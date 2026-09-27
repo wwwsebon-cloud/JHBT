@@ -7330,11 +7330,12 @@ function seededPick(list, count) {
    티어표(3.6 시뮬 티어리스트)와 1:1 상성표로 봇이 "알고 고르는" 정도를 정한다.
    brain.smart 가 false 면 예전처럼 등급 가중 무작위, true 면 accuracy(0~1) 만큼 티어·상성을 따른다.
    정확도가 높아도 확률로 고르므로 가끔은 낮은 티어도 들고 온다. */
+// 3.7 신규(태양·마피아·별·마검·선인장·공허·수호자·브로커·자객·개구리)는 1:1 시뮬 결과로 임시 배치했다.
 const BOT_TIER_LIST = {
-  1: ['blackflame', 'genesis', 'dragon', 'berserk', 'dimension', 'edgy', 'engineer'],
-  2: ['solemn', 'charge', 'tentacle', 'ninja', 'mimic', 'tyrant', 'arcade', 'god', 'combo', 'dj'],
-  3: ['blizzard', 'instinct', 'mushroom', 'slime', 'necro', 'arcane', 'assassin', 'lonely', 'planet', 'dosa', 'lightning', 'burning', 'reaper', 'levelup', 'lasso', 'lock', 'curse', 'gumiho', 'rank', 'mutation', 'syringe', 'no_u', 'clock'],
-  4: ['impeachment', 'poison', 'taeguk', 'glutton', 'fire', 'shield', 'bat', 'meteor', 'egg', 'mini', 'roulette', 'awaken', 'mutant', 'hmg', 'portal', 'sniper', 'mine', 'beam', 'dust', 'metal', 'hypno', 'biker', 'sixseven', 'phantom', 'growth'],
+  1: ['blackflame', 'genesis', 'dragon', 'sun', 'berserk', 'dimension', 'edgy', 'engineer'],
+  2: ['solemn', 'mafia', 'star', 'demonblade', 'cactus', 'charge', 'tentacle', 'ninja', 'mimic', 'tyrant', 'arcade', 'god', 'combo', 'dj'],
+  3: ['blizzard', 'instinct', 'mushroom', 'slime', 'necro', 'arcane', 'assassin', 'lonely', 'planet', 'dosa', 'lightning', 'hollow', 'guardian', 'broker', 'hitman', 'burning', 'reaper', 'levelup', 'lasso', 'lock', 'curse', 'gumiho', 'rank', 'mutation', 'syringe', 'no_u', 'clock'],
+  4: ['impeachment', 'poison', 'taeguk', 'glutton', 'fire', 'shield', 'bat', 'meteor', 'egg', 'mini', 'roulette', 'awaken', 'frog', 'mutant', 'hmg', 'portal', 'sniper', 'mine', 'beam', 'dust', 'metal', 'hypno', 'biker', 'sixseven', 'phantom', 'growth'],
   5: ['ice', 'bomb', 'smoke', 'telescope', 'revive', 'stop', 'satellite', 'mega', 'medic', 'hong', 'hacker', 'gambler', 'battery']
 };
 // 1:1 상성: ids 순서대로 행(나) × 열(상대), 글자 하나가 승률 0~4 (0 = 0%, 2 = 50%, 4 = 100%). 현재 버전 시뮬 5,402판.
@@ -7430,16 +7431,26 @@ function createBotBrain(modeKey, enemy) {
   const smart = Math.random() < 0.4 + 0.5 * t;
   return { smart, accuracy: smart ? clamp((0.4 + 0.5 * t) * (0.85 + Math.random() * 0.3), 0, 1) : 0 };
 }
+// 밴은 티어와 상관없이 모든 봇이 어느 정도 잘한다: 티어표 상위일수록 자주 밴하지만, 한 칸마다 BOT_BAN_WILD 확률로 아무거나 밴한다.
+const BOT_BAN_SHARPNESS = 4;  // 똑똑하지 않은 봇도 이만큼은 티어를 본다 (1티어 맨 위 vs 5티어 맨 아래 ≈ e^4)
+const BOT_BAN_WILD = 0.15;
 function botChooseBans(brain, request) {
-  if (!brain.smart) return botWeightedPick(request.pool, request.count);
-  const sharp = BOT_SHARPNESS * brain.accuracy;
-  if (request.context.first) {
-    // 선픽: 1티어 상위권은 내가 가져가려고 살리고, 그 아래의 강한 지후를 밴한다
-    const keep = new Set(request.pool.slice().sort((a, b) => botTierScore(b) - botTierScore(a)).slice(0, BOT_KEEP_TOP));
-    return weightedSample(request.pool.filter(id => !keep.has(id)), request.count, id => Math.exp(sharp * botTierScore(id)));
+  const sharp = Math.max(BOT_BAN_SHARPNESS, BOT_SHARPNESS * brain.accuracy);
+  let pool = request.pool;
+  if (brain.smart && request.context.first) {
+    // 똑똑한 봇이 선픽이면 1티어 상위권은 내가 가져가려고 살리고, 그 아래의 강한 지후를 밴한다
+    const keep = new Set(pool.slice().sort((a, b) => botTierScore(b) - botTierScore(a)).slice(0, BOT_KEEP_TOP));
+    pool = pool.filter(id => !keep.has(id));
   }
-  // 후픽: 상대가 먼저 가져갈 1티어 상위권 위주로 밴한다
-  return weightedSample(request.pool, request.count, id => Math.exp(sharp * botTierScore(id)));
+  const bans = [];
+  while (bans.length < request.count) {
+    const rest = pool.filter(id => !bans.includes(id));
+    if (!rest.length) break;
+    bans.push(Math.random() < BOT_BAN_WILD
+      ? rest[Math.floor(Math.random() * rest.length)]
+      : weightedSample(rest, 1, id => Math.exp(sharp * botTierScore(id)))[0]);
+  }
+  return bans;
 }
 function botChoosePick(brain, request) {
   const context = request.context;
@@ -13841,7 +13852,7 @@ const PATCH_NOTES = {
         { emoji:'🏆', name:'경쟁전 배치 풀', tag:'adjust', color:'#c99a17', desc:'경쟁전도 선택지가 <b>항상 3개</b> 나옵니다 (덱에서 칸마다 따로 뽑아 겹칠 수 있음).' },
         { emoji:'🎯', name:'상대 매칭', tag:'adjust', color:'#555555', desc:'상대 레벨 <b>±2 → ±5</b> · 경쟁전 상대 티어 <b>±3칸</b> 안에서 나옵니다.' },
         { emoji:'📈', name:'상대 보정', tag:'adjust', color:'#2f9e44', desc:'상대가 높을수록 더 얻고 덜 잃습니다. 경쟁전 TP는 티어 한 칸당 <b>12%</b>, 경험치는 레벨 1당 <b>6%</b> (최소 ×0.5 ~ 최대 ×1.6).' },
-        { emoji:'🤖', name:'봇', tag:'adjust', color:'#444444', desc:'밴픽을 아는 봇이 <b>골드 → 브론즈</b>부터 나옵니다.' }
+        { emoji:'🤖', name:'봇', tag:'adjust', color:'#444444', desc:'밴픽을 아는 봇이 <b>골드 → 브론즈</b>부터 나옵니다. 밴은 티어와 상관없이 <b>모든 봇</b>이 강한 지후 위주로 하지만, 가끔 엉뚱한 지후도 밴합니다.' }
       ] }
     ]
   },
