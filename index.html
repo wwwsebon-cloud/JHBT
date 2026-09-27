@@ -5286,9 +5286,9 @@ function rollDeployPool(bench, deckIds, size, round, rng = Math.random) {
   return pool;
 }
 
-function buildEnemyDeck() {
+function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
   const all = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden');
-  const level = getLevelInfo(profile.totalXp).level;
+  const skill = botLevelSkill(level);
   let deck;
   if (level <= 3) {
     const common = all.filter(id => CHAR_DB[id].rarity === 'common');
@@ -5296,7 +5296,8 @@ function buildEnemyDeck() {
     const rest = all.filter(id => !deck.includes(id));
     deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
   } else {
-    deck = pickRandom(all, 5);
+    // 레벨이 오를수록 티어표 상위 지후를 들고 오려 한다 (최대 약 15배, 낮은 티어도 가끔 나온다)
+    deck = weightedSample(all, 5, id => Math.exp(3 * skill * botTierScore(id)));
   }
   // 봇은 1% 확률로 히든 지후를 덱에 넣어 온다. 등장은 배치 풀 규칙(rollDeployPool)을 따른다.
   if (Math.random() < 0.01) {
@@ -6971,24 +6972,168 @@ function seededPick(list, count) {
   return out;
 }
 
+/* ───────── 봇 정밀화 (3.6.2) ─────────
+   티어표(3.6 시뮬 티어리스트)와 1:1 상성표로 봇이 "알고 고르는" 정도를 정한다.
+   brain.smart 가 false 면 예전처럼 등급 가중 무작위, true 면 accuracy(0~1) 만큼 티어·상성을 따른다.
+   정확도가 높아도 확률로 고르므로 가끔은 낮은 티어도 들고 온다. */
+const BOT_TIER_LIST = {
+  1: ['blackflame', 'genesis', 'dragon', 'berserk', 'dimension', 'edgy', 'engineer'],
+  2: ['solemn', 'charge', 'tentacle', 'ninja', 'mimic', 'tyrant', 'arcade', 'god', 'combo', 'dj'],
+  3: ['blizzard', 'instinct', 'mushroom', 'slime', 'necro', 'arcane', 'assassin', 'lonely', 'planet', 'dosa', 'lightning', 'burning', 'reaper', 'levelup', 'lasso', 'lock', 'curse', 'gumiho', 'rank', 'mutation', 'syringe', 'no_u', 'clock'],
+  4: ['impeachment', 'poison', 'taeguk', 'glutton', 'fire', 'shield', 'bat', 'meteor', 'egg', 'mini', 'roulette', 'awaken', 'mutant', 'hmg', 'portal', 'sniper', 'mine', 'beam', 'dust', 'metal', 'hypno', 'biker', 'sixseven', 'phantom', 'growth'],
+  5: ['ice', 'bomb', 'smoke', 'telescope', 'revive', 'stop', 'satellite', 'mega', 'medic', 'hong', 'hacker', 'gambler', 'battery']
+};
+// 1:1 상성: ids 순서대로 행(나) × 열(상대), 글자 하나가 승률 0~4 (0 = 0%, 2 = 50%, 4 = 100%). 현재 버전 시뮬 5,402판.
+const BOT_MATCHUP_IDS = 'growth hypno edgy egg sixseven gambler mushroom phantom hacker roulette dimension syringe glutton dosa biker tentacle engineer curse taeguk fire ice lonely shield assassin combo sniper medic awaken berserk poison charge stop mutant revive burning bat clock hmg mega rank arcade gumiho ninja mini metal necro lasso mine dj lightning slime god instinct arcane satellite portal no_u tyrant telescope hong levelup reaper smoke battery impeachment bomb dragon meteor blizzard beam mutation planet lock dust'.split(' ');
+const BOT_MATCHUP_TABLE =
+  '2000240022000040000000000020000210000020000000000000002020220002020000000042024404420000400000404004400004240404400000400400000044004404440404040004' +
+  '4422444444044044004444404444040424444442040444444444044400444044440404444442222222440022430022422000440424440400420200022422002044202422244102200204' +
+  '2002240222022020022002000020020002020020000202020022040202000000220020200000020200400000400000000000200000000000000000000000000020002200020100000000' +
+  '4402442444202042402442402444224242242444242444240440224220440442430424042240022402440000400000000000400004440000400000400440000040004400440200000000' +
+  '2000200020000040000000000020000200000000000000010000002020020002020000000022002400424024400202220200240220444420002440202000002222224024022220044224' +
+  '4444442440244442044444444444044444444442240444444444444444444044442444442444042444440204404444404004440004240004420000400404000044004404444202044404' +
+  '4402242442042040004440400444040444040442000440040000204440440044040404200444424444400042400444444004440404240444440404440204002444204440444404440404' +
+  '0000200000000020000000000000000000000000000000000000000000000000000000000044014424442444420244404424440404444444420444044444444244404440444404444444' +
+  '4444440444404444244444440444040444444442444444044440444444444444444044444444442444420040420244444004440404444444422400400400040444444440444444040404' +
+  '4402242444000040002040400444020424000442000020040000004400440044220404400444024404420000400042404004440404240004420004400400000044004400440404044004' +
+  '4000440442000040000020000040000424000040000040040000004200440044020200000044022424420440440044424444440444444444442444404440242044404440444404440004' +
+  '4002440444000040000040200440000444000040000440040000004440440044040000000044444444420444400444404244440404444444440024444444042444004440444204444424' +
+  '4404442444044442444440402444040424444444040440442000004400444444440404444440044404440000400000400002400004440004400000000440000040004400440200044004' +
+  '2000220022000040000000000020000210000020000000022000002020220002020000000044004404400000400000404004420004240400400000400420000044404400444400000004' +
+  '4444442444444444444444444444244444444444444444444444444444444444444444040444002424420400400020404004440204240404400004400404000044004400440204044004' +
+  '4442440442044444444440444444042424444444044444444444444400444044440444442420004420240000400000000000200002440000200000000200000020200202020400000000' +
+  '3220440040020240002220002032022020202222000200222202423202040204030022220040002420400000400000000000400000420000400000400200000040004400040400000000' +
+  '4404442440044440004440400444040424244442040440444400404440440044440404402440002404400400400044404004400004440204420404400200000044404400444404000004' +
+  '4404442442044040004440400444040424042444040240040000204400440044440404400440044404440000400000404000440004240002400000400400000040004404440200000000' +
+  '2000240044000040000000000020000220000020000000020000004020040204040000000044224404442220422222404004440404242204422220422220222044004402242402044020' +
+  '4444442442244444024442444444044444444442244440444404444444444044440444224444024404400440400044404404440404440004420244400400000044404440444404040204' +
+  '4444442440444440044440424444040444444442002444244404244440440044420424444444042404440400400440400004440004240024440002400400000044004400040203044024' +
+  '4004440042000044002000000440000440000040000020040000004040440444040400000044022404440440400444444044440404444444424404424400024044404402440404444444' +
+  '4402442442044440444440400444040424044442042440244400004400442444040404442440002400340002400000000000200002220200220000000200000240102400040200000000' +
+  '4402444044044440044440402022040424044442040444042422202400442042440404024444024404440040400444444044440004240444440404440402400444004444444204044444' +
+  '4404240444044440044442444444040444444442444444442020204440440444440444044444042444440444404044404044440404244444420404424424422044404444444404044444' +
+  '4442442442042240044442424444040404042442042440442422244402442044420424442444040424420440420044444044440404244444440404444240440244404440444204444424' +
+  '2000420022000040000000000020000210000000000000002000002020020002020000000040002424420000400000200004400004240004400000400400000042004400440200000002' +
+  '2442442422040240004440044420044244004424000400434400402420224442020444004444442444420444440044444444440444244444440444444444442444424440444404440424' +
+  '2002420040000040000000000020000440000040000000020000004020240004040000000020004200240000400000000000200002000000000000000000000020200200020200000000' +
+  '4402444442044040004440400444040444444444004444242040204400442044440404000440424404404044440444444404440442244440224444020440004444044442444400440444' +
+  '4002440044000040000000000040000444000042000400040000004000440024020100000020004220220000400000000000200002000000000000000020000020200200020200000000' +
+  '4400240442004040002440400440040444000442000444440000004440440044240400000420032312220200400020200202200200100002000022000202002222200200220202020001' +
+  '4444444442244444004444444444044444444444444444444444444444444444442444444440024404440200404000204004440004440004420001000400000044004404340202020004' +
+  '4442242444044040044440404444040424444444042440444404204400444044440424042440044404400000400000404000440004240404400000400400000044004400444202020004' +
+  '4404244440002440040044400044400424040440240040044040004444444444440444240444024404420040400044444004440404244444442204400420000044404440444404040224' +
+  '4404442442244440044444420444442444244442040240240000224402444044440424422440004424400000400000404000400004440004440000400400000042004400440300000002';
+const BOT_TIER_SCORE = (() => {
+  const score = {};
+  Object.entries(BOT_TIER_LIST).forEach(([tier, ids]) => ids.forEach((id, pos) => {
+    score[id] = ((5 - Number(tier)) + 0.8 * (1 - pos / ids.length)) / 4.8; // 1티어 맨 위 ≈ 1, 5티어 맨 아래 ≈ 0
+  }));
+  return score;
+})();
+const BOT_MATCHUP_INDEX = Object.fromEntries(BOT_MATCHUP_IDS.map((id, index) => [id, index]));
+function botTierScore(id) { return BOT_TIER_SCORE[id] ?? 0.5; } // 표에 없는 새 지후는 3티어 중간
+function botMatchup(id, other) { // id 가 other 를 1:1 로 이길 확률 (모르면 0.5)
+  const a = BOT_MATCHUP_INDEX[id], b = BOT_MATCHUP_INDEX[other];
+  if (a === undefined || b === undefined) return 0.5;
+  return Number(BOT_MATCHUP_TABLE[a * BOT_MATCHUP_IDS.length + b]) / 4;
+}
+function botCounterScore(id, theirs) { // 지금까지 나온 상대 지후들을 얼마나 잘 잡는지 (-0.5 ~ 0.5)
+  if (!theirs.length) return 0;
+  return theirs.reduce((sum, other) => sum + botMatchup(id, other) - 0.5, 0) / theirs.length;
+}
+function weightedSample(items, count, weightOf) {
+  const bag = items.slice(), out = [];
+  while (out.length < count && bag.length) {
+    const weights = bag.map(item => Math.max(0, weightOf(item)) || 0);
+    const total = weights.reduce((sum, w) => sum + w, 0);
+    let index = 0;
+    if (total > 0) {
+      let roll = Math.random() * total;
+      for (; index < bag.length - 1; index++) { roll -= weights[index]; if (roll < 0) break; }
+    } else index = Math.floor(Math.random() * bag.length);
+    out.push(bag.splice(index, 1)[0]);
+  }
+  return out;
+}
+const BOT_SHARPNESS = 5;   // 정확도 1 일 때 1티어 맨 위와 5티어 맨 아래의 선택 비율 ≈ e^5
+const BOT_KEEP_TOP = 5;    // 선픽 봇은 티어 상위 5종을 밴하지 않고 살려 둔다
+const BOT_BACKLINE = ['egg', 'growth', 'gambler']; // 성장·보조형은 역할과 상관없이 뒤쪽
+
+// 레벨이 오를수록 티어표와 역할 배치를 의식한다 (일반전·드래프트전 배치). 레벨 2 이하 0 → 레벨 27 이상 0.9
+function botLevelSkill(level) { return clamp(((Number(level) || 1) - 2) / 28, 0, 0.9); }
+// 드래프트 봇의 두뇌. 경쟁전은 봇 티어 기준(실버까지는 예전처럼), 드래프트전은 레벨 기준.
+// 조건이 돼도 일부 봇만 똑똑하게 고른다.
+function createBotBrain(modeKey, enemy) {
+  let t;
+  if (modeKey === 'competitive') {
+    const group = compGroupIndex(enemy.tp);
+    if (group < 3) return { smart: false, accuracy: 0 };
+    t = (group - 3) / (COMP_GROUPS.length - 4); // 골드 0 → 챌린저 1
+  } else {
+    t = clamp(((Number(enemy.level) || 1) - 6) / 30, 0, 1);
+    if (t <= 0) return { smart: false, accuracy: 0 };
+  }
+  const smart = Math.random() < 0.4 + 0.5 * t;
+  return { smart, accuracy: smart ? clamp((0.4 + 0.5 * t) * (0.85 + Math.random() * 0.3), 0, 1) : 0 };
+}
+function botChooseBans(brain, request) {
+  if (!brain.smart) return botWeightedPick(request.pool, request.count);
+  const sharp = BOT_SHARPNESS * brain.accuracy;
+  if (request.context.first) {
+    // 선픽: 1티어 상위권은 내가 가져가려고 살리고, 그 아래의 강한 지후를 밴한다
+    const keep = new Set(request.pool.slice().sort((a, b) => botTierScore(b) - botTierScore(a)).slice(0, BOT_KEEP_TOP));
+    return weightedSample(request.pool.filter(id => !keep.has(id)), request.count, id => Math.exp(sharp * botTierScore(id)));
+  }
+  // 후픽: 상대가 먼저 가져갈 1티어 상위권 위주로 밴한다
+  return weightedSample(request.pool, request.count, id => Math.exp(sharp * botTierScore(id)));
+}
+function botChoosePick(brain, request) {
+  const context = request.context;
+  if (!brain.smart || context.blind) return botWeightedPick(request.options, 1)[0];
+  const sharp = BOT_SHARPNESS * brain.accuracy;
+  // 후반에는 지금까지 나온 상대 지후를 잡는 지후를 더 쳐준다
+  const counter = context.late ? id => 0.8 * botCounterScore(id, context.theirs) : () => 0;
+  return weightedSample(request.options, 1, id => Math.exp(sharp * (botTierScore(id) + counter(id))))[0];
+}
+// 배치: 탱커는 앞, 딜러는 가운데, 서포터·성장형은 뒤 (적 진영 기준 0.12 = 맨 뒤, 0.42 = 맨 앞)
+function botRoleBand(charId) {
+  const c = CHAR_DB[charId];
+  if (!c) return [0.12, 0.42];
+  if (BOT_BACKLINE.includes(charId) || c.role === 'support') return [0.12, 0.22];
+  if (c.role === 'tank') return [0.32, 0.42];
+  if (c.role === 'assassin') return [0.26, 0.40];
+  if (c.role === 'controller') return [0.20, 0.34];
+  return c.isMelee ? [0.26, 0.38] : [0.18, 0.30]; // 딜러
+}
+
 // 상대: 흐름은 act(request) 만 부른다. 지금은 봇이 답하고,
 // 나중에 온라인 친선전에서는 같은 모양의 네트워크 상대로 바꾸면 된다.
-//   request: { type:'ban', count, pool } | { type:'pick', options }
+//   request: { type:'ban', count, pool, context } | { type:'pick', options, context }
+//   context: 상대 입장에서 본 공개 정보 { first, mine, theirs, late, blind }
 //   → Promise<{ type:'ban', ids } | { type:'pick', id }>
-function createBotOpponent() {
+function createBotOpponent(brain = { smart: false, accuracy: 0 }) {
   return {
     kind: 'bot',
+    brain,
     act(request) {
       const delay = randomBetween(BOT_THINK_MS[0], BOT_THINK_MS[1]);
       return new Promise(resolve => scheduleTask(() => resolve(request.type === 'ban'
-        ? { type: 'ban', ids: botWeightedPick(request.pool, request.count) }
-        : { type: 'pick', id: botWeightedPick(request.options, 1)[0] }), delay));
+        ? { type: 'ban', ids: botChooseBans(brain, request) }
+        : { type: 'pick', id: botChoosePick(brain, request) }), delay));
     }
   };
 }
 // 상대에게 행동을 요청한다. 그 사이 차례가 바뀌었으면(시간 초과·취소) 답을 버린다.
 function askOpponent(request) {
   const turnKey = comp.turnKey;
+  request.context = {
+    first: comp.first === 'enemy',
+    mine: comp.picks.enemy.slice(),
+    theirs: comp.picks.ally.slice(),
+    // 후반: 드래프트전 PHASE 3 부터, 경쟁전은 네 번째 픽부터
+    late: comp.cfg.style === 'snake' ? comp.pickIndex >= 3 : comp.phase >= 3,
+    blind: !!comp.blind
+  };
   comp.opponent.act(request).then(action => { if (comp && comp.turnKey === turnKey) applyDraftAction('enemy', action); });
 }
 // 양쪽 행동이 반영되는 유일한 입구. 온라인이 되면 내 행동은 여기서 상대에게도 보낸다.
@@ -7013,10 +7158,13 @@ function botEnemyProfile() {
 }
 function createBotMatchmaker() {
   return {
-    find() {
+    find(modeKey) {
       let timer = null;
       const promise = new Promise(resolve => {
-        timer = setTimeout(() => resolve({ opponent: createBotOpponent(), enemy: botEnemyProfile() }), randomBetween(MATCH_WAIT_MS[0], MATCH_WAIT_MS[1]));
+        timer = setTimeout(() => {
+          const enemy = botEnemyProfile();
+          resolve({ opponent: createBotOpponent(createBotBrain(modeKey, enemy)), enemy });
+        }, randomBetween(MATCH_WAIT_MS[0], MATCH_WAIT_MS[1]));
       });
       return { promise, cancel() { clearTimeout(timer); } };
     }
@@ -7187,7 +7335,7 @@ function startDraftMode(modeKey, match = null) {
   const myLevel = getLevelInfo(profile.totalXp).level;
   const seed = Math.floor(Math.random() * 4294967296);
   comp = {
-    mode: modeKey, cfg, seed, rng: seededRng(seed), opponent: match?.opponent || createBotOpponent(),
+    mode: modeKey, cfg, seed, rng: seededRng(seed), opponent: null,
     stage: 'ban', token: 0, turnKey: 0, phase: 0, pickIndex: 0, selected: null, lastTap: null,
     first: null,
     bans: { ally: [], enemy: [] }, banDraft: [],
@@ -7195,6 +7343,7 @@ function startDraftMode(modeKey, match = null) {
     rarity: null, options: [], pickedBy: {}, turn: null, deadline: 0, blind: false,
     enemy: match?.enemy || botEnemyProfile()
   };
+  comp.opponent = match?.opponent || createBotOpponent(createBotBrain(modeKey, comp.enemy));
   comp.first = comp.rng() < 0.5 ? 'ally' : 'enemy'; // 동전 던지기 (공유 시드)
   // 경쟁전은 드래프트부터 경기다. 여기서 창을 닫아도 패배로 처리한다.
   abandonNotice = '';
@@ -7524,6 +7673,8 @@ function startDraftMatch() {
   state.enemyDeckIds = comp.picks.enemy.slice();
   state.enemyName = comp.enemy.name;
   state.enemyLevel = comp.enemy.level;
+  const brain = comp.opponent.brain || { smart: false, accuracy: 0 };
+  state.botSkill = brain.smart ? brain.accuracy : botLevelSkill(comp.enemy.level) * 0.6;
   state.matchSettled = false;
   state.lastSettlement = null;
   resetBattlePresentation();
@@ -7587,9 +7738,10 @@ function startMatch(mode = 'ranked') {
     state.round = 1; state.allyLives = 4; state.enemyLives = 4; state.placements = [];
     state.reaperGrudges = {};
     state.castles = mode === 'castle' ? {} : null;
-    state.enemyDeckIds = buildEnemyDeck();
     state.enemyName = BOT_NICKNAMES[Math.floor(Math.random() * BOT_NICKNAMES.length)];
     state.enemyLevel = Math.max(1, Math.min(100, getLevelInfo(profile.totalXp).level + Math.floor(Math.random() * 5) - 2));
+    state.enemyDeckIds = buildEnemyDeck(state.enemyLevel);
+    state.botSkill = botLevelSkill(state.enemyLevel);
     state.matchSettled = false;
     state.lastSettlement = null;
     resetBattlePresentation();
@@ -7962,7 +8114,7 @@ function enemyAutoDeployOne() {
     if (mergeCandidates.length) charId = pickRandom(mergeCandidates, 1)[0];
     else return;
   } else {
-    charId = pickRandom(placeable, 1)[0];
+    charId = weightedSample(placeable, 1, id => Math.exp(2 * (state.botSkill || 0) * botTierScore(id)))[0];
   }
   if (!charId) return;
 
@@ -7982,7 +8134,8 @@ function enemyAutoDeployOne() {
       return;
     }
     // non-overlapping spot in enemy half
-    const band = aiDepthBand('enemy', 0.12, 0.42);
+    // 실력이 있을수록 역할에 맞는 줄(탱커 앞 · 딜러 가운데 · 서포터 뒤)에 둔다
+    const band = Math.random() < (state.botSkill || 0) ? aiDepthBand('enemy', ...botRoleBand(charId)) : aiDepthBand('enemy', 0.12, 0.42);
     let x, y, tries = 0;
     do {
       if (isEastWestLayout()) {
@@ -12825,6 +12978,7 @@ const PATCH_NOTES = {
         { emoji:'🔎', name:'매칭', tag:'new', color:'#2479b8', desc:'드래프트전과 경쟁전은 누르자마자 시작하지 않고 <b>매칭 중</b> 창이 뜹니다. 3~5초 뒤 상대 이름과 함께 매칭이 잡히며, 잡히기 전에는 <b>취소</b>할 수 있습니다.' },
         { emoji:'🏆', name:'경쟁전 로비 · 시즌', tag:'new', color:'#c99a17', desc:'경쟁전 버튼을 누르면 경쟁전 로비로 갑니다. 내 티어와 게이지, 경쟁전 리더보드, 시즌 종료일을 볼 수 있습니다. <b>시즌 1</b>은 <b>2026.10.27</b>에 끝나고 바로 시즌 2가 시작됩니다. 새 시즌에는 티어가 <b>세 단계</b> 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로, 골드 이하는 아이언).' },
         { emoji:'◆', name:'승급 보상', tag:'new', color:'#3f78e0', desc:'시즌마다 새 티어에 처음 오르면 다이아를 받습니다. 실버 <b>500</b> · 골드 600 · 플래티넘 700 · 다이아 800 · 에이스 900 · 마스터 1,000 · 그랜드마스터 1,100 · 챌린저 <b>1,200</b>. 시즌이 바뀌어 티어가 내려가면 다시 올라갈 때 또 받습니다.' },
+        { emoji:'🤖', name:'봇 정밀화', tag:'new', color:'#444444', desc:'일반전 봇은 레벨이 오를수록 <b>티어표 상위</b> 지후를 들고 오고, 탱커는 앞 · 딜러는 가운데 · 서포터와 성장형(알 · 성장 · 도박)은 뒤에 두는 경향이 생깁니다. 경쟁전은 <b>골드부터</b>(드래프트전은 레벨이 오를수록) 일부 봇이 티어를 의식해 밴픽합니다. 선픽이면 1티어 상위권을 살리고, 후픽이면 밴하며, 후반에는 상대 지후를 잡는 지후를 고릅니다. 티어가 높을수록 더 정확해지지만 늘 최선의 덱을 들고 오지는 않습니다.' },
         { emoji:'✨', name:'소환 연출', tag:'new', color:'#8d2fb0', desc:'랜덤 영웅·전설 모집권과 상점 지후 구매도 뽑기와 같은 소환 연출로 보여줍니다.' }
       ] },
       { title: '변경', items: [
