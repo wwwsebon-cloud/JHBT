@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="3.7.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="3.7.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <style>
@@ -2974,7 +2974,7 @@ const CHARACTER_BALANCE = {
   biker: {
     hp: 9999, atk: 0, atkSpeed: 0, range: 0, speed: 13.5,
     noAttack: true,
-    bikeChargeTime: 3, bikeRushSpeed: 2250, bikeHitHpFraction: 0.7, bikeStun: 3, bikeKnockback: 90,
+    bikeChargeTime: 3, bikeRushSpeed: 2250, bikeHitMaxHpFraction: 0.5, bikeStun: 3, bikeKnockback: 90,
     bikeExplosionRadius: 135, bikeExplosionDamage: 1500, bikeBurnDps: 200, bikeBurnDuration: 5,
     skidDuration: 4, skidInterval: 0.5, skidDamage: 120
   },
@@ -3181,7 +3181,7 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 3000, atk: 100, atkSpeed: 0.6, range: 360, speed: 0,
     skipHpMult: true,
-    isDj: true
+    isDj: true, djSonicInterval: 1, djKnockChance: 0.2
   },
   lightning: {
     hp: 1300, atk: 300, atkSpeed: 1.0, range: 180, speed: 135,
@@ -3349,13 +3349,13 @@ const CHARACTER_BALANCE = {
     isMelee: true
   },
   sun: {
-    hp: 2500, atk: 40, atkSpeed: 0.6, range: 225, speed: 81,
-    sunAtkGain: 40, sunGainEvery: 2, sunSplashRadius: 56.25,
+    hp: 2500, atk: 40, atkSpeed: 0.8, range: 225, speed: 81,
+    sunAtkGain: 10, sunGainEvery: 2, sunSplashRadius: 56.25,
     sunReviveDelay: 2, sunDropDamage: 1000, sunDropRadius: 90
   },
   hollow: {
     hp: 2800, atk: 100, atkSpeed: 1, range: 90, speed: 67.5,
-    hollowOpenDelay: 3, hollowOpenTime: 4, hollowZoneScale: 2, // 공허지역 반지름 = 유닛 반지름 × 2
+    hollowOpenDelay: 3, hollowOpenTime: 2.75, hollowZoneScale: 4.4, // 공허지역 반지름 = 유닛 반지름 × 4.4 (3.7.3: 기존 2배의 2.2배)
     hollowRealmMove: 3, hollowRealmSpeed: 180, hollowStrike: 1400, hollowStunDelay: 1, hollowStun: 2,
     hollowRealmAtk: 1000, hollowRealmSplash: 90
   },
@@ -3381,7 +3381,7 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 500, atk: 0, atkSpeed: 1, range: 0, speed: 9,
     noAttack: true,
-    brokerDelay: 7, brokerDuration: 10
+    brokerDelay: 7, brokerDuration: 4
   },
   hitman: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
@@ -3998,7 +3998,7 @@ const CHAR_DB = {
     id: 'biker', name: '폭주족 지후', emoji: '🏎️', role: 'assassin', roleLabel: '어쌔신',
     rarity: 'legend', color: '#f07a1a', portrait: PORTRAITS.biker,
     ...CHARACTER_BALANCE.biker,
-    skillDesc: '전투 시작 시 <b>3초</b> 시동을 건 뒤 적 진영 끝까지 일직선으로 초당 <b>50칸</b> 속도로 돌진한다. 부딪힌 유닛은 모두 밀쳐내고, 적은 넉백·<b>3초 기절</b>과 현재 HP의 <b>70%</b> 피해를 입는다. 지나간 자리에 4초간 스키드마크(0.5초마다 120 피해)를 남기고, 벽에 닿으면 자폭해 반경 3칸에 <b>1500</b> 피해와 화상(초당 200, 5초)을 입힌다.'
+    skillDesc: '전투 시작 시 <b>3초</b> 시동을 건 뒤 적 진영 끝까지 일직선으로 초당 <b>50칸</b> 속도로 돌진한다. 부딪힌 유닛은 모두 밀쳐내고, 적은 넉백·<b>3초 기절</b>과 <b>최대 HP의 50%</b> 피해를 입는다. 지나간 자리에 4초간 스키드마크(0.5초마다 120 피해)를 남기고, 벽에 닿으면 자폭해 반경 3칸에 <b>1500</b> 피해와 화상(초당 200, 5초)을 입힌다.'
   },
   tentacle: {
     id: 'tentacle', name: '촉수 지후', emoji: '🦑', role: 'controller', roleLabel: '컨트롤러',
@@ -4061,7 +4061,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#4b2d7f', portrait: PORTRAITS.hollow,
     ...CHARACTER_BALANCE.hollow,
     customAttack(caster, target) { hollowAttack(caster, target); },
-    skillDesc: '라운드 시작 <b>3초</b> 뒤 자신 주변(반지름 = 유닛의 2배)에 <b>공허지역</b>을 연다. 4초 뒤 닫히며 공허 지후와 지역에 닿은 아군이 <b>아공간</b>으로 들어간다. 아공간에서 공허 지후는 가장 가까운 적에게 다가가고, 3초 뒤 그 자리에 공허지역이 다시 열려 닿은 적에게 <b>1,400</b> 피해를 주고 1초 뒤 <b>2초 기절</b>시킨다. 기절이 끝나면 아공간의 아군이 모두 그 자리로 나오고 공허가 닫힌다 (라운드당 1번). 아공간 안에서는 ATK <b>1,000</b>, 반경 2칸 광역 공격.'
+    skillDesc: '라운드 시작 <b>3초</b> 뒤 자신 주변(반지름 = 유닛의 4.4배)에 <b>공허지역</b>을 연다. <b>2.75초</b> 뒤 닫히며 공허 지후와 지역에 닿은 아군이 <b>아공간</b>으로 들어간다. 아공간에서 공허 지후는 가장 가까운 적에게 다가가고, 3초 뒤 그 자리에 공허지역이 다시 열려 닿은 적에게 <b>1,400</b> 피해를 주고 1초 뒤 <b>2초 기절</b>시킨다. 기절이 끝나면 아공간의 아군이 모두 그 자리로 나오고 공허가 닫힌다 (라운드당 1번). 아공간 안에서는 ATK <b>1,000</b>, 반경 2칸 광역 공격.'
   },
   star: {
     id: 'star', name: '별 지후', emoji: '⭐', role: 'dealer', roleLabel: '딜러',
@@ -4108,7 +4108,7 @@ const CHAR_DB = {
     id: 'broker', name: '브로커 지후', emoji: '💼', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#3a3a3a', portrait: PORTRAITS.broker,
     ...CHARACTER_BALANCE.broker,
-    skillDesc: '공격하지 않는다. 라운드 시작 <b>7초</b> 뒤 <b>체력이 가장 높은 적</b>에게 순간이동해 <b>협상</b>을 건다 (10초): 둘 다 움직이지도 공격하지도 못하고 은신한다. 발동 순간의 아군 <b>승률만큼의 확률</b>로 성공하면 대상과 함께 처음 자리로 돌아오고, 그 적은 <b>영구히 아군</b>이 되며 최대 배치 수가 1 늘어난다. 실패하면 협상만 풀린다 (라운드당 1번). 출격제한 1기.'
+    skillDesc: '공격하지 않는다. 라운드 시작 <b>7초</b> 뒤 <b>체력이 가장 높은 적</b>에게 순간이동해 <b>협상</b>을 건다 (4초): 둘 다 움직이지도 공격하지도 못하고 은신한다. 발동 순간의 아군 <b>승률만큼의 확률</b>로 성공하면 대상과 함께 처음 자리로 돌아오고, 그 적은 <b>영구히 아군</b>이 되며 최대 배치 수가 1 늘어난다. 실패하면 협상만 풀린다 (라운드당 1번). 출격제한 1기.'
   },
   hitman: {
     id: 'hitman', name: '자객 지후', emoji: '🥷', role: 'assassin', roleLabel: '어쌔신',
@@ -4121,7 +4121,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#ff7a00', portrait: PORTRAITS.sun,
     ...CHARACTER_BALANCE.sun,
     customAttack(caster, target) { splashShot(caster, target, caster.def.sunSplashRadius); sunGrow(caster); },
-    skillDesc: '공격이 반경 <b>1.25칸</b>에 광역 피해를 준다. <b>2회</b> 공격할 때마다 공격력이 <b>40</b> 오른다. 죽을 때 자신이 <b>마지막으로 살아남은 아군</b>이면 <b>2초</b> 뒤 체력을 가득 채워 부활해 <b>체력이 가장 높은 적</b>에게 떨어지며 반경 2칸에 <b>1,000</b> 피해를 준다 (라운드당 1번).'
+    skillDesc: '공격이 반경 <b>1.25칸</b>에 광역 피해를 준다. <b>2회</b> 공격할 때마다 공격력이 <b>10</b> 오른다. 죽을 때 자신이 <b>마지막으로 살아남은 아군</b>이면 <b>2초</b> 뒤 체력을 가득 채워 부활해 <b>체력이 가장 높은 적</b>에게 떨어지며 반경 2칸에 <b>1,000</b> 피해를 준다 (라운드당 1번).'
   },
   curse: {
     id: 'curse', name: '저주 지후', emoji: '🪆', role: 'assassin', roleLabel: '어쌔신',
@@ -4366,7 +4366,7 @@ const CHAR_DB = {
     id: 'dj', name: 'DJ 지후', emoji: '🎧', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#39ff14', portrait: PORTRAITS.dj,
     ...CHARACTER_BALANCE.dj,
-    skillDesc: '반경 8칸 아군 ATK·공속 <b>+20%</b>(DJ끼리는 중첩 불가). <b>0.6초</b>마다 음파 피해, 10% 확률로 강력한 넉백'
+    skillDesc: '반경 8칸 아군 ATK·공속 <b>+20%</b>(DJ끼리는 중첩 불가). <b>1초</b>마다 음파 피해, <b>20%</b> 확률로 강력한 넉백'
   },
   lightning: {
     id: 'lightning', name: '번개 지후', emoji: '⚡', role: 'dealer', roleLabel: '딜러',
@@ -7108,6 +7108,7 @@ function updateDraftCount() {
 
 /* 툴팁 */
 const DETAIL_STAT_FIELDS = {
+  djSonicInterval:['음파 간격','s'], djKnockChance:['음파 넉백 확률','%'],
   frogPrinceChance:['레벨업 시 왕자 확률','%'], princeAtkPerHit:['같은 적 연속 타격당 공격력'], princeExecute:['즉시 처치 체력','%'],
   mafiaHpThreshold:['부하 호출 체력','%'], mafiaShield:['호출 시 쉴드'], henchKnockRadius:['부하 등장 넉백 범위','칸'],
   sunAtkGain:['공격력 증가량'], sunGainEvery:['공격력 증가 주기','회'], sunSplashRadius:['공격 범위','칸'],
@@ -7151,7 +7152,7 @@ const DETAIL_STAT_FIELDS = {
   transformChance:['드래곤 변신 확률','%'], flightDistance:['비행 거리','칸'], flightDuration:['비행 시간','s'], fireTrailDuration:['불길 지속','s'], fireTrailInterval:['불길 피해 간격','s'], fireTrailDamage:['불길 피해'], landingRadius:['착지 범위','칸'], landingDamage:['착지 피해'], landingDr:['착지 후 피해 감소','%'], landingDrDuration:['착지 보호 지속','s'],
   meteorDelay:['메테오 낙하 대기','s'], meteorRadiusMultiplier:['메테오 범위 배율','×'], meteorBurnDuration:['메테오 화상 지속','s'], meteorBurnDps:['메테오 화상 초당 피해'], meteorKnockback:['메테오 넉백 거리'],
   blizzardCooldown:['블리자드 재사용','s'], blizzardFreeze:['빙결 시간','s'], blizzardSlowDuration:['약화 지속','s'], blizzardAtkPenalty:['공격력 감소','%'], blizzardSpeedPenalty:['이동속도 감소','%'],
-  bikeChargeTime:['시동 시간','s'], bikeRushSpeed:['초당 돌진 거리','칸'], bikeHitHpFraction:['돌진 피해 (대상 현재 HP)','%'], bikeStun:['돌진 기절','s'],
+  bikeChargeTime:['시동 시간','s'], bikeRushSpeed:['초당 돌진 거리','칸'], bikeHitMaxHpFraction:['돌진 피해 (대상 최대 HP)','%'], bikeStun:['돌진 기절','s'],
   bikeExplosionRadius:['자폭 범위','칸'], bikeExplosionDamage:['자폭 피해'], bikeBurnDps:['자폭 화상 초당 피해'], bikeBurnDuration:['자폭 화상 지속','s'],
   skidDuration:['스키드마크 지속','s'], skidInterval:['스키드마크 피해 간격','s'], skidDamage:['스키드마크 피해'],
   slowAmount:['이동속도 감소','%'], slowDuration:['둔화 지속','s'], blindChance:['눈가림 확률','%'], blindDuration:['눈가림 지속','s'], blindMissChance:['눈가림 명중률 감소','%'],
@@ -9912,7 +9913,7 @@ function aiSteerAndAttack(u, dt) {
     });
     u._sonicCd = (u._sonicCd == null ? 0 : u._sonicCd) - dt;
     if (u._sonicCd <= 0) {
-      u._sonicCd = 0.6;
+      u._sonicCd = u.def.djSonicInterval;
       const R = u.def.range || 360;
       const ring = document.createElement('div');
       ring.className = 'fx-pulse';
@@ -9925,7 +9926,7 @@ function aiSteerAndAttack(u, dt) {
         if (!e.alive || !isHostile(u, e)) return;
         if (Math.hypot(e.x - u.x, e.y - u.y) <= R) {
           dealDamage(u, e, u.def.atk, {});
-          if (e.alive && Math.random() < 0.1) battleAPI.knockback(e, u, GRID * 8);
+          if (e.alive && Math.random() < u.def.djKnockChance) battleAPI.knockback(e, u, GRID * 8);
         }
       });
     }
@@ -12454,7 +12455,7 @@ function bikerRam(u, other) {
   const from = { x: other.x + dir.y * side * 10, y: other.y - dir.x * side * 10 };
   if (!isHostile(u, other)) { battleAPI.knockbackDistance(other, from, 1); return; }
   spawnSlash(u, other);
-  dealDamage(u, other, Math.max(0, other.hp) * u.def.bikeHitHpFraction, { isSkill: true, skipAtkBuff: true, noEvade: true });
+  dealDamage(u, other, Math.max(0, other.maxHp) * u.def.bikeHitMaxHpFraction, { isSkill: true, skipAtkBuff: true, noEvade: true });
   if (!other.alive) return;
   battleAPI.knockbackDistance(other, from, u.def.bikeKnockback / GRID);
   other.stun = Math.max(other.stun || 0, u.def.bikeStun);
@@ -13913,6 +13914,19 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '3.7.3': {
+    label: 'v3.7.3 밸런스 조정',
+    date: '2026.09.27',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🕳️', name:'공허 지후', tag:'adjust', color:'#4b2d7f', portraitKey:'hollow', desc:'공허가 닫히는 시간 <b>4초 → 2.75초</b> · 공허 크기 <b>반지름 2.2배</b> (유닛 반지름의 2배 → 4.4배).' },
+        { emoji:'☀️', name:'태양 지후', tag:'nerf', color:'#ff7a00', portraitKey:'sun', desc:'2회 공격마다 공격력 증가 <b>40 → 10</b> · 공격 간격 <b>0.6초 → 0.8초</b>.' },
+        { emoji:'💼', name:'브로커 지후', tag:'buff', color:'#3a3a3a', portraitKey:'broker', desc:'협상 시간 <b>10초 → 4초</b>.' },
+        { emoji:'🏎️', name:'폭주족 지후', tag:'adjust', color:'#f07a1a', portraitKey:'biker', desc:'돌진 피해 <b>대상 현재 HP 70% → 최대 HP 50%</b>.' },
+        { emoji:'🎧', name:'DJ 지후', tag:'adjust', color:'#39ff14', portraitKey:'dj', desc:'음파 간격 <b>0.6초 → 1초</b> · 음파 넉백 확률 <b>10% → 20%</b>.' }
+      ] }
+    ]
+  },
   '3.7.2': {
     label: 'v3.7.2 개발자 지후',
     date: '2026.09.27',
