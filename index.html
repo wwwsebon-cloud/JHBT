@@ -7098,9 +7098,9 @@ function formatRemaining(ms) {
   return hours >= 24 ? `${Math.floor(hours / 24)}일 ${hours % 24}시간` : `${hours}시간 ${Math.floor(Math.max(0, ms) % 3600000 / 60000)}분`;
 }
 
-// 승급 보상: 새 티어 묶음에 처음 오르면 한 번. 실버 1000, 그 뒤로 100씩 더.
+// 승급 보상: 시즌마다 새 티어 묶음에 처음 오르면 한 번. 실버 500, 그 뒤로 100씩 더.
 const COMP_GROUP_LABELS = ['아이언', '브론즈', '실버', '골드', '플래티넘', '다이아', '에이스', '마스터', '그랜드마스터', '챌린저'];
-function compPromoReward(group) { return group >= 2 ? 1000 + (group - 2) * 100 : 0; }
+function compPromoReward(group) { return group >= 2 ? 500 + (group - 2) * 100 : 0; }
 function compGroupIndex(tp) { return COMP_GROUPS.indexOf(compTierInfo(tp).group); }
 // 시즌이 바뀌면 티어가 세 묶음 내려간다 (다이아 → 실버, 에이스 → 골드 …).
 // III · II · I 숫자와 그 안의 진행도는 그대로. 골드 이하는 아이언부터, 챌린저는 에이스 I 로.
@@ -7127,6 +7127,7 @@ function compApplySeasonReset() {
   record.tp = tp;
   record.season = current;
   record.lastReset = { season: current, from, to: tp };
+  record.promo = compGroupIndex(tp); // 승급 보상은 시즌마다 다시 받는다 (내려간 티어 위부터)
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   return true;
@@ -7161,7 +7162,7 @@ function renderCompLobby() {
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
     ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
-    <div class="settlement-note">시즌이 끝나면 시즌 ${season.number + 1}이 바로 시작되고, 티어가 세 단계 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로). 새 티어에 처음 오르면 승급 보상으로 다이아를 받습니다.</div>
+    <div class="settlement-note">시즌이 끝나면 시즌 ${season.number + 1}이 바로 시작되고, 티어가 세 단계 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로). 시즌마다 새 티어에 처음 오르면 승급 보상으로 다이아를 받습니다.</div>
     <div class="cl-promo">${COMP_GROUP_LABELS.map((label, group) => compPromoReward(group)
       ? `<span class="${group <= claimed ? 'done' : ''}">${label} ◆${formatNumber(compPromoReward(group))}</span>` : '').join('')}</div>`;
 }
@@ -12823,7 +12824,7 @@ const PATCH_NOTES = {
       { title: '신규', items: [
         { emoji:'🔎', name:'매칭', tag:'new', color:'#2479b8', desc:'드래프트전과 경쟁전은 누르자마자 시작하지 않고 <b>매칭 중</b> 창이 뜹니다. 3~5초 뒤 상대 이름과 함께 매칭이 잡히며, 잡히기 전에는 <b>취소</b>할 수 있습니다.' },
         { emoji:'🏆', name:'경쟁전 로비 · 시즌', tag:'new', color:'#c99a17', desc:'경쟁전 버튼을 누르면 경쟁전 로비로 갑니다. 내 티어와 게이지, 경쟁전 리더보드, 시즌 종료일을 볼 수 있습니다. <b>시즌 1</b>은 <b>2026.10.27</b>에 끝나고 바로 시즌 2가 시작됩니다. 새 시즌에는 티어가 <b>세 단계</b> 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로, 골드 이하는 아이언).' },
-        { emoji:'◆', name:'승급 보상', tag:'new', color:'#3f78e0', desc:'새 티어에 처음 오르면 다이아를 받습니다. 실버 <b>1,000</b> · 골드 1,100 · 플래티넘 1,200 · 다이아 1,300 · 에이스 1,400 · 마스터 1,500 · 그랜드마스터 1,600 · 챌린저 <b>1,700</b>.' },
+        { emoji:'◆', name:'승급 보상', tag:'new', color:'#3f78e0', desc:'시즌마다 새 티어에 처음 오르면 다이아를 받습니다. 실버 <b>500</b> · 골드 600 · 플래티넘 700 · 다이아 800 · 에이스 900 · 마스터 1,000 · 그랜드마스터 1,100 · 챌린저 <b>1,200</b>. 시즌이 바뀌어 티어가 내려가면 다시 올라갈 때 또 받습니다.' },
         { emoji:'✨', name:'소환 연출', tag:'new', color:'#8d2fb0', desc:'랜덤 영웅·전설 모집권과 상점 지후 구매도 뽑기와 같은 소환 연출로 보여줍니다.' }
       ] },
       { title: '변경', items: [
