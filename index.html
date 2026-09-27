@@ -3900,7 +3900,7 @@ const CHAR_DB = {
     rarity: 'hidden', color: '#3a3a3a', portrait: PORTRAITS.blackflame, portraitDragon: PORTRAITS.blackflame_dragon,
     ...CHARACTER_BALANCE.blackflame,
     customAttack(caster, target) { blackflameAttack(caster, target); },
-    skillDesc: '공격마다 게이지가 차고 <b>5회</b> 공격하면 흑염룡이 된다. 흑염룡은 모든 유닛을 뚫고 초당 13칸으로 가장 가까운 적에게 돌진해 지나간 적에게 <b>900</b> 피해를 주고, <b>6칸 안</b>의 적에게만 최대 2번 더 튕긴다. 마지막으로 맞은 적은 <b>0.5초</b> 기절. 돌아오면 4초간 받는 피해 <b>40%</b> 감소.'
+    skillDesc: '공격마다 게이지가 차고 <b>5회</b> 공격하면 흑염룡이 된다. 흑염룡은 모든 유닛을 뚫고 초당 13칸으로 가장 가까운 적에게 돌진해 지나간 적에게 <b>900</b> 피해를 주고, <b>6칸 안</b>의 적에게만 최대 2번 더 튕긴다. 마지막으로 맞은 적은 <b>0.5초</b> 기절. 돌아오면 4초간 받는 피해 <b>40%</b> 감소. 돌진으로 박은 적 1기마다 게이지 <b>+1</b>.'
   },
   growth: {
     id: 'growth', name: '성장 지후', emoji: '🔄', role: 'controller', roleLabel: '컨트롤러',
@@ -12394,6 +12394,8 @@ function endBlackflameDash(u) {
   u.el.classList.remove('blackflame-dash');
   battleAPI.setImage(u, u.def.portrait);
   u._flameGuard = u.def.flameGuardDuration;
+  // 3.8: 돌진으로 박은 적 1기마다 게이지 +1 (가득 차면 바로 다시 도는 걸 막으려고 한 칸은 비워 둔다)
+  if (dash) u._flameGauge = Math.min(u.def.flameGaugeMax - 1, (u._flameGauge || 0) + dash.hit.size);
   // 돌진에 마지막으로 맞은 적은 잠깐 기절한다
   const last = dash && dash.lastHit;
   if (last && last.alive && u.def.flameEndStun) {
@@ -13992,7 +13994,7 @@ const PATCH_NOTES = {
     date: '2026.09.27',
     sections: [
       { title: '하향', items: [
-        { emoji:'🐉', name:'흑염룡 지후', tag:'nerf', color:'#3a3a3a', desc:'돌진 피해 <b>750 → 900</b> · 추가 튕김 <b>3 → 2회</b> (6칸보다 먼 적에게는 튕기지 않음) · 처치 시 게이지 충전 <b>삭제</b>.' },
+        { emoji:'🐉', name:'흑염룡 지후', tag:'nerf', color:'#3a3a3a', desc:'돌진 피해 <b>750 → 900</b> · 추가 튕김 <b>3 → 2회</b> (6칸보다 먼 적에게는 튕기지 않음) · 처치 시 충전 대신 <b>박은 적 1기마다 게이지 +1</b>.' },
         { emoji:'🐲', name:'드래곤 지후', tag:'nerf', color:'#c0392b', portraitKey:'dragon', desc:'HP <b>4,100 → 3,300</b> · 불길 <b>5초 → 3초</b>, 1초마다 150 (최대 3번).' },
         { emoji:'💢', name:'광폭화 지후', tag:'nerf', color:'#c92a2a', portraitKey:'berserk', desc:'광폭 무적 <b>3초 → 2초</b> · 광폭 ATK <b>750 → 550</b> · 공격 간격 <b>0.4 → 0.5초</b>.' },
         { emoji:'🐂', name:'돌격 지후', tag:'nerf', color:'#8a5a2b', portraitKey:'charge', desc:'돌격 피해 <b>1,500 → 1,100</b> · 평타 <b>300 → 150</b>.' },
