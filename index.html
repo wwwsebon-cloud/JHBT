@@ -5271,12 +5271,18 @@ function fieldCount(side, charId) {
 function canPlaceNew(side, charId) { return fieldCount(side, charId) < deployLimitOf(charId); }
 
 // 배치 풀: 덱의 일반 지후 중에서 선택지를 뽑고, 2라운드부터 10% 확률로 덱의 히든 지후가 한 칸을 덮어쓴다.
+// 일반전(3.6.2)은 칸 수가 늘 고정이고, 칸마다 덱의 일반 지후 하나를 따로 뽑는다 (같은 지후가 겹칠 수 있다).
+// 드래프트전·경쟁전은 남은 벤치에서 겹치지 않게 뽑는다.
 // 내 풀과 봇의 풀이 같은 함수를 쓴다 (온라인이 되어도 그대로).
 const HIDDEN_POOL_CHANCE = 0.1;
 const HIDDEN_POOL_FROM_ROUND = 2;
+const FIXED_POOL_MODES = ['ranked'];
 function rollDeployPool(bench, deckIds, size, round, rng = Math.random) {
-  const normal = bench.filter(id => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden');
-  const pool = pickRandom(normal, Math.min(size, normal.length));
+  const fixed = FIXED_POOL_MODES.includes(state.mode);
+  const normal = (fixed ? deckIds : bench).filter(id => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden');
+  const pool = fixed
+    ? (normal.length ? Array.from({ length: size }, () => normal[Math.floor(rng() * normal.length)]) : [])
+    : pickRandom(normal, Math.min(size, normal.length));
   const hidden = deckIds.filter(id => CHAR_DB[id]?.rarity === 'hidden');
   if (hidden.length && round >= HIDDEN_POOL_FROM_ROUND && rng() < HIDDEN_POOL_CHANCE) {
     const id = hidden[Math.floor(rng() * hidden.length)];
@@ -6907,8 +6913,8 @@ const COMP_RARITIES = ['common', 'rare', 'epic', 'legend'];
 // 드래프트전: 5:5, PHASE 1~5 (등급 3종 중 고르기, PHASE 5 블라인드), 경험치만.
 // 경쟁전: 3:3, 선→후→후→선→선→후 로 모든 지후 중 고르기, 배치 선택지 2개, 티어 점수.
 const DRAFT_MODES = {
-  draftbattle: { label: '드래프트전', size: 5, style: 'phases', maxUnits: 5, poolSize: 3, ranked: false },
-  competitive: { label: '경쟁전', size: 3, style: 'snake', maxUnits: 3, poolSize: 2, ranked: true }
+  draftbattle: { label: '드래프트전', size: 5, style: 'phases', maxUnits: 8, poolSize: 3, ranked: false },
+  competitive: { label: '경쟁전', size: 3, style: 'snake', maxUnits: 6, poolSize: 2, ranked: true }
 };
 const SNAKE_ORDER = ['first', 'second', 'second', 'first', 'first', 'second'];
 
@@ -12983,6 +12989,8 @@ const PATCH_NOTES = {
       ] },
       { title: '변경', items: [
         { emoji:'⏱️', name:'밴픽 시간', tag:'adjust', color:'#555555', desc:'밴 <b>15초 → 30초</b> · 픽 <b>15초 → 20초</b> (드래프트전 · 경쟁전).' },
+        { emoji:'🧮', name:'일반전 배치 풀', tag:'adjust', color:'#555555', desc:'선택지가 <b>항상 3개</b> 나옵니다. 칸마다 내 덱의 지후 중 하나를 따로 뽑으므로 <b>같은 지후가 겹쳐 나올 수 있습니다</b>. 덱에 히든 지후를 넣었을 때 선택지가 2개로 줄던 문제가 없어졌습니다. (히든 지후는 예전처럼 2라운드부터 10% 확률로 한 칸에 나옵니다.)' },
+        { emoji:'👥', name:'최대 배치 수', tag:'buff', color:'#555555', desc:'드래프트전 <b>5기 → 8기</b> · 경쟁전 <b>3기 → 6기</b>. 배치 풀 방식은 그대로입니다.' },
         { emoji:'👆', name:'두 번 눌러 확정', tag:'adjust', color:'#555555', desc:'밴 확정 · 픽 확정 버튼을 없앴습니다. 지후를 <b>두 번 누르면</b>(더블클릭) 바로 확정됩니다.' },
         { emoji:'📈', name:'경쟁전 승리 점수', tag:'buff', color:'#2f9e44', desc:'승리 시 티어 점수 <b>+80~120 → +200~240 TP</b>.' },
         { emoji:'🧩', name:'지후 조각', tag:'adjust', color:'#0f9d7a', desc:'중복 지후는 조각 <b>10개 → 1개</b>로 바뀝니다. 대신 S · SR · SSR 랭크업 조각이 크게 줄었습니다. 일반 <b>250·400·500 → 15·30·45</b> · 희귀 <b>125·250·400 → 8·16·24</b> · 영웅 <b>50·100·150 → 3·10·20</b> · 전설 <b>10·30·60 → 1·2·4</b>. 이미 가진 조각도 <b>10분의 1</b>로 바뀝니다 (올림).' }
