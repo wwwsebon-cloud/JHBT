@@ -4672,6 +4672,7 @@ function freshProfile() {
     diamonds: 0,
     unlocked: STARTER_IDS.slice(),
     shards: {},
+    shardsVersion: 2,
     ranks: {},
     masteryCounts: {},
     gachaHistory: [],
@@ -4686,7 +4687,7 @@ function freshProfile() {
     highestRewardedLevel: 1,
     pendingLevelCelebration: null,
     activeMatch: null,
-    competitive: { tp: 0, wins: 0, losses: 0, peak: 0, promo: -1, lastDeck: [] },
+    competitive: { tp: 0, wins: 0, losses: 0, peak: 0, promo: -1, season: 0, lastReset: null, lastDeck: [] },
     daily: { day: '', points: 0, chestClaimed: false, progress: {}, awarded: {}, allCounted: false, shop: null },
     inventory: { epicTicket: 0, legendTicket: 0 },
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
@@ -4746,7 +4747,9 @@ function normalizeProfile(raw) {
     gold: Math.max(0, Math.floor(Number(raw.gold) || 0)),
     diamonds: Math.max(0, Math.floor(Number(raw.diamonds) || 0)),
     unlocked,
-    shards: raw.shards && typeof raw.shards === 'object' ? Object.fromEntries(Object.entries(raw.shards).filter(([id]) => validIds.has(id)).map(([id,count]) => [id,safeCount(count)])) : {},
+    // 3.6.2 조각 개편: 중복 1회가 10개 → 1개가 되면서, 그 전에 모은 조각은 한 번만 10분의 1로 줄인다 (올림)
+    shards: raw.shards && typeof raw.shards === 'object' ? Object.fromEntries(Object.entries(raw.shards).filter(([id]) => validIds.has(id)).map(([id,count]) => [id, raw.shardsVersion === 2 ? safeCount(count) : Math.ceil(safeCount(count) / 10)])) : {},
+    shardsVersion: 2,
     ranks: raw.ranks && typeof raw.ranks === 'object' ? Object.fromEntries(Object.entries(raw.ranks).filter(([id]) => validIds.has(id)).map(([id,level]) => [id,Math.min(3,safeCount(level))])) : {},
     masteryCounts: raw.masteryCounts && typeof raw.masteryCounts === 'object' ? Object.fromEntries(Object.entries(raw.masteryCounts).filter(([id]) => validIds.has(id)).map(([id,count]) => [id,safeCount(count)])) : {},
     gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
@@ -4768,6 +4771,10 @@ function normalizeProfile(raw) {
       losses: safeCount(raw.competitive?.losses), peak: safeCount(raw.competitive?.peak),
       // 승급 보상을 받은 가장 높은 티어 묶음. -1 은 아직 모름(3.6.2 이전 기록) → 최고 티어까지 받은 것으로 친다
       promo: Number.isInteger(raw.competitive?.promo) ? Math.max(-1, Math.min(9, raw.competitive.promo)) : -1,
+      // 마지막으로 반영한 시즌 번호 (0 = 아직 없음 → 지금 시즌으로 잡고 초기화하지 않는다)
+      season: safeCount(raw.competitive?.season),
+      lastReset: raw.competitive?.lastReset && typeof raw.competitive.lastReset === 'object'
+        ? { season: safeCount(raw.competitive.lastReset.season), from: safeCount(raw.competitive.lastReset.from), to: safeCount(raw.competitive.lastReset.to) } : null,
       lastDeck: (Array.isArray(raw.competitive?.lastDeck) ? raw.competitive.lastDeck : []).filter(id => typeof id === 'string' && /^[a-z_]{1,24}$/.test(id)).slice(0, 3)
     },
     activeMatch: raw.activeMatch && typeof raw.activeMatch === 'object'
@@ -5762,6 +5769,7 @@ function settleMatch(won, draw, surrendered = false) {
     }
   }
   if (state.mode === 'competitive') {
+    compApplySeasonReset(); // 경기 중에 시즌이 바뀌었으면 먼저 내린다
     const claimed = compPromoClaimed(); // 최고 기록이 바뀌기 전에 기준을 잡는다
     const before = compTierInfo(profile.competitive.tp);
     let tp = 0;
@@ -7094,12 +7102,42 @@ function formatRemaining(ms) {
 const COMP_GROUP_LABELS = ['아이언', '브론즈', '실버', '골드', '플래티넘', '다이아', '에이스', '마스터', '그랜드마스터', '챌린저'];
 function compPromoReward(group) { return group >= 2 ? 1000 + (group - 2) * 100 : 0; }
 function compGroupIndex(tp) { return COMP_GROUPS.indexOf(compTierInfo(tp).group); }
+// 시즌이 바뀌면 티어가 세 묶음 내려간다 (다이아 → 실버, 에이스 → 골드 …).
+// III · II · I 숫자와 그 안의 진행도는 그대로. 골드 이하는 아이언부터, 챌린저는 에이스 I 로.
+const COMP_SEASON_DROP = 3;
+function compSeasonResetTp(tp) {
+  const info = compTierInfo(tp);
+  const target = COMP_GROUPS.indexOf(info.group) - COMP_SEASON_DROP;
+  if (target <= 0) return 0;
+  const challenger = info.group === 'challenger';
+  const sub = challenger ? 2 : (info.index - 1) % 3; // 0 = III, 1 = II, 2 = I
+  const index = 1 + (target - 1) * 3 + sub;
+  const floor = COMP_TIER_POINTS[index], next = COMP_TIER_POINTS[index + 1];
+  return Math.round(floor + (next - floor) * (challenger ? 0 : info.progress));
+}
+// 새 시즌이 시작됐으면 티어를 내린다. 여러 시즌을 건너뛰었으면 그만큼 내린다.
+function compApplySeasonReset() {
+  const current = compSeason().number;
+  const record = profile.competitive;
+  if (!record.season) { record.season = current; return false; }
+  if (record.season >= current) return false;
+  const from = record.tp;
+  let tp = from;
+  for (let season = record.season; season < current; season++) tp = compSeasonResetTp(tp);
+  record.tp = tp;
+  record.season = current;
+  record.lastReset = { season: current, from, to: tp };
+  saveProfile();
+  window.JihooOnline.publish().catch(() => {});
+  return true;
+}
 function compPromoClaimed() {
   if (profile.competitive.promo < 0) profile.competitive.promo = compGroupIndex(profile.competitive.peak);
   return profile.competitive.promo;
 }
 
 function openCompLobby() {
+  compApplySeasonReset();
   renderCompLobby();
   showScreen('complobby');
   $('screen-complobby').scrollTop = 0;
@@ -7122,7 +7160,8 @@ function renderCompLobby() {
   $('clSeasonChip').textContent = `시즌 ${season.number}`;
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
-    <div class="settlement-note">시즌이 끝나면 시즌 ${season.number + 1}이 바로 시작됩니다. 새 티어에 처음 오르면 승급 보상으로 다이아를 받습니다.</div>
+    ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
+    <div class="settlement-note">시즌이 끝나면 시즌 ${season.number + 1}이 바로 시작되고, 티어가 세 단계 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로). 새 티어에 처음 오르면 승급 보상으로 다이아를 받습니다.</div>
     <div class="cl-promo">${COMP_GROUP_LABELS.map((label, group) => compPromoReward(group)
       ? `<span class="${group <= claimed ? 'done' : ''}">${label} ◆${formatNumber(compPromoReward(group))}</span>` : '').join('')}</div>`;
 }
@@ -7142,6 +7181,7 @@ function startDraftMode(modeKey, match = null) {
   leaveBattle();
   state.mode = modeKey;
   state.matchSettled = false;
+  if (cfg.ranked) compApplySeasonReset();
   const me = compTierInfo(profile.competitive.tp);
   const myLevel = getLevelInfo(profile.totalXp).level;
   const seed = Math.floor(Math.random() * 4294967296);
@@ -12782,7 +12822,7 @@ const PATCH_NOTES = {
     sections: [
       { title: '신규', items: [
         { emoji:'🔎', name:'매칭', tag:'new', color:'#2479b8', desc:'드래프트전과 경쟁전은 누르자마자 시작하지 않고 <b>매칭 중</b> 창이 뜹니다. 3~5초 뒤 상대 이름과 함께 매칭이 잡히며, 잡히기 전에는 <b>취소</b>할 수 있습니다.' },
-        { emoji:'🏆', name:'경쟁전 로비 · 시즌', tag:'new', color:'#c99a17', desc:'경쟁전 버튼을 누르면 경쟁전 로비로 갑니다. 내 티어와 게이지, 경쟁전 리더보드, 시즌 종료일을 볼 수 있습니다. <b>시즌 1</b>은 <b>2026.10.27</b>에 끝나고 바로 시즌 2가 시작됩니다.' },
+        { emoji:'🏆', name:'경쟁전 로비 · 시즌', tag:'new', color:'#c99a17', desc:'경쟁전 버튼을 누르면 경쟁전 로비로 갑니다. 내 티어와 게이지, 경쟁전 리더보드, 시즌 종료일을 볼 수 있습니다. <b>시즌 1</b>은 <b>2026.10.27</b>에 끝나고 바로 시즌 2가 시작됩니다. 새 시즌에는 티어가 <b>세 단계</b> 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로, 골드 이하는 아이언).' },
         { emoji:'◆', name:'승급 보상', tag:'new', color:'#3f78e0', desc:'새 티어에 처음 오르면 다이아를 받습니다. 실버 <b>1,000</b> · 골드 1,100 · 플래티넘 1,200 · 다이아 1,300 · 에이스 1,400 · 마스터 1,500 · 그랜드마스터 1,600 · 챌린저 <b>1,700</b>.' },
         { emoji:'✨', name:'소환 연출', tag:'new', color:'#8d2fb0', desc:'랜덤 영웅·전설 모집권과 상점 지후 구매도 뽑기와 같은 소환 연출로 보여줍니다.' }
       ] },
@@ -12790,7 +12830,7 @@ const PATCH_NOTES = {
         { emoji:'⏱️', name:'밴픽 시간', tag:'adjust', color:'#555555', desc:'밴 <b>15초 → 30초</b> · 픽 <b>15초 → 20초</b> (드래프트전 · 경쟁전).' },
         { emoji:'👆', name:'두 번 눌러 확정', tag:'adjust', color:'#555555', desc:'밴 확정 · 픽 확정 버튼을 없앴습니다. 지후를 <b>두 번 누르면</b>(더블클릭) 바로 확정됩니다.' },
         { emoji:'📈', name:'경쟁전 승리 점수', tag:'buff', color:'#2f9e44', desc:'승리 시 티어 점수 <b>+80~120 → +200~240 TP</b>.' },
-        { emoji:'🧩', name:'지후 조각', tag:'adjust', color:'#0f9d7a', desc:'중복 지후는 조각 <b>10개 → 1개</b>로 바뀝니다. 대신 S · SR · SSR 랭크업 조각이 크게 줄었습니다. 일반 <b>250·400·500 → 15·30·45</b> · 희귀 <b>125·250·400 → 8·16·24</b> · 영웅 <b>50·100·150 → 3·10·20</b> · 전설 <b>10·30·60 → 1·2·4</b>.' }
+        { emoji:'🧩', name:'지후 조각', tag:'adjust', color:'#0f9d7a', desc:'중복 지후는 조각 <b>10개 → 1개</b>로 바뀝니다. 대신 S · SR · SSR 랭크업 조각이 크게 줄었습니다. 일반 <b>250·400·500 → 15·30·45</b> · 희귀 <b>125·250·400 → 8·16·24</b> · 영웅 <b>50·100·150 → 3·10·20</b> · 전설 <b>10·30·60 → 1·2·4</b>. 이미 가진 조각도 <b>10분의 1</b>로 바뀝니다 (올림).' }
       ] },
       { title: '밸런스', items: [
         { emoji:'🗡️', name:'에드게이 지후', tag:'nerf', color:'#a52bf0', portraitKey:'edgy', desc:'ATK <b>240×2 → 70×2</b>.' },
@@ -13785,6 +13825,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyVersionUI();
   startUpdateChecks();
   settleAbandonedMatch();
+  compApplySeasonReset();
   const onlineInitPromise = window.JihooOnline.init({
     getProfile: () => profile,
     getLevel: () => getLevelInfo(profile.totalXp).level,
@@ -13792,6 +13833,7 @@ document.addEventListener('DOMContentLoaded', () => {
     onRestore: data => {
       profile = normalizeProfile(data);
       settleAbandonedMatch();
+      compApplySeasonReset();
       persistProfile();
       renderAccountUI();
       window.JihooOnline.publish().catch(() => { $('onlineStatus').textContent = '백업을 복원했지만 리더보드 갱신에 실패했습니다.'; });
