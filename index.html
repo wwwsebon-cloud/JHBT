@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="3.8.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="3.8.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <style>
@@ -591,6 +591,32 @@ html, body {
   background:radial-gradient(circle, rgba(255,230,80,.85) 0 18%, rgba(255,140,0,.35) 40%, transparent 62%); color:#b30000; font:900 120px/1 'Segoe UI',sans-serif; text-shadow:0 0 18px #fff;
   animation:jackpot 2s ease-out forwards; }
 @keyframes jackpot { 30% { transform:translate(-50%,-50%) scale(.6); } to { transform:translate(-50%,-50%) scale(1); opacity:0; } }
+.cl-friendly { margin-top:8px; width:100%; }
+.cd-mini-bans { display:flex; flex-wrap:wrap; align-items:center; gap:2px; min-height:0; }
+.cd-mini-bans:empty { display:none; }
+.cd-mini-bans small { font-size:10px; color:#888; margin-right:2px; }
+.cd-mini-bans img { width:20px; height:20px; border-radius:50%; background:#fff; border:1px solid #bbb; filter:grayscale(.7); opacity:.85; }
+.cd-mini-bans.global { justify-content:center; margin-top:4px; }
+.stats-card { width:min(620px,100%); }
+.stats-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.stats-tabs button { font:inherit; font-size:13px; padding:5px 10px; border-radius:999px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+.stats-tabs button.on { background:#222; color:#fff; border-color:#222; }
+.stats-side { margin:12px 0 6px; font-size:15px; }
+.stats-side.ally { color:#2f9e44; } .stats-side.enemy { color:#e03131; }
+.stats-row { display:flex; gap:10px; align-items:center; padding:6px 8px; border-radius:10px; }
+.stats-row + .stats-row { border-top:1px solid rgba(0,0,0,.06); }
+.stats-row.mvp { background:rgba(242,201,76,.18); }
+.stats-row img { width:38px; height:38px; border-radius:50%; background:#fff; border:1px solid #ccc; flex:none; }
+.stats-main { flex:1; min-width:0; }
+.stats-main b em { font-style:normal; font-size:11px; color:#fff; background:#e0a800; padding:1px 5px; border-radius:5px; }
+.stats-main small { font-size:12px; color:#666; }
+.stats-main small.dead { color:#e03131; }
+.stats-bar { height:6px; border-radius:3px; background:#eee; margin:3px 0; overflow:hidden; }
+.stats-bar i { display:block; height:100%; background:#4c6ef5; }
+.cl-rules .settlement-note { margin-top:6px; }
+.cd-card.locked { opacity:.35; filter:grayscale(1); }
+.cd-card.promo { box-shadow:0 0 0 2px #f2c94c, 0 0 10px rgba(242,201,76,.6); }
+.lobby-tile .d.warn { color:#e03131; font-weight:800; }
 .fx-hollow-zone { position:absolute; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:3;
   background:radial-gradient(circle, rgba(18,6,36,.88) 0%, rgba(75,45,127,.6) 55%, rgba(150,110,220,.12) 100%);
   box-shadow:0 0 22px rgba(110,60,200,.65); animation:hollow-pulse 1.1s ease-in-out infinite; }
@@ -2542,16 +2568,18 @@ html.preview-mode .round-result-box { transform:scale(.5); }
       <div class="cl-stats" id="clStats"></div>
     </section>
     <section class="cl-card cl-season" id="clSeason"></section>
+    <section class="cl-card cl-rules" id="clRules"></section>
     <button type="button" class="btn btn-primary cl-start" id="btnCompMatch">매칭 시작 · 3:3 밴픽 · 3판 2선승</button>
+    <button type="button" class="btn btn-ghost cl-start cl-friendly" id="btnCompFriendly">경쟁전(친선) 매칭 · 모든 지후 · 경험치</button>
     <section class="cl-card cl-board"><h3>경쟁전 리더보드</h3><p class="settlement-note" id="clBoardMessage"></p><div class="leaderboard-list" id="clBoardList"></div></section>
   </div>
 
   <!-- 경쟁전 드래프트 -->
   <div id="screen-compdraft" class="screen">
     <div class="cd-head">
-      <div class="cd-player enemy"><span class="cd-order" id="cdEnemyOrder"></span><b id="cdEnemyName"></b><span id="cdEnemyTier"></span></div>
-      <div class="cd-center"><div class="cd-mode" id="cdMode"></div><div class="cd-phase" id="cdPhase">BAN</div><div class="cd-timer" id="cdTimer"></div></div>
-      <div class="cd-player ally"><span class="cd-order" id="cdAllyOrder"></span><b id="cdAllyName"></b><span id="cdAllyTier"></span></div>
+      <div class="cd-player enemy"><span class="cd-order" id="cdEnemyOrder"></span><b id="cdEnemyName"></b><span id="cdEnemyTier"></span><div class="cd-mini-bans" id="cdEnemyBans"></div></div>
+      <div class="cd-center"><div class="cd-mode" id="cdMode"></div><div class="cd-phase" id="cdPhase">BAN</div><div class="cd-timer" id="cdTimer"></div><div class="cd-mini-bans global" id="cdGlobalBans"></div></div>
+      <div class="cd-player ally"><span class="cd-order" id="cdAllyOrder"></span><b id="cdAllyName"></b><span id="cdAllyTier"></span><div class="cd-mini-bans" id="cdAllyBans"></div></div>
     </div>
     <div class="cd-picks enemy" id="cdEnemyPicks"></div>
     <div class="cd-turn" id="cdTurn"></div>
@@ -2815,6 +2843,7 @@ html.preview-mode .round-result-box { transform:scale(.5); }
     <div class="settlement-card" id="settlementCard"></div>
     <div class="end-actions">
       <button class="btn btn-primary lobby-enter-btn" id="btnRestart">로비로</button>
+      <button type="button" class="btn-ghost" id="btnMatchStats">📊 통계</button>
       <button type="button" class="btn-ghost" id="btnArenaAgain" style="display:none;">다시 편성</button>
     </div>
   </div>
@@ -2958,6 +2987,11 @@ html.preview-mode .round-result-box { transform:scale(.5); }
   <div class="settlement-note" id="codeMessage">공개된 코드가 있을 때 이곳에서 입력할 수 있습니다.</div>
   <div class="modal-actions"><button type="button" class="btn btn-primary" id="btnSubmitCode">확인</button></div>
 </div></div>
+<div class="app-modal" id="statsModal" role="dialog" aria-modal="true" aria-labelledby="statsModalTitle"><div class="modal-card stats-card">
+  <div class="modal-head"><h2 id="statsModalTitle">📊 경기 통계</h2><button type="button" class="btn-ghost" id="btnStatsClose">닫기</button></div>
+  <div class="stats-tabs" id="statsTabs"></div>
+  <div id="statsBody"></div>
+</div></div>
 <div class="app-modal" id="levelUpModal" role="dialog" aria-modal="true"><div class="modal-card level-up-card">
   <div class="level-up-icon">🎉</div>
   <h2 class="title-font" id="levelUpTitle">LEVEL UP!</h2>
@@ -3079,14 +3113,14 @@ const CHARACTER_BALANCE = {
     }
   },
   fire: {
-    hp: 2500, atk: 10, atkSpeed: 0.1, range: 180, speed: 110,
-    burnDps: 100,
+    hp: 2500, atk: 20, atkSpeed: 0.1, range: 180, speed: 110,
+    burnDps: 120,
     burnDuration: 5
   },
   ice: {
     hp: 2000, atk: 100, atkSpeed: 1.5, range: 180, speed: 100,
-    freezeChance: 0.35,
-    freezeDuration: 1.6
+    freezeChance: 0.5,
+    freezeDuration: 2.5
   },
   lonely: {
     hp: 5500, atk: 140, atkSpeed: 1.0, range: 72, speed: 90,
@@ -4486,14 +4520,14 @@ const CHAR_DB = {
     rarity: 'common', color: '#ff6b35', portrait: PORTRAITS.fire,
     ...CHARACTER_BALANCE.fire,
     isStreamAttacker: true,
-    skillDesc: '화염방사기로 상대를 <b>지속적으로 불태워 화상</b> (100/s, 5초)',
+    skillDesc: '화염방사기로 상대를 <b>지속적으로 불태워 화상</b> (120/s, 5초)',
     onHit(caster, target, battle) { battle.applyBurn(target, caster.def.burnDps, caster.def.burnDuration, caster); }
   },
   ice: {
     id: 'ice', name: '얼음 지후', emoji: '❄️', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'common', color: '#2a9bc7', portrait: PORTRAITS.ice,
     ...CHARACTER_BALANCE.ice,
-    skillDesc: '얼음을 발사해 <b>35% 확률로 1.6초간 빙결</b>',
+    skillDesc: '얼음을 발사해 <b>50% 확률로 2.5초간 빙결</b>',
     onHit(caster, target, battle) { if (Math.random() < caster.def.freezeChance) battle.applyFreeze(target, caster.def.freezeDuration); }
   },
   lonely: {
@@ -5360,6 +5394,7 @@ function freshProfile() {
     competitive: { tp: 0, wins: 0, losses: 0, peak: 0, promo: -1, season: 0, lastReset: null, lastDeck: [] },
     daily: { day: '', points: 0, chestClaimed: false, progress: {}, awarded: {}, allCounted: false, shop: null },
     inventory: { epicTicket: 0, legendTicket: 0 },
+    draftTickets: 0,
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
     achievements: { loginDays: 0, lastLoginDay: '', wins: 0, kills: 0, dailyAll: 0, acquired: { epic: 0, legend: 0, hidden: 0 }, claimed: { login: 0, wins: 0, kills: 0, dailyAll: 0, epic: 0, legend: 0, hidden: 0 } },
@@ -5459,6 +5494,7 @@ function normalizeProfile(raw) {
       allCounted: !!rawDaily.allCounted,
     },
     inventory: { epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket) },
+    draftTickets: safeCount(raw.draftTickets),
     newcomer: {
       unlocked: !!rawNewcomer.unlocked || (!!(raw.wins || raw.losses) && !raw.newcomer),
       daysClaimed: Math.min(7, safeCount(rawNewcomer.daysClaimed)),
@@ -5986,7 +6022,7 @@ function canPlaceNew(side, charId) { return fieldCount(side, charId) < deployLim
 // 내 풀과 봇의 풀이 같은 함수를 쓴다 (온라인이 되어도 그대로).
 const HIDDEN_POOL_CHANCE = 0.1;
 const HIDDEN_POOL_FROM_ROUND = 2;
-const FIXED_POOL_MODES = ['ranked', 'competitive'];
+const FIXED_POOL_MODES = ['ranked', 'competitive', 'compfriendly'];
 function rollDeployPool(bench, deckIds, size, round, rng = Math.random) {
   const fixed = FIXED_POOL_MODES.includes(state.mode);
   const normal = (fixed ? deckIds : bench).filter(id => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden');
@@ -6007,8 +6043,17 @@ function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
   const skill = botLevelSkill(level);
   let deck;
   if (level <= 3) {
+    // 3.8.2 초보자: 일반 4 + 희귀 1
     const common = all.filter(id => CHAR_DB[id].rarity === 'common');
-    deck = pickRandom(common, Math.min(4, common.length));
+    const rare = all.filter(id => CHAR_DB[id].rarity === 'rare');
+    deck = pickRandom(common, Math.min(4, common.length)).concat(pickRandom(rare, 1));
+    const rest = all.filter(id => !deck.includes(id));
+    deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
+  } else if (level <= 6) {
+    // 4~6레벨: 티어표 4티어 1 + 5~6티어 4
+    const tier4 = (BOT_TIER_LIST['4'] || []).filter(id => all.includes(id));
+    const low = [...(BOT_TIER_LIST['5'] || []), ...(BOT_TIER_LIST['6'] || [])].filter(id => all.includes(id));
+    deck = pickRandom(tier4, 1).concat(pickRandom(low, 4));
     const rest = all.filter(id => !deck.includes(id));
     deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
   } else {
@@ -6016,7 +6061,7 @@ function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
     deck = weightedSample(all, 5, id => Math.exp(3 * skill * botTierScore(id)));
   }
   // 봇은 1% 확률로 히든 지후를 덱에 넣어 온다. 등장은 배치 풀 규칙(rollDeployPool)을 따른다.
-  if (Math.random() < 0.01) {
+  if (level >= 7 && Math.random() < 0.01) {
     const hidden = playableIds().filter(id => CHAR_DB[id].rarity === 'hidden');
     const pick = hidden[Math.floor(Math.random() * hidden.length)] || null;
     if (pick) deck[deck.length - 1] = pick;
@@ -6510,8 +6555,9 @@ function settleMatch(won, draw, surrendered = false) {
     window.JihooOnline.publish().catch(() => {});
     return state.lastSettlement;
   }
-  if (surrendered && state.mode !== 'ranked' && state.mode !== 'draftbattle') profile.losses++;
-  if (state.mode !== 'ranked' && state.mode !== 'castle' && state.mode !== 'draftbattle') {
+  const xpOnlyMode = state.mode === 'draftbattle' || state.mode === 'compfriendly';
+  if (surrendered && state.mode !== 'ranked' && !xpOnlyMode) profile.losses++;
+  if (state.mode !== 'ranked' && state.mode !== 'castle' && !xpOnlyMode) {
     state.lastSettlement = { practice: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
     saveProfile();
     window.JihooOnline.publish().catch(() => {});
@@ -6521,7 +6567,9 @@ function settleMatch(won, draw, surrendered = false) {
   const levelDiff = Number.isFinite(state.enemyLevel) ? state.enemyLevel - before.level : 0;
   let xp = 0, diamonds = 0, gold = 0, xpMult = 1;
   // 드래프트전(과 예전 성뿌수기): 승리 시 경험치만 획득 (패배 페널티·재화·전적 없음)
-  const castleMode = state.mode === 'castle' || state.mode === 'draftbattle';
+  const castleMode = state.mode === 'castle' || xpOnlyMode;
+  let draftTicket = 0;
+  if (!draw && won && !surrendered && state.mode === 'ranked') { draftTicket = 1; profile.draftTickets = (profile.draftTickets || 0) + 1; }
   if (!draw && won) {
     xpMult = diffMult(levelDiff, LEVEL_DIFF_BONUS);
     xp = Math.round((100 + Math.floor(Math.random() * 51)) * xpMult);
@@ -6543,12 +6591,13 @@ function settleMatch(won, draw, surrendered = false) {
   const after = getLevelInfo(profile.totalXp);
   let levelBonus = 0;
   if (after.level > profile.highestRewardedLevel) {
-    levelBonus = (after.level - profile.highestRewardedLevel) * 200;
+    for (let level = profile.highestRewardedLevel + 1; level <= after.level; level++) levelBonus += level % 5 === 0 ? 1000 : 200;
     profile.highestRewardedLevel = after.level;
     profile.diamonds += levelBonus;
     profile.pendingLevelCelebration = { from: before.level, to: after.level, diamonds: levelBonus };
   }
-  state.lastSettlement = { practice: false, surrendered, xp, diamonds, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult };
+  state.lastSettlement = { practice: false, surrendered, xp, diamonds, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, backToComp: state.mode === 'compfriendly' };
+  if (state.mode === 'compfriendly') comp = null;
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   return state.lastSettlement;
@@ -6584,7 +6633,7 @@ window.addEventListener('beforeunload', event => {
 
 /* 3.2 account rewards. All claims mutate the same profile as the online backup. */
 const NEWCOMER_REWARDS = [
-  { label:'골드 10,000', kind:'gold', amount:10000 },
+  { label:'골드 10,000 + 랜덤 영웅 모집권', kind:'gold', amount:10000, extra: [{ kind:'epicTicket', amount:1 }] },
   { label:'랜덤 영웅 모집권', kind:'epicTicket', amount:1 },
   { label:'다이아 500', kind:'diamonds', amount:500 },
   { label:'골드 5,000', kind:'gold', amount:5000 },
@@ -6617,6 +6666,7 @@ function renderInventory(message = '') {
     ${rewardCard('다이아 ◆100 → 골드 ●1,000', '인벤토리에서 바로 교환', 'exchange100', profile.diamonds < 100)}
     ${rewardCard('다이아 ◆1,000 → 골드 ●11,000', '인벤토리에서 바로 교환', 'exchange1000', profile.diamonds < 1000)}
     ${rewardCard('경험치 부스트 · 10분 · 경험치 ×2 · 승리 시 ◆100~200', activeSeconds ? `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음` : `◆300 · 오늘 ${profile.xpBoost.usesToday}/2회 사용`, 'boost', activeSeconds > 0 || profile.xpBoost.usesToday >= 2 || profile.diamonds < 300)}
+    ${rewardCard('🎟️ 드래프트전 티켓 ×' + (profile.draftTickets || 0), '드래프트전(5:5) 한 판에 1장. 일반전에서 이기면 1장 받습니다.', '', true)}
     ${rewardCard('랜덤 영웅 모집권 ×' + profile.inventory.epicTicket, '영웅 등급 지후 1기를 모집합니다. 중복은 조각 1개로 전환됩니다.', 'epicTicket', !profile.inventory.epicTicket)}
     ${rewardCard('랜덤 전설 모집권 ×' + profile.inventory.legendTicket, '전설 등급 지후 1기를 모집합니다. 중복은 조각 1개로 전환됩니다.', 'legendTicket', !profile.inventory.legendTicket)}
     ${rewardCard('지후 조각', shards || '보유한 조각이 없습니다.')}
@@ -6722,8 +6772,10 @@ function claimAttendance() {
   const today = localDayKey();
   if (!n.unlocked || n.daysClaimed >= 7 || n.lastClaimDay === today) return;
   const reward = NEWCOMER_REWARDS[n.daysClaimed];
-  if (reward.kind.endsWith('Ticket')) profile.inventory[reward.kind] += reward.amount;
-  else profile[reward.kind] += reward.amount;
+  [reward, ...(reward.extra || [])].forEach(item => {
+    if (item.kind.endsWith('Ticket')) profile.inventory[item.kind] += item.amount;
+    else profile[item.kind] += item.amount;
+  });
   n.daysClaimed++;
   n.lastClaimDay = today;
   saveProfile();
@@ -6922,7 +6974,20 @@ $('btnLobbyBoost').addEventListener('click', () => {
   renderAccountUI();
 });
 setInterval(() => { if (state.screen === 'lobby') { renderLobbyBoost(); renderLobbyBadges(); } }, 1000);
-$('btnStartDraftBattle').addEventListener('click', () => beginMatchmaking('draftbattle'));
+$('btnStartDraftBattle').addEventListener('click', () => {
+  if ((profile.draftTickets || 0) <= 0) {
+    const desc = $('btnStartDraftBattle').querySelector('.d');
+    desc.textContent = '티켓이 없습니다 · 일반전에서 이기면 1장';
+    desc.classList.add('warn');
+    setTimeout(() => { desc.classList.remove('warn'); renderDraftTile(); }, 2200);
+    return;
+  }
+  beginMatchmaking('draftbattle');
+});
+function renderDraftTile() {
+  const desc = $('btnStartDraftBattle')?.querySelector('.d');
+  if (desc && !desc.classList.contains('warn')) desc.textContent = `5:5 밴픽 · 3판 2선승 · 🎟️ 티켓 ${profile.draftTickets || 0}장`;
+}
 $('btnStartComp').addEventListener('click', () => openCompLobby());
 $('btnStartGame').addEventListener('click', () => {
   const deck = currentDeck();
@@ -7216,6 +7281,7 @@ function startArenaMatch() {
     state.myDeckIds = allies.map(entry => entry.id);
     state.enemyDeckIds = enemies.map(entry => entry.id);
     state.arenaRoundFormations = { ally: allies.map(entry => ({ ...entry })), enemy: enemies.map(entry => ({ ...entry })) };
+    state.matchStats = [];
     state.matchSettled = false;
     state.lastSettlement = null;
     state.placements = [];
@@ -7666,8 +7732,10 @@ const COMP_RARITIES = ['common', 'rare', 'epic', 'legend'];
 // 드래프트전: 5:5, PHASE 1~5 (등급 3종 중 고르기, PHASE 5 블라인드), 경험치만.
 // 경쟁전: 3:3, 선→후→후→선→선→후 로 모든 지후 중 고르기, 배치 선택지 2개, 티어 점수.
 const DRAFT_MODES = {
-  draftbattle: { label: '드래프트전', size: 5, style: 'phases', maxUnits: 8, poolSize: 3, ranked: false },
-  competitive: { label: '경쟁전', size: 3, style: 'snake', maxUnits: 6, poolSize: 3, ranked: true }
+  draftbattle: { label: '드래프트전', size: 5, style: 'phases', maxUnits: 8, poolSize: 3, ranked: false, ticket: true },
+  // 3.8.2: 경쟁전은 보유 지후 + 이번 판 프로모션 전설 3종만. 친선은 모든 지후, TP 대신 경험치.
+  competitive: { label: '경쟁전', size: 3, style: 'snake', maxUnits: 6, poolSize: 3, ranked: true, tiered: true, ownedOnly: true, promos: 6, globalBans: 5 },
+  compfriendly: { label: '경쟁전(친선)', size: 3, style: 'snake', maxUnits: 6, poolSize: 3, ranked: false, tiered: true, globalBans: 5 }
 };
 const SNAKE_ORDER = ['first', 'second', 'second', 'first', 'first', 'second'];
 
@@ -7681,8 +7749,8 @@ function compTierInfo(tp) {
   return { tp: points, index, name: COMP_TIER_NAMES[index], group, floor, next, progress: next ? (points - floor) / (next - floor) : 1 };
 }
 // 경쟁전은 다이아부터 5판 3선승, 그 아래와 드래프트전은 3판 2선승
-function compMatchWins(modeKey, tp = profile.competitive.tp) { return modeKey === 'competitive' && compTierInfo(tp).index >= COMP_TIER_NAMES.indexOf('다이아 III') ? 3 : 2; }
-function matchLabel(wins) { return `${wins * 2 - 1}판 ${wins}선승`; }
+function compMatchWins(modeKey, tp = profile.competitive.tp) { return modeKey === 'competitive' && compGroupIndex(tp) >= COMP_GROUPS.indexOf('gold') ? 4 : 2; }
+function matchLabel(wins) { return wins >= 4 ? `라이프 ${wins}` : `${wins * 2 - 1}판 ${wins}선승`; }
 function compTierBadge(tp, extra = '') {
   const info = compTierInfo(tp);
   const art = TIER_ART[info.group];
@@ -7719,7 +7787,7 @@ function compLossTp(tierIndex) {
 // 드래프트 진행 상태
 let comp = null;
 function compPool() { return playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden'); }
-function compTaken() { return new Set([...comp.bans.ally, ...comp.bans.enemy, ...comp.picks.ally, ...comp.picks.enemy]); }
+function compTaken() { return new Set([...(comp.globalBans || []), ...comp.bans.ally, ...comp.bans.enemy, ...comp.picks.ally, ...comp.picks.enemy]); }
 const otherSide = side => (side === 'ally' ? 'enemy' : 'ally');
 function compFirstPicker(phase) { // 홀수 페이즈는 선수, 짝수 페이즈는 후수가 먼저 고른다
   return phase % 2 === 1 ? comp.first : otherSide(comp.first);
@@ -7762,59 +7830,15 @@ function seededPick(list, count) {
 const BOT_TIER_LIST = {
   '1': ['jaws', 'blackflame'],
   '2': ['planet', 'duet', 'dragon', 'tentacle', 'solemn', 'mushroom', 'dimension', 'tyrant', 'blizzard', 'god', 'instinct', 'mafia', 'unicorn', 'demonblade', 'edgy', 'hitman', 'slime', 'paladin', 'cactus', 'ninja', 'necro', 'combo', 'arcane'],
-  '3': ['berserk', 'arcade', 'syringe', 'farmer', 'reaper', 'star', 'supply', 'lock', 'rock', 'levelup', 'lasso', 'dosa', 'lightning', 'curse', 'lonely', 'rank', 'charge', 'zombie'],
-  '4': ['mutation', 'clock', 'skul', 'gumiho', 'bsod', 'bomber', 'func', 'no_u', 'glutton', 'poison', 'fire', 'impeachment', 'hypno', 'meteor', 'hollow'],
-  '5': ['engineer', 'hmg', 'vampire', 'mutant', 'bat', 'guardian', 'burning', 'metal', 'roulette', 'moon', 'mini', 'portal', 'sniper', 'taeguk', 'matrix', 'shield', 'hacker', 'sixseven', 'beam', 'mine', 'dust', 'ruins', 'mega', 'battery', 'ice', 'smoke', 'stop', 'phantom'],
+  '3': ['berserk', 'arcade', 'syringe', 'farmer', 'reaper', 'fire', 'star', 'supply', 'lock', 'rock', 'levelup', 'lasso', 'dosa', 'lightning', 'curse', 'lonely', 'rank', 'charge', 'zombie'],
+  '4': ['mutation', 'clock', 'skul', 'gumiho', 'bsod', 'bomber', 'func', 'no_u', 'glutton', 'poison', 'impeachment', 'hypno', 'meteor', 'hollow'],
+  '5': ['engineer', 'hmg', 'vampire', 'mutant', 'bat', 'guardian', 'burning', 'metal', 'roulette', 'moon', 'mini', 'portal', 'sniper', 'taeguk', 'matrix', 'shield', 'hacker', 'ice', 'sixseven', 'beam', 'mine', 'dust', 'ruins', 'mega', 'battery', 'smoke', 'stop', 'phantom'],
   '6': ['medic', 'telescope', 'revive', 'awaken', 'maestro', 'hong', 'growth', 'biker', 'gambler'],
   '?': ['sun', 'assassin', 'dj', 'genesis', 'satellite', 'bomb', 'egg', 'contractor', 'slot', 'frog', 'mimic', 'broker']
 };
-// 1:1 상성: ids 순서대로 행(나) × 열(상대), 글자 하나가 승률 0~4 (0 = 0%, 2 = 50%, 4 = 100%). 3.7.3 시뮬 7,656판.
-const BOT_MATCHUP_IDS = 'solemn blackflame growth hypno edgy egg sixseven gambler mushroom phantom hacker roulette dimension syringe glutton dosa biker tentacle engineer frog mafia hollow star demonblade cactus guardian broker hitman sun curse taeguk fire ice lonely shield assassin combo sniper medic awaken berserk poison charge stop mutant revive burning bat clock hmg mega rank arcade gumiho ninja mini metal necro lasso mine dj lightning slime god instinct arcane satellite portal no_u tyrant telescope hong levelup reaper smoke battery impeachment bomb dragon meteor blizzard beam mutation mimic planet lock genesis dust'.split(' ');
-const BOT_MATCHUP_TABLE =
-  '20444444444204444404040044440444444044440404244444422404440444402444404440444204444444444244442424420444444444404440404444444444040404444444244444444444444444444444440444044444' +
-  '00200024002400004000000000100000000000200002200000200000000200000020202200020200000000000042020404440000400400000440002040400440000424040442000040024000004400440444040404040044' +
-  '00442224444200424004442404400444444040440404044444402004440444040444044440444244444444040042222401420202400220202440202220002432200423020240200220244222204240242024040224442044' +
-  '02242220022000202202002000400222202000220002002002200020002004022020022220200000020002040000004200400000200000000040000000000040000020000000000000000000004000200004010000000000' +
-  '02440442244002404204022024442044422424440444242224422244020222240242424424444304240442440040032402440000400000000040000000000040000404000040000020044000004000440024020000040000' +
-  '00200020002400004000000000000000000000200002100000000000000100000020200200020200000000002200224440022002440022004424204220240042000444024002422020024000202420220042040002402002' +
-  '44444444444224444404044444444444444444440444444444442404444444444444444440444424442442440044424424440204404400000444044440400444000444000440000040044400004400440444410204442044' +
-  '00440424044404204004040004400044404004440404240404400004400440004044404400440404041400440044224444420042400404000440444444400444040444044444240444040440044400444444440424044244' +
-  '00000002000000002000000000000000000000000000000000000000000000000000000000000000000000000044442424400444420444100440044442444444040424444442044444444444204440444044440444444444' +
-  '40444444444440444424040444404444444404440404244444424444440444404444444444444440444444440040022404440000400200000040000040000040000404000440000400020000004000440044020000040000' +
-  '40440244444244444044244444404444444444404444244444444444444444044244444440444224444444440044044424420400400402000440004440040440040424000440000440040400004420440044040404040044' +
-  '40442224244404444344042044444444404044440404244444442404444444444044004444444404444444444444044444440444440404420440444444404444040444444442200444442444244404444044442444244444' +
-  '00444244244004444404040424400044444404440444244444444444444444404444444442444404040444440040004404400000400400000240000040000440000444000440000040040000004400440044040200040002' +
-  '00300000004200004000000000200000000000200000000000000000000000000030200200020200000000000444444404400044444444044442004444440444004424440044420400444000044440444044440000044402' +
-  '40444244244204404404040044442444404404400404244444420424444444042044404400444404440444440444042444440040400404004444024444400444040404444442240040224004244444444044442404044244' +
-  '00420224044000004004000004400020404004440204440004400000200400000044004400440204044400440044022404420000400400000440004240400444040444000442000440040000004400440044040404440044' +
-  '00400224044200004000000000400000200000400004240002400000400400000040204400440200020400020044044424440440420404400440404442444444044444444444244442444044404440444044440444040444' +
-  '00400424244200004004040004400000402004400004240000420004400400000044204400440400000400424044444404400444400400440440044440424444040424444444000444444404244400444044420444444244' +
-  '00440244244404444044040044444444404024440404244444440404404440002044004444444404044444440040404404440000400400000040000040000240000424000440000000044000004000440044020004440044' +
-  '00200120002000004000000000200000000000200002020000200000000220000020202200020200000000000044022404420000400444000440400040400442000424040040000040044000004440440044440000040004' +
-  '44444244444444444444044444444444444444442444444444444444444244444444444444444444440442440044044404440400400400000444002040400444020404040444000440044400004400440044020404440044' +
-  '44444444044404444444044404404444404444440424444444442424444444444444004440444424444444440020002400200000400000000040000000000020000224000020000000020000002020220202040000040000' +
-  '24224242243000204224222020422400202222420402200022004042204002000222022402242222240042200040014400400000400000000040000000000020000042000040000040040000004020440004040000040000' +
-  '00440424244404444004040004400044404004440404442444440404404444004044404400444404044402440040024424420400400404000440004440400440000444020440040440044000004420440044440400040044' +
-  '00440444244004404004040004440044404004440404240424400404400420000044004400444404044400440040022404440000400000000044000020400044000424000240000040040000004000440444020000040000' +
-  '00200024004400004000000000400000000000200002400000200000000000000020200402040400000400002042444424420440422404020440224240200444000444044442020442224222024420444244240442240044' +
-  '22442244244024424404042204404244424444440424044444442444404444244444444440444424442422440044444424420440400404040442004440440444040444000442024440440000004440444044440404042044' +
-  '40444424044244444004044404442444404444440424044444440024442444042444404400444204244442440044024404440400400000000440044040000444000424000440000240040000004400440004020204440444' +
-  '00400244404200004004000000440020000004400004200000400000200400000040404404440404000400400044044424440440400404000444044442404444040444444442440442442000004400440044040444444444' +
-  '40444224444404444044040004400244404004440404040444420024402444002044004442440404044442440022004420320000400200000040020000000020200240000042000000020000002012230003020200220000' +
-  '00400044204000044004040204400044404000200004440024400404420420200024004420420402040422440044020424440040400400000444044444404444000424044442040444044240044400444444420404444444' +
-  '00444244244404204004440004444444404444440404444444422444444420202044404404444404440444444044022404440444404404004444004440404444040444444442040444444442204440444444440404440444' +
-  '20444224444204044204040204442244404224440404440444440424442444222244024420444204444422440044044424440440440424400440404444404444040424444442040444444044224440444044420444444444' +
-  '00200020002200004000000000100000000000200002200000200000000220000020200200020200000000000040024424400000400400000040000040000440000424000440000040040000004200440044020000040004' +
-  '00244044042204044004024404200044202444200442420244220004044344004024202244422204440404444044042424440444440404400444404444444444044424444444044444424444244442444044440444044444' +
-  '00200222004200004000000000400000000000200002200000400000000200000040202400040400000400000020002400220000400000000020000000000020000200000000000000010000002020020002020000000000' +
-  '00440224244404404004040004404044404004440404444444400044440420402044004420444404040400444040444404444040440444042444444444440444044224444022444404244000444404444244444044044404' +
-  '00400224024000004000000000400000000000400004240000400004000400000040004400240203020400020020004000220000400000000020000000000020000200000000000000012000002020020002020000000000' +
-  '00440444044400404004040004400044404004400404240004420004444440000044204400442404000400442020204312200100400220000020002020020220020020000200002200020200222220020022020202020022' +
-  '44440444444224444404244244444244444444440424244444442444444444444444444440444424444442440040024404440200404400000244000040400444000424000440000200022000004400440414020202040044' +
-  '00440244244404424004040044440444404044440404244444400424404444040044004440444404240444440040002404420000400400000444000020400044000404040442000040040000004400440024420202040004' +
-  '04440044444000144004040244444400444000444004440404422400400240400044444444444404442440040040004400240000400000000040000000000040000040000000000000020000004000040004020000020000' +
-  '00440244044202404004040004400044444004440404044444442204400420042044404440444404040422440044042424442442400404000440024440420444240424244444242040242000204400444044442404442244' +
-  '00404044044400004004000004440000400000440004240004400000000400000044004404440200044400240040000404420000400400000242000020200040000444000440000040040000004000440024020000040002';
+// 1:1 상성: ids 순서대로 행(나) × 열(상대), 글자 하나가 승률 0~4 (0 = 0%, 2 = 50%, 4 = 100%). 3.8.2 시뮬 107기 11,342판 (쌍마다 진영 바꿔 2판).
+const BOT_MATCHUP_IDS = 'solemn blackflame growth hypno edgy egg sixseven gambler mushroom phantom hacker roulette dimension syringe glutton dosa biker tentacle engineer frog mafia hollow star demonblade cactus guardian broker hitman sun curse taeguk fire ice lonely shield assassin combo sniper medic awaken berserk poison charge stop mutant revive burning bat clock hmg mega rank arcade gumiho ninja mini metal necro lasso mine dj lightning slime god instinct arcane satellite portal no_u tyrant telescope hong levelup reaper smoke battery impeachment bomb dragon meteor blizzard beam mutation mimic planet lock genesis dust moon duet bomber paladin func zombie skul farmer jaws rock ruins vampire unicorn matrix supply maestro bsod contractor slot'.split(' ');
+const BOT_MATCHUP_TABLE = '2444040444440444444404204444044444404444040444444440044444244400044400444044422444404444404444440044444404402440444244204444244440044400044404044444444244444400404424440444444404444444444440004444044444004444404044002002440024000040000000002000000000002000020000000000000000000000002002000202000000000000000000000000140220042022404240000400400000440002040400440000424040440000440044000000400440444040404000044400000200040040404444442424244444444044402404400444444040440404444444444044442444440444044440444224444042044044244404440444044002202440022000242022200044000024000022200034422242002000024422000420024004103010202200022002022023200240444002202440140222200200002002022004220000022000200002220020220220002000202240020004204040220200022020220002200000002001200004000000000400000000000200000200000000000000200000000002400000000000000000000000000000004022024424042442244242442442244420442442244222022444244222044204424202444444402444022402202442242222004224220420040044402240000400000000040000000000040000444000040000040004000004000440044020000000000000000000040042404400220233022220204002000022100020222202202002220022200200202020222222222220222200200202222000022220220204220020002022022202044022202422000402420004022402242000442200004200002242200224222204042200200202044202220222224444044424222444444404404444044444444444044424444444444444444444444442444044444444404244404244440444442404400440424044402444044000004400440404004440404244404420404400444004044004444444202444000444240204400440404444004404240422002040040410044000404040044404044444044000044004400020444044004404040420004442404020004004040440044022424440042400404000440024044400444044444440442444444024440044400444444440404004444404424400044040404400000020000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000024442442440044442444440444002444244044424444444444204440444442424444044404444044440244440424442004444040440044044404440044402402000440044040400444020424440442040440044200204440440444440204400244402040400042044424200400224042200004002000000400000000000400004440004400000000400000000004400440200000000000040000000400404044404402442442444440442444444004444444444444440444444444444444440440444044404442444440444440442440024404040440044424404420400402402040440004040040444040444000440000440044400200400440044040404000044404040200044040404424442444044404344044042024440342404044440404444234420344444444022044004404442402244004444044420200440404444444404442442444444440042044004440440444424440444444440444444444424440444444444244424424444444444404444440440044442424200444404404242440004444440444444424444444444444444440244444444244440404000444404444404040242404400400044042200004004000002400000000004400004440004400000400420000004004400440402000000044200200000400424044002000400032000040000000002000000000002000000000000000000001000000204002000302000000000000200000000000040300444442404440444444444044442004444440444444444444444424400444044444444444444444440004444400444444044444444444444444244444444444444444442444444444444444244444444444444444444444444444444444440044444244402444444424044044404244444004242040410444402444440044404442444044244004004400424444444404444040000444440404444004444440440042042404200000400400000440002000400444000404400442000020044000000400440044020400000044444040200040040404400440244044404444044042004400042404044440404444444420404440444000044004400444404444004444240202000440444044004000442422000040040004044000402000224000042402044000004022400000040044204402000402000440002040004204040440444040404200440424404400440004442444444444424444440444440444044004440444044442444004244404240400444042404400400424042200004004040004400000402004400004244000400004400440000004404400440400000400444040200000400404044444444242424044440440044044004444042444404044444444400044444440444440044404442244444444444404420044404440440044044424440444444404004444044020402444040404444442040440444000204400444444440404000444424044240044444404400404244042400004004000000400000200002440004440004400000000440000040004400240200044400440040004000400404044002002420020000040000000002000000000002000021000000000000001200000202002000202000000000000000000002000140210044024424440000400400000440000040400042000424040042000040044000004040440004440000040000420200000040044404440444444242244444244044204400444404444442444244444440444444240444444004440444404040042444240404020440404044004404242442000040240000044000404040044402042444044200044004440000040044004402040440004444402000004404040444044442444400440404404400440004440444444042424404440004444444440204400440044040404440044404040000040040404400200144202400004000000000400000000000200002440000000000000000000000400204020400000400000000000000000004021024200422022220040204004204022402220403222202200040022000020000004022044220423402020424200020200040222440440040004400220000400000000040000000000040000022000040000040020000000000440004040000000000020000000040000404200440224044000004004040004400000400004440004442004420004400440000004004400440404004000444200202000400404444004002440442000040040420044000402040044000444442044204044004400000044044004444040004004440024020004004040440044024424240444404404100440044040400444040444442444040440244400204400444444440404400044404040000044040404400400044042400004000000000400000004000440004040002400000400440000040004404040200000000004040000400400444044004002440024000040000000004000000000004000044000002000000002000000400044040404000000000000000000004000040444444042424400242422404200440022244402442024444220442200442444040024400442044042402024444424220202442042404444440424244004404444044004400044404444444444244444422444404442044444424440444404440022444040444044444404044004442242422004040040414044200404044044404442440044402444002400000444044404444040000004440402020004004040440444044444420440404404000440044440444444040444444444002444444424224400440044442424400044404040400044242444400400444044400004004000004400440400004440004440004400002400200000004004400240203044000044240400000440404044004004240024000044040000004400200000044000044000004000002004000000004044044404040000004002400000004404040440244044424440440404404000444044044404444040444444442440442444000204440440244032444400444424040000444042444420442224442404444044040004400444204004440404244424400404402444000044004444440404044002444040402000420424044004000220440000240000000003000002000003020044200002002020002000000004024200303000004000002002200002000040240040004400220000400400000240000000000020000444000040000440042000002000440042040000040040420020000040040404004440224244400404024000004440440444044444004444404442404440442400444004444444244044044444040444400440444044404402240424044042444440044004444044444404044444444044244444402440444044044444244400444440404020004404040444044044424240444404404204440004440404444044444444444040444444402204440444444440404400444424040400044040404440444444442400244224022224400244444024440424444424440424424444022444004420444204244044444442444200440404044004404442422044040444440044000444440444404440444444204244444404402440044404442044440444442444420044404240440044002400220000400404000420004040400020040444440000000440042000002440420042040000040004400000200000002402000400244042000004004000000400000000004440004240004400000400440000002004400440202000000404440200000400404044402444440422040440040444040000444004442044402440444400440040440044042042444202024404444440004020000004044224444044404222444444444400440004444444444444444444444244444444444444442444044440444004244424444200444440404400400222002400004000000000400000000000400004000000000000000200000000002400040400000000000200000000400004044002000400024000040000000002000000000002000020000000000000000000000202002000202000000000000000002000000142200044042404220040404404400440004420400444044424440442004444024040204400442044440404000244444440400044040404440404424444240404404440024400444444404444440244400044444020440004444044442444420440044044444042440440444044004000042020000040000000004000000000024400044400044000020004000000000044002402010200000000400000004002040440020034400220000400000000010000000000020000200000000000000012000002020020002020000000000000000000000001402000440444042200404004042004400040404004400444244004440004444440000044404400442404000400444004400000400404044202021240222020040022000002000202002022002001000020000020101020022022002002202020202002100202000000202042202044244444420444444404424440044442424444444404444442442442444024444444444244442424004444404244200244240404400400344244402004024002002400000404004440004440004400001000440000042204404340202040000444040402200440404444004404442420004440440420444004404040444444442444444404244044440420440044404444242400044444404440004404240440040020404440000400400000444044000400044000444440442040040044000004400440024420002000004424024040044044404404440424444000244004040244444440444040444004240404444400400440400044444444444444442444044240444000440444444444442442422444444444440444444442400404044004440444244444440044444040444444402444402444440024444444444040440444020424420440424404404440004440404444044404444440244444444004004400444044440444002044404440400440040404400442444442424404024040204400040424004442444244444402444402440000044024420444404040042444040420020440404044004044042424000040040000044000004000004400040400044000040004000000400044044402000440002442402040004404040440040044404220000400400000040000000000044000424000440000040044000000400440044030000000002404020000040042404400400224042400004004000000400000000004400004440000400000400400000000004400440400000000002000000000400404044444442242444422444444440424424024440244220444224444244422242244202404224004444440224442442224424044244444440044044424420000402000000424000040000044000444440040000000044000004040440004420000040000422004040040004404400440424044424404244040004400444424444424444244244424444444444442044404400440424444204444242402000440404444004422442442020240042000024000022020044402044420044202004002200000420044044402000200002240402000004004240440044044424240440404404200440404444400444444424444444044444424044004440444044440400004244400442400044042404400420244242000204004024004402022004220440444442244420204442440200224224402444422040004044242402002440404044044402242420004442444420444000444444044444444444404444444444404424444442404444424040444440044442444444440444444442444224444444444400440044444444444244444444442044444444444444444444044444444404244444444402444444444440440244444404444444244444440444404044444444044444400444404444444044404444444424444004444044442002440434444004001240022000040000000004000000000002000044000000000000002000000404004000404000000000000000000002000040440044024424220040402400004440004020400444004424440442040000244000004440440044420000004004424040000042044404400444424244204444044444024400044444404444444244444440424444444444444404444444424444044444044444004442404044004004240024000040000000004000000000004000042400004000000004000000400044002402000000000000400000004002040440434024422422444440444402240204042400430444404444042442442244044422444434043444420044442400422400140442404300000040200200004000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000444444444422404444244404444044444444444444444404444444044044444444440442444442404404444440404444004444442440020002200220000400000000010000000000020000200000000000000020000002020020002020000000000000000000000000402000200022204200004020000000400000000000300003020000000000000040000040200400040400000000000000000000000014042';
 const BOT_TIER_SCORE = (() => {
   const score = {};
   Object.entries(BOT_TIER_LIST).forEach(([tier, ids]) => ids.forEach((id, pos) => {
@@ -7858,7 +7882,7 @@ function botLevelSkill(level) { return clamp(((Number(level) || 1) - 2) / 28, 0,
 // 조건이 돼도 일부 봇만 똑똑하게 고른다.
 function createBotBrain(modeKey, enemy) {
   let t;
-  if (modeKey === 'competitive') {
+  if (DRAFT_MODES[modeKey]?.tiered) {
     const group = compGroupIndex(enemy.tp);
     if (group < 1) return { smart: false, accuracy: 0 };
     t = (group - 1) / (COMP_GROUPS.length - 2); // 브론즈 0 → 챌린저 1
@@ -8014,7 +8038,7 @@ function beginMatchmaking(modeKey) {
     clearInterval(matching.clock);
     overlay.classList.add('found');
     $('matchTitle').textContent = '매칭 완료!';
-    $('matchFound').innerHTML = `<small>상대</small><b></b><span>${cfg.ranked ? compTierBadge(match.enemy.tp) : `<span class="cd-level">Lv.${match.enemy.level}</span>`}</span>`;
+    $('matchFound').innerHTML = `<small>상대</small><b></b><span>${cfg.tiered ? compTierBadge(match.enemy.tp) : `<span class="cd-level">Lv.${match.enemy.level}</span>`}</span>`;
     $('matchFound').querySelector('b').textContent = match.enemy.name;
     setTimeout(() => {
       if (!matching || matching.search !== search) return;
@@ -8117,7 +8141,11 @@ function renderCompLobby() {
   const season = compSeason();
   const claimed = compPromoClaimed();
   $('clSeasonChip').textContent = `시즌 ${season.number}`;
-  $('btnCompMatch').textContent = `매칭 시작 · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
+  $('btnCompMatch').textContent = `경쟁전 매칭 · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
+  $('clRules').innerHTML = `<h3>규칙</h3>
+    <div class="settlement-note"><b>경쟁전</b>: <b>보유한 지후</b>와 판마다 무작위로 정해지는 <b>프로모션 전설 6종</b>만 쓸 수 있습니다 (보유하지 않아도 사용 가능). 브론즈까지는 3판 2선승, <b>골드부터는 라이프 4</b>로 겨룹니다. 티어 점수가 오르내립니다.</div>
+    <div class="settlement-note"><b>경쟁전(친선)</b>: 모든 지후를 쓸 수 있고 3판 2선승입니다. 티어 점수 대신 승리하면 경험치를 받습니다.</div>
+    <div class="settlement-note">두 모드 모두 밴 페이즈 전에 <b>무작위 전설 5종이 글로벌 밴</b>됩니다.</div>`;
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
     ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
@@ -8127,6 +8155,7 @@ function renderCompLobby() {
 }
 $('btnCompLobbyBack').addEventListener('click', () => { showScreen('lobby'); renderAccountUI(); });
 $('btnCompMatch').addEventListener('click', () => beginMatchmaking('competitive'));
+$('btnCompFriendly').addEventListener('click', () => beginMatchmaking('compfriendly'));
 
 // 같은 지후를 짧은 시간 안에 두 번 누르면 true (더블클릭·두 번 탭 공용)
 function compDoubleTap(id) {
@@ -8138,6 +8167,11 @@ function compDoubleTap(id) {
 
 function startDraftMode(modeKey, match = null) {
   const cfg = DRAFT_MODES[modeKey];
+  if (cfg.ticket) {
+    if ((profile.draftTickets || 0) <= 0) { showScreen('lobby'); renderAccountUI(); return; }
+    profile.draftTickets--;
+    saveProfile();
+  }
   leaveBattle();
   state.mode = modeKey;
   state.matchSettled = false;
@@ -8152,28 +8186,86 @@ function startDraftMode(modeKey, match = null) {
     bans: { ally: [], enemy: [] }, banDraft: [],
     picks: { ally: [], enemy: [] },
     rarity: null, options: [], pickedBy: {}, turn: null, deadline: 0, blind: false,
-    enemy: match?.enemy || botEnemyProfile()
+    enemy: match?.enemy || botEnemyProfile(),
+    globalBans: [], promos: [], owned: { ally: null, enemy: null }, extra: { ally: [], enemy: [] }
   };
   comp.opponent = match?.opponent || createBotOpponent(createBotBrain(modeKey, comp.enemy));
   comp.first = comp.rng() < 0.5 ? 'ally' : 'enemy'; // 동전 던지기 (공유 시드)
+  // 글로벌 밴: 밴 페이즈 전에 무작위 전설 5종 (공유 시드). 경쟁전은 남은 전설 중 프로모션 3종을 누구나 쓸 수 있다.
+  const legends = compPool().filter(id => CHAR_DB[id].rarity === 'legend');
+  if (cfg.globalBans) comp.globalBans = seededPick(legends, cfg.globalBans);
+  if (cfg.promos) comp.promos = seededPick(legends.filter(id => !comp.globalBans.includes(id)), cfg.promos);
+  if (cfg.ownedOnly) {
+    comp.owned.ally = myOwnedIds();
+    comp.owned.enemy = match?.enemyOwned || botOwnedIds(comp.enemy);
+  }
   // 경쟁전은 드래프트부터 경기다. 여기서 창을 닫아도 패배로 처리한다.
   abandonNotice = '';
   if (cfg.ranked) { profile.activeMatch = { mode: modeKey, startedAt: Date.now() }; saveProfile(); }
   $('cdMode').textContent = `${cfg.label} · ${cfg.size}:${cfg.size}`;
   $('cdAllyName').textContent = profile.nickname || '나';
   $('cdEnemyName').textContent = comp.enemy.name;
-  $('cdAllyTier').innerHTML = cfg.ranked ? compTierBadge(me.tp) : `<span class="cd-level">Lv.${myLevel}</span>`;
-  $('cdEnemyTier').innerHTML = cfg.ranked ? compTierBadge(comp.enemy.tp) : `<span class="cd-level">Lv.${comp.enemy.level}</span>`;
+  $('cdAllyTier').innerHTML = cfg.tiered ? compTierBadge(me.tp) : `<span class="cd-level">Lv.${myLevel}</span>`;
+  $('cdEnemyTier').innerHTML = cfg.tiered ? compTierBadge(comp.enemy.tp) : `<span class="cd-level">Lv.${comp.enemy.level}</span>`;
   $('cdAllyOrder').textContent = comp.first === 'ally' ? '선수' : '후수';
   $('cdEnemyOrder').textContent = comp.first === 'enemy' ? '선수' : '후수';
-  $('cdLog').textContent = `동전 던지기 결과 ${comp.first === 'ally' ? '내가 선수' : '상대가 선수'}입니다. 먼저 밴할 지후 ${COMP_BAN_COUNT}종을 고르세요.`;
+  $('cdLog').textContent = `동전 던지기 결과 ${comp.first === 'ally' ? '내가 선수' : '상대가 선수'}입니다.`;
   showScreen('compdraft');
   $('cdStage').scrollTop = 0;
   renderCompPicks();
+  if (comp.globalBans.length || comp.promos.length) { showGlobalBans(); scheduleTask(startBanPhase, 3600); }
+  else startBanPhase();
+}
+function startBanPhase() {
+  if (!comp) return;
+  comp.stage = 'ban';
+  $('cdLog').textContent = `${comp.first === 'ally' ? '내가 선수' : '상대가 선수'}입니다. 밴할 지후 ${COMP_BAN_COUNT}종을 고르세요.`;
   renderCompBan();
   compSetTimer(COMP_BAN_SECONDS, banTimeUp);
   comp.turnKey++;
-  askOpponent({ type: 'ban', count: COMP_BAN_COUNT, pool: compPool() });
+  askOpponent({ type: 'ban', count: COMP_BAN_COUNT, pool: compBanPool() });
+}
+// 밴 페이즈 전: 글로벌 밴 5종과 (경쟁전) 프로모션 3종을 보여준다
+function showGlobalBans() {
+  comp.stage = 'global';
+  $('cdPhase').textContent = 'GLOBAL BAN';
+  $('cdTimer').textContent = '';
+  $('cdTurn').textContent = comp.cfg.ownedOnly ? '글로벌 밴 · 이번 판 프로모션 지후' : '글로벌 밴';
+  $('cdTurn').className = 'cd-turn';
+  $('cdStage').innerHTML = `<div class="cd-reveal">
+    <div><h4>글로벌 밴 · 무작위 전설 ${comp.globalBans.length}종</h4><div class="cd-row">${comp.globalBans.map(id => compCardHtml(id, { cls: 'banned', disabled: true })).join('')}</div></div>
+    ${comp.promos.length ? `<div><h4>프로모션 · 보유하지 않아도 이번 판에 쓸 수 있습니다</h4><div class="cd-row">${comp.promos.map(id => compCardHtml(id, { cls: 'promo', disabled: true, tag: '프로모션' })).join('')}</div></div>` : ''}
+  </div>`;
+  bindCompInfo($('cdStage'));
+}
+// 경쟁전에서 그 진영이 고를 수 있는 지후: 보유 + 프로모션 + (모자랄 때) 지원
+function compAllowed(side, id) {
+  if (!comp.cfg.ownedOnly) return true;
+  return comp.owned[side].includes(id) || comp.promos.includes(id) || comp.extra[side].includes(id);
+}
+function myOwnedIds() { return compPool().filter(id => isUnlocked(id)); }
+// 봇의 보유 목록: 일반·희귀는 전부, 영웅·전설은 레벨이 높을수록 많이
+function botOwnedIds(enemy) {
+  const level = Number(enemy.level) || 1;
+  const share = { common: 1, rare: 1, epic: clamp(0.3 + level / 60, 0.3, 0.95), legend: clamp(0.1 + level / 80, 0.1, 0.8) };
+  return compPool().filter(id => Math.random() < share[CHAR_DB[id].rarity]);
+}
+function compBanPool() { return compPool().filter(id => !comp.globalBans.includes(id)); }
+// 밴·픽이 끝났는데 쓸 수 있는 지후가 남은 픽 수보다 적으면 무작위로 채워 준다 (지원 지후)
+function ensureCompPickable() {
+  if (!comp.cfg.ownedOnly) return;
+  ['ally', 'enemy'].forEach(side => {
+    let need = 0;
+    for (let i = comp.pickIndex; i < SNAKE_ORDER.length; i++) if (snakeSide(i) === side) need++;
+    const taken = compTaken();
+    const have = compPool().filter(id => !taken.has(id) && compAllowed(side, id)).length;
+    if (have >= need) return;
+    const spare = compPool().filter(id => !taken.has(id) && !compAllowed(side, id));
+    const added = [];
+    while (have + added.length < need && spare.length) added.push(spare.splice(Math.floor(Math.random() * spare.length), 1)[0]);
+    comp.extra[side].push(...added);
+    if (side === 'ally' && added.length) $('cdLog').textContent = `쓸 수 있는 지후가 모자라 ${added.map(id => CHAR_DB[id].name).join(', ')}을(를) 지원받았습니다.`;
+  });
 }
 
 // 한 단계 타이머. 단계가 바뀌면 이전 타이머는 자동으로 무시된다.
@@ -8221,8 +8313,9 @@ function renderCompBan() {
   const hint = locked ? '밴 확정 완료' : comp.selected ? `${CHAR_DB[comp.selected].name} · 한 번 더 누르면 밴` : '지후를 두 번 누르면 밴이 확정됩니다';
   const scroll = $('cdStage').scrollTop;
   $('cdStage').innerHTML = `<div class="cd-ban">${compGridHtml(id => {
+      if (comp.globalBans.includes(id)) return { cls: 'mini banned', disabled: true, tag: '글로벌 밴' };
       const banned = comp.banDraft.includes(id);
-      return { cls: 'mini' + (banned ? ' banned-mine' : comp.selected === id ? ' selected' : ''), disabled: locked || banned };
+      return { cls: 'mini' + (banned ? ' banned-mine' : comp.selected === id ? ' selected' : ''), disabled: locked || banned, tag: comp.promos.includes(id) ? '프로모션' : '' };
     })}</div>
     <div class="cd-ban-bar"><span>밴 ${comp.banDraft.length} / ${COMP_BAN_COUNT}</span><small>${hint}</small></div>`;
   $('cdStage').scrollTop = scroll;
@@ -8244,7 +8337,7 @@ function confirmCompBan() {
   if (!comp || comp.stage !== 'ban' || comp.bans.ally.length) return;
   if (comp.selected && !comp.banDraft.includes(comp.selected) && comp.banDraft.length < COMP_BAN_COUNT) comp.banDraft.push(comp.selected);
   comp.selected = null;
-  const pool = compPool();
+  const pool = compBanPool();
   while (comp.banDraft.length < COMP_BAN_COUNT) {
     const rest = pool.filter(id => !comp.banDraft.includes(id));
     comp.banDraft.push(rest[Math.floor(Math.random() * rest.length)]);
@@ -8255,11 +8348,11 @@ function confirmCompBan() {
 function banTimeUp() {
   if (!comp || comp.stage !== 'ban') return;
   confirmCompBan();
-  if (comp.stage === 'ban' && !comp.bans.enemy.length) applyDraftAction('enemy', { type: 'ban', ids: botWeightedPick(compPool(), COMP_BAN_COUNT) });
+  if (comp.stage === 'ban' && !comp.bans.enemy.length) applyDraftAction('enemy', { type: 'ban', ids: botWeightedPick(compBanPool(), COMP_BAN_COUNT) });
 }
 function submitBans(side, ids) {
   if (comp.stage !== 'ban' || comp.bans[side].length) return;
-  comp.bans[side] = ids.slice(0, COMP_BAN_COUNT);
+  comp.bans[side] = ids.filter(id => !comp.globalBans.includes(id)).slice(0, COMP_BAN_COUNT);
   if (side === 'ally') renderCompBan(); // 판을 잠그고 상대를 기다린다
   if (comp.bans.ally.length && comp.bans.enemy.length) revealBans(); // 둘 다 내야 공개
 }
@@ -8364,9 +8457,9 @@ function renderCompPhase() {
 
 /* 경쟁전: 선→후→후→선→선→후 스네이크 픽, 모든 지후 중에서 */
 const snakeSide = index => (SNAKE_ORDER[index] === 'first' ? comp.first : otherSide(comp.first));
-function snakeAvailable() {
+function snakeAvailable(side) {
   const taken = compTaken();
-  return compPool().filter(id => !taken.has(id));
+  return compPool().filter(id => !taken.has(id) && (!side || compAllowed(side, id)));
 }
 function startSnakePick() {
   if (!comp) return;
@@ -8377,6 +8470,7 @@ function startSnakePick() {
 function nextSnakeTurn() {
   if (comp.pickIndex >= SNAKE_ORDER.length) { finishCompDraft(); return; }
   const side = snakeSide(comp.pickIndex);
+  ensureCompPickable();
   comp.turn = side;
   comp.turnKey++;
   comp.selected = null;
@@ -8384,19 +8478,19 @@ function nextSnakeTurn() {
   renderSnake();
   if (side === 'ally') {
     compSetTimer(COMP_PICK_SECONDS, () => {
-      const rest = snakeAvailable();
+      const rest = snakeAvailable('ally');
       applyDraftAction('ally', { type: 'pick', id: comp.selected && rest.includes(comp.selected) ? comp.selected : rest[Math.floor(Math.random() * rest.length)] });
     });
   } else {
     compSetTimer(COMP_PICK_SECONDS, () => {
-      const rest = snakeAvailable();
+      const rest = snakeAvailable('enemy');
       applyDraftAction('enemy', { type: 'pick', id: rest[Math.floor(Math.random() * rest.length)] });
     });
-    askOpponent({ type: 'pick', options: snakeAvailable() });
+    askOpponent({ type: 'pick', options: snakeAvailable('enemy') });
   }
 }
 function snakePick(side, id) {
-  if (!comp || comp.stage !== 'snake' || comp.turn !== side || !id || !snakeAvailable().includes(id)) return;
+  if (!comp || comp.stage !== 'snake' || comp.turn !== side || !id || !snakeAvailable(side).includes(id)) return;
   comp.token++;
   comp.picks[side].push(id);
   comp.pickIndex++;
@@ -8414,14 +8508,16 @@ function renderSnake() {
   $('cdTurn').textContent = mine ? `내 차례 · 지후를 두 번 누르면 확정${count > 1 ? ` (연속 ${count}픽)` : ''}` : comp.turn === 'enemy' ? '상대가 고르는 중…' : '다음 차례 준비…';
   $('cdTurn').className = 'cd-turn' + (mine ? ' mine' : '');
   const owner = id => (comp.picks.ally.includes(id) ? 'ally' : comp.picks.enemy.includes(id) ? 'enemy' : null);
-  const banned = id => comp.bans.ally.includes(id) || comp.bans.enemy.includes(id);
+  const banned = id => comp.globalBans.includes(id) || comp.bans.ally.includes(id) || comp.bans.enemy.includes(id);
   const order = SNAKE_ORDER.map((who, i) => `<span class="${i < comp.pickIndex ? 'done' : i === comp.pickIndex ? 'now' : ''} ${snakeSide(i)}">${who === 'first' ? '선' : '후'}</span>`).join('');
   $('cdStage').innerHTML = `<div class="cd-snake-order">${order}</div>
     <div class="cd-ban">${compGridHtml(id => {
       const who = owner(id);
-      if (banned(id)) return { cls: 'mini banned', disabled: true };
+      if (banned(id)) return { cls: 'mini banned', disabled: true, tag: comp.globalBans.includes(id) ? '글로벌 밴' : '' };
       if (who) return { cls: 'mini taken ' + who, disabled: true, tag: who === 'ally' ? '내 픽' : '상대 픽' };
-      return { cls: 'mini' + (comp.selected === id ? ' selected' : ''), disabled: !mine };
+      if (!compAllowed('ally', id)) return { cls: 'mini locked', disabled: true, tag: '미보유' };
+      const tag = comp.promos.includes(id) ? '프로모션' : comp.extra.ally.includes(id) ? '지원' : '';
+      return { cls: 'mini' + (comp.selected === id ? ' selected' : '') + (tag ? ' promo' : ''), disabled: !mine, tag };
     })}</div>
     <div class="cd-ban-bar"><span>${comp.selected ? CHAR_DB[comp.selected].name : mine ? '지후를 선택하세요' : ''}</span><small>${mine ? (comp.selected ? '한 번 더 누르면 확정' : '두 번 누르면 확정') : ''}</small></div>`;
   $('cdStage').querySelectorAll('.cd-card:not(:disabled)').forEach(card => card.addEventListener('click', () => {
@@ -8435,7 +8531,16 @@ function renderSnake() {
   bindCompInfo($('cdStage'));
 }
 
+// 머리 쪽에 작게: 각자 밴한 3종 (공개된 뒤), 글로벌 밴
+function renderCompMiniBans() {
+  const mini = (ids, label) => ids.length ? `<small>${label}</small>${ids.map(id => `<img src="${CHAR_DB[id].portrait}" alt="${CHAR_DB[id].name}" title="${CHAR_DB[id].name}">`).join('')}` : '';
+  const revealed = comp.stage !== 'ban' && comp.stage !== 'global';
+  $('cdAllyBans').innerHTML = revealed ? mini(comp.bans.ally, '밴') : '';
+  $('cdEnemyBans').innerHTML = revealed ? mini(comp.bans.enemy, '밴') : '';
+  $('cdGlobalBans').innerHTML = mini(comp.globalBans || [], '글로벌 밴');
+}
 function renderCompPicks() {
+  renderCompMiniBans();
   const row = side => Array.from({ length: comp.cfg.size }, (_, i) => {
     const id = comp.picks[side][i];
     if (!id) return '<div class="cd-slot empty"></div>';
@@ -8476,7 +8581,7 @@ function startDraftMatch() {
   state.mode = comp.mode;
   state.matchStartedAt = Date.now();
   state.matchWins = compMatchWins(comp.mode);
-  state.round = 1; state.allyLives = state.matchWins; state.enemyLives = state.matchWins; state.placements = [];
+  state.round = 1; state.allyLives = state.matchWins; state.enemyLives = state.matchWins; state.placements = []; state.matchStats = [];
   state.reaperGrudges = {};
   state.castles = null;
   state.maxUnits = cfg.maxUnits;
@@ -8533,6 +8638,7 @@ function replayDraftRound() {
 }
 
 function renderCompTile() {
+  renderDraftTile();
   const info = compTierInfo(profile.competitive.tp);
   const desc = $('compTileDesc');
   if (desc) desc.innerHTML = `${compTierBadge(info.tp, 'small')} ${formatNumber(info.tp)} TP · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
@@ -8557,7 +8663,7 @@ function startMatch(mode = 'ranked') {
     // 랭크전 도중 창을 닫거나 새로고침하면 다음 접속 때 패배로 처리한다
     abandonNotice = '';
     if (mode === 'ranked') { profile.activeMatch = { mode, startedAt: state.matchStartedAt }; saveProfile(); }
-    state.round = 1; state.allyLives = 4; state.enemyLives = 4; state.placements = [];
+    state.round = 1; state.allyLives = 4; state.enemyLives = 4; state.placements = []; state.matchStats = [];
     state.reaperGrudges = {};
     state.castles = mode === 'castle' ? {} : null;
     state.enemyName = BOT_NICKNAMES[Math.floor(Math.random() * BOT_NICKNAMES.length)];
@@ -11301,6 +11407,7 @@ const battleAPI = {
 };
 
 function recordEnemyDefeat(attacker, target) {
+  if (attacker && target && attacker.side !== target.side) attacker._kills = (attacker._kills || 0) + 1;
   if (attacker && attacker.alive && attacker.charId === 'levelup' && target && attacker.side !== target.side) {
     attacker._growthKills = (attacker._growthKills || 0) + 1;
     if (attacker._growthKills >= LEVELUP_KILLS_PER_FORM) {
@@ -15110,7 +15217,35 @@ function beginFinalMoment(winnerSide) {
   scheduleTask(() => endRoundCombat(winnerSide), state.mode === 'preview' ? 1400 : 2000);
 }
 
+// 라운드가 끝날 때 지후별 기록을 남긴다 (소환체의 몫은 주인에게 합친다)
+function recordRoundStats(winnerSide, timedOut) {
+  if (state.mode === 'preview' || state.mode === 'castle') return;
+  if (!state.matchStats) state.matchStats = [];
+  const rows = new Map();
+  const byUid = new Map(state.units.map(u => [u.uid, u]));
+  state.units.forEach(u => {
+    if (u.isCastle) return;
+    let owner = u;
+    for (let guard = 0; (owner.ownerUid || owner.isClone) && guard < 5; guard++) { const next = byUid.get(owner.ownerUid); if (!next) break; owner = next; }
+    if (!rows.has(owner.uid)) {
+      if (owner._devoured && !(owner.dmgDealt || owner.dmgTaken) && owner !== u) return;
+      rows.set(owner.uid, { id: owner.charId, side: owner.side, level: owner.level || 1, dealt: 0, taken: 0, kills: 0, alive: false, summons: 0 });
+    }
+    const row = rows.get(owner.uid);
+    row.dealt += u.dmgDealt || 0;
+    row.kills += u._kills || 0;
+    if (u === owner) { row.taken += u.dmgTaken || 0; row.alive = !!u.alive && !u._devoured; row.side = u.side; }
+    else row.summons++;
+  });
+  const list = [...rows.values()].filter(row => CHAR_DB[row.id] && (row.dealt || row.taken || row.alive || row.kills));
+  ['ally', 'enemy'].forEach(side => {
+    const total = list.filter(row => row.side === side).reduce((sum, row) => sum + row.dealt, 0);
+    list.filter(row => row.side === side).forEach(row => { row.share = total ? row.dealt / total : 0; });
+  });
+  state.matchStats.push({ round: state.round, winner: winnerSide, timedOut, seconds: Math.round(state.combatTime || 0), rows: list });
+}
 function endRoundCombat(winnerSide, timedOut = false) {
+  recordRoundStats(winnerSide, timedOut);
   cancelRuntimeTasks();
   state.phase = 'roundEnd';
   $('battleArena').classList.remove('final-moment');
@@ -15271,10 +15406,11 @@ function finishMatch(winnerSide, surrendered = false) {
       ${settlement.xp && settlement.enemyLevel ? `<div class="settlement-row"><span>상대 레벨</span><b>Lv.${settlement.enemyLevel} (${settlement.levelDiff > 0 ? '+' : ''}${settlement.levelDiff}) · ×${settlement.xpMult.toFixed(2)}</b></div>` : ''}
       <div class="settlement-row"><span>다이아</span><b class="gain">${settlement.diamonds ? `+${settlement.diamonds} ◆` : '변동 없음'}</b></div>
       <div class="settlement-row"><span>골드</span><b class="gain">${settlement.gold ? `+${formatNumber(settlement.gold)} ●` : '변동 없음'}</b></div>
+      ${settlement.draftTicket ? `<div class="settlement-row"><span>드래프트전 티켓</span><b class="gain">+${settlement.draftTicket} 🎟️ (보유 ${profile.draftTickets || 0})</b></div>` : ''}
       ${settlement.levelBonus ? `<div class="settlement-row"><span>레벨업 보너스</span><b class="gain">+${formatNumber(settlement.levelBonus)} ◆</b></div>` : ''}
       <div class="settlement-row"><span>프로필</span><b>Lv.${settlement.after.level}${levelUp ? ' LEVEL UP!' : ''}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${settlement.after.required ? settlement.after.current / settlement.after.required * 100 : 100}%"></div></div>
-      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? '드래프트전: 승리 시 EXP +100~150 · 패배 시 변동 없음 · 재화와 전적은 기록되지 않습니다' : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50'}</div>`;
+      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? '드래프트전: 승리 시 EXP +100~150 · 패배 시 변동 없음 · 재화와 전적은 기록되지 않습니다' : state.mode === 'compfriendly' ? '경쟁전(친선): 티어 점수 대신 승리 시 EXP +100~150 · 패배 시 변동 없음' : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50'}</div>`;
   }
   card.insertAdjacentHTML('afterbegin', '<div class="settlement-heading"><span>전투 보상</span><b id="settlementProgressLabel">정산 중 · 0%</b></div><div class="settlement-progress"><span id="settlementProgressFill"></span></div>');
   const steps = Array.from(card.children).filter(el => !el.classList.contains('settlement-heading') && !el.classList.contains('settlement-progress'));
@@ -15291,15 +15427,80 @@ function finishMatch(winnerSide, surrendered = false) {
 }
 
 $('btnRestart').addEventListener('click', () => {
-  const backToComp = !!state.lastSettlement?.competitive; // 경쟁전이 끝나면 경쟁전 로비로
+  const backToComp = !!(state.lastSettlement?.competitive || state.lastSettlement?.backToComp); // 경쟁전·친선이 끝나면 경쟁전 로비로
   leaveBattle();
   if (backToComp) openCompLobby(); else showScreen('lobby');
   renderAccountUI(); showLevelCelebration();
 });
+// 경기 통계: 라운드별 · 합계 (입힌 피해 · 받은 피해 · 처치 · 기여도)
+function renderMatchStats(tab = 'all') {
+  const rounds = state.matchStats || [];
+  if (!rounds.length) { $('statsTabs').innerHTML = ''; $('statsBody').innerHTML = '<p class="settlement-note">기록된 라운드가 없습니다.</p>'; return; }
+  const tabs = [['all', '합계'], ...rounds.map((r, i) => [String(i), `R${r.round}${r.winner === 'draw' ? ' 무' : r.winner === 'ally' ? ' 승' : ' 패'}`])];
+  $('statsTabs').innerHTML = tabs.map(([key, label]) => `<button type="button" class="${key === tab ? 'on' : ''}" data-tab="${key}">${label}</button>`).join('');
+  $('statsTabs').querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => renderMatchStats(b.dataset.tab)));
+  let rows, head;
+  if (tab === 'all') {
+    const merged = new Map();
+    rounds.forEach(r => r.rows.forEach(row => {
+      const key = row.side + ':' + row.id;
+      const m = merged.get(key) || { id: row.id, side: row.side, level: row.level, dealt: 0, taken: 0, kills: 0, games: 0 };
+      m.dealt += row.dealt; m.taken += row.taken; m.kills += row.kills; m.games++; m.level = Math.max(m.level, row.level);
+      merged.set(key, m);
+    }));
+    rows = [...merged.values()];
+    ['ally', 'enemy'].forEach(side => { const total = rows.filter(r => r.side === side).reduce((n, r) => n + r.dealt, 0); rows.filter(r => r.side === side).forEach(r => { r.share = total ? r.dealt / total : 0; }); });
+    head = `${rounds.length}라운드 합계`;
+  } else {
+    const r = rounds[Number(tab)];
+    rows = r.rows;
+    head = `ROUND ${r.round} · ${r.winner === 'ally' ? '승리' : r.winner === 'enemy' ? '패배' : '무승부'} · ${r.seconds}초${r.timedOut ? ' (시간 종료)' : ''}`;
+  }
+  const best = side => rows.filter(r => r.side === side).sort((a, b) => b.share - a.share)[0];
+  const table = side => {
+    const list = rows.filter(r => r.side === side).sort((a, b) => b.dealt - a.dealt);
+    const mvp = best(side);
+    return `<h3 class="stats-side ${side}">${side === 'ally' ? '아군' : '상대'}</h3>` + (list.length ? list.map(r => {
+      const c = CHAR_DB[r.id];
+      return `<div class="stats-row${r === mvp && r.dealt ? ' mvp' : ''}">
+        <img src="${c.portrait}" alt=""><div class="stats-main"><b>${c.name}${r.level > 1 ? ` <small>Lv.${r.level}</small>` : ''}${r === mvp && r.dealt ? ' <em>MVP</em>' : ''}${tab !== 'all' && r.alive === false ? ' <small class="dead">사망</small>' : ''}</b>
+        <div class="stats-bar"><i style="width:${Math.round(r.share * 100)}%"></i></div>
+        <small>기여도 ${Math.round(r.share * 100)}% · 입힌 피해 ${formatNumber(Math.round(r.dealt))} · 받은 피해 ${formatNumber(Math.round(r.taken))} · 처치 ${r.kills}${r.summons ? ` · 소환체 ${r.summons}` : ''}${tab === 'all' ? ` · ${r.games}회 출전` : ''}</small></div></div>`;
+    }).join('') : '<p class="settlement-note">기록 없음</p>');
+  };
+  $('statsBody').innerHTML = `<p class="settlement-note">${head} · 기여도 = 우리 편이 입힌 전체 피해 중 그 지후(소환체 포함)의 몫</p>${table('ally')}${table('enemy')}`;
+}
+$('btnMatchStats').addEventListener('click', () => { renderMatchStats(); $('statsModal').classList.add('show'); });
+$('btnStatsClose').addEventListener('click', () => $('statsModal').classList.remove('show'));
+$('statsModal').addEventListener('click', event => { if (event.target.id === 'statsModal') $('statsModal').classList.remove('show'); });
 $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('arena'); renderArenaList(); });
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '3.8.2': {
+    label: 'v3.8.2 경쟁전 개편 · 초보자 지원',
+    date: '2026.09.28',
+    sections: [
+      { title: '경쟁전', items: [
+        { emoji:'🏆', name:'경쟁전', tag:'system', color:'#c99a17', desc:'<b>보유한 지후</b>만 쓸 수 있습니다. 대신 판마다 무작위 <b>프로모션 전설 6종</b>이 정해지며, 보유하지 않아도 쓸 수 있습니다. 쓸 수 있는 지후가 모자라면 무작위 지후를 지원받습니다.' },
+        { emoji:'❤️', name:'골드부터 라이프 4', tag:'system', color:'#e03131', desc:'골드 티어부터는 일반전처럼 서로 <b>라이프 4</b>로 겨룹니다 (브론즈까지는 3판 2선승, 다이아 5판 3선승 규칙은 없어짐).' },
+        { emoji:'🤝', name:'경쟁전(친선)', tag:'new', color:'#2f9e44', desc:'경쟁전 로비에서 <b>친선전</b>을 따로 할 수 있습니다. 모든 지후를 쓸 수 있고 3판 2선승이며, 티어 점수 대신 이기면 <b>경험치</b>를 받습니다.' },
+        { emoji:'🚫', name:'글로벌 밴', tag:'new', color:'#555555', desc:'경쟁전·친선 모두 밴 페이즈 전에 <b>무작위 전설 5종</b>이 밴됩니다.' },
+        { emoji:'👀', name:'밴 표시', tag:'new', color:'#555555', desc:'드래프트 화면에서 각자 밴한 3종을 닉네임 아래에, 글로벌 밴을 가운데에 작게 표시합니다.' },
+        { emoji:'📊', name:'경기 통계', tag:'new', color:'#4c6ef5', desc:'경기가 끝난 정산 화면의 <b>📊 통계</b> 버튼으로 라운드별·합계 지후 기여도, 입힌 피해, 받은 피해, 처치 수를 볼 수 있습니다.' },
+        { emoji:'🎟️', name:'드래프트전 티켓', tag:'system', color:'#7048e8', desc:'드래프트전(5:5)은 이제 <b>티켓 1장</b>이 필요합니다. 일반전에서 <b>이기면 1장</b>을 받습니다.' }
+      ] },
+      { title: '초보자 지원', items: [
+        { emoji:'🎁', name:'신규 유저 출석부', tag:'buff', color:'#ba8732', desc:'1일차 보상에 <b>랜덤 영웅 모집권</b>이 추가되었습니다.' },
+        { emoji:'🤖', name:'봇', tag:'adjust', color:'#444444', desc:'밴·픽에 쓰는 1:1 상성표를 신규 지후까지 <b>107종</b>으로 다시 만들었습니다 (11,342판). 초반 상대: 레벨 1~3 상대는 <b>일반 4 + 희귀 1</b>, 레벨 4~6 상대는 <b>4티어 1 + 5~6티어 4</b>로 덱을 짭니다. 7레벨부터는 전과 같습니다.' },
+        { emoji:'💎', name:'레벨업 보상', tag:'buff', color:'#2479b8', desc:'<b>5의 배수 레벨</b>에 오르면 ◆200 대신 <b>◆1,000</b>을 받습니다.' }
+      ] },
+      { title: '밸런스', items: [
+        { emoji:'🔥', name:'화염 지후', tag:'buff', color:'#ff6b35', portraitKey:'fire', desc:'ATK <b>10 → 20</b> · 화상 <b>초당 100 → 120</b>.' },
+        { emoji:'❄️', name:'얼음 지후', tag:'buff', color:'#2a9bc7', portraitKey:'ice', desc:'빙결 확률 <b>35% → 50%</b> · 빙결 <b>1.6 → 2.5초</b>.' }
+      ] }
+    ]
+  },
   '3.8.1': {
     label: 'v3.8.1 신규 지후 밸런스',
     date: '2026.09.28',
