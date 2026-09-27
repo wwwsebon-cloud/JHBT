@@ -6151,8 +6151,8 @@ function settleMatch(won, draw, surrendered = false) {
     const enemyTier = compTierInfo(state.enemyTp ?? before.tp);
     const tierDiff = enemyTier.index - before.index;
     let tp = 0, tpMult = 1;
-    if (!draw && won) { tpMult = diffMult(tierDiff, COMP_TIER_DIFF_BONUS); tp = Math.round(compWinTp() * tpMult); profile.competitive.wins++; }
-    else if (!draw) { tpMult = diffMult(-tierDiff, COMP_TIER_DIFF_BONUS); tp = -Math.round(compLossTp(before.index) * tpMult); profile.competitive.losses++; }
+    if (!draw && won) { tpMult = diffMult(tierDiff, COMP_TIER_DIFF_BONUS); tp = Math.round(compWinTp(before.index) * tpMult); profile.competitive.wins++; }
+    else if (!draw) { tpMult = diffMult(-tierDiff, COMP_TIER_DIFF_BONUS); tp = -Math.min(COMP_LOSS_CAP, Math.round(compLossTp(before.index) * tpMult)); profile.competitive.losses++; }
     profile.competitive.tp = Math.max(0, profile.competitive.tp + tp);
     profile.competitive.peak = Math.max(profile.competitive.peak, profile.competitive.tp);
     profile.competitive.lastDeck = state.myDeckIds.filter(id => CHAR_DB[id]).slice(0, 3);
@@ -7320,6 +7320,9 @@ function compTierInfo(tp) {
   const group = COMP_GROUPS[index === 0 ? 0 : Math.min(COMP_GROUPS.length - 1, Math.ceil(index / 3))];
   return { tp: points, index, name: COMP_TIER_NAMES[index], group, floor, next, progress: next ? (points - floor) / (next - floor) : 1 };
 }
+// 경쟁전은 다이아부터 5판 3선승, 그 아래와 드래프트전은 3판 2선승
+function compMatchWins(modeKey, tp = profile.competitive.tp) { return modeKey === 'competitive' && compTierInfo(tp).index >= COMP_TIER_NAMES.indexOf('다이아 III') ? 3 : 2; }
+function matchLabel(wins) { return `${wins * 2 - 1}판 ${wins}선승`; }
 function compTierBadge(tp, extra = '') {
   const info = compTierInfo(tp);
   const art = TIER_ART[info.group];
@@ -7330,13 +7333,24 @@ function compTierEmblem(tp) { // 큰 티어 그림 (아이언은 없음)
   return TIER_ART[info.group] ? `<img class="tier-emblem" src="${TIER_ART[info.group]}" alt="${info.name}">` : '';
 }
 const randomBetween = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
-function compWinTp() { return randomBetween(200, 240); }
+// 다이아 III 부터 그랜드마스터 III 까지 단계적으로: 얻는 TP 약 100 → 70, 잃는 TP 약 60 → 150~200. 잃는 TP 는 보정 뒤에도 최대 200.
+const COMP_HIGH_FROM = COMP_TIER_NAMES.indexOf('다이아 III');
+const COMP_LOSS_CAP = 200;
+function compHighTier(tierIndex) { return tierIndex < COMP_HIGH_FROM ? -1 : clamp((tierIndex - COMP_HIGH_FROM) / (COMP_GRANDMASTER - COMP_HIGH_FROM), 0, 1); }
+function compWinTp(tierIndex = 0) {
+  const u = compHighTier(tierIndex);
+  if (u < 0) return randomBetween(200, 240);
+  const center = 100 - 30 * u;
+  return randomBetween(Math.round(center * 0.9), Math.round(center * 1.1));
+}
 // 상대와의 차이 보정: 경쟁전 티어 1칸당 12%, 레벨 1당 6%. 이기면 상대가 높을수록 많이 얻고, 지면 상대가 높을수록 덜 잃는다.
 const COMP_TIER_DIFF_BONUS = 0.12;
 const LEVEL_DIFF_BONUS = 0.06;
 const diffMult = (diff, per) => clamp(1 + diff * per, 0.5, 1.6);
 // 패배 TP: 아이언 0~5 에서 그랜드마스터 80~100 까지 지수함수꼴로 늘어난다.
 function compLossTp(tierIndex) {
+  const u = compHighTier(tierIndex);
+  if (u >= 0) return randomBetween(Math.round(50 + 100 * u), Math.round(70 + 130 * u));
   const t = Math.min(tierIndex, COMP_GRANDMASTER) / COMP_GRANDMASTER;
   const curve = (Math.exp(3.2 * t) - 1) / (Math.exp(3.2) - 1);
   return randomBetween(Math.round(80 * curve), Math.round(5 + 95 * curve));
@@ -7733,6 +7747,7 @@ function renderCompLobby() {
   const season = compSeason();
   const claimed = compPromoClaimed();
   $('clSeasonChip').textContent = `시즌 ${season.number}`;
+  $('btnCompMatch').textContent = `매칭 시작 · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
     ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
@@ -8072,7 +8087,7 @@ function finishCompDraft() {
   renderCompPicks();
   $('cdPhase').textContent = 'READY';
   $('cdTimer').textContent = '';
-  $('cdTurn').textContent = `드래프트 완료 · ${comp.cfg.size}:${comp.cfg.size} · 3판 2선승`;
+  $('cdTurn').textContent = `드래프트 완료 · ${comp.cfg.size}:${comp.cfg.size} · ${matchLabel(compMatchWins(comp.mode))}`;
   $('cdTurn').className = 'cd-turn';
   $('cdStage').innerHTML = `<div class="cd-ready"><b id="cdReadyCount">5</b><span>초 뒤 전투 시작</span></div>`;
   let left = 5;
@@ -8090,7 +8105,8 @@ function startDraftMatch() {
   const cfg = comp.cfg;
   state.mode = comp.mode;
   state.matchStartedAt = Date.now();
-  state.round = 1; state.allyLives = 2; state.enemyLives = 2; state.placements = [];
+  state.matchWins = compMatchWins(comp.mode);
+  state.round = 1; state.allyLives = state.matchWins; state.enemyLives = state.matchWins; state.placements = [];
   state.reaperGrudges = {};
   state.castles = null;
   state.maxUnits = cfg.maxUnits;
@@ -8149,7 +8165,7 @@ function replayDraftRound() {
 function renderCompTile() {
   const info = compTierInfo(profile.competitive.tp);
   const desc = $('compTileDesc');
-  if (desc) desc.innerHTML = `${compTierBadge(info.tp, 'small')} ${formatNumber(info.tp)} TP · 3:3 밴픽 · 3판 2선승`;
+  if (desc) desc.innerHTML = `${compTierBadge(info.tp, 'small')} ${formatNumber(info.tp)} TP · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
   // 로비 칸 아이콘은 지금 내 티어 그림 (아이언이면 번호)
   const icon = $('btnStartComp')?.querySelector('.ico');
   if (icon) {
@@ -13836,7 +13852,7 @@ function finishMatch(winnerSide, surrendered = false) {
     $('endTitle').textContent = won ? 'VICTORY' : 'DEFEAT';
     $('endTitle').className = 'end-title title-font ' + (won ? 'win' : 'lose');
     $('endSub').textContent = surrendered ? '항복했습니다. 패배로 기록됩니다.' : DRAFT_MODES[state.mode]
-      ? `${DRAFT_MODES[state.mode].label} 3판 2선승 ${won ? '승리' : '패배'}`
+      ? `${DRAFT_MODES[state.mode].label} ${matchLabel(state.matchWins || 2)} ${won ? '승리' : '패배'}`
       : state.mode === 'castle'
       ? (won ? '적 성을 먼저 파괴했습니다' : '아군 성이 파괴되었습니다')
       : state.mode === 'arena'
@@ -13856,7 +13872,7 @@ function finishMatch(winnerSide, surrendered = false) {
       ${settlement.promoDiamonds ? `<div class="settlement-row"><span>승급 보상</span><b class="gain">${settlement.promoGroups.map(group => COMP_GROUP_LABELS[group]).join(' · ')} 첫 승급 +${formatNumber(settlement.promoDiamonds)} ◆</b></div>` : ''}
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.round(after.progress * 100)}%"></div></div>
-      <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP · 패배 시 티어가 높을수록 더 많이 잃습니다. 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대).</div>`;
+      <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대).</div>`;
   } else if (settlement.practice) {
     card.innerHTML = surrendered
       ? '<div class="settlement-row"><span>항복</span><b>패배 기록 +1</b></div><div class="settlement-note">경험치와 재화는 변동되지 않으며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.</div>'
