@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="3.8"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="3.8.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <style>
@@ -3021,7 +3021,7 @@ const CHARACTER_BALANCE = {
   hacker: {
     hp: 1100, atk: 0, atkSpeed: 1, range: 225, speed: 45,
     noAttack: true, holdRange: true,
-    hackCooldown: 5, hackDuration: 3, hackTypeTime: 1.2, hackRetry: 2
+    hackCooldown: 4, hackDuration: 3, hackTypeTime: 1.2
   },
   roulette: {
     hp: 4200, atk: 0, atkSpeed: 1.5, range: 112.5, speed: 72,
@@ -3468,13 +3468,13 @@ const CHARACTER_BALANCE = {
   // 3.8 신규
   moon: {
     hp: 2500, atk: 40, atkSpeed: 0.7, range: 202.5, speed: 81,
-    moonRadius: 180, moonAtk: 0.08, moonAspd: 0.16, moonGain: 0.01, moonMax: 1
+    moonRadius: 270, moonAtk: 0.08, moonAspd: 0.16, moonGain: 0.01, moonMax: 1
   },
   duet: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 3000, atk: 700, atkSpeed: 1, range: 180, speed: 72,
     noAttack: true, // 듀엣2와 처음 맞닿은 뒤부터 공격 (배치 기록에 남는다)
-    duetMinGap: 360, duetStun: 1, duetBurst: 0.5
+    duetGap: 180, duetTouch: 45, duetStun: 1, duetBurst: 0.5
   },
   duet2: {
     hp: 3000, atk: 900, atkSpeed: 1, range: 72, speed: 72,
@@ -3483,7 +3483,7 @@ const CHARACTER_BALANCE = {
   bomber: {
     hp: 1500, atk: 0, atkSpeed: 1, range: 270, speed: 45,
     noAttack: true, holdRange: true,
-    bombFirst: 10, bombEvery: 6, bombWarn: 3, bombRadius: 225, bombFraction: 0.8
+    bombFirst: 10, bombEvery: 6, bombWarn: 3, bombRadius: 225, bombFraction: 0.8, bombSpread: 90
   },
   paladin: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
@@ -3492,7 +3492,7 @@ const CHARACTER_BALANCE = {
     triLength: 90, triHalf: 45, knightDelay: 2, knightCount: 6, knightAhead: 90
   },
   knight: {
-    hp: 1000, shield: 2000, atk: 240, atkSpeed: 1.6, range: 72, speed: 94.5,
+    hp: 500, shield: 1000, atk: 240, atkSpeed: 1.6, range: 72, speed: 94.5,
     isMelee: true, shieldDamageMultiplier: 0.9
   },
   func: {
@@ -3522,7 +3522,7 @@ const CHARACTER_BALANCE = {
     rockDuration: 4, rockSlow: 0.6, rockScale: 2
   },
   ruins: {
-    hp: 5000, atk: 50, atkSpeed: 2, range: 900, speed: 45,
+    hp: 5000, atk: 50, atkSpeed: 2, range: 225, speed: 45,
     ruinsRadius: 225, ruinsSlow: 0.2, ruinsHaste: 0.2, ruinsAtkDown: 0.4, ruinsHeal: 100,
     ruinsDecayEvery: 2, ruinsAtkDecay: 0.02, ruinsHealDecay: 2, ruinsAtkMin: 0.02, ruinsHealMin: 2
   },
@@ -3542,13 +3542,13 @@ const CHARACTER_BALANCE = {
   supply: {
     hp: 1800, atk: 0, atkSpeed: 1, range: 180, speed: 67.5,
     noAttack: true, holdRange: true,
-    supplyEvery: 8, supplyMax: 3, supplyHpGain: 0.3, supplyHeal: 1500, supplyAtkGain: 0.25,
+    supplyEvery: 5, supplyMax: 3, supplyNear: 135, supplyHpGain: 0.3, supplyHeal: 1500, supplyAtkGain: 0.25,
     supplyDropRadius: 45, supplyDropDamage: 800, supplyFall: 1, crateRadius: 22
   },
   maestro: {
     hp: 2600, atk: 0, atkSpeed: 1, range: 0, speed: 0,
     noAttack: true, immobile: true,
-    maestroTime: 18, maestroHeal: 2000, maestroFrame: 0.5, maestroBow: 1.2
+    maestroTime: 12, maestroHeal: 2500, maestroFrame: 0.5, maestroBow: 1.2
   },
   bsod: {
     hp: 404, atk: 404, atkSpeed: 1, range: 45, speed: 4.5,
@@ -4161,7 +4161,7 @@ const CHAR_DB = {
     id: 'hacker', name: '해커 지후', emoji: '💻', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#19c7c0', portrait: PORTRAITS.hacker,
     ...CHARACTER_BALANCE.hacker,
-    skillDesc: '적 진영 지후 하나의 이름을 타이핑한다. 그 이름의 적은 모두 <b>3초간 해킹</b>되어 일반 공격이 대상에게 피해를 주지 않고 오히려 회복시킨다. 타이핑이 끝났을 때 그 지후가 없으면 무산된다. 해킹 효과가 끝나고 <b>2초</b> 뒤 다시 해킹한다 (무산되면 2초 뒤).'
+    skillDesc: '적 진영 지후 하나의 이름을 타이핑한다. 그 이름의 적은 모두 <b>3초간 해킹</b>되어 일반 공격이 대상에게 피해를 주지 않고 오히려 회복시킨다. 타이핑이 끝났을 때 그 지후가 없으면 무산된다. <b>4초마다</b> 1번 해킹한다.'
   },
   roulette: {
     id: 'roulette', name: '러시안룰렛 지후', emoji: '🔫', role: 'assassin', roleLabel: '어쌔신',
@@ -4293,13 +4293,13 @@ const CHAR_DB = {
     rarity: 'legend', color: '#5aa9ff', portrait: PORTRAITS.moon,
     ...CHARACTER_BALANCE.moon,
     modifyDamage(caster, target, dmg) { caster._moonStack = (caster._moonStack || 0) + 1; return dmg; },
-    skillDesc: '반경 <b>4칸</b> 안의 모든 아군(자신 포함)에게 공격력 <b>+8%</b> · 공격속도 <b>+16%</b> 버프를 준다. 공격할 때마다 두 버프가 각각 <b>1%p</b>씩 오른다 (각 최대 100%).'
+    skillDesc: '반경 <b>6칸</b> 안의 모든 아군(자신 포함)에게 공격력 <b>+8%</b> · 공격속도 <b>+16%</b> 버프를 준다. 공격할 때마다 두 버프가 각각 <b>1%p</b>씩 오른다 (각 최대 100%).'
   },
   duet: {
     id: 'duet', name: '듀엣 지후', emoji: '🎤', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#ff6b6b', portrait: PORTRAITS.duet, portraitAwake: PORTRAITS.duet_awake,
     ...CHARACTER_BALANCE.duet,
-    skillDesc: '설치하면 아군 진영의 먼 곳에 <b>듀엣 지후2</b>가 같이 나온다 (레벨도 같이 오른다). 둘은 따로 움직이다가 <b>처음 맞닿는 순간</b> 모든 적을 <b>1초</b> 기절시키고 최대 체력의 <b>50%</b> 피해를 준다. 그 뒤로는 모든 라운드에서 공격한다 (듀엣: ATK 700 · 사거리 4칸 · 1초 / 듀엣2: 근접 ATK 900 · 1초). 출격 제한 1.'
+    skillDesc: '설치하면 아군 진영의 <b>4칸</b>쯤 떨어진 곳에 <b>듀엣 지후2</b>가 같이 나온다 (레벨도 같이 오른다). 둘은 따로 움직이다가 <b>처음 맞닿는 순간</b> 모든 적을 <b>1초</b> 기절시키고 최대 체력의 <b>50%</b> 피해를 준다. 그 뒤로는 모든 라운드에서 공격한다 (듀엣: ATK 700 · 사거리 4칸 · 1초 / 듀엣2: 근접 ATK 900 · 1초). 출격 제한 1.'
   },
   duet2: {
     id: 'duet2', name: '듀엣 지후2', emoji: '🎤', role: 'controller', roleLabel: '컨트롤러',
@@ -4312,14 +4312,14 @@ const CHAR_DB = {
     id: 'bomber', name: '새털라이트 전술폭격 지후', emoji: '📡', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#3b5bdb', portrait: PORTRAITS.bomber, portraitScope: PORTRAITS.bomber_scope,
     ...CHARACTER_BALANCE.bomber,
-    skillDesc: '공격하지 않는다. 라운드 시작 <b>10초</b> 뒤 적 진영의 무작위 좌표를 폭격한다: 반경 <b>5칸</b> 안의 적에게 최대 체력의 <b>80%</b> 피해. 폭격이 끝나고 <b>6초</b> 뒤 다시 폭격한다. 폭격 3초 전부터 그 자리에 스코프가 떠서 경고한다.'
+    skillDesc: '공격하지 않는다. 라운드 시작 <b>10초</b> 뒤 <b>적이 가장 많이 모인 곳</b> 주변 2칸 안의 무작위 좌표를 폭격한다: 반경 <b>5칸</b> 안의 적에게 최대 체력의 <b>80%</b> 피해. 폭격이 끝나고 <b>6초</b> 뒤 다시 폭격한다. 폭격 3초 전부터 그 자리에 스코프가 떠서 경고한다.'
   },
   paladin: {
     id: 'paladin', name: '팔라딘 지후', emoji: '⚜️', role: 'tank', roleLabel: '탱커',
     rarity: 'legend', color: '#e0b400', portrait: PORTRAITS.paladin,
     ...CHARACTER_BALANCE.paladin,
     customAttack(caster, target) { paladinStrike(caster, target); },
-    skillDesc: 'HP 2,000 + 쉴드 <b>2,500</b>. 앞쪽 <b>이등변삼각형</b>(길이 2칸) 범위의 적을 모두 관통해 벤다. 라운드 시작 <b>2초</b> 뒤 자기 앞에 <b>팔라딘나이트</b> 6기를 필드 끝에서 끝까지 한 줄로 부른다 (HP 1,000 + 쉴드 2,000 · 근접 ATK 240). 패시브: 팔라딘과 나이트는 쉴드가 있는 동안 받는 피해 <b>10%</b> 감소. 출격 제한 1.'
+    skillDesc: 'HP 2,000 + 쉴드 <b>2,500</b>. 앞쪽 <b>이등변삼각형</b>(길이 2칸) 범위의 적을 모두 관통해 벤다. 라운드 시작 <b>2초</b> 뒤 자기 앞에 <b>팔라딘나이트</b> 6기를 필드 끝에서 끝까지 한 줄로 부른다 (HP 500 + 쉴드 1,000 · 근접 ATK 240). 패시브: 팔라딘과 나이트는 쉴드가 있는 동안 받는 피해 <b>10%</b> 감소. 출격 제한 1.'
   },
   knight: {
     id: 'knight', name: '팔라딘나이트 지후', emoji: '🪖', role: 'tank', roleLabel: '탱커',
@@ -4369,7 +4369,7 @@ const CHAR_DB = {
     id: 'ruins', name: '유적 지후', emoji: '🏛️', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#2f8a3a', portrait: PORTRAITS.ruins,
     ...CHARACTER_BALANCE.ruins,
-    skillDesc: '자신의 반경 <b>5칸</b>이 <b>유적지대</b>다. 안의 적은 이동속도 <b>-20%</b> · 공격력 <b>-40%</b>, 아군은 이동속도 <b>+20%</b>. 안에 있는 모든 유닛(적 포함)은 초당 HP <b>100</b>을 회복한다. 적 공격력 감소와 회복량은 라운드 시작부터 2초마다 2씩 줄어 최소 2% / 2가 된다. 사거리 20칸.'
+    skillDesc: '자신의 반경 <b>5칸</b>이 <b>유적지대</b>다. 안의 적은 이동속도 <b>-20%</b> · 공격력 <b>-40%</b>, 아군은 이동속도 <b>+20%</b>. 안에 있는 모든 유닛(적 포함)은 초당 HP <b>100</b>을 회복한다. 적 공격력 감소와 회복량은 라운드 시작부터 2초마다 2씩 줄어 최소 2% / 2가 된다. 사거리 5칸.'
   },
   vampire: {
     id: 'vampire', name: '흡혈 지후', emoji: '🧛', role: 'dealer', roleLabel: '딜러',
@@ -4388,26 +4388,26 @@ const CHAR_DB = {
     id: 'matrix', name: '매트릭스 지후', emoji: '💾', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#1fbf5f', portrait: PORTRAITS.matrix,
     ...CHARACTER_BALANCE.matrix,
-    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 적은 우리 편 <b>홀로그램</b>으로 복제된다 (적 1기당 한 번, 홀로그램 HP는 <b>500</b> 고정). ATK 500 · 5초 · 사거리 5칸.'
+    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번, 홀로그램 HP는 <b>500</b> 고정). ATK 500 · 5초 · 사거리 5칸.'
   },
   supply: {
     id: 'supply', name: '보급병 지후', emoji: '📦', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#4f7a2c', portrait: PORTRAITS.supply, portraitCrate: PORTRAITS.supply_crate,
     ...CHARACTER_BALANCE.supply,
-    skillDesc: '[보급요청] <b>8초마다</b> 아군 진영 무작위 자리에 보급을 떨어뜨린다 (필드에 최대 3개). 떨어질 때 반경 1칸의 적에게 <b>800</b> 피해. 보급에 닿아 먹은 아군은 최대 체력 <b>+30%</b>, 체력 <b>1,500</b> 회복, 공격력 <b>+25%</b> (라운드 끝까지, 중첩).'
+    skillDesc: '[보급요청] <b>5초마다</b> <b>가장 앞에 선 아군</b> 주변 3칸 안에 보급을 떨어뜨린다 (필드에 최대 3개). 떨어질 때 반경 1칸의 적에게 <b>800</b> 피해. 보급에 닿아 먹은 아군은 최대 체력 <b>+30%</b>, 체력 <b>1,500</b> 회복, 공격력 <b>+25%</b> (라운드 끝까지, 중첩).'
   },
   maestro: {
     id: 'maestro', name: '마에스트로 지후', emoji: '🎻', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#b07a1a', portrait: PORTRAITS.maestro, portraitPlay2: PORTRAITS.maestro_play2, portraitBow: PORTRAITS.maestro_bow,
     ...CHARACTER_BALANCE.maestro,
-    skillDesc: '제자리에서 <b>18초</b> 동안 연주한다. 연주가 끝나면 인사를 하고, 모든 아군의 HP를 <b>2,000</b> 회복시키며 걸린 <b>디버프를 모두 제거</b>한다. 인사한 뒤 이번 라운드에서 퇴장한다 (다음 라운드에 다시 나온다).'
+    skillDesc: '제자리에서 <b>12초</b> 동안 연주한다. 연주가 끝나면 인사를 하고, 모든 아군의 HP를 <b>2,500</b> 회복시키며 걸린 <b>디버프를 모두 제거</b>한다. 인사한 뒤 이번 라운드에서 퇴장한다 (다음 라운드에 다시 나온다).'
   },
   bsod: {
     id: 'bsod', name: '블루스크린 지후', emoji: '🖥️', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#0a4fd8', portrait: PORTRAITS.bsod,
     ...CHARACTER_BALANCE.bsod,
     customAttack(caster) { bsodPulse(caster); },
-    skillDesc: 'HP 404 · 자기 주변 반경 1칸에 ATK <b>404</b> (1초). <b>처음으로 자신을 공격한 지후</b>의 공격을 무효화하고 그 지후를 우리 편 블루스크린 지후로 변이시킨다. 변이한 지후는 라운드가 끝나면 사라지고, 원래 진영에서도 영영 사라진다.'
+    skillDesc: 'HP 404 · 자기 주변 반경 1칸에 ATK <b>404</b> (1초). <b>처음으로 자신을 공격한 지후</b>의 공격을 무효화하고 그 지후를 우리 편 블루스크린 지후로 변이시킨다. 변이한 지후는 HP 404(레벨 무관)이고 변이 능력은 없으며, 라운드가 끝나면 사라지고 원래 진영에서도 영영 사라진다.'
   },
   contractor: {
     id: 'contractor', name: '청부업자 지후', emoji: '📜', role: 'controller', roleLabel: '컨트롤러',
@@ -7462,10 +7462,10 @@ const DETAIL_STAT_FIELDS = {
   guardBurstRadius:['쉴드 폭발 범위','칸'], guardBurstDamage:['쉴드 폭발 피해'],
   brokerDelay:['협상 시작','s'], brokerDuration:['협상 시간','s'],
   meterEvery:['DPS 알림 간격','s'],
-  sunReviveAtk:['부활 후 공격력 증가'], sunDropStun:['낙하 기절','s'], hackRetry:['해킹 종료 후 재발동','s'],
+  sunReviveAtk:['부활 후 공격력 증가'], sunDropStun:['낙하 기절','s'],
   moonRadius:['버프 범위','칸'], moonAtk:['공격력 버프','%'], moonAspd:['공격속도 버프','%'], moonGain:['공격당 버프 증가','%'], moonMax:['버프 최대','%'],
-  duetMinGap:['듀엣2 소환 거리','칸'], duetStun:['첫 접촉 기절','s'], duetBurst:['첫 접촉 피해 (최대 체력)','%'],
-  bombFirst:['첫 폭격','s'], bombEvery:['폭격 간격','s'], bombWarn:['스코프 경고','s'], bombRadius:['폭격 범위','칸'], bombFraction:['폭격 피해 (최대 체력)','%'],
+  duetGap:['듀엣2 소환 거리','칸'], duetTouch:['맞닿음 판정 여유','칸'], duetStun:['첫 접촉 기절','s'], duetBurst:['첫 접촉 피해 (최대 체력)','%'],
+  bombFirst:['첫 폭격','s'], bombEvery:['폭격 간격','s'], bombWarn:['스코프 경고','s'], bombRadius:['폭격 범위','칸'], bombSpread:['조준 흩어짐','칸'], bombFraction:['폭격 피해 (최대 체력)','%'],
   triLength:['삼각형 길이','칸'], knightDelay:['기사 소환','s'], knightCount:['기사 수','기'],
   funcEvery:['함수 간격','s'], funcMin:['최소 피해'], funcMax:['최대 피해'], funcStun:['기절','s'],
   zombieCap:['좀비 최대','마리'], skulDelay:['부활 대기','s'], skulChance:['부활 확률','%'],
@@ -7476,7 +7476,7 @@ const DETAIL_STAT_FIELDS = {
   vampFraction:['대상 현재 체력 추가 피해','%'],
   uniEvery:['돌진 간격','s'], uniDistance:['돌진 거리','칸'], uniSpeed:['돌진 속도','칸'], uniDamage:['돌진 피해'], uniGuard:['돌진 후 피해 감소','%'], uniSlowdown:['돌진마다 쿨타임 증가','s'],
   matrixDelay:['정사각형 생성','s'], matrixSize:['정사각형 한 변','칸'], holoHp:['홀로그램 HP'],
-  supplyEvery:['보급 간격','s'], supplyMax:['보급 최대','개'], supplyHpGain:['최대 체력 증가','%'], supplyHeal:['보급 회복'], supplyAtkGain:['공격력 증가','%'], supplyDropDamage:['낙하 피해'],
+  supplyEvery:['보급 간격','s'], supplyNear:['가장 앞 아군 주변','칸'], supplyMax:['보급 최대','개'], supplyHpGain:['최대 체력 증가','%'], supplyHeal:['보급 회복'], supplyAtkGain:['공격력 증가','%'], supplyDropDamage:['낙하 피해'],
   maestroTime:['연주 시간','s'], maestroHeal:['연주 후 회복'],
   bsodRadius:['공격 반경','칸'], contractEvery:['청부 간격','s'], contractType:['타이핑','s'],
   slotEvery:['슬롯 간격','s'], slotLucky:['럭키독 피해 (최대 체력)','%'],
@@ -7758,12 +7758,12 @@ function seededPick(list, count) {
    정확도가 높아도 확률로 고르므로 가끔은 낮은 티어도 들고 온다. */
 // 봇 티어표: 3.7.3 정식 티어리스트 (88기 1:1 7,656판 + 3:3 1,500판 + 5:5 1,563판) + 3.8 바뀐 31종 간이 재측정. 6단계 + '?'(상황 편차가 큰 지후).
 const BOT_TIER_LIST = {
-  '1': ['paladin', 'bsod', 'jaws', 'blackflame'],
-  '2': ['planet', 'dragon', 'tentacle', 'solemn', 'mushroom', 'dimension', 'tyrant', 'blizzard', 'god', 'instinct', 'mafia', 'unicorn', 'demonblade', 'edgy', 'hitman', 'slime', 'cactus', 'ninja', 'necro', 'combo', 'arcane'],
-  '3': ['berserk', 'arcade', 'syringe', 'farmer', 'reaper', 'star', 'lock', 'rock', 'levelup', 'lasso', 'dosa', 'lightning', 'curse', 'lonely', 'rank', 'charge', 'zombie'],
-  '4': ['mutation', 'clock', 'skul', 'gumiho', 'func', 'no_u', 'glutton', 'poison', 'fire', 'impeachment', 'hypno', 'meteor', 'hollow'],
-  '5': ['engineer', 'hmg', 'vampire', 'matrix', 'mutant', 'bat', 'guardian', 'burning', 'metal', 'roulette', 'mini', 'portal', 'duet', 'sniper', 'taeguk', 'shield', 'moon', 'sixseven', 'beam', 'mine', 'dust', 'mega', 'battery', 'ruins', 'bomber', 'ice', 'smoke', 'stop', 'phantom'],
-  '6': ['hacker', 'medic', 'telescope', 'revive', 'awaken', 'supply', 'hong', 'growth', 'maestro', 'biker', 'gambler'],
+  '1': ['paladin', 'jaws', 'blackflame'],
+  '2': ['planet', 'duet', 'dragon', 'tentacle', 'solemn', 'mushroom', 'dimension', 'tyrant', 'blizzard', 'god', 'instinct', 'mafia', 'unicorn', 'demonblade', 'edgy', 'hitman', 'slime', 'cactus', 'ninja', 'necro', 'combo', 'arcane'],
+  '3': ['berserk', 'arcade', 'syringe', 'farmer', 'reaper', 'star', 'supply', 'lock', 'rock', 'levelup', 'lasso', 'dosa', 'lightning', 'curse', 'lonely', 'rank', 'charge', 'zombie'],
+  '4': ['mutation', 'clock', 'skul', 'gumiho', 'bsod', 'bomber', 'func', 'no_u', 'glutton', 'poison', 'fire', 'impeachment', 'hypno', 'meteor', 'hollow'],
+  '5': ['engineer', 'hmg', 'vampire', 'mutant', 'bat', 'guardian', 'burning', 'metal', 'roulette', 'moon', 'mini', 'portal', 'sniper', 'taeguk', 'matrix', 'shield', 'hacker', 'sixseven', 'beam', 'mine', 'dust', 'mega', 'battery', 'ice', 'smoke', 'stop', 'phantom'],
+  '6': ['ruins', 'medic', 'telescope', 'revive', 'awaken', 'hong', 'maestro', 'growth', 'biker', 'gambler'],
   '?': ['sun', 'assassin', 'dj', 'genesis', 'satellite', 'bomb', 'egg', 'contractor', 'slot', 'frog', 'mimic', 'broker']
 };
 // 1:1 상성: ids 순서대로 행(나) × 열(상대), 글자 하나가 승률 0~4 (0 = 0%, 2 = 50%, 4 = 100%). 3.7.3 시뮬 7,656판.
@@ -9128,7 +9128,7 @@ function growLevelUpUnit(u, quiet = false) {
 }
 
 function scaleCombatDef(def) {
-  for (const key of ['range', 'speed', 'fanRadius', 'loneRadius', 'charmRadius', 'evadeRadius', 'tyrantRadius', 'tyrantRageRadius', 'attackRange', 'attackRadius', 'smokeRadius', 'explosionRadius', 'flightDistance', 'landingRadius', 'orbitRadius', 'genesisRadius', 'dustRadius', 'pulseRadiusPx', 'portalRadiusPx', 'bikeRushSpeed', 'bikeExplosionRadius', 'bikeKnockback', 'realmSpeed', 'feastRadius', 'feastSpeed', 'whiteBurstRadius', 'flameDashSpeed', 'henchKnockRadius', 'sunSplashRadius', 'sunDropRadius', 'hollowRealmSpeed', 'hollowRealmSplash', 'starSplash', 'starMeteorScatter', 'cactusSpikeLength', 'guardBurstRadius', 'moonRadius', 'duetMinGap', 'bombRadius', 'triLength', 'triHalf', 'knightAhead', 'funcUnit', 'farmSize', 'diveSpeed', 'surfaceRadius', 'ruinsRadius', 'uniDistance', 'uniSpeed', 'matrixSize', 'crateRadius', 'supplyDropRadius', 'bsodRadius']) {
+  for (const key of ['range', 'speed', 'fanRadius', 'loneRadius', 'charmRadius', 'evadeRadius', 'tyrantRadius', 'tyrantRageRadius', 'attackRange', 'attackRadius', 'smokeRadius', 'explosionRadius', 'flightDistance', 'landingRadius', 'orbitRadius', 'genesisRadius', 'dustRadius', 'pulseRadiusPx', 'portalRadiusPx', 'bikeRushSpeed', 'bikeExplosionRadius', 'bikeKnockback', 'realmSpeed', 'feastRadius', 'feastSpeed', 'whiteBurstRadius', 'flameDashSpeed', 'henchKnockRadius', 'sunSplashRadius', 'sunDropRadius', 'hollowRealmSpeed', 'hollowRealmSplash', 'starSplash', 'starMeteorScatter', 'cactusSpikeLength', 'guardBurstRadius', 'moonRadius', 'duetGap', 'duetTouch', 'bombSpread', 'bombRadius', 'triLength', 'triHalf', 'knightAhead', 'funcUnit', 'farmSize', 'diveSpeed', 'surfaceRadius', 'ruinsRadius', 'uniDistance', 'uniSpeed', 'matrixSize', 'crateRadius', 'supplyNear', 'supplyDropRadius', 'bsodRadius']) {
     if (typeof def[key] === 'number') def[key] *= WORLD_SCALE;
   }
   return def;
@@ -13570,13 +13570,17 @@ function duetPartner(u) {
   return state.units.find(x => x.uid === u.ownerUid && x.alive) || null;
 }
 function spawnDuetPartner(u, opts) {
-  let best = null, bestD = -1;
+  // 아군 진영 안에서 약 4칸 떨어진 자리
+  let best = null, bestErr = Infinity;
   for (let i = 0; i < 40; i++) {
-    const p = zonePoint(u.side);
-    const d = Math.hypot(p.x - u.x, p.y - u.y);
-    if (d > bestD) { best = p; bestD = d; }
-    if (d >= u.def.duetMinGap) break;
+    const a = Math.random() * Math.PI * 2;
+    const p = { x: u.x + Math.cos(a) * u.def.duetGap, y: u.y + Math.sin(a) * u.def.duetGap };
+    const inside = p.x > PHYS.WALL_PAD && p.x < MAP_W - PHYS.WALL_PAD && p.y > PHYS.WALL_PAD && p.y < MAP_H - PHYS.WALL_PAD && inSideZone(u.side, p.x, p.y);
+    const err = inside ? 0 : 1 + Math.random();
+    if (err < bestErr) { best = p; bestErr = err; }
+    if (inside) break;
   }
+  best.x = clamp(best.x, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD); best.y = clamp(best.y, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
   const partner = spawnUnit(u.side, best.x, best.y, 'duet2', { saved: true, quiet: true, asExtra: true, skipCount: true, level: opts.level || 1, ownerUid: u.uid });
   applyDuetState(u, !!u._duetAwake);
   applyDuetState(partner, !!u._duetAwake);
@@ -13597,7 +13601,7 @@ function tickDuet(u) {
   if (u._duetAwake) return;
   const partner = duetPartner(u);
   if (!partner || !sameRealm(u, partner)) return;
-  if (Math.hypot(partner.x - u.x, partner.y - u.y) > bodySeparation(u, partner) + 16) return;
+  if (Math.hypot(partner.x - u.x, partner.y - u.y) > bodySeparation(u, partner) + u.def.duetTouch) return;
   const placement = state.placements.find(p => p.id === u.placementId);
   if (placement) placement.duetAwake = true;
   applyDuetState(u, true);
@@ -13621,9 +13625,16 @@ function tickBomber(u, dt) {
   b.t -= dt;
   if (b.t > 0) return;
   if (b.phase === 'wait') {
-    const enemySide = u.side === 'ally' ? 'enemy' : 'ally';
-    const p = zonePoint(enemySide, PHYS.WALL_PAD + 20);
-    b.x = p.x; b.y = p.y;
+    // 적이 가장 많이 모인 곳(폭격 범위 안에 든 적 수가 가장 많은 적) 주변 2칸 안 무작위
+    const foes = fieldFoes(u);
+    let center = null, most = -1;
+    foes.forEach(e => {
+      const n = foes.filter(o => Math.hypot(o.x - e.x, o.y - e.y) <= u.def.bombRadius).length;
+      if (n > most) { most = n; center = e; }
+    });
+    const p = center || zonePoint(u.side === 'ally' ? 'enemy' : 'ally', PHYS.WALL_PAD + 20);
+    const a = Math.random() * Math.PI * 2, r = Math.random() * u.def.bombSpread;
+    b.x = clamp(p.x + Math.cos(a) * r, 0, MAP_W); b.y = clamp(p.y + Math.sin(a) * r, 0, MAP_H);
     b.scope = fx38('fx-bomb-scope', b.x, b.y, `<img src="${u.def.portraitScope}" alt="">`);
     b.scope.style.width = b.scope.style.height = u.def.bombRadius * 2 + 'px';
     b.phase = 'aim'; b.t = u.def.bombWarn;
@@ -14068,7 +14079,7 @@ function tickMatrix(u, dt) {
 function tickMatrixZones() {
   state.matrixZones.forEach(z => {
     state.units.slice().forEach(e => {
-      if (!e.alive || e.isCastle || e.side === z.side || e._realm || e._flight || e._holo || e.isClone || e.expire != null || z.cloned.has(e.uid)) return;
+      if (!e.alive || e.isCastle || e.side !== z.side || e === z.caster || e._realm || e._flight || e._holo || e.isClone || e.expire != null || z.cloned.has(e.uid)) return;
       const r = unitRadius(e);
       const cx = clamp(e.x, z.x - z.half, z.x + z.half), cy = clamp(e.y, z.y - z.half, z.y + z.half);
       if (Math.hypot(e.x - cx, e.y - cy) > r) return;
@@ -14094,7 +14105,12 @@ function tickSupply(u, dt) {
   if (u._supplyCd > 0) return;
   if (state.crates.filter(c => c.side === u.side).length >= u.def.supplyMax) return;
   u._supplyCd = u.def.supplyEvery;
-  const p = zonePoint(u.side);
+  // 가장 앞(적 진영 쪽)에 선 아군 주변 3칸 안
+  const dir = bikerDirection(u);
+  const front = state.units.filter(a => a.alive && !a.isCastle && a.side === u.side && !a._realm)
+    .sort((a, b) => (b.x * dir.x + b.y * dir.y) - (a.x * dir.x + a.y * dir.y))[0] || u;
+  const ang = Math.random() * Math.PI * 2, dist = Math.random() * u.def.supplyNear;
+  const p = { x: clamp(front.x + Math.cos(ang) * dist, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), y: clamp(front.y + Math.sin(ang) * dist, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD) };
   const el = fx38('fx-crate falling', p.x, p.y, `<img src="${u.def.portraitCrate}" alt="">`);
   el.style.setProperty('--fall', u.def.supplyFall + 's');
   state.crates.push({ caster: u, side: u.side, x: p.x, y: p.y, fall: u.def.supplyFall, el, r: u.def.crateRadius, def: u.def, level: u.level || 1 });
@@ -14206,6 +14222,9 @@ function bsodConvert(u) {
   if (rangeRing && rangeRing.unit === u) hideRangeRing();
   const next = spawnUnit(side, x, y, 'bsod', { saved: true, quiet: true, asExtra: true, skipCount: true, level, ownerUid: src.uid });
   if (!next) return;
+  next._bsodUsed = true; // 변이된 블루스크린은 다시 변이시키지 않는다
+  next.maxHp = next.hp = CHARACTER_BALANCE.bsod.hp; // 레벨과 상관없이 HP 404
+  updateUnitBars(next);
   readyRoundSkills(next);
   fx38Flash('fx-bsod-flash', x, y, unitRadius(next) * 5, 600, ':(');
   spawnDamageNumber(next, ':( 변이', { crit: true });
@@ -14590,6 +14609,7 @@ function spawnGlitchBurst(u) {
   scheduleTask(() => burst.remove(), 450);
 }
 function tickHacker(u, dt) {
+  u._hackCd = (u._hackCd ?? 0) - dt; // 타이핑 중에도 흐른다 (4초 주기)
   if (u._hackTyping) {
     const typing = u._hackTyping;
     typing.t += dt;
@@ -14599,8 +14619,6 @@ function tickHacker(u, dt) {
     u._hackTyping = null;
     scheduleTask(() => typing.el.remove(), 500);
     const victims = state.units.filter(x => x.alive && !x.isCastle && isHostile(u, x) && x.charId === typing.charId);
-    // 3.8: 해킹 효과가 끝나고 2초 뒤 다시 해킹한다 (무산되면 2초 뒤)
-    u._hackCd = victims.length ? u.def.hackDuration + u.def.hackRetry : u.def.hackRetry;
     if (!victims.length) { typing.el.textContent = '> 대상 없음'; return; }
     victims.forEach(x => {
       x._hacked = u.def.hackDuration;
@@ -14611,10 +14629,10 @@ function tickHacker(u, dt) {
     });
     return;
   }
-  u._hackCd = (u._hackCd ?? 0) - dt;
   if (u._hackCd > 0) return;
   const enemies = state.units.filter(x => x.alive && !x.isCastle && isHostile(u, x) && CHAR_DB[x.charId]);
   if (!enemies.length) return;
+  u._hackCd = u.def.hackCooldown; // 3.8.1: 4초마다 1번 (타이핑 시작 기준)
   const pick = enemies[Math.floor(Math.random() * enemies.length)];
   const el = document.createElement('div');
   el.className = 'hack-typing';
@@ -14820,7 +14838,7 @@ function skillCdInfo(u) {
   if (u.charId === 'reaper') return null;
   if (u.charId === 'growth' && u._growth != null) return { cur: Math.max(0, u._growth), max: u.def.growthDelay };
   if (u.charId === 'hypno') return { cur: Math.max(0, u._hypnoCd ?? 0), max: u.def.hypnoInterval };
-  if (u.charId === 'hacker') return { cur: Math.max(0, u._hackCd ?? 0), max: u.def.hackDuration + u.def.hackRetry };
+  if (u.charId === 'hacker') return { cur: Math.max(0, u._hackCd ?? 0), max: u.def.hackCooldown };
   if (u.charId === 'func' && u._func && u._func.phase === 'cd') return { cur: Math.max(0, u._func.t), max: u.def.funcEvery - u.def.funcAnnounce };
   if (u.charId === 'bomber' && u._bomb) return { cur: Math.max(0, u._bomb.t), max: u._bomb.phase === 'aim' ? u.def.bombWarn : u.def.bombEvery - u.def.bombWarn };
   if (u.charId === 'unicorn' && !u._uniDash) return { cur: Math.max(0, u._uniCd ?? 0), max: u.def.uniEvery };
@@ -15272,6 +15290,26 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '3.8.1': {
+    label: 'v3.8.1 신규 지후 밸런스',
+    date: '2026.09.28',
+    sections: [
+      { title: '하향', items: [
+        { emoji:'🪖', name:'팔라딘나이트 지후', tag:'nerf', color:'#b8962e', portraitKey:'knight', desc:'HP <b>1,000 → 500</b> · 쉴드 <b>2,000 → 1,000</b> (6기 유지).' },
+        { emoji:'🖥️', name:'블루스크린 지후', tag:'nerf', color:'#0a4fd8', portraitKey:'bsod', desc:'변이된 블루스크린은 <b>변이 능력이 없고</b>, HP가 레벨과 상관없이 <b>404</b>로 고정됩니다 (연쇄 변이 방지).' },
+        { emoji:'🎤', name:'듀엣 지후', tag:'adjust', color:'#ff6b6b', portraitKey:'duet', desc:'두 듀엣이 더 이상 <b>서로를 찾아가지 않고</b> 평소처럼 움직입니다. 대신 듀엣2가 <b>4칸쯤</b> 떨어진 곳에 나오고, 맞닿음 판정이 <b>1칸</b> 넓어졌습니다.' }
+      ] },
+      { title: '상향', items: [
+        { emoji:'📡', name:'새털라이트 전술폭격 지후', tag:'buff', color:'#3b5bdb', portraitKey:'bomber', desc:'폭격 범위 <b>3.5 → 5칸</b> · 폭격 간격 <b>12 → 6초</b> · 적진 무작위 대신 <b>적이 가장 많이 모인 곳</b> 주변 2칸을 조준합니다.' },
+        { emoji:'🎻', name:'마에스트로 지후', tag:'buff', color:'#b07a1a', portraitKey:'maestro', desc:'연주 <b>18 → 12초</b> · 회복 <b>2,000 → 2,500</b>.' },
+        { emoji:'📦', name:'보급병 지후', tag:'buff', color:'#4f7a2c', portraitKey:'supply', desc:'보급 간격 <b>8 → 5초</b> · 보급이 <b>가장 앞에 선 아군</b> 주변 3칸에 떨어집니다.' },
+        { emoji:'🏛️', name:'유적 지후', tag:'buff', color:'#2f8a3a', portraitKey:'ruins', desc:'사거리 <b>20 → 5칸</b> (전선 가까이 서서 유적지대를 펼칩니다).' },
+        { emoji:'🌙', name:'달 지후', tag:'buff', color:'#5aa9ff', portraitKey:'moon', desc:'버프 범위 <b>4 → 6칸</b>.' },
+        { emoji:'💻', name:'해커 지후', tag:'buff', color:'#19c7c0', portraitKey:'hacker', desc:'해킹 간격: 효과가 끝나고 2초 뒤 → <b>4초마다</b> 1번.' },
+        { emoji:'💾', name:'매트릭스 지후', tag:'adjust', color:'#1fbf5f', portraitKey:'matrix', desc:'정사각형이 적 대신 <b>아군</b>을 복제합니다. 정사각형에 걸친 아군마다 HP 500 홀로그램이 하나씩 생깁니다.' }
+      ] }
+    ]
+  },
   '3.8': {
     label: 'v3.8 신규 지후 19종 · 대규모 밸런스',
     date: '2026.09.28',
@@ -15279,14 +15317,14 @@ const PATCH_NOTES = {
     sections: [
       { title: '신규 지후', items: [
         { emoji:'🌙', name:'달 지후', tag:'new', color:'#5aa9ff', portraitKey:'moon', desc:'전설 · 서포터. 반경 <b>4칸</b> 아군에게 공격력 <b>+8%</b> · 공격속도 <b>+16%</b>. 공격할 때마다 두 버프가 <b>+1%p</b>씩 (최대 100%).' },
-        { emoji:'📡', name:'새털라이트 전술폭격 지후', tag:'new', color:'#3b5bdb', portraitKey:'bomber', desc:'전설 · 컨트롤러. <b>10초</b> 뒤, 이후 <b>6초</b>마다 적 진영 무작위 좌표에 스코프 경고 후 폭격: 반경 <b>5칸</b> · 최대 체력 <b>80%</b> 피해.' },
+        { emoji:'📡', name:'새털라이트 전술폭격 지후', tag:'new', color:'#3b5bdb', portraitKey:'bomber', desc:'전설 · 컨트롤러. <b>10초</b> 뒤, 이후 <b>12초</b>마다 적 진영 무작위 좌표에 스코프 경고 후 폭격: 반경 <b>3.5칸</b> · 최대 체력 <b>80%</b> 피해.' },
         { emoji:'⚜️', name:'팔라딘 지후', tag:'new', color:'#e0b400', portraitKey:'paladin', desc:'전설 · 탱커. HP 2,000 + 쉴드 <b>2,500</b>, 이등변삼각형 범위 관통 베기. 2초 뒤 앞에 <b>팔라딘나이트 6기</b>를 필드 끝에서 끝까지 한 줄로 부릅니다. 쉴드가 있는 동안 받는 피해 <b>10%</b> 감소. 출격 제한 1.' },
         { emoji:'📈', name:'지후함수', tag:'new', color:'#22b14c', portraitKey:'func', desc:'전설 · 딜러. <b>7초마다</b> 자신을 원점으로 무작위 함수(30종 · y=sin x · y=tan x · 하트 방정식…)를 그립니다. 선에 걸친 적은 <b>500~1,500</b> 피해 + <b>1초 기절</b>. 2초 전에 함수를 말하고 1초 전에 빨갛게 예고.' },
         { emoji:'🏛️', name:'유적 지후', tag:'new', color:'#2f8a3a', portraitKey:'ruins', desc:'전설 · 서포터. 반경 <b>5칸 유적지대</b>: 적 이동 <b>-20%</b> · 공격력 <b>-40%</b>, 아군 이동 <b>+20%</b>, 안의 모두 초당 <b>100</b> 회복 (2초마다 2씩 약해짐). 사거리 20칸.' },
         { emoji:'💾', name:'매트릭스 지후', tag:'new', color:'#1fbf5f', portraitKey:'matrix', desc:'전설 · 서포터. 1초 뒤 아군 자리에 <b>4×4칸</b> 정사각형. 닿은 적은 우리 편 <b>홀로그램</b>(HP 500)으로 복제됩니다.' },
         { emoji:'🖥️', name:'블루스크린 지후', tag:'new', color:'#0a4fd8', portraitKey:'bsod', desc:'전설 · 컨트롤러. HP 404 · ATK 404(반경 1칸). <b>처음 자신을 공격한 지후</b>의 공격을 무효화하고 우리 편 블루스크린으로 변이시킵니다 (라운드가 끝나면 양쪽에서 사라짐).' },
         { emoji:'📜', name:'청부업자 지후', tag:'new', color:'#d32f2f', portraitKey:'contractor', desc:'전설 · 컨트롤러. <b>8초마다</b> 양쪽 덱의 지후 이름 두 개를 타이핑. 둘 다 적 덱 이름이고 둘 다 살아 있으면 각각 1기씩 <b>즉사</b>.' },
-        { emoji:'🎤', name:'듀엣 지후', tag:'new', color:'#ff6b6b', portraitKey:'duet', desc:'영웅 · 컨트롤러. 설치하면 아군 진영 먼 곳에 <b>듀엣 지후2</b>가 함께 나옵니다. 둘은 따로 움직이다 처음 맞닿으면 모든 적 <b>1초 기절</b> + 최대 체력 <b>50%</b> 피해, 그 뒤 모든 라운드에서 공격 (ATK 700 / 근접 900). 출격 제한 1.' },
+        { emoji:'🎤', name:'듀엣 지후', tag:'new', color:'#ff6b6b', portraitKey:'duet', desc:'영웅 · 컨트롤러. 설치하면 아군 진영 먼 곳에 <b>듀엣 지후2</b>가 함께 나옵니다. 둘이 처음 맞닿으면 모든 적 <b>1초 기절</b> + 최대 체력 <b>50%</b> 피해, 그 뒤 모든 라운드에서 공격 (ATK 700 / 근접 900). 출격 제한 1.' },
         { emoji:'🧟', name:'좀비 지후', tag:'new', color:'#4f8a3c', portraitKey:'zombie', desc:'영웅 · 탱커. 흡혈 <b>75%</b>. 직접 처치한 유닛을 그 레벨의 <b>아군 좀비</b>로 만들고 최대 유닛 수 <b>+1</b> (최대 15마리).' },
         { emoji:'🌾', name:'농부 지후', tag:'new', color:'#9c6b3c', portraitKey:'farmer', desc:'영웅 · 서포터. <b>8초마다</b> 밭(최대 10). 밭은 5초마다 빵을 아군에게 던져 <b>300</b> 회복. 밭 근처에선 초당 <b>200</b> 회복. 근접 ATK 900, 이동속도 0.3.' },
         { emoji:'🦈', name:'죠스 지후', tag:'new', color:'#2f7fc1', portraitKey:'jaws', desc:'영웅 · 어쌔신. 라운드 시작 때 <b>잠수</b>(피해·대상 지정 불가)해 무작위 적 앞에서 떠오르며 2칸 적 <b>400</b> 피해 · 아군 <b>400</b> 회복. 근접 범위 ATK 600 · 흡혈 30%.' },
