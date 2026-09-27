@@ -2568,9 +2568,7 @@ html.preview-mode .round-result-box { transform:scale(.5); }
       <div class="cl-stats" id="clStats"></div>
     </section>
     <section class="cl-card cl-season" id="clSeason"></section>
-    <section class="cl-card cl-rules" id="clRules"></section>
     <button type="button" class="btn btn-primary cl-start" id="btnCompMatch">매칭 시작 · 3:3 밴픽 · 3판 2선승</button>
-    <button type="button" class="btn btn-ghost cl-start cl-friendly" id="btnCompFriendly">경쟁전(친선) 매칭 · 모든 지후 · 경험치</button>
     <section class="cl-card cl-board"><h3>경쟁전 리더보드</h3><p class="settlement-note" id="clBoardMessage"></p><div class="leaderboard-list" id="clBoardList"></div></section>
   </div>
 
@@ -6022,7 +6020,7 @@ function canPlaceNew(side, charId) { return fieldCount(side, charId) < deployLim
 // 내 풀과 봇의 풀이 같은 함수를 쓴다 (온라인이 되어도 그대로).
 const HIDDEN_POOL_CHANCE = 0.1;
 const HIDDEN_POOL_FROM_ROUND = 2;
-const FIXED_POOL_MODES = ['ranked', 'competitive', 'compfriendly'];
+const FIXED_POOL_MODES = ['ranked', 'competitive'];
 function rollDeployPool(bench, deckIds, size, round, rng = Math.random) {
   const fixed = FIXED_POOL_MODES.includes(state.mode);
   const normal = (fixed ? deckIds : bench).filter(id => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden');
@@ -6555,7 +6553,7 @@ function settleMatch(won, draw, surrendered = false) {
     window.JihooOnline.publish().catch(() => {});
     return state.lastSettlement;
   }
-  const xpOnlyMode = state.mode === 'draftbattle' || state.mode === 'compfriendly';
+  const xpOnlyMode = state.mode === 'draftbattle';
   if (surrendered && state.mode !== 'ranked' && !xpOnlyMode) profile.losses++;
   if (state.mode !== 'ranked' && state.mode !== 'castle' && !xpOnlyMode) {
     state.lastSettlement = { practice: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
@@ -6596,8 +6594,7 @@ function settleMatch(won, draw, surrendered = false) {
     profile.diamonds += levelBonus;
     profile.pendingLevelCelebration = { from: before.level, to: after.level, diamonds: levelBonus };
   }
-  state.lastSettlement = { practice: false, surrendered, xp, diamonds, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, backToComp: state.mode === 'compfriendly' };
-  if (state.mode === 'compfriendly') comp = null;
+  state.lastSettlement = { practice: false, surrendered, xp, diamonds, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket };
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   return state.lastSettlement;
@@ -7733,9 +7730,8 @@ const COMP_RARITIES = ['common', 'rare', 'epic', 'legend'];
 // 경쟁전: 3:3, 선→후→후→선→선→후 로 모든 지후 중 고르기, 배치 선택지 2개, 티어 점수.
 const DRAFT_MODES = {
   draftbattle: { label: '드래프트전', size: 5, style: 'phases', maxUnits: 8, poolSize: 3, ranked: false, ticket: true },
-  // 3.8.2: 경쟁전은 보유 지후 + 이번 판 프로모션 전설 3종만. 친선은 모든 지후, TP 대신 경험치.
-  competitive: { label: '경쟁전', size: 3, style: 'snake', maxUnits: 6, poolSize: 3, ranked: true, tiered: true, ownedOnly: true, promos: 6, globalBans: 5 },
-  compfriendly: { label: '경쟁전(친선)', size: 3, style: 'snake', maxUnits: 6, poolSize: 3, ranked: false, tiered: true, globalBans: 5 }
+  // ownedOnly(보유 지후만) · promos(프로모션 전설) · globalBans(글로벌 밴)는 3.8.2 에서 만들었다가 되돌렸다. 켜면 그대로 동작한다.
+  competitive: { label: '경쟁전', size: 3, style: 'snake', maxUnits: 6, poolSize: 3, ranked: true, tiered: true }
 };
 const SNAKE_ORDER = ['first', 'second', 'second', 'first', 'first', 'second'];
 
@@ -7749,7 +7745,7 @@ function compTierInfo(tp) {
   return { tp: points, index, name: COMP_TIER_NAMES[index], group, floor, next, progress: next ? (points - floor) / (next - floor) : 1 };
 }
 // 경쟁전은 다이아부터 5판 3선승, 그 아래와 드래프트전은 3판 2선승
-function compMatchWins(modeKey, tp = profile.competitive.tp) { return modeKey === 'competitive' && compGroupIndex(tp) >= COMP_GROUPS.indexOf('gold') ? 4 : 2; }
+function compMatchWins(modeKey, tp = profile.competitive.tp) { return modeKey === 'competitive' && compGroupIndex(tp) >= COMP_GROUPS.indexOf('gold') ? 4 : 2; } // 3.8.2: 골드부터 라이프 4
 function matchLabel(wins) { return wins >= 4 ? `라이프 ${wins}` : `${wins * 2 - 1}판 ${wins}선승`; }
 function compTierBadge(tp, extra = '') {
   const info = compTierInfo(tp);
@@ -8141,11 +8137,7 @@ function renderCompLobby() {
   const season = compSeason();
   const claimed = compPromoClaimed();
   $('clSeasonChip').textContent = `시즌 ${season.number}`;
-  $('btnCompMatch').textContent = `경쟁전 매칭 · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
-  $('clRules').innerHTML = `<h3>규칙</h3>
-    <div class="settlement-note"><b>경쟁전</b>: <b>보유한 지후</b>와 판마다 무작위로 정해지는 <b>프로모션 전설 6종</b>만 쓸 수 있습니다 (보유하지 않아도 사용 가능). 브론즈까지는 3판 2선승, <b>골드부터는 라이프 4</b>로 겨룹니다. 티어 점수가 오르내립니다.</div>
-    <div class="settlement-note"><b>경쟁전(친선)</b>: 모든 지후를 쓸 수 있고 3판 2선승입니다. 티어 점수 대신 승리하면 경험치를 받습니다.</div>
-    <div class="settlement-note">두 모드 모두 밴 페이즈 전에 <b>무작위 전설 5종이 글로벌 밴</b>됩니다.</div>`;
+  $('btnCompMatch').textContent = `매칭 시작 · 3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))}`;
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
     ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
@@ -8155,7 +8147,6 @@ function renderCompLobby() {
 }
 $('btnCompLobbyBack').addEventListener('click', () => { showScreen('lobby'); renderAccountUI(); });
 $('btnCompMatch').addEventListener('click', () => beginMatchmaking('competitive'));
-$('btnCompFriendly').addEventListener('click', () => beginMatchmaking('compfriendly'));
 
 // 같은 지후를 짧은 시간 안에 두 번 누르면 true (더블클릭·두 번 탭 공용)
 function compDoubleTap(id) {
@@ -15410,7 +15401,7 @@ function finishMatch(winnerSide, surrendered = false) {
       ${settlement.levelBonus ? `<div class="settlement-row"><span>레벨업 보너스</span><b class="gain">+${formatNumber(settlement.levelBonus)} ◆</b></div>` : ''}
       <div class="settlement-row"><span>프로필</span><b>Lv.${settlement.after.level}${levelUp ? ' LEVEL UP!' : ''}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${settlement.after.required ? settlement.after.current / settlement.after.required * 100 : 100}%"></div></div>
-      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? '드래프트전: 승리 시 EXP +100~150 · 패배 시 변동 없음 · 재화와 전적은 기록되지 않습니다' : state.mode === 'compfriendly' ? '경쟁전(친선): 티어 점수 대신 승리 시 EXP +100~150 · 패배 시 변동 없음' : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50'}</div>`;
+      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? '드래프트전: 승리 시 EXP +100~150 · 패배 시 변동 없음 · 재화와 전적은 기록되지 않습니다' : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50'}</div>`;
   }
   card.insertAdjacentHTML('afterbegin', '<div class="settlement-heading"><span>전투 보상</span><b id="settlementProgressLabel">정산 중 · 0%</b></div><div class="settlement-progress"><span id="settlementProgressFill"></span></div>');
   const steps = Array.from(card.children).filter(el => !el.classList.contains('settlement-heading') && !el.classList.contains('settlement-progress'));
@@ -15427,7 +15418,7 @@ function finishMatch(winnerSide, surrendered = false) {
 }
 
 $('btnRestart').addEventListener('click', () => {
-  const backToComp = !!(state.lastSettlement?.competitive || state.lastSettlement?.backToComp); // 경쟁전·친선이 끝나면 경쟁전 로비로
+  const backToComp = !!state.lastSettlement?.competitive; // 경쟁전이 끝나면 경쟁전 로비로
   leaveBattle();
   if (backToComp) openCompLobby(); else showScreen('lobby');
   renderAccountUI(); showLevelCelebration();
@@ -15478,15 +15469,12 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
   '3.8.2': {
-    label: 'v3.8.2 경쟁전 개편 · 초보자 지원',
+    label: 'v3.8.2 경쟁전 라이프 4 · 경기 통계 · 초보자 지원',
     date: '2026.09.28',
     sections: [
-      { title: '경쟁전', items: [
-        { emoji:'🏆', name:'경쟁전', tag:'system', color:'#c99a17', desc:'<b>보유한 지후</b>만 쓸 수 있습니다. 대신 판마다 무작위 <b>프로모션 전설 6종</b>이 정해지며, 보유하지 않아도 쓸 수 있습니다. 쓸 수 있는 지후가 모자라면 무작위 지후를 지원받습니다.' },
-        { emoji:'❤️', name:'골드부터 라이프 4', tag:'system', color:'#e03131', desc:'골드 티어부터는 일반전처럼 서로 <b>라이프 4</b>로 겨룹니다 (브론즈까지는 3판 2선승, 다이아 5판 3선승 규칙은 없어짐).' },
-        { emoji:'🤝', name:'경쟁전(친선)', tag:'new', color:'#2f9e44', desc:'경쟁전 로비에서 <b>친선전</b>을 따로 할 수 있습니다. 모든 지후를 쓸 수 있고 3판 2선승이며, 티어 점수 대신 이기면 <b>경험치</b>를 받습니다.' },
-        { emoji:'🚫', name:'글로벌 밴', tag:'new', color:'#555555', desc:'경쟁전·친선 모두 밴 페이즈 전에 <b>무작위 전설 5종</b>이 밴됩니다.' },
-        { emoji:'👀', name:'밴 표시', tag:'new', color:'#555555', desc:'드래프트 화면에서 각자 밴한 3종을 닉네임 아래에, 글로벌 밴을 가운데에 작게 표시합니다.' },
+      { title: '편의 · 모드', items: [
+        { emoji:'❤️', name:'경쟁전 골드부터 라이프 4', tag:'system', color:'#e03131', desc:'골드 티어부터는 일반전처럼 서로 <b>라이프 4</b>로 겨룹니다 (브론즈까지는 3판 2선승, 다이아 5판 3선승 규칙은 없어짐).' },
+        { emoji:'👀', name:'밴 표시', tag:'new', color:'#555555', desc:'드래프트 화면에서 각자 밴한 3종을 닉네임 아래에 작게 표시합니다.' },
         { emoji:'📊', name:'경기 통계', tag:'new', color:'#4c6ef5', desc:'경기가 끝난 정산 화면의 <b>📊 통계</b> 버튼으로 라운드별·합계 지후 기여도, 입힌 피해, 받은 피해, 처치 수를 볼 수 있습니다.' },
         { emoji:'🎟️', name:'드래프트전 티켓', tag:'system', color:'#7048e8', desc:'드래프트전(5:5)은 이제 <b>티켓 1장</b>이 필요합니다. 일반전에서 <b>이기면 1장</b>을 받습니다.' }
       ] },
