@@ -8,6 +8,7 @@
 
 - `index.html` — 게임 전체
 - `firestore.rules` — Firestore 보안 규칙. Firebase 콘솔 → Firestore Database → 규칙에 전체를 붙여넣어 게시합니다.
+- `manifest.webmanifest`, `sw.js`, `icons/` — 앱으로 설치(PWA). 메뉴(☰) → 앱으로 설치. 서비스 워커는 항상 네트워크를 먼저 쓰고 연결이 없을 때만 마지막으로 받은 사본을 보여주므로, 새 버전 배포나 버전 확인에 영향을 주지 않습니다.
 
 ## 릴리스
 
