@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.1.10"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2452,6 +2452,13 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 @keyframes v49TutPulseBtn { 50% { transform:scale(1.06); } }
 .v49-tut.wait .v49-tut-next { display:none; }
 @media (max-width:640px) { .v49-tut-face { width:64px; height:64px; } .v49-tut-bubble p { font-size:13px; } .v49-tut-card { gap:8px; } }
+/* 4.2 랭크 효과 목록 */
+.v42r-list { list-style:none; margin:8px 0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.v42r-list li { display:flex; align-items:center; gap:8px; font-size:12px; line-height:1.5; opacity:.5; }
+.v42r-list li.on { opacity:1; }
+.v42r-list li.on::after { content:'✓'; margin-left:auto; font-weight:900; color:#2f9e44; }
+.v42r-list .rank-badge { flex:none; width:24px; height:24px; }
+.v42r-list .rank-badge img { width:100%; height:100%; object-fit:contain; }
 /* 4.1.9 우편함 */
 html[data-theme="light"] .v49-mailbtn { position:relative; margin-right:8px; font-size:16px; }
 html[data-theme="light"] .v49-mailbtn:hover { transform:translateY(-2px); }
@@ -7465,6 +7472,45 @@ function rankBadge(id, ranks, extra = '') {
 function masteryIndex(count) { let i = 0; while (i < MASTERY_STEPS.length && count >= MASTERY_STEPS[i].count) i++; return i; }
 function masteryName(count) { return masteryIndex(count) ? MASTERY_STEPS[masteryIndex(count)-1].name : '없음'; }
 function masteryClass(count) { return ['none','novice','intermediate','expert','artisan','master'][masteryIndex(count)]; }
+// ===== 4.2 랭크 효과 =====
+// A → S: 지후마다 고유 능력이 붙는다. 아직 고유 능력이 없는 지후는 임시로 공격력 +5%.
+// S → SR: 기본 HP·공격력 +10%. SR → SSR: 기본 HP·공격력 +20% 더 (SSR은 합계 +30%).
+// 새 고유 능력은 RANK_S_ABILITIES 에 추가하면 임시 +5%가 자동으로 빠진다.
+//   예) fire: { name: '불꽃 흔적', desc: '…', apply(def) { def.xxx = … } }
+//   apply(def) 는 유닛 전용 복사본을 받는다 (CHAR_DB 원본은 건드리지 않는다).
+const RANK_S_ABILITIES = {};
+const RANK_S_TEMP_ATK = 0.05;
+const RANK_STAT_STEPS = [null, null, { hp: 0.10, atk: 0.10 }, { hp: 0.20, atk: 0.20 }]; // 랭크 번호(0=A … 3=SSR)에 오를 때 얻는 것
+const RANK_EFFECT_MODES = ['ranked', 'competitive', 'draftbattle']; // 투기장 · 미리보기는 랭크 효과 없음
+function rankStatBonus(r) { // r 랭크까지 쌓인 HP·공격력 보너스 (합산)
+  let hp = 0, atk = 0;
+  for (let i = 2; i <= r; i++) { hp += RANK_STAT_STEPS[i].hp; atk += RANK_STAT_STEPS[i].atk; }
+  return { hp, atk };
+}
+function unitRankFor(side, charId) {
+  if (side !== 'ally' || !RANK_EFFECT_MODES.includes(state.mode)) return 0;
+  const c = CHAR_DB[charId];
+  if (!c || c.rarity === 'hidden' || c.unobtainable || !isUnlocked(charId)) return 0; // 히든은 랭크업이 없어 랭크 효과도 없다
+  return Math.min(3, Math.max(0, Math.floor(Number(profile.ranks?.[charId]) || 0)));
+}
+function applyRankToDef(def, charId, rank) {
+  if (rank <= 0) return;
+  const bonus = rankStatBonus(rank);
+  const ability = RANK_S_ABILITIES[charId];
+  const atkMult = 1 + bonus.atk + (ability ? 0 : RANK_S_TEMP_ATK);
+  const hpMult = 1 + bonus.hp;
+  if (typeof def.hp === 'number') def.hp = Math.round(def.hp * hpMult);
+  if (typeof def.atk === 'number') def.atk = Math.round(def.atk * atkMult);
+  if (ability && ability.apply) ability.apply(def);
+}
+function rankEffectLines(id) {
+  const ability = RANK_S_ABILITIES[id];
+  return [
+    ['S', ability ? `<b>${ability.name}</b> · ${ability.desc}` : '고유 능력 준비 중 · 임시로 <b>공격력 +5%</b>'],
+    ['SR', '기본 <b>HP +10%</b> · <b>공격력 +10%</b>'],
+    ['SSR', '기본 <b>HP +20%</b> · <b>공격력 +20%</b> 더 (합계 +30%)']
+  ];
+}
 function rankUpCharacter(id) {
   if (!CHAR_DB[id] || !isUnlocked(id)) return false;
   const step = rankIndex(id);
@@ -10492,7 +10538,7 @@ function showCharDetail(c, unit) {
     const next = MASTERY_STEPS.find(item => count < item.count);
     const area = document.createElement('section');
     area.className = 'rank-detail';
-    area.innerHTML = `<div class="rank-detail-head"><strong>랭크 ${rankBadge(c.id)}</strong><small>랭크 능력은 추후 추가됩니다.</small></div><p>${c.rarity === 'hidden' ? '히든 지후는 SSR 랭크로 시작하며 랭크업할 수 없습니다.' : step < 3 ? `${RANK_NAMES[step]} → ${RANK_NAMES[step+1]} · 조각 ${formatNumber(current)}/${cost} · 골드 ${formatNumber(profile.gold)}/${formatNumber(gold)}` : '최고 랭크에 도달했습니다.'}</p><button type="button" class="btn btn-primary" id="btnRankUp" ${step >= 3 || current < cost || profile.gold < gold ? 'disabled' : ''}>랭크업</button><p>마스터리 ${masteryName(count)} · 누적 배치 ${formatNumber(count)}회${next ? ` · 다음 ${next.count}회 보상 ◆${formatNumber(next.reward)}` : ' · 최고 단계'}</p>`;
+    area.innerHTML = `<div class="rank-detail-head"><strong>랭크 ${rankBadge(c.id)}</strong><small>${c.rarity === 'hidden' ? '히든 지후는 랭크 효과가 없습니다.' : '랭크전 · 경쟁전 · 드래프트전에서 적용'}</small></div>${c.rarity === 'hidden' ? '' : `<ul class="v42r-list">${rankEffectLines(c.id).map(([r, text], i) => `<li class="${step >= i + 1 ? 'on' : ''}"><span class="rank-badge rank-${r.toLowerCase()} has-art"><img src="${RANK_ART[r]}" alt="${r}"></span><span>${text}</span></li>`).join('')}</ul>`}<p>${c.rarity === 'hidden' ? '히든 지후는 SSR 랭크로 시작하며 랭크업할 수 없습니다.' : step < 3 ? `${RANK_NAMES[step]} → ${RANK_NAMES[step+1]} · 조각 ${formatNumber(current)}/${cost} · 골드 ${formatNumber(profile.gold)}/${formatNumber(gold)}` : '최고 랭크에 도달했습니다.'}</p><button type="button" class="btn btn-primary" id="btnRankUp" ${step >= 3 || current < cost || profile.gold < gold ? 'disabled' : ''}>랭크업</button><p>마스터리 ${masteryName(count)} · 누적 배치 ${formatNumber(count)}회${next ? ` · 다음 ${next.count}회 보상 ◆${formatNumber(next.reward)}` : ' · 최고 단계'}</p>`;
     body.querySelector('.cdp-content').appendChild(area);
     area.querySelector('#btnRankUp').addEventListener('click', () => rankUpCharacter(c.id));
   }
@@ -12199,6 +12245,8 @@ function spawnUnit(side, x, y, charId, opts) {
     const f = def.taegukForms[form];
     Object.assign(def, f); def.name = baseDef.name + f.suffix;
   }
+  const unitRank = unitRankFor(side, charId);
+  applyRankToDef(def, charId, unitRank); // 4.2: 내 지후의 랭크 효과 (레벨업 배율은 이 값을 기준으로 곱해진다)
   // 데이터의 px 수치는 이전 45px 격자 기준이다. 유닛별 복사본만 변환해
   // 사거리·이동속도·스킬 범위가 확대된 격자와 같은 칸 수를 유지한다.
   scaleCombatDef(def);
@@ -12238,7 +12286,7 @@ function spawnUnit(side, x, y, charId, opts) {
     baseExplosionDamage: charId === 'bomb' ? def.explosionDamage : null,
     baseBoltDamage: charId === 'lightning' ? def.boltDamage : null,
     shield: def.shield || 0, maxShield: def.shield || 0, baseShield: def.shield || 0,
-    alive: true, level: 1,
+    alive: true, level: 1, rank: unitRank,
     atkCooldown: Math.random() * 0.3,
     comboStack: 0,
     awakenTimer: baseDef.awakenTime || 0, awakened: false, invincible: 0, berserked: false, form, buffs: {}, hmgInterval: def.atkSpeed,
@@ -18908,6 +18956,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
       ['💥 크리티컬', '모든 피해는 2% 확률로 2배가 됩니다.'],
       ['🏷️ 등급과 역할', '일반 · 희귀 · 영웅 · 전설 · 히든. 탱커는 앞에서 버티고, 딜러는 피해를 넣고, 서포터는 아군을 돕고, 컨트롤러는 적을 묶고, 어쌔신은 뒤를 노립니다.'],
       ['🚫 출격 제한', '출격 제한이 있는 지후는 한 진영 전장에 1기만 나올 수 있습니다.'],
+      ['⭐ 랭크', '덱 설정에서 조각과 골드로 A → S → SR → SSR 랭크업. <b>S</b>: 지후 고유 능력 (준비 중인 지후는 공격력 +5%) · <b>SR</b>: 기본 HP·공격력 +10% · <b>SSR</b>: +20% 더 (합계 +30%). 랭크전 · 경쟁전 · 드래프트전에서 내 지후에 적용되고, 히든 지후는 랭크 효과가 없습니다.'],
       ['📊 경기 통계', '경기가 끝나면 정산 화면의 통계 버튼으로 라운드별 기여도와 MVP를 볼 수 있습니다.']
     ].map(([title, text]) => `<div class="help-rule"><b>${title}</b><p>${text}</p></div>`).join('');
     return;
@@ -18987,6 +19036,17 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.2': {
+    label: 'v4.2 랭크 효과',
+    date: '2026.09.28',
+    sections: [
+      { title: '랭크 시스템', items: [
+        { emoji:'⭐', name:'랭크 효과', tag:'new', color:'#f2c94c', desc:'이제 랭크업하면 전투에서 강해집니다. <b>S</b>: 지후마다 <b>고유 능력</b>이 붙습니다 (순차적으로 추가 · 아직 없는 지후는 임시로 <b>공격력 +5%</b>). <b>SR</b>: 기본 <b>HP · 공격력 +10%</b>. <b>SSR</b>: <b>+20%</b> 더 (합계 +30%).' },
+        { emoji:'⚔️', name:'적용 범위', tag:'system', color:'#555555', desc:'랭크전 · 경쟁전 · 드래프트전에서 <b>내 지후</b>에 적용됩니다. 투기장과 미리보기는 제외. 히든 지후는 랭크업이 없어 랭크 효과도 없습니다.' },
+        { emoji:'📖', name:'덱 설정 상세정보', tag:'new', color:'#111111', desc:'지후를 누르면 S · SR · SSR 효과가 보이고, 이미 얻은 효과에는 ✓ 표시가 붙습니다.' }
+      ] }
+    ]
+  },
   '4.1.10': {
     label: 'v4.1.10 긴급 밸런스 패치',
     date: '2026.09.28',
