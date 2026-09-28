@@ -3780,6 +3780,32 @@ html.preview-mode .v41-feed, html.preview-mode .v41-callout { display:none !impo
   html[data-theme="light"] #app #screen-battle .v41-alive { font-size:11px; }
   html[data-theme="light"] #app #screen-battle[data-phase="combat"] .bottom-status-line { display:none; }
 }
+/* 4.1 태블릿: 3.x 카드 높이 제한(160px)이 4.0 카드(정사각 초상화 + 이름)를 눌러 초상화가 잘리던 문제 */
+html[data-theme="light"] #app .char-card { max-height:none; aspect-ratio:auto; }
+html[data-theme="light"] #app .char-card .char-portrait-zone { flex:none; }
+/* ─── 4.1 8×3 칸 배치 (9a) ─── */
+@keyframes v42Glow { 0%,100% { border-color:#8a8a87; background:rgba(255,255,255,.55); } 50% { border-color:#111; background:rgba(255,255,255,.85); } }
+@keyframes v42Slam { 0% { transform:scale(1.6); opacity:0; } 60% { transform:scale(.96); opacity:1; } 100% { transform:none; } }
+@keyframes v42GoOut { 0%,70% { opacity:1; } 100% { opacity:0; } }
+.v42-grid { position:absolute; left:0; top:0; width:0; height:0; pointer-events:none; display:none; }
+#screen-battle[data-phase="deploy"] .v42-grid, #screen-battle[data-phase="deploy-resolve"] .v42-grid { display:block; }
+.v42-tile { position:absolute; transform:translate(-50%,-50%); box-sizing:border-box; border-radius:14px; border:2px solid rgba(17,17,17,.12); background:rgba(255,255,255,.4); transition:border-color .2s, background-color .2s; }
+.v42-grid.enemy .v42-tile { border-style:dashed; border-color:rgba(229,50,45,.18); background:rgba(229,50,45,.03); }
+.v42-grid.ally .v42-tile.filled { border-color:rgba(17,17,17,.28); background:rgba(255,255,255,.7); }
+.v42-grid.ally .v42-tile.avail { border-style:dashed; animation:v42Glow 1.4s ease-in-out infinite; }
+.v42-grid.ally .v42-tile.merge { border:2.5px solid #f2c94c; background:rgba(242,201,76,.18); }
+.v42-grid.ally .v42-tile.sel { border:2.5px solid #111; background:rgba(17,17,17,.1); }
+.v42-grid.ally .v42-tile.swap { border-style:dashed; border-color:#555; }
+.v42-rowlab { position:absolute; transform:translate(-50%,-50%); font:800 13px var(--v4-mono,ui-monospace,monospace); letter-spacing:.14em; color:#8a8a87; white-space:nowrap; }
+.v42-go { position:absolute; inset:0; z-index:40; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:rgba(244,244,242,.72); pointer-events:none; }
+.v42-go.show { display:flex; animation:v42GoOut 1.1s ease-in forwards; }
+.v42-go b { font:900 clamp(48px,11vw,90px) 'Arial Black','Jihoo Hangul',sans-serif; letter-spacing:-.05em; color:#111; animation:v42Slam .5s cubic-bezier(.2,.8,.2,1); }
+.v42-go span { font-size:14px; color:#555; font-weight:700; }
+.v42-presets { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.v42-presets .lab { font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.18em; color:#666; }
+.v42-presets button { padding:6px 10px; border-radius:8px; border:1px solid #d6d6d3; background:#f7f7f5; color:#111; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+.v42-presets button:hover { border-color:#111; }
+html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important; }
 </style>
 </head>
 <body>
@@ -4238,6 +4264,7 @@ html.preview-mode .v41-feed, html.preview-mode .v41-callout { display:none !impo
       </div>
       <div class="v41-feed" id="v41Feed" aria-live="polite"></div>
       <div class="v41-callout" id="v41Callout" aria-hidden="true"></div>
+      <div class="v42-go" id="v42Go" aria-hidden="true"><b>전투 시작!</b><span>배치가 잠겼어요 · 상대 진영 공개</span></div>
     </div>
 
     <div class="battle-bottom">
@@ -6444,6 +6471,7 @@ function applyMapLayout() {
   if (alab) alab.textContent = ew ? '아군 진영' : '아군 진영';
   syncWorldSize();
   fitCamera();
+  if (typeof v42BuildGrid === 'function' && state.units) { v42Resnap(); v42BuildGrid(); }
 }
 function inAllyZone(x, y) {
   return isEastWestLayout() ? x >= MAP_W * 0.5 : y >= MAP_H * 0.5;
@@ -10412,7 +10440,9 @@ function startRound() {
   state.placements.forEach(p => {
     if (state.mode === 'castle' && state.units.some(u => u.alive && u.placementId === p.id)) return;
     if (!p.id) p.id = 'placement-' + Math.random();
-    spawnUnit(p.side, p.x, p.y, p.charId, { saved: true, quiet: true, form: p.form, level: p.level || 1, placementId: p.id });
+    if (p.tile != null && v42Enabled()) Object.assign(p, v42TileCenter(p.side, p.tile));
+    const back = spawnUnit(p.side, p.x, p.y, p.charId, { saved: true, quiet: true, form: p.form, level: p.level || 1, placementId: p.id });
+    if (back && p.tile != null) back.tile = p.tile;
   });
   checkTaegukHarmony('ally');
   checkTaegukHarmony('enemy');
@@ -10486,10 +10516,12 @@ function completeDeployAction(delay = 700) {
   clearPhaseTimer();
   pendingPoolIdx = null;
   state.pendingPick = false;
+  V42.moveSel = null; hideRangeRing();
   document.querySelectorAll('.pool-card').forEach(el => el.classList.add('picked'));
   enemyAutoDeployOne();
   checkTaegukHarmony('ally');
   checkTaegukHarmony('enemy');
+  v42RefreshGrid();
   scheduleTask(nextDeployCycle, delay);
 }
 
@@ -10500,12 +10532,13 @@ function nextDeployCycle() {
   state.phase = 'deploy';
   $('screen-battle').dataset.phase = 'deploy';
   const allyCount = countedAlive('ally');
-  $('bottomStatusLine').innerHTML = `배치 <b>${state.deployRounds}</b>/${deployMax} · 유닛 <b>${allyCount}</b>/${maxUnitsFor('ally')}`;
+  $('bottomStatusLine').innerHTML = `배치 <b>${state.deployRounds}</b>/${deployMax} · 유닛 <b>${allyCount}</b>/${maxUnitsFor('ally')} · 전열은 먼저 맞고, 후열은 보호받아요`;
 
   const source = state.allyBench.length ? state.allyBench : (DRAFT_MODES[state.mode] ? state.myDeckIds : playableIds());
   state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round);
   renderPool();
   openPoolSheet(true);
+  v42RefreshGrid();
   startPhaseTimer(15, autoPlacePool);
 }
 
@@ -10557,17 +10590,33 @@ function renderPool() {
     completeDeployAction();
   });
   actions.appendChild(skipBtn);
+  if (v42Enabled()) {
+    const presets = document.createElement('div');
+    presets.className = 'v42-presets';
+    presets.innerHTML = '<span class="lab">진형</span>';
+    V42_PRESETS.forEach((preset, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = preset.name;
+      b.addEventListener('click', ev => { ev.stopPropagation(); v42ApplyPreset(i); });
+      presets.appendChild(b);
+    });
+    actions.appendChild(presets);
+  }
 }
 
 let pendingPoolIdx = null;
 function selectPoolCard(idx) {
   if (state.phase !== 'deploy') return;
+  V42.moveSel = null; hideRangeRing();
   pendingPoolIdx = idx;
   state.pendingPick = true;
   document.querySelectorAll('.pool-card').forEach((el, i) => {
     el.style.borderColor = i === idx ? 'var(--accent-gold)' : 'var(--border-warm)';
   });
-  $('bottomStatusLine').innerHTML = `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 아군 진영을 터치하세요`;
+  $('bottomStatusLine').innerHTML = v42Enabled()
+    ? `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 빈 칸에 놓거나, 같은 지후 칸(금색)에 겹쳐 레벨업`
+    : `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 아군 진영을 터치하세요`;
+  v42RefreshGrid();
 }
 
 function tryDeployMergeOrPlace(x, y, clickedUnit) {
@@ -10577,7 +10626,10 @@ function tryDeployMergeOrPlace(x, y, clickedUnit) {
   let mergeTarget = null;
   if (clickedUnit && clickedUnit.alive && clickedUnit.side === 'ally' && clickedUnit.charId === charId && !clickedUnit.isClone && !clickedUnit.skipCount)
     mergeTarget = clickedUnit;
-  if (!mergeTarget) {
+  if (!mergeTarget && v42Enabled()) {
+    const owner = v42TileUnit('ally', v42TileAt('ally', x, y));
+    if (owner && owner.charId === charId) mergeTarget = owner;
+  } else if (!mergeTarget) {
     mergeTarget = state.units.find(u =>
       u.side === 'ally' && u.alive && u.charId === charId && !u.isClone &&
       Math.hypot(u.x - x, u.y - y) <= 96 * WORLD_SCALE
@@ -10596,7 +10648,17 @@ function tryDeployMergeOrPlace(x, y, clickedUnit) {
 }
 
 $('battleArena').addEventListener('click', e => {
-  if (!CAM.moved) hideRangeRing(); // 빈 필드를 누르면 사거리 원을 지운다 (드래그는 제외, 유닛 클릭은 전파를 막는다)
+  if (!CAM.moved && !V42.moveSel) hideRangeRing(); // 빈 필드를 누르면 사거리 원을 지운다 (드래그는 제외, 유닛 클릭은 전파를 막는다)
+  if (state.phase === 'deploy' && pendingPoolIdx === null && !CAM.moved && v42Enabled() && !(e.target.closest && e.target.closest('#miniMap, #camZoom'))) {
+    // 카메라 드래그가 포인터를 잡아서 클릭이 유닛이 아니라 전장으로 온다. 누른 자리의 유닛을 직접 찾는다.
+    const unitEl = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList && el.classList.contains('unit'));
+    const tapped = unitEl ? state.units.find(u => u.el === unitEl && u.alive) : null;
+    if (tapped && tapped.side === 'ally' && !tapped.ownerUid) {
+      if (!v42HandleUnitTap(tapped)) { showCharDetail(tapped.def, tapped); showRangeRing(tapped); }
+      return;
+    }
+    if (V42.moveSel) { const pt = worldPointFromEvent(e); v42HandleFieldTap(pt.x, pt.y); return; }
+  }
   if (state.phase !== 'deploy' || pendingPoolIdx === null) { CAM.moved = false; return; }
   if (CAM.moved && !(e.target.closest && e.target.closest('.unit'))) { CAM.moved = false; return; }
   CAM.moved = false;
@@ -10607,6 +10669,14 @@ $('battleArena').addEventListener('click', e => {
   if (clickedUnit) { x = clickedUnit.x; y = clickedUnit.y; }
   if (tryDeployMergeOrPlace(x, y, clickedUnit)) return;
 
+  let v42Tile = null;
+  if (v42Enabled()) {
+    v42Tile = v42TileAt('ally', x, y);
+    if (v42Tile == null) { $('bottomStatusLine').textContent = '아군 진영의 칸 안에만 배치할 수 있습니다!'; return; }
+    const owner = v42TileUnit('ally', v42Tile);
+    if (owner) { $('bottomStatusLine').innerHTML = `이미 <b>${owner.def.name}</b>이(가) 있는 칸입니다. 빈 칸이나 같은 지후 칸을 누르세요`; return; }
+    ({ x, y } = v42TileCenter('ally', v42Tile));
+  }
   if (!clickedUnit && !inAllyZone(x, y)) {
     $('bottomStatusLine').textContent = isEastWestLayout()
       ? '아군 진영(오른쪽)에만 배치할 수 있습니다!'
@@ -10617,7 +10687,7 @@ $('battleArena').addEventListener('click', e => {
   const charId = state.pool[pendingPoolIdx];
   const MERGE_RADIUS = 90 * WORLD_SCALE;
   // 동일 종류 합체: 가까운 같은 charId 아군이 있으면 레벨업
-  const mergeTarget = state.units.find(u =>
+  const mergeTarget = v42Enabled() ? null : state.units.find(u =>
     u.side === 'ally' && u.alive && u.charId === charId &&
     Math.hypot(u.x - x, u.y - y) <= MERGE_RADIUS
   );
@@ -10658,7 +10728,8 @@ $('battleArena').addEventListener('click', e => {
     return;
   }
 
-  spawnUnit('ally', x, y, charId);
+  if (v42Tile != null) v42Spawn('ally', v42Tile, charId);
+  else spawnUnit('ally', x, y, charId);
 
   const benchIdx = state.allyBench.indexOf(charId);
   if (benchIdx >= 0) state.allyBench.splice(benchIdx, 1);
@@ -10677,6 +10748,9 @@ function autoPlacePool() {
     levelUpUnit(same);
     const placement = state.placements.find(p => p.id === same.placementId);
     if (placement) placement.level = same.level;
+  } else if (v42Enabled() && allyCount < maxUnitsFor('ally') && canPlaceNew('ally', charId)) {
+    const tile = v42PickTile('ally', charId, v42RoleRow(charId));
+    if (tile != null) v42Spawn('ally', tile, charId);
   } else if (allyCount < maxUnitsFor('ally') && canPlaceNew('ally', charId)) {
     // find non-overlapping spot
     const band = aiDepthBand('ally', 0.58, 0.90);
@@ -10739,6 +10813,12 @@ function enemyAutoDeployOne() {
     }
     if (countedAlive('enemy') >= maxUnitsFor('enemy') || !canPlaceNew('enemy', charId)) {
       // 자리가 없거나 출격제한에 걸리면 건너뛴다
+      return;
+    }
+    if (v42Enabled()) {
+      // 실력이 있을수록 역할에 맞는 줄(탱커 전열 · 딜러 중열 · 서포터 후열)에 둔다
+      const tile = v42PickTile('enemy', charId, Math.random() < (state.botSkill || 0) ? v42RoleRow(charId) : null);
+      if (tile != null) v42Spawn('enemy', tile, charId);
       return;
     }
     // non-overlapping spot in enemy half
@@ -11060,6 +11140,7 @@ function spawnUnit(side, x, y, charId, opts) {
       // 다른 유닛 클릭 시 스탯 패널 열지 않음
       return;
     }
+    if (v42HandleUnitTap(unit)) return;
     showCharDetail(def, unit);
     showRangeRing(unit);
   });
@@ -11115,6 +11196,320 @@ function clearPhaseTimer() {
 
 // 4.1 인게임 HUD: 킬 피드 · 스킬 콜아웃 · 하단 아군 스킬 도크 (시안 '전투 화면 v2' 8a)
 const V41_RING = { hidden: '#111', legend: '#f2c94c', epic: '#c77dff', rare: '#4d8ef7' };
+
+// 4.1 8×3 칸 배치 (시안 9a): 진영마다 가로 8칸 × 세로 3줄(전열·중열·후열).
+// 칸 번호 = 줄 × 8 + 칸. 배치 기록(placements)에 칸을 저장하고, 라운드마다 그 칸 중심에 그대로 다시 소환한다.
+const V42_COLS = 8, V42_ROWS = 3;
+const V42_DEPTH = [0.60, 0.72, 0.84]; // 아군 기준 깊이 비율 (0.5 = 중앙선). 적은 1 - 값
+const V42_ACROSS = [0.1, 0.9];
+const V42_ROW_LABEL = ['전열', '중열', '후열'];
+const V42 = { moveSel: null };
+function v42Enabled() { return state.mode !== 'arena' && state.mode !== 'preview' && state.mode !== 'castle'; }
+function v42TileCenter(side, tile) {
+  const col = tile % V42_COLS, row = Math.floor(tile / V42_COLS);
+  const across = V42_ACROSS[0] + (col + 0.5) * (V42_ACROSS[1] - V42_ACROSS[0]) / V42_COLS;
+  const depth = side === 'ally' ? V42_DEPTH[row] : 1 - V42_DEPTH[row];
+  return isEastWestLayout() ? { x: MAP_W * depth, y: MAP_H * across } : { x: MAP_W * across, y: MAP_H * depth };
+}
+function v42TileAt(side, x, y) {
+  const ew = isEastWestLayout();
+  let depth = ew ? x / MAP_W : y / MAP_H;
+  const across = ew ? y / MAP_H : x / MAP_W;
+  if (side !== 'ally') depth = 1 - depth;
+  const half = (V42_DEPTH[1] - V42_DEPTH[0]) / 2;
+  const row = V42_DEPTH.findIndex(d => Math.abs(depth - d) <= half);
+  if (row < 0 || across < V42_ACROSS[0] || across >= V42_ACROSS[1]) return null;
+  const col = Math.floor((across - V42_ACROSS[0]) / ((V42_ACROSS[1] - V42_ACROSS[0]) / V42_COLS));
+  return row * V42_COLS + Math.min(V42_COLS - 1, col);
+}
+function v42TileUnit(side, tile) {
+  if (tile == null) return null;
+  return state.units.find(u => u.side === side && u.alive && u.tile === tile && !u.skipCount && !u.isClone) || null;
+}
+function v42TileBlocked(side, tile, charId) {
+  if (v42TileUnit(side, tile)) return true;
+  const c = v42TileCenter(side, tile);
+  const body = { def: CHAR_DB[charId], level: 1 };
+  return state.units.some(u => u.alive && Math.hypot(u.x - c.x, u.y - c.y) < bodySeparation(body, u));
+}
+function v42RoleRow(charId) {
+  const band = botRoleBand(charId), mid = (band[0] + band[1]) / 2;
+  return mid >= 0.3 ? 0 : mid >= 0.2 ? 1 : 2;
+}
+// 가운데 칸부터 바깥으로
+const V42_CENTER_OUT = [3, 4, 2, 5, 1, 6, 0, 7];
+function v42PickTile(side, charId, preferRow = null) {
+  const rows = preferRow == null ? [0, 1, 2].sort(() => Math.random() - 0.5) : [preferRow, ...[0, 1, 2].filter(r => r !== preferRow)];
+  for (const row of rows) {
+    const cols = preferRow == null ? V42_CENTER_OUT.slice().sort(() => Math.random() - 0.5) : V42_CENTER_OUT.map(c => ({ c, k: Math.random() + V42_CENTER_OUT.indexOf(c) * 0.35 })).sort((a, b) => a.k - b.k).map(o => o.c);
+    for (const col of cols) {
+      const tile = row * V42_COLS + col;
+      if (!v42TileBlocked(side, tile, charId)) return tile;
+    }
+  }
+  return null;
+}
+function v42Spawn(side, tile, charId) {
+  const c = v42TileCenter(side, tile);
+  const u = spawnUnit(side, c.x, c.y, charId);
+  if (!u) return null;
+  u.tile = tile;
+  const pl = state.placements.find(p => p.id === u.placementId);
+  if (pl) pl.tile = tile;
+  return u;
+}
+function v42PlaceUnitDom(u, x, y) {
+  u.x = x; u.y = y;
+  u.el.style.left = x + 'px'; u.el.style.top = y + 'px';
+  if (u.ringEl) { u.ringEl.style.left = x + 'px'; u.ringEl.style.top = y + 'px'; }
+  physInitBody(u);
+}
+function v42MoveUnit(u, tile) {
+  const c = v42TileCenter(u.side, tile);
+  const dx = c.x - u.x, dy = c.y - u.y;
+  v42PlaceUnitDom(u, c.x, c.y);
+  u.tile = tile;
+  const pl = state.placements.find(p => p.id === u.placementId);
+  if (pl) { pl.x = c.x; pl.y = c.y; pl.tile = tile; }
+  // 미니 추가 2기·듀엣 짝처럼 본체를 따라다니는 유닛도 같이 옮긴다
+  state.units.filter(x => x.ownerUid === u.uid && x.alive).forEach(x => v42PlaceUnitDom(x,
+    clamp(x.x + dx, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), clamp(x.y + dy, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD)));
+  if (rangeRing && rangeRing.unit === u) positionRangeRing(u.x, u.y);
+}
+function v42BuildGrid() {
+  const world = worldEl();
+  if (!world) return;
+  world.querySelectorAll('.v42-grid').forEach(el => el.remove());
+  if (!v42Enabled()) return;
+  const ew = isEastWestLayout();
+  const acrossDim = ew ? MAP_H : MAP_W, depthDim = ew ? MAP_W : MAP_H;
+  const tw = (V42_ACROSS[1] - V42_ACROSS[0]) * acrossDim / V42_COLS - 8;
+  const th = (V42_DEPTH[1] - V42_DEPTH[0]) * depthDim - 10;
+  ['enemy', 'ally'].forEach(side => {
+    const grid = document.createElement('div');
+    grid.className = 'v42-grid ' + side;
+    for (let tile = 0; tile < V42_COLS * V42_ROWS; tile++) {
+      const c = v42TileCenter(side, tile);
+      const t = document.createElement('div');
+      t.className = 'v42-tile';
+      t.dataset.tile = tile;
+      t.style.left = c.x + 'px'; t.style.top = c.y + 'px';
+      t.style.width = (ew ? th : tw) + 'px'; t.style.height = (ew ? tw : th) + 'px';
+      grid.appendChild(t);
+    }
+    if (side === 'ally') V42_ROW_LABEL.forEach((label, row) => {
+      const c = v42TileCenter(side, row * V42_COLS);
+      const lab = document.createElement('span');
+      lab.className = 'v42-rowlab';
+      lab.textContent = label;
+      if (ew) { lab.style.left = c.x + 'px'; lab.style.top = (c.y - tw / 2 - 26) + 'px'; }
+      else { lab.style.left = (c.x - tw / 2 - 30) + 'px'; lab.style.top = c.y + 'px'; }
+      grid.appendChild(lab);
+    });
+    world.insertBefore(grid, world.firstChild);
+  });
+  v42RefreshGrid();
+}
+function v42RefreshGrid() {
+  const grid = document.querySelector('.v42-grid.ally');
+  if (!grid) return;
+  const pick = state.phase === 'deploy' && pendingPoolIdx != null ? state.pool[pendingPoolIdx] : null;
+  const moving = state.phase === 'deploy' && V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
+  grid.classList.toggle('picking', !!(pick || moving));
+  grid.querySelectorAll('.v42-tile').forEach(t => {
+    const tile = +t.dataset.tile, owner = v42TileUnit('ally', tile);
+    t.classList.toggle('filled', !!owner);
+    t.classList.toggle('avail', !owner && !!(pick || moving));
+    t.classList.toggle('merge', !!pick && !!owner && owner.charId === pick);
+    t.classList.toggle('sel', !!moving && owner === moving);
+    t.classList.toggle('swap', !!moving && !!owner && owner !== moving);
+  });
+}
+// 화면 방향이 바뀌면 칸 좌표도 바뀐다. 배치 단계라면 칸에 있는 지후를 새 칸 중심으로 옮긴다.
+function v42Resnap() {
+  if (!v42Enabled()) return;
+  state.placements.forEach(p => { if (p.tile != null) Object.assign(p, v42TileCenter(p.side, p.tile)); });
+  if (state.phase !== 'deploy' && state.phase !== 'deploy-resolve') return;
+  state.units.forEach(u => { if (u.alive && u.tile != null && !u.ownerUid) v42MoveUnit(u, u.tile); });
+}
+function v42SelectForMove(u) {
+  V42.moveSel = u;
+  if (u) showRangeRing(u); else hideRangeRing();
+  if (u) $('bottomStatusLine').innerHTML = `<b>${u.def.name}</b> 이동 — 빈 칸을 누르면 옮기고, 다른 지후를 누르면 자리를 바꿉니다. 한 번 더 누르면 상세 정보`;
+  v42RefreshGrid();
+}
+// 배치 단계에서 내 지후를 눌렀을 때. 처리했으면 true.
+function v42HandleUnitTap(u) {
+  if (!v42Enabled() || state.phase !== 'deploy' || pendingPoolIdx !== null || u.side !== 'ally' || u.tile == null) return false;
+  const sel = V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
+  if (sel === u) { v42SelectForMove(null); return false; } // 두 번째 탭: 상세 정보
+  if (sel) {
+    const a = sel.tile, b = u.tile;
+    v42MoveUnit(sel, b); v42MoveUnit(u, a);
+    v42SelectForMove(null);
+    $('bottomStatusLine').innerHTML = `<b>${sel.def.name}</b> ↔ <b>${u.def.name}</b> 자리를 바꿨습니다`;
+    return true;
+  }
+  v42SelectForMove(u);
+  return true;
+}
+// 배치 단계에서 빈 곳을 눌렀을 때 (이동 중일 때만). 처리했으면 true.
+function v42HandleFieldTap(x, y) {
+  const sel = V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
+  if (!sel || state.phase !== 'deploy') return false;
+  const tile = v42TileAt('ally', x, y);
+  if (tile == null) { v42SelectForMove(null); return true; }
+  const owner = v42TileUnit('ally', tile);
+  if (owner && owner !== sel) return v42HandleUnitTap(owner);
+  if (!owner) {
+    const c = v42TileCenter('ally', tile);
+    const clash = state.units.some(o => o.alive && o !== sel && o.ownerUid !== sel.uid && Math.hypot(o.x - c.x, o.y - c.y) < bodySeparation(sel, o));
+    if (clash) { $('bottomStatusLine').textContent = '다른 유닛과 겹쳐서 옮길 수 없습니다!'; return true; }
+    v42MoveUnit(sel, tile);
+  }
+  v42SelectForMove(null);
+  $('bottomStatusLine').innerHTML = `<b>${sel.def.name}</b> → ${V42_ROW_LABEL[Math.floor(tile / V42_COLS)]} ${tile % V42_COLS + 1}번 칸`;
+  return true;
+}
+// 진형 프리셋: 이미 놓인 내 지후만 다시 줄 세운다 (배치 횟수를 쓰지 않는다).
+const V42_PRESETS = [
+  { name: '전열 돌격', order: () => [0, 1, 2].flatMap(r => V42_CENTER_OUT.map(c => r * 8 + c)) },
+  { name: '후열 보호', order: u => (v42RoleRow(u.charId) === 0 ? [0, 1, 2] : [2, 1, 0]).flatMap(r => V42_CENTER_OUT.map(c => r * 8 + c)) },
+  { name: '산개', order: () => [0, 7, 11, 12, 16, 23, 3, 4, 9, 14, 18, 21, 1, 6, 2, 5, 8, 15, 10, 13, 17, 22, 19, 20] },
+];
+function v42ApplyPreset(idx) {
+  if (state.phase !== 'deploy' || !v42Enabled()) return;
+  const preset = V42_PRESETS[idx];
+  const mine = state.units.filter(u => u.side === 'ally' && u.alive && u.tile != null && !u.ownerUid && !u.skipCount && !u.isClone);
+  // 탱커·근접을 먼저 앞자리에 둔다
+  mine.sort((a, b) => v42RoleRow(a.charId) - v42RoleRow(b.charId));
+  const taken = new Set();
+  const plan = mine.map(u => { const tile = preset.order(u).find(t => !taken.has(t)); taken.add(tile); return [u, tile]; });
+  plan.forEach(([u, tile]) => { u.tile = -1 - tile; }); // 옮기는 동안 서로 겹침 판정을 피한다
+  plan.forEach(([u, tile]) => v42MoveUnit(u, tile));
+  v42SelectForMove(null);
+  $('bottomStatusLine').innerHTML = `진형 <b>${preset.name}</b> 적용`;
+}
+function v42ShowGo() {
+  const el = $('v42Go');
+  if (!el || state.mode === 'preview') return;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1100);
+}
+
+// 4.1 스킬 콜아웃에 띄우는 스킬 이름
+const V41_SKILL = {
+  solemn: '흑백 나비',
+  blackflame: '흑염룡 돌진',
+  growth: '성장 변이',
+  hypno: '최면',
+  edgy: '비행 착지',
+  egg: '부화',
+  sixseven: '67 주사위',
+  gambler: '도박',
+  mushroom: '버섯 먹기',
+  phantom: '예고장',
+  hacker: '해킹',
+  roulette: '러시안룰렛',
+  dimension: '아공간 이동',
+  syringe: '관통 주사',
+  glutton: '포식',
+  dosa: '아공간 유랑',
+  biker: '폭주 돌진',
+  tentacle: '촉수 내려치기',
+  engineer: '포탑 설치',
+  frog: '관통 혀',
+  prince: '왕자의 검',
+  mafia: '부하 호출',
+  hollow: '공허지역',
+  star: '별똥별',
+  demonblade: '마검 모드',
+  cactus: '가시 폭발',
+  moon: '달빛',
+  duet: '듀엣 합주',
+  bomber: '전술폭격',
+  paladin: '나이트 소환',
+  func: '함수 그래프',
+  zombie: '좀비화',
+  skul: '부활',
+  farmer: '밭 갈기',
+  jaws: '잠수 습격',
+  rock: '암석지대',
+  ruins: '유적지대',
+  vampire: '흡혈',
+  unicorn: '유니콘 돌진',
+  matrix: '매트릭스 복제',
+  supply: '보급요청',
+  maestro: '연주회',
+  bsod: '블루스크린',
+  contractor: '청부',
+  slot: '슬롯머신',
+  developer: '개발자 모드',
+  guardian: '수호',
+  broker: '협상',
+  hitman: '암살 의뢰',
+  sun: '일출',
+  curse: '저주',
+  taeguk: '극의 조화',
+  fire: '화염방사',
+  ice: '빙결탄',
+  lonely: '고독한 일격',
+  shield: '쉴드',
+  assassin: '순간 암살',
+  combo: '콤보',
+  sniper: '저격',
+  medic: '치유',
+  awaken: '각성',
+  berserk: '광폭화',
+  poison: '독 단검',
+  charge: '돌격',
+  stop: '멈춰!',
+  mutant: '변이',
+  revive: '부활',
+  burning: '불꽃 몸',
+  bat: '빠따 스윙',
+  clock: '시간 가속',
+  hmg: '연사',
+  mega: '확성',
+  rank: '계급 룰렛',
+  arcade: '콤보 커맨드',
+  gumiho: '매혹',
+  ninja: '분신술',
+  mini: '미니 3형제',
+  metal: '메탈 바디',
+  necro: '망자 소환',
+  lasso: '올가미',
+  mine: '지뢰 설치',
+  dj: '음파',
+  lightning: '낙뢰',
+  slime: '분열',
+  god: '트루폼 레이저',
+  instinct: '본능 회피',
+  arcane: '비전 도약',
+  satellite: '궤도 쉴드',
+  portal: '포탈',
+  no_u: 'NO U 반사',
+  tyrant: '폭정',
+  telescope: '망원 조준',
+  hong: '홍명보 슛',
+  levelup: '폼 성장',
+  reaper: '사신의 낫',
+  smoke: '연막',
+  battery: '충전',
+  impeachment: '탄핵',
+  bomb: '자폭',
+  dragon: '드래곤 비행',
+  meteor: '메테오',
+  blizzard: '블리자드',
+  beam: '집중 빔',
+  mutation: '돌연변이',
+  mimic: '의태',
+  planet: '위성 공전',
+  lock: '잠금',
+  genesis: '제네시스',
+  dust: '황사',
+};
+function v41SkillName(u) { return V41_SKILL[u.charId] || V41_SKILL[u.def?.id] || '스킬 발동'; }
 const V41 = { cards: [], callQ: [], callBusy: false, lastDock: 0, folded: false, gen: 0 };
 try { V41.folded = localStorage.getItem('jihooBattle.v41DockFolded') === '1'; } catch (error) {}
 function v41Tracked(u) { return !!(u && u.def && !u.isCastle && !u.isClone && !u.skipCount && !u.ownerUid && u.expire == null); }
@@ -11145,7 +11540,7 @@ function v41Kill(victim) {
   setTimeout(() => row.remove(), 6000);
 }
 function v41Callout(u, label) {
-  if (state.mode === 'preview') return;
+  if (state.mode === 'preview' || state.phase !== 'combat' || !u || !u.def || !v41Tracked(u)) return;
   V41.callQ = V41.callQ.filter(c => c.u !== u).concat({ u, label }).slice(-2);
   if (!V41.callBusy) v41NextCallout();
 }
@@ -11223,13 +11618,13 @@ function v41DockUpdate() {
 // 쿨다운이 거의 다 찼다가 크게 다시 늘어나면 방금 스킬을 쓴 것으로 본다.
 function v41SkillWatch(u) {
   if (!u.alive || !v41Tracked(u)) return;
-  if (u.awakened && !u._v41aw) { u._v41aw = true; v41Callout(u, '각성'); }
+  if (u.awakened && !u._v41aw) { u._v41aw = true; v41Callout(u, u.charId === 'awaken' ? '각성' : v41SkillName(u) + ' · 각성'); }
   const info = skillCdInfo(u);
   // 돌진 중처럼 쿨다운이 잠깐 안 보이는 동안은 마지막 값을 그대로 둔다.
   if (!info || !(info.max >= 2)) return;
   const prev = u._v41cd;
   u._v41cd = info.cur;
-  if (prev != null && prev <= info.max * 0.25 && info.cur - prev >= info.max * 0.5) v41Callout(u, '스킬 발동');
+  if (prev != null && prev <= info.max * 0.25 && info.cur - prev >= info.max * 0.5) v41Callout(u, v41SkillName(u));
 }
 function v41HudTick(ts) {
   if (state.mode === 'preview') return;
@@ -11581,6 +11976,7 @@ function resolveTyrantRage(u) {
 function triggerTyrantRage(u) {
   if (u._tyrantRageUsed) return;
   u._tyrantRageUsed = true;
+  v41Callout(u, v41SkillName(u));
   const radius = u.def.tyrantRageRadius || 5 * GRID;
   const blast = document.createElement('div');
   blast.className = 'fx-tyrant-aura';
@@ -12741,6 +13137,8 @@ function beginCombatPhase() {
   });
   activateRoundGrudges();
   v41HudStart();
+  V42.moveSel = null;
+  v42ShowGo();
   state.combatLastTs = performance.now();
   state.combatStartTs = state.combatLastTs;
   state.combatTime = 0;
@@ -13153,6 +13551,7 @@ const battleAPI = {
     gumihoTick(u, target, dist, dt) {
     if (!u._charmUsed && u.hp / u.maxHp <= (u.def.charmHpThreshold || 0.4)) {
       u._charmUsed = true;
+      v41Callout(u, v41SkillName(u));
       const R = u.def.charmRadius || 135;
       spawnBurst(u.el, '#e8a0ff');
       state.units.forEach(e => {
@@ -13874,6 +14273,7 @@ function activateImpeachment(target, opts) {
   if (target._impeachmentHits < target.def.hitThreshold) return;
   target._impeachmentHits = 0;
   target._impeachmentUsed = true;
+  v41Callout(target, v41SkillName(target));
   target._impeachmentRemaining = target.def.impeachmentDuration;
   const impeachShield = Math.round(target.def.impeachmentShield * supportMult(target));
   target.maxShield = Math.max(target.maxShield, impeachShield);
@@ -14897,6 +15297,7 @@ function spawnTurret(u) {
 // 마피아: 라운드에 한 번, 바로 앞에 부하를 부르고 쉴드를 얻는다. 부하가 나타나며 주변 적을 밀쳐낸다.
 function callHenchman(u) {
   u._mafiaCalled = true;
+  v41Callout(u, v41SkillName(u));
   const factor = Math.pow(LEVEL_MULT, (u.level || 1) - 1);
   const foe = getNearestEnemy(u);
   const angle = foe ? Math.atan2(foe.y - u.y, foe.x - u.x) : (u.side === 'ally' ? -Math.PI / 2 : Math.PI / 2);
@@ -15136,6 +15537,7 @@ function guardianSave(u) {
   u._guardShieldMax = u._guardShield;
   u._guardSrc = g;
   u._guardTick = g.def.guardDecayEvery;
+  v41Callout(g, v41SkillName(g));
   spawnBurst(u.el, g.def.color);
   spawnDamageNumber(u, '수호!', { heal: true });
   updateUnitBars(u);
@@ -16952,6 +17354,7 @@ function killUnit(u) {
 }
 
 function triggerBerserk(u) {
+  v41Callout(u, v41SkillName(u));
   u.berserked = true; u.hp = 1; u.invincible = u.def.berserkTime;
   u.def.atk = Math.round(u.def.berserkAtk * Math.pow(LEVEL_MULT, (u.level || 1) - 1)); u.def.speed *= 2; u.def.atkSpeed = u.def.berserkAtkSpeed;
   u.atkCooldown = 0;
@@ -16976,6 +17379,7 @@ function onUnitDeath(u) {
 }
 
 function reviveUnit(u, reviver) {
+  if (reviver) v41Callout(reviver, v41SkillName(reviver));
   u.alive = true; u.hp = Math.max(1, u.maxHp * Math.min(1, reviver.def.reviveHpFraction * supportMult(reviver))); u.shield = u.maxShield;
   physInitBody(u);
   u.statuses = { burn: null, freeze: null, poison: null, grudges: {} };
