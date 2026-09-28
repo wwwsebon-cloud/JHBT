@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.1.8"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.1.9"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2422,6 +2422,87 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 #screen-lobby .lobby-logo-img { width:clamp(220px, 42vw, 440px); }
 #screen-lobby .lobby-logo { display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
 .intro-version { font-size:12px; font-weight:900; letter-spacing:.12em; color:var(--text-dim); }
+/* 4.1.9 튜토리얼 (화염 지후) */
+.v49-tut { position:fixed; inset:0; z-index:1100; pointer-events:none; }
+.v49-tut-curtain, .v49-tut-card { pointer-events:auto; }
+.v49-tut[hidden] { display:none; }
+.v49-tut-curtain { position:absolute; background:rgba(8,8,8,.78); transition:top .35s,left .35s,width .35s,height .35s; transition-timing-function:cubic-bezier(.2,.8,.2,1); }
+.v49-tut-hole { position:absolute; border-radius:16px; box-shadow:0 0 0 3px #ff6b35, 0 0 30px rgba(255,107,53,.6); pointer-events:none; transition:top .35s,left .35s,width .35s,height .35s; animation:v49TutPulse 1.4s ease-in-out infinite; }
+.v49-tut-hole.blocked { pointer-events:auto; }
+.v49-tut.center .v49-tut-hole { display:none; }
+@keyframes v49TutPulse { 50% { box-shadow:0 0 0 6px #ff6b35, 0 0 44px rgba(255,107,53,.85); } }
+.v49-tut-card { position:absolute; left:50%; transform:translateX(-50%); width:min(540px, calc(100vw - 24px)); display:flex; align-items:flex-end; gap:12px; transition:top .35s cubic-bezier(.2,.8,.2,1); animation:popIn .4s cubic-bezier(.2,.8,.2,1); }
+.v49-tut-face { flex:none; width:96px; height:96px; border-radius:50%; background:#fff; border:3px solid #ff6b35; box-shadow:0 12px 30px rgba(0,0,0,.5); overflow:hidden; display:grid; place-items:center; animation:v49TutBob 2.2s ease-in-out infinite; }
+.v49-tut-face img { width:92%; height:92%; object-fit:contain; }
+@keyframes v49TutBob { 50% { transform:translateY(-6px); } }
+.v49-tut-bubble { position:relative; flex:1; min-width:0; background:#fff; color:#171717; border-radius:18px 18px 18px 4px; padding:14px 16px 12px; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+.v49-tut-bubble::before { content:''; position:absolute; left:-9px; bottom:14px; border:9px solid transparent; border-right-color:#fff; border-left:0; }
+.v49-tut-name { display:inline-block; font:800 10px var(--v4-mono); letter-spacing:.2em; color:#ff6b35; margin-bottom:6px; }
+.v49-tut-bubble p { margin:0; font-size:14px; line-height:1.65; min-height:3.3em; word-break:keep-all; }
+.v49-tut-bubble p b { color:#e5322d; }
+.v49-tut-actions { display:flex; align-items:center; gap:8px; margin-top:10px; }
+.v49-tut-dots { display:flex; gap:4px; margin-right:auto; }
+.v49-tut-dots i { width:6px; height:6px; border-radius:50%; background:#ddd; }
+.v49-tut-dots i.on { background:#ff6b35; }
+.v49-tut-skip { border:0; background:none; color:#888; font:700 12px inherit; cursor:pointer; padding:8px; }
+.v49-tut-skip[hidden] { display:none; }
+.v49-tut-next { border:0; border-radius:999px; background:#171717; color:#fff; font:900 13px inherit; padding:9px 18px; cursor:pointer; transition:background .2s; }
+.v49-tut-next:hover { background:#ff6b35; }
+.v49-tut-next.gift { background:linear-gradient(135deg,#ff6b35,#e5322d); animation:v49TutPulseBtn 1s infinite; }
+@keyframes v49TutPulseBtn { 50% { transform:scale(1.06); } }
+.v49-tut.wait .v49-tut-next { display:none; }
+@media (max-width:640px) { .v49-tut-face { width:64px; height:64px; } .v49-tut-bubble p { font-size:13px; } .v49-tut-card { gap:8px; } }
+/* 4.1.9 우편함 */
+html[data-theme="light"] .v49-mailbtn { position:relative; margin-right:8px; font-size:16px; }
+html[data-theme="light"] .v49-mailbtn:hover { transform:translateY(-2px); }
+.v49-maildot { position:absolute; top:-3px; right:-3px; min-width:18px; height:18px; padding:0 4px; box-sizing:border-box; border-radius:9px; background:#e5322d; color:#fff; font:900 10px/18px var(--v4-mono); text-align:center; box-shadow:0 0 0 2px #111; }
+.v49-maildot[hidden] { display:none; }
+.v49-mail-card { width:min(460px,100%); max-height:86vh; display:flex; flex-direction:column; gap:10px; }
+#mailBody { overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:80px; }
+.v49-mail { display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center; padding:12px; border:1px solid #d6d6d3; border-radius:12px; background:#fff; color:#171717; animation:popIn .35s backwards; }
+.v49-mail.done { opacity:.5; }
+.v49-mail .ic { width:40px; height:40px; border-radius:50%; background:#f2f2f0; display:grid; place-items:center; font-size:18px; }
+.v49-mail b { display:block; font-size:14px; }
+.v49-mail p { margin:2px 0 4px; font-size:12px; color:#555; line-height:1.5; }
+.v49-mail small { font:700 11px var(--v4-mono); color:#9a7a12; }
+.v49-mail button { border:0; border-radius:999px; padding:8px 14px; background:#111; color:#fff; font:900 12px inherit; cursor:pointer; }
+.v49-mail button:disabled { background:#ccc; cursor:default; }
+.v49-mail-empty { padding:30px 0; text-align:center; color:#888; font-size:13px; }
+.v4-offer .was { text-decoration:line-through; opacity:.55; margin-right:4px; font-weight:600; }
+/* 4.1.9 리더보드 메뉴 강조 */
+html[data-theme="light"] .v4-drawer .menu-list button.v49-lb { align-items:center; padding:14px 14px; margin-bottom:8px; border:1px solid #f2c94c; border-radius:12px; background:linear-gradient(135deg,rgba(242,201,76,.2),rgba(242,201,76,.04)); }
+html[data-theme="light"] .v4-drawer .menu-list button.v49-lb .n { font-size:24px; line-height:1; filter:drop-shadow(0 0 8px rgba(242,201,76,.7)); }
+html[data-theme="light"] .v4-drawer .menu-list button.v49-lb .t { color:#f2c94c; }
+html[data-theme="light"] .v4-drawer .menu-list button.v49-lb:hover { padding-left:14px; background:rgba(242,201,76,.28); }
+/* 4.1.9 글로벌 채팅 · 폰 화면 (DM 스타일) */
+html[data-theme="light"] .v49-phone-wrap { display:flex; justify-content:center; padding:20px 16px 40px; }
+html[data-theme="light"] .v49-phone { position:relative; width:min(400px,100%); height:min(760px, calc(100vh - 150px)); min-height:520px; display:flex; flex-direction:column; background:#fff; color:#111; border-radius:44px; border:10px solid #111; box-shadow:0 30px 60px -20px rgba(0,0,0,.7), inset 0 0 0 2px #333; overflow:hidden; box-sizing:border-box; animation:popIn .5s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] .v49-phone-notch { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:110px; height:26px; border-radius:20px; background:#111; z-index:2; }
+html[data-theme="light"] .v49-phone-status { display:flex; justify-content:space-between; padding:12px 24px 4px; font:700 12px var(--v4-mono); color:#111; }
+html[data-theme="light"] .v49-phone-status .sig i { font-style:normal; color:#2f9e44; }
+html[data-theme="light"] .v49-dm-head { display:flex; align-items:center; gap:10px; padding:8px 12px 10px; border-bottom:1px solid #efefef; }
+html[data-theme="light"] .v49-dm-head .back { border:0; background:none; font-size:30px; line-height:1; cursor:pointer; color:#111; padding:0 4px; font-family:inherit; }
+html[data-theme="light"] .v49-dm-head .av { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5); display:grid; place-items:center; color:#fff; font:900 12px var(--v4-mono); flex:none; }
+html[data-theme="light"] .v49-dm-head .who { flex:1; min-width:0; display:flex; flex-direction:column; }
+html[data-theme="light"] .v49-dm-head .who b { font-size:14px; }
+html[data-theme="light"] .v49-dm-head .who small { font-size:11px; color:#8e8e8e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html[data-theme="light"] .v49-dm-head .ic { color:#111; font-size:16px; }
+html[data-theme="light"] .v49-dm-list { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:3px; padding:12px 12px 8px; scrollbar-width:thin; background:#fff; }
+html[data-theme="light"] .v49-dm-list .m { display:flex; flex-direction:column; align-items:flex-start; max-width:78%; }
+html[data-theme="light"] .v49-dm-list .m.me { align-self:flex-end; align-items:flex-end; }
+html[data-theme="light"] .v49-dm-list .m b { font-size:10px; font-weight:800; color:#8e8e8e; margin:6px 0 2px 10px; }
+html[data-theme="light"] .v49-dm-list .m.me b { display:none; }
+html[data-theme="light"] .v49-dm-list .m span { font-size:14px; line-height:1.45; padding:8px 13px; border-radius:20px; background:#efefef; color:#111; word-break:break-word; }
+html[data-theme="light"] .v49-dm-list .m.me span { background:linear-gradient(135deg,#7b4dff,#3797f0); color:#fff; }
+html[data-theme="light"] .v49-dm-list .m span.t { font:600 9px var(--v4-mono); color:#b0b0b0; padding:2px 8px 0; background:none; }
+html[data-theme="light"] .v49-dm-list .v47-chat-empty { margin:auto; color:#8e8e8e; font-size:12px; text-align:center; padding:20px; }
+html[data-theme="light"] .v49-dm-form { display:flex; align-items:center; gap:8px; margin:6px 10px 10px; padding:6px 6px 6px 10px; border:1px solid #dbdbdb; border-radius:999px; }
+html[data-theme="light"] .v49-dm-form .cam { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7b4dff,#3797f0); color:#fff; display:grid; place-items:center; font-size:12px; flex:none; }
+html[data-theme="light"] .v49-dm-form input { flex:1; min-width:0; border:0; background:none; font:inherit; font-size:14px; color:#111; outline:none; }
+html[data-theme="light"] .v49-dm-form input:disabled { opacity:.5; }
+html[data-theme="light"] .v49-dm-form button { border:0; background:none; color:#3797f0; font:800 13px inherit; cursor:pointer; padding:6px 8px; }
+html[data-theme="light"] .v49-dm-form button:disabled { opacity:.4; cursor:not-allowed; }
+html[data-theme="light"] .v49-phone-home { width:120px; height:5px; border-radius:5px; background:#111; margin:0 auto 8px; flex:none; }
 .update-overlay { position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(15,15,15,.82); }
 .update-overlay.show { display:flex; }
 .update-card { width:min(420px, 100%); display:flex; flex-direction:column; align-items:center; gap:10px; padding:26px 22px; border-radius:16px; background:#fff; color:#1b1b1b; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.4); }
@@ -4168,6 +4249,18 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
     <div class="v4-intro-ver" id="introVersion"></div>
   </div>
 
+  <div class="v49-tut" id="tutorialOverlay" hidden>
+    <div class="v49-tut-curtain" id="tutCurT"></div><div class="v49-tut-curtain" id="tutCurB"></div><div class="v49-tut-curtain" id="tutCurL"></div><div class="v49-tut-curtain" id="tutCurR"></div>
+    <div class="v49-tut-hole" id="tutHole"></div>
+    <div class="v49-tut-card" id="tutCard">
+      <div class="v49-tut-face" id="tutFace"></div>
+      <div class="v49-tut-bubble">
+        <span class="v49-tut-name">화염 지후</span>
+        <p id="tutText"></p>
+        <div class="v49-tut-actions"><span class="v49-tut-dots" id="tutDots"></span><button type="button" class="v49-tut-skip" id="btnTutSkip">건너뛰기</button><button type="button" class="v49-tut-next" id="btnTutNext">다음 ▸</button></div>
+      </div>
+    </div>
+  </div>
   <div class="update-overlay" id="sessionOverlay" role="alertdialog" aria-modal="true" aria-labelledby="sessionTitle">
     <div class="update-card v4-paper-card">
       <span class="v4-dashin"></span>
@@ -4258,6 +4351,7 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
             <span class="v4-pill"><span>●</span><span id="goldAmount">0</span></span>
             <span class="v4-pill"><span>◆</span><span id="diamondAmount">0</span></span>
           </div>
+          <button type="button" class="v4-menu-btn v49-mailbtn" id="btnOpenMail" aria-label="우편함">✉<span class="v49-maildot" id="mailDot" hidden></span></button>
           <button type="button" class="v4-menu-btn" id="btnOpenMenu" aria-label="메뉴">☰</button>
         </div>
         <div class="v4-hero-copy">
@@ -4294,6 +4388,7 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
       <div class="v4-tilewrap" style="animation-delay:1.04s"><button type="button" class="v4-tile" id="btnOpenInventory" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">07</span><span class="ico v4-ico">BAG</span><span class="reddot"></span><div class="t">인벤토리</div><div class="d">재화 · 모집권 · 티켓 · 조각</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:1.11s"><button type="button" class="v4-tile" id="btnOpenAttendance" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">08</span><span class="ico v4-ico">D+</span><span class="reddot"></span><div class="t">신규 유저 출석부</div><div class="d">첫 게임 완료 후 해금 · 7일 보상</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:1.18s"><button type="button" class="v4-tile" id="btnOpenAchievements" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">09</span><span class="ico v4-ico">★</span><span class="reddot"></span><div class="t">업적</div><div class="d">플레이 기록으로 다이아 획득</div></button></div>
+      <div class="v4-tilewrap" style="animation-delay:1.25s"><button type="button" class="v4-tile" id="btnOpenChat" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">10</span><span class="ico v4-ico">DM</span><span class="reddot"></span><div class="t">글로벌 채팅</div><div class="d">모든 플레이어와 대화 · 폰 화면처럼</div></button></div>
       </div>
       <div class="v4-foot">
         <button type="button" class="v4-patchbtn" id="btnLobbyPatch"><span>패치노트 <span class="v4-version">4.0</span></span><span>↗</span></button>
@@ -4515,6 +4610,32 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
     </div>
   </div>
 
+  <div id="screen-chat" class="screen v4-page">
+    <div class="v4-band"><div class="v4-gridbg"></div><canvas class="v4-particles" data-n="24"></canvas>
+      <div class="v4-band-inner">
+        <div class="v4-bandtop"><button type="button" class="v4-back" id="btnChatBack">← 로비</button><h2>글로벌 채팅</h2></div>
+      </div>
+    </div>
+    <div class="v4-body v49-phone-wrap">
+      <div class="v49-phone">
+        <div class="v49-phone-notch"></div>
+        <div class="v49-phone-status"><span id="chatClock">12:00</span><span class="sig">▂▄▆ <i>●</i> 100%</span></div>
+        <div class="v49-dm-head">
+          <button type="button" class="back" id="btnChatBack2" aria-label="뒤로">‹</button>
+          <span class="av">JH</span>
+          <div class="who"><b>지후배틀 전체 채팅</b><small id="chatStatus">연결 중…</small></div>
+          <span class="ic">☏</span><span class="ic">▣</span>
+        </div>
+        <div class="v49-dm-list" id="chatList"><div class="v47-chat-empty">불러오는 중…</div></div>
+        <form class="v49-dm-form" id="chatForm" autocomplete="off">
+          <span class="cam">◉</span>
+          <input type="text" id="chatInput" maxlength="120" placeholder="메시지 보내기…" aria-label="채팅 입력">
+          <button type="submit" id="chatSend">보내기</button>
+        </form>
+        <div class="v49-phone-home"></div>
+      </div>
+    </div>
+  </div>
   <div id="screen-patch" class="screen v4-patch">
     <div class="v4-patch-side">
       <button type="button" class="v4-back" id="btnPatchBack">← 로비</button>
@@ -4757,20 +4878,16 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
   <div class="modal-card v4-drawer">
     <div class="v4-drawer-head"><span>MENU</span><button type="button" class="modal-close" data-close-modal="menuModal" aria-label="닫기">✕</button></div>
     <div class="menu-list">
-      <button type="button" id="btnMenuSettings" style="animation-delay:.12s"><span class="n">01</span><span class="t">환경설정</span><span class="a">↗</span></button>
-      <button type="button" id="btnMenuCode" style="animation-delay:.17s"><span class="n">02</span><span class="t">코드 입력</span><span class="a">↗</span></button>
-      <button type="button" id="btnOpenPatch" style="animation-delay:.22s"><span class="n">03</span><span class="t">패치노트</span><span class="a">↗</span></button>
-      <button type="button" id="btnMenuHelp" style="animation-delay:.27s"><span class="n">04</span><span class="t">도움말</span><span class="a">↗</span></button>
-      <button type="button" id="btnMenuCredits" style="animation-delay:.32s"><span class="n">05</span><span class="t">크레딧</span><span class="a">↗</span></button>
-      <button type="button" id="btnMenuInstall" style="animation-delay:.37s"><span class="n">06</span><span class="t">앱으로 설치</span><span class="a">↓</span></button>
-      <button type="button" id="btnOpenLeaderboard" style="animation-delay:.42s"><span class="n">07</span><span class="t">리더보드</span><span class="a">↗</span></button>
+      <button type="button" id="btnOpenLeaderboard" class="v49-lb" style="animation-delay:.08s"><span class="n">🏆</span><span class="t">리더보드</span><span class="a">↗</span></button>
+      <button type="button" id="btnMenuChat" style="animation-delay:.14s"><span class="n">01</span><span class="t">글로벌 채팅</span><span class="a">↗</span></button>
+      <button type="button" id="btnMenuSettings" style="animation-delay:.19s"><span class="n">02</span><span class="t">환경설정</span><span class="a">↗</span></button>
+      <button type="button" id="btnMenuCode" style="animation-delay:.24s"><span class="n">03</span><span class="t">코드 입력</span><span class="a">↗</span></button>
+      <button type="button" id="btnOpenPatch" style="animation-delay:.29s"><span class="n">04</span><span class="t">패치노트</span><span class="a">↗</span></button>
+      <button type="button" id="btnMenuHelp" style="animation-delay:.34s"><span class="n">05</span><span class="t">도움말</span><span class="a">↗</span></button>
+      <button type="button" id="btnMenuCredits" style="animation-delay:.39s"><span class="n">06</span><span class="t">크레딧</span><span class="a">↗</span></button>
+      <button type="button" id="btnMenuInstall" style="animation-delay:.44s"><span class="n">07</span><span class="t">앱으로 설치</span><span class="a">↓</span></button>
     </div>
     <div class="v4-roster" id="menuRoster"></div>
-    <div class="v47-chat" id="globalChat">
-      <div class="v47-chat-head"><span>GLOBAL CHAT</span><small id="chatStatus"></small></div>
-      <div class="v47-chat-list" id="chatList"><div class="v47-chat-empty">불러오는 중…</div></div>
-      <form class="v47-chat-form" id="chatForm" autocomplete="off"><input type="text" id="chatInput" maxlength="120" placeholder="메시지 (120자)" aria-label="채팅 입력"><button type="submit" id="chatSend">보내기</button></form>
-    </div>
     <div class="v4-drawer-ver">JHBT · v<span class="v4-version">4.0</span></div>
   </div>
 </div>
@@ -4901,10 +5018,15 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
   <button type="button" class="v43-pay-opt ticket" id="btnBoxPayTicket"><span class="ic">📦</span><span class="tx"><b>지후 상자 오픈권 사용</b><small id="boxPayTicketCount">보유 0장</small></span><span>▶</span></button>
   <button type="button" class="v43-pay-opt" id="btnBoxPayDia"><span class="ic">◆</span><span class="tx"><b>다이아 1,000 사용</b><small id="boxPayDiaCount">보유 ◆ 0</small></span><span>▶</span></button>
 </div></div>
+<div class="app-modal" id="mailModal" role="dialog" aria-modal="true" aria-label="우편함"><div class="modal-card v49-mail-card">
+  <div class="modal-head"><h2 class="title-font">우편함</h2><button type="button" class="modal-close" data-close-modal="mailModal">✕</button></div>
+  <div id="mailBody"></div>
+  <div class="modal-actions"><button type="button" class="btn btn-primary" id="btnMailClaimAll">모두 받기</button></div>
+</div></div>
 <div class="app-modal" id="codeModal" role="dialog" aria-modal="true"><div class="modal-card">
   <div class="modal-head"><h2 class="title-font">코드 입력</h2><button type="button" class="modal-close" data-close-modal="codeModal">✕</button></div>
-  <label class="field-label" for="codeInput">쿠폰 코드</label><input class="text-field" id="codeInput" maxlength="24" autocomplete="off" placeholder="코드를 입력하세요">
-  <div class="settlement-note" id="codeMessage">공개된 코드가 있을 때 이곳에서 입력할 수 있습니다.</div>
+  <label class="field-label" for="codeInput">쿠폰 코드</label><input class="text-field" id="codeInput" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="대문자 · 숫자">
+  <div class="settlement-note" id="codeMessage">코드는 영어 대문자와 숫자로만 되어 있어요. 계정마다 한 번 쓸 수 있습니다.</div>
   <div class="modal-actions"><button type="button" class="btn btn-primary" id="btnSubmitCode">확인</button></div>
 </div></div>
 <div class="app-modal" id="statsModal" role="dialog" aria-modal="true" aria-labelledby="statsModalTitle"><div class="modal-card ms-card">
@@ -7509,6 +7631,9 @@ function freshProfile() {
     rankedForm: [],
     ticketRegenAt: 0,
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
+    tutorial: { done: false, giftPending: false, giftUsed: false },
+    mail: [],
+    mailFlags: [],
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
     achievements: { loginDays: 0, lastLoginDay: '', wins: 0, kills: 0, dailyAll: 0, acquired: { epic: 0, legend: 0, hidden: 0 }, claimed: { login: 0, wins: 0, kills: 0, dailyAll: 0, epic: 0, legend: 0, hidden: 0 } },
     redeemedCodes: [],
@@ -7619,6 +7744,10 @@ function normalizeProfile(raw) {
       lastClaimDay: String(rawNewcomer.lastClaimDay || ''),
       noticePending: !!rawNewcomer.noticePending,
     },
+    // 4.1.9 튜토리얼: 이 필드가 없던 기존 유저(닉네임 있음)는 이미 본 것으로 친다
+    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)) })) : [] })) : [],
+    mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
+    tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     xpBoost: { day: String(rawBoost.day || ''), usesToday: Math.min(2, safeCount(rawBoost.usesToday)), activeUntil: Math.max(0, Number(rawBoost.activeUntil) || 0) },
     achievements: {
       loginDays: safeCount(rawAchievements.loginDays), lastLoginDay: String(rawAchievements.lastLoginDay || ''),
@@ -7803,6 +7932,7 @@ function renderAccountUI() {
     drawMinimap();
   }
   const info = getLevelInfo(profile.totalXp);
+  if (typeof renderMailDot === 'function' && window.__mailReady) renderMailDot();
   if ($('profileQuickName')) $('profileQuickName').textContent = profile.nickname;
   if ($('profileQuickLevel')) $('profileQuickLevel').textContent = `Lv.${info.level}`;
   if ($('profileQuickXp')) $('profileQuickXp').style.width = (info.required ? info.current / info.required * 100 : 100) + '%';
@@ -7867,7 +7997,7 @@ function openModal(id) { const el = $(id); if (el) el.classList.add('show'); }
 function closeModal(id) {
   const el = $(id);
   if (el) el.classList.remove('show');
-  if (id === 'menuModal' && window.__chatReady) closeChat();
+  if ((id === 'recoveryModal' || id === 'profileModal' || id === 'levelUpModal') && typeof maybeStartTutorial === 'function') setTimeout(maybeStartTutorial, 350);
   if (id === 'recoveryModal') {
     $('issuedCode').textContent = '';
     $('issuedWarning').textContent = '';
@@ -8531,9 +8661,10 @@ function rollWithPity(mode) {
 // 영웅 55% → 전설 60% → 히든 20% (픽업은 히든 칸 없음). 결과는 8~11기.
 const GACHA_BOX_BASE = 8;
 const GACHA_BOX_STEPS = { normal: [['epic', 55], ['legend', 60], ['hidden', 25]], pickup: [['epic', 55], ['legend', 60]] };
-function rollGachaBox(mode = gachaView) {
+function rollGachaBox(mode = gachaView, fixedBonus = null) {
   const ids = Array.from({ length: GACHA_BOX_BASE }, () => pickGachaCharacter(Math.random() < 60 / 90 ? 'common' : 'rare', mode));
-  for (const [rarity, chance] of GACHA_BOX_STEPS[mode === 'normal' ? 'normal' : 'pickup']) {
+  if (fixedBonus) fixedBonus.forEach(rarity => ids.push(pickGachaCharacter(rarity, mode)));
+  else for (const [rarity, chance] of GACHA_BOX_STEPS[mode === 'normal' ? 'normal' : 'pickup']) {
     if (Math.random() * 100 >= chance) break;
     ids.push(pickGachaCharacter(rarity, mode));
   }
@@ -8549,6 +8680,9 @@ function renderGachaPity() {
   if ($('gachaPityLab')) $('gachaPityLab').textContent = `${n} / ${GACHA_PITY} · 전설 확정까지 ${GACHA_PITY - n}회`;
 }
 const GACHA_RARITY_ORDER = { common: 0, rare: 1, epic: 2, legend: 3, hidden: 4 };
+// 튜토리얼 선물 오픈권은 계단식 대신 정해진 보너스로 연다 (겉으로는 다른 오픈권과 같다)
+function tutorialGiftBonus() { return profile.tutorial?.giftPending && (profile.inventory.boxTicket || 0) > 0 ? ['epic', 'legend'] : null; }
+function consumeTutorialGift() { if (profile.tutorial?.giftPending) { profile.tutorial.giftPending = false; profile.tutorial.giftUsed = true; } }
 function renderGachaPool() {
   const odds = [['hidden', '0.3%'], ['legend', '3%'], ['epic', '10%'], ['rare', '38.5%'], ['common', '48.2%']];
   const ids = playableIds();
@@ -8631,6 +8765,7 @@ function closeGachaMulti() {
   $('gachaMulti').classList.remove('show', 'flipped');
   $('gachaMulti').setAttribute('aria-hidden', 'true');
   if (state.screen === 'gacha') $('btnGachaEleven').focus();
+  if (typeof tutAfterBox === 'function') tutAfterBox();
 }
 
 function rollShopRarity() { // 3.8.3: 전설은 따로 굴린다 (SHOP_LEGEND_CHANCE)
@@ -8640,8 +8775,11 @@ const SHOP_LEGEND_CHANCE = 0.25;
 const SHOP_REROLL_MAX = 4; // 4.1.4: 무료 1회 + 유료 3회
 // 매물 중 1개는 같은 등급의 랜덤 지후를 원가의 70%에 판다. 어떤 지후인지는 구매할 때 정해진다.
 const SHOP_RANDOM_DISCOUNT = 0.7;
+const SHOP_PRICE = { rare: 2000, epic: 7500, legend: 20000 }; // 4.1.4: 전설 30,000 → 20,000
+// 4.1.9: 가격은 저장된 값 대신 늘 현재 가격표로 계산한다 (가격이 바뀌기 전에 만든 상점도 새 가격)
+function shopOfferPrice(offer) { const base = SHOP_PRICE[offer.rarity] || offer.price || 0; return offer.random ? Math.round(base * SHOP_RANDOM_DISCOUNT) : base; }
 function generatePaidShopOffers(serial = 0) {
-  const priceByRarity = { rare: 2000, epic: 7500, legend: 20000 }; // 4.1.4: 전설 30,000 → 20,000
+  const priceByRarity = SHOP_PRICE;
   const randomIndex = Math.floor(Math.random() * 5);
   const legendIndex = Math.random() < SHOP_LEGEND_CHANCE ? Math.floor(Math.random() * 5) : -1; // 전설은 최대 1개
   return Array.from({ length: 5 }, (_, index) => {
@@ -8688,7 +8826,7 @@ function renderShop() {
     const art = character ? `<img src="${character.portrait}" alt="${character.name}">` : '<div class="mystery" aria-hidden="true">?</div>';
     cards.push(offerCard(`<div class="pic">${offer.random ? '<span class="sale">-30%</span>' : ''}${art}<span class="gloss"></span>${offer.sold ? '<div class="soldmark"><span>구매 완료</span></div>' : ''}</div>
       <div class="row"><i style="background:${rarityColorVar(offer.rarity)}"></i><b>${shopOfferName(offer)}</b><small>${character && !offer.random ? character.roleLabel : RARITY_LABEL[offer.rarity]}</small></div>
-      <button type="button" class="v4-darkbtn shop-buy-btn" data-offer-id="${offer.id}" ${offer.sold ? 'disabled' : ''}>${offer.sold ? '보유 중' : `● ${formatNumber(offer.price)}`}</button>`, index + 1));
+      <button type="button" class="v4-darkbtn shop-buy-btn" data-offer-id="${offer.id}" ${offer.sold ? 'disabled' : ''}>${offer.sold ? '보유 중' : `${offer.random ? `<span class="was">● ${formatNumber(SHOP_PRICE[offer.rarity])}</span>` : ''}● ${formatNumber(shopOfferPrice(offer))}`}</button>`, index + 1));
   });
   $('shopOffers').innerHTML = cards.join('');
   const freeButton = $('btnClaimShopFree');
@@ -8711,6 +8849,7 @@ function buyShopOffer(offerId) {
   ensureDailyState();
   const offer = profile.daily.shop.offers.find(item => item.id === offerId);
   if (!offer || offer.sold) return;
+  offer.price = shopOfferPrice(offer);
   if (profile.gold < offer.price) { setShopMessage('골드가 부족합니다.'); return; }
   if (offer.random && !offer.charId) {
     const candidates = playableIds().filter(id => CHAR_DB[id].rarity === offer.rarity);
@@ -8901,10 +9040,11 @@ function performGacha(box, cost, useTicket = false) {
   const mode = gachaView;
   if (mode === 'history' || mode === 'pool') return;
   if (mode === 'newpickup' && !newPickupInfo()) { renderGachaView('normal'); return; }
-  if (useTicket) profile.inventory.boxTicket--;
+  const giftBonus = useTicket ? tutorialGiftBonus() : null;
+  if (useTicket) { profile.inventory.boxTicket--; if (giftBonus) consumeTutorialGift(); }
   else profile.diamonds -= cost;
   const results = [];
-  for (const id of box ? rollGachaBox(mode) : [rollWithPity(mode)]) {
+  for (const id of box ? rollGachaBox(mode, giftBonus) : [rollWithPity(mode)]) {
     const duplicate = grantCharacter(id);
     results.push({ id, duplicate });
     profile.gachaHistory.push({ id, mode, duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at:Date.now() });
@@ -9049,7 +9189,7 @@ window.addEventListener('beforeunload', event => {
 
 /* 3.2 account rewards. All claims mutate the same profile as the online backup. */
 const NEWCOMER_REWARDS = [
-  { label:'골드 10,000 + 지후 상자 오픈권', kind:'gold', amount:10000, extra: [{ kind:'boxTicket', amount:1 }] },
+  { label:'골드 10,000', kind:'gold', amount:10000 }, // 4.1.9: 오픈권은 튜토리얼 보상으로 옮겼다
   { label:'랜덤 영웅 모집권', kind:'epicTicket', amount:1 },
   { label:'다이아 500', kind:'diamonds', amount:500 },
   { label:'골드 5,000', kind:'gold', amount:5000 },
@@ -9157,8 +9297,10 @@ function useInventoryAction(action) {
     message = '경험치 부스트가 10분간 활성화되었습니다. 경험치 ×2, 승리 시 다이아 100~200.';
   } else if (action === 'boxTicket') {
     if (!profile.inventory.boxTicket || gachaRevealResults.length) return;
+    const giftBonus = tutorialGiftBonus();
     profile.inventory.boxTicket--;
-    const box = rollGachaBox('normal').map(id => {
+    if (giftBonus) consumeTutorialGift();
+    const box = rollGachaBox('normal', giftBonus).map(id => {
       const duplicate = grantCharacter(id);
       profile.gachaHistory.push({ id, mode: 'normal', duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at: Date.now() });
       return { id, duplicate };
@@ -9644,6 +9786,7 @@ $('btnGachaOne').addEventListener('click', () => performGacha(false, 100));
 $('btnGachaEleven').addEventListener('click', () => {
   if (gachaRevealResults.length) return;
   const tickets = profile.inventory.boxTicket || 0;
+  if (tickets && tutorialGiftBonus()) { tutOnBoxOpened(); performGacha(true, 0, true); renderGachaBoxButton(); return; } // 튜토리얼 선물은 바로 연다
   if (!tickets) { performGacha(true, 1000); return; }
   $('boxPayTicketCount').textContent = `보유 ${tickets}장 · 다이아를 쓰지 않아요`;
   $('boxPayDiaCount').textContent = `보유 ◆ ${formatNumber(profile.diamonds)}${profile.diamonds < 1000 ? ' · 부족' : ''}`;
@@ -10792,9 +10935,10 @@ function formatRemaining(ms) {
   return hours >= 24 ? `${Math.floor(hours / 24)}일 ${hours % 24}시간` : `${hours}시간 ${Math.floor(Math.max(0, ms) % 3600000 / 60000)}분`;
 }
 
-// 승급 보상: 시즌마다 새 티어 묶음에 처음 오르면 한 번. 실버 500, 그 뒤로 100씩 더.
+// 승급 보상: 시즌마다 새 티어 묶음에 처음 오르면 한 번. 4.1.9부터 2배: 실버 1,000, 그 뒤로 200씩 더.
 const COMP_GROUP_LABELS = ['아이언', '브론즈', '실버', '골드', '플래티넘', '다이아', '에이스', '마스터', '그랜드마스터', '챌린저'];
-function compPromoReward(group) { return group >= 2 ? 500 + (group - 2) * 100 : 0; }
+function compPromoRewardOld(group) { return group >= 2 ? 500 + (group - 2) * 100 : 0; }
+function compPromoReward(group) { return compPromoRewardOld(group) * 2; }
 function compGroupIndex(tp) { return COMP_GROUPS.indexOf(compTierInfo(tp).group); }
 // 시즌이 바뀌면 티어가 세 묶음 내려간다 (다이아 → 실버, 에이스 → 골드 …).
 // III · II · I 숫자와 그 안의 진행도는 그대로. 골드 이하는 아이언부터, 챌린저는 에이스 I 로.
@@ -10866,7 +11010,7 @@ function renderCompLobby() {
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
     ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
-    <div class="settlement-note">시즌이 끝나면 시즌 ${season.number + 1}이 바로 시작되고, 티어가 세 단계 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로). 시즌마다 새 티어에 처음 오르면 승급 보상으로 다이아를 받습니다.</div>
+    <div class="settlement-note">시즌이 끝나면 시즌 ${season.number + 1}이 바로 시작되고, 티어가 세 단계 내려간 채로 시작합니다 (다이아 → 실버, 에이스 → 골드 …, III · II · I 는 그대로). 시즌마다 새 티어에 처음 오르면 승급 보상으로 다이아를 받습니다 (실버 1,000 · 이후 한 단계마다 +200).</div>
     <div class="cl-promo">${COMP_GROUP_LABELS.map((label, group) => compPromoReward(group)
       ? `<span class="${group <= claimed ? 'done' : ''}">${label} ◆${formatNumber(compPromoReward(group))}</span>` : '').join('')}</div>`;
 }
@@ -18748,9 +18892,14 @@ const HELP_TIER_INFO = {
   '5': ['비추', '#3b82c4'], '6': ['쓰레기', '#6b7280'], '?': ['변수', '#8b5cf6']
 };
 function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
-  const tabs = [['tier', '📊 티어리스트'], ['rules', '📖 기본 규칙']];
+  const tabs = [['tier', '📊 티어리스트'], ['rules', '📖 기본 규칙'], ['tutorial', '🔥 튜토리얼']];
   $('helpTabs').innerHTML = tabs.map(([key, label]) => `<button type="button" class="${key === tab ? 'on' : ''}" data-help="${key}">${label}</button>`).join('');
   $('helpTabs').querySelectorAll('[data-help]').forEach(b => b.addEventListener('click', () => renderHelp(b.dataset.help)));
+  if (tab === 'tutorial') {
+    $('helpBody').innerHTML = `<div class="help-rule" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fff;border:3px solid #ff6b35;display:grid;place-items:center;flex:none">${portraitHtml(CHAR_DB.fire)}</span><div style="flex:1;min-width:200px"><b>화염 지후의 안내</b><p>게임 시작 · 덱 설정 · 뽑기 · 퀘스트 · 상점 · 출석부 · 채팅 · 메뉴를 화염 지후가 1분 안에 알려줍니다. 처음 완료할 때만 지후 상자 오픈권을 선물해요.</p><button type="button" class="btn btn-primary" id="btnHelpTutorial" style="margin-top:8px">튜토리얼 다시 보기</button></div></div>`;
+    $('btnHelpTutorial').addEventListener('click', () => { closeModal('helpModal'); closeModal('menuModal'); showScreen('lobby'); renderAccountUI(); startTutorial(profile.tutorial?.done !== false); });
+    return;
+  }
   if (tab === 'rules') {
     $('helpBody').innerHTML = [
       ['⚔️ 일반전', '덱의 지후 5종으로 싸웁니다. 라운드마다 배치 풀에서 지후를 골라 배치합니다 (1~3라운드 2번, 4라운드부터 3번). 양쪽 라이프가 모두 1이 되면 <b>데스매치</b>로 배치 6번. 같은 지후를 겹치면 레벨이 오릅니다 (HP·ATK +10%). 라이프 3을 먼저 깎으면 이깁니다. 이기면 🎟️ 티켓 1장.'],
@@ -18837,6 +18986,28 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.1.9': {
+    label: 'v4.1.9 튜토리얼 · 채팅 탭 · 우편함 · 승급 보상 2배',
+    date: '2026.09.28',
+    sections: [
+      { title: '신규', items: [
+        { emoji:'🔥', name:'튜토리얼', tag:'new', color:'#ff6b35', portraitKey:'fire', desc:'처음 시작하면 <b>화염 지후</b>가 게임 시작 · 덱 설정 · 뽑기 · 퀘스트 · 상점 · 출석부 · 채팅 · 메뉴를 1분 안에 안내합니다. 끝까지 들으면 <b>지후 상자 오픈권</b>을 선물하고 바로 상자를 열어 볼 수 있어요. 메뉴 → <b>도움말 → 튜토리얼</b>에서 언제든 다시 볼 수 있습니다.' },
+        { emoji:'💬', name:'글로벌 채팅 탭', tag:'new', color:'#3797f0', desc:'메뉴 안에 끼어 있어 잘 안 보이던 채팅이 로비 <b>10번 타일</b>과 메뉴의 <b>글로벌 채팅</b>으로 옮겨졌습니다. 폰을 들고 DM을 보는 느낌의 화면으로 새로 그렸어요.' },
+        { emoji:'🏆', name:'리더보드 메뉴', tag:'adjust', color:'#f2c94c', desc:'☰ 메뉴 <b>맨 위</b>로 올라오고 트로피와 금색 테두리가 붙어 바로 눈에 띕니다.' }
+      ] },
+      { title: '우편함 · 코드', items: [
+        { emoji:'✉', name:'우편함', tag:'new', color:'#111111', desc:'로비 오른쪽 위 <b>✉</b> 버튼. 운영 보상과 보상 보정이 우편으로 옵니다. 받을 우편이 있으면 빨간 숫자가 떠요. <b>모두 받기</b>로 한 번에 받을 수 있습니다.' },
+        { emoji:'🎟', name:'쿠폰 코드', tag:'new', color:'#7048e8', desc:'메뉴 → 코드 입력. 코드는 <b>영어 대문자와 숫자</b>로만 되어 있고, 계정마다 한 번씩 쓸 수 있어요.' }
+      ] },
+      { title: '조정', items: [
+        { emoji:'🏆', name:'경쟁전 승급 보상 2배', tag:'buff', color:'#f2c94c', desc:'실버 <b>500 → 1,000</b> · 골드 1,200 · 플래티넘 1,400 · 다이아 1,600 · 에이스 1,800 · 마스터 2,000 · 그랜드마스터 2,200 · 챌린저 <b>1,200 → 2,400</b>. 이미 받은 승급 보상의 차액은 <b>우편함</b>으로 보내드렸어요.' },
+        { emoji:'📅', name:'신규 유저 출석부 1일차', tag:'adjust', color:'#ba8732', desc:'보상이 <b>골드 10,000</b>으로 바뀝니다. 지후 상자 오픈권은 튜토리얼 선물로 옮겼어요.' }
+      ] },
+      { title: '버그 수정', items: [
+        { emoji:'🛒', name:'상점 랜덤칸 가격', tag:'fix', color:'#e5322d', desc:'전설 가격이 내려간 뒤에도 그 전에 만들어진 상점의 <b>랜덤 전설</b> 칸이 옛 가격(21,000)으로 남아 있던 문제. 이제 늘 현재 가격의 70%(전설 <b>14,000</b>)이고, 원래 가격에 줄을 그어 보여줍니다.' }
+      ] }
+    ]
+  },
   '4.1.8': {
     label: 'v4.1.8 지후 상세 승률 · 코멘트',
     date: '2026.09.28',
@@ -20399,6 +20570,213 @@ $('creditsRoll')?.addEventListener('scroll', () => {
   if ($('creditsProgress')) $('creditsProgress').style.transform = `scaleX(${max > 0 ? (roll.scrollTop / max).toFixed(4) : 0})`;
 }, { passive: true });
 
+// ================= 4.1.9 우편함 · 코드 =================
+window.__mailReady = true;
+const MAIL_REWARD_KINDS = { diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'] };
+function mailRewardText(rewards) { return rewards.map(r => `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
+function sendMail(mail) {
+  profile.mail = (profile.mail || []).concat({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, icon: '✉', body: '', rewards: [], ...mail }).slice(-60);
+}
+function unreadMailCount() { return (profile.mail || []).filter(m => !m.claimed).length; }
+function renderMailDot() {
+  const dot = $('mailDot'); if (!dot) return;
+  const n = unreadMailCount();
+  dot.hidden = !n; dot.textContent = n > 9 ? '9+' : String(n);
+}
+function claimMail(mail) {
+  if (!mail || mail.claimed) return false;
+  mail.claimed = true;
+  mail.rewards.forEach(r => {
+    if (r.kind === 'diamonds') profile.diamonds += r.amount;
+    else if (r.kind === 'gold') profile.gold += r.amount;
+    else profile.inventory[r.kind] = (profile.inventory[r.kind] || 0) + r.amount;
+  });
+  return true;
+}
+function renderMail(message = '') {
+  const list = (profile.mail || []).slice().sort((a, b) => (a.claimed - b.claimed) || (b.at - a.at));
+  $('mailBody').innerHTML = (message ? `<div class="settlement-note">${message}</div>` : '') + (list.length ? list.map((m, i) => `<div class="v49-mail${m.claimed ? ' done' : ''}" style="animation-delay:${(i * 0.04).toFixed(2)}s"><span class="ic">${m.icon}</span><div><b></b><p></p>${m.rewards.length ? `<small>${mailRewardText(m.rewards)}</small>` : ''}</div><button type="button" data-mail="${m.id}" ${m.claimed ? 'disabled' : ''}>${m.claimed ? '받음' : m.rewards.length ? '받기' : '확인'}</button></div>`).join('') : '<div class="v49-mail-empty">우편이 없어요.</div>');
+  $('mailBody').querySelectorAll('.v49-mail').forEach((el, i) => { el.querySelector('b').textContent = list[i].title; el.querySelector('p').textContent = list[i].body; });
+  $('mailBody').querySelectorAll('[data-mail]').forEach(b => b.addEventListener('click', () => {
+    const mail = profile.mail.find(m => m.id === b.dataset.mail);
+    if (!claimMail(mail)) return;
+    saveProfile(); renderAccountUI(); v4BumpDiamond();
+    renderMail(mail.rewards.length ? `${mailRewardText(mail.rewards)} 받았습니다.` : '');
+  }));
+  $('btnMailClaimAll').disabled = !unreadMailCount();
+  renderMailDot();
+}
+// 한 번만 보내는 우편 (계정마다 mailFlags에 기록)
+function runMailMigrations() {
+  if (!profile.nickname) return;
+  profile.mailFlags = profile.mailFlags || [];
+  let changed = false;
+  if (!profile.mailFlags.includes('promo2x')) {
+    // 4.1.9 승급 보상 2배: 이미 받은 승급 보상은 차액(= 예전 금액)을, 기록이 없어 못 받은 승급 보상은 새 금액 전부를 보낸다
+    profile.mailFlags.push('promo2x'); changed = true;
+    const rec = profile.competitive;
+    const unpaid = rec.promo < 0;
+    const top = unpaid ? compGroupIndex(rec.peak) : rec.promo;
+    let amount = 0; const names = [];
+    for (let g = 2; g <= top; g++) { amount += unpaid ? compPromoReward(g) : compPromoRewardOld(g); names.push(COMP_GROUP_LABELS[g]); }
+    if (unpaid) rec.promo = top;
+    if (amount > 0) sendMail({ icon: '🏆', title: '경쟁전 승급 보상 추가 지급', body: `승급 보상이 2배가 되었습니다. ${unpaid ? '받지 못했던' : '이미 받은'} ${names.join(' · ')} 승급 보상${unpaid ? '을 새 금액으로' : '의 차액을'} 보내드려요.`, rewards: [{ kind: 'diamonds', amount }] });
+  }
+  if (changed) saveProfile();
+  renderMailDot();
+}
+const REDEEM_CODES = {
+  JIHULOVER777: { label: '다이아 777', apply: () => { profile.diamonds += 777; return { message: '◆ 다이아 777개를 받았습니다!' }; } },
+  LEGENO: { label: '랜덤 전설 지후', apply: () => {
+    const choices = playableIds().filter(id => CHAR_DB[id].rarity === 'legend');
+    const id = choices[Math.floor(Math.random() * choices.length)];
+    const duplicate = grantCharacter(id);
+    postEvent('gacha', id, 'legend');
+    return { message: `${CHAR_DB[id].name} 획득!${duplicate ? ` · 중복 조각 +${DUPLICATE_SHARDS}` : ' · 새 지후 해금'}`, summon: { id, duplicate } };
+  } }
+};
+function redeemCode(code) {
+  if (!code) return { error: '코드를 입력하세요.' };
+  if (!/^[A-Z0-9]+$/.test(code)) return { error: '코드는 영어 대문자와 숫자로만 되어 있어요.' };
+  const entry = REDEEM_CODES[code];
+  if (!entry) return { error: '없는 코드입니다.' };
+  profile.redeemedCodes = profile.redeemedCodes || [];
+  if (profile.redeemedCodes.includes(code)) return { error: '이미 사용한 코드입니다.' };
+  profile.redeemedCodes.push(code);
+  const result = entry.apply();
+  saveProfile(); renderAccountUI(); v4BumpDiamond();
+  return result;
+}
+
+// ================= 4.1.9 튜토리얼 (화염 지후가 진행) =================
+const TUT_STEPS = [
+  { text: '안녕! 나는 <b>화염 지후</b>. 지후배틀에 온 걸 환영해. 처음이지? 딱 1분만 내가 안내할게. 🔥' },
+  { target: 'btnStartGame', text: '여기가 <b>게임 시작</b>. 덱의 지후 5기로 라이프 3 랭크전을 해. 라운드마다 배치 풀에서 지후를 골라 놓기만 하면 알아서 싸워.' },
+  { target: 'btnEnterDraft', text: '<b>덱 설정</b>에서 출전할 지후 5기를 고를 수 있어. 전투 중 같은 지후를 겹쳐 놓으면 레벨이 올라 (HP·ATK +10%).' },
+  { target: 'btnOpenGacha', text: '<b>캐릭터 뽑기</b>. 다이아 100으로 1회, 1,000으로 지후 상자. 상자는 일반·희귀 8기에 운이 좋으면 영웅·전설·히든까지 딸려 나와.' },
+  { target: 'btnOpenQuests', text: '<b>일일 퀘스트</b>로 다이아를 모아. 600P를 채우면 ◆500 보상이야. 매일 리셋되니까 꼭 들러.' },
+  { target: 'btnOpenShop', text: '<b>일일 상점</b>엔 매일 무료 보상이 있어. 지후를 골드로 살 수도 있으니 잊지 말고 챙겨.' },
+  { target: 'btnOpenAttendance', text: '첫 게임을 끝내면 <b>신규 유저 출석부</b>가 열려. 7일 동안 골드·다이아·모집권을 줘. 받은 모집권은 <b>인벤토리</b>에서 써.' },
+  { target: 'btnOpenChat', text: '<b>글로벌 채팅</b>에서 다른 플레이어와 이야기할 수 있어. 폰 화면처럼 생겼지? 욕은 자동으로 가려지니까 사이좋게.' },
+  { target: 'btnOpenMenu', text: '☰ 메뉴에는 <b>🏆 리더보드</b>, 도움말(티어리스트), 패치노트가 있어. 이 튜토리얼도 도움말에서 언제든 다시 볼 수 있어.' },
+  { gift: true, text: '여기까지 들어줘서 고마워! 선물로 <b>지후 상자 오픈권</b> 1장을 줄게. 바로 열어보자. 🎁', replayText: '여기까지야! 선물 오픈권은 처음 한 번만 줘. 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 🔥' },
+  { target: 'btnGachaEleven', wait: true, text: '<b>지후 상자</b> 버튼을 눌러! 오픈권으로 여니까 다이아는 안 들어. 뭐가 나올지 두근두근…' },
+  { final: true, text: '오, 좋은 지후들이 왔네! 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 첫 승리하면 출석부도 열려. 행운을 빌어! 🔥' }
+];
+const tut = { step: -1, replay: false, active: false, typing: 0, timer: 0, box: false };
+function tutEl() { return $('tutorialOverlay'); }
+function startTutorial(replay = false) {
+  if (tut.active) return;
+  tut.replay = replay; tut.active = true; tut.box = false;
+  const face = $('tutFace'); if (face) face.innerHTML = portraitHtml(CHAR_DB.fire);
+  tutEl().hidden = false;
+  tutGo(0);
+  if (!tut.timer) tut.timer = setInterval(() => { if (tut.active) tutPlace(); }, 250);
+}
+function tutEnd() {
+  tut.active = false; tut.step = -1;
+  tutEl().hidden = true;
+  clearTimeout(tut.typing);
+  if (tut.timer) { clearInterval(tut.timer); tut.timer = 0; }
+}
+function tutGo(i) {
+  const step = TUT_STEPS[i];
+  if (!step) { tutEnd(); return; }
+  tut.step = i;
+  const ov = tutEl();
+  ov.classList.toggle('center', !step.target);
+  ov.classList.toggle('wait', !!step.wait);
+  $('btnTutSkip').hidden = tut.replay ? !!step.gift : (!!step.gift || !!step.wait || !!step.final);
+  const next = $('btnTutNext');
+  next.className = 'v49-tut-next' + (step.gift ? ' gift' : '');
+  next.textContent = step.final ? '시작하기 🔥' : step.gift ? (tut.replay ? '끝!' : '선물 받기 🎁') : '다음 ▸';
+  $('tutDots').innerHTML = TUT_STEPS.filter(s => !s.wait && !s.final).map((s, k) => `<i class="${k <= Math.min(i, 9) ? 'on' : ''}"></i>`).join('');
+  tutType(step.replayText && tut.replay ? step.replayText : step.text);
+  const target = step.target && $(step.target);
+  if (target) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  tutPlace();
+}
+function tutType(html) {
+  clearTimeout(tut.typing);
+  const el = $('tutText');
+  const tokens = html.match(/<[^>]+>|./gs) || [];
+  let k = 0;
+  el.innerHTML = '';
+  const tick = () => {
+    k += 2;
+    el.innerHTML = tokens.slice(0, k).join('') + (k < tokens.length ? '<span style="opacity:.4">▌</span>' : '');
+    if (k < tokens.length) tut.typing = setTimeout(tick, 22);
+  };
+  tick();
+  tut.full = html;
+}
+function tutPlace() {
+  const step = TUT_STEPS[tut.step]; if (!step) return;
+  const W = window.innerWidth, H = window.innerHeight, pad = 8;
+  const target = step.target && $(step.target);
+  const r = target ? target.getBoundingClientRect() : null;
+  const box = r ? { top: Math.max(0, r.top - pad), left: Math.max(0, r.left - pad), w: Math.min(W, r.width + pad * 2), h: r.height + pad * 2 } : { top: H / 2, left: W / 2, w: 0, h: 0 };
+  const set = (id, css) => Object.assign($(id).style, css);
+  set('tutCurT', { top: 0, left: 0, width: W + 'px', height: box.top + 'px' });
+  set('tutCurB', { top: (box.top + box.h) + 'px', left: 0, width: W + 'px', height: Math.max(0, H - box.top - box.h) + 'px' });
+  set('tutCurL', { top: box.top + 'px', left: 0, width: box.left + 'px', height: box.h + 'px' });
+  set('tutCurR', { top: box.top + 'px', left: (box.left + box.w) + 'px', width: Math.max(0, W - box.left - box.w) + 'px', height: box.h + 'px' });
+  const hole = $('tutHole');
+  set('tutHole', { top: box.top + 'px', left: box.left + 'px', width: box.w + 'px', height: box.h + 'px' });
+  hole.classList.toggle('blocked', !step.wait);
+  const card = $('tutCard');
+  const ch = card.offsetHeight || 160;
+  let top;
+  if (!r) top = (H - ch) / 2;
+  else if (box.top + box.h + ch + 24 < H) top = box.top + box.h + 14;
+  else if (box.top - ch - 14 > 0) top = box.top - ch - 14;
+  else top = H - ch - 12;
+  card.style.top = Math.max(8, Math.min(H - ch - 8, top)) + 'px';
+}
+function tutNext() {
+  const step = TUT_STEPS[tut.step]; if (!step) return;
+  if (tut.typing && $('tutText').querySelector('span')) { clearTimeout(tut.typing); $('tutText').innerHTML = tut.full; return; } // 타이핑 중이면 먼저 다 보여준다
+  if (step.wait) return;
+  if (step.final) { tutEnd(); showScreen('lobby'); renderAccountUI(); return; }
+  if (step.gift) {
+    if (tut.replay) { tutEnd(); return; }
+    if (profile.tutorial.giftPending || profile.tutorial.giftUsed) { tutOpenGachaForGift(); return; } // 두 번 눌러도 한 장만
+    profile.inventory.boxTicket = (profile.inventory.boxTicket || 0) + 1;
+    profile.tutorial.giftPending = true; profile.tutorial.done = true;
+    saveProfile(); renderAccountUI();
+    tutOpenGachaForGift();
+    return;
+  }
+  tutGo(tut.step + 1);
+}
+function tutOpenGachaForGift() {
+  $('gachaResult').innerHTML = ''; renderAccountUI(); showScreen('gacha'); renderGachaView('normal'); renderGachaBoxButton();
+  tutGo(TUT_STEPS.findIndex(s => s.wait));
+  setTimeout(tutPlace, 350);
+}
+function tutSkip() {
+  const giftIdx = TUT_STEPS.findIndex(s => s.gift);
+  if (tut.step < giftIdx) tutGo(giftIdx);
+}
+function tutOnBoxOpened() { if (tut.active) { tut.box = true; tutEl().hidden = true; } } // 상자 연출 동안은 숨긴다
+function tutAfterBox() { // 상자 결과 창을 닫으면 마지막 한마디
+  if (!tut.active || !tut.box) return;
+  tut.box = false; tutEl().hidden = false;
+  tutGo(TUT_STEPS.findIndex(s => s.final));
+}
+function maybeStartTutorial() {
+  if (PREVIEW_MODE || tut.active || !profile.nickname || !profile.tutorial || state.screen !== 'lobby') return;
+  if (document.querySelector('.app-modal.show') || $('updateOverlay').classList.contains('show') || $('sessionOverlay').classList.contains('show')) return;
+  if (!profile.tutorial.done) { startTutorial(false); return; }
+  if (profile.tutorial.giftPending) {
+    if ((profile.inventory.boxTicket || 0) <= 0) { profile.tutorial.giftPending = false; saveProfile(); return; }
+    startTutorial(false); tutOpenGachaForGift(); // 새로고침해도 선물 상자부터 이어서
+  }
+}
+$('btnTutNext').addEventListener('click', tutNext);
+$('btnTutSkip').addEventListener('click', tutSkip);
+window.addEventListener('resize', () => { if (tut.active) tutPlace(); });
+
 // ================= 4.1.4 글로벌 채팅 · 공지 =================
 // 욕설 검열: 글자 사이의 공백·기호·자모 흉내를 무시하고 찾아서 *로 가린다. 보낼 때와 보여줄 때 모두 거친다.
 const BAD_WORDS = ['씨발', '시발', '씨팔', '시팔', '씹', '병신', '븅신', '지랄', '좆', '존나', '개새끼', '새끼', '새키', '섹스', '니미', '니애미', '느금', '엠창', '창녀', '걸레', '보지', '자지', '꺼져', '닥쳐', '멍청이', '등신', 'ㅅㅂ', 'ㅆㅂ', 'ㅂㅅ', 'ㅈㄹ', 'ㅈㄴ', 'ㄴㅇㅁ', 'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'nigger', 'faggot', 'retard'];
@@ -20452,6 +20830,8 @@ function openChat() {
   chat.unsub = window.JihooOnline.chatSubscribe(renderChat);
 }
 function closeChat() { if (chat.unsub) { chat.unsub(); chat.unsub = null; } }
+function tickChatClock() { const el = $('chatClock'); if (el) { const d = new Date(); el.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; } }
+setInterval(() => { if (state.screen === 'chat') tickChatClock(); }, 20000);
 $('chatForm')?.addEventListener('submit', async event => {
   event.preventDefault();
   const input = $('chatInput');
@@ -20630,6 +21010,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAccountUI();
       window.JihooOnline.publish().catch(() => { $('onlineStatus').textContent = '백업을 복원했지만 리더보드 갱신에 실패했습니다.'; });
       if (state.screen === 'welcome' && profile.nickname) showScreen('lobby');
+      runMailMigrations();
       if ($('profileModal').classList.contains('show')) renderProfileModal();
     }
   });
@@ -20641,7 +21022,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.screen !== 'intro') return;
     showScreen(profile.nickname ? 'lobby' : 'welcome');
     if (state.screen === 'welcome') $('welcomeNickname').focus();
-    else showLevelCelebration();
+    else { showLevelCelebration(); setTimeout(maybeStartTutorial, 700); }
   });
   $('welcomeNickname').addEventListener('input', e => e.target.setCustomValidity(''));
   $('welcomeForm').addEventListener('submit', async event => {
@@ -20670,6 +21051,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (issued) showIssuedCredentials(issued);
     else if (failure) { renderProfileModal(); openModal('profileModal'); } // 실패 이유를 프로필에서 확인하고 다시 만들 수 있게
     showLevelCelebration();
+    setTimeout(maybeStartTutorial, 500);
   });
   $('btnWelcomeRecover').addEventListener('click', () => openModal('restoreModal'));
   $('btnSessionTakeover')?.addEventListener('click', () => location.reload()); // 새로 열면 이 창이 세션을 다시 잡고, 상대 창이 막힌다
@@ -20694,6 +21076,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       postEvent('join'); startNotices();
       showScreen('lobby');
+      setTimeout(maybeStartTutorial, 500);
       showIssuedCredentials({ code: result.code, warning: result.warning || 'Google 계정이 연결되었습니다. 다른 기기에서도 "Google로 로그인"으로 들어올 수 있어요. 비밀번호는 정하지 않았으니, UID로도 로그인하려면 프로필 → 비밀번호 변경에서 정하세요.' });
     } catch (error) {
       messageEl.textContent = error.message;
@@ -20727,6 +21110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('welcomePasswordConfirm').value = '';
     showScreen('lobby');
     showLevelCelebration();
+    setTimeout(maybeStartTutorial, 500);
   });
   if (ACTIVE_SLOT === 'sub') {
     $('welcomeSlotNote').hidden = false;
@@ -20798,7 +21182,22 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnQuestsBack').addEventListener('click', () => { renderAccountUI(); showScreen('lobby'); });
   document.querySelectorAll('[data-close-modal]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.closeModal)));
   document.querySelectorAll('.app-modal').forEach(modal => modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal.id); }));
-  $('btnOpenMenu').addEventListener('click', () => { openModal('menuModal'); openChat(); });
+  $('btnOpenMenu').addEventListener('click', () => { openModal('menuModal'); });
+  $('btnOpenMail').addEventListener('click', () => { renderMail(); openModal('mailModal'); });
+  $('btnMailClaimAll').addEventListener('click', () => {
+    const got = (profile.mail || []).filter(m => !m.claimed && claimMail(m));
+    if (!got.length) return;
+    saveProfile(); renderAccountUI(); v4BumpDiamond();
+    renderMail(`${got.length}개의 우편을 받았습니다.`);
+  });
+  runMailMigrations();
+  // 4.1.9 글로벌 채팅은 따로 화면으로
+  const openChatScreen = () => { closeModal('menuModal'); showScreen('chat'); openChat(); tickChatClock(); };
+  $('btnOpenChat').addEventListener('click', openChatScreen);
+  $('btnMenuChat').addEventListener('click', openChatScreen);
+  const leaveChat = () => { closeChat(); showScreen('lobby'); renderAccountUI(); };
+  $('btnChatBack').addEventListener('click', leaveChat);
+  $('btnChatBack2').addEventListener('click', leaveChat);
   $('btnOpenProfile').addEventListener('click', () => { renderProfileModal(); openModal('profileModal'); });
   $('btnMenuSettings').addEventListener('click', () => { closeModal('menuModal'); $('reduceMotionSetting').checked = profile.settings.reduceMotion; renderDeveloperMode(); openModal('settingsModal'); });
   $('btnMenuCode').addEventListener('click', () => { closeModal('menuModal'); $('codeInput').value = ''; $('codeMessage').textContent = '공개된 코드가 있을 때 이곳에서 입력할 수 있습니다.'; openModal('codeModal'); });
@@ -20919,11 +21318,17 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnDeveloperGold').addEventListener('click', () => addDeveloperCurrency('gold'));
   $('btnDeveloperDiamonds').addEventListener('click', () => addDeveloperCurrency('diamonds'));
   $('btnDeveloperArena').addEventListener('click', openArena);
+  $('codeInput').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== e.target.value) e.target.value = v; });
   $('btnSubmitCode').addEventListener('click', () => {
-    $('codeMessage').textContent = '현재 사용할 수 있는 코드가 없습니다.';
     const input = $('codeInput');
-    input.classList.remove('bad'); void input.offsetWidth; input.classList.add('bad');
-    $('codeMessage').classList.add('bad');
+    const code = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const fail = text => { $('codeMessage').textContent = text; input.classList.remove('bad'); void input.offsetWidth; input.classList.add('bad'); $('codeMessage').classList.add('bad'); };
+    const result = redeemCode(code);
+    if (result.error) { fail(result.error); return; }
+    input.classList.remove('bad'); $('codeMessage').classList.remove('bad');
+    $('codeMessage').textContent = result.message;
+    input.value = '';
+    if (result.summon) { closeModal('codeModal'); closeModal('menuModal'); playSummonReveal([result.summon]); }
   });
   $('btnLevelUpConfirm').addEventListener('click', () => { profile.pendingLevelCelebration = null; saveProfile(); closeModal('levelUpModal'); });
   renderQuests();
