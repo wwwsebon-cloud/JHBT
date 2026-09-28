@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.1.5"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.1.6"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -3922,6 +3922,17 @@ html[data-theme="light"] #app #screen-credits.active { display:block; background
   .v45-cast-row .c { width:54px; height:54px; }
 }
 body.reduce-motion .v45-cr-sec { transition:none; }
+/* 4.1.6 Google 로그인 */
+.v48-or { display:flex; align-items:center; gap:10px; margin:14px 0 10px; font-size:11px; color:#8a8a87; }
+.v48-or::before, .v48-or::after { content:''; flex:1; height:1px; background:#d6d6d3; }
+.v48-gbtn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 16px; border-radius:999px; border:1px solid #dadce0; background:#fff; color:#1f1f1f; font:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:background-color .2s, box-shadow .2s, transform .2s; box-sizing:border-box; }
+.v48-gbtn:hover { background:#f8f9fa; box-shadow:0 1px 3px rgba(60,64,67,.3); transform:translateY(-1px); }
+.v48-gbtn:disabled { opacity:.55; cursor:wait; transform:none; }
+.v48-gbtn .g, .v48-glink .g { width:20px; height:20px; flex-shrink:0; }
+.v48-glink { display:inline-flex; align-items:center; gap:6px; }
+.v48-glink[hidden] { display:none; }
+.v48-glink .g { width:15px; height:15px; }
+.v48-gstate { display:flex; align-items:center; gap:6px; }
 /* 4.1.4 공지 띠 · 최근 알림 · 글로벌 채팅 */
 @keyframes v47TickIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 html[data-theme="light"] .v47-ticker { position:relative; z-index:3; display:flex; align-items:center; gap:10px; width:100%; padding:8px 20px; border:0; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(0,0,0,.35); color:#f2f2f0; font:inherit; font-size:12px; text-align:left; cursor:pointer; backdrop-filter:blur(6px); }
@@ -4166,6 +4177,9 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
         <input class="text-field" id="welcomePasswordConfirm" type="password" maxlength="32" autocomplete="new-password" required>
         <button type="submit" class="btn btn-primary v4-bigbtn"><span class="v4-sweep light"></span>게임 시작 ▶</button>
       </form>
+      <div class="v48-or"><span>또는</span></div>
+      <button type="button" class="v48-gbtn" id="btnWelcomeGoogle"><svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Google로 시작</span></button>
+      <div class="v4-small">닉네임만 입력하면 비밀번호 없이 시작해요. 이미 Google을 연결한 계정이면 그 계정으로 로그인됩니다.</div>
       <button type="button" class="btn btn-secondary v4-guestbtn" id="btnWelcomeGuest">게스트로 시작 (닉네임만)</button>
       <div class="v4-small">게스트는 이 기기에만 저장되고 리더보드에 오르지 않아요. 나중에 프로필에서 온라인 계정을 만들 수 있어요.</div>
       <button type="button" class="v4-linkbtn" id="btnWelcomeBackMain" hidden>본계정으로 돌아가기 →</button>
@@ -4741,7 +4755,9 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
     <button type="button" class="btn-ghost" id="btnRestoreCurrent">내 백업 불러오기</button>
     <button type="button" class="btn-ghost" id="btnRestoreAccount">UID로 로그인</button>
     <button type="button" class="btn-ghost" id="btnChangePassword">비밀번호 변경</button>
+    <button type="button" class="btn-ghost v48-glink" id="btnLinkGoogle"><svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Google 계정 연결</button>
   </div>
+  <div class="settlement-note v48-gstate" id="googleState" hidden></div>
   <div class="account-manage">
     <div class="field-label">계정 관리 · <span id="accountSlotLabel">본계정</span></div>
     <div class="settlement-note" id="accountSlotNote"></div>
@@ -4784,6 +4800,8 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
     <div class="settlement-note" id="restoreMessage"></div>
     <div class="modal-actions"><button type="submit" class="btn btn-primary" id="btnConfirmRestore">로그인</button></div>
   </form>
+  <div class="v48-or light"><span>또는</span></div>
+  <button type="button" class="v48-gbtn light" id="btnRestoreGoogle"><svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Google로 로그인</span></button>
 </div></div>
 <div class="app-modal" id="createAccountModal" role="dialog" aria-modal="true"><div class="modal-card">
   <div class="modal-head"><h2 class="title-font">온라인 계정 만들기</h2><button type="button" class="modal-close" data-close-modal="createAccountModal">✕</button></div>
@@ -4798,7 +4816,8 @@ body.reduce-motion .v42-multi .mc.charge, body.reduce-motion .v42-multi .mc.char
 <div class="app-modal" id="passwordModal" role="dialog" aria-modal="true"><div class="modal-card">
   <div class="modal-head"><h2 class="title-font">비밀번호 변경</h2><button type="button" class="modal-close" data-close-modal="passwordModal">✕</button></div>
   <form id="passwordForm">
-    <label class="field-label" for="currentPassword">현재 비밀번호</label><input class="text-field" id="currentPassword" type="password" maxlength="64" autocomplete="current-password" required>
+    <div class="settlement-note" id="passwordGoogleNote" hidden>Google로 시작한 계정은 비밀번호가 정해져 있지 않아요. <b>변경하기</b>를 누르면 Google로 본인 확인을 한 뒤 새 비밀번호가 설정됩니다. 그 뒤로는 UID·닉네임과 이 비밀번호로도 로그인할 수 있어요.</div>
+    <label class="field-label" for="currentPassword" id="currentPasswordLabel">현재 비밀번호</label><input class="text-field" id="currentPassword" type="password" maxlength="64" autocomplete="current-password" required>
     <label class="field-label" for="newPassword">새 비밀번호 (6~32자)</label><input class="text-field" id="newPassword" type="password" maxlength="32" autocomplete="new-password" required>
     <label class="field-label" for="newPasswordConfirm">새 비밀번호 확인</label><input class="text-field" id="newPasswordConfirm" type="password" maxlength="32" autocomplete="new-password" required>
     <div class="settlement-note" id="passwordMessage"></div>
@@ -5572,7 +5591,7 @@ window.JIHOO_FIREBASE_CONFIG = {
       if (auth.currentUser) {
         if (!handlers.getProfile().nickname) await restoreCurrent();
         else backupWriteBlocked = false;
-        status(`온라인 연결됨 · UID ${code()}`);
+        status(`온라인 연결됨 · UID ${code()}${googleInfo() ? ' · Google' : ''}`);
         publish().catch(() => {});
       } else {
         backupWriteBlocked = false;
@@ -5643,6 +5662,91 @@ window.JIHOO_FIREBASE_CONFIG = {
     claimedNicknameKey = key;
   }
 
+  // ---------- 4.1.6 Google 로그인 ----------
+  // 지후배틀 계정은 늘 '8자리UID@jihoo-battle.invalid' 이메일 계정이다 (닉네임·백업·리더보드 규칙이 이 형식을 쓴다).
+  // Google은 그 계정에 '연결'만 한다. 그래서 Google로 로그인해도 UID·닉네임 로그인·백업이 그대로 동작한다.
+  const googleProvider = () => { const provider = new sdk.GoogleAuthProvider(); provider.setCustomParameters({ prompt: 'select_account' }); return provider; };
+  function googleInfo() {
+    const entry = auth && auth.currentUser && auth.currentUser.providerData.find(item => item.providerId === 'google.com');
+    return entry ? { email: entry.email || '' } : null;
+  }
+  function googleMessage(error) {
+    switch (error && error.code) {
+      case 'auth/popup-closed-by-user': case 'auth/cancelled-popup-request': case 'auth/user-cancelled': return 'Google 로그인을 취소했습니다.';
+      case 'auth/popup-blocked': return '브라우저가 팝업을 막았습니다. 팝업을 허용한 뒤 다시 눌러 주세요.';
+      case 'auth/operation-not-allowed': return 'Firebase에서 Google 로그인이 꺼져 있습니다. 관리자에게 알려 주세요.';
+      case 'auth/unauthorized-domain': return '이 주소는 Google 로그인이 허용되지 않았습니다. 관리자에게 알려 주세요.';
+      case 'auth/credential-already-in-use': case 'auth/account-exists-with-different-credential': return '이 Google 계정은 이미 다른 지후배틀 계정에 연결되어 있습니다.';
+      case 'auth/provider-already-linked': return '이미 Google 계정이 연결되어 있습니다.';
+      case 'auth/network-request-failed': return '네트워크 연결을 확인한 뒤 다시 시도하세요.';
+      case 'auth/web-storage-unsupported': return '이 브라우저(앱 안 브라우저·시크릿 모드 등)에서는 Google 로그인을 쓸 수 없습니다. 크롬·사파리에서 열어 주세요.';
+      default: return 'Google 로그인에 실패했습니다. 잠시 후 다시 시도하세요.';
+    }
+  }
+  const randomSecret = () => { const bytes = new Uint8Array(18); crypto.getRandomValues(bytes); return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, 'x'); };
+
+  // Google로 로그인(mode 'login') 또는 시작(mode 'start').
+  // 연결된 계정이 있으면 그 계정으로 로그인해 백업을 불러온다. 없으면 'start'일 때만 새 UID 계정을 만들어 Google을 붙인다.
+  async function signInGoogle(mode = 'login') {
+    if (!auth) throw new Error('Firebase 연결을 먼저 확인하세요.');
+    if (auth.currentUser) throw new Error('이미 온라인 계정에 로그인되어 있습니다. 프로필에서 Google 계정을 연결하세요.');
+    clearTimeout(saveTimer);
+    saveTimer = undefined;
+    const previousBlock = backupWriteBlocked;
+    backupWriteBlocked = true;
+    let result;
+    try { result = await sdk.signInWithPopup(auth, googleProvider()); } // 첫 await: 클릭 직후라 팝업이 막히지 않는다
+    catch (error) { backupWriteBlocked = previousBlock; throw new Error(googleMessage(error)); }
+    // 이미 연결된 계정 → 로그인
+    if (code()) {
+      let restored;
+      try { restored = await restoreCurrent(); }
+      catch (error) { await sdk.signOut(auth); backupWriteBlocked = false; throw new Error('백업을 읽을 수 없습니다. Firebase 규칙과 연결을 확인하세요.'); }
+      if (!restored) { backupWriteBlocked = false; await saveNow().catch(() => {}); }
+      claimedNicknameKey = null;
+      status(`온라인 연결됨 · UID ${code()} · Google`);
+      publish().catch(() => {});
+      return { existing: true, code: code(), restored };
+    }
+    // 연결된 계정 없음 → 방금 생긴 Google 전용 사용자는 지운다 (자격 증명은 새 계정에 다시 붙인다)
+    const credential = sdk.GoogleAuthProvider.credentialFromResult(result);
+    try { await result.user.delete(); } catch (error) { await sdk.signOut(auth).catch(() => {}); }
+    backupWriteBlocked = previousBlock;
+    if (mode !== 'start') throw new Error('이 Google 계정에 연결된 지후배틀 계정이 없습니다. 처음이면 첫 화면의 "Google로 시작"을, 기존 계정이면 UID·비밀번호로 로그인한 뒤 프로필에서 Google을 연결하세요.');
+    if (!credential) throw new Error('Google 인증 정보를 받지 못했습니다. 다시 시도하세요.');
+    if (!callbacks.getProfile().nickname) throw new Error('닉네임을 먼저 입력하세요.');
+    // 새 UID 계정 (비밀번호는 무작위 · 나중에 프로필에서 정할 수 있다) → Google 연결
+    backupWriteBlocked = false;
+    let privateCode = null;
+    for (let attempt = 0; attempt < 30 && !privateCode; attempt++) {
+      const candidate = randomCode();
+      try { await sdk.createUserWithEmailAndPassword(auth, codeEmail(candidate), randomSecret()); privateCode = candidate; }
+      catch (error) {
+        if (error.code === 'auth/email-already-in-use') continue;
+        if (error.code === 'auth/network-request-failed') throw new Error('네트워크 연결을 확인한 뒤 다시 시도하세요.');
+        throw new Error('온라인 계정을 만들 수 없습니다. 인증 설정을 확인하세요.');
+      }
+    }
+    if (!privateCode) throw new Error('사용 가능한 번호를 배정하지 못했습니다. 잠시 후 다시 시도하세요.');
+    let warning = '';
+    try { await sdk.linkWithCredential(auth.currentUser, credential); }
+    catch (error) { warning = `계정은 만들었지만 Google 연결에 실패했습니다 (${googleMessage(error)}). 프로필에서 "Google 계정 연결"을 다시 눌러 주세요.`; }
+    callbacks.getProfile().accountNoPassword = true;
+    status(`온라인 연결됨 · UID ${privateCode}${warning ? '' : ' · Google'}`);
+    try { await saveNow(); await publish(); }
+    catch (error) { warning = warning || '계정은 생성됐지만 초기 백업에 실패했습니다. 프로필의 "지금 백업"을 눌러 주세요.'; }
+    return { code: privateCode, google: !warning, warning };
+  }
+  // 로그인된 계정에 Google 연결 (프로필)
+  async function linkGoogle() {
+    if (!auth || !auth.currentUser || !code()) throw new Error('온라인 계정에 먼저 로그인하세요.');
+    if (googleInfo()) throw new Error('이미 Google 계정이 연결되어 있습니다.');
+    try { await sdk.linkWithPopup(auth.currentUser, googleProvider()); }
+    catch (error) { throw new Error(googleMessage(error)); }
+    status(`온라인 연결됨 · UID ${code()} · Google`);
+    return googleInfo();
+  }
+
   // UID(또는 닉네임) + 비밀번호로 로그인하고, 온라인 백업이 있으면 이 브라우저의 기록을 백업으로 바꾼다.
   async function login(identifier, password) {
     if (!auth) throw new Error('Firebase 연결을 먼저 확인하세요.');
@@ -5688,8 +5792,18 @@ window.JIHOO_FIREBASE_CONFIG = {
   // 로그인된 상태에서 비밀번호를 바꾼다. 현재 비밀번호로 한 번 더 확인한다.
   async function changePassword(currentPassword, newPassword) {
     if (!auth || !auth.currentUser) throw new Error('온라인 계정에 먼저 로그인하세요.');
-    if (!currentPassword) throw new Error('현재 비밀번호를 입력하세요.');
     checkPassword(newPassword);
+    // 4.1.6: 현재 비밀번호를 모르면(Google로 시작한 계정) Google로 본인 확인을 한다
+    if (!currentPassword && googleInfo()) {
+      try { await sdk.reauthenticateWithPopup(auth.currentUser, googleProvider()); }
+      catch (error) { throw new Error(googleMessage(error)); }
+      try { await sdk.updatePassword(auth.currentUser, newPassword); }
+      catch (error) { throw new Error(error.code === 'auth/weak-password' ? `비밀번호가 너무 약합니다. ${PASSWORD_MIN}자 이상으로 정해 주세요.` : '비밀번호를 정하지 못했습니다. 잠시 후 다시 시도하세요.'); }
+      callbacks.getProfile().accountNoPassword = false;
+      queueSave();
+      return;
+    }
+    if (!currentPassword) throw new Error('현재 비밀번호를 입력하세요.');
     if (newPassword === currentPassword) throw new Error('현재 비밀번호와 다른 비밀번호를 정해 주세요.');
     try {
       const credential = sdk.EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
@@ -5731,7 +5845,7 @@ window.JIHOO_FIREBASE_CONFIG = {
       await sdk.setDoc(sdk.doc(database, 'backups', userId), {
         payload, updatedAt: sdk.serverTimestamp()
       });
-      if (auth.currentUser?.uid === userId) status(`온라인 연결됨 · UID ${code()} · 백업 완료`);
+      if (auth.currentUser?.uid === userId) status(`온라인 연결됨 · UID ${code()}${googleInfo() ? ' · Google' : ''} · 백업 완료`);
     });
     return lastSave;
   }
@@ -5843,7 +5957,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const q = sdk.query(sdk.collection(database, 'events'), sdk.orderBy('at', 'desc'), sdk.limit(40));
     return sdk.onSnapshot(q, snap => onChange(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => onChange(null));
   }
-  window.JihooOnline = { init, code, createAccount, login, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, compTiers, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { init, code, createAccount, login, signInGoogle, linkGoogle, googleInfo, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, compTiers, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     connected: () => !!(auth && auth.currentUser), enabled: () => !!auth && !backupWriteBlocked };
 })();
 
@@ -5860,7 +5974,7 @@ if (PREVIEW_MODE) {
   const noop = () => {}, resolved = () => Promise.resolve(null);
   window.JihooOnline = { init: resolved, code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved,
-    leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {}, eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
+    leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {}, eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
 
 const PORTRAITS = {
@@ -7308,6 +7422,7 @@ function freshProfile() {
     inventory: { epicTicket: 0, legendTicket: 0, boxTicket: 0 },
     draftTickets: 0,
     discordRewarded: false,
+    accountNoPassword: false,
     rankedForm: [],
     ticketRegenAt: 0,
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
@@ -7412,6 +7527,7 @@ function normalizeProfile(raw) {
     inventory: { epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), boxTicket: safeCount(rawInventory.boxTicket) },
     draftTickets: safeCount(raw.draftTickets),
     discordRewarded: !!raw.discordRewarded,
+    accountNoPassword: !!raw.accountNoPassword,
     rankedForm: Array.isArray(raw.rankedForm) ? raw.rankedForm.slice(-10).map(x => !!x) : [],
     ticketRegenAt: Math.max(0, Number(raw.ticketRegenAt) || 0),
     newcomer: {
@@ -7738,6 +7854,11 @@ function renderProfileModal() {
     + (ACTIVE_SLOT === 'sub' ? '부계정을 쓰는 중입니다.' : created ? '이 기기에는 부계정이 있습니다.' : '부계정은 기기당 한 번만 만들 수 있습니다.');
   $('btnCreateOnlineAccount').style.display = online ? 'none' : '';
   $('btnChangePassword').style.display = online ? '' : 'none';
+  { const google = online ? window.JihooOnline.googleInfo() : null;
+    $('btnLinkGoogle').hidden = !(online && !google);
+    $('googleState').hidden = !google;
+    if (google) $('googleState').textContent = `✓ Google 연결됨${google.email ? ' · ' + google.email : ''}${profile.accountNoPassword ? ' · 비밀번호 미설정' : ''}`;
+    $('btnChangePassword').textContent = profile.accountNoPassword && google ? '비밀번호 설정' : '비밀번호 변경'; }
   $('nicknameInput').value = profile.nickname;
   $('profileCardFace').textContent = (profile.nickname[0] || 'J').toUpperCase();
   $('profileCardName').textContent = profile.nickname || '신입 지후';
@@ -18579,6 +18700,18 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.1.6': {
+    label: 'v4.1.6 Google 로그인',
+    date: '2026.09.28',
+    sections: [
+      { title: '계정', items: [
+        { emoji:'🔐', name:'Google로 시작', tag:'new', color:'#4285f4', desc:'첫 화면에서 닉네임을 입력하고 <b>Google로 시작</b>을 누르면 비밀번호 없이 온라인 계정이 만들어집니다. 8자리 UID도 그대로 받아요.' },
+        { emoji:'🔑', name:'Google로 로그인', tag:'new', color:'#4285f4', desc:'다른 기기에서는 로그인 창의 <b>Google로 로그인</b>으로 바로 들어가 백업을 불러옵니다.' },
+        { emoji:'🔗', name:'기존 계정에 Google 연결', tag:'new', color:'#4285f4', desc:'이미 UID·비밀번호로 쓰던 계정은 프로필의 <b>Google 계정 연결</b>로 연결하면 그다음부터 Google로 로그인할 수 있습니다. UID·닉네임 로그인도 계속 됩니다.' },
+        { emoji:'🔒', name:'비밀번호 설정', tag:'new', color:'#555555', desc:'Google로 시작한 계정은 프로필의 <b>비밀번호 설정</b>에서 Google 확인 후 비밀번호를 정하면 UID로도 로그인할 수 있습니다.' }
+      ] }
+    ]
+  },
   '4.1.5': {
     label: 'v4.1.5 새 글꼴',
     date: '2026.09.28',
@@ -20268,6 +20401,49 @@ document.addEventListener('DOMContentLoaded', () => {
     showLevelCelebration();
   });
   $('btnWelcomeRecover').addEventListener('click', () => openModal('restoreModal'));
+  // 4.1.6 Google로 시작 / 로그인
+  const googleFlow = async (button, mode, messageEl) => {
+    const nickname = $('welcomeNickname')?.value.trim().slice(0, 12);
+    const before = { nickname: profile.nickname, nicknameSet: profile.nicknameSet };
+    if (mode === 'start' && nickname) { profile.nickname = nickname; profile.nicknameSet = true; }
+    button.disabled = true;
+    messageEl.textContent = 'Google 창에서 계정을 선택하세요…';
+    try {
+      await onlineInitPromise;
+      const result = await window.JihooOnline.signInGoogle(mode); // 팝업은 이 호출의 첫 await에서 열린다
+      saveProfile();
+      messageEl.textContent = '';
+      closeModal('restoreModal');
+      if (result.existing) {
+        $('onlineStatus').textContent = result.restored ? `Google 계정으로 로그인했습니다 · UID ${result.code}` : `Google 계정으로 로그인했습니다 · 온라인 백업이 없어 이 기기 기록을 올렸습니다`;
+        if (profile.nickname) { showScreen('lobby'); showLevelCelebration(); }
+        renderAccountUI();
+        return;
+      }
+      postEvent('join'); startNotices();
+      showScreen('lobby');
+      showIssuedCredentials({ code: result.code, warning: result.warning || 'Google 계정이 연결되었습니다. 다른 기기에서도 "Google로 로그인"으로 들어올 수 있어요. 비밀번호는 정하지 않았으니, UID로도 로그인하려면 프로필 → 비밀번호 변경에서 정하세요.' });
+    } catch (error) {
+      messageEl.textContent = error.message;
+      if (!window.JihooOnline.connected()) { profile.nickname = before.nickname; profile.nicknameSet = before.nicknameSet; } // 실패하면 입력 전으로
+    } finally { button.disabled = false; }
+  };
+  $('btnWelcomeGoogle').addEventListener('click', () => {
+    if (!$('welcomeNickname').value.trim()) { /* 닉네임이 없어도 이미 연결된 계정이면 로그인된다 */ }
+    googleFlow($('btnWelcomeGoogle'), 'start', $('welcomeMessage'));
+  });
+  $('btnRestoreGoogle').addEventListener('click', () => googleFlow($('btnRestoreGoogle'), 'login', $('restoreMessage')));
+  $('btnLinkGoogle').addEventListener('click', async () => {
+    const button = $('btnLinkGoogle');
+    button.disabled = true;
+    try {
+      const info = await window.JihooOnline.linkGoogle();
+      $('onlineStatus').textContent = `Google 계정(${info?.email || ''})을 연결했습니다. 이제 다른 기기에서 "Google로 로그인"으로 들어올 수 있어요.`;
+      saveProfile();
+      renderProfileModal();
+    } catch (error) { $('onlineStatus').textContent = error.message; }
+    finally { button.disabled = false; }
+  });
   // 게스트: 닉네임만 정하고 바로 시작한다 (온라인 계정 없이 이 기기에만 저장)
   $('btnWelcomeGuest').addEventListener('click', () => {
     const nickname = $('welcomeNickname').value.trim().slice(0, 12);
@@ -20386,7 +20562,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) { $('createAccountMessage').textContent = error.message; }
     finally { button.disabled = false; }
   });
-  $('btnChangePassword').addEventListener('click', () => { closeModal('profileModal'); openModal('passwordModal'); });
+  $('btnChangePassword').addEventListener('click', () => {
+    closeModal('profileModal');
+    const viaGoogle = !!profile.accountNoPassword && !!window.JihooOnline.googleInfo();
+    $('passwordGoogleNote').hidden = !viaGoogle;
+    $('currentPassword').hidden = viaGoogle; $('currentPasswordLabel').hidden = viaGoogle;
+    $('currentPassword').required = !viaGoogle;
+    openModal('passwordModal');
+  });
   $('passwordForm').addEventListener('submit', async event => {
     event.preventDefault();
     const problem = passwordProblem($('newPassword').value, $('newPasswordConfirm').value);
@@ -20394,7 +20577,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const button = $('btnConfirmPassword');
     button.disabled = true;
     try {
-      await window.JihooOnline.changePassword($('currentPassword').value, $('newPassword').value);
+      await window.JihooOnline.changePassword($('currentPassword').hidden ? '' : $('currentPassword').value, $('newPassword').value);
       closeModal('passwordModal');
       $('onlineStatus').textContent = '비밀번호를 바꿨습니다. 다음 로그인부터 새 비밀번호를 사용하세요.';
       renderProfileModal();
