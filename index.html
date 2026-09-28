@@ -10884,6 +10884,7 @@ function readyRoundSkills(u) {
 
 /* 전투 페이즈 */
 const COMBAT_TIME_LIMIT = 100;
+const AUTO_FAST_FORWARD_MS = 25000; // 3.8.3: 전투가 길어지면 2배속 (10초 → 25초)
 const CASTLE_ROUND_TIME_LIMIT = 30;
 const PREVIEW_TIME_LIMIT = 45;
 
@@ -11540,7 +11541,7 @@ function combatTick(ts) {
   const rawDt = Math.min((ts - state.combatLastTs) / 1000, 0.1);
   state.combatLastTs = ts;
 
-  if (state.speedMultiplier === 1 && ts - state.combatStartTs >= 10000) {
+  if (state.speedMultiplier === 1 && ts - state.combatStartTs >= AUTO_FAST_FORWARD_MS) {
     state.speedMultiplier = 2;
     $('battleArena').classList.add('fast-forward');
     $('bottomStatusLine').innerHTML = '⏩ <b>2배속</b> — 전투가 길어져 속도를 올렸습니다';
@@ -15590,6 +15591,7 @@ const PATCH_NOTES = {
         { emoji:'🤖', name:'초보자 지원', tag:'adjust', color:'#444444', desc:'12레벨까지의 상대는 1~2티어 지후를 <b>거의 들고 오지 않습니다</b>.' },
         { emoji:'❓', name:'도움말', tag:'new', color:'#2479b8', desc:'메뉴(☰)에 <b>도움말</b>이 생겼습니다. 버전별 <b>티어리스트</b>를 볼 수 있습니다.' },
         { emoji:'🎟️', name:'티켓', tag:'system', color:'#7048e8', desc:'<b>경쟁전</b>도 티켓 1장이 필요합니다. 일일 퀘스트 600P 달성 보상에 <b>티켓 3장</b>이 추가되었습니다. 최대 <b>15장</b>까지 보유합니다.' },
+        { emoji:'⏩', name:'자동 2배속', tag:'adjust', color:'#555555', desc:'전투가 길어질 때 켜지는 2배속이 <b>10초 → 25초</b> 뒤부터 켜집니다. 대부분의 전투를 정상 속도로 볼 수 있습니다.' },
         { emoji:'🧩', name:'일반전 배치', tag:'adjust', color:'#555555', desc:'일반전은 라운드마다 배치 횟수가 <b>3 → 2번</b>입니다 (드래프트전·경쟁전은 그대로).' },
         { emoji:'🛒', name:'일일 상점', tag:'adjust', color:'#c99a17', desc:'전설 지후는 리롤마다 <b>25%</b> 확률로 <b>1개만</b> 나옵니다.' },
         { emoji:'📈', name:'레벨업 능력치', tag:'nerf', color:'#e03131', desc:'합쳐서 레벨이 오를 때 HP·ATK 증가량 <b>+25% → +10%</b>.' }
