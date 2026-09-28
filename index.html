@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <style>
@@ -2536,7 +2536,8 @@ html[data-theme="light"] .v4-fan-card:hover > div { translate:0 -18px; }
 html[data-theme="light"] .v4-fan-card .card { width:118px; height:164px; padding:6px; box-sizing:border-box; border-radius:12px; background:var(--v4-soft); color:#111; box-shadow:0 18px 30px -12px rgba(0,0,0,.8); animation:bob 4.5s ease-in-out infinite; }
 html[data-theme="light"] .v4-fan-card .card .pic { width:100%; height:118px; border-radius:7px; overflow:hidden; background:#fff; }
 html[data-theme="light"] .v4-fan-card .card .pic img { width:100%; height:100%; object-fit:contain; }
-html[data-theme="light"] .v4-fan-card .card .foot { display:flex; justify-content:space-between; margin-top:8px; font:800 9px var(--v4-mono); letter-spacing:.1em; }
+html[data-theme="light"] .v4-fan-card .card .foot { display:flex; justify-content:space-between; gap:4px; margin-top:8px; font:800 9px var(--v4-mono); letter-spacing:.1em; }
+html[data-theme="light"] .v4-fan-card .card .foot .nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'Jihoo Hangul','Pretendard',sans-serif; font-weight:900; letter-spacing:0; }
 html[data-theme="light"] .v4-topbar { position:relative; z-index:2; display:flex; align-items:center; gap:10px; padding:16px 20px; animation:fadeDown .5s backwards; }
 html[data-theme="light"] .v4-profile { display:flex; align-items:center; gap:10px; padding:4px 14px 4px 4px; border-radius:999px; border:1px solid #3a3a39; background:rgba(255,255,255,.04); color:inherit; cursor:pointer; transition:border-color .2s; font-family:inherit; }
 html[data-theme="light"] .v4-profile:hover { border-color:var(--v4-soft); }
@@ -3718,6 +3719,208 @@ html[data-theme="light"] .v4-vs-card.hidden .tag { background:#111; color:#f2f2f
 @keyframes vsGlitch { 0%,90%,100% { opacity:0; transform:none; } 91% { opacity:.9; transform:translateX(-4px); } 93% { opacity:.6; transform:translateX(3px); } 95% { opacity:.9; transform:none; } 96% { opacity:0; } }
 @keyframes vsScan { to { background-position:0 6px; } }
 html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0f0e !important; backdrop-filter:none; }
+/* ─── 4.1 인게임 HUD: 킬 피드 · 스킬 콜아웃 · 아군 스킬 도크 ─── */
+@keyframes v41FeedIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+@keyframes v41FeedOut { to { opacity:0; transform:translateX(12px); } }
+@keyframes v41CalloutIn { from { transform:translateX(-110%); } to { transform:none; } }
+@keyframes v41CalloutOut { to { transform:translateX(-110%); } }
+@keyframes v41Sweep { 0% { transform:translateX(-160%) skewX(-18deg); } 100% { transform:translateX(460%) skewX(-18deg); } }
+.v41-feed, .v41-callout, .v41-dock, .v41-alive, .btn-v41-dock { display:none; }
+html[data-theme="light"] #app #screen-battle .v41-feed { position:absolute; right:14px; top:14px; z-index:22; width:230px; flex-direction:column; gap:5px; pointer-events:none; }
+html[data-theme="light"] #app #screen-battle .v41-feed-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:8px; background:rgba(255,255,255,.94); border:1px solid #e1e1de; color:#111; font-size:11px; font-weight:800; box-shadow:0 8px 16px -12px rgba(0,0,0,.4); animation:v41FeedIn .3s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] #app #screen-battle .v41-feed-row.out { animation:v41FeedOut .4s forwards; }
+html[data-theme="light"] #app #screen-battle .v41-feed-row.mine { border-color:#111; }
+html[data-theme="light"] .v41-av { width:20px; height:20px; flex-shrink:0; border-radius:50%; background:#f2f2f0; overflow:hidden; display:grid; place-items:center; font-size:11px; line-height:1; box-shadow:0 0 0 1.5px var(--sc,#111); }
+html[data-theme="light"] .v41-av img { width:100%; height:100%; object-fit:contain; }
+html[data-theme="light"] .v41-av.victim { opacity:.7; filter:grayscale(1); }
+html[data-theme="light"] .v41-feed-ic { color:#666; }
+html[data-theme="light"] .v41-feed-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; color:#555; }
+html[data-theme="light"] .v41-feed-t { margin-left:auto; flex-shrink:0; font:700 9px var(--v4-mono); color:#666; }
+html[data-theme="light"] #app #screen-battle .v41-callout { position:absolute; left:0; top:14px; z-index:22; align-items:center; gap:10px; padding:10px 24px 10px 16px; background:#fff; color:#111; border:1px solid #d6d6d3; box-shadow:0 14px 26px -16px rgba(0,0,0,.45); clip-path:polygon(0 0,100% 0,calc(100% - 18px) 100%,0 100%); pointer-events:none; overflow:hidden; }
+html[data-theme="light"] #app #screen-battle .v41-callout.show { display:flex; animation:v41CalloutIn .35s cubic-bezier(.2,.9,.1,1); }
+html[data-theme="light"] #app #screen-battle .v41-callout.out { display:flex; animation:v41CalloutOut .3s ease-in forwards; }
+html[data-theme="light"] #app #screen-battle .v41-callout::after { content:''; position:absolute; top:0; bottom:0; left:0; width:30%; background:linear-gradient(90deg,transparent,rgba(0,0,0,.06),transparent); animation:v41Sweep 1.2s .2s ease-in-out; }
+html[data-theme="light"] #app #screen-battle .v41-callout.enemy { border-left:4px solid #e5322d; }
+html[data-theme="light"] #app #screen-battle .v41-callout.ally { border-left:4px solid #111; }
+html[data-theme="light"] .v41-callout .v41-av { width:34px; height:34px; font-size:18px; box-shadow:0 0 0 2px var(--rc,#d6d6d3); }
+html[data-theme="light"] .v41-callout .t { display:flex; flex-direction:column; min-width:0; }
+html[data-theme="light"] .v41-callout .k { font:800 9px var(--v4-mono); letter-spacing:.2em; color:#9a7a12; }
+html[data-theme="light"] .v41-callout.enemy .k { color:#c8231e; }
+html[data-theme="light"] .v41-callout b { font-size:14px; white-space:nowrap; }
+html[data-theme="light"] #app #screen-battle .v41-alive { align-items:center; gap:7px; flex-shrink:0; font-size:12px; font-weight:900; color:#111; white-space:nowrap; }
+html[data-theme="light"] #app #screen-battle .v41-alive i { width:7px; height:7px; border-radius:50%; background:#e5322d; animation:blinkDot 1s infinite; }
+html[data-theme="light"] #app #screen-battle .btn-v41-dock { flex-shrink:0; padding:7px 12px; font-size:12px; border-radius:12px; border:1px solid #111; background:#fff; color:#111; font-weight:900; cursor:pointer; }
+html[data-theme="light"] #app #screen-battle .btn-v41-dock:hover { background:#111; color:#fff; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .v41-feed { display:flex; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .v41-alive { display:flex; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .btn-v41-dock { display:block; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .v41-dock:not(.folded):not(:empty) { display:flex; }
+html[data-theme="light"] #app #screen-battle .v41-dock { gap:10px; overflow-x:auto; padding:2px 2px 4px; scrollbar-width:thin; }
+html[data-theme="light"] #app #screen-battle .v41-card { position:relative; flex:1 0 150px; max-width:220px; display:grid; grid-template-columns:44px 1fr; gap:8px; align-items:center; padding:7px 8px; border-radius:12px; border:1px solid #d6d6d3; background:#fff; color:#111; font:inherit; text-align:left; cursor:pointer; box-shadow:0 10px 20px -16px rgba(0,0,0,.45); transition:opacity .3s, filter .3s, border-color .2s; }
+html[data-theme="light"] #app #screen-battle .v41-card:hover { border-color:#111; }
+html[data-theme="light"] #app #screen-battle .v41-card.dead { opacity:.45; filter:grayscale(1); }
+html[data-theme="light"] .v41-ring { position:relative; width:44px; height:44px; border-radius:50%; padding:3px; box-sizing:border-box; background:conic-gradient(var(--rc,#111) var(--cd,0deg),#e6e6e3 0); }
+html[data-theme="light"] .v41-ring .face { width:100%; height:100%; border-radius:50%; background:#f4f4f2; overflow:hidden; display:grid; place-items:center; font-size:20px; }
+html[data-theme="light"] .v41-ring .face img { width:100%; height:100%; object-fit:contain; }
+html[data-theme="light"] .v41-card.ready .v41-ring::after { content:''; position:absolute; inset:0; border-radius:50%; border:2px solid var(--rc,#111); animation:ping .8s ease-out infinite; }
+html[data-theme="light"] .v41-card .info { display:flex; flex-direction:column; gap:4px; min-width:0; }
+html[data-theme="light"] .v41-card .nm { font-size:11px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html[data-theme="light"] .v41-card .hp { height:5px; border-radius:5px; background:#e6e6e3; overflow:hidden; }
+html[data-theme="light"] .v41-card .hp > i { display:block; height:100%; width:100%; background:#111; transition:width .35s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] .v41-card.low .hp > i { background:#e5322d; }
+html[data-theme="light"] .v41-card .sub { font:800 9px var(--v4-mono); color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html.preview-mode .v41-feed, html.preview-mode .v41-callout { display:none !important; }
+@media (max-width:640px) {
+  html[data-theme="light"] #app #screen-battle .v41-feed { width:170px; right:8px; top:8px; }
+  html[data-theme="light"] #app #screen-battle .v41-feed-nm { display:none; }
+  html[data-theme="light"] #app #screen-battle .v41-callout { top:8px; padding:7px 18px 7px 10px; gap:8px; }
+  html[data-theme="light"] .v41-callout .v41-av { width:26px; height:26px; }
+  html[data-theme="light"] .v41-callout b { font-size:12px; }
+  html[data-theme="light"] #app #screen-battle .v41-card { flex-basis:128px; grid-template-columns:36px 1fr; gap:6px; padding:6px; }
+  html[data-theme="light"] .v41-ring { width:36px; height:36px; }
+  html[data-theme="light"] #app #screen-battle .v41-alive { font-size:11px; }
+  html[data-theme="light"] #app #screen-battle[data-phase="combat"] .bottom-status-line { display:none; }
+}
+/* 4.1 태블릿: 3.x 카드 높이 제한(160px)이 4.0 카드(정사각 초상화 + 이름)를 눌러 초상화가 잘리던 문제 */
+html[data-theme="light"] #app .char-card { max-height:none; aspect-ratio:auto; }
+html[data-theme="light"] #app .char-card .char-portrait-zone { flex:none; }
+/* ─── 4.1 보상 받기 연출 · 목록 재생성 시 등장 애니메이션 억제 ─── */
+@keyframes v4RewardPop { 0% { opacity:0; transform:translate(-50%,6px) scale(.8); } 15% { opacity:1; transform:translate(-50%,-4px) scale(1.1); } 100% { opacity:0; transform:translate(-50%,-44px) scale(1); } }
+@keyframes v4Bump { 0% { transform:scale(1); } 35% { transform:scale(1.22); } 100% { transform:scale(1); } }
+@keyframes v4ClaimFlash { 0% { box-shadow:0 0 0 0 rgba(17,17,17,.45); } 100% { box-shadow:0 0 0 18px rgba(17,17,17,0); } }
+html[data-theme="light"] .v4-noanim .v4-ach, html[data-theme="light"] .v4-noanim .v4-daywrap, html[data-theme="light"] .v4-noanim .v4-qrow, html[data-theme="light"] .v4-noanim .v4-shard, html[data-theme="light"] .v4-noanim .v4-boost, html[data-theme="light"] .v4-noanim .v4-grid2, html[data-theme="light"] .v4-noanim .v4-money button { animation:none !important; }
+html[data-theme="light"] .v4-ach.claiming, html[data-theme="light"] .v4-day.claiming { border-color:#111; animation:v4ClaimFlash .7s ease-out; }
+html[data-theme="light"] .v4-ach .v4-claimstamp, html[data-theme="light"] .v4-day .v4-claimstamp { padding:5px 10px; border:2px solid #111; border-radius:6px; font-size:12px; font-weight:900; color:#111; background:#fff; animation:stamp .35s cubic-bezier(.2,.8,.2,1) forwards; }
+html[data-theme="light"] .v4-day .v4-claimstamp { position:absolute; right:10px; top:10px; z-index:2; }
+html[data-theme="light"] .v4-rewardpop { position:fixed; z-index:1300; padding:6px 12px; border-radius:999px; background:#111; color:#fff; font:900 13px var(--v4-mono); white-space:nowrap; pointer-events:none; animation:v4RewardPop 1s cubic-bezier(.2,.8,.2,1) forwards; box-shadow:0 10px 20px -10px rgba(0,0,0,.6); }
+html[data-theme="light"] .v4-pill.bump { animation:v4Bump .45s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] #app .v4-end .profile-xp-fill { transform-origin:left; animation:growX 1.2s .9s cubic-bezier(.2,.8,.2,1) backwards; }
+/* ─── 4.1 8×3 칸 배치 (9a) ─── */
+@keyframes v42Glow { 0%,100% { border-color:#8a8a87; background:rgba(255,255,255,.55); } 50% { border-color:#111; background:rgba(255,255,255,.85); } }
+@keyframes v42Slam { 0% { transform:scale(1.6); opacity:0; } 60% { transform:scale(.96); opacity:1; } 100% { transform:none; } }
+@keyframes v42GoOut { 0%,70% { opacity:1; } 100% { opacity:0; } }
+.v42-grid { position:absolute; left:0; top:0; width:0; height:0; pointer-events:none; display:none; }
+#screen-battle[data-phase="deploy"] .v42-grid, #screen-battle[data-phase="deploy-resolve"] .v42-grid { display:block; }
+.v42-tile { position:absolute; transform:translate(-50%,-50%); box-sizing:border-box; border-radius:14px; border:2px solid rgba(17,17,17,.12); background:rgba(255,255,255,.4); transition:border-color .2s, background-color .2s; }
+.v42-grid.enemy .v42-tile { border-style:dashed; border-color:rgba(229,50,45,.18); background:rgba(229,50,45,.03); }
+.v42-grid.ally .v42-tile.filled { border-color:rgba(17,17,17,.28); background:rgba(255,255,255,.7); }
+.v42-grid.ally .v42-tile.avail { border-style:dashed; animation:v42Glow 1.4s ease-in-out infinite; }
+.v42-grid.ally .v42-tile.merge { border:2.5px solid #f2c94c; background:rgba(242,201,76,.18); }
+.v42-grid.ally .v42-tile.sel { border:2.5px solid #111; background:rgba(17,17,17,.1); }
+.v42-grid.ally .v42-tile.swap { border-style:dashed; border-color:#555; }
+.v42-rowlab { position:absolute; transform:translate(-50%,-50%); font:800 13px var(--v4-mono,ui-monospace,monospace); letter-spacing:.14em; color:#8a8a87; white-space:nowrap; }
+.v42-go { position:absolute; inset:0; z-index:40; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:rgba(244,244,242,.72); pointer-events:none; }
+.v42-go.show { display:flex; animation:v42GoOut 1.1s ease-in forwards; }
+.v42-go b { font:900 clamp(48px,11vw,90px) 'Arial Black','Jihoo Hangul',sans-serif; letter-spacing:-.05em; color:#111; animation:v42Slam .5s cubic-bezier(.2,.8,.2,1); }
+.v42-go span { font-size:14px; color:#555; font-weight:700; }
+.v42-presets { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.v42-presets .lab { font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.18em; color:#666; }
+.v42-presets button { padding:6px 10px; border-radius:8px; border:1px solid #d6d6d3; background:#f7f7f5; color:#111; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+.v42-presets button:hover { border-color:#111; }
+html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important; }
+/* 4.1 지후 상자 결제 선택 */
+html[data-theme="light"] #boxPayModal { background:rgba(8,8,8,.8); }
+html[data-theme="light"] #boxPayModal .modal-card.v43-pay { width:min(380px,100%); display:flex; flex-direction:column; gap:12px; padding:22px; border-radius:20px; background:#0f0f0e; color:#f2f2f0; border:1px solid #2a2a29; animation:popIn .3s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] #boxPayModal .modal-head { display:flex; align-items:center; justify-content:space-between; }
+html[data-theme="light"] #boxPayModal .modal-head h2 { margin:0; font:900 22px var(--v4-display); letter-spacing:-.04em; color:#f2f2f0; }
+html[data-theme="light"] #boxPayModal .modal-close { width:34px; height:34px; border-radius:50%; border:1px solid #444; background:transparent; color:#f2f2f0; cursor:pointer; }
+html[data-theme="light"] .v43-pay-sub { margin:0; font-size:13px; color:#a3a3a0; }
+html[data-theme="light"] .v43-pay-opt { display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; border:1px solid #444; background:transparent; color:#f2f2f0; font:inherit; text-align:left; cursor:pointer; transition:transform .2s, border-color .2s; }
+html[data-theme="light"] .v43-pay-opt:hover:not(:disabled) { transform:translateY(-2px); border-color:#f2f2f0; }
+html[data-theme="light"] .v43-pay-opt.ticket { background:#f2f2f0; color:#111; border-color:#f2f2f0; }
+html[data-theme="light"] .v43-pay-opt:disabled { opacity:.4; cursor:not-allowed; }
+html[data-theme="light"] .v43-pay-opt .ic { width:40px; height:40px; flex-shrink:0; border-radius:10px; display:grid; place-items:center; font-size:20px; background:rgba(128,128,128,.18); }
+html[data-theme="light"] .v43-pay-opt .tx { display:flex; flex-direction:column; gap:2px; flex:1; }
+html[data-theme="light"] .v43-pay-opt b { font-size:15px; font-weight:900; }
+html[data-theme="light"] .v43-pay-opt small { font:800 11px var(--v4-mono); opacity:.7; }
+/* 4.1 데스매치 */
+@keyframes v43DmPulse { 0%,100% { box-shadow:inset 0 0 0 0 rgba(229,50,45,0); } 50% { box-shadow:inset 0 0 60px 0 rgba(229,50,45,.28); } }
+.v42-go.dm { background:rgba(15,15,14,.86); }
+.v42-go.dm b { color:#e5322d; -webkit-text-stroke:0; letter-spacing:-.04em; }
+.v42-go.dm span { color:#f2f2f0; }
+.v42-go.dm.show { animation:v42GoOut 1.9s ease-in forwards; }
+html[data-theme="light"] #app #screen-battle.deathmatch .v4-hud .round-badge { background:#e5322d; }
+html[data-theme="light"] #app #screen-battle.deathmatch .v4-hud .round-badge::after { content:' · ☠ DEATHMATCH'; }
+html[data-theme="light"] #app #screen-battle.deathmatch .battle-arena::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:5; animation:v43DmPulse 2.4s ease-in-out infinite; }
+@media (max-width:640px) { html[data-theme="light"] #app #screen-battle.deathmatch .v4-hud .round-badge::after { content:' ☠'; } }
+/* 4.1 휴대폰 상단바: 승률 글자가 버튼과 겹치던 문제. 승률 줄을 접고 짧게 쓴다 */
+@media (max-width:640px) {
+  html[data-theme="light"] #app #screen-battle .battle-topbar.v4-hud { grid-template-columns:auto minmax(0,1fr) auto; }
+  html[data-theme="light"] .v4-hud-row { flex-wrap:wrap; gap:3px 8px; }
+  html[data-theme="light"] #app .v4-hud .odds-lab { font-size:10px; white-space:nowrap; }
+  html[data-theme="light"] #app .v4-hud .odds-hp { display:none; }
+  html[data-theme="light"] #app .v4-hud .life-pip { width:10px; height:10px; }
+  html[data-theme="light"] .v4-hud-right { gap:5px; }
+  html[data-theme="light"] #app .v4-hud .btn-stats { padding:6px 7px; font-size:10px; }
+}
+@media (max-width:640px) { html[data-theme="light"] #app #screen-battle[data-phase="deploy"] .minimap { display:none; } }
+/* ─── 4.1 뽑기 v2 (7a): 천장 · 소환 풀 · 탭해서 공개 · 10+1 그리드 ─── */
+@keyframes v42Flash { 0% { opacity:.85; } 100% { opacity:0; } }
+@keyframes v42Invert { 0% { opacity:1; } 100% { opacity:0; } }
+@keyframes v42Glitch { 0%,100% { transform:none; } 25% { transform:translate(-6px,2px); } 50% { transform:translate(5px,-3px); } 75% { transform:translate(-3px,-1px); } }
+@keyframes v42Stamp { 0% { transform:scale(2.2) rotate(-8deg); opacity:0; } 100% { transform:rotate(-4deg); opacity:1; } }
+@keyframes v42Bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+@keyframes v42Deal { from { opacity:0; transform:translateY(24px) scale(.9); } to { opacity:1; transform:none; } }
+@keyframes v42GlowPulse { 0%,100% { opacity:.25; } 50% { opacity:.8; } }
+.v42-pity { display:flex; align-items:center; gap:12px; margin-top:14px; padding:12px 14px; border-radius:14px; border:1px solid #2a2a29; background:rgba(15,15,14,.6); color:#f2f2f0; }
+.v42-pity .lab { font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.18em; color:#9a9a97; white-space:nowrap; }
+.v42-pity .bar { flex:1; height:8px; border-radius:8px; background:#2a2a29; overflow:hidden; }
+.v42-pity .bar i { display:block; height:100%; border-radius:8px; background:linear-gradient(90deg,#f2f2f0,#f2c94c); transform-origin:left; transition:transform .6s cubic-bezier(.2,.8,.2,1); }
+.v42-pity .txt { font:800 11px var(--v4-mono,ui-monospace,monospace); white-space:nowrap; }
+.v42-plus { position:absolute; right:14px; top:0; transform:translateY(-50%); padding:2px 8px; border-radius:999px; background:#f2c94c; color:#111; font:800 10px var(--v4-mono,ui-monospace,monospace); }
+#btnGachaEleven { position:relative; overflow:visible; }
+.v42-pool { display:flex; flex-direction:column; gap:14px; color:#f2f2f0; }
+.v42-pool .odds { display:flex; flex-wrap:wrap; gap:14px; font:800 11px var(--v4-mono,ui-monospace,monospace); color:#c9c9c6; }
+.v42-pool .odds span { display:flex; align-items:center; gap:6px; }
+.v42-pool .odds i { width:8px; height:8px; border-radius:50%; background:var(--rc); box-shadow:0 0 0 1px #555; }
+.v42-pool h4 { margin:6px 0 0; font:800 11px var(--v4-mono,ui-monospace,monospace); letter-spacing:.2em; color:#9a9a97; }
+.v42-pool .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px; }
+.v42-pool .pc { position:relative; padding:6px; border-radius:12px; background:#f2f2f0; color:#111; box-shadow:0 0 0 2px var(--rc); animation:v42Deal .45s var(--d,0s) cubic-bezier(.2,.8,.2,1) backwards; }
+.v42-pool .pc .pic { aspect-ratio:1.3; border-radius:8px; background:#fff; overflow:hidden; display:grid; place-items:center; font-size:30px; }
+.v42-pool .pc img { width:100%; height:100%; object-fit:contain; }
+.v42-pool .pc .nm { display:flex; justify-content:space-between; gap:4px; padding:6px 2px 0; font-size:11px; font-weight:900; }
+.v42-pool .pc .nm small { font:800 9px var(--v4-mono,ui-monospace,monospace); color:#555; white-space:nowrap; }
+.v42-pool .pc.locked .pic { filter:grayscale(1); opacity:.55; }
+.v42-pool .pc .own { position:absolute; right:10px; top:10px; padding:2px 6px; border-radius:5px; background:#111; color:#fff; font:800 9px var(--v4-mono,ui-monospace,monospace); }
+/* 1회: 카드를 눌러 공개 */
+.gacha-reveal.tap .v4-flip { cursor:pointer; animation:v42Bob 1.6s ease-in-out infinite; }
+.gacha-reveal.tap .v4-flip .back div { animation:none !important; }
+.gacha-reveal.tap .gacha-reveal-rarity { animation:v42GlowPulse 1s ease-in-out infinite; }
+.gacha-reveal .v42-flash { position:absolute; inset:0; pointer-events:none; opacity:0; background:#f2c94c; }
+.gacha-reveal.fx-legend .v42-flash { animation:v42Flash .6s ease-out; }
+.gacha-reveal.fx-hidden .v42-flash { background:#f2f2f0; mix-blend-mode:difference; animation:v42Invert 1s ease-out; }
+.gacha-reveal .v42-hidden-word { position:absolute; left:0; right:0; top:60px; text-align:center; pointer-events:none; font:900 clamp(56px,14vw,110px) 'Arial Black',sans-serif; letter-spacing:-.05em; color:transparent; -webkit-text-stroke:2px #f2f2f0; opacity:0; }
+.gacha-reveal.fx-hidden .v42-hidden-word { opacity:1; animation:v42Glitch .4s 3, v42Invert 1.6s .4s forwards reverse; }
+.gacha-reveal .v42-stamp { display:none; padding:5px 12px; border:2px solid #f2f2f0; border-radius:6px; color:#f2f2f0; font-size:13px; font-weight:900; }
+.gacha-reveal .v42-stamp.new { display:inline-block; animation:v42Stamp .4s .2s cubic-bezier(.2,.8,.2,1) both; }
+.gacha-reveal .v42-stamp.dup { display:inline-block; border:0; padding:0; font-size:12px; font-weight:700; color:#a3a3a0; }
+.gacha-reveal.opening .v42-stamp, .gacha-reveal.tap .v42-stamp { display:none; }
+/* 10+1 */
+.v42-multi { position:fixed; inset:0; z-index:1200; display:none; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:20px; box-sizing:border-box; background:#080808; color:#f2f2f0; overflow:auto; }
+.v42-multi.show { display:flex; animation:v42Deal .25s; }
+.v42-multi .k { font:800 11px var(--v4-mono,ui-monospace,monospace); letter-spacing:.3em; color:#c9c9c6; }
+.v42-multi .grid { display:grid; grid-template-columns:repeat(6,110px); gap:12px; justify-content:center; }
+.v42-multi .mc { position:relative; width:110px; height:154px; perspective:800px; animation:v42Deal .4s var(--d) cubic-bezier(.2,.8,.2,1) backwards; }
+.v42-multi .mc.hi::before { content:''; position:absolute; inset:-14px; border-radius:22px; background:radial-gradient(closest-side,var(--rc),transparent); opacity:0; }
+.v42-multi.flipped .mc.hi::before { animation:v42GlowPulse 1.6s calc(var(--d) + .5s) ease-in-out infinite; }
+.v42-multi .spin { position:absolute; inset:0; transform-style:preserve-3d; transition:transform .6s var(--d) cubic-bezier(.3,1.4,.4,1); }
+.v42-multi.flipped .spin { transform:rotateY(180deg); }
+.v42-multi .back, .v42-multi .front { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:12px; background:#f2f2f0; padding:6px; box-sizing:border-box; }
+.v42-multi .back div { width:100%; height:100%; box-sizing:border-box; border-radius:8px; border:1px dashed #9a9a97; display:grid; place-items:center; background:repeating-linear-gradient(45deg,#e6e6e3 0 5px,#f2f2f0 5px 10px); font:900 22px 'Arial Black',sans-serif; color:#111; }
+.v42-multi .front { transform:rotateY(180deg); display:flex; flex-direction:column; gap:5px; box-shadow:0 0 0 2px var(--rc); color:#111; }
+.v42-multi .front .pic { flex:1; min-height:0; border-radius:8px; background:#fff; overflow:hidden; display:grid; place-items:center; }
+.v42-multi .front img { width:100%; height:100%; object-fit:contain; }
+.v42-multi .front .nm { display:flex; justify-content:space-between; align-items:center; gap:4px; }
+.v42-multi .front .nm b { font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v42-multi .front .nm i { width:7px; height:7px; flex-shrink:0; border-radius:50%; background:var(--rc); box-shadow:0 0 0 1px #111; }
+.v42-multi .front .new { position:absolute; left:8px; top:8px; padding:1px 5px; border-radius:4px; background:#111; color:#fff; font:800 8px var(--v4-mono,ui-monospace,monospace); }
+.v42-multi .best { display:flex; align-items:center; gap:10px; opacity:0; transition:opacity .4s 2s; }
+.v42-multi.flipped .best, .v42-multi.flipped .close { opacity:1; }
+.v42-multi .best .lab { font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.2em; color:#9a9a97; }
+.v42-multi .best .rl { padding:2px 8px; border-radius:5px; background:#111; border:1px solid var(--rc); color:var(--rc); font:800 10px var(--v4-mono,ui-monospace,monospace); }
+.v42-multi .close { padding:12px 26px; border-radius:999px; border:0; background:#f2f2f0; color:#111; font:inherit; font-size:13px; font-weight:900; cursor:pointer; opacity:0; transition:opacity .4s 2.1s; }
+@media (max-width:760px) { .v42-multi .grid { grid-template-columns:repeat(4,76px); gap:8px; } .v42-multi .mc { width:76px; height:106px; } }
+body.reduce-motion .v42-multi .spin { transition-delay:0s !important; }
 </style>
 </head>
 <body>
@@ -3934,6 +4137,7 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
           <button type="button" class="active" data-gacha-view="normal">일반 뽑기</button>
           <button type="button" data-gacha-view="pickup">픽업 뽑기</button>
           <button type="button" data-gacha-view="newpickup" id="btnGachaNewPickup" hidden>신규 지후 픽업</button>
+          <button type="button" data-gacha-view="pool">소환 풀</button>
           <button type="button" data-gacha-view="history">뽑기 내역</button>
         </nav>
         <span class="v4-pill">◆ <span id="gachaDiamondAmount">0</span></span>
@@ -3964,17 +4168,26 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
             <div class="gacha-odds" id="gachaOdds"></div>
             <div class="gacha-actions">
               <button type="button" class="v4-sbtn" id="btnGachaOne"><span class="v4-sweep"></span><img data-art="menu_summon" alt=""><span class="tx"><b>1회 뽑기</b><small>◆ 100</small></span><span>▶</span></button>
-              <button type="button" class="v4-sbtn outline" id="btnGachaEleven"><img data-art="menu_box" alt=""><span class="tx"><b>지후 상자</b><small>◆ 1,000 · 11회</small></span><span>▶</span></button>
+              <button type="button" class="v4-sbtn outline" id="btnGachaEleven"><span class="v42-plus">8~11기</span><img data-art="menu_box" alt=""><span class="tx"><b>지후 상자</b><small>◆ 1,000 · 일반·희귀 8기 + 계단식 보너스</small></span><span>▶</span></button>
             </div>
+            <div class="v42-pity" aria-label="천장"><span class="lab">천장</span><span class="bar"><i id="gachaPityFill"></i></span><span class="txt" id="gachaPityLab">0 / 80</span></div>
           </div>
           <div class="gacha-result" id="gachaResult"></div>
           <div class="gacha-history" id="gachaHistory" hidden></div>
+          <div class="v42-pool" id="gachaPool" hidden></div>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="v42-multi" id="gachaMulti" role="dialog" aria-modal="true" aria-label="지후 상자 결과" aria-hidden="true">
+    <span class="k" id="gachaMultiTitle">지후 상자</span>
+    <div class="grid" id="gachaMultiGrid"></div>
+    <div class="best" id="gachaMultiBest"></div>
+    <button type="button" class="close" id="btnGachaMultiClose">확인</button>
+  </div>
   <div class="gacha-reveal" id="gachaReveal" role="dialog" aria-modal="true" aria-label="뽑기 결과" aria-hidden="true">
+    <span class="v42-flash"></span><b class="v42-hidden-word" aria-hidden="true">HIDDEN</b>
     <div class="gacha-reveal-panel">
       <div id="gachaRevealCount">1 / 1</div>
       <div class="gacha-reveal-rarity" id="gachaRevealRarity">소환 중…</div>
@@ -3984,6 +4197,7 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
         <div class="front"><img class="gacha-reveal-portrait" id="gachaRevealPortrait" alt=""><div class="role"><b id="gachaRevealCardName"></b><span id="gachaRevealRole"></span></div></div>
       </div></div>
       <h2 class="gacha-reveal-name title-font" id="gachaRevealName"></h2>
+      <span class="v42-stamp" id="gachaRevealStamp"></span>
       <div class="gacha-reveal-desc" id="gachaRevealDesc"></div>
       <div class="gacha-reveal-actions">
         <button type="button" class="btn btn-secondary" id="btnGachaRevealSkip">모두 보기</button>
@@ -4174,11 +4388,15 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
         <canvas id="miniMapCanvas" width="224" height="308"></canvas>
         <div class="minimap-tag">MAP</div>
       </div>
+      <div class="v41-feed" id="v41Feed" aria-live="polite"></div>
+      <div class="v41-callout" id="v41Callout" aria-hidden="true"></div>
+      <div class="v42-go" id="v42Go" aria-hidden="true"><b>전투 시작!</b><span>배치가 잠겼어요 · 상대 진영 공개</span></div>
     </div>
 
     <div class="battle-bottom">
       <div class="battle-dock">
         <div class="bottom-status-line" id="bottomStatusLine" style="flex:1;text-align:left;min-height:0;">전투 준비중...</div>
+        <span class="v41-alive"><i></i><span>전투 중 · 적 <b id="v41AliveNum">0</b>기 남음</span></span>
         <button type="button" class="btn-dock" id="btnTogglePool">배치</button>
         <div class="lives-row" id="allyLivesDisplay" style="display:none; margin:0;">
           <span class="lives-label">라이프</span>
@@ -4187,7 +4405,9 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
           <div class="life-pip on ally"></div>
           <div class="life-pip on ally"></div>
         </div>
+        <button type="button" class="btn-v41-dock" id="btnV41Dock">접기</button>
       </div>
+      <div class="v41-dock" id="v41Dock"></div>
       <div class="pool-sheet" id="poolSheet">
         <div class="pool-row" id="poolRow"></div>
       </div>
@@ -4387,6 +4607,12 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
     <div class="settlement-note" id="developerMessage" aria-live="polite"></div>
   </div>
   <div class="settings-help">화면 설정은 브라우저에 저장됩니다. 개발자 모드는 새로고침 시 꺼집니다.</div>
+</div></div>
+<div class="app-modal" id="boxPayModal" role="dialog" aria-modal="true" aria-labelledby="boxPayTitle"><div class="modal-card v43-pay">
+  <div class="modal-head"><h2 id="boxPayTitle">지후 상자 열기</h2><button type="button" class="modal-close" data-close-modal="boxPayModal">✕</button></div>
+  <p class="v43-pay-sub">무엇으로 열까요?</p>
+  <button type="button" class="v43-pay-opt ticket" id="btnBoxPayTicket"><span class="ic">📦</span><span class="tx"><b>지후 상자 오픈권 사용</b><small id="boxPayTicketCount">보유 0장</small></span><span>▶</span></button>
+  <button type="button" class="v43-pay-opt" id="btnBoxPayDia"><span class="ic">◆</span><span class="tx"><b>다이아 1,000 사용</b><small id="boxPayDiaCount">보유 ◆ 0</small></span><span>▶</span></button>
 </div></div>
 <div class="app-modal" id="codeModal" role="dialog" aria-modal="true"><div class="modal-card">
   <div class="modal-head"><h2 class="title-font">코드 입력</h2><button type="button" class="modal-close" data-close-modal="codeModal">✕</button></div>
@@ -6377,6 +6603,7 @@ function applyMapLayout() {
   if (alab) alab.textContent = ew ? '아군 진영' : '아군 진영';
   syncWorldSize();
   fitCamera();
+  if (typeof v42BuildGrid === 'function' && state.units) { v42Resnap(); v42BuildGrid(); }
 }
 function inAllyZone(x, y) {
   return isEastWestLayout() ? x >= MAP_W * 0.5 : y >= MAP_H * 0.5;
@@ -6650,6 +6877,7 @@ const RARITY_LABEL = { common: '일반', rare: '희귀', epic: '영웅', legend:
 const RANK_NAMES = ['A', 'S', 'SR', 'SSR'];
 const RANK_SHARD_COSTS = { common:[15,30,45], rare:[8,16,24], epic:[3,10,20], legend:[1,2,4] };
 const DUPLICATE_SHARDS = 1; // 중복 지후 한 번에 주는 조각
+const GACHA_PITY = 80; // 4.1 천장: 전설·히든 없이 80번째 뽑기는 전설 확정
 const RANK_GOLD_COSTS = [2500,10000,25000]; // 3.6.3 절반으로
 const MASTERY_STEPS = [
   { count:50, name:'하수', reward:250 }, { count:100, name:'중수', reward:1000 },
@@ -6789,6 +7017,7 @@ function freshProfile() {
     ranks: {},
     masteryCounts: {},
     gachaHistory: [],
+    gachaPity: 0,
     decks: [STARTER_IDS.slice(), [], []],
     archivedDecks: [],
     activeDeck: 0,
@@ -6802,8 +7031,9 @@ function freshProfile() {
     activeMatch: null,
     competitive: { tp: 0, wins: 0, losses: 0, peak: 0, promo: -1, season: 0, lastReset: null, lastDeck: [] },
     daily: { day: '', points: 0, chestClaimed: false, progress: {}, awarded: {}, allCounted: false, shop: null },
-    inventory: { epicTicket: 0, legendTicket: 0 },
+    inventory: { epicTicket: 0, legendTicket: 0, boxTicket: 0 },
     draftTickets: 0,
+    ticketRegenAt: 0,
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
     achievements: { loginDays: 0, lastLoginDay: '', wins: 0, kills: 0, dailyAll: 0, acquired: { epic: 0, legend: 0, hidden: 0 }, claimed: { login: 0, wins: 0, kills: 0, dailyAll: 0, epic: 0, legend: 0, hidden: 0 } },
@@ -6866,6 +7096,7 @@ function normalizeProfile(raw) {
     shardsVersion: 2,
     ranks: raw.ranks && typeof raw.ranks === 'object' ? Object.fromEntries(Object.entries(raw.ranks).filter(([id]) => validIds.has(id)).map(([id,level]) => [id,Math.min(3,safeCount(level))])) : {},
     masteryCounts: raw.masteryCounts && typeof raw.masteryCounts === 'object' ? Object.fromEntries(Object.entries(raw.masteryCounts).filter(([id]) => validIds.has(id)).map(([id,count]) => [id,safeCount(count)])) : {},
+    gachaPity: Math.max(0, Math.min(GACHA_PITY - 1, Math.floor(Number(raw.gachaPity) || 0))),
     gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
     decks,
     archivedDecks,
@@ -6902,8 +7133,9 @@ function normalizeProfile(raw) {
       shop: rawDaily.shop && typeof rawDaily.shop === 'object' ? rawDaily.shop : null,
       allCounted: !!rawDaily.allCounted,
     },
-    inventory: { epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket) },
+    inventory: { epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), boxTicket: safeCount(rawInventory.boxTicket) },
     draftTickets: safeCount(raw.draftTickets),
+    ticketRegenAt: Math.max(0, Number(raw.ticketRegenAt) || 0),
     newcomer: {
       unlocked: !!rawNewcomer.unlocked || (!!(raw.wins || raw.losses) && !raw.newcomer),
       daysClaimed: Math.min(7, safeCount(rawNewcomer.daysClaimed)),
@@ -7546,6 +7778,7 @@ function matchupUnitHtml(id, i = 0, base = 0) {
 }
 
 function resetBattlePresentation() {
+  $('screen-battle')?.classList.remove('deathmatch');
   $('battleArena')?.classList.remove('final-moment');
   worldEl()?.classList.remove('cinematic-zoom');
   $('finalMoment')?.classList.remove('show');
@@ -7557,6 +7790,7 @@ function resetBattlePresentation() {
   if ($('resultTitle')) { $('resultTitle').textContent = ''; $('resultTitle').className = 'result-title'; }
   if ($('resultSub')) $('resultSub').textContent = '';
   if ($('statsPanel')) $('statsPanel').classList.remove('show');
+  v41HudClear();
 }
 
 function showMatchupPreview(next) {
@@ -7667,13 +7901,21 @@ function renderGachaHistory() {
 }
 function renderGachaView(view = gachaView) {
   gachaView = view;
-  const history = view === 'history';
-  $('gachaStage').hidden = history;
-  $('gachaSpotlight').hidden = history;
-  $('gachaResult').hidden = history;
+  const history = view === 'history', pool = view === 'pool';
+  $('gachaStage').hidden = history || pool;
+  $('gachaSpotlight').hidden = history || pool;
+  $('gachaResult').hidden = history || pool;
   $('gachaHistory').hidden = !history;
+  $('gachaPool').hidden = !pool;
   document.querySelectorAll('[data-gacha-view]').forEach(button => button.classList.toggle('active',button.dataset.gachaView === view));
-  if (history) {stopCombatPreview($('gachaPreview')); renderGachaHistory(); return;}
+  renderGachaPity();
+  renderGachaBoxButton();
+  if (history || pool) {
+    stopCombatPreview($('gachaPreview'));
+    document.querySelector('.gacha-layout')?.classList.add('no-spotlight');
+    if (history) renderGachaHistory(); else renderGachaPool();
+    return;
+  }
   const newPickup = newPickupInfo();
   $('btnGachaNewPickup').hidden = !newPickup;
   if (newPickup) $('btnGachaNewPickup').textContent = `${newPickup.version} 신규 지후 픽업`;
@@ -7685,7 +7927,7 @@ function renderGachaView(view = gachaView) {
     const left = Math.max(0, newPickup.endsAt - Date.now());
     $('gachaTitle').textContent = `${newPickup.version} 신규 지후 픽업`;
     $('gachaOdds').innerHTML = '1회: 전설 3.3% · 영웅 10% · 희귀 38.5% · 일반 48.2%<br>'
-      + '지후 상자: 일반·희귀 8기 확정 · 영웅 55% → 성공 시 전설 60%<br>'
+      + `지후 상자: 일반·희귀 8기 확정 · 영웅 55% → 성공 시 전설 60% · 천장 ${GACHA_PITY}회<br>`
       + `전설은 ${newPickup.version} 신규 지후만 등장합니다 (${newPickup.legendIds.map(id => CHAR_DB[id].name).join(', ')}). 히든은 등장하지 않습니다.<br>`
       + `종료까지 ${Math.floor(left / 3600000)}시간 ${Math.floor(left / 60000) % 60}분`;
     $('gachaDecor').innerHTML = newPickup.legendIds.slice(0, 6).map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
@@ -7711,7 +7953,7 @@ function renderGachaView(view = gachaView) {
   $('gachaOdds').innerHTML = (pickup
     ? '1회: 전설 3.3% · 영웅 10% · 희귀 38.5% · 일반 48.2%<br>'
     : '1회: 히든 0.3% · 전설 3% · 영웅 10% · 희귀 38.5% · 일반 48.2%<br>')
-    + '지후 상자: 일반·희귀 8기 확정 · 영웅 55% → 성공 시 전설 60%' + (pickup ? '' : ' → 성공 시 히든 20%') + '<br>'
+    + '지후 상자: 일반·희귀 8기 확정 · 영웅 55% → 성공 시 전설 60%' + (pickup ? '' : ' → 성공 시 히든 20%') + `<br>천장: 전설 없이 ${GACHA_PITY}번째 지후는 전설 확정 (상자의 지후도 셉니다)<br>`
     + (pickup ? '전설 등장 시 66.6% 확률로 오늘의 픽업 지후가 등장합니다. 히든은 등장하지 않습니다.' : `중복은 해당 지후 조각 ${DUPLICATE_SHARDS}개로 바뀝니다.`);
   const artIds = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden').slice(0,6);
   $('gachaDecor').innerHTML = artIds.map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
@@ -7728,10 +7970,6 @@ function rollGachaCharacter(mode = gachaView) {
   for (const item of weights) { roll -= item.weight; if (roll < 0) { rarity = item.rarity; break; } }
   return pickGachaCharacter(rarity, mode);
 }
-// 지후 상자: 일반·희귀 8기 확정 + 계단식 칸. 앞 칸이 성공해야 다음 칸에 도전한다.
-// 영웅 55% → 전설 60% → 히든 20% (픽업은 히든 칸 없음). 결과는 8~11기.
-const GACHA_BOX_BASE = 8;
-const GACHA_BOX_STEPS = { normal: [['epic', 55], ['legend', 60], ['hidden', 20]], pickup: [['epic', 55], ['legend', 60]] };
 function pickGachaCharacter(rarity, mode = gachaView) {
   if (mode === 'pickup' && rarity === 'legend' && Math.random() < .666) return dailyPickupId();
   if (mode === 'newpickup' && rarity === 'legend') {
@@ -7741,13 +7979,76 @@ function pickGachaCharacter(rarity, mode = gachaView) {
   const candidates = playableIds().filter(id => CHAR_DB[id].rarity === rarity);
   return candidates[Math.floor(Math.random() * candidates.length)] || STARTER_IDS[0];
 }
+// 4.1 천장: 전설·히든 없이 80번째 뽑기는 전설 확정. 일반·픽업·신규 픽업이 같은 카운트를 쓴다.
+function rollWithPity(mode) {
+  profile.gachaPity = (profile.gachaPity || 0) + 1;
+  const id = profile.gachaPity >= GACHA_PITY ? pickGachaCharacter('legend', mode) : rollGachaCharacter(mode);
+  const rarity = CHAR_DB[id]?.rarity;
+  if (rarity === 'legend' || rarity === 'hidden') profile.gachaPity = 0;
+  return id;
+}
+// 지후 상자: 일반·희귀 8기 확정 + 계단식 칸. 앞 칸이 성공해야 다음 칸에 도전한다.
+// 영웅 55% → 전설 60% → 히든 20% (픽업은 히든 칸 없음). 결과는 8~11기.
+const GACHA_BOX_BASE = 8;
+const GACHA_BOX_STEPS = { normal: [['epic', 55], ['legend', 60], ['hidden', 20]], pickup: [['epic', 55], ['legend', 60]] };
 function rollGachaBox(mode = gachaView) {
   const ids = Array.from({ length: GACHA_BOX_BASE }, () => pickGachaCharacter(Math.random() < 60 / 90 ? 'common' : 'rare', mode));
   for (const [rarity, chance] of GACHA_BOX_STEPS[mode === 'normal' ? 'normal' : 'pickup']) {
     if (Math.random() * 100 >= chance) break;
     ids.push(pickGachaCharacter(rarity, mode));
   }
+  // 4.1 천장: 상자의 지후도 한 기씩 세고, 상자 안에서 80에 닿으면 마지막 칸을 전설로 바꾼다.
+  profile.gachaPity = (profile.gachaPity || 0) + ids.length;
+  if (ids.some(id => ['legend', 'hidden'].includes(CHAR_DB[id]?.rarity))) profile.gachaPity = 0;
+  else if (profile.gachaPity >= GACHA_PITY) { ids[ids.length - 1] = pickGachaCharacter('legend', mode); profile.gachaPity = 0; }
   return ids;
+}
+function renderGachaPity() {
+  const n = Math.max(0, Math.min(GACHA_PITY, profile.gachaPity || 0));
+  if ($('gachaPityFill')) $('gachaPityFill').style.transform = `scaleX(${(n / GACHA_PITY).toFixed(3)})`;
+  if ($('gachaPityLab')) $('gachaPityLab').textContent = `${n} / ${GACHA_PITY} · 전설 확정까지 ${GACHA_PITY - n}회`;
+}
+const GACHA_RARITY_ORDER = { common: 0, rare: 1, epic: 2, legend: 3, hidden: 4 };
+function renderGachaPool() {
+  const odds = [['hidden', '0.3%'], ['legend', '3%'], ['epic', '10%'], ['rare', '38.5%'], ['common', '48.2%']];
+  const ids = playableIds();
+  let delay = 0;
+  $('gachaPool').innerHTML = `<div class="odds">${odds.map(([r, v]) => `<span style="--rc:${rarityColorVar(r)}"><i></i>${V4_RARITY_EN[r]} ${v}</span>`).join('')}<span>· 천장 ${GACHA_PITY}회 전설 확정</span></div>`
+    + ['hidden', 'legend', 'epic', 'rare', 'common'].map(r => {
+      const list = ids.filter(id => CHAR_DB[id].rarity === r);
+      if (!list.length) return '';
+      return `<h4>${RARITY_LABEL[r]} · ${list.length}</h4><div class="grid">` + list.map(id => {
+        const c = CHAR_DB[id], owned = isUnlocked(id);
+        delay = Math.min(delay + 0.02, 0.6);
+        return `<div class="pc${owned ? '' : ' locked'}" style="--rc:${rarityColorVar(r)};--d:${delay.toFixed(2)}s"><div class="pic">${portraitHtml(c)}</div><div class="nm"><span>${c.name}</span><small>${V4_RARITY_EN[r]}</small></div>${owned ? '<span class="own">보유</span>' : ''}</div>`;
+      }).join('') + '</div>';
+    }).join('');
+}
+function showGachaMulti(results) {
+  gachaRevealResults = results;
+  const overlay = $('gachaMulti');
+  $('gachaMultiGrid').innerHTML = results.map((result, i) => {
+    const c = CHAR_DB[result.id], hi = GACHA_RARITY_ORDER[c.rarity] >= 2;
+    return `<div class="mc${hi ? ' hi' : ''}" style="--d:${(i * 0.14).toFixed(2)}s;--rc:${rarityColorVar(c.rarity)}"><div class="spin"><div class="back"><div>JH</div></div>`
+      + `<div class="front"><div class="pic">${portraitHtml(c)}</div><div class="nm"><b>${c.name}</b><i></i></div>${result.duplicate ? '' : '<span class="new">NEW</span>'}</div></div></div>`;
+  }).join('');
+  const best = results.reduce((b, r) => GACHA_RARITY_ORDER[CHAR_DB[r.id].rarity] > GACHA_RARITY_ORDER[CHAR_DB[b.id].rarity] ? r : b, results[0]);
+  const bc = CHAR_DB[best.id];
+  $('gachaMultiBest').innerHTML = `<span class="lab">최고 등급</span><b></b><span class="rl" style="--rc:${rarityColorVar(bc.rarity)}">${V4_RARITY_EN[bc.rarity]}</span>`;
+  $('gachaMultiBest').querySelector('b').textContent = bc.name;
+  $('gachaMultiTitle').textContent = gachaAgainCost === -1 ? `지후 상자 · ${results.length}기` : `소환 결과 · ${results.length}개`;
+  overlay.classList.remove('flipped');
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+  clearTimeout(gachaRevealTimer);
+  gachaRevealTimer = setTimeout(() => overlay.classList.add('flipped'), 500);
+}
+function closeGachaMulti() {
+  clearTimeout(gachaRevealTimer);
+  gachaRevealResults = [];
+  $('gachaMulti').classList.remove('show', 'flipped');
+  $('gachaMulti').setAttribute('aria-hidden', 'true');
+  if (state.screen === 'gacha') $('btnGachaEleven').focus();
 }
 
 function rollShopRarity() { // 3.8.3: 전설은 따로 굴린다 (SHOP_LEGEND_CHANCE)
@@ -7895,13 +8196,14 @@ function showLevelCelebration() {
 let gachaRevealResults = [];
 let gachaRevealIndex = 0;
 let gachaRevealTimer = null;
+let gachaAgainCost = 0; // 1회 뽑기 결과 화면의 '한 번 더' 가격 (0이면 버튼 대신 확인)
 
 function closeGachaReveal() {
   clearTimeout(gachaRevealTimer);
   gachaRevealTimer = null;
   gachaRevealResults = [];
   const overlay = $('gachaReveal');
-  overlay.classList.remove('show', 'opening', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
+  overlay.classList.remove('show', 'opening', 'tap', 'fx-legend', 'fx-hidden', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
   overlay.setAttribute('aria-hidden', 'true');
   if (state.screen === 'gacha') $('btnGachaOne').focus();
 }
@@ -7913,34 +8215,76 @@ function showGachaReveal(index) {
   const character = CHAR_DB[result.id];
   const overlay = $('gachaReveal');
   overlay.style.setProperty('--rarity-color', rarityColorVar(character.rarity));
-  overlay.classList.remove('rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
+  overlay.classList.remove('tap', 'fx-legend', 'fx-hidden', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
   overlay.classList.add('rarity-' + character.rarity);
   overlay.classList.add('show', 'opening');
   overlay.setAttribute('aria-hidden', 'false');
-  $('gachaRevealCount').textContent = `${index + 1} / ${gachaRevealResults.length}`;
   const total = gachaRevealResults.length;
+  const single = total === 1;
+  $('gachaRevealCount').textContent = single ? '1회 소환' : `${index + 1} / ${total}`;
   $('gachaRevealRarity').textContent = total > 1 && index === 0 ? `총 ${total}개` : '소환 중…';
   $('gachaRevealName').textContent = '';
   $('gachaRevealDesc').textContent = '';
+  $('gachaRevealStamp').className = 'v42-stamp';
+  $('btnGachaRevealSkip').textContent = single ? '닫기' : '모두 보기';
   $('btnGachaRevealNext').disabled = true;
   $('btnGachaRevealNext').textContent = index === total - 1 ? '확인' : '다음';
   const delays = { common: 650, rare: 900, epic: 1200, legend: 1650, hidden: 3000 };
   clearTimeout(gachaRevealTimer);
-  gachaRevealTimer = setTimeout(() => {
-    $('gachaRevealRarity').textContent = RARITY_LABEL[character.rarity];
-    $('gachaRevealPortrait').src = character.portrait;
-    $('gachaRevealPortrait').alt = character.name;
-    $('gachaRevealName').textContent = character.name;
-    $('gachaRevealCardName').textContent = character.name;
-    $('gachaRevealRole').textContent = character.roleLabel;
-    $('gachaRevealDesc').innerHTML = character.skillDesc + `<br>${result.duplicate ? `중복 · 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}`;
-    overlay.classList.remove('opening');
-    $('btnGachaRevealNext').disabled = false;
-    $('btnGachaRevealNext').focus();
-  }, delays[character.rarity] + (total > 1 && index === 0 ? 1200 : 0)); // 첫 장은 총 개수를 읽을 시간을 준다
+  // 4.1: 1회는 소환진이 차오른 뒤 카드를 눌러야 공개된다 (등급 색은 미리 새어 나온다)
+  if (single) {
+    gachaRevealTimer = setTimeout(() => {
+      overlay.classList.add('tap');
+      $('gachaRevealRarity').textContent = '카드를 눌러 공개';
+      $('btnGachaRevealNext').textContent = '공개';
+      $('btnGachaRevealNext').disabled = false;
+      $('btnGachaRevealNext').focus();
+    }, Math.max(1500, delays[character.rarity]));
+    return;
+  }
+  gachaRevealTimer = setTimeout(() => revealGachaCard(index), delays[character.rarity] + (index === 0 ? 1200 : 0)); // 첫 장은 총 개수를 읽을 시간을 준다
 }
+function revealGachaCard(index) {
+  const result = gachaRevealResults[index];
+  if (!result) return;
+  const character = CHAR_DB[result.id];
+  const overlay = $('gachaReveal');
+  const single = gachaRevealResults.length === 1;
+  $('gachaRevealRarity').textContent = RARITY_LABEL[character.rarity];
+  $('gachaRevealPortrait').src = character.portrait;
+  $('gachaRevealPortrait').alt = character.name;
+  $('gachaRevealName').textContent = character.name;
+  $('gachaRevealCardName').textContent = character.name;
+  $('gachaRevealRole').textContent = character.roleLabel;
+  $('gachaRevealDesc').innerHTML = character.skillDesc;
+  const stamp = $('gachaRevealStamp');
+  stamp.textContent = result.duplicate ? `이미 보유 · 조각 +${DUPLICATE_SHARDS}` : 'NEW!';
+  stamp.className = 'v42-stamp ' + (result.duplicate ? 'dup' : 'new');
+  overlay.classList.remove('opening', 'tap');
+  if (character.rarity === 'legend' || character.rarity === 'hidden') { void overlay.offsetWidth; overlay.classList.add('fx-' + character.rarity); }
+  const next = $('btnGachaRevealNext');
+  if (single) {
+    $('btnGachaRevealSkip').textContent = '확인';
+    next.textContent = gachaAgainCost ? `한 번 더 · ◆ ${gachaAgainCost}` : '확인';
+  }
+  next.disabled = false;
+  next.focus();
+}
+function onGachaRevealNext() {
+  const overlay = $('gachaReveal');
+  if (overlay.classList.contains('tap')) { revealGachaCard(gachaRevealIndex); return; }
+  if (gachaRevealResults.length === 1 && gachaAgainCost && !overlay.classList.contains('opening')) {
+    const cost = gachaAgainCost;
+    closeGachaReveal();
+    performGacha(false, cost);
+    return;
+  }
+  showGachaReveal(gachaRevealIndex + 1);
+}
+$('gachaReveal').querySelector('.v4-flip').addEventListener('click', () => { if ($('gachaReveal').classList.contains('tap')) revealGachaCard(gachaRevealIndex); });
+$('btnGachaMultiClose').addEventListener('click', closeGachaMulti);
 
-$('btnGachaRevealNext').addEventListener('click', () => showGachaReveal(gachaRevealIndex + 1));
+$('btnGachaRevealNext').addEventListener('click', onGachaRevealNext);
 $('btnGachaRevealSkip').addEventListener('click', closeGachaReveal);
 
 function grantCharacter(id) {
@@ -7956,22 +8300,26 @@ function grantCharacter(id) {
 // 모집권·상점 구매도 뽑기와 같은 소환 연출로 보여준다
 function playSummonReveal(results) {
   if (!results.length || gachaRevealResults.length) return;
+  gachaAgainCost = 0;
+  if (results.length > 1) { showGachaMulti(results); return; }
   gachaRevealResults = results;
   showGachaReveal(0);
 }
 
-function performGacha(box, cost) {
+function performGacha(box, cost, useTicket = false) {
   if (gachaRevealResults.length) return;
-  if (profile.diamonds < cost) {
+  if (useTicket && !(box && profile.inventory.boxTicket > 0)) return;
+  if (!useTicket && profile.diamonds < cost) {
     $('gachaResult').innerHTML = '<div class="settlement-note" style="grid-column:1/-1;text-align:center;">다이아가 부족합니다. 경험치 부스트 중 랭크전에서 승리하면 100~200 다이아를 획득합니다.</div>';
     return;
   }
   const mode = gachaView;
-  if (mode === 'history') return;
+  if (mode === 'history' || mode === 'pool') return;
   if (mode === 'newpickup' && !newPickupInfo()) { renderGachaView('normal'); return; }
-  profile.diamonds -= cost;
+  if (useTicket) profile.inventory.boxTicket--;
+  else profile.diamonds -= cost;
   const results = [];
-  for (const id of box ? rollGachaBox(mode) : [rollGachaCharacter(mode)]) {
+  for (const id of box ? rollGachaBox(mode) : [rollWithPity(mode)]) {
     const duplicate = grantCharacter(id);
     results.push({ id, duplicate });
     profile.gachaHistory.push({ id, mode, duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at:Date.now() });
@@ -7984,6 +8332,9 @@ function performGacha(box, cost) {
     return `<div class="gacha-card" style="border-color:${rarityColorVar(c.rarity)};animation-delay:${index * 35}ms"><img src="${c.portrait}" alt=""><div class="name">${c.name}</div><div class="result-tag">${result.duplicate ? `중복 · 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}</div></div>`;
   }).join('');
   renderAccountUI();
+  renderGachaPity();
+  gachaAgainCost = box ? -1 : cost;
+  if (box) { showGachaMulti(results); return; }
   gachaRevealResults = results;
   showGachaReveal(0);
 }
@@ -8107,7 +8458,7 @@ window.addEventListener('beforeunload', event => {
 
 /* 3.2 account rewards. All claims mutate the same profile as the online backup. */
 const NEWCOMER_REWARDS = [
-  { label:'골드 10,000 + 랜덤 영웅 모집권', kind:'gold', amount:10000, extra: [{ kind:'epicTicket', amount:1 }] },
+  { label:'골드 10,000 + 지후 상자 오픈권', kind:'gold', amount:10000, extra: [{ kind:'boxTicket', amount:1 }] },
   { label:'랜덤 영웅 모집권', kind:'epicTicket', amount:1 },
   { label:'다이아 500', kind:'diamonds', amount:500 },
   { label:'골드 5,000', kind:'gold', amount:5000 },
@@ -8126,7 +8477,7 @@ const ACHIEVEMENT_RULES = [
 ];
 function rewardCard(title, description, action = '', disabled = false, className = '') {
   const actionText = action === 'shop' ? '상점 열기' : action === 'gacha' ? '뽑기' : action.startsWith('offerIndex:') ? '구매' : action.startsWith('exchange') ? '교환' : action === 'boost' ? '발동' : action.endsWith('Ticket') ? '사용' : '받기';
-  const green = !disabled && (action.startsWith('achievement:') || ['boost','epicTicket','legendTicket'].includes(action));
+  const green = !disabled && (action.startsWith('achievement:') || ['boost','epicTicket','legendTicket','boxTicket'].includes(action));
   return `<div class="reward-card ${className}"><div><b>${title}</b><p>${description}</p></div>${action ? `<button type="button" class="btn btn-secondary${green ? ' reward-ready' : ''}" ${disabled ? 'disabled' : ''} data-reward-action="${action}">${disabled ? '대기' : actionText}</button>` : ''}</div>`;
 }
 function renderInventory(message = '') {
@@ -8141,16 +8492,17 @@ function renderInventory(message = '') {
   const shardCards = Object.entries(profile.shards).filter(([id, count]) => CHAR_DB[id] && count > 0)
     .map(([id, count], index) => `<div class="v4-shard" style="animation-delay:${(0.05 + index * 0.04).toFixed(2)}s"><span class="pic"><img src="${CHAR_DB[id].portrait}" alt=""></span><span class="nm">${CHAR_DB[id].name}</span><span class="ct">×${formatNumber(count)}</span></div>`).join('');
   $('inventoryBody').innerHTML = `${message ? `<div class="v4-msg">${message}</div>` : ''}
-    <div class="v4-boost"><span class="sw"></span><span class="ic">🔥</span><span class="tx"><b>경험치 부스트 · 10분</b><span>${activeSeconds ? `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음` : `경험치 ×2 · 승리 시 ◆100~200 · 오늘 ${profile.xpBoost.usesToday}/2회 사용`}</span></span>
-      <button type="button" data-reward-action="boost" ${boostOff ? 'disabled' : ''}>${activeSeconds ? '사용 중' : '◆ 300 · 사용'}</button></div>
+    <div class="v4-boost"><span class="sw"></span><span class="ic">🔥</span><span class="tx"><b>경험치 부스트 · 10분</b><span id="inventoryBoostText">${activeSeconds ? `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음` : `경험치 ×2 · 승리 시 ◆100~200 · 오늘 ${profile.xpBoost.usesToday}/2회 사용`}</span></span>
+      <button type="button" id="inventoryBoostBtn" data-reward-action="boost" ${boostOff ? 'disabled' : ''}>${activeSeconds ? '사용 중' : '◆ 300 · 사용'}</button></div>
     <div class="v4-grid2" style="animation:rise .5s .32s backwards">
       <button type="button" class="v4-xbtn" data-reward-action="exchange100" ${profile.diamonds < 100 ? 'disabled' : ''}><span>◆ 100</span><span class="arr">→</span><span>● 1,000</span></button>
       <button type="button" class="v4-xbtn dark" data-reward-action="exchange1000" ${profile.diamonds < 1000 ? 'disabled' : ''}><span>◆ 1,000</span><span class="arr">→</span><span>● 11,000</span><span class="bonus">+10%</span></button>
     </div>
     <div class="v4-tickets">
-      <div class="v4-ticket"><b>🎟️ 티켓</b><span class="cnt">${profile.draftTickets || 0} / ${TICKET_MAX}</span><small>드래프트전·경쟁전 한 판에 1장. 일반전 승리 시 1장, 일일 퀘스트 600P 달성 시 3장.</small></div>
+      <div class="v4-ticket"><b>🎟️ 티켓</b><span class="cnt">${profile.draftTickets || 0} / ${TICKET_MAX}</span><small>드래프트전·경쟁전 한 판에 1장. 일반전 승리 시 1장, 일일 퀘스트 600P 달성 시 3장. 3장보다 적으면 15분마다 1장 자동 충전 · <b id="inventoryTicketRegen">${ticketRegenText() || '자동 충전 완료 (3장 이상)'}</b></small></div>
       <div class="v4-ticket"><b>랜덤 영웅 모집권</b><span class="cnt">×${profile.inventory.epicTicket}</span><small>영웅 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="epicTicket" ${profile.inventory.epicTicket ? '' : 'disabled'}>사용</button></div>
       <div class="v4-ticket"><b>랜덤 전설 모집권</b><span class="cnt">×${profile.inventory.legendTicket}</span><small>전설 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="legendTicket" ${profile.inventory.legendTicket ? '' : 'disabled'}>사용</button></div>
+      <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}`;
@@ -8213,6 +8565,21 @@ function useInventoryAction(action) {
   } else if (action === 'boost') {
     if (!activateXpBoost()) return;
     message = '경험치 부스트가 10분간 활성화되었습니다. 경험치 ×2, 승리 시 다이아 100~200.';
+  } else if (action === 'boxTicket') {
+    if (!profile.inventory.boxTicket || gachaRevealResults.length) return;
+    profile.inventory.boxTicket--;
+    const box = rollGachaBox('normal').map(id => {
+      const duplicate = grantCharacter(id);
+      profile.gachaHistory.push({ id, mode: 'normal', duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at: Date.now() });
+      return { id, duplicate };
+    });
+    profile.gachaHistory = profile.gachaHistory.slice(-200);
+    saveProfile();
+    renderAccountUI();
+    v4RenderQuiet($('inventoryBody'), () => renderInventory(`지후 상자 개봉! ${box.length}기를 얻었습니다.`));
+    gachaAgainCost = -1;
+    showGachaMulti(box);
+    return;
   } else if (action === 'epicTicket' || action === 'legendTicket') {
     if (!profile.inventory[action]) return;
     const rarity = action === 'epicTicket' ? 'epic' : 'legend';
@@ -8225,7 +8592,13 @@ function useInventoryAction(action) {
     summon = { id, duplicate };
   } else return;
   saveProfile();
-  renderInventory(message);
+  renderAccountUI();
+  const btn = $('inventoryBody').querySelector(`[data-reward-action="${action}"]`);
+  if (action.startsWith('exchange')) v4RewardPop(btn, `+● ${formatNumber(action === 'exchange100' ? 1000 : 11000)}`);
+  else if (action === 'boost') v4RewardPop(btn, '🔥 경험치 ×2 · 10분');
+  else v4RewardPop(btn, `+ ${CHAR_DB[summon.id].name}`);
+  v4BumpDiamond();
+  v4RenderQuiet($('inventoryBody'), () => renderInventory(message));
   if (summon) playSummonReveal([summon]);
 }
 function renderAttendance(message = '') {
@@ -8260,7 +8633,10 @@ function claimAttendance() {
   n.daysClaimed++;
   n.lastClaimDay = today;
   saveProfile();
-  renderAttendance(`${reward.label}을 받았습니다!`);
+  renderAccountUI();
+  const card = $('attendanceBody').querySelector('.v4-day.today');
+  if (card) { card.classList.add('claiming'); const tag = card.querySelector('.todaytag'); const stamp = document.createElement('span'); stamp.className = 'v4-claimstamp'; stamp.textContent = '완료'; card.appendChild(stamp); if (tag) tag.remove(); v4RewardPop(card, `+ ${reward.label}`); v4BumpDiamond(); }
+  setTimeout(() => v4RenderQuiet($('attendanceBody'), () => renderAttendance(`${reward.label}을 받았습니다!`)), 900);
 }
 function renderAchievements(message = '') {
   ensureDailyState();
@@ -8271,7 +8647,7 @@ function renderAchievements(message = '') {
       const current = rule.current();
       const ready = current >= goal;
       const unit = rule.key === 'kills' ? '회' : rule.key === 'login' ? '일' : '회';
-      return `<div class="v4-ach" style="animation-delay:${(0.05 + index * 0.05).toFixed(2)}s">
+      return `<div class="v4-ach" data-ach="${rule.key}" style="animation-delay:${(0.05 + index * 0.05).toFixed(2)}s">
         <div class="top"><span class="star">★</span><span class="tt"><b>${rule.label} ${formatNumber(goal)}${unit}</b><span>${claimed}단계 달성</span></span><span class="rw">◆ ${rule.reward}</span></div>
         <div class="bot"><span class="bar"><b style="transform:scaleX(${Math.min(1, goal ? current / goal : 0)})"></b></span><span class="pg">${formatNumber(Math.min(current, goal))} / ${formatNumber(goal)}</span>
         ${ready ? `<button type="button" class="v4-darkbtn" data-reward-action="achievement:${rule.key}">받기</button>` : ''}</div>
@@ -8279,8 +8655,44 @@ function renderAchievements(message = '') {
     }).join('') + '</div>';
   $('btnClaimAllAchievements').classList.toggle('reward-ready', ACHIEVEMENT_RULES.some(rule => rule.current() >= (profile.achievements.claimed[rule.key] + 1) * rule.step));
 }
+// 4.1 보상 받기 연출: 카드에 '완료' 도장 + 보상이 떠오르고, 상단 다이아 알약이 튄다.
+function v4RewardPop(fromEl, text) {
+  if (!fromEl) return;
+  const r = fromEl.getBoundingClientRect();
+  const pop = document.createElement('span');
+  pop.className = 'v4-rewardpop';
+  pop.textContent = text;
+  pop.style.left = (r.left + r.width / 2) + 'px';
+  pop.style.top = (r.top - 4) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+function v4BumpDiamond() {
+  document.querySelectorAll('#diamondAmount').forEach(el => {
+    const pill = el.closest('.v4-pill') || el.parentElement;
+    if (!pill) return;
+    pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
+  });
+}
+function v4ClaimFx(card, button, reward) {
+  if (!card) return;
+  card.classList.add('claiming');
+  if (button) {
+    const stamp = document.createElement('span');
+    stamp.className = 'v4-claimstamp';
+    stamp.textContent = '완료';
+    button.replaceWith(stamp);
+    v4RewardPop(stamp, reward);
+  } else v4RewardPop(card, reward);
+  v4BumpDiamond();
+}
+// 목록을 다시 그릴 때 등장 애니메이션을 다시 돌리지 않는다 (받기 뒤 갱신용)
+function v4RenderQuiet(container, render) {
+  container.classList.add('v4-noanim'); // 화면을 다시 열 때(showScreen) 풀린다
+  render();
+}
 function claimAllAchievements() {
-  let total = 0;
+  let total = 0, n = 0;
   // A single click may claim several already completed tiers of one achievement.
   for (const rule of ACHIEVEMENT_RULES) {
     let claimed = profile.achievements.claimed[rule.key];
@@ -8288,10 +8700,16 @@ function claimAllAchievements() {
     if (available) {
       profile.achievements.claimed[rule.key] += available;
       total += available * rule.reward;
+      const card = $('achievementsBody').querySelector(`[data-ach="${rule.key}"]`);
+      const btn = card && card.querySelector('[data-reward-action]');
+      setTimeout(() => v4ClaimFx(card, btn, `+◆ ${formatNumber(available * rule.reward)}`), n * 140);
+      n++;
     }
   }
-  if (total) { profile.diamonds += total; saveProfile(); }
-  renderAchievements(total ? `모든 보상을 받아 ◆${formatNumber(total)}을 획득했습니다!` : '지금 받을 수 있는 보상이 없습니다.');
+  if (total) { profile.diamonds += total; saveProfile(); renderAccountUI(); }
+  const msg = total ? `모든 보상을 받아 ◆${formatNumber(total)}을 획득했습니다!` : '지금 받을 수 있는 보상이 없습니다.';
+  if (!n) { renderAchievements(msg); return; }
+  setTimeout(() => v4RenderQuiet($('achievementsBody'), () => renderAchievements(msg)), 900 + n * 140);
 }
 
 function claimAchievement(key) {
@@ -8302,7 +8720,10 @@ function claimAchievement(key) {
   profile.achievements.claimed[key]++;
   profile.diamonds += rule.reward;
   saveProfile();
-  renderAchievements(`◆${rule.reward}을 받았습니다!`);
+  renderAccountUI();
+  const card = $('achievementsBody').querySelector(`[data-ach="${key}"]`);
+  v4ClaimFx(card, card && card.querySelector('[data-reward-action]'), `+◆ ${formatNumber(rule.reward)}`);
+  setTimeout(() => v4RenderQuiet($('achievementsBody'), () => renderAchievements(`◆${rule.reward}을 받았습니다!`)), 900);
 }
 
 function scheduleTask(fn, delay) {
@@ -8517,6 +8938,7 @@ function v4OnScreen(name) {
 function showScreen(name) {
   if (name === 'lobby' && !profile.nickname) name = 'welcome';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.v4-noanim').forEach(el => el.classList.remove('v4-noanim'));
   $('screen-' + name).classList.add('active');
   state.screen = name;
   v4OnScreen(name);
@@ -8543,7 +8965,8 @@ function renderLobbyPreview() {
     el.style.left = (6 + (i + (5 - cards.length) / 2) * 48) + 'px';
     el.style.top = (34 + Math.abs(off) * 12) + 'px';
     el.style.animationDelay = (0.3 + i * 0.08).toFixed(2) + 's';
-    el.innerHTML = `<div style="transform:rotate(${off * 8}deg)"><div class="card" style="animation-delay:${(i * 0.35).toFixed(2)}s"><div class="pic">${c.portrait ? `<img src="${c.portrait}" alt="${c.name}">` : c.emoji}</div><div class="foot"><span>JHBT</span><span>◆</span></div></div></div>`;
+    el.innerHTML = `<div style="transform:rotate(${off * 8}deg)"><div class="card" style="animation-delay:${(i * 0.35).toFixed(2)}s"><div class="pic">${c.portrait ? `<img src="${c.portrait}" alt="${c.name}">` : c.emoji}</div><div class="foot"><span class="nm"></span><span>◆</span></div></div></div>`;
+    el.querySelector('.foot .nm').textContent = c.name;
     wrap.appendChild(el);
   });
   const roster = $('menuRoster');
@@ -8556,11 +8979,11 @@ $('btnLobbyBoost').addEventListener('click', () => {
   saveProfile();
   renderAccountUI();
 });
-setInterval(() => { if (state.screen === 'lobby') { renderLobbyBoost(); renderLobbyBadges(); } }, 1000);
+setInterval(() => { if (state.screen === 'lobby') { renderLobbyBoost(); renderLobbyBadges(); } tickTicketRegen(); }, 1000);
 $('btnStartDraftBattle').addEventListener('click', () => {
   if ((profile.draftTickets || 0) <= 0) {
     const desc = $('btnStartDraftBattle').querySelector('.d');
-    desc.textContent = '티켓이 없습니다 · 일반전 승리·일일 퀘스트로 획득';
+    desc.textContent = `티켓이 없습니다 · ${ticketRegenText() || '15분마다 1장 자동 충전'}`;
     desc.classList.add('warn');
     setTimeout(() => { desc.classList.remove('warn'); renderDraftTile(); }, 2200);
     return;
@@ -8573,9 +8996,44 @@ function grantTickets(n) {
   profile.draftTickets = Math.min(TICKET_MAX, before + n);
   return profile.draftTickets - before;
 }
+// 4.1 티켓 자동 충전: 3장보다 적으면 15분마다 1장 (자동 충전은 3장까지). 꺼져 있던 동안의 시간도 계산한다.
+const TICKET_REGEN_MS = 15 * 60 * 1000;
+const TICKET_REGEN_CAP = 3;
+function regenTickets(now = Date.now()) {
+  const have = profile.draftTickets || 0;
+  if (have >= TICKET_REGEN_CAP) { profile.ticketRegenAt = now; return 0; }
+  let since = Number(profile.ticketRegenAt) || 0;
+  if (!since || since > now) { profile.ticketRegenAt = now; return 0; } // 처음이거나 기기 시계가 뒤로 간 경우
+  const steps = Math.floor((now - since) / TICKET_REGEN_MS);
+  if (steps <= 0) return 0;
+  const add = Math.min(steps, TICKET_REGEN_CAP - have);
+  profile.draftTickets = have + add;
+  profile.ticketRegenAt = profile.draftTickets >= TICKET_REGEN_CAP ? now : since + steps * TICKET_REGEN_MS;
+  return add;
+}
+function ticketRegenText(now = Date.now()) {
+  if ((profile.draftTickets || 0) >= TICKET_REGEN_CAP) return '';
+  const left = Math.max(0, (profile.ticketRegenAt || now) + TICKET_REGEN_MS - now);
+  const sec = Math.ceil(left / 1000);
+  return `+1까지 ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+}
+function tickTicketRegen() {
+  const added = regenTickets();
+  if (added) {
+    saveProfile();
+    if (state.screen === 'inventory') v4RenderQuiet($('inventoryBody'), () => renderInventory(`🎟️ 티켓 ${added}장이 충전되었습니다.`));
+    if (state.screen === 'complobby') renderCompLobby();
+  }
+  renderDraftTile();
+  const inv = $('inventoryTicketRegen');
+  if (inv) inv.textContent = ticketRegenText() || '자동 충전 완료 (3장 이상)';
+  const cl = $('clMatchSub');
+  if (cl && cl.dataset.regen === '1' && !cl.textContent.startsWith('티켓이 없습니다')) cl.textContent = `3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))} · 🎟️ ${profile.draftTickets || 0}/${TICKET_MAX}${ticketRegenText() ? ' · ' + ticketRegenText() : ''}`;
+}
 function renderDraftTile() {
   const desc = $('btnStartDraftBattle')?.querySelector('.d');
-  if (desc && !desc.classList.contains('warn')) desc.textContent = `5:5 밴픽 · 3판 2선승 · 🎟️ 티켓 ${profile.draftTickets || 0}/${TICKET_MAX}`;
+  const regen = ticketRegenText();
+  if (desc && !desc.classList.contains('warn')) desc.textContent = `5:5 밴픽 · 3판 2선승 · 🎟️ 티켓 ${profile.draftTickets || 0}/${TICKET_MAX}${regen ? ' · ' + regen : ''}`;
 }
 $('btnStartComp').addEventListener('click', () => openCompLobby());
 $('btnStartGame').addEventListener('click', () => {
@@ -8589,7 +9047,25 @@ $('btnGachaBack').addEventListener('click', () => { stopCombatPreview($('gachaPr
 document.querySelectorAll('[data-gacha-view]').forEach(button => button.addEventListener('click', () => renderGachaView(button.dataset.gachaView)));
 setInterval(() => { if (state.screen === 'gacha' && (localDayKey() !== pickupDayShown || gachaView === 'newpickup' || $('btnGachaNewPickup').hidden !== !newPickupInfo())) renderGachaView(gachaView); }, 30000);
 $('btnGachaOne').addEventListener('click', () => performGacha(false, 100));
-$('btnGachaEleven').addEventListener('click', () => performGacha(true, 1000));
+// 4.1: 지후 상자 오픈권이 있으면 무엇으로 열지 묻는다
+$('btnGachaEleven').addEventListener('click', () => {
+  if (gachaRevealResults.length) return;
+  const tickets = profile.inventory.boxTicket || 0;
+  if (!tickets) { performGacha(true, 1000); return; }
+  $('boxPayTicketCount').textContent = `보유 ${tickets}장 · 다이아를 쓰지 않아요`;
+  $('boxPayDiaCount').textContent = `보유 ◆ ${formatNumber(profile.diamonds)}${profile.diamonds < 1000 ? ' · 부족' : ''}`;
+  $('btnBoxPayDia').disabled = profile.diamonds < 1000;
+  openModal('boxPayModal');
+  $('btnBoxPayTicket').focus();
+});
+$('btnBoxPayTicket').addEventListener('click', () => { closeModal('boxPayModal'); performGacha(true, 0, true); renderGachaBoxButton(); });
+$('btnBoxPayDia').addEventListener('click', () => { closeModal('boxPayModal'); performGacha(true, 1000); });
+// 오픈권이 있으면 상자 버튼에 표시한다
+function renderGachaBoxButton() {
+  const small = $('btnGachaEleven')?.querySelector('small');
+  const n = profile.inventory.boxTicket || 0;
+  if (small) small.textContent = n ? `◆ 1,000 또는 📦 오픈권 (${n}장)` : '◆ 1,000 · 일반·희귀 8기 + 계단식 보너스';
+}
 
 const ARENA_MAX = 8;
 const ARENA_MAX_LEVEL = 7;
@@ -9746,7 +10222,8 @@ function renderCompLobby() {
   const season = compSeason();
   const claimed = compPromoClaimed();
   $('clSeasonChip').textContent = `SEASON ${season.number}`;
-  $('clMatchSub').textContent = `3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))} · 🎟️ ${profile.draftTickets || 0}/${TICKET_MAX}`;
+  $('clMatchSub').textContent = `3:3 밴픽 · ${matchLabel(compMatchWins('competitive'))} · 🎟️ ${profile.draftTickets || 0}/${TICKET_MAX}${ticketRegenText() ? ' · ' + ticketRegenText() : ''}`;
+  $('clMatchSub').dataset.regen = '1';
   $('clSeason').innerHTML = `<h3>시즌 ${season.number}</h3>
     <div class="cl-season-end">${formatSeasonDate(season.end)} 00:00 종료 · 남은 기간 ${formatRemaining(season.end - Date.now())}</div>
     ${record.lastReset && record.lastReset.season === season.number ? `<div class="settlement-note">시즌 ${season.number} 시작 · 티어 ${compTierInfo(record.lastReset.from).name} → <b>${compTierInfo(record.lastReset.to).name}</b></div>` : ''}
@@ -9756,7 +10233,7 @@ function renderCompLobby() {
 }
 $('btnCompLobbyBack').addEventListener('click', () => { showScreen('lobby'); renderAccountUI(); });
 $('btnCompMatch').addEventListener('click', () => {
-  if ((profile.draftTickets || 0) <= 0) { $('clMatchSub').textContent = '티켓이 없습니다 · 일반전 승리·일일 퀘스트로 획득'; setTimeout(renderCompLobby, 2200); return; }
+  if ((profile.draftTickets || 0) <= 0) { $('clMatchSub').textContent = `티켓이 없습니다 · ${ticketRegenText() || '15분마다 1장 자동 충전'}`; setTimeout(renderCompLobby, 2200); return; }
   beginMatchmaking('competitive');
 });
 
@@ -9773,6 +10250,7 @@ function startDraftMode(modeKey, match = null) {
   if (cfg.ticket) {
     if ((profile.draftTickets || 0) <= 0) { showScreen('lobby'); renderAccountUI(); return; }
     profile.draftTickets--;
+    if (profile.draftTickets === TICKET_REGEN_CAP - 1) profile.ticketRegenAt = Date.now(); // 3장에서 내려가는 순간부터 15분을 센다
     saveProfile();
   }
   leaveBattle();
@@ -10305,6 +10783,7 @@ function updateLifeUI() {
 
 function startRound() {
   cancelRuntimeTasks();
+  v41HudClear();
   // 시간 종료 무승부 때 이번 라운드의 배치와 스킬 결과를 버리고 다시 편성한다.
   state.roundStartPlacements = state.placements.map(p => ({ ...p }));
   state.roundStartReaperGrudges = { ...state.reaperGrudges };
@@ -10343,7 +10822,9 @@ function startRound() {
   state.placements.forEach(p => {
     if (state.mode === 'castle' && state.units.some(u => u.alive && u.placementId === p.id)) return;
     if (!p.id) p.id = 'placement-' + Math.random();
-    spawnUnit(p.side, p.x, p.y, p.charId, { saved: true, quiet: true, form: p.form, level: p.level || 1, placementId: p.id });
+    if (p.tile != null && v42Enabled()) Object.assign(p, v42TileCenter(p.side, p.tile));
+    const back = spawnUnit(p.side, p.x, p.y, p.charId, { saved: true, quiet: true, form: p.form, level: p.level || 1, placementId: p.id });
+    if (back && p.tile != null) back.tile = p.tile;
   });
   checkTaegukHarmony('ally');
   checkTaegukHarmony('enemy');
@@ -10417,26 +10898,46 @@ function completeDeployAction(delay = 700) {
   clearPhaseTimer();
   pendingPoolIdx = null;
   state.pendingPick = false;
+  V42.moveSel = null; hideRangeRing();
   document.querySelectorAll('.pool-card').forEach(el => el.classList.add('picked'));
   enemyAutoDeployOne();
   checkTaegukHarmony('ally');
   checkTaegukHarmony('enemy');
+  v42RefreshGrid();
   scheduleTask(nextDeployCycle, delay);
 }
 
+// 4.1 배치 기회: 일반전은 1~3라운드 2번, 4라운드부터 3번. 드래프트전·경쟁전은 3번.
+// 양쪽 라이프가 모두 1이면 데스매치: 6번.
+const DEATHMATCH_DEPLOYS = 6;
+function isDeathmatch() {
+  return (state.mode === 'ranked' || !!DRAFT_MODES[state.mode]) && state.allyLives === 1 && state.enemyLives === 1;
+}
+function deployChances() {
+  if (isDeathmatch()) return DEATHMATCH_DEPLOYS;
+  if (state.mode === 'ranked') return state.round >= 4 ? 3 : 2;
+  return 3;
+}
 function nextDeployCycle() {
   state.deployRounds++;
-  const deployMax = state.mode === 'ranked' ? 2 : 3; // 3.8.3: 일반전은 라운드마다 2번
+  const deployMax = deployChances();
   if (state.deployRounds > deployMax) { beginCombatPhase(); return; }
+  if (state.deployRounds === 1) {
+    const dm = isDeathmatch();
+    $('screen-battle').classList.toggle('deathmatch', dm);
+    if (dm) v42ShowGo('DEATHMATCH', `양쪽 라이프 1 · 이번 라운드 배치 ${DEATHMATCH_DEPLOYS}번`, 'dm');
+    else if (state.mode === 'ranked' && state.round === 4) v42ShowGo(`ROUND ${state.round}`, '지금부터 라운드마다 배치 3번', 'info');
+  }
   state.phase = 'deploy';
   $('screen-battle').dataset.phase = 'deploy';
   const allyCount = countedAlive('ally');
-  $('bottomStatusLine').innerHTML = `배치 <b>${state.deployRounds}</b>/${deployMax} · 유닛 <b>${allyCount}</b>/${maxUnitsFor('ally')}`;
+  $('bottomStatusLine').innerHTML = `${isDeathmatch() ? '<b>☠ 데스매치</b> · ' : ''}배치 <b>${state.deployRounds}</b>/${deployMax} · 유닛 <b>${allyCount}</b>/${maxUnitsFor('ally')} · 전열은 먼저 맞고, 후열은 보호받아요`;
 
   const source = state.allyBench.length ? state.allyBench : (DRAFT_MODES[state.mode] ? state.myDeckIds : playableIds());
   state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round);
   renderPool();
   openPoolSheet(true);
+  v42RefreshGrid();
   startPhaseTimer(15, autoPlacePool);
 }
 
@@ -10488,17 +10989,33 @@ function renderPool() {
     completeDeployAction();
   });
   actions.appendChild(skipBtn);
+  if (v42Enabled()) {
+    const presets = document.createElement('div');
+    presets.className = 'v42-presets';
+    presets.innerHTML = '<span class="lab">진형</span>';
+    V42_PRESETS.forEach((preset, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = preset.name;
+      b.addEventListener('click', ev => { ev.stopPropagation(); v42ApplyPreset(i); });
+      presets.appendChild(b);
+    });
+    actions.appendChild(presets);
+  }
 }
 
 let pendingPoolIdx = null;
 function selectPoolCard(idx) {
   if (state.phase !== 'deploy') return;
+  V42.moveSel = null; hideRangeRing();
   pendingPoolIdx = idx;
   state.pendingPick = true;
   document.querySelectorAll('.pool-card').forEach((el, i) => {
     el.style.borderColor = i === idx ? 'var(--accent-gold)' : 'var(--border-warm)';
   });
-  $('bottomStatusLine').innerHTML = `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 아군 진영을 터치하세요`;
+  $('bottomStatusLine').innerHTML = v42Enabled()
+    ? `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 빈 칸에 놓거나, 같은 지후 칸(금색)에 겹쳐 레벨업`
+    : `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 아군 진영을 터치하세요`;
+  v42RefreshGrid();
 }
 
 function tryDeployMergeOrPlace(x, y, clickedUnit) {
@@ -10508,7 +11025,10 @@ function tryDeployMergeOrPlace(x, y, clickedUnit) {
   let mergeTarget = null;
   if (clickedUnit && clickedUnit.alive && clickedUnit.side === 'ally' && clickedUnit.charId === charId && !clickedUnit.isClone && !clickedUnit.skipCount)
     mergeTarget = clickedUnit;
-  if (!mergeTarget) {
+  if (!mergeTarget && v42Enabled()) {
+    const owner = v42TileUnit('ally', v42TileAt('ally', x, y));
+    if (owner && owner.charId === charId) mergeTarget = owner;
+  } else if (!mergeTarget) {
     mergeTarget = state.units.find(u =>
       u.side === 'ally' && u.alive && u.charId === charId && !u.isClone &&
       Math.hypot(u.x - x, u.y - y) <= 96 * WORLD_SCALE
@@ -10527,7 +11047,17 @@ function tryDeployMergeOrPlace(x, y, clickedUnit) {
 }
 
 $('battleArena').addEventListener('click', e => {
-  if (!CAM.moved) hideRangeRing(); // 빈 필드를 누르면 사거리 원을 지운다 (드래그는 제외, 유닛 클릭은 전파를 막는다)
+  if (!CAM.moved && !V42.moveSel) hideRangeRing(); // 빈 필드를 누르면 사거리 원을 지운다 (드래그는 제외, 유닛 클릭은 전파를 막는다)
+  if (state.phase === 'deploy' && pendingPoolIdx === null && !CAM.moved && v42Enabled() && !(e.target.closest && e.target.closest('#miniMap, #camZoom'))) {
+    // 카메라 드래그가 포인터를 잡아서 클릭이 유닛이 아니라 전장으로 온다. 누른 자리의 유닛을 직접 찾는다.
+    const unitEl = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList && el.classList.contains('unit'));
+    const tapped = unitEl ? state.units.find(u => u.el === unitEl && u.alive) : null;
+    if (tapped && tapped.side === 'ally' && !tapped.ownerUid) {
+      if (!v42HandleUnitTap(tapped)) { showCharDetail(tapped.def, tapped); showRangeRing(tapped); }
+      return;
+    }
+    if (V42.moveSel) { const pt = worldPointFromEvent(e); v42HandleFieldTap(pt.x, pt.y); return; }
+  }
   if (state.phase !== 'deploy' || pendingPoolIdx === null) { CAM.moved = false; return; }
   if (CAM.moved && !(e.target.closest && e.target.closest('.unit'))) { CAM.moved = false; return; }
   CAM.moved = false;
@@ -10538,6 +11068,14 @@ $('battleArena').addEventListener('click', e => {
   if (clickedUnit) { x = clickedUnit.x; y = clickedUnit.y; }
   if (tryDeployMergeOrPlace(x, y, clickedUnit)) return;
 
+  let v42Tile = null;
+  if (v42Enabled()) {
+    v42Tile = v42TileAt('ally', x, y);
+    if (v42Tile == null) { $('bottomStatusLine').textContent = '아군 진영의 칸 안에만 배치할 수 있습니다!'; return; }
+    const owner = v42TileUnit('ally', v42Tile);
+    if (owner) { $('bottomStatusLine').innerHTML = `이미 <b>${owner.def.name}</b>이(가) 있는 칸입니다. 빈 칸이나 같은 지후 칸을 누르세요`; return; }
+    ({ x, y } = v42TileCenter('ally', v42Tile));
+  }
   if (!clickedUnit && !inAllyZone(x, y)) {
     $('bottomStatusLine').textContent = isEastWestLayout()
       ? '아군 진영(오른쪽)에만 배치할 수 있습니다!'
@@ -10548,7 +11086,7 @@ $('battleArena').addEventListener('click', e => {
   const charId = state.pool[pendingPoolIdx];
   const MERGE_RADIUS = 90 * WORLD_SCALE;
   // 동일 종류 합체: 가까운 같은 charId 아군이 있으면 레벨업
-  const mergeTarget = state.units.find(u =>
+  const mergeTarget = v42Enabled() ? null : state.units.find(u =>
     u.side === 'ally' && u.alive && u.charId === charId &&
     Math.hypot(u.x - x, u.y - y) <= MERGE_RADIUS
   );
@@ -10589,7 +11127,8 @@ $('battleArena').addEventListener('click', e => {
     return;
   }
 
-  spawnUnit('ally', x, y, charId);
+  if (v42Tile != null) v42Spawn('ally', v42Tile, charId);
+  else spawnUnit('ally', x, y, charId);
 
   const benchIdx = state.allyBench.indexOf(charId);
   if (benchIdx >= 0) state.allyBench.splice(benchIdx, 1);
@@ -10608,6 +11147,9 @@ function autoPlacePool() {
     levelUpUnit(same);
     const placement = state.placements.find(p => p.id === same.placementId);
     if (placement) placement.level = same.level;
+  } else if (v42Enabled() && allyCount < maxUnitsFor('ally') && canPlaceNew('ally', charId)) {
+    const tile = v42PickTile('ally', charId, v42RoleRow(charId));
+    if (tile != null) v42Spawn('ally', tile, charId);
   } else if (allyCount < maxUnitsFor('ally') && canPlaceNew('ally', charId)) {
     // find non-overlapping spot
     const band = aiDepthBand('ally', 0.58, 0.90);
@@ -10670,6 +11212,12 @@ function enemyAutoDeployOne() {
     }
     if (countedAlive('enemy') >= maxUnitsFor('enemy') || !canPlaceNew('enemy', charId)) {
       // 자리가 없거나 출격제한에 걸리면 건너뛴다
+      return;
+    }
+    if (v42Enabled()) {
+      // 실력이 있을수록 역할에 맞는 줄(탱커 전열 · 딜러 중열 · 서포터 후열)에 둔다
+      const tile = v42PickTile('enemy', charId, Math.random() < (state.botSkill || 0) ? v42RoleRow(charId) : null);
+      if (tile != null) v42Spawn('enemy', tile, charId);
       return;
     }
     // non-overlapping spot in enemy half
@@ -10991,6 +11539,7 @@ function spawnUnit(side, x, y, charId, opts) {
       // 다른 유닛 클릭 시 스탯 패널 열지 않음
       return;
     }
+    if (v42HandleUnitTap(unit)) return;
     showCharDetail(def, unit);
     showRangeRing(unit);
   });
@@ -11042,6 +11591,450 @@ function startPhaseTimer(sec, cb) {
 function clearPhaseTimer() {
   if (state.timerHandle) clearInterval(state.timerHandle);
   state.timerHandle = null;
+}
+
+// 4.1 인게임 HUD: 킬 피드 · 스킬 콜아웃 · 하단 아군 스킬 도크 (시안 '전투 화면 v2' 8a)
+const V41_RING = { hidden: '#111', legend: '#f2c94c', epic: '#c77dff', rare: '#4d8ef7' };
+
+// 4.1 8×3 칸 배치 (시안 9a): 진영마다 가로 8칸 × 세로 3줄(전열·중열·후열).
+// 칸 번호 = 줄 × 8 + 칸. 배치 기록(placements)에 칸을 저장하고, 라운드마다 그 칸 중심에 그대로 다시 소환한다.
+const V42_COLS = 8, V42_ROWS = 3;
+const V42_DEPTH = [0.60, 0.72, 0.84]; // 아군 기준 깊이 비율 (0.5 = 중앙선). 적은 1 - 값
+const V42_ACROSS = [0.1, 0.9];
+const V42_ROW_LABEL = ['전열', '중열', '후열'];
+const V42 = { moveSel: null };
+function v42Enabled() { return state.mode !== 'arena' && state.mode !== 'preview' && state.mode !== 'castle'; }
+function v42TileCenter(side, tile) {
+  const col = tile % V42_COLS, row = Math.floor(tile / V42_COLS);
+  const across = V42_ACROSS[0] + (col + 0.5) * (V42_ACROSS[1] - V42_ACROSS[0]) / V42_COLS;
+  const depth = side === 'ally' ? V42_DEPTH[row] : 1 - V42_DEPTH[row];
+  return isEastWestLayout() ? { x: MAP_W * depth, y: MAP_H * across } : { x: MAP_W * across, y: MAP_H * depth };
+}
+function v42TileAt(side, x, y) {
+  const ew = isEastWestLayout();
+  let depth = ew ? x / MAP_W : y / MAP_H;
+  const across = ew ? y / MAP_H : x / MAP_W;
+  if (side !== 'ally') depth = 1 - depth;
+  const half = (V42_DEPTH[1] - V42_DEPTH[0]) / 2;
+  const row = V42_DEPTH.findIndex(d => Math.abs(depth - d) <= half);
+  if (row < 0 || across < V42_ACROSS[0] || across >= V42_ACROSS[1]) return null;
+  const col = Math.floor((across - V42_ACROSS[0]) / ((V42_ACROSS[1] - V42_ACROSS[0]) / V42_COLS));
+  return row * V42_COLS + Math.min(V42_COLS - 1, col);
+}
+function v42TileUnit(side, tile) {
+  if (tile == null) return null;
+  return state.units.find(u => u.side === side && u.alive && u.tile === tile && !u.skipCount && !u.isClone) || null;
+}
+function v42TileBlocked(side, tile, charId) {
+  if (v42TileUnit(side, tile)) return true;
+  const c = v42TileCenter(side, tile);
+  const body = { def: CHAR_DB[charId], level: 1 };
+  return state.units.some(u => u.alive && Math.hypot(u.x - c.x, u.y - c.y) < bodySeparation(body, u));
+}
+function v42RoleRow(charId) {
+  const band = botRoleBand(charId), mid = (band[0] + band[1]) / 2;
+  return mid >= 0.3 ? 0 : mid >= 0.2 ? 1 : 2;
+}
+// 가운데 칸부터 바깥으로
+const V42_CENTER_OUT = [3, 4, 2, 5, 1, 6, 0, 7];
+function v42PickTile(side, charId, preferRow = null) {
+  const rows = preferRow == null ? [0, 1, 2].sort(() => Math.random() - 0.5) : [preferRow, ...[0, 1, 2].filter(r => r !== preferRow)];
+  for (const row of rows) {
+    const cols = preferRow == null ? V42_CENTER_OUT.slice().sort(() => Math.random() - 0.5) : V42_CENTER_OUT.map(c => ({ c, k: Math.random() + V42_CENTER_OUT.indexOf(c) * 0.35 })).sort((a, b) => a.k - b.k).map(o => o.c);
+    for (const col of cols) {
+      const tile = row * V42_COLS + col;
+      if (!v42TileBlocked(side, tile, charId)) return tile;
+    }
+  }
+  return null;
+}
+function v42Spawn(side, tile, charId) {
+  const c = v42TileCenter(side, tile);
+  const u = spawnUnit(side, c.x, c.y, charId);
+  if (!u) return null;
+  u.tile = tile;
+  const pl = state.placements.find(p => p.id === u.placementId);
+  if (pl) pl.tile = tile;
+  return u;
+}
+function v42PlaceUnitDom(u, x, y) {
+  u.x = x; u.y = y;
+  u.el.style.left = x + 'px'; u.el.style.top = y + 'px';
+  if (u.ringEl) { u.ringEl.style.left = x + 'px'; u.ringEl.style.top = y + 'px'; }
+  physInitBody(u);
+}
+function v42MoveUnit(u, tile) {
+  const c = v42TileCenter(u.side, tile);
+  const dx = c.x - u.x, dy = c.y - u.y;
+  v42PlaceUnitDom(u, c.x, c.y);
+  u.tile = tile;
+  const pl = state.placements.find(p => p.id === u.placementId);
+  if (pl) { pl.x = c.x; pl.y = c.y; pl.tile = tile; }
+  // 미니 추가 2기·듀엣 짝처럼 본체를 따라다니는 유닛도 같이 옮긴다
+  state.units.filter(x => x.ownerUid === u.uid && x.alive).forEach(x => v42PlaceUnitDom(x,
+    clamp(x.x + dx, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), clamp(x.y + dy, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD)));
+  if (rangeRing && rangeRing.unit === u) positionRangeRing(u.x, u.y);
+}
+function v42BuildGrid() {
+  const world = worldEl();
+  if (!world) return;
+  world.querySelectorAll('.v42-grid').forEach(el => el.remove());
+  if (!v42Enabled()) return;
+  const ew = isEastWestLayout();
+  const acrossDim = ew ? MAP_H : MAP_W, depthDim = ew ? MAP_W : MAP_H;
+  const tw = (V42_ACROSS[1] - V42_ACROSS[0]) * acrossDim / V42_COLS - 8;
+  const th = (V42_DEPTH[1] - V42_DEPTH[0]) * depthDim - 10;
+  ['enemy', 'ally'].forEach(side => {
+    const grid = document.createElement('div');
+    grid.className = 'v42-grid ' + side;
+    for (let tile = 0; tile < V42_COLS * V42_ROWS; tile++) {
+      const c = v42TileCenter(side, tile);
+      const t = document.createElement('div');
+      t.className = 'v42-tile';
+      t.dataset.tile = tile;
+      t.style.left = c.x + 'px'; t.style.top = c.y + 'px';
+      t.style.width = (ew ? th : tw) + 'px'; t.style.height = (ew ? tw : th) + 'px';
+      grid.appendChild(t);
+    }
+    if (side === 'ally') V42_ROW_LABEL.forEach((label, row) => {
+      const c = v42TileCenter(side, row * V42_COLS);
+      const lab = document.createElement('span');
+      lab.className = 'v42-rowlab';
+      lab.textContent = label;
+      if (ew) { lab.style.left = c.x + 'px'; lab.style.top = (c.y - tw / 2 - 26) + 'px'; }
+      else { lab.style.left = (c.x - tw / 2 - 30) + 'px'; lab.style.top = c.y + 'px'; }
+      grid.appendChild(lab);
+    });
+    world.insertBefore(grid, world.firstChild);
+  });
+  v42RefreshGrid();
+}
+function v42RefreshGrid() {
+  const grid = document.querySelector('.v42-grid.ally');
+  if (!grid) return;
+  const pick = state.phase === 'deploy' && pendingPoolIdx != null ? state.pool[pendingPoolIdx] : null;
+  const moving = state.phase === 'deploy' && V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
+  grid.classList.toggle('picking', !!(pick || moving));
+  grid.querySelectorAll('.v42-tile').forEach(t => {
+    const tile = +t.dataset.tile, owner = v42TileUnit('ally', tile);
+    t.classList.toggle('filled', !!owner);
+    t.classList.toggle('avail', !owner && !!(pick || moving));
+    t.classList.toggle('merge', !!pick && !!owner && owner.charId === pick);
+    t.classList.toggle('sel', !!moving && owner === moving);
+    t.classList.toggle('swap', !!moving && !!owner && owner !== moving);
+  });
+}
+// 화면 방향이 바뀌면 칸 좌표도 바뀐다. 배치 단계라면 칸에 있는 지후를 새 칸 중심으로 옮긴다.
+function v42Resnap() {
+  if (!v42Enabled()) return;
+  state.placements.forEach(p => { if (p.tile != null) Object.assign(p, v42TileCenter(p.side, p.tile)); });
+  if (state.phase !== 'deploy' && state.phase !== 'deploy-resolve') return;
+  state.units.forEach(u => { if (u.alive && u.tile != null && !u.ownerUid) v42MoveUnit(u, u.tile); });
+}
+function v42SelectForMove(u) {
+  V42.moveSel = u;
+  if (u) showRangeRing(u); else hideRangeRing();
+  if (u) $('bottomStatusLine').innerHTML = `<b>${u.def.name}</b> 이동 — 빈 칸을 누르면 옮기고, 다른 지후를 누르면 자리를 바꿉니다. 한 번 더 누르면 상세 정보`;
+  v42RefreshGrid();
+}
+// 배치 단계에서 내 지후를 눌렀을 때. 처리했으면 true.
+function v42HandleUnitTap(u) {
+  if (!v42Enabled() || state.phase !== 'deploy' || pendingPoolIdx !== null || u.side !== 'ally' || u.tile == null) return false;
+  const sel = V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
+  if (sel === u) { v42SelectForMove(null); return false; } // 두 번째 탭: 상세 정보
+  if (sel) {
+    const a = sel.tile, b = u.tile;
+    v42MoveUnit(sel, b); v42MoveUnit(u, a);
+    v42SelectForMove(null);
+    $('bottomStatusLine').innerHTML = `<b>${sel.def.name}</b> ↔ <b>${u.def.name}</b> 자리를 바꿨습니다`;
+    return true;
+  }
+  v42SelectForMove(u);
+  return true;
+}
+// 배치 단계에서 빈 곳을 눌렀을 때 (이동 중일 때만). 처리했으면 true.
+function v42HandleFieldTap(x, y) {
+  const sel = V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
+  if (!sel || state.phase !== 'deploy') return false;
+  const tile = v42TileAt('ally', x, y);
+  if (tile == null) { v42SelectForMove(null); return true; }
+  const owner = v42TileUnit('ally', tile);
+  if (owner && owner !== sel) return v42HandleUnitTap(owner);
+  if (!owner) {
+    const c = v42TileCenter('ally', tile);
+    const clash = state.units.some(o => o.alive && o !== sel && o.ownerUid !== sel.uid && Math.hypot(o.x - c.x, o.y - c.y) < bodySeparation(sel, o));
+    if (clash) { $('bottomStatusLine').textContent = '다른 유닛과 겹쳐서 옮길 수 없습니다!'; return true; }
+    v42MoveUnit(sel, tile);
+  }
+  v42SelectForMove(null);
+  $('bottomStatusLine').innerHTML = `<b>${sel.def.name}</b> → ${V42_ROW_LABEL[Math.floor(tile / V42_COLS)]} ${tile % V42_COLS + 1}번 칸`;
+  return true;
+}
+// 진형 프리셋: 이미 놓인 내 지후만 다시 줄 세운다 (배치 횟수를 쓰지 않는다).
+const V42_PRESETS = [
+  { name: '전열 돌격', order: () => [0, 1, 2].flatMap(r => V42_CENTER_OUT.map(c => r * 8 + c)) },
+  { name: '후열 보호', order: u => (v42RoleRow(u.charId) === 0 ? [0, 1, 2] : [2, 1, 0]).flatMap(r => V42_CENTER_OUT.map(c => r * 8 + c)) },
+  { name: '산개', order: () => [0, 7, 11, 12, 16, 23, 3, 4, 9, 14, 18, 21, 1, 6, 2, 5, 8, 15, 10, 13, 17, 22, 19, 20] },
+];
+function v42ApplyPreset(idx) {
+  if (state.phase !== 'deploy' || !v42Enabled()) return;
+  const preset = V42_PRESETS[idx];
+  const mine = state.units.filter(u => u.side === 'ally' && u.alive && u.tile != null && !u.ownerUid && !u.skipCount && !u.isClone);
+  // 탱커·근접을 먼저 앞자리에 둔다
+  mine.sort((a, b) => v42RoleRow(a.charId) - v42RoleRow(b.charId));
+  const taken = new Set();
+  const plan = mine.map(u => { const tile = preset.order(u).find(t => !taken.has(t)); taken.add(tile); return [u, tile]; });
+  plan.forEach(([u, tile]) => { u.tile = -1 - tile; }); // 옮기는 동안 서로 겹침 판정을 피한다
+  plan.forEach(([u, tile]) => v42MoveUnit(u, tile));
+  v42SelectForMove(null);
+  $('bottomStatusLine').innerHTML = `진형 <b>${preset.name}</b> 적용`;
+}
+function v42ShowGo(title = '전투 시작!', sub = '배치가 잠겼어요 · 상대 진영 공개', kind = '') {
+  const el = $('v42Go');
+  if (!el || state.mode === 'preview') return;
+  el.querySelector('b').textContent = title;
+  el.querySelector('span').textContent = sub;
+  el.className = 'v42-go' + (kind ? ' ' + kind : '');
+  void el.offsetWidth; el.classList.add('show');
+  clearTimeout(v42ShowGo.t);
+  v42ShowGo.t = setTimeout(() => el.classList.remove('show'), kind === 'dm' ? 1900 : 1100);
+}
+
+// 4.1 스킬 콜아웃에 띄우는 스킬 이름
+const V41_SKILL = {
+  solemn: '흑백 나비',
+  blackflame: '흑염룡 돌진',
+  growth: '성장 변이',
+  hypno: '최면',
+  edgy: '비행 착지',
+  egg: '부화',
+  sixseven: '67 주사위',
+  gambler: '도박',
+  mushroom: '버섯 먹기',
+  phantom: '예고장',
+  hacker: '해킹',
+  roulette: '러시안룰렛',
+  dimension: '아공간 이동',
+  syringe: '관통 주사',
+  glutton: '포식',
+  dosa: '아공간 유랑',
+  biker: '폭주 돌진',
+  tentacle: '촉수 내려치기',
+  engineer: '포탑 설치',
+  frog: '관통 혀',
+  prince: '왕자의 검',
+  mafia: '부하 호출',
+  hollow: '공허지역',
+  star: '별똥별',
+  demonblade: '마검 모드',
+  cactus: '가시 폭발',
+  moon: '달빛',
+  duet: '듀엣 합주',
+  bomber: '전술폭격',
+  paladin: '나이트 소환',
+  func: '함수 그래프',
+  zombie: '좀비화',
+  skul: '부활',
+  farmer: '밭 갈기',
+  jaws: '잠수 습격',
+  rock: '암석지대',
+  ruins: '유적지대',
+  vampire: '흡혈',
+  unicorn: '유니콘 돌진',
+  matrix: '매트릭스 복제',
+  supply: '보급요청',
+  maestro: '연주회',
+  bsod: '블루스크린',
+  contractor: '청부',
+  slot: '슬롯머신',
+  developer: '개발자 모드',
+  guardian: '수호',
+  broker: '협상',
+  hitman: '암살 의뢰',
+  sun: '일출',
+  curse: '저주',
+  taeguk: '극의 조화',
+  fire: '화염방사',
+  ice: '빙결탄',
+  lonely: '고독한 일격',
+  shield: '쉴드',
+  assassin: '순간 암살',
+  combo: '콤보',
+  sniper: '저격',
+  medic: '치유',
+  awaken: '각성',
+  berserk: '광폭화',
+  poison: '독 단검',
+  charge: '돌격',
+  stop: '멈춰!',
+  mutant: '변이',
+  revive: '부활',
+  burning: '불꽃 몸',
+  bat: '빠따 스윙',
+  clock: '시간 가속',
+  hmg: '연사',
+  mega: '확성',
+  rank: '계급 룰렛',
+  arcade: '콤보 커맨드',
+  gumiho: '매혹',
+  ninja: '분신술',
+  mini: '미니 3형제',
+  metal: '메탈 바디',
+  necro: '망자 소환',
+  lasso: '올가미',
+  mine: '지뢰 설치',
+  dj: '음파',
+  lightning: '낙뢰',
+  slime: '분열',
+  god: '트루폼 레이저',
+  instinct: '본능 회피',
+  arcane: '비전 도약',
+  satellite: '궤도 쉴드',
+  portal: '포탈',
+  no_u: 'NO U 반사',
+  tyrant: '폭정',
+  telescope: '망원 조준',
+  hong: '홍명보 슛',
+  levelup: '폼 성장',
+  reaper: '사신의 낫',
+  smoke: '연막',
+  battery: '충전',
+  impeachment: '탄핵',
+  bomb: '자폭',
+  dragon: '드래곤 비행',
+  meteor: '메테오',
+  blizzard: '블리자드',
+  beam: '집중 빔',
+  mutation: '돌연변이',
+  mimic: '의태',
+  planet: '위성 공전',
+  lock: '잠금',
+  genesis: '제네시스',
+  dust: '황사',
+};
+function v41SkillName(u) { return V41_SKILL[u.charId] || V41_SKILL[u.def?.id] || '스킬 발동'; }
+const V41 = { cards: [], callQ: [], callBusy: false, lastDock: 0, folded: false, gen: 0 };
+try { V41.folded = localStorage.getItem('jihooBattle.v41DockFolded') === '1'; } catch (error) {}
+function v41Tracked(u) { return !!(u && u.def && !u.isCastle && !u.isClone && !u.skipCount && !u.ownerUid && u.expire == null); }
+function v41Av(u, cls = '') {
+  const def = u && u.def;
+  const side = u && u.side === 'enemy' ? '#e5322d' : '#111';
+  return `<span class="v41-av ${cls}" style="--sc:${side}">${def ? portraitHtml(def) : '☠'}</span>`;
+}
+function v41Clock() {
+  const t = Math.max(0, Number($('phaseTimer')?.textContent) || 0);
+  return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
+function v41Kill(victim) {
+  if (state.mode === 'preview' || !v41Tracked(victim)) return;
+  const feed = $('v41Feed');
+  if (!feed) return;
+  let killer = victim._lastKiller || null;
+  if (killer && killer.ownerUid) killer = state.units.find(x => x.uid === killer.ownerUid) || killer;
+  const row = document.createElement('div');
+  row.className = 'v41-feed-row' + (killer && killer.side === 'ally' ? ' mine' : '');
+  const icon = !killer ? '☠' : killer.side === victim.side ? '✦' : '⚔';
+  row.innerHTML = (killer ? v41Av(killer) : '') + `<span class="v41-feed-ic">${icon}</span>` + v41Av(victim, 'victim') +
+    `<span class="v41-feed-nm"></span><span class="v41-feed-t">${v41Clock()}</span>`;
+  row.querySelector('.v41-feed-nm').textContent = victim.def.name;
+  feed.prepend(row);
+  while (feed.children.length > 4) feed.lastElementChild.remove();
+  setTimeout(() => row.classList.add('out'), 5600);
+  setTimeout(() => row.remove(), 6000);
+}
+function v41Callout(u, label) {
+  if (state.mode === 'preview' || state.phase !== 'combat' || !u || !u.def || !v41Tracked(u)) return;
+  V41.callQ = V41.callQ.filter(c => c.u !== u).concat({ u, label }).slice(-2);
+  if (!V41.callBusy) v41NextCallout();
+}
+function v41NextCallout() {
+  const el = $('v41Callout');
+  const next = V41.callQ.shift();
+  if (!el || !next || state.phase !== 'combat') { V41.callBusy = false; return; }
+  V41.callBusy = true;
+  const { u, label } = next;
+  el.className = 'v41-callout ' + (u.side === 'enemy' ? 'enemy' : 'ally');
+  el.innerHTML = `<span class="v41-av" style="--rc:${V41_RING[u.def.rarity] || '#d6d6d3'}">${portraitHtml(u.def)}</span><span class="t"><span class="k"></span><b></b></span>`;
+  el.querySelector('.k').textContent = (u.side === 'enemy' ? 'ENEMY SKILL' : 'SKILL');
+  el.querySelector('b').textContent = u.def.name + ' · ' + label;
+  void el.offsetWidth;
+  el.classList.add('show');
+  const gen = V41.gen;
+  setTimeout(() => {
+    if (gen !== V41.gen) return;
+    el.classList.remove('show'); el.classList.add('out');
+    setTimeout(() => { if (gen !== V41.gen) return; el.className = 'v41-callout'; v41NextCallout(); }, 300);
+  }, 1500);
+}
+function v41ToggleDock(force) {
+  V41.folded = force === undefined ? !V41.folded : !!force;
+  try { localStorage.setItem('jihooBattle.v41DockFolded', V41.folded ? '1' : '0'); } catch (error) {}
+  $('v41Dock')?.classList.toggle('folded', V41.folded);
+  const btn = $('btnV41Dock');
+  if (btn) btn.textContent = V41.folded ? '도크' : '접기';
+}
+function v41HudClear() {
+  V41.gen++; V41.callQ = []; V41.callBusy = false; V41.cards = [];
+  if ($('v41Feed')) $('v41Feed').innerHTML = '';
+  if ($('v41Callout')) $('v41Callout').className = 'v41-callout';
+  if ($('v41Dock')) $('v41Dock').innerHTML = '';
+}
+function v41HudStart() {
+  v41HudClear();
+  state.units.forEach(u => { u._v41cd = null; u._v41aw = !!u.awakened; });
+  const dock = $('v41Dock');
+  if (!dock || state.mode === 'preview') return;
+  const allies = state.units.filter(u => u.side === 'ally' && u.alive && v41Tracked(u));
+  V41.cards = allies.map(u => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'v41-card';
+    card.style.setProperty('--rc', V41_RING[u.def.rarity] || '#111');
+    card.innerHTML = `<span class="v41-ring"><span class="face">${portraitHtml(u.def)}</span></span><span class="info"><span class="nm"></span><span class="hp"><i></i></span><span class="sub"></span></span>`;
+    card.addEventListener('click', () => { if (u.alive) { showCharDetail(u.def, u); showRangeRing(u); } });
+    dock.appendChild(card);
+    return { u, card, nm: card.querySelector('.nm'), hp: card.querySelector('.hp > i'), sub: card.querySelector('.sub'), ring: card.querySelector('.v41-ring') };
+  });
+  v41ToggleDock(V41.folded);
+  v41DockUpdate();
+}
+function v41DockUpdate() {
+  V41.cards.forEach(c => {
+    const u = c.u;
+    const ratio = u.maxHp > 0 ? clamp(u.hp / u.maxHp, 0, 1) : 0;
+    const info = u.alive ? skillCdInfo(u) : null;
+    const fill = info && info.max > 0 ? 1 - clamp(info.cur / info.max, 0, 1) : (u.alive ? 1 : 0);
+    const ready = !!info && fill >= 0.98;
+    if (c.nm.textContent !== u.def.name) c.nm.textContent = u.def.name;
+    c.hp.style.width = (u.alive ? ratio * 100 : 0).toFixed(1) + '%';
+    c.ring.style.setProperty('--cd', (fill * 360).toFixed(0) + 'deg');
+    c.card.classList.toggle('dead', !u.alive);
+    c.card.classList.toggle('low', u.alive && ratio <= 0.3);
+    c.card.classList.toggle('ready', u.alive && ready);
+    const sub = !u.alive ? '전투 불능' : `Lv.${u.level || 1} · ` + (!info ? '기본 공격' : ready ? '스킬 준비' : '스킬 ' + info.cur.toFixed(1) + 's');
+    if (c.sub.textContent !== sub) c.sub.textContent = sub;
+  });
+  const alive = state.units.filter(u => u.side === 'enemy' && u.alive && v41Tracked(u)).length;
+  const lab = $('v41AliveNum');
+  if (lab && lab.textContent !== String(alive)) lab.textContent = alive;
+}
+// 쿨다운이 거의 다 찼다가 크게 다시 늘어나면 방금 스킬을 쓴 것으로 본다.
+function v41SkillWatch(u) {
+  if (!u.alive || !v41Tracked(u)) return;
+  if (u.awakened && !u._v41aw) { u._v41aw = true; v41Callout(u, u.charId === 'awaken' ? '각성' : v41SkillName(u) + ' · 각성'); }
+  const info = skillCdInfo(u);
+  // 돌진 중처럼 쿨다운이 잠깐 안 보이는 동안은 마지막 값을 그대로 둔다.
+  if (!info || !(info.max >= 2)) return;
+  const prev = u._v41cd;
+  u._v41cd = info.cur;
+  if (prev != null && prev <= info.max * 0.25 && info.cur - prev >= info.max * 0.5) v41Callout(u, v41SkillName(u));
+}
+function v41HudTick(ts) {
+  if (state.mode === 'preview') return;
+  state.units.forEach(v41SkillWatch);
+  if (ts - V41.lastDock < 120) return;
+  V41.lastDock = ts;
+  v41DockUpdate();
 }
 
 /* ===== PHYS v2 — 고정 타임스텝 원형 강체 엔진 =====
@@ -11386,6 +12379,7 @@ function resolveTyrantRage(u) {
 function triggerTyrantRage(u) {
   if (u._tyrantRageUsed) return;
   u._tyrantRageUsed = true;
+  v41Callout(u, v41SkillName(u));
   const radius = u.def.tyrantRageRadius || 5 * GRID;
   const blast = document.createElement('div');
   blast.className = 'fx-tyrant-aura';
@@ -12545,6 +13539,9 @@ function beginCombatPhase() {
     if (u.def.onRoundStart) u.def.onRoundStart(u, battleAPI);
   });
   activateRoundGrudges();
+  v41HudStart();
+  V42.moveSel = null;
+  v42ShowGo();
   state.combatLastTs = performance.now();
   state.combatStartTs = state.combatLastTs;
   state.combatTime = 0;
@@ -12957,6 +13954,7 @@ const battleAPI = {
     gumihoTick(u, target, dist, dt) {
     if (!u._charmUsed && u.hp / u.maxHp <= (u.def.charmHpThreshold || 0.4)) {
       u._charmUsed = true;
+      v41Callout(u, v41SkillName(u));
       const R = u.def.charmRadius || 135;
       spawnBurst(u.el, '#e8a0ff');
       state.units.forEach(e => {
@@ -13154,6 +14152,7 @@ function combatTick(ts) {
     }
     updateUnitBars(u);
   });
+  v41HudTick(ts);
 
   updateOddsBar();
   if ($('statsPanel') && $('statsPanel').classList.contains('show')) renderStatsPanel();
@@ -13677,6 +14676,7 @@ function activateImpeachment(target, opts) {
   if (target._impeachmentHits < target.def.hitThreshold) return;
   target._impeachmentHits = 0;
   target._impeachmentUsed = true;
+  v41Callout(target, v41SkillName(target));
   target._impeachmentRemaining = target.def.impeachmentDuration;
   const impeachShield = Math.round(target.def.impeachmentShield * supportMult(target));
   target.maxShield = Math.max(target.maxShield, impeachShield);
@@ -14700,6 +15700,7 @@ function spawnTurret(u) {
 // 마피아: 라운드에 한 번, 바로 앞에 부하를 부르고 쉴드를 얻는다. 부하가 나타나며 주변 적을 밀쳐낸다.
 function callHenchman(u) {
   u._mafiaCalled = true;
+  v41Callout(u, v41SkillName(u));
   const factor = Math.pow(LEVEL_MULT, (u.level || 1) - 1);
   const foe = getNearestEnemy(u);
   const angle = foe ? Math.atan2(foe.y - u.y, foe.x - u.x) : (u.side === 'ally' ? -Math.PI / 2 : Math.PI / 2);
@@ -14939,6 +15940,7 @@ function guardianSave(u) {
   u._guardShieldMax = u._guardShield;
   u._guardSrc = g;
   u._guardTick = g.def.guardDecayEvery;
+  v41Callout(g, v41SkillName(g));
   spawnBurst(u.el, g.def.color);
   spawnDamageNumber(u, '수호!', { heal: true });
   updateUnitBars(u);
@@ -16737,6 +17739,7 @@ function killUnit(u) {
   clearTelegraph(u); u._engaged = false;
   if (u.charId === 'beam') resetBeam(u);
   onUnitDeath(u);
+  if (!u.alive) v41Kill(u);
   if (!u.alive && u.charId === 'reaper') resolveReaperDeath(u);
   if (!u.alive && u.charId === 'bomb' && !u._devoured) {
     state.pendingExplosions.push({ caster: u, x: u.x, y: u.y, radius: u.def.explosionRadius, damage: u.def.explosionDamage, remaining: u.def.explosionDelay });
@@ -16754,6 +17757,7 @@ function killUnit(u) {
 }
 
 function triggerBerserk(u) {
+  v41Callout(u, v41SkillName(u));
   u.berserked = true; u.hp = 1; u.invincible = u.def.berserkTime;
   u.def.atk = Math.round(u.def.berserkAtk * Math.pow(LEVEL_MULT, (u.level || 1) - 1)); u.def.speed *= 2; u.def.atkSpeed = u.def.berserkAtkSpeed;
   u.atkCooldown = 0;
@@ -16778,6 +17782,7 @@ function onUnitDeath(u) {
 }
 
 function reviveUnit(u, reviver) {
+  if (reviver) v41Callout(reviver, v41SkillName(reviver));
   u.alive = true; u.hp = Math.max(1, u.maxHp * Math.min(1, reviver.def.reviveHpFraction * supportMult(reviver))); u.shield = u.maxShield;
   physInitBody(u);
   u.statuses = { burn: null, freeze: null, poison: null, grudges: {} };
@@ -17090,8 +18095,8 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
   $('helpTabs').querySelectorAll('[data-help]').forEach(b => b.addEventListener('click', () => renderHelp(b.dataset.help)));
   if (tab === 'rules') {
     $('helpBody').innerHTML = [
-      ['⚔️ 일반전', '덱의 지후 5종으로 싸웁니다. 라운드마다 배치 풀에서 지후를 골라 2번 배치하고, 같은 지후를 겹치면 레벨이 오릅니다 (HP·ATK +10%). 라이프 4를 먼저 깎으면 이깁니다. 이기면 🎟️ 티켓 1장.'],
-      ['🎯 드래프트전 · 경쟁전', '밴과 픽으로 지후를 정해 싸웁니다. 한 판에 🎟️ 티켓 1장 (최대 15장, 일반전 승리·일일 퀘스트로 획득). 경쟁전은 골드부터 라이프 4, 그 아래는 3판 2선승입니다.'],
+      ['⚔️ 일반전', '덱의 지후 5종으로 싸웁니다. 라운드마다 배치 풀에서 지후를 골라 배치합니다 (1~3라운드 2번, 4라운드부터 3번). 양쪽 라이프가 모두 1이 되면 <b>데스매치</b>로 배치 6번. 같은 지후를 겹치면 레벨이 오릅니다 (HP·ATK +10%). 라이프 4를 먼저 깎으면 이깁니다. 이기면 🎟️ 티켓 1장.'],
+      ['🎯 드래프트전 · 경쟁전', '밴과 픽으로 지후를 정해 싸웁니다. 한 판에 🎟️ 티켓 1장 (최대 15장, 일반전 승리·일일 퀘스트로 획득, 3장보다 적으면 15분마다 1장 자동 충전). 경쟁전은 골드부터 라이프 4, 그 아래는 3판 2선승입니다. 라운드마다 배치 3번, 양쪽 라이프가 모두 1이면 <b>데스매치</b>로 6번.'],
       ['💥 크리티컬', '모든 피해는 2% 확률로 2배가 됩니다.'],
       ['🏷️ 등급과 역할', '일반 · 희귀 · 영웅 · 전설 · 히든. 탱커는 앞에서 버티고, 딜러는 피해를 넣고, 서포터는 아군을 돕고, 컨트롤러는 적을 묶고, 어쌔신은 뒤를 노립니다.'],
       ['🚫 출격 제한', '출격 제한이 있는 지후는 한 진영 전장에 1기만 나올 수 있습니다.'],
@@ -17161,6 +18166,43 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.1': {
+    label: 'v4.1 8×3 칸 배치 · 데스매치 · 뽑기 v2 · 새 인게임 HUD',
+    date: '2026.09.28',
+    sections: [
+      { title: '규칙', items: [
+        { emoji:'🔁', name:'배치 기회', tag:'adjust', color:'#444444', desc:'일반전은 <b>1~3라운드 2번</b>(기존과 같음), <b>4라운드부터 3번</b> 배치합니다. 드래프트전·경쟁전은 그대로 3번입니다.' },
+        { emoji:'☠️', name:'데스매치', tag:'new', color:'#e5322d', desc:'나와 상대의 라이프가 <b>둘 다 1</b>이 되면 <b>데스매치</b>가 시작됩니다. 그 라운드부터 배치 기회가 <b>6번</b>이 되고, 라운드 배지가 빨갛게 바뀝니다. 모든 대전 모드에 적용됩니다.' },
+        { emoji:'🎟️', name:'티켓 자동 충전', tag:'new', color:'#7048e8', desc:'티켓이 <b>3장보다 적으면 15분마다 1장</b>씩 자동으로 찹니다 (자동 충전은 3장까지, 게임을 꺼 둔 동안에도 계산). 남은 시간은 드래프트전 타일 · 경쟁전 · 인벤토리에 표시됩니다.' }
+      ] },
+      { title: '배치', items: [
+        { emoji:'🧩', name:'8×3 칸 배치', tag:'new', color:'#111111', desc:'진영마다 <b>가로 8칸 × 전열·중열·후열 3줄</b> 칸이 생겼습니다. 풀에서 고른 지후를 빈 칸에 놓고, 같은 지후가 있는 칸(금색)에 놓으면 합체 레벨업합니다. 놓은 칸이 <b>전투 시작 위치와 다음 라운드 복귀 위치</b>가 됩니다.' },
+        { emoji:'↔️', name:'칸 이동 · 진형', tag:'new', color:'#111111', desc:'배치 단계에서 내 지후를 누르면 사거리가 보이고 <b>다른 빈 칸으로 옮기거나</b> 다른 지후와 <b>자리를 바꿀</b> 수 있습니다. 진형 프리셋 <b>전열 돌격 · 후열 보호 · 산개</b>로 한 번에 줄을 세울 수 있습니다 (배치 횟수를 쓰지 않습니다).' },
+        { emoji:'🤖', name:'상대 배치', tag:'adjust', color:'#555555', desc:'상대도 같은 칸에 배치하며, 실력이 높을수록 탱커는 전열 · 서포터는 후열에 둡니다.' }
+      ] },
+      { title: '뽑기', items: [
+        { emoji:'🎯', name:'천장', tag:'new', color:'#f2c94c', desc:'전설·히든 없이 <b>80번째</b> 뽑기는 <b>전설 확정</b>입니다. 뽑기 화면 아래 게이지로 남은 횟수를 볼 수 있으며, 일반·픽업·신규 픽업이 같은 카운트를 씁니다.' },
+        { emoji:'🎁', name:'지후 상자 연출', tag:'adjust', color:'#c77dff', desc:'확률은 그대로(일반·희귀 8기 확정 → 영웅 55% → 전설 60% → 히든 20%). 결과 카드가 <b>한꺼번에 뒤집히고</b> 최고 등급을 알려줍니다. 상자의 지후도 천장 카운트에 <b>한 기씩</b> 들어갑니다.' },
+        { emoji:'🃏', name:'1회 소환 연출', tag:'new', color:'#111111', desc:'소환진이 차오른 뒤 <b>카드를 눌러 공개</b>합니다. 전설은 금빛 섬광, 히든은 화면 반전 연출. 결과 화면에서 바로 <b>한 번 더</b> 뽑을 수 있습니다.' },
+        { emoji:'📖', name:'소환 풀', tag:'new', color:'#111111', desc:'뽑기에서 나오는 모든 지후와 등급별 확률, 보유 여부를 보는 탭이 생겼습니다.' },
+        { emoji:'📦', name:'지후 상자 오픈권', tag:'new', color:'#c77dff', desc:'신규 유저 출석부 <b>1일차</b> 보상이 골드 10,000 + <b>지후 상자 오픈권</b>으로 바뀝니다 (기존: 랜덤 영웅 모집권). 인벤토리에서 눌러 지후 상자 1개를 무료로 엽니다.' }
+      ] },
+      { title: '전투 화면', items: [
+        { emoji:'🎴', name:'아군 스킬 도크', tag:'new', color:'#111111', desc:'전투 중 하단에 <b>아군 지후 카드</b>가 나옵니다. 초상화 테두리가 <b>스킬 쿨다운 링</b>으로 차오르고, 다 차면 반짝입니다. 체력 바 · 레벨 · 남은 쿨다운이 함께 보이며, 카드를 누르면 상세 정보가 열립니다. <b>접기</b> 버튼으로 숨길 수 있습니다.' },
+        { emoji:'⚔️', name:'킬 피드', tag:'new', color:'#111111', desc:'오른쪽 위에 <b>누가 누구를 쓰러뜨렸는지</b> 최근 4건이 흘러갑니다. 내 지후의 처치는 검은 테두리로 표시됩니다.' },
+        { emoji:'✨', name:'스킬 콜아웃', tag:'new', color:'#111111', desc:'지후가 스킬을 쓰거나 <b>각성</b>하면 왼쪽 위에 <b>스킬 이름</b>(예: 괴도 지후 · 예고장)과 함께 배너가 미끄러져 들어옵니다. 광폭화 · 탄핵 · 매혹 같은 1회성 스킬도 표시됩니다. 적의 스킬은 빨간 띠로 구분됩니다.' },
+        { emoji:'🔴', name:'남은 적', tag:'new', color:'#111111', desc:'하단 상태줄에 <b>남은 적 지후 수</b>가 실시간으로 표시됩니다.' }
+      ] },
+      { title: 'UI', items: [
+        { emoji:'🎉', name:'보상 받기 연출', tag:'new', color:'#111111', desc:'업적 · 출석 · 인벤토리에서 보상을 받으면 카드에 <b>완료 도장</b>이 찍히고 보상이 떠오르며 다이아 표시가 튑니다. 받은 뒤 목록 전체가 다시 등장하지 않습니다.' },
+        { emoji:'🃏', name:'로비 덱 카드', tag:'adjust', color:'#555555', desc:'로비에 펼쳐진 덱 카드 아래에 JHBT 대신 <b>지후 이름</b>이 쓰입니다.' }
+      ] },
+      { title: '버그 수정', items: [
+        { emoji:'📱', name:'태블릿 초상화', tag:'fix', color:'#555555', desc:'태블릿 크기 화면에서 덱 설정 카드의 초상화가 잘려 머리만 보이던 문제를 고쳤습니다.' },
+        { emoji:'🎒', name:'인벤토리 깜빡임', tag:'fix', color:'#555555', desc:'인벤토리가 1초마다 전체를 다시 그려 애니메이션이 반복되던 문제를 고쳤습니다. 이제 부스트 남은 시간만 갱신됩니다.' }
+      ] }
+    ]
+  },
   '4.0': {
     label: 'v4.0 UI 전면 개편 · 모노리스 카드 테이블',
     date: '2026.09.28',
@@ -18500,6 +19542,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindMinimap();
   const tp = $('btnTogglePool');
   if (tp) tp.addEventListener('click', ev => { ev.stopPropagation(); openPoolSheet(); });
+  const vd = $('btnV41Dock');
+  if (vd) vd.addEventListener('click', ev => { ev.stopPropagation(); v41ToggleDock(); });
   const db = $('btnDraftBack');
   if (db) db.addEventListener('click', () => showScreen('lobby'));
   const ex = $('btnExitBattle');
@@ -18665,7 +19709,16 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnLevelUpConfirm').addEventListener('click', () => { profile.pendingLevelCelebration = null; saveProfile(); closeModal('levelUpModal'); });
   renderQuests();
   saveProfile();
-  setInterval(() => { if (state.screen === 'inventory') renderInventory(); }, 1000);
+  // 4.1: 인벤토리는 1초마다 전체를 다시 그리지 않고 부스트 남은 시간만 고친다. 부스트가 끝나는 순간에만 한 번 다시 그린다.
+  let inventoryBoostWasActive = false;
+  setInterval(() => {
+    if (state.screen !== 'inventory') return;
+    const activeSeconds = Math.max(0, Math.ceil((profile.xpBoost.activeUntil - Date.now()) / 1000));
+    const active = activeSeconds > 0;
+    if (inventoryBoostWasActive && !active) { v4RenderQuiet($('inventoryBody'), () => renderInventory()); }
+    else if (active && $('inventoryBoostText')) $('inventoryBoostText').textContent = `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음`;
+    inventoryBoostWasActive = active;
+  }, 1000);
 });
 
 
