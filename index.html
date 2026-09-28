@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <style>
@@ -3718,6 +3718,68 @@ html[data-theme="light"] .v4-vs-card.hidden .tag { background:#111; color:#f2f2f
 @keyframes vsGlitch { 0%,90%,100% { opacity:0; transform:none; } 91% { opacity:.9; transform:translateX(-4px); } 93% { opacity:.6; transform:translateX(3px); } 95% { opacity:.9; transform:none; } 96% { opacity:0; } }
 @keyframes vsScan { to { background-position:0 6px; } }
 html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0f0e !important; backdrop-filter:none; }
+/* ─── 4.1 인게임 HUD: 킬 피드 · 스킬 콜아웃 · 아군 스킬 도크 ─── */
+@keyframes v41FeedIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+@keyframes v41FeedOut { to { opacity:0; transform:translateX(12px); } }
+@keyframes v41CalloutIn { from { transform:translateX(-110%); } to { transform:none; } }
+@keyframes v41CalloutOut { to { transform:translateX(-110%); } }
+@keyframes v41Sweep { 0% { transform:translateX(-160%) skewX(-18deg); } 100% { transform:translateX(460%) skewX(-18deg); } }
+.v41-feed, .v41-callout, .v41-dock, .v41-alive, .btn-v41-dock { display:none; }
+html[data-theme="light"] #app #screen-battle .v41-feed { position:absolute; right:14px; top:14px; z-index:22; width:230px; flex-direction:column; gap:5px; pointer-events:none; }
+html[data-theme="light"] #app #screen-battle .v41-feed-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:8px; background:rgba(255,255,255,.94); border:1px solid #e1e1de; color:#111; font-size:11px; font-weight:800; box-shadow:0 8px 16px -12px rgba(0,0,0,.4); animation:v41FeedIn .3s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] #app #screen-battle .v41-feed-row.out { animation:v41FeedOut .4s forwards; }
+html[data-theme="light"] #app #screen-battle .v41-feed-row.mine { border-color:#111; }
+html[data-theme="light"] .v41-av { width:20px; height:20px; flex-shrink:0; border-radius:50%; background:#f2f2f0; overflow:hidden; display:grid; place-items:center; font-size:11px; line-height:1; box-shadow:0 0 0 1.5px var(--sc,#111); }
+html[data-theme="light"] .v41-av img { width:100%; height:100%; object-fit:contain; }
+html[data-theme="light"] .v41-av.victim { opacity:.7; filter:grayscale(1); }
+html[data-theme="light"] .v41-feed-ic { color:#666; }
+html[data-theme="light"] .v41-feed-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; color:#555; }
+html[data-theme="light"] .v41-feed-t { margin-left:auto; flex-shrink:0; font:700 9px var(--v4-mono); color:#666; }
+html[data-theme="light"] #app #screen-battle .v41-callout { position:absolute; left:0; top:14px; z-index:22; align-items:center; gap:10px; padding:10px 24px 10px 16px; background:#fff; color:#111; border:1px solid #d6d6d3; box-shadow:0 14px 26px -16px rgba(0,0,0,.45); clip-path:polygon(0 0,100% 0,calc(100% - 18px) 100%,0 100%); pointer-events:none; overflow:hidden; }
+html[data-theme="light"] #app #screen-battle .v41-callout.show { display:flex; animation:v41CalloutIn .35s cubic-bezier(.2,.9,.1,1); }
+html[data-theme="light"] #app #screen-battle .v41-callout.out { display:flex; animation:v41CalloutOut .3s ease-in forwards; }
+html[data-theme="light"] #app #screen-battle .v41-callout::after { content:''; position:absolute; top:0; bottom:0; left:0; width:30%; background:linear-gradient(90deg,transparent,rgba(0,0,0,.06),transparent); animation:v41Sweep 1.2s .2s ease-in-out; }
+html[data-theme="light"] #app #screen-battle .v41-callout.enemy { border-left:4px solid #e5322d; }
+html[data-theme="light"] #app #screen-battle .v41-callout.ally { border-left:4px solid #111; }
+html[data-theme="light"] .v41-callout .v41-av { width:34px; height:34px; font-size:18px; box-shadow:0 0 0 2px var(--rc,#d6d6d3); }
+html[data-theme="light"] .v41-callout .t { display:flex; flex-direction:column; min-width:0; }
+html[data-theme="light"] .v41-callout .k { font:800 9px var(--v4-mono); letter-spacing:.2em; color:#9a7a12; }
+html[data-theme="light"] .v41-callout.enemy .k { color:#c8231e; }
+html[data-theme="light"] .v41-callout b { font-size:14px; white-space:nowrap; }
+html[data-theme="light"] #app #screen-battle .v41-alive { align-items:center; gap:7px; flex-shrink:0; font-size:12px; font-weight:900; color:#111; white-space:nowrap; }
+html[data-theme="light"] #app #screen-battle .v41-alive i { width:7px; height:7px; border-radius:50%; background:#e5322d; animation:blinkDot 1s infinite; }
+html[data-theme="light"] #app #screen-battle .btn-v41-dock { flex-shrink:0; padding:7px 12px; font-size:12px; border-radius:12px; border:1px solid #111; background:#fff; color:#111; font-weight:900; cursor:pointer; }
+html[data-theme="light"] #app #screen-battle .btn-v41-dock:hover { background:#111; color:#fff; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .v41-feed { display:flex; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .v41-alive { display:flex; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .btn-v41-dock { display:block; }
+html[data-theme="light"] #screen-battle[data-phase="combat"] .v41-dock:not(.folded):not(:empty) { display:flex; }
+html[data-theme="light"] #app #screen-battle .v41-dock { gap:10px; overflow-x:auto; padding:2px 2px 4px; scrollbar-width:thin; }
+html[data-theme="light"] #app #screen-battle .v41-card { position:relative; flex:1 0 150px; max-width:220px; display:grid; grid-template-columns:44px 1fr; gap:8px; align-items:center; padding:7px 8px; border-radius:12px; border:1px solid #d6d6d3; background:#fff; color:#111; font:inherit; text-align:left; cursor:pointer; box-shadow:0 10px 20px -16px rgba(0,0,0,.45); transition:opacity .3s, filter .3s, border-color .2s; }
+html[data-theme="light"] #app #screen-battle .v41-card:hover { border-color:#111; }
+html[data-theme="light"] #app #screen-battle .v41-card.dead { opacity:.45; filter:grayscale(1); }
+html[data-theme="light"] .v41-ring { position:relative; width:44px; height:44px; border-radius:50%; padding:3px; box-sizing:border-box; background:conic-gradient(var(--rc,#111) var(--cd,0deg),#e6e6e3 0); }
+html[data-theme="light"] .v41-ring .face { width:100%; height:100%; border-radius:50%; background:#f4f4f2; overflow:hidden; display:grid; place-items:center; font-size:20px; }
+html[data-theme="light"] .v41-ring .face img { width:100%; height:100%; object-fit:contain; }
+html[data-theme="light"] .v41-card.ready .v41-ring::after { content:''; position:absolute; inset:0; border-radius:50%; border:2px solid var(--rc,#111); animation:ping .8s ease-out infinite; }
+html[data-theme="light"] .v41-card .info { display:flex; flex-direction:column; gap:4px; min-width:0; }
+html[data-theme="light"] .v41-card .nm { font-size:11px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html[data-theme="light"] .v41-card .hp { height:5px; border-radius:5px; background:#e6e6e3; overflow:hidden; }
+html[data-theme="light"] .v41-card .hp > i { display:block; height:100%; width:100%; background:#111; transition:width .35s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] .v41-card.low .hp > i { background:#e5322d; }
+html[data-theme="light"] .v41-card .sub { font:800 9px var(--v4-mono); color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html.preview-mode .v41-feed, html.preview-mode .v41-callout { display:none !important; }
+@media (max-width:640px) {
+  html[data-theme="light"] #app #screen-battle .v41-feed { width:170px; right:8px; top:8px; }
+  html[data-theme="light"] #app #screen-battle .v41-feed-nm { display:none; }
+  html[data-theme="light"] #app #screen-battle .v41-callout { top:8px; padding:7px 18px 7px 10px; gap:8px; }
+  html[data-theme="light"] .v41-callout .v41-av { width:26px; height:26px; }
+  html[data-theme="light"] .v41-callout b { font-size:12px; }
+  html[data-theme="light"] #app #screen-battle .v41-card { flex-basis:128px; grid-template-columns:36px 1fr; gap:6px; padding:6px; }
+  html[data-theme="light"] .v41-ring { width:36px; height:36px; }
+  html[data-theme="light"] #app #screen-battle .v41-alive { font-size:11px; }
+  html[data-theme="light"] #app #screen-battle[data-phase="combat"] .bottom-status-line { display:none; }
+}
 </style>
 </head>
 <body>
@@ -4174,11 +4236,14 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
         <canvas id="miniMapCanvas" width="224" height="308"></canvas>
         <div class="minimap-tag">MAP</div>
       </div>
+      <div class="v41-feed" id="v41Feed" aria-live="polite"></div>
+      <div class="v41-callout" id="v41Callout" aria-hidden="true"></div>
     </div>
 
     <div class="battle-bottom">
       <div class="battle-dock">
         <div class="bottom-status-line" id="bottomStatusLine" style="flex:1;text-align:left;min-height:0;">전투 준비중...</div>
+        <span class="v41-alive"><i></i><span>전투 중 · 적 <b id="v41AliveNum">0</b>기 남음</span></span>
         <button type="button" class="btn-dock" id="btnTogglePool">배치</button>
         <div class="lives-row" id="allyLivesDisplay" style="display:none; margin:0;">
           <span class="lives-label">라이프</span>
@@ -4187,7 +4252,9 @@ html[data-theme="light"] #screen-battle .matchup-overlay.v4-vs { background:#0f0
           <div class="life-pip on ally"></div>
           <div class="life-pip on ally"></div>
         </div>
+        <button type="button" class="btn-v41-dock" id="btnV41Dock">접기</button>
       </div>
+      <div class="v41-dock" id="v41Dock"></div>
       <div class="pool-sheet" id="poolSheet">
         <div class="pool-row" id="poolRow"></div>
       </div>
@@ -7557,6 +7624,7 @@ function resetBattlePresentation() {
   if ($('resultTitle')) { $('resultTitle').textContent = ''; $('resultTitle').className = 'result-title'; }
   if ($('resultSub')) $('resultSub').textContent = '';
   if ($('statsPanel')) $('statsPanel').classList.remove('show');
+  v41HudClear();
 }
 
 function showMatchupPreview(next) {
@@ -10305,6 +10373,7 @@ function updateLifeUI() {
 
 function startRound() {
   cancelRuntimeTasks();
+  v41HudClear();
   // 시간 종료 무승부 때 이번 라운드의 배치와 스킬 결과를 버리고 다시 편성한다.
   state.roundStartPlacements = state.placements.map(p => ({ ...p }));
   state.roundStartReaperGrudges = { ...state.reaperGrudges };
@@ -11042,6 +11111,132 @@ function startPhaseTimer(sec, cb) {
 function clearPhaseTimer() {
   if (state.timerHandle) clearInterval(state.timerHandle);
   state.timerHandle = null;
+}
+
+// 4.1 인게임 HUD: 킬 피드 · 스킬 콜아웃 · 하단 아군 스킬 도크 (시안 '전투 화면 v2' 8a)
+const V41_RING = { hidden: '#111', legend: '#f2c94c', epic: '#c77dff', rare: '#4d8ef7' };
+const V41 = { cards: [], callQ: [], callBusy: false, lastDock: 0, folded: false, gen: 0 };
+try { V41.folded = localStorage.getItem('jihooBattle.v41DockFolded') === '1'; } catch (error) {}
+function v41Tracked(u) { return !!(u && u.def && !u.isCastle && !u.isClone && !u.skipCount && !u.ownerUid && u.expire == null); }
+function v41Av(u, cls = '') {
+  const def = u && u.def;
+  const side = u && u.side === 'enemy' ? '#e5322d' : '#111';
+  return `<span class="v41-av ${cls}" style="--sc:${side}">${def ? portraitHtml(def) : '☠'}</span>`;
+}
+function v41Clock() {
+  const t = Math.max(0, Number($('phaseTimer')?.textContent) || 0);
+  return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
+function v41Kill(victim) {
+  if (state.mode === 'preview' || !v41Tracked(victim)) return;
+  const feed = $('v41Feed');
+  if (!feed) return;
+  let killer = victim._lastKiller || null;
+  if (killer && killer.ownerUid) killer = state.units.find(x => x.uid === killer.ownerUid) || killer;
+  const row = document.createElement('div');
+  row.className = 'v41-feed-row' + (killer && killer.side === 'ally' ? ' mine' : '');
+  const icon = !killer ? '☠' : killer.side === victim.side ? '✦' : '⚔';
+  row.innerHTML = (killer ? v41Av(killer) : '') + `<span class="v41-feed-ic">${icon}</span>` + v41Av(victim, 'victim') +
+    `<span class="v41-feed-nm"></span><span class="v41-feed-t">${v41Clock()}</span>`;
+  row.querySelector('.v41-feed-nm').textContent = victim.def.name;
+  feed.prepend(row);
+  while (feed.children.length > 4) feed.lastElementChild.remove();
+  setTimeout(() => row.classList.add('out'), 5600);
+  setTimeout(() => row.remove(), 6000);
+}
+function v41Callout(u, label) {
+  if (state.mode === 'preview') return;
+  V41.callQ = V41.callQ.filter(c => c.u !== u).concat({ u, label }).slice(-2);
+  if (!V41.callBusy) v41NextCallout();
+}
+function v41NextCallout() {
+  const el = $('v41Callout');
+  const next = V41.callQ.shift();
+  if (!el || !next || state.phase !== 'combat') { V41.callBusy = false; return; }
+  V41.callBusy = true;
+  const { u, label } = next;
+  el.className = 'v41-callout ' + (u.side === 'enemy' ? 'enemy' : 'ally');
+  el.innerHTML = `<span class="v41-av" style="--rc:${V41_RING[u.def.rarity] || '#d6d6d3'}">${portraitHtml(u.def)}</span><span class="t"><span class="k"></span><b></b></span>`;
+  el.querySelector('.k').textContent = (u.side === 'enemy' ? 'ENEMY SKILL' : 'SKILL');
+  el.querySelector('b').textContent = u.def.name + ' · ' + label;
+  void el.offsetWidth;
+  el.classList.add('show');
+  const gen = V41.gen;
+  setTimeout(() => {
+    if (gen !== V41.gen) return;
+    el.classList.remove('show'); el.classList.add('out');
+    setTimeout(() => { if (gen !== V41.gen) return; el.className = 'v41-callout'; v41NextCallout(); }, 300);
+  }, 1500);
+}
+function v41ToggleDock(force) {
+  V41.folded = force === undefined ? !V41.folded : !!force;
+  try { localStorage.setItem('jihooBattle.v41DockFolded', V41.folded ? '1' : '0'); } catch (error) {}
+  $('v41Dock')?.classList.toggle('folded', V41.folded);
+  const btn = $('btnV41Dock');
+  if (btn) btn.textContent = V41.folded ? '도크' : '접기';
+}
+function v41HudClear() {
+  V41.gen++; V41.callQ = []; V41.callBusy = false; V41.cards = [];
+  if ($('v41Feed')) $('v41Feed').innerHTML = '';
+  if ($('v41Callout')) $('v41Callout').className = 'v41-callout';
+  if ($('v41Dock')) $('v41Dock').innerHTML = '';
+}
+function v41HudStart() {
+  v41HudClear();
+  state.units.forEach(u => { u._v41cd = null; u._v41aw = !!u.awakened; });
+  const dock = $('v41Dock');
+  if (!dock || state.mode === 'preview') return;
+  const allies = state.units.filter(u => u.side === 'ally' && u.alive && v41Tracked(u));
+  V41.cards = allies.map(u => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'v41-card';
+    card.style.setProperty('--rc', V41_RING[u.def.rarity] || '#111');
+    card.innerHTML = `<span class="v41-ring"><span class="face">${portraitHtml(u.def)}</span></span><span class="info"><span class="nm"></span><span class="hp"><i></i></span><span class="sub"></span></span>`;
+    card.addEventListener('click', () => { if (u.alive) { showCharDetail(u.def, u); showRangeRing(u); } });
+    dock.appendChild(card);
+    return { u, card, nm: card.querySelector('.nm'), hp: card.querySelector('.hp > i'), sub: card.querySelector('.sub'), ring: card.querySelector('.v41-ring') };
+  });
+  v41ToggleDock(V41.folded);
+  v41DockUpdate();
+}
+function v41DockUpdate() {
+  V41.cards.forEach(c => {
+    const u = c.u;
+    const ratio = u.maxHp > 0 ? clamp(u.hp / u.maxHp, 0, 1) : 0;
+    const info = u.alive ? skillCdInfo(u) : null;
+    const fill = info && info.max > 0 ? 1 - clamp(info.cur / info.max, 0, 1) : (u.alive ? 1 : 0);
+    const ready = !!info && fill >= 0.98;
+    if (c.nm.textContent !== u.def.name) c.nm.textContent = u.def.name;
+    c.hp.style.width = (u.alive ? ratio * 100 : 0).toFixed(1) + '%';
+    c.ring.style.setProperty('--cd', (fill * 360).toFixed(0) + 'deg');
+    c.card.classList.toggle('dead', !u.alive);
+    c.card.classList.toggle('low', u.alive && ratio <= 0.3);
+    c.card.classList.toggle('ready', u.alive && ready);
+    const sub = !u.alive ? '전투 불능' : `Lv.${u.level || 1} · ` + (!info ? '기본 공격' : ready ? '스킬 준비' : '스킬 ' + info.cur.toFixed(1) + 's');
+    if (c.sub.textContent !== sub) c.sub.textContent = sub;
+  });
+  const alive = state.units.filter(u => u.side === 'enemy' && u.alive && v41Tracked(u)).length;
+  const lab = $('v41AliveNum');
+  if (lab && lab.textContent !== String(alive)) lab.textContent = alive;
+}
+// 쿨다운이 거의 다 찼다가 크게 다시 늘어나면 방금 스킬을 쓴 것으로 본다.
+function v41SkillWatch(u) {
+  if (!u.alive || !v41Tracked(u)) return;
+  if (u.awakened && !u._v41aw) { u._v41aw = true; v41Callout(u, '각성'); }
+  const info = skillCdInfo(u);
+  // 돌진 중처럼 쿨다운이 잠깐 안 보이는 동안은 마지막 값을 그대로 둔다.
+  if (!info || !(info.max >= 2)) return;
+  const prev = u._v41cd;
+  u._v41cd = info.cur;
+  if (prev != null && prev <= info.max * 0.25 && info.cur - prev >= info.max * 0.5) v41Callout(u, '스킬 발동');
+}
+function v41HudTick(ts) {
+  if (state.mode === 'preview') return;
+  state.units.forEach(v41SkillWatch);
+  if (ts - V41.lastDock < 120) return;
+  V41.lastDock = ts;
+  v41DockUpdate();
 }
 
 /* ===== PHYS v2 — 고정 타임스텝 원형 강체 엔진 =====
@@ -12545,6 +12740,7 @@ function beginCombatPhase() {
     if (u.def.onRoundStart) u.def.onRoundStart(u, battleAPI);
   });
   activateRoundGrudges();
+  v41HudStart();
   state.combatLastTs = performance.now();
   state.combatStartTs = state.combatLastTs;
   state.combatTime = 0;
@@ -13154,6 +13350,7 @@ function combatTick(ts) {
     }
     updateUnitBars(u);
   });
+  v41HudTick(ts);
 
   updateOddsBar();
   if ($('statsPanel') && $('statsPanel').classList.contains('show')) renderStatsPanel();
@@ -16737,6 +16934,7 @@ function killUnit(u) {
   clearTelegraph(u); u._engaged = false;
   if (u.charId === 'beam') resetBeam(u);
   onUnitDeath(u);
+  if (!u.alive) v41Kill(u);
   if (!u.alive && u.charId === 'reaper') resolveReaperDeath(u);
   if (!u.alive && u.charId === 'bomb' && !u._devoured) {
     state.pendingExplosions.push({ caster: u, x: u.x, y: u.y, radius: u.def.explosionRadius, damage: u.def.explosionDamage, remaining: u.def.explosionDelay });
@@ -17161,6 +17359,18 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.1': {
+    label: 'v4.1 새 인게임 HUD',
+    date: '2026.09.28',
+    sections: [
+      { title: '전투 화면', items: [
+        { emoji:'🎴', name:'아군 스킬 도크', tag:'new', color:'#111111', desc:'전투 중 하단에 <b>아군 지후 카드</b>가 나옵니다. 초상화 테두리가 <b>스킬 쿨다운 링</b>으로 차오르고, 다 차면 반짝입니다. 체력 바 · 레벨 · 남은 쿨다운이 함께 보이며, 카드를 누르면 상세 정보가 열립니다. <b>접기</b> 버튼으로 숨길 수 있습니다.' },
+        { emoji:'⚔️', name:'킬 피드', tag:'new', color:'#111111', desc:'오른쪽 위에 <b>누가 누구를 쓰러뜨렸는지</b> 최근 4건이 흘러갑니다. 내 지후의 처치는 검은 테두리로 표시됩니다.' },
+        { emoji:'✨', name:'스킬 콜아웃', tag:'new', color:'#111111', desc:'지후가 스킬을 쓰거나 <b>각성</b>하면 왼쪽 위에 배너가 미끄러져 들어옵니다. 적의 스킬은 빨간 띠로 구분됩니다.' },
+        { emoji:'🔴', name:'남은 적', tag:'new', color:'#111111', desc:'하단 상태줄에 <b>남은 적 지후 수</b>가 실시간으로 표시됩니다.' }
+      ] }
+    ]
+  },
   '4.0': {
     label: 'v4.0 UI 전면 개편 · 모노리스 카드 테이블',
     date: '2026.09.28',
@@ -18500,6 +18710,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindMinimap();
   const tp = $('btnTogglePool');
   if (tp) tp.addEventListener('click', ev => { ev.stopPropagation(); openPoolSheet(); });
+  const vd = $('btnV41Dock');
+  if (vd) vd.addEventListener('click', ev => { ev.stopPropagation(); v41ToggleDock(); });
   const db = $('btnDraftBack');
   if (db) db.addEventListener('click', () => showScreen('lobby'));
   const ex = $('btnExitBattle');
