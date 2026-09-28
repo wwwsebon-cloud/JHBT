@@ -60,6 +60,38 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    // 4.1.4 글로벌 채팅: 누구나 읽고, 로그인한 계정만 자기 UID로 쓴다. 수정·삭제 불가. at 는 서버 시각이어야 한다.
+    function validChat(data) {
+      return data.keys().hasAll(['uid', 'nickname', 'text', 'at'])
+        && data.keys().hasOnly(['uid', 'nickname', 'text', 'at'])
+        && data.uid == request.auth.uid
+        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
+        && data.text is string && data.text.size() > 0 && data.text.size() <= 120
+        && data.at == request.time;
+    }
+
+    // 4.1.4 공지 이벤트 (레벨업·가입·뽑기·랭크·마스터리·승급)
+    function validEvent(data) {
+      return data.keys().hasAll(['uid', 'nickname', 'type', 'a', 'b', 'at'])
+        && data.keys().hasOnly(['uid', 'nickname', 'type', 'a', 'b', 'at'])
+        && data.uid == request.auth.uid
+        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
+        && data.type in ['level', 'join', 'gacha', 'rank', 'mastery', 'promo']
+        && data.a is string && data.a.size() <= 40
+        && data.b is string && data.b.size() <= 40
+        && data.at == request.time;
+    }
+
+    match /chat/{id} {
+      allow get, list: if true;
+      allow create: if request.auth != null && validChat(request.resource.data);
+    }
+
+    match /events/{id} {
+      allow get, list: if true;
+      allow create: if request.auth != null && validEvent(request.resource.data);
+    }
+
     match /nicknames/{key} {
       allow get: if true;
       allow list: if request.auth != null && resource.data.owner == request.auth.uid;
