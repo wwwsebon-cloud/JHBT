@@ -3049,7 +3049,7 @@ const CHARACTER_BALANCE = {
   growth: {
     hp: 1000, atk: 0, atkSpeed: 1, range: 180, speed: 22.5,
     noAttack: true, holdRange: true,
-    growthDelay: 22
+    growthDelay: 20
   },
   hypno: {
     hp: 2300, atk: 100, atkSpeed: 1, range: 135, speed: 90,
@@ -3188,7 +3188,7 @@ const CHARACTER_BALANCE = {
   awaken: {
     hp: 2500, atk: 50, atkSpeed: 1.0, range: 72, speed: 0.1,
     isMelee: true,
-    awakenTime: 21, awakenDashSpeed: 900, awakenDashDamage: 1000, awakenChannel: 2,
+    awakenTime: 19, awakenDashSpeed: 900, awakenDashDamage: 1000, awakenChannel: 2,
     awakenStats: { hp: 2500, atk: 1000, atkSpeed: 0.5, range: 202.5, speed: 216 }
   },
   berserk: {
@@ -4181,7 +4181,7 @@ const CHAR_DB = {
     id: 'growth', name: '성장 지후', emoji: '🔄', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#8a1fb0', portrait: PORTRAITS.growth,
     ...CHARACTER_BALANCE.growth,
-    skillDesc: '매 라운드 시작 직후 <b>성장</b>을 시도한다. 성장 시간 <b>22초</b>가 다 차면 덱의 무작위 지후(성장 지후일 수도 있다)로 <b>변이</b>하고 레벨이 <b>1</b> 오른다. 변이한 모습과 레벨은 다음 라운드에도 유지된다. 남은 성장 시간은 살아 있든 죽었든 다음 라운드로 이어진다.'
+    skillDesc: '매 라운드 시작 직후 <b>성장</b>을 시도한다. 성장 시간 <b>20초</b>가 다 차면 덱의 무작위 지후(성장 지후일 수도 있다)로 <b>변이</b>하고 레벨이 <b>1</b> 오른다. 변이한 모습과 레벨은 다음 라운드에도 유지된다. 남은 성장 시간은 살아 있든 죽었든 다음 라운드로 이어진다.'
   },
   hypno: {
     id: 'hypno', name: '최면 지후', emoji: '🌀', role: 'controller', roleLabel: '컨트롤러',
@@ -4212,7 +4212,7 @@ const CHAR_DB = {
     id: 'gambler', name: '도박 지후', emoji: '🎲', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#4b1fd6', portrait: PORTRAITS.gambler,
     ...CHARACTER_BALANCE.gambler,
-    skillDesc: '라운드 시작 <b>1초</b> 뒤 자신을 포함한 아군 중 무작위 1기의 레벨을 <b>1 올리거나 1 내린다</b> (각 50%). 레벨 1인 지후의 레벨이 내려가면 그 지후는 <b>영구 소멸</b>한다.'
+    skillDesc: '라운드 시작 <b>1초</b> 뒤 자신을 포함한 아군 중 무작위 1기의 레벨을 <b>2 올리거나 2 내린다</b> (각 50%, 최대 7). 레벨이 1 아래로 내려가면 그 지후는 <b>영구 소멸</b>한다.'
   },
   mushroom: {
     id: 'mushroom', name: '버섯 지후', emoji: '🍄', role: 'tank', roleLabel: '탱커',
@@ -4615,7 +4615,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#4ae0c4', portrait: PORTRAITS.awaken, portraitAwakened: PORTRAITS.awaken_form,
     ...CHARACTER_BALANCE.awaken,
     customAttack(caster, target) { awakenAttack(caster, target); },
-    skillDesc: '일반 폼으로 소환된다 (HP 2500 / ATK 50 / 사거리 1 / 공속 1s). <b>21초 뒤 2초간 멈춰 아우라를 뿜으며 각성</b>하고 체력을 풀회복한다 (HP <b>2500</b>). 각성하면 사거리 <b>4.5칸</b> 안의 적에게 초당 20칸으로 박아 <b>1000</b> 피해를 주고 살짝 밀친 뒤 제자리로 돌아온다 (공속 0.5s).'
+    skillDesc: '일반 폼으로 소환된다 (HP 2500 / ATK 50 / 사거리 1 / 공속 1s). <b>19초 뒤 2초간 멈춰 아우라를 뿜으며 각성</b>하고 체력을 풀회복한다 (HP <b>2500</b>). 각성하면 사거리 <b>4.5칸</b> 안의 적에게 초당 20칸으로 박아 <b>1000</b> 피해를 주고 살짝 밀친 뒤 제자리로 돌아온다 (공속 0.5s).'
   },
   berserk: {
     id: 'berserk', name: '광폭화 지후', emoji: '😡', role: 'dealer', roleLabel: '딜러',
@@ -14548,9 +14548,10 @@ function tickNewJihooSkills(u, dt) {
       const pick = pool[Math.floor(Math.random() * pool.length)];
       if (pick) {
         const up = Math.random() < 0.5;
-        if (up) { if (pick.level < MAX_UNIT_LEVEL) setUnitLevel(pick, pick.level + 1); else spawnDamageNumber(pick, 'MAX', { heal: true }); }
-        else if (pick.level <= 1) vanishUnit(pick, '🎲 소멸');
-        else { setUnitLevel(pick, pick.level - 1); spawnDamageNumber(pick, '🎲 레벨 -1', { crit: true }); }
+        // 3.8.3: 레벨 ±2
+        if (up) { if (pick.level < MAX_UNIT_LEVEL) { setUnitLevel(pick, pick.level + 2); spawnDamageNumber(pick, '🎲 레벨 +2', { heal: true }); } else spawnDamageNumber(pick, 'MAX', { heal: true }); }
+        else if (pick.level <= 2) vanishUnit(pick, '🎲 소멸');
+        else { setUnitLevel(pick, pick.level - 2); spawnDamageNumber(pick, '🎲 레벨 -2', { crit: true }); }
       }
     }
   }
@@ -15604,6 +15605,9 @@ const PATCH_NOTES = {
         { emoji:'📈', name:'지후함수', tag:'buff', color:'#22b14c', portraitKey:'func', desc:'함수 간격 <b>7 → 4초</b> · 기절 <b>1 → 2초</b>.' },
         { emoji:'🪨', name:'암석 지후', tag:'buff', color:'#9a6c40', portraitKey:'rock', desc:'암석지대 지속 <b>4 → 6초</b>.' },
         { emoji:'📡', name:'새털라이트 전술폭격 지후', tag:'nerf', color:'#3b5bdb', portraitKey:'bomber', desc:'폭격 범위 <b>5 → 3.2칸</b>.' },
+        { emoji:'⚡', name:'각성 지후', tag:'buff', color:'#f59f00', portraitKey:'awaken', desc:'각성까지 <b>21 → 19초</b>.' },
+        { emoji:'🔄', name:'성장 지후', tag:'buff', color:'#8a1fb0', portraitKey:'growth', desc:'성장 시간 <b>22 → 20초</b>.' },
+        { emoji:'🎲', name:'도박 지후', tag:'adjust', color:'#4b1fd6', portraitKey:'gambler', desc:'무작위 아군의 레벨을 <b>±1 → ±2</b> 바꿉니다. 레벨이 1 아래로 내려가면 영구 소멸합니다.' },
         { emoji:'🥚', name:'알 지후', tag:'nerf', color:'#0f9d7a', portraitKey:'egg', desc:'흔들리는 간격 <b>1초 → 2초</b> (부화 확률은 그대로 6%).' },
         { emoji:'⚽', name:'홍명보 지후', tag:'buff', color:'#e02328', portraitKey:'hong', desc:'공이 <b>1~7번</b> 무작위로 튕깁니다 (최대 4 → 7번).' }
       ] },
