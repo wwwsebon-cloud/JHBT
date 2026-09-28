@@ -3783,6 +3783,17 @@ html.preview-mode .v41-feed, html.preview-mode .v41-callout { display:none !impo
 /* 4.1 태블릿: 3.x 카드 높이 제한(160px)이 4.0 카드(정사각 초상화 + 이름)를 눌러 초상화가 잘리던 문제 */
 html[data-theme="light"] #app .char-card { max-height:none; aspect-ratio:auto; }
 html[data-theme="light"] #app .char-card .char-portrait-zone { flex:none; }
+/* ─── 4.1 보상 받기 연출 · 목록 재생성 시 등장 애니메이션 억제 ─── */
+@keyframes v4RewardPop { 0% { opacity:0; transform:translate(-50%,6px) scale(.8); } 15% { opacity:1; transform:translate(-50%,-4px) scale(1.1); } 100% { opacity:0; transform:translate(-50%,-44px) scale(1); } }
+@keyframes v4Bump { 0% { transform:scale(1); } 35% { transform:scale(1.22); } 100% { transform:scale(1); } }
+@keyframes v4ClaimFlash { 0% { box-shadow:0 0 0 0 rgba(17,17,17,.45); } 100% { box-shadow:0 0 0 18px rgba(17,17,17,0); } }
+html[data-theme="light"] .v4-noanim .v4-ach, html[data-theme="light"] .v4-noanim .v4-daywrap, html[data-theme="light"] .v4-noanim .v4-qrow, html[data-theme="light"] .v4-noanim .v4-shard, html[data-theme="light"] .v4-noanim .v4-boost, html[data-theme="light"] .v4-noanim .v4-grid2, html[data-theme="light"] .v4-noanim .v4-money button { animation:none !important; }
+html[data-theme="light"] .v4-ach.claiming, html[data-theme="light"] .v4-day.claiming { border-color:#111; animation:v4ClaimFlash .7s ease-out; }
+html[data-theme="light"] .v4-ach .v4-claimstamp, html[data-theme="light"] .v4-day .v4-claimstamp { padding:5px 10px; border:2px solid #111; border-radius:6px; font-size:12px; font-weight:900; color:#111; background:#fff; animation:stamp .35s cubic-bezier(.2,.8,.2,1) forwards; }
+html[data-theme="light"] .v4-day .v4-claimstamp { position:absolute; right:10px; top:10px; z-index:2; }
+html[data-theme="light"] .v4-rewardpop { position:fixed; z-index:1300; padding:6px 12px; border-radius:999px; background:#111; color:#fff; font:900 13px var(--v4-mono); white-space:nowrap; pointer-events:none; animation:v4RewardPop 1s cubic-bezier(.2,.8,.2,1) forwards; box-shadow:0 10px 20px -10px rgba(0,0,0,.6); }
+html[data-theme="light"] .v4-pill.bump { animation:v4Bump .45s cubic-bezier(.2,.8,.2,1); }
+html[data-theme="light"] #app .v4-end .profile-xp-fill { transform-origin:left; animation:growX 1.2s .9s cubic-bezier(.2,.8,.2,1) backwards; }
 /* ─── 4.1 8×3 칸 배치 (9a) ─── */
 @keyframes v42Glow { 0%,100% { border-color:#8a8a87; background:rgba(255,255,255,.55); } 50% { border-color:#111; background:rgba(255,255,255,.85); } }
 @keyframes v42Slam { 0% { transform:scale(1.6); opacity:0; } 60% { transform:scale(.96); opacity:1; } 100% { transform:none; } }
@@ -8443,8 +8454,8 @@ function renderInventory(message = '') {
   const shardCards = Object.entries(profile.shards).filter(([id, count]) => CHAR_DB[id] && count > 0)
     .map(([id, count], index) => `<div class="v4-shard" style="animation-delay:${(0.05 + index * 0.04).toFixed(2)}s"><span class="pic"><img src="${CHAR_DB[id].portrait}" alt=""></span><span class="nm">${CHAR_DB[id].name}</span><span class="ct">×${formatNumber(count)}</span></div>`).join('');
   $('inventoryBody').innerHTML = `${message ? `<div class="v4-msg">${message}</div>` : ''}
-    <div class="v4-boost"><span class="sw"></span><span class="ic">🔥</span><span class="tx"><b>경험치 부스트 · 10분</b><span>${activeSeconds ? `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음` : `경험치 ×2 · 승리 시 ◆100~200 · 오늘 ${profile.xpBoost.usesToday}/2회 사용`}</span></span>
-      <button type="button" data-reward-action="boost" ${boostOff ? 'disabled' : ''}>${activeSeconds ? '사용 중' : '◆ 300 · 사용'}</button></div>
+    <div class="v4-boost"><span class="sw"></span><span class="ic">🔥</span><span class="tx"><b>경험치 부스트 · 10분</b><span id="inventoryBoostText">${activeSeconds ? `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음` : `경험치 ×2 · 승리 시 ◆100~200 · 오늘 ${profile.xpBoost.usesToday}/2회 사용`}</span></span>
+      <button type="button" id="inventoryBoostBtn" data-reward-action="boost" ${boostOff ? 'disabled' : ''}>${activeSeconds ? '사용 중' : '◆ 300 · 사용'}</button></div>
     <div class="v4-grid2" style="animation:rise .5s .32s backwards">
       <button type="button" class="v4-xbtn" data-reward-action="exchange100" ${profile.diamonds < 100 ? 'disabled' : ''}><span>◆ 100</span><span class="arr">→</span><span>● 1,000</span></button>
       <button type="button" class="v4-xbtn dark" data-reward-action="exchange1000" ${profile.diamonds < 1000 ? 'disabled' : ''}><span>◆ 1,000</span><span class="arr">→</span><span>● 11,000</span><span class="bonus">+10%</span></button>
@@ -8527,7 +8538,13 @@ function useInventoryAction(action) {
     summon = { id, duplicate };
   } else return;
   saveProfile();
-  renderInventory(message);
+  renderAccountUI();
+  const btn = $('inventoryBody').querySelector(`[data-reward-action="${action}"]`);
+  if (action.startsWith('exchange')) v4RewardPop(btn, `+● ${formatNumber(action === 'exchange100' ? 1000 : 11000)}`);
+  else if (action === 'boost') v4RewardPop(btn, '🔥 경험치 ×2 · 10분');
+  else v4RewardPop(btn, `+ ${CHAR_DB[summon.id].name}`);
+  v4BumpDiamond();
+  v4RenderQuiet($('inventoryBody'), () => renderInventory(message));
   if (summon) playSummonReveal([summon]);
 }
 function renderAttendance(message = '') {
@@ -8562,7 +8579,10 @@ function claimAttendance() {
   n.daysClaimed++;
   n.lastClaimDay = today;
   saveProfile();
-  renderAttendance(`${reward.label}을 받았습니다!`);
+  renderAccountUI();
+  const card = $('attendanceBody').querySelector('.v4-day.today');
+  if (card) { card.classList.add('claiming'); const tag = card.querySelector('.todaytag'); const stamp = document.createElement('span'); stamp.className = 'v4-claimstamp'; stamp.textContent = '완료'; card.appendChild(stamp); if (tag) tag.remove(); v4RewardPop(card, `+ ${reward.label}`); v4BumpDiamond(); }
+  setTimeout(() => v4RenderQuiet($('attendanceBody'), () => renderAttendance(`${reward.label}을 받았습니다!`)), 900);
 }
 function renderAchievements(message = '') {
   ensureDailyState();
@@ -8573,7 +8593,7 @@ function renderAchievements(message = '') {
       const current = rule.current();
       const ready = current >= goal;
       const unit = rule.key === 'kills' ? '회' : rule.key === 'login' ? '일' : '회';
-      return `<div class="v4-ach" style="animation-delay:${(0.05 + index * 0.05).toFixed(2)}s">
+      return `<div class="v4-ach" data-ach="${rule.key}" style="animation-delay:${(0.05 + index * 0.05).toFixed(2)}s">
         <div class="top"><span class="star">★</span><span class="tt"><b>${rule.label} ${formatNumber(goal)}${unit}</b><span>${claimed}단계 달성</span></span><span class="rw">◆ ${rule.reward}</span></div>
         <div class="bot"><span class="bar"><b style="transform:scaleX(${Math.min(1, goal ? current / goal : 0)})"></b></span><span class="pg">${formatNumber(Math.min(current, goal))} / ${formatNumber(goal)}</span>
         ${ready ? `<button type="button" class="v4-darkbtn" data-reward-action="achievement:${rule.key}">받기</button>` : ''}</div>
@@ -8581,8 +8601,44 @@ function renderAchievements(message = '') {
     }).join('') + '</div>';
   $('btnClaimAllAchievements').classList.toggle('reward-ready', ACHIEVEMENT_RULES.some(rule => rule.current() >= (profile.achievements.claimed[rule.key] + 1) * rule.step));
 }
+// 4.1 보상 받기 연출: 카드에 '완료' 도장 + 보상이 떠오르고, 상단 다이아 알약이 튄다.
+function v4RewardPop(fromEl, text) {
+  if (!fromEl) return;
+  const r = fromEl.getBoundingClientRect();
+  const pop = document.createElement('span');
+  pop.className = 'v4-rewardpop';
+  pop.textContent = text;
+  pop.style.left = (r.left + r.width / 2) + 'px';
+  pop.style.top = (r.top - 4) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+function v4BumpDiamond() {
+  document.querySelectorAll('#diamondAmount').forEach(el => {
+    const pill = el.closest('.v4-pill') || el.parentElement;
+    if (!pill) return;
+    pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
+  });
+}
+function v4ClaimFx(card, button, reward) {
+  if (!card) return;
+  card.classList.add('claiming');
+  if (button) {
+    const stamp = document.createElement('span');
+    stamp.className = 'v4-claimstamp';
+    stamp.textContent = '완료';
+    button.replaceWith(stamp);
+    v4RewardPop(stamp, reward);
+  } else v4RewardPop(card, reward);
+  v4BumpDiamond();
+}
+// 목록을 다시 그릴 때 등장 애니메이션을 다시 돌리지 않는다 (받기 뒤 갱신용)
+function v4RenderQuiet(container, render) {
+  container.classList.add('v4-noanim'); // 화면을 다시 열 때(showScreen) 풀린다
+  render();
+}
 function claimAllAchievements() {
-  let total = 0;
+  let total = 0, n = 0;
   // A single click may claim several already completed tiers of one achievement.
   for (const rule of ACHIEVEMENT_RULES) {
     let claimed = profile.achievements.claimed[rule.key];
@@ -8590,10 +8646,16 @@ function claimAllAchievements() {
     if (available) {
       profile.achievements.claimed[rule.key] += available;
       total += available * rule.reward;
+      const card = $('achievementsBody').querySelector(`[data-ach="${rule.key}"]`);
+      const btn = card && card.querySelector('[data-reward-action]');
+      setTimeout(() => v4ClaimFx(card, btn, `+◆ ${formatNumber(available * rule.reward)}`), n * 140);
+      n++;
     }
   }
-  if (total) { profile.diamonds += total; saveProfile(); }
-  renderAchievements(total ? `모든 보상을 받아 ◆${formatNumber(total)}을 획득했습니다!` : '지금 받을 수 있는 보상이 없습니다.');
+  if (total) { profile.diamonds += total; saveProfile(); renderAccountUI(); }
+  const msg = total ? `모든 보상을 받아 ◆${formatNumber(total)}을 획득했습니다!` : '지금 받을 수 있는 보상이 없습니다.';
+  if (!n) { renderAchievements(msg); return; }
+  setTimeout(() => v4RenderQuiet($('achievementsBody'), () => renderAchievements(msg)), 900 + n * 140);
 }
 
 function claimAchievement(key) {
@@ -8604,7 +8666,10 @@ function claimAchievement(key) {
   profile.achievements.claimed[key]++;
   profile.diamonds += rule.reward;
   saveProfile();
-  renderAchievements(`◆${rule.reward}을 받았습니다!`);
+  renderAccountUI();
+  const card = $('achievementsBody').querySelector(`[data-ach="${key}"]`);
+  v4ClaimFx(card, card && card.querySelector('[data-reward-action]'), `+◆ ${formatNumber(rule.reward)}`);
+  setTimeout(() => v4RenderQuiet($('achievementsBody'), () => renderAchievements(`◆${rule.reward}을 받았습니다!`)), 900);
 }
 
 function scheduleTask(fn, delay) {
@@ -8819,6 +8884,7 @@ function v4OnScreen(name) {
 function showScreen(name) {
   if (name === 'lobby' && !profile.nickname) name = 'welcome';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.v4-noanim').forEach(el => el.classList.remove('v4-noanim'));
   $('screen-' + name).classList.add('active');
   state.screen = name;
   v4OnScreen(name);
@@ -17991,7 +18057,9 @@ const PATCH_NOTES = {
         { emoji:'🔴', name:'남은 적', tag:'new', color:'#111111', desc:'하단 상태줄에 <b>남은 적 지후 수</b>가 실시간으로 표시됩니다.' }
       ] },
       { title: '버그 수정', items: [
-        { emoji:'📱', name:'태블릿 초상화', tag:'fix', color:'#555555', desc:'태블릿 크기 화면에서 덱 설정 카드의 초상화가 잘려 머리만 보이던 문제를 고쳤습니다.' }
+        { emoji:'🎉', name:'보상 받기 연출', tag:'new', color:'#111111', desc:'업적 · 출석 · 인벤토리에서 보상을 받으면 카드에 <b>완료 도장</b>이 찍히고 보상이 떠오르며 다이아 표시가 튑니다. 받은 뒤 목록 전체가 다시 등장하지 않습니다.' },
+        { emoji:'📱', name:'태블릿 초상화', tag:'fix', color:'#555555', desc:'태블릿 크기 화면에서 덱 설정 카드의 초상화가 잘려 머리만 보이던 문제를 고쳤습니다.' },
+        { emoji:'🎒', name:'인벤토리 깜빡임', tag:'fix', color:'#555555', desc:'인벤토리가 1초마다 전체를 다시 그려 애니메이션이 반복되던 문제를 고쳤습니다. 이제 부스트 남은 시간만 갱신됩니다.' }
       ] }
     ]
   },
@@ -19501,7 +19569,16 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnLevelUpConfirm').addEventListener('click', () => { profile.pendingLevelCelebration = null; saveProfile(); closeModal('levelUpModal'); });
   renderQuests();
   saveProfile();
-  setInterval(() => { if (state.screen === 'inventory') renderInventory(); }, 1000);
+  // 4.1: 인벤토리는 1초마다 전체를 다시 그리지 않고 부스트 남은 시간만 고친다. 부스트가 끝나는 순간에만 한 번 다시 그린다.
+  let inventoryBoostWasActive = false;
+  setInterval(() => {
+    if (state.screen !== 'inventory') return;
+    const activeSeconds = Math.max(0, Math.ceil((profile.xpBoost.activeUntil - Date.now()) / 1000));
+    const active = activeSeconds > 0;
+    if (inventoryBoostWasActive && !active) { v4RenderQuiet($('inventoryBody'), () => renderInventory()); }
+    else if (active && $('inventoryBoostText')) $('inventoryBoostText').textContent = `활성 중 · ${Math.floor(activeSeconds / 60)}분 ${activeSeconds % 60}초 남음`;
+    inventoryBoostWasActive = active;
+  }, 1000);
 });
 
 
