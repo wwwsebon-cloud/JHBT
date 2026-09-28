@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.1.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.1.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -3842,6 +3842,73 @@ html[data-theme="light"] #lbPodium { pointer-events:none; }
 html[data-theme="light"] #lbPodium .pod { pointer-events:auto; }
 html[data-theme="light"] .v4-podium .v44-podtier .tier-badge { background:rgba(242,242,240,.12); color:#f2f2f0; border-color:rgba(242,242,240,.35); }
 .v44-detail-tier { display:flex; align-items:center; gap:6px; }
+/* 4.1.1 크레딧 화면 */
+@keyframes v45Float { 0% { transform:translateY(110vh) rotate(var(--rot)); opacity:0; } 10%,85% { opacity:var(--op,.55); } 100% { transform:translateY(-30vh) rotate(calc(var(--rot) * -1)); opacity:0; } }
+@keyframes v45Belt { to { transform:translateX(-50%); } }
+@keyframes v45BeltR { from { transform:translateX(-50%); } to { transform:translateX(0); } }
+@keyframes v45Heart { 0%,100% { transform:scale(1); } 15% { transform:scale(1.25); } 30% { transform:scale(1); } 45% { transform:scale(1.15); } }
+@keyframes v45Spot { 0%,100% { opacity:.55; transform:translate(-50%,-50%) scale(1); } 50% { opacity:.8; transform:translate(-50%,-50%) scale(1.08); } }
+html[data-theme="light"] #app #screen-credits.active { display:block; background:var(--v4-black,#0f0f0e); color:var(--v4-soft,#f2f2f0); overflow:hidden; padding:0; }
+.v45-cr-spot { position:absolute; left:50%; top:50%; width:min(900px,120vw); height:min(900px,120vw); border-radius:50%; background:radial-gradient(closest-side,rgba(255,255,255,.08),transparent); animation:v45Spot 6s ease-in-out infinite; pointer-events:none; }
+.v45-cr-marquee { position:absolute; left:0; top:50%; transform:translateY(-50%); display:flex; white-space:nowrap; pointer-events:none; font:900 clamp(90px,16vw,200px) 'Arial Black',sans-serif; letter-spacing:-.06em; color:transparent; -webkit-text-stroke:1px rgba(255,255,255,.06); animation:v45Belt 40s linear infinite; }
+.v45-cr-marquee span { padding-right:.3em; }
+.v45-cr-float { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.v45-cr-float .fc { position:absolute; top:0; width:78px; height:104px; padding:5px; box-sizing:border-box; border-radius:10px; background:#f2f2f0; box-shadow:0 18px 30px -12px rgba(0,0,0,.8); opacity:0; animation:v45Float var(--t) var(--d) linear infinite; }
+.v45-cr-float .fc.l { left:var(--x); }
+.v45-cr-float .fc.r { right:var(--x); }
+.v45-cr-float .fc img { width:100%; height:100%; object-fit:contain; border-radius:6px; background:#fff; }
+.v45-cr-top { position:absolute; left:0; right:0; top:0; z-index:5; display:flex; align-items:center; gap:14px; padding:16px 20px; }
+.v45-cr-top h2 { margin:0; font:900 24px 'Arial Black','Jihoo Hangul',sans-serif; letter-spacing:-.04em; }
+.v45-cr-hint { margin-left:auto; font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.14em; color:#8f8f8c; }
+.v45-cr-replay { padding:9px 14px; border-radius:999px; border:1px solid #444; background:transparent; color:#f2f2f0; font:inherit; font-size:12px; font-weight:800; cursor:pointer; transition:background-color .2s,color .2s,border-color .2s; }
+.v45-cr-replay:hover { background:#f2f2f0; color:#111; }
+#screen-credits.ended .v45-cr-replay { background:#f2f2f0; color:#111; border-color:#f2f2f0; animation:v45Heart 1.6s ease-in-out infinite; }
+.v45-cr-roll { position:absolute; inset:0; z-index:2; overflow-y:auto; scrollbar-width:none; outline:none; }
+.v45-cr-roll::-webkit-scrollbar { display:none; }
+.v45-cr-track { display:flex; flex-direction:column; align-items:center; gap:clamp(90px,16vh,160px); padding:0 20px; text-align:center; }
+.v45-cr-gap { height:55vh; flex-shrink:0; }
+.v45-cr-gap.end { height:40vh; }
+.v45-cr-fade { position:absolute; left:0; right:0; height:22vh; z-index:3; pointer-events:none; }
+.v45-cr-fade.top { top:0; background:linear-gradient(180deg,#0f0f0e 25%,transparent); }
+.v45-cr-fade.bot { bottom:0; background:linear-gradient(0deg,#0f0f0e 15%,transparent); }
+.v45-cr-progress { position:absolute; left:0; right:0; bottom:0; height:3px; z-index:5; background:rgba(255,255,255,.08); }
+.v45-cr-progress i { display:block; height:100%; background:#f2f2f0; transform-origin:left; transform:scaleX(0); }
+.v45-cr-sec { display:flex; flex-direction:column; align-items:center; gap:14px; opacity:0; transform:translateY(40px); filter:blur(6px); transition:opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1), filter .9s; }
+.v45-cr-sec.in { opacity:1; transform:none; filter:none; }
+.v45-cr-sec .k { display:flex; flex-direction:column; align-items:center; gap:6px; font:800 12px var(--v4-mono,ui-monospace,monospace); letter-spacing:.5em; color:#8f8f8c; padding-left:.5em; transition:letter-spacing 1.2s cubic-bezier(.2,.8,.2,1); }
+.v45-cr-sec:not(.in) .k { letter-spacing:1.2em; }
+.v45-cr-sec .k i { font-style:normal; font-family:'Jihoo Hangul',sans-serif; letter-spacing:.2em; font-size:11px; color:#5f5f5c; }
+.v45-cr-logo { width:min(420px,80vw); }
+.v45-cr-sec.hero .tag { margin:0; font-size:15px; color:#c9c9c6; letter-spacing:.3em; }
+.v45-cr-sec .names { display:flex; flex-direction:column; gap:6px; }
+.v45-cr-sec .names b { display:block; font:900 clamp(40px,8vw,76px) 'Arial Black','Jihoo Hangul',sans-serif; letter-spacing:-.04em; line-height:1.05; opacity:0; transform:translateY(24px) scale(.96); transition:opacity .8s var(--d) cubic-bezier(.2,.8,.2,1), transform .8s var(--d) cubic-bezier(.2,.8,.2,1); }
+.v45-cr-sec.in .names b { opacity:1; transform:none; }
+.v45-cr-sec.alt .names b { color:transparent; -webkit-text-stroke:1.5px #f2f2f0; }
+.v45-cr-sec.cast { width:100vw; }
+.v45-cr-sec.cast .big, .v45-cr-sec.stats .nums span { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.v45-cr-sec.cast .big b { font:900 clamp(60px,12vw,110px) 'Arial Black',sans-serif; letter-spacing:-.05em; line-height:1; }
+.v45-cr-sec small { font-size:13px; color:#a3a3a0; }
+.v45-cast-row { width:100%; overflow:hidden; -webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
+.v45-cast-row .belt { display:flex; gap:12px; width:max-content; padding:8px 0; animation:v45Belt 70s linear infinite; }
+.v45-cast-row.r .belt { animation-name:v45BeltR; animation-duration:80s; }
+.v45-cast-row .c { width:74px; height:74px; flex-shrink:0; border-radius:50%; background:#f2f2f0; overflow:hidden; box-shadow:0 0 0 3px var(--rc,#555); }
+.v45-cast-row .c img { width:100%; height:100%; object-fit:contain; }
+.v45-cr-sec.stats .nums { display:flex; gap:clamp(24px,6vw,70px); flex-wrap:wrap; justify-content:center; }
+.v45-cr-sec.stats .nums b { font:900 clamp(34px,6vw,56px) 'Arial Black',sans-serif; letter-spacing:-.04em; }
+.v45-cr-sec.thanks p { margin:0; font-size:clamp(20px,3.6vw,30px); line-height:1.5; color:#c9c9c6; }
+.v45-cr-sec.thanks p b { color:#f2f2f0; font-weight:900; }
+.v45-cr-sec.finale .fin { font:900 clamp(46px,10vw,104px) 'Arial Black',sans-serif; letter-spacing:-.05em; line-height:.95; }
+.v45-cr-sec.finale .made { font:800 12px var(--v4-mono,ui-monospace,monospace); letter-spacing:.4em; color:#8f8f8c; }
+.v45-cr-sec.finale .heart { font-size:34px; color:var(--v4-red,#e5322d); animation:v45Heart 1.6s ease-in-out infinite; }
+@media (max-width:640px) {
+  .v45-cr-hint { display:none; }
+  .v45-cr-top { padding:10px 12px; }
+  .v45-cr-replay { margin-left:auto; }
+  .v45-cr-float .fc { width:54px; height:72px; --op:.3; }
+  .v45-cr-float .fc:nth-child(n+5) { display:none; }
+  .v45-cast-row .c { width:54px; height:54px; }
+}
+body.reduce-motion .v45-cr-sec { transition:none; }
 /* 4.1.1 앱 설치 */
 html[data-theme="light"] #installModal { background:rgba(8,8,8,.8); }
 html[data-theme="light"] #installModal .modal-card.v43-pay { width:min(400px,100%); display:flex; flex-direction:column; gap:14px; padding:22px; border-radius:20px; background:#0f0f0e; color:#f2f2f0; border:1px solid #2a2a29; animation:popIn .3s cubic-bezier(.2,.8,.2,1); }
@@ -4312,6 +4379,24 @@ body.reduce-motion .v42-multi .spin { transition-delay:0s !important; }
     <div class="patch-body" id="patchBody"></div>
   </div>
 
+  <!-- 4.1.1 크레딧: 별도 화면. 엔딩 크레딧처럼 천천히 올라간다 -->
+  <div id="screen-credits" class="screen v45-credits">
+    <div class="v4-gridbg"></div>
+    <div class="v45-cr-spot" aria-hidden="true"></div>
+    <canvas class="v4-particles" data-n="70"></canvas>
+    <div class="v45-cr-marquee" aria-hidden="true"><span>CREDITS · JIHOO BATTLE · CREDITS · JIHOO BATTLE · </span><span>CREDITS · JIHOO BATTLE · CREDITS · JIHOO BATTLE · </span></div>
+    <div class="v45-cr-float" id="creditsFloat" aria-hidden="true"></div>
+    <div class="v45-cr-top">
+      <button type="button" class="v4-back" id="btnCreditsBack">← 로비</button>
+      <h2>크레딧</h2>
+      <span class="v45-cr-hint" id="creditsHint">스크롤하면 멈추고, 가만히 두면 다시 흘러요</span>
+      <button type="button" class="v45-cr-replay" id="btnCreditsReplay">처음부터</button>
+    </div>
+    <div class="v45-cr-roll" id="creditsRoll" tabindex="0" aria-label="크레딧"><div class="v45-cr-track" id="creditsTrack"></div></div>
+    <div class="v45-cr-fade top" aria-hidden="true"></div><div class="v45-cr-fade bot" aria-hidden="true"></div>
+    <div class="v45-cr-progress" aria-hidden="true"><i id="creditsProgress"></i></div>
+  </div>
+
   <!-- 투기장 편성 -->
   <div id="screen-arena" class="screen v4-page v4-arena">
     <div class="v4-arena-top"><canvas class="v4-particles" data-n="18"></canvas><div class="v4-band-inner">
@@ -4621,10 +4706,6 @@ body.reduce-motion .v42-multi .spin { transition-delay:0s !important; }
   <div class="modal-head"><h2 class="title-font">도움말</h2><button type="button" class="modal-close" data-close-modal="helpModal">✕</button></div>
   <div class="ms-tabs" id="helpTabs"></div>
   <div id="helpBody"></div>
-</div></div>
-<div class="app-modal" id="creditsModal" role="dialog" aria-modal="true"><div class="modal-card">
-  <div class="modal-head"><h2 class="title-font">크레딧</h2><button type="button" class="modal-close" data-close-modal="creditsModal">✕</button></div>
-  <p>Developer : Solyening</p><p>Scripter : Coderabbit, Claude</p><p>Tester : 월1수</p><p>Contributor : Kaden, Tsukasa</p>
 </div></div>
 <div class="app-modal" id="surrenderModal" role="dialog" aria-modal="true" aria-label="항복 확인"><div class="modal-card surrender-card"><h2>항복하시겠습니까?</h2><p>항복하면 현재 게임은 패배로 기록됩니다.</p><div class="surrender-actions"><button type="button" class="btn btn-secondary" id="btnSurrenderCancel">계속하기</button><button type="button" class="btn btn-primary" id="btnSurrenderConfirm">항복하기</button></div></div></div>
 <div class="app-modal" id="leaderboardDetailModal" role="dialog" aria-modal="true"><div class="modal-card">
@@ -18285,6 +18366,16 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.1.2': {
+    label: 'v4.1.2 크레딧 화면 · 새 앱 아이콘',
+    date: '2026.09.28',
+    sections: [
+      { title: '새 화면', items: [
+        { emoji:'🎬', name:'크레딧 화면', tag:'new', color:'#111111', desc:'메뉴(☰)의 <b>크레딧</b>이 작은 창 대신 <b>엔딩 크레딧처럼 흘러가는 화면</b>으로 바뀝니다. 스크롤하면 멈추고, 가만히 두면 다시 흐릅니다. 출연한 <b>지후 전원</b>과 패치 기록도 나옵니다.' },
+        { emoji:'📲', name:'앱 아이콘', tag:'adjust', color:'#555555', desc:'앱으로 설치했을 때의 아이콘이 <b>지후 그림</b>으로 바뀌었습니다. 이미 설치한 기기는 바뀌는 데 시간이 걸릴 수 있습니다.' }
+      ] }
+    ]
+  },
   '4.1.1': {
     label: 'v4.1.1 리더보드 티어 · 지후 정보 바로 보기 · 앱 설치',
     date: '2026.09.28',
@@ -19603,6 +19694,111 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
 
+// 4.1.1 크레딧 화면. 이름은 전부 여기 한 곳에서 고친다.
+const CREDITS = [
+  { role: 'DEVELOPER', ko: '개발', names: ['Solyening'] },
+  { role: 'SCRIPTER', ko: '스크립트', names: ['Coderabbit', 'Claude'] },
+  { role: 'TESTER', ko: '테스트', names: ['월1수'] },
+  { role: 'CONTRIBUTOR', ko: '도움', names: ['Kaden', 'Tsukasa'] }
+];
+const CREDITS_SPEED = 38; // px/s
+const credits = { raf: 0, last: 0, idleUntil: 0, io: null, pos: 0 };
+function renderCredits() {
+  const roster = playableIds().filter(id => CHAR_DB[id].portrait);
+  const versions = Object.keys(PATCH_NOTES);
+  const first = versions[versions.length - 1];
+  const half = Math.ceil(roster.length / 2);
+  const castRow = (ids, dir) => `<div class="v45-cast-row ${dir}"><div class="belt">${[...ids, ...ids].map(id => `<span class="c" title="${CHAR_DB[id].name}" style="--rc:${rarityColorVar(CHAR_DB[id].rarity)}"><img src="${CHAR_DB[id].portrait}" alt="" loading="lazy"></span>`).join('')}</div></div>`;
+  $('creditsTrack').innerHTML = `
+    <div class="v45-cr-gap"></div>
+    <section class="v45-cr-sec hero">
+      <span class="k">JIHOO BATTLE · v${gameVersion()}</span>
+      <div class="v4-logo v45-cr-logo"><h2 class="game-logo" role="img" aria-label="지후끼리 야차까는겜 JHBT"></h2><div class="v4-logo-sweep"><span></span></div></div>
+      <p class="tag">지후끼리 야차까는겜</p>
+    </section>
+    ${CREDITS.map((c, i) => `
+    <section class="v45-cr-sec role${i % 2 ? ' alt' : ''}">
+      <span class="k">${c.role}<i>${c.ko}</i></span>
+      <div class="names">${c.names.map((n, j) => `<b style="--d:${(0.15 + j * 0.12).toFixed(2)}s">${n}</b>`).join('')}</div>
+    </section>`).join('')}
+    <section class="v45-cr-sec cast">
+      <span class="k">CAST<i>출연</i></span>
+      <div class="big"><b data-count="${roster.length}">0</b><small>종의 지후</small></div>
+      ${castRow(roster.slice(0, half), 'l')}${castRow(roster.slice(half), 'r')}
+    </section>
+    <section class="v45-cr-sec stats">
+      <span class="k">SINCE<i>지금까지</i></span>
+      <div class="nums">
+        <span><b data-count="${versions.length}">0</b><small>번의 패치</small></span>
+        <span><b>v${first}</b><small>에서 시작</small></span>
+        <span><b>v${gameVersion()}</b><small>지금 버전</small></span>
+      </div>
+    </section>
+    <section class="v45-cr-sec thanks">
+      <span class="k">SPECIAL THANKS</span>
+      <p>지후배틀을 플레이해 준<br><b>모든 분</b>께</p>
+    </section>
+    <section class="v45-cr-sec finale">
+      <div class="fin">THANK YOU<br>FOR PLAYING</div>
+      <span class="made">MADE BY 솔여닁</span>
+      <span class="heart" aria-hidden="true">♥</span>
+    </section>
+    <div class="v45-cr-gap end"></div>`;
+  // 양옆에 떠다니는 지후 카드
+  const float = pickRandom(roster, 8);
+  $('creditsFloat').innerHTML = float.map((id, i) => `<span class="fc ${i % 2 ? 'r' : 'l'}" style="--x:${(4 + (i % 4) * 5.5).toFixed(1)}%;--d:${(-i * 3.1).toFixed(1)}s;--t:${(22 + (i % 3) * 5)}s;--rot:${(i % 2 ? 1 : -1) * (6 + i % 4 * 3)}deg"><img src="${CHAR_DB[id].portrait}" alt=""></span>`).join('');
+}
+function creditsCountUp(el) {
+  const to = Number(el.dataset.count) || 0, t0 = performance.now(), d = 1200;
+  const step = t => { const k = Math.min(1, (t - t0) / d); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function openCredits() {
+  showScreen('credits');
+  renderCredits();
+  const roll = $('creditsRoll');
+  roll.scrollTop = 0;
+  credits.pos = 0;
+  $('screen-credits').classList.remove('ended');
+  if (credits.io) credits.io.disconnect();
+  credits.io = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('in');
+    entry.target.querySelectorAll('[data-count]').forEach(el => { if (!el.dataset.done) { el.dataset.done = '1'; creditsCountUp(el); } });
+    credits.io.unobserve(entry.target);
+  }), { root: roll, threshold: 0.25 });
+  roll.querySelectorAll('.v45-cr-sec').forEach(sec => credits.io.observe(sec));
+  cancelAnimationFrame(credits.raf);
+  credits.idleUntil = performance.now() + 900; // 첫 화면을 잠깐 보여준 뒤 흐른다
+  credits.last = performance.now();
+  if (profile.settings.reduceMotion || document.body.classList.contains('reduce-motion')) {
+    roll.querySelectorAll('.v45-cr-sec').forEach(sec => sec.classList.add('in'));
+    $('creditsHint').textContent = '스크롤해서 보세요';
+    return;
+  }
+  $('creditsHint').textContent = '스크롤하면 멈추고, 가만히 두면 다시 흘러요';
+  const tick = now => {
+    if (state.screen !== 'credits') return;
+    const dt = Math.min(0.05, (now - credits.last) / 1000);
+    credits.last = now;
+    const max = roll.scrollHeight - roll.clientHeight;
+    if (now >= credits.idleUntil && roll.scrollTop < max - 1) {
+      credits.pos = Math.max(credits.pos, roll.scrollTop) + CREDITS_SPEED * dt;
+      roll.scrollTop = credits.pos;
+    } else credits.pos = roll.scrollTop;
+    $('screen-credits').classList.toggle('ended', roll.scrollTop >= max - 2);
+    credits.raf = requestAnimationFrame(tick);
+  };
+  credits.raf = requestAnimationFrame(tick);
+}
+// 사용자가 직접 움직이면 잠깐 멈춘다
+['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(type => $('creditsRoll')?.addEventListener(type, () => { credits.idleUntil = performance.now() + 2600; }, { passive: true }));
+$('creditsRoll')?.addEventListener('scroll', () => {
+  const roll = $('creditsRoll');
+  const max = roll.scrollHeight - roll.clientHeight;
+  if ($('creditsProgress')) $('creditsProgress').style.transform = `scaleX(${max > 0 ? (roll.scrollTop / max).toFixed(4) : 0})`;
+}, { passive: true });
+
 function initPatchUI() {
   const tabs = $('patchVerTabs');
   if (!tabs) return;
@@ -19774,7 +19970,9 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnOpenProfile').addEventListener('click', () => { renderProfileModal(); openModal('profileModal'); });
   $('btnMenuSettings').addEventListener('click', () => { closeModal('menuModal'); $('reduceMotionSetting').checked = profile.settings.reduceMotion; renderDeveloperMode(); openModal('settingsModal'); });
   $('btnMenuCode').addEventListener('click', () => { closeModal('menuModal'); $('codeInput').value = ''; $('codeMessage').textContent = '공개된 코드가 있을 때 이곳에서 입력할 수 있습니다.'; openModal('codeModal'); });
-  $('btnMenuCredits').addEventListener('click', () => { closeModal('menuModal'); openModal('creditsModal'); });
+  $('btnMenuCredits').addEventListener('click', () => { closeModal('menuModal'); openCredits(); });
+  $('btnCreditsBack').addEventListener('click', () => { renderAccountUI(); showScreen('lobby'); });
+  $('btnCreditsReplay').addEventListener('click', () => openCredits());
   $('btnMenuInstall').addEventListener('click', () => { closeModal('menuModal'); renderInstallGuide(); openModal('installModal'); });
   $('btnMenuHelp').addEventListener('click', () => { closeModal('menuModal'); renderHelp(); openModal('helpModal'); });
   $('btnSaveNickname').addEventListener('click', () => {
