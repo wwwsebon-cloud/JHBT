@@ -82,6 +82,19 @@ service cloud.firestore {
         && data.at == request.time;
     }
 
+    // 4.1.6 동시접속 차단: 계정마다 지금 플레이 중인 세션 번호 하나
+    function validSession(data) {
+      return data.keys().hasAll(['sid', 'at']) && data.keys().hasOnly(['sid', 'at'])
+        && data.sid is string && data.sid.size() > 0 && data.sid.size() <= 40
+        && data.at == request.time;
+    }
+
+    match /sessions/{userId} {
+      allow get: if owner(userId);
+      allow create, update: if owner(userId) && validSession(request.resource.data);
+      allow delete: if owner(userId);
+    }
+
     match /chat/{id} {
       allow get, list: if true;
       allow create: if request.auth != null && validChat(request.resource.data);
