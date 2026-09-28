@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.2.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.2.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2453,6 +2453,16 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 .v49-tut.wait .v49-tut-next { display:none; }
 @media (max-width:640px) { .v49-tut-face { width:64px; height:64px; } .v49-tut-bubble p { font-size:13px; } .v49-tut-card { gap:8px; } }
 /* 4.2 랭크 효과 목록 */
+.v422-glow { display:flex; align-items:center; gap:10px; margin:8px 0; padding:10px 12px; border-radius:12px; border:1px solid #f2c94c; background:linear-gradient(135deg,rgba(242,201,76,.16),rgba(242,201,76,.03)); }
+.v422-glow .gi { font-size:18px; color:#f2c94c; filter:drop-shadow(0 0 6px rgba(242,201,76,.8)); }
+.v422-glow .gt { flex:1; min-width:0; display:flex; flex-direction:column; }
+.v422-glow .gt b { font-size:13px; color:#f2c94c; }
+.v422-glow .gt small { font-size:11px; opacity:.8; }
+.v422-glow .gs { display:flex; align-items:center; gap:6px; }
+.v422-glow .gs button { width:26px; height:26px; border-radius:50%; border:1px solid #888; background:transparent; color:inherit; font:900 14px inherit; cursor:pointer; }
+.v422-glow .gs b { min-width:22px; text-align:center; font-weight:900; }
+.v422-glow #btnGlowUse { padding:7px 12px; border-color:#f2c94c; color:#f2c94c; }
+.v4-ticket.glow b { color:#b8860b; }
 .fx-bread.golden { filter:drop-shadow(0 0 6px #f2c94c); }
 .v42r-list { list-style:none; margin:8px 0; padding:0; display:flex; flex-direction:column; gap:6px; }
 .v42r-list li { display:flex; align-items:center; gap:8px; font-size:12px; line-height:1.5; opacity:.5; }
@@ -7465,6 +7475,19 @@ const RARITY_LABEL = { common: '일반', rare: '희귀', epic: '영웅', legend:
 const RANK_NAMES = ['A', 'S', 'SR', 'SSR'];
 const RANK_SHARD_COSTS = { common:[15,30,45], rare:[8,16,24], epic:[3,10,20], legend:[1,2,4] };
 const DUPLICATE_SHARDS = 1; // 중복 지후 한 번에 주는 조각
+// 4.2.2 빛나는 조각: 같은 등급 아무 지후의 조각으로 쓸 수 있다 (랭크업할 때 원하는 만큼 그 지후 조각으로 바꾼다)
+const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', legend: 'glowLegend' };
+const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각' };
+function glowCount(rarity) { return GLOW_KEYS[rarity] ? Math.max(0, Number(profile.inventory[GLOW_KEYS[rarity]]) || 0) : 0; }
+function convertGlowShards(id, amount) {
+  const c = CHAR_DB[id]; const key = c && GLOW_KEYS[c.rarity];
+  amount = Math.floor(Number(amount) || 0);
+  if (!key || !isUnlocked(id) || amount <= 0 || amount > glowCount(c.rarity) || rankIndex(id) >= 3) return false;
+  profile.inventory[key] -= amount;
+  profile.shards[id] = (Number(profile.shards[id]) || 0) + amount;
+  saveProfile();
+  return true;
+}
 const GACHA_PITY = 80; // 4.1 천장: 전설·히든 없이 80번째 뽑기는 전설 확정
 const RANK_GOLD_COSTS = [2500,10000,25000]; // 3.6.3 절반으로
 const MASTERY_STEPS = [
@@ -7747,7 +7770,7 @@ function freshProfile() {
     activeMatch: null,
     competitive: { tp: 0, wins: 0, losses: 0, peak: 0, promo: -1, season: 0, lastReset: null, lastDeck: [] },
     daily: { day: '', points: 0, chestClaimed: false, progress: {}, awarded: {}, allCounted: false, shop: null },
-    inventory: { epicTicket: 0, legendTicket: 0, boxTicket: 0 },
+    inventory: { epicTicket: 0, legendTicket: 0, boxTicket: 0, glowCommon: 0, glowRare: 0, glowEpic: 0, glowLegend: 0 },
     draftTickets: 0,
     discordRewarded: false,
     accountNoPassword: false,
@@ -7855,7 +7878,7 @@ function normalizeProfile(raw) {
       shop: rawDaily.shop && typeof rawDaily.shop === 'object' ? rawDaily.shop : null,
       allCounted: !!rawDaily.allCounted,
     },
-    inventory: { epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), boxTicket: safeCount(rawInventory.boxTicket) },
+    inventory: { epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), boxTicket: safeCount(rawInventory.boxTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend) },
     draftTickets: safeCount(raw.draftTickets),
     discordRewarded: !!raw.discordRewarded,
     accountNoPassword: !!raw.accountNoPassword,
@@ -7868,7 +7891,7 @@ function normalizeProfile(raw) {
       noticePending: !!rawNewcomer.noticePending,
     },
     // 4.1.9 튜토리얼: 이 필드가 없던 기존 유저(닉네임 있음)는 이미 본 것으로 친다
-    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)) })) : [] })) : [],
+    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)) })) : [] })) : [],
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     xpBoost: { day: String(rawBoost.day || ''), usesToday: Math.min(2, safeCount(rawBoost.usesToday)), activeUntil: Math.max(0, Number(rawBoost.activeUntil) || 0) },
@@ -9358,6 +9381,8 @@ function renderInventory(message = '') {
       <div class="v4-ticket"><b>랜덤 전설 모집권</b><span class="cnt">×${profile.inventory.legendTicket}</span><small>전설 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="legendTicket" ${profile.inventory.legendTicket ? '' : 'disabled'}>사용</button></div>
       <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
+    <b class="v4-h3">빛나는 조각</b>
+    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${RARITY_LABEL[r]} 지후 아무나의 조각으로 쓸 수 있어요 · 덱 설정에서 지후를 눌러 랭크업할 때 사용</small></div>`).join('')}</div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}`;
 }
@@ -10615,9 +10640,15 @@ function showCharDetail(c, unit) {
     const next = MASTERY_STEPS.find(item => count < item.count);
     const area = document.createElement('section');
     area.className = 'rank-detail';
-    area.innerHTML = `<div class="rank-detail-head"><strong>랭크 ${rankBadge(c.id)}</strong><small>${c.rarity === 'hidden' ? '히든 지후는 랭크 효과가 없습니다.' : '랭크전 · 경쟁전 · 드래프트전에서 적용'}</small></div>${c.rarity === 'hidden' ? '' : `<ul class="v42r-list">${rankEffectLines(c.id).map(([r, text], i) => `<li class="${step >= i + 1 ? 'on' : ''}"><span class="rank-badge rank-${r.toLowerCase()} has-art"><img src="${RANK_ART[r]}" alt="${r}"></span><span>${text}</span></li>`).join('')}</ul>`}<p>${c.rarity === 'hidden' ? '히든 지후는 SSR 랭크로 시작하며 랭크업할 수 없습니다.' : step < 3 ? `${RANK_NAMES[step]} → ${RANK_NAMES[step+1]} · 조각 ${formatNumber(current)}/${cost} · 골드 ${formatNumber(profile.gold)}/${formatNumber(gold)}` : '최고 랭크에 도달했습니다.'}</p><button type="button" class="btn btn-primary" id="btnRankUp" ${step >= 3 || current < cost || profile.gold < gold ? 'disabled' : ''}>랭크업</button><p>마스터리 ${masteryName(count)} · 누적 배치 ${formatNumber(count)}회${next ? ` · 다음 ${next.count}회 보상 ◆${formatNumber(next.reward)}` : ' · 최고 단계'}</p>`;
+    area.innerHTML = `<div class="rank-detail-head"><strong>랭크 ${rankBadge(c.id)}</strong><small>${c.rarity === 'hidden' ? '히든 지후는 랭크 효과가 없습니다.' : '랭크전 · 경쟁전 · 드래프트전에서 적용'}</small></div>${c.rarity === 'hidden' ? '' : `<ul class="v42r-list">${rankEffectLines(c.id).map(([r, text], i) => `<li class="${step >= i + 1 ? 'on' : ''}"><span class="rank-badge rank-${r.toLowerCase()} has-art"><img src="${RANK_ART[r]}" alt="${r}"></span><span>${text}</span></li>`).join('')}</ul>`}<p>${c.rarity === 'hidden' ? '히든 지후는 SSR 랭크로 시작하며 랭크업할 수 없습니다.' : step < 3 ? `${RANK_NAMES[step]} → ${RANK_NAMES[step+1]} · 조각 ${formatNumber(current)}/${cost} · 골드 ${formatNumber(profile.gold)}/${formatNumber(gold)}` : '최고 랭크에 도달했습니다.'}</p>${step < 3 && glowCount(c.rarity) ? (() => { const own = glowCount(c.rarity), want = Math.min(own, Math.max(1, cost - current)); return `<div class="v422-glow" data-max="${own}"><span class="gi">✦</span><span class="gt"><b>${GLOW_NAMES[c.rarity]}</b><small>보유 ${formatNumber(own)} · 이 지후 조각으로 바꿔 씁니다${cost > current ? ` · 부족 ${cost - current}` : ''}</small></span><span class="gs"><button type="button" data-glow="-1">−</button><b id="glowAmt">${want}</b><button type="button" data-glow="1">+</button></span><button type="button" class="btn-ghost" id="btnGlowUse">사용</button></div>`; })() : ''}<button type="button" class="btn btn-primary" id="btnRankUp" ${step >= 3 || current < cost || profile.gold < gold ? 'disabled' : ''}>랭크업</button><p>마스터리 ${masteryName(count)} · 누적 배치 ${formatNumber(count)}회${next ? ` · 다음 ${next.count}회 보상 ◆${formatNumber(next.reward)}` : ' · 최고 단계'}</p>`;
     body.querySelector('.cdp-content').appendChild(area);
     area.querySelector('#btnRankUp').addEventListener('click', () => rankUpCharacter(c.id));
+    const glow = area.querySelector('.v422-glow');
+    if (glow) {
+      const max = Number(glow.dataset.max), lab = glow.querySelector('#glowAmt');
+      glow.querySelectorAll('[data-glow]').forEach(b => b.addEventListener('click', () => { lab.textContent = clamp(Number(lab.textContent) + Number(b.dataset.glow), 1, max); }));
+      glow.querySelector('#btnGlowUse').addEventListener('click', () => { if (convertGlowShards(c.id, Number(lab.textContent))) { renderDraftGrid(); showCharDetail(c); } });
+    }
   }
   // 전투 미리보기는 보유하지 않은 지후도 볼 수 있다 (해금 전 히든은 위에서 이미 막힘).
   if (!unit && !inBattle) {
@@ -19195,6 +19226,16 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.2.2': {
+    label: 'v4.2.2 빛나는 조각',
+    date: '2026.09.28',
+    sections: [
+      { title: '재화', items: [
+        { emoji:'✦', name:'빛나는 조각', tag:'new', color:'#f2c94c', desc:'<b>빛나는 전설 · 영웅 · 희귀 · 일반조각</b>이 추가됩니다. 같은 등급 <b>아무 지후</b>의 조각으로 쓸 수 있어요. 덱 설정에서 지후를 누르고 랭크업 칸의 <b>빛나는 조각</b> 줄에서 원하는 만큼 골라 <b>사용</b>하면 그 지후의 조각이 됩니다. 인벤토리에서 보유 수를 볼 수 있습니다.' },
+        { emoji:'✉', name:'랭크 업데이트 기념 보상', tag:'new', color:'#111111', desc:'우편함으로 빛나는 일반조각 <b>15</b> · 희귀조각 <b>8</b> · 영웅조각 <b>3</b> · 전설조각 <b>1</b>개를 보내드렸어요.' }
+      ] }
+    ]
+  },
   '4.2.1': {
     label: 'v4.2.1 S랭크 고유 능력 56종',
     date: '2026.09.28',
@@ -20817,7 +20858,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'] };
+const MAIL_REWARD_KINDS = { diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
 function mailRewardText(rewards) { return rewards.map(r => `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 function sendMail(mail) {
   profile.mail = (profile.mail || []).concat({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, icon: '✉', body: '', rewards: [], ...mail }).slice(-60);
@@ -20866,6 +20907,10 @@ function runMailMigrations() {
     for (let g = 2; g <= top; g++) { amount += unpaid ? compPromoReward(g) : compPromoRewardOld(g); names.push(COMP_GROUP_LABELS[g]); }
     if (unpaid) rec.promo = top;
     if (amount > 0) sendMail({ icon: '🏆', title: '경쟁전 승급 보상 추가 지급', body: `승급 보상이 2배가 되었습니다. ${unpaid ? '받지 못했던' : '이미 받은'} ${names.join(' · ')} 승급 보상${unpaid ? '을 새 금액으로' : '의 차액을'} 보내드려요.`, rewards: [{ kind: 'diamonds', amount }] });
+  }
+  if (!profile.mailFlags.includes('rankShards42')) {
+    profile.mailFlags.push('rankShards42'); changed = true;
+    sendMail({ icon: '✦', title: '랭크 업데이트 기념 보상', body: '랭크 효과와 S랭크 고유 능력이 추가된 기념으로 빛나는 조각을 보내드려요. 같은 등급 아무 지후의 랭크업에 쓸 수 있습니다.', rewards: [{ kind: 'glowCommon', amount: 15 }, { kind: 'glowRare', amount: 8 }, { kind: 'glowEpic', amount: 3 }, { kind: 'glowLegend', amount: 1 }] });
   }
   if (changed) saveProfile();
   renderMailDot();
