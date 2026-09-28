@@ -3806,6 +3806,74 @@ html[data-theme="light"] #app .char-card .char-portrait-zone { flex:none; }
 .v42-presets button { padding:6px 10px; border-radius:8px; border:1px solid #d6d6d3; background:#f7f7f5; color:#111; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
 .v42-presets button:hover { border-color:#111; }
 html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important; }
+@media (max-width:640px) { html[data-theme="light"] #app #screen-battle[data-phase="deploy"] .minimap { display:none; } }
+/* ─── 4.1 뽑기 v2 (7a): 천장 · 소환 풀 · 탭해서 공개 · 10+1 그리드 ─── */
+@keyframes v42Flash { 0% { opacity:.85; } 100% { opacity:0; } }
+@keyframes v42Invert { 0% { opacity:1; } 100% { opacity:0; } }
+@keyframes v42Glitch { 0%,100% { transform:none; } 25% { transform:translate(-6px,2px); } 50% { transform:translate(5px,-3px); } 75% { transform:translate(-3px,-1px); } }
+@keyframes v42Stamp { 0% { transform:scale(2.2) rotate(-8deg); opacity:0; } 100% { transform:rotate(-4deg); opacity:1; } }
+@keyframes v42Bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+@keyframes v42Deal { from { opacity:0; transform:translateY(24px) scale(.9); } to { opacity:1; transform:none; } }
+@keyframes v42GlowPulse { 0%,100% { opacity:.25; } 50% { opacity:.8; } }
+.v42-pity { display:flex; align-items:center; gap:12px; margin-top:14px; padding:12px 14px; border-radius:14px; border:1px solid #2a2a29; background:rgba(15,15,14,.6); color:#f2f2f0; }
+.v42-pity .lab { font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.18em; color:#9a9a97; white-space:nowrap; }
+.v42-pity .bar { flex:1; height:8px; border-radius:8px; background:#2a2a29; overflow:hidden; }
+.v42-pity .bar i { display:block; height:100%; border-radius:8px; background:linear-gradient(90deg,#f2f2f0,#f2c94c); transform-origin:left; transition:transform .6s cubic-bezier(.2,.8,.2,1); }
+.v42-pity .txt { font:800 11px var(--v4-mono,ui-monospace,monospace); white-space:nowrap; }
+.v42-plus { position:absolute; right:14px; top:0; transform:translateY(-50%); padding:2px 8px; border-radius:999px; background:#f2c94c; color:#111; font:800 10px var(--v4-mono,ui-monospace,monospace); }
+#btnGachaEleven { position:relative; overflow:visible; }
+.v42-pool { display:flex; flex-direction:column; gap:14px; color:#f2f2f0; }
+.v42-pool .odds { display:flex; flex-wrap:wrap; gap:14px; font:800 11px var(--v4-mono,ui-monospace,monospace); color:#c9c9c6; }
+.v42-pool .odds span { display:flex; align-items:center; gap:6px; }
+.v42-pool .odds i { width:8px; height:8px; border-radius:50%; background:var(--rc); box-shadow:0 0 0 1px #555; }
+.v42-pool h4 { margin:6px 0 0; font:800 11px var(--v4-mono,ui-monospace,monospace); letter-spacing:.2em; color:#9a9a97; }
+.v42-pool .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px; }
+.v42-pool .pc { position:relative; padding:6px; border-radius:12px; background:#f2f2f0; color:#111; box-shadow:0 0 0 2px var(--rc); animation:v42Deal .45s var(--d,0s) cubic-bezier(.2,.8,.2,1) backwards; }
+.v42-pool .pc .pic { aspect-ratio:1.3; border-radius:8px; background:#fff; overflow:hidden; display:grid; place-items:center; font-size:30px; }
+.v42-pool .pc img { width:100%; height:100%; object-fit:contain; }
+.v42-pool .pc .nm { display:flex; justify-content:space-between; gap:4px; padding:6px 2px 0; font-size:11px; font-weight:900; }
+.v42-pool .pc .nm small { font:800 9px var(--v4-mono,ui-monospace,monospace); color:#555; white-space:nowrap; }
+.v42-pool .pc.locked .pic { filter:grayscale(1); opacity:.55; }
+.v42-pool .pc .own { position:absolute; right:10px; top:10px; padding:2px 6px; border-radius:5px; background:#111; color:#fff; font:800 9px var(--v4-mono,ui-monospace,monospace); }
+/* 1회: 카드를 눌러 공개 */
+.gacha-reveal.tap .v4-flip { cursor:pointer; animation:v42Bob 1.6s ease-in-out infinite; }
+.gacha-reveal.tap .v4-flip .back div { animation:none !important; }
+.gacha-reveal.tap .gacha-reveal-rarity { animation:v42GlowPulse 1s ease-in-out infinite; }
+.gacha-reveal .v42-flash { position:absolute; inset:0; pointer-events:none; opacity:0; background:#f2c94c; }
+.gacha-reveal.fx-legend .v42-flash { animation:v42Flash .6s ease-out; }
+.gacha-reveal.fx-hidden .v42-flash { background:#f2f2f0; mix-blend-mode:difference; animation:v42Invert 1s ease-out; }
+.gacha-reveal .v42-hidden-word { position:absolute; left:0; right:0; top:60px; text-align:center; pointer-events:none; font:900 clamp(56px,14vw,110px) 'Arial Black',sans-serif; letter-spacing:-.05em; color:transparent; -webkit-text-stroke:2px #f2f2f0; opacity:0; }
+.gacha-reveal.fx-hidden .v42-hidden-word { opacity:1; animation:v42Glitch .4s 3, v42Invert 1.6s .4s forwards reverse; }
+.gacha-reveal .v42-stamp { display:none; padding:5px 12px; border:2px solid #f2f2f0; border-radius:6px; color:#f2f2f0; font-size:13px; font-weight:900; }
+.gacha-reveal .v42-stamp.new { display:inline-block; animation:v42Stamp .4s .2s cubic-bezier(.2,.8,.2,1) both; }
+.gacha-reveal .v42-stamp.dup { display:inline-block; border:0; padding:0; font-size:12px; font-weight:700; color:#a3a3a0; }
+.gacha-reveal.opening .v42-stamp, .gacha-reveal.tap .v42-stamp { display:none; }
+/* 10+1 */
+.v42-multi { position:fixed; inset:0; z-index:1200; display:none; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:20px; box-sizing:border-box; background:#080808; color:#f2f2f0; overflow:auto; }
+.v42-multi.show { display:flex; animation:v42Deal .25s; }
+.v42-multi .k { font:800 11px var(--v4-mono,ui-monospace,monospace); letter-spacing:.3em; color:#c9c9c6; }
+.v42-multi .grid { display:grid; grid-template-columns:repeat(6,110px); gap:12px; justify-content:center; }
+.v42-multi .mc { position:relative; width:110px; height:154px; perspective:800px; animation:v42Deal .4s var(--d) cubic-bezier(.2,.8,.2,1) backwards; }
+.v42-multi .mc.hi::before { content:''; position:absolute; inset:-14px; border-radius:22px; background:radial-gradient(closest-side,var(--rc),transparent); opacity:0; }
+.v42-multi.flipped .mc.hi::before { animation:v42GlowPulse 1.6s calc(var(--d) + .5s) ease-in-out infinite; }
+.v42-multi .spin { position:absolute; inset:0; transform-style:preserve-3d; transition:transform .6s var(--d) cubic-bezier(.3,1.4,.4,1); }
+.v42-multi.flipped .spin { transform:rotateY(180deg); }
+.v42-multi .back, .v42-multi .front { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:12px; background:#f2f2f0; padding:6px; box-sizing:border-box; }
+.v42-multi .back div { width:100%; height:100%; box-sizing:border-box; border-radius:8px; border:1px dashed #9a9a97; display:grid; place-items:center; background:repeating-linear-gradient(45deg,#e6e6e3 0 5px,#f2f2f0 5px 10px); font:900 22px 'Arial Black',sans-serif; color:#111; }
+.v42-multi .front { transform:rotateY(180deg); display:flex; flex-direction:column; gap:5px; box-shadow:0 0 0 2px var(--rc); color:#111; }
+.v42-multi .front .pic { flex:1; min-height:0; border-radius:8px; background:#fff; overflow:hidden; display:grid; place-items:center; }
+.v42-multi .front img { width:100%; height:100%; object-fit:contain; }
+.v42-multi .front .nm { display:flex; justify-content:space-between; align-items:center; gap:4px; }
+.v42-multi .front .nm b { font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v42-multi .front .nm i { width:7px; height:7px; flex-shrink:0; border-radius:50%; background:var(--rc); box-shadow:0 0 0 1px #111; }
+.v42-multi .front .new { position:absolute; left:8px; top:8px; padding:1px 5px; border-radius:4px; background:#111; color:#fff; font:800 8px var(--v4-mono,ui-monospace,monospace); }
+.v42-multi .best { display:flex; align-items:center; gap:10px; opacity:0; transition:opacity .4s 2s; }
+.v42-multi.flipped .best, .v42-multi.flipped .close { opacity:1; }
+.v42-multi .best .lab { font:800 10px var(--v4-mono,ui-monospace,monospace); letter-spacing:.2em; color:#9a9a97; }
+.v42-multi .best .rl { padding:2px 8px; border-radius:5px; background:#111; border:1px solid var(--rc); color:var(--rc); font:800 10px var(--v4-mono,ui-monospace,monospace); }
+.v42-multi .close { padding:12px 26px; border-radius:999px; border:0; background:#f2f2f0; color:#111; font:inherit; font-size:13px; font-weight:900; cursor:pointer; opacity:0; transition:opacity .4s 2.1s; }
+@media (max-width:760px) { .v42-multi .grid { grid-template-columns:repeat(4,76px); gap:8px; } .v42-multi .mc { width:76px; height:106px; } }
+body.reduce-motion .v42-multi .spin { transition-delay:0s !important; }
 </style>
 </head>
 <body>
@@ -3923,7 +3991,7 @@ html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important
       </div>
       <div class="v4-tiles">
       <div class="v4-tilewrap" style="animation-delay:0.55s"><button type="button" class="v4-tile" id="btnEnterDraft" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">01</span><span class="ico v4-ico art"><img data-art="menu_draft" alt=""></span><span class="reddot"></span><div class="t">덱 설정</div><div class="d">출전할 지후 5기를 편성</div></button></div>
-      <div class="v4-tilewrap" style="animation-delay:0.62s"><button type="button" class="v4-tile" id="btnOpenGacha" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">02</span><span class="ico v4-ico art"><img data-art="menu_summon" alt=""></span><span class="reddot"></span><div class="t">캐릭터 뽑기</div><div class="d">◆100 1회 · ◆1000 지후 상자</div></button></div>
+      <div class="v4-tilewrap" style="animation-delay:0.62s"><button type="button" class="v4-tile" id="btnOpenGacha" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">02</span><span class="ico v4-ico art"><img data-art="menu_summon" alt=""></span><span class="reddot"></span><div class="t">캐릭터 뽑기</div><div class="d">◆100 1회 · ◆1000 10+1회</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:0.69s"><button type="button" class="v4-tile" id="btnOpenShop" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">03</span><span class="ico v4-ico art"><img data-art="menu_shop" alt=""></span><span class="reddot"></span><div class="t">일일 상점</div><div class="d">무료 보상 · 지후 구매 · 다이아 환전</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:0.76s"><button type="button" class="v4-tile" id="btnStartDraftBattle" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">04</span><span class="ico v4-ico">5:5</span><span class="reddot"></span><div class="t">드래프트전</div><div class="d">5:5 밴픽 · 3판 2선승 · 승리 시 경험치</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:0.83s"><button type="button" class="v4-tile comp-tile" id="btnStartComp" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">05</span><span class="ico v4-ico">06</span><span class="reddot"></span><div class="t">경쟁전</div><div class="d"><span id="compTileDesc">아이언 · 0 TP · 3:3 밴픽</span></div></button></div>
@@ -4022,6 +4090,7 @@ html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important
           <button type="button" class="active" data-gacha-view="normal">일반 뽑기</button>
           <button type="button" data-gacha-view="pickup">픽업 뽑기</button>
           <button type="button" data-gacha-view="newpickup" id="btnGachaNewPickup" hidden>신규 지후 픽업</button>
+          <button type="button" data-gacha-view="pool">소환 풀</button>
           <button type="button" data-gacha-view="history">뽑기 내역</button>
         </nav>
         <span class="v4-pill">◆ <span id="gachaDiamondAmount">0</span></span>
@@ -4052,17 +4121,26 @@ html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important
             <div class="gacha-odds" id="gachaOdds"></div>
             <div class="gacha-actions">
               <button type="button" class="v4-sbtn" id="btnGachaOne"><span class="v4-sweep"></span><img data-art="menu_summon" alt=""><span class="tx"><b>1회 뽑기</b><small>◆ 100</small></span><span>▶</span></button>
-              <button type="button" class="v4-sbtn outline" id="btnGachaEleven"><img data-art="menu_box" alt=""><span class="tx"><b>지후 상자</b><small>◆ 1,000 · 11회</small></span><span>▶</span></button>
+              <button type="button" class="v4-sbtn outline" id="btnGachaEleven"><span class="v42-plus">+1 보너스</span><img data-art="menu_box" alt=""><span class="tx"><b>10+1회 뽑기</b><small>◆ 1,000 · 영웅 이상 1개 확정</small></span><span>▶</span></button>
             </div>
+            <div class="v42-pity" aria-label="천장"><span class="lab">천장</span><span class="bar"><i id="gachaPityFill"></i></span><span class="txt" id="gachaPityLab">0 / 80</span></div>
           </div>
           <div class="gacha-result" id="gachaResult"></div>
           <div class="gacha-history" id="gachaHistory" hidden></div>
+          <div class="v42-pool" id="gachaPool" hidden></div>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="v42-multi" id="gachaMulti" role="dialog" aria-modal="true" aria-label="10+1 뽑기 결과" aria-hidden="true">
+    <span class="k" id="gachaMultiTitle">10+1 소환 결과</span>
+    <div class="grid" id="gachaMultiGrid"></div>
+    <div class="best" id="gachaMultiBest"></div>
+    <button type="button" class="close" id="btnGachaMultiClose">확인</button>
+  </div>
   <div class="gacha-reveal" id="gachaReveal" role="dialog" aria-modal="true" aria-label="뽑기 결과" aria-hidden="true">
+    <span class="v42-flash"></span><b class="v42-hidden-word" aria-hidden="true">HIDDEN</b>
     <div class="gacha-reveal-panel">
       <div id="gachaRevealCount">1 / 1</div>
       <div class="gacha-reveal-rarity" id="gachaRevealRarity">소환 중…</div>
@@ -4072,6 +4150,7 @@ html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important
         <div class="front"><img class="gacha-reveal-portrait" id="gachaRevealPortrait" alt=""><div class="role"><b id="gachaRevealCardName"></b><span id="gachaRevealRole"></span></div></div>
       </div></div>
       <h2 class="gacha-reveal-name title-font" id="gachaRevealName"></h2>
+      <span class="v42-stamp" id="gachaRevealStamp"></span>
       <div class="gacha-reveal-desc" id="gachaRevealDesc"></div>
       <div class="gacha-reveal-actions">
         <button type="button" class="btn btn-secondary" id="btnGachaRevealSkip">모두 보기</button>
@@ -6745,6 +6824,7 @@ const RARITY_LABEL = { common: '일반', rare: '희귀', epic: '영웅', legend:
 const RANK_NAMES = ['A', 'S', 'SR', 'SSR'];
 const RANK_SHARD_COSTS = { common:[15,30,45], rare:[8,16,24], epic:[3,10,20], legend:[1,2,4] };
 const DUPLICATE_SHARDS = 1; // 중복 지후 한 번에 주는 조각
+const GACHA_PITY = 80; // 4.1 천장: 전설·히든 없이 80번째 뽑기는 전설 확정
 const RANK_GOLD_COSTS = [2500,10000,25000]; // 3.6.3 절반으로
 const MASTERY_STEPS = [
   { count:50, name:'하수', reward:250 }, { count:100, name:'중수', reward:1000 },
@@ -6884,6 +6964,7 @@ function freshProfile() {
     ranks: {},
     masteryCounts: {},
     gachaHistory: [],
+    gachaPity: 0,
     decks: [STARTER_IDS.slice(), [], []],
     archivedDecks: [],
     activeDeck: 0,
@@ -6961,6 +7042,7 @@ function normalizeProfile(raw) {
     shardsVersion: 2,
     ranks: raw.ranks && typeof raw.ranks === 'object' ? Object.fromEntries(Object.entries(raw.ranks).filter(([id]) => validIds.has(id)).map(([id,level]) => [id,Math.min(3,safeCount(level))])) : {},
     masteryCounts: raw.masteryCounts && typeof raw.masteryCounts === 'object' ? Object.fromEntries(Object.entries(raw.masteryCounts).filter(([id]) => validIds.has(id)).map(([id,count]) => [id,safeCount(count)])) : {},
+    gachaPity: Math.max(0, Math.min(GACHA_PITY - 1, Math.floor(Number(raw.gachaPity) || 0))),
     gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
     decks,
     archivedDecks,
@@ -7763,13 +7845,20 @@ function renderGachaHistory() {
 }
 function renderGachaView(view = gachaView) {
   gachaView = view;
-  const history = view === 'history';
-  $('gachaStage').hidden = history;
-  $('gachaSpotlight').hidden = history;
-  $('gachaResult').hidden = history;
+  const history = view === 'history', pool = view === 'pool';
+  $('gachaStage').hidden = history || pool;
+  $('gachaSpotlight').hidden = history || pool;
+  $('gachaResult').hidden = history || pool;
   $('gachaHistory').hidden = !history;
+  $('gachaPool').hidden = !pool;
   document.querySelectorAll('[data-gacha-view]').forEach(button => button.classList.toggle('active',button.dataset.gachaView === view));
-  if (history) {stopCombatPreview($('gachaPreview')); renderGachaHistory(); return;}
+  renderGachaPity();
+  if (history || pool) {
+    stopCombatPreview($('gachaPreview'));
+    document.querySelector('.gacha-layout')?.classList.add('no-spotlight');
+    if (history) renderGachaHistory(); else renderGachaPool();
+    return;
+  }
   const newPickup = newPickupInfo();
   $('btnGachaNewPickup').hidden = !newPickup;
   if (newPickup) $('btnGachaNewPickup').textContent = `${newPickup.version} 신규 지후 픽업`;
@@ -7781,7 +7870,7 @@ function renderGachaView(view = gachaView) {
     const left = Math.max(0, newPickup.endsAt - Date.now());
     $('gachaTitle').textContent = `${newPickup.version} 신규 지후 픽업`;
     $('gachaOdds').innerHTML = '1회: 전설 3.3% · 영웅 10% · 희귀 38.5% · 일반 48.2%<br>'
-      + '지후 상자: 일반·희귀 8기 확정 · 영웅 55% → 성공 시 전설 60%<br>'
+      + `10+1회: 11번 뽑기 · 영웅 이상 1개 확정 · 천장 ${GACHA_PITY}회<br>`
       + `전설은 ${newPickup.version} 신규 지후만 등장합니다 (${newPickup.legendIds.map(id => CHAR_DB[id].name).join(', ')}). 히든은 등장하지 않습니다.<br>`
       + `종료까지 ${Math.floor(left / 3600000)}시간 ${Math.floor(left / 60000) % 60}분`;
     $('gachaDecor').innerHTML = newPickup.legendIds.slice(0, 6).map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
@@ -7807,7 +7896,7 @@ function renderGachaView(view = gachaView) {
   $('gachaOdds').innerHTML = (pickup
     ? '1회: 전설 3.3% · 영웅 10% · 희귀 38.5% · 일반 48.2%<br>'
     : '1회: 히든 0.3% · 전설 3% · 영웅 10% · 희귀 38.5% · 일반 48.2%<br>')
-    + '지후 상자: 일반·희귀 8기 확정 · 영웅 55% → 성공 시 전설 60%' + (pickup ? '' : ' → 성공 시 히든 20%') + '<br>'
+    + `10+1회: 11번 뽑기 · 영웅 이상 1개 확정 · 천장: 전설 없이 ${GACHA_PITY}번째 뽑기는 전설 확정<br>`
     + (pickup ? '전설 등장 시 66.6% 확률로 오늘의 픽업 지후가 등장합니다. 히든은 등장하지 않습니다.' : `중복은 해당 지후 조각 ${DUPLICATE_SHARDS}개로 바뀝니다.`);
   const artIds = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden').slice(0,6);
   $('gachaDecor').innerHTML = artIds.map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
@@ -7824,10 +7913,6 @@ function rollGachaCharacter(mode = gachaView) {
   for (const item of weights) { roll -= item.weight; if (roll < 0) { rarity = item.rarity; break; } }
   return pickGachaCharacter(rarity, mode);
 }
-// 지후 상자: 일반·희귀 8기 확정 + 계단식 칸. 앞 칸이 성공해야 다음 칸에 도전한다.
-// 영웅 55% → 전설 60% → 히든 20% (픽업은 히든 칸 없음). 결과는 8~11기.
-const GACHA_BOX_BASE = 8;
-const GACHA_BOX_STEPS = { normal: [['epic', 55], ['legend', 60], ['hidden', 20]], pickup: [['epic', 55], ['legend', 60]] };
 function pickGachaCharacter(rarity, mode = gachaView) {
   if (mode === 'pickup' && rarity === 'legend' && Math.random() < .666) return dailyPickupId();
   if (mode === 'newpickup' && rarity === 'legend') {
@@ -7837,13 +7922,66 @@ function pickGachaCharacter(rarity, mode = gachaView) {
   const candidates = playableIds().filter(id => CHAR_DB[id].rarity === rarity);
   return candidates[Math.floor(Math.random() * candidates.length)] || STARTER_IDS[0];
 }
-function rollGachaBox(mode = gachaView) {
-  const ids = Array.from({ length: GACHA_BOX_BASE }, () => pickGachaCharacter(Math.random() < 60 / 90 ? 'common' : 'rare', mode));
-  for (const [rarity, chance] of GACHA_BOX_STEPS[mode === 'normal' ? 'normal' : 'pickup']) {
-    if (Math.random() * 100 >= chance) break;
-    ids.push(pickGachaCharacter(rarity, mode));
-  }
+// 4.1 천장: 전설·히든 없이 80번째 뽑기는 전설 확정. 일반·픽업·신규 픽업이 같은 카운트를 쓴다.
+function rollWithPity(mode) {
+  profile.gachaPity = (profile.gachaPity || 0) + 1;
+  const id = profile.gachaPity >= GACHA_PITY ? pickGachaCharacter('legend', mode) : rollGachaCharacter(mode);
+  const rarity = CHAR_DB[id]?.rarity;
+  if (rarity === 'legend' || rarity === 'hidden') profile.gachaPity = 0;
+  return id;
+}
+// 10+1회: 11번 따로 굴리고, 영웅 이상이 하나도 없으면 마지막 칸을 영웅으로 바꾼다.
+function rollGachaTen(mode) {
+  const ids = Array.from({ length: 11 }, () => rollWithPity(mode));
+  if (!ids.some(id => ['epic', 'legend', 'hidden'].includes(CHAR_DB[id]?.rarity))) ids[10] = pickGachaCharacter('epic', mode);
   return ids;
+}
+function renderGachaPity() {
+  const n = Math.max(0, Math.min(GACHA_PITY, profile.gachaPity || 0));
+  if ($('gachaPityFill')) $('gachaPityFill').style.transform = `scaleX(${(n / GACHA_PITY).toFixed(3)})`;
+  if ($('gachaPityLab')) $('gachaPityLab').textContent = `${n} / ${GACHA_PITY} · 전설 확정까지 ${GACHA_PITY - n}회`;
+}
+const GACHA_RARITY_ORDER = { common: 0, rare: 1, epic: 2, legend: 3, hidden: 4 };
+function renderGachaPool() {
+  const odds = [['hidden', '0.3%'], ['legend', '3%'], ['epic', '10%'], ['rare', '38.5%'], ['common', '48.2%']];
+  const ids = playableIds();
+  let delay = 0;
+  $('gachaPool').innerHTML = `<div class="odds">${odds.map(([r, v]) => `<span style="--rc:${rarityColorVar(r)}"><i></i>${V4_RARITY_EN[r]} ${v}</span>`).join('')}<span>· 천장 ${GACHA_PITY}회 전설 확정</span></div>`
+    + ['hidden', 'legend', 'epic', 'rare', 'common'].map(r => {
+      const list = ids.filter(id => CHAR_DB[id].rarity === r);
+      if (!list.length) return '';
+      return `<h4>${RARITY_LABEL[r]} · ${list.length}</h4><div class="grid">` + list.map(id => {
+        const c = CHAR_DB[id], owned = isUnlocked(id);
+        delay = Math.min(delay + 0.02, 0.6);
+        return `<div class="pc${owned ? '' : ' locked'}" style="--rc:${rarityColorVar(r)};--d:${delay.toFixed(2)}s"><div class="pic">${portraitHtml(c)}</div><div class="nm"><span>${c.name}</span><small>${V4_RARITY_EN[r]}</small></div>${owned ? '<span class="own">보유</span>' : ''}</div>`;
+      }).join('') + '</div>';
+    }).join('');
+}
+function showGachaMulti(results) {
+  gachaRevealResults = results;
+  const overlay = $('gachaMulti');
+  $('gachaMultiGrid').innerHTML = results.map((result, i) => {
+    const c = CHAR_DB[result.id], hi = GACHA_RARITY_ORDER[c.rarity] >= 2;
+    return `<div class="mc${hi ? ' hi' : ''}" style="--d:${(i * 0.14).toFixed(2)}s;--rc:${rarityColorVar(c.rarity)}"><div class="spin"><div class="back"><div>JH</div></div>`
+      + `<div class="front"><div class="pic">${portraitHtml(c)}</div><div class="nm"><b>${c.name}</b><i></i></div>${result.duplicate ? '' : '<span class="new">NEW</span>'}</div></div></div>`;
+  }).join('');
+  const best = results.reduce((b, r) => GACHA_RARITY_ORDER[CHAR_DB[r.id].rarity] > GACHA_RARITY_ORDER[CHAR_DB[b.id].rarity] ? r : b, results[0]);
+  const bc = CHAR_DB[best.id];
+  $('gachaMultiBest').innerHTML = `<span class="lab">최고 등급</span><b></b><span class="rl" style="--rc:${rarityColorVar(bc.rarity)}">${V4_RARITY_EN[bc.rarity]}</span>`;
+  $('gachaMultiBest').querySelector('b').textContent = bc.name;
+  $('gachaMultiTitle').textContent = results.length === 11 ? '10+1 소환 결과' : `소환 결과 · ${results.length}개`;
+  overlay.classList.remove('flipped');
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+  clearTimeout(gachaRevealTimer);
+  gachaRevealTimer = setTimeout(() => overlay.classList.add('flipped'), 500);
+}
+function closeGachaMulti() {
+  clearTimeout(gachaRevealTimer);
+  gachaRevealResults = [];
+  $('gachaMulti').classList.remove('show', 'flipped');
+  $('gachaMulti').setAttribute('aria-hidden', 'true');
+  if (state.screen === 'gacha') $('btnGachaEleven').focus();
 }
 
 function rollShopRarity() { // 3.8.3: 전설은 따로 굴린다 (SHOP_LEGEND_CHANCE)
@@ -7991,13 +8129,14 @@ function showLevelCelebration() {
 let gachaRevealResults = [];
 let gachaRevealIndex = 0;
 let gachaRevealTimer = null;
+let gachaAgainCost = 0; // 1회 뽑기 결과 화면의 '한 번 더' 가격 (0이면 버튼 대신 확인)
 
 function closeGachaReveal() {
   clearTimeout(gachaRevealTimer);
   gachaRevealTimer = null;
   gachaRevealResults = [];
   const overlay = $('gachaReveal');
-  overlay.classList.remove('show', 'opening', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
+  overlay.classList.remove('show', 'opening', 'tap', 'fx-legend', 'fx-hidden', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
   overlay.setAttribute('aria-hidden', 'true');
   if (state.screen === 'gacha') $('btnGachaOne').focus();
 }
@@ -8009,34 +8148,76 @@ function showGachaReveal(index) {
   const character = CHAR_DB[result.id];
   const overlay = $('gachaReveal');
   overlay.style.setProperty('--rarity-color', rarityColorVar(character.rarity));
-  overlay.classList.remove('rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
+  overlay.classList.remove('tap', 'fx-legend', 'fx-hidden', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
   overlay.classList.add('rarity-' + character.rarity);
   overlay.classList.add('show', 'opening');
   overlay.setAttribute('aria-hidden', 'false');
-  $('gachaRevealCount').textContent = `${index + 1} / ${gachaRevealResults.length}`;
   const total = gachaRevealResults.length;
+  const single = total === 1;
+  $('gachaRevealCount').textContent = single ? '1회 소환' : `${index + 1} / ${total}`;
   $('gachaRevealRarity').textContent = total > 1 && index === 0 ? `총 ${total}개` : '소환 중…';
   $('gachaRevealName').textContent = '';
   $('gachaRevealDesc').textContent = '';
+  $('gachaRevealStamp').className = 'v42-stamp';
+  $('btnGachaRevealSkip').textContent = single ? '닫기' : '모두 보기';
   $('btnGachaRevealNext').disabled = true;
   $('btnGachaRevealNext').textContent = index === total - 1 ? '확인' : '다음';
   const delays = { common: 650, rare: 900, epic: 1200, legend: 1650, hidden: 3000 };
   clearTimeout(gachaRevealTimer);
-  gachaRevealTimer = setTimeout(() => {
-    $('gachaRevealRarity').textContent = RARITY_LABEL[character.rarity];
-    $('gachaRevealPortrait').src = character.portrait;
-    $('gachaRevealPortrait').alt = character.name;
-    $('gachaRevealName').textContent = character.name;
-    $('gachaRevealCardName').textContent = character.name;
-    $('gachaRevealRole').textContent = character.roleLabel;
-    $('gachaRevealDesc').innerHTML = character.skillDesc + `<br>${result.duplicate ? `중복 · 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}`;
-    overlay.classList.remove('opening');
-    $('btnGachaRevealNext').disabled = false;
-    $('btnGachaRevealNext').focus();
-  }, delays[character.rarity] + (total > 1 && index === 0 ? 1200 : 0)); // 첫 장은 총 개수를 읽을 시간을 준다
+  // 4.1: 1회는 소환진이 차오른 뒤 카드를 눌러야 공개된다 (등급 색은 미리 새어 나온다)
+  if (single) {
+    gachaRevealTimer = setTimeout(() => {
+      overlay.classList.add('tap');
+      $('gachaRevealRarity').textContent = '카드를 눌러 공개';
+      $('btnGachaRevealNext').textContent = '공개';
+      $('btnGachaRevealNext').disabled = false;
+      $('btnGachaRevealNext').focus();
+    }, Math.max(1500, delays[character.rarity]));
+    return;
+  }
+  gachaRevealTimer = setTimeout(() => revealGachaCard(index), delays[character.rarity] + (index === 0 ? 1200 : 0)); // 첫 장은 총 개수를 읽을 시간을 준다
 }
+function revealGachaCard(index) {
+  const result = gachaRevealResults[index];
+  if (!result) return;
+  const character = CHAR_DB[result.id];
+  const overlay = $('gachaReveal');
+  const single = gachaRevealResults.length === 1;
+  $('gachaRevealRarity').textContent = RARITY_LABEL[character.rarity];
+  $('gachaRevealPortrait').src = character.portrait;
+  $('gachaRevealPortrait').alt = character.name;
+  $('gachaRevealName').textContent = character.name;
+  $('gachaRevealCardName').textContent = character.name;
+  $('gachaRevealRole').textContent = character.roleLabel;
+  $('gachaRevealDesc').innerHTML = character.skillDesc;
+  const stamp = $('gachaRevealStamp');
+  stamp.textContent = result.duplicate ? `이미 보유 · 조각 +${DUPLICATE_SHARDS}` : 'NEW!';
+  stamp.className = 'v42-stamp ' + (result.duplicate ? 'dup' : 'new');
+  overlay.classList.remove('opening', 'tap');
+  if (character.rarity === 'legend' || character.rarity === 'hidden') { void overlay.offsetWidth; overlay.classList.add('fx-' + character.rarity); }
+  const next = $('btnGachaRevealNext');
+  if (single) {
+    $('btnGachaRevealSkip').textContent = '확인';
+    next.textContent = gachaAgainCost ? `한 번 더 · ◆ ${gachaAgainCost}` : '확인';
+  }
+  next.disabled = false;
+  next.focus();
+}
+function onGachaRevealNext() {
+  const overlay = $('gachaReveal');
+  if (overlay.classList.contains('tap')) { revealGachaCard(gachaRevealIndex); return; }
+  if (gachaRevealResults.length === 1 && gachaAgainCost && !overlay.classList.contains('opening')) {
+    const cost = gachaAgainCost;
+    closeGachaReveal();
+    performGacha(false, cost);
+    return;
+  }
+  showGachaReveal(gachaRevealIndex + 1);
+}
+$('gachaReveal').querySelector('.v4-flip').addEventListener('click', () => { if ($('gachaReveal').classList.contains('tap')) revealGachaCard(gachaRevealIndex); });
+$('btnGachaMultiClose').addEventListener('click', closeGachaMulti);
 
-$('btnGachaRevealNext').addEventListener('click', () => showGachaReveal(gachaRevealIndex + 1));
+$('btnGachaRevealNext').addEventListener('click', onGachaRevealNext);
 $('btnGachaRevealSkip').addEventListener('click', closeGachaReveal);
 
 function grantCharacter(id) {
@@ -8052,6 +8233,8 @@ function grantCharacter(id) {
 // 모집권·상점 구매도 뽑기와 같은 소환 연출로 보여준다
 function playSummonReveal(results) {
   if (!results.length || gachaRevealResults.length) return;
+  gachaAgainCost = 0;
+  if (results.length > 1) { showGachaMulti(results); return; }
   gachaRevealResults = results;
   showGachaReveal(0);
 }
@@ -8063,11 +8246,11 @@ function performGacha(box, cost) {
     return;
   }
   const mode = gachaView;
-  if (mode === 'history') return;
+  if (mode === 'history' || mode === 'pool') return;
   if (mode === 'newpickup' && !newPickupInfo()) { renderGachaView('normal'); return; }
   profile.diamonds -= cost;
   const results = [];
-  for (const id of box ? rollGachaBox(mode) : [rollGachaCharacter(mode)]) {
+  for (const id of box ? rollGachaTen(mode) : [rollWithPity(mode)]) {
     const duplicate = grantCharacter(id);
     results.push({ id, duplicate });
     profile.gachaHistory.push({ id, mode, duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at:Date.now() });
@@ -8080,6 +8263,9 @@ function performGacha(box, cost) {
     return `<div class="gacha-card" style="border-color:${rarityColorVar(c.rarity)};animation-delay:${index * 35}ms"><img src="${c.portrait}" alt=""><div class="name">${c.name}</div><div class="result-tag">${result.duplicate ? `중복 · 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}</div></div>`;
   }).join('');
   renderAccountUI();
+  renderGachaPity();
+  gachaAgainCost = box ? 0 : cost;
+  if (box) { showGachaMulti(results); return; }
   gachaRevealResults = results;
   showGachaReveal(0);
 }
@@ -17764,14 +17950,28 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
   '4.1': {
-    label: 'v4.1 새 인게임 HUD',
+    label: 'v4.1 8×3 칸 배치 · 뽑기 v2 · 새 인게임 HUD',
     date: '2026.09.28',
     sections: [
+      { title: '배치', items: [
+        { emoji:'🧩', name:'8×3 칸 배치', tag:'new', color:'#111111', desc:'진영마다 <b>가로 8칸 × 전열·중열·후열 3줄</b> 칸이 생겼습니다. 풀에서 고른 지후를 빈 칸에 놓고, 같은 지후가 있는 칸(금색)에 놓으면 합체 레벨업합니다. 놓은 칸이 <b>전투 시작 위치와 다음 라운드 복귀 위치</b>가 됩니다.' },
+        { emoji:'↔️', name:'칸 이동 · 진형', tag:'new', color:'#111111', desc:'배치 단계에서 내 지후를 누르면 사거리가 보이고 <b>다른 빈 칸으로 옮기거나</b> 다른 지후와 <b>자리를 바꿀</b> 수 있습니다. 진형 프리셋 <b>전열 돌격 · 후열 보호 · 산개</b>로 한 번에 줄을 세울 수 있습니다 (배치 횟수를 쓰지 않습니다).' },
+        { emoji:'🤖', name:'상대 배치', tag:'adjust', color:'#555555', desc:'상대도 같은 칸에 배치하며, 실력이 높을수록 탱커는 전열 · 서포터는 후열에 둡니다.' }
+      ] },
+      { title: '뽑기', items: [
+        { emoji:'🎯', name:'천장', tag:'new', color:'#f2c94c', desc:'전설·히든 없이 <b>80번째</b> 뽑기는 <b>전설 확정</b>입니다. 뽑기 화면 아래 게이지로 남은 횟수를 볼 수 있으며, 일반·픽업·신규 픽업이 같은 카운트를 씁니다.' },
+        { emoji:'🎁', name:'10+1회 뽑기', tag:'adjust', color:'#c77dff', desc:'지후 상자가 <b>10+1회 뽑기</b>(◆1,000)로 바뀝니다. 1회 뽑기를 11번 하고, <b>영웅 이상 1개 확정</b>입니다. 11장이 한꺼번에 뒤집히고 최고 등급을 알려줍니다.' },
+        { emoji:'🃏', name:'1회 소환 연출', tag:'new', color:'#111111', desc:'소환진이 차오른 뒤 <b>카드를 눌러 공개</b>합니다. 전설은 금빛 섬광, 히든은 화면 반전 연출. 결과 화면에서 바로 <b>한 번 더</b> 뽑을 수 있습니다.' },
+        { emoji:'📖', name:'소환 풀', tag:'new', color:'#111111', desc:'뽑기에서 나오는 모든 지후와 등급별 확률, 보유 여부를 보는 탭이 생겼습니다.' }
+      ] },
       { title: '전투 화면', items: [
         { emoji:'🎴', name:'아군 스킬 도크', tag:'new', color:'#111111', desc:'전투 중 하단에 <b>아군 지후 카드</b>가 나옵니다. 초상화 테두리가 <b>스킬 쿨다운 링</b>으로 차오르고, 다 차면 반짝입니다. 체력 바 · 레벨 · 남은 쿨다운이 함께 보이며, 카드를 누르면 상세 정보가 열립니다. <b>접기</b> 버튼으로 숨길 수 있습니다.' },
         { emoji:'⚔️', name:'킬 피드', tag:'new', color:'#111111', desc:'오른쪽 위에 <b>누가 누구를 쓰러뜨렸는지</b> 최근 4건이 흘러갑니다. 내 지후의 처치는 검은 테두리로 표시됩니다.' },
-        { emoji:'✨', name:'스킬 콜아웃', tag:'new', color:'#111111', desc:'지후가 스킬을 쓰거나 <b>각성</b>하면 왼쪽 위에 배너가 미끄러져 들어옵니다. 적의 스킬은 빨간 띠로 구분됩니다.' },
+        { emoji:'✨', name:'스킬 콜아웃', tag:'new', color:'#111111', desc:'지후가 스킬을 쓰거나 <b>각성</b>하면 왼쪽 위에 <b>스킬 이름</b>(예: 괴도 지후 · 예고장)과 함께 배너가 미끄러져 들어옵니다. 광폭화 · 탄핵 · 매혹 같은 1회성 스킬도 표시됩니다. 적의 스킬은 빨간 띠로 구분됩니다.' },
         { emoji:'🔴', name:'남은 적', tag:'new', color:'#111111', desc:'하단 상태줄에 <b>남은 적 지후 수</b>가 실시간으로 표시됩니다.' }
+      ] },
+      { title: '버그 수정', items: [
+        { emoji:'📱', name:'태블릿 초상화', tag:'fix', color:'#555555', desc:'태블릿 크기 화면에서 덱 설정 카드의 초상화가 잘려 머리만 보이던 문제를 고쳤습니다.' }
       ] }
     ]
   },
