@@ -57,6 +57,28 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    // 4.4 시즌 리더보드: seasons/{시즌}/lb · seasons/{시즌}/comp. 이번 달(UTC 기준 또는 한국 시간으로 이미 넘어간 다음 달) 시즌에만 쓸 수 있다.
+    function currentSeason(season) {
+      return int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 8
+        || int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 7;
+    }
+    function validSeasonLb(data) {
+      return data.keys().hasAll(['nickname', 'level', 'deck', 'wins', 'losses', 'playMs', 'favorite', 'xp', 'updatedAt'])
+        && data.keys().hasOnly(['nickname', 'level', 'deck', 'wins', 'losses', 'playMs', 'favorite', 'ranks', 'masteryCounts', 'look', 'xp', 'updatedAt'])
+        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
+        && data.level is int && data.level >= 1 && data.level <= 150
+        && validDeck(data.deck)
+        && data.wins is int && data.wins >= 0 && data.wins <= 99999
+        && data.losses is int && data.losses >= 0 && data.losses <= 99999
+        && data.playMs is int && data.playMs >= 0 && data.playMs <= 315360000000
+        && data.favorite is string && (data.favorite == '' || data.favorite.matches('^[a-z_]{1,24}$'))
+        && data.xp is int && data.xp >= 0 && data.xp <= 999999999
+        && (!('ranks' in data) || data.ranks is map)
+        && (!('masteryCounts' in data) || data.masteryCounts is map)
+        && (!('look' in data) || data.look is map)
+        && data.updatedAt is timestamp;
+    }
+
     function validBackup(data) {
       return data.keys().hasAll(['payload', 'updatedAt'])
         && data.keys().hasOnly(['payload', 'updatedAt'])
@@ -132,6 +154,16 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId);
       allow create, update: if owner(userId) && validLeaderboard(request.resource.data);
+    }
+
+    match /seasons/{season}/lb/{userId} {
+      allow get, list: if true;
+      allow create, update: if owner(userId) && currentSeason(season) && validSeasonLb(request.resource.data);
+    }
+
+    match /seasons/{season}/comp/{userId} {
+      allow get, list: if true;
+      allow create, update: if owner(userId) && currentSeason(season) && validCompLeaderboard(request.resource.data);
     }
   }
 }
