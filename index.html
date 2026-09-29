@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.4.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.4.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -4406,6 +4406,28 @@ html[data-theme="light"] .v441-pick .pic { width:64px; height:64px; border-radiu
 html[data-theme="light"] .v441-pick .pic img { width:100%; height:100%; object-fit:contain; }
 html[data-theme="light"] .v441-pick b { font-size:11px; font-weight:900; text-align:center; }
 html[data-theme="light"] .v441-pick small { font-size:10px; color:#666; }
+
+/* ═════════ 4.4.2 전투 중 유닛 정보 ═════════ */
+html[data-theme="light"] .v442-inspect { position:fixed; left:14px; bottom:150px; z-index:70; width:min(300px,calc(100vw - 28px)); padding:12px; box-sizing:border-box; border-radius:14px; background:rgba(15,15,14,.94); color:#f2f2f0; box-shadow:0 18px 36px -16px rgba(0,0,0,.7); font-size:12px; animation:rise .2s; }
+html[data-theme="light"] .v442-inspect[hidden] { display:none; }
+html[data-theme="light"] .v442-inspect .hd { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+html[data-theme="light"] .v442-inspect .pic { width:36px; height:36px; border-radius:50%; background:#f2f2f0; overflow:hidden; flex-shrink:0; }
+html[data-theme="light"] .v442-inspect .pic img { width:100%; height:100%; object-fit:contain; }
+html[data-theme="light"] .v442-inspect .nm { display:flex; flex-direction:column; min-width:0; flex:1; }
+html[data-theme="light"] .v442-inspect .nm b { font-size:14px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html[data-theme="light"] .v442-inspect .nm small { font:700 10px var(--v4-mono); color:#a3a3a0; }
+html[data-theme="light"] .v442-inspect .hd button { padding:5px 9px; border-radius:999px; border:1px solid #444; background:transparent; color:#f2f2f0; font-size:11px; font-weight:800; cursor:pointer; }
+html[data-theme="light"] .v442-inspect .st > div:not(.fx):not(.dead) { display:flex; justify-content:space-between; gap:8px; padding:3px 0; border-bottom:1px solid #2a2a29; }
+html[data-theme="light"] .v442-inspect .st span { color:#a3a3a0; font-weight:800; }
+html[data-theme="light"] .v442-inspect .st b { font-family:var(--v4-mono); font-weight:900; text-align:right; }
+html[data-theme="light"] .v442-inspect .up { color:#4ade80; }
+html[data-theme="light"] .v442-inspect .down { color:#ff6b66; }
+html[data-theme="light"] .v442-inspect .fx { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+html[data-theme="light"] .v442-inspect .fx i { font-style:normal; padding:2px 7px; border-radius:999px; background:#2a2a29; font-size:11px; font-weight:800; color:#c9c9c6; }
+html[data-theme="light"] .v442-inspect .fx i.up { background:rgba(74,222,128,.14); color:#4ade80; }
+html[data-theme="light"] .v442-inspect .fx i.down { background:rgba(255,107,102,.14); color:#ff6b66; }
+html[data-theme="light"] .v442-inspect .dead { padding:8px 0; color:#ff6b66; font-weight:900; }
+@media (max-width:640px) { html[data-theme="light"] .v442-inspect { bottom:170px; } }
 </style>
 </head>
 <body>
@@ -5045,6 +5067,10 @@ html[data-theme="light"] .v441-pick small { font-size:10px; color:#666; }
 </div>
 <div class="scrim-tap" id="scrimTap"></div>
 <div class="char-tooltip" id="charTooltip"></div>
+<div class="v442-inspect" id="unitInspect" hidden>
+  <div class="hd"><span class="pic"></span><span class="nm"><b></b><small></small></span><button type="button" class="more" id="btnInspectMore">도감</button><button type="button" class="x" id="btnInspectClose" aria-label="닫기">✕</button></div>
+  <div class="st"></div>
+</div>
 <div class="char-detail-panel" id="charDetailPanel">
   <button class="cdp-close" id="cdpClose">✕</button>
   <div id="charDetailBody"></div>
@@ -5343,7 +5369,7 @@ const CHARACTER_BALANCE = {
     immobile: true
   },
   curse: {
-    hp: 2444, atk: 444, atkSpeed: 1.2, range: 148.5, speed: 72,
+    hp: 2444, atk: 444, atkSpeed: 1.65, range: 148.5, speed: 72,
     curseHits: 4, curseKillPoseTime: 1.5
   },
   taeguk: {
@@ -5620,7 +5646,7 @@ const CHARACTER_BALANCE = {
   },
   battery: {
     hp: 1500, atk: 0, atkSpeed: 4, range: 90, speed: 90,
-    isCooldownSupport: true, chargeAuraRadius: 180, chargeAuraRate: 0.1
+    isCooldownSupport: true, chargeAuraRadius: 180, chargeAuraRate: 0.04
   },
   impeachment: {
     hp: 4800, atk: 120, atkSpeed: 1.2, range: 135, speed: 90,
@@ -5739,7 +5765,7 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 4900, atk: 4000, atkSpeed: 9, range: 72, speed: 0,
     isMelee: true, immobile: true,
-    hitCooldown: 18, hitStealth: 1, hitReturn: 0.6, hitDamage: 2400, hitKillRefund: 15
+    hitCooldown: 18, hitStealth: 1, hitReturn: 0.6, hitDamage: 2400, hitKillRefund: 8
   },
   // 3.8 신규
   moon: {
@@ -5768,12 +5794,12 @@ const CHARACTER_BALANCE = {
     triLength: 90, triHalf: 45, knightDelay: 2, knightCount: 6, knightAhead: 90
   },
   knight: {
-    hp: 500, shield: 700, atk: 60, atkSpeed: 1.6, range: 72, speed: 94.5,
+    hp: 500, shield: 500, atk: 100, atkSpeed: 1.6, range: 72, speed: 94.5,
     isMelee: true, shieldDamageMultiplier: 0.9
   },
   func: {
     hp: 2000, atk: 150, atkSpeed: 1.2, range: 270, speed: 72,
-    funcEvery: 3.2, funcAnnounce: 2, funcWarn: 1, funcMin: 1000, funcMax: 2000, funcStun: 2, funcUnit: 67.5
+    funcEvery: 4.5, funcAnnounce: 2, funcWarn: 1, funcMin: 1000, funcMax: 2000, funcStun: 2, funcUnit: 67.5
   },
   zombie: {
     hp: 4000, atk: 144, atkSpeed: 0.8, range: 72, speed: 58.5,
@@ -6799,7 +6825,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#e0b400', portrait: PORTRAITS.paladin,
     ...CHARACTER_BALANCE.paladin,
     customAttack(caster, target) { paladinStrike(caster, target); },
-    skillDesc: 'HP 2,000 + 쉴드 <b>2,500</b>. 앞쪽 <b>이등변삼각형</b>(길이 2칸) 범위의 적을 모두 관통해 벤다. 라운드 시작 <b>2초</b> 뒤 자기 앞에 <b>팔라딘나이트</b> 6기를 필드 끝에서 끝까지 한 줄로 부른다 (HP 500 + 쉴드 1,000 · 근접 ATK 60). 패시브: 팔라딘과 나이트는 쉴드가 있는 동안 받는 피해 <b>10%</b> 감소. 출격 제한 1.'
+    skillDesc: 'HP 2,000 + 쉴드 <b>2,500</b>. 앞쪽 <b>이등변삼각형</b>(길이 2칸) 범위의 적을 모두 관통해 벤다. 라운드 시작 <b>2초</b> 뒤 자기 앞에 <b>팔라딘나이트</b> 6기를 필드 끝에서 끝까지 한 줄로 부른다 (HP 500 + 쉴드 500 · 근접 ATK 100). 패시브: 팔라딘과 나이트는 쉴드가 있는 동안 받는 피해 <b>10%</b> 감소. 출격 제한 1.'
   },
   knight: {
     id: 'knight', name: '팔라딘나이트 지후', emoji: '🪖', role: 'tank', roleLabel: '탱커',
@@ -6812,7 +6838,7 @@ const CHAR_DB = {
     id: 'func', name: '지후함수', emoji: '📈', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#22b14c', portrait: PORTRAITS.func,
     ...CHARACTER_BALANCE.func,
-    skillDesc: '<b>3.2초마다</b> 자신을 원점으로 무작위 함수의 그래프를 그린다 (y=ax, y=sin x, y=tan x, y²=4px, y=ax², 하트 방정식 등 30종). 선에 걸친 모든 적은 <b>1,000~2,000</b> 사이 무작위 피해를 받고 <b>2초</b> 기절한다. 2초 전에 그릴 함수를 말하고, 1초 전에 선을 빨갛게 예고한다.'
+    skillDesc: '<b>4.5초마다</b> 자신을 원점으로 무작위 함수의 그래프를 그린다 (y=ax, y=sin x, y=tan x, y²=4px, y=ax², 하트 방정식 등 30종). 선에 걸친 모든 적은 <b>1,000~2,000</b> 사이 무작위 피해를 받고 <b>2초</b> 기절한다. 2초 전에 그릴 함수를 말하고, 1초 전에 선을 빨갛게 예고한다.'
   },
   zombie: {
     id: 'zombie', name: '좀비 지후', emoji: '🧟', role: 'tank', roleLabel: '탱커',
@@ -6932,7 +6958,7 @@ const CHAR_DB = {
     id: 'hitman', name: '자객 지후', emoji: '🥷', role: 'assassin', roleLabel: '어쌔신',
     rarity: 'legend', color: '#1a1a1a', portrait: PORTRAITS.hitman, portraitKill: PORTRAITS.hitman_kill,
     ...CHARACTER_BALANCE.hitman,
-    skillDesc: '움직이지 않는다. <b>18초마다</b> (라운드 시작 때는 발동하지 않음) 1초간 은신한 뒤 <b>체력이 가장 높은 적</b>에게 순간이동해 <b>2,400</b> 피해를 주고 0.6초 뒤 제자리로 돌아온다. 이 피해로 처치하면 다음 쿨타임이 <b>15초</b> 줄어든다. 출격제한 1기.'
+    skillDesc: '움직이지 않는다. <b>18초마다</b> (라운드 시작 때는 발동하지 않음) 1초간 은신한 뒤 <b>체력이 가장 높은 적</b>에게 순간이동해 <b>2,400</b> 피해를 주고 0.6초 뒤 제자리로 돌아온다. 이 피해로 처치하면 다음 쿨타임이 <b>8초</b> 줄어든다. 출격제한 1기.'
   },
   sun: {
     id: 'sun', name: '태양 지후', emoji: '☀️', role: 'dealer', roleLabel: '딜러',
@@ -7293,7 +7319,7 @@ const CHAR_DB = {
     id: 'battery', name: '충전지후', emoji: '🔋', role: 'support', roleLabel: '서포터',
     rarity: 'rare', color: '#65eb06', portrait: PORTRAITS.battery,
     ...CHARACTER_BALANCE.battery,
-    skillDesc: '반경 <b>4칸</b> 안의 아군 스킬 쿨타임 게이지를 <b>초당 10%</b>씩 채운다'
+    skillDesc: '반경 <b>4칸</b> 안의 아군 스킬 쿨타임이 <b>4%</b> 빨리 찬다. 충전 지후 여러 기의 효과는 <b>중첩</b>된다'
   },
   impeachment: {
     id: 'impeachment', name: '탄핵지후', emoji: '⚖️', role: 'tank', roleLabel: '탱커',
@@ -7745,7 +7771,7 @@ const RANK_S_ABILITIES = {
   slime: { name: '산성 분열', desc: '분해될 때 반경 2칸에 <b>100</b> 피해' },
   slot: { name: '빠른 손', desc: '슬롯을 돌리는 간격 <b>-0.5초</b>', apply(d) { d.slotEvery = Math.max(0.3, d.slotEvery - 0.5); } },
   smoke: { name: '짙은 연막', desc: '연막 반지름 <b>+1칸</b>', apply(d) { d.smokeRadius += 45; } },
-  battery: { name: '고속 충전', desc: '쿨타임 충전 초당 <b>10% → 12%</b>', apply(d) { d.chargeAuraRate = 0.12; } },
+  battery: { name: '고속 충전', desc: '쿨타임 가속 <b>4% → 5%</b>', apply(d) { d.chargeAuraRate = 0.05; } },
   hmg: { name: '과열 연사', desc: '최대 연사 간격 <b>0.05초</b>까지', apply(d) { d.hmgMinInterval = 0.05; } },
   mega: { name: '연속 방송', desc: '쿨타임 <b>-4초</b>', apply(d) { d.pulseInterval = Math.max(1, d.pulseInterval - 4); } },
   frog: { name: '끈질긴 개구리', desc: '변신 실패 시 <b>35%</b> 확률로 소멸하지 않고 레벨업' },
@@ -7792,7 +7818,7 @@ const RANK_S_ABILITIES = {
   god: { name: '신의 가호', desc: '합체할 때 <b>15%</b> 확률로 레벨 <b>+2</b>' },
   developer: { name: '관리자 권한', desc: '부채꼴 반지름 <b>50칸</b> · 공격력 <b>9999</b>', apply(d) { d.fanRadius = 50 * 45; d.atk = 9999; } },
   rank: { name: '승급 심사', desc: '급을 바꾸는 동안 <b>무적</b>' },
-  hollow: { name: '빠른 귀환', desc: '포탈이 <b>1초</b> 만에 닫히고, 적이 기절하는 <b>즉시</b> 아군과 함께 탈출', apply(d) { d.hollowOpenTime = 1; } },
+  hollow: { name: '빠른 귀환', desc: '포탈이 <b>1초</b> 만에 닫히고, 적이 기절하는 <b>즉시</b> 아군과 함께 탈출 · 공허가 열리기까지 <b>-1.5초</b>', apply(d) { d.hollowOpenTime = 1; d.hollowOpenDelay = Math.max(0, d.hollowOpenDelay - 1.5); } },
   phantom: { name: '예고된 등장', desc: '라운드 시작 후 <b>6초</b> 은신 (혼자 남으면 풀림)' },
   gumiho: { name: '구미호의 본성', desc: '체력 <b>40%</b> 아래에서 공격력 <b>+100%</b>' },
   moon: { name: '보름달', desc: '공격 간격 <b>0.35초</b>', apply(d) { d.atkSpeed = 0.35; } },
@@ -7821,6 +7847,21 @@ const RANK_S_ABILITIES = {
   hitman: { name: '청부 완료', desc: '스킬 피해 <b>+600</b>', apply(d) { d.hitDamage += 600; } },
   curse: { name: '지워지지 않는 저주', desc: '다른 대상을 공격해도 <b>저주가 유지</b>된다' },
   func: { name: '최적화', desc: '스킬 쿨타임 <b>-1초</b>', apply(d) { d.funcEvery = Math.max(1, d.funcEvery - 1); } },
+  // ── 4.4.2 ──
+  dimension: { name: '차원 재생', desc: '아공간에서 초당 <b>200</b> 회복' },
+  contractor: { name: '빠른 청부', desc: '청부 간격 <b>-1초</b>', apply(d) { d.contractEvery = Math.max(1, d.contractEvery - 1); } },
+  hypno: { name: '깊은 최면', desc: '최면 지속 <b>+0.5초</b>', apply(d) { d.hypnoDuration += 0.5; } },
+  impeachment: { name: '국민 소환', desc: '효과가 발동하면 <b>모든 적</b>에게 2초 최면' },
+  taeguk: { name: '음양 전환', desc: '레벨업할 때 <b>반드시</b> 색이 바뀐다' },
+  sun: { name: '작열하는 착지', desc: '떨어질 때 범위 안의 적에게 5초간 초당 <b>50</b> 화상' },
+  paladin: { name: '기사단의 방패', desc: '팔라딘나이트가 모두 쓰러지기 전까지 받는 피해 <b>-50%</b>' },
+  glutton: { name: '폭식', desc: '포식 지속 <b>+3초</b>', apply(d) { d.feastDuration += 3; } },
+  tyrant: { name: '공포 정치', desc: '분노 발동 때 범위 안 적의 공격력 <b>-5%</b> (라운드 끝까지)' },
+  biker: { name: '직진 본능', desc: '돌진 각도 <b>-15° ~ 15°</b>', apply(d) { d.bikeAngleSpread = 15; } },
+  hacker: { name: '정확한 입력', desc: '<b>없는 지후</b>를 타이핑하지 않는다 (대상이 사라지면 다른 적을 해킹)' },
+  planet: { name: '질량 붕괴', desc: '위성 피해가 현재 HP 대신 <b>최대 HP</b> 비례' },
+  dj: { name: '앵콜', desc: '버프 <b>+2%</b> · 넉백 확률 <b>+2%</b>', apply(d) { d.djBuff = (d.djBuff ?? 0.1) + 0.02; d.djKnockChance += 0.02; } },
+  no_u: { name: '반사 신경', desc: '반사 지속 <b>+0.3초</b>', apply(d) { d.reflectDuration += 0.3; } },
 };
 // 지후 자신이 S 이상일 때만 (다른 지후가 같은 상태이상을 걸어도 적용되지 않는다)
 function rankS(u, id) { return !!(u && u.rank >= 1 && u.charId === id); }
@@ -11469,6 +11510,74 @@ function showCharDetail(c, unit) {
   $('scrimTap').classList.add('show');
 }
 
+// 4.4.2 전투 중 유닛 정보: 현재 능력치(버프 반영)와 걸린 효과를 간단히. 0.25초마다 갱신한다.
+let inspectUnit = null, inspectTimer = null;
+function inspDelta(value, base, unit, lowerIsGood, digits = 0) {
+  const d = value - base;
+  if (Math.abs(d) < (digits ? 0.005 : 0.5)) return '';
+  const good = lowerIsGood ? d < 0 : d > 0;
+  return ` <span class="${good ? 'up' : 'down'}">(${d > 0 ? '+' : ''}${digits ? d.toFixed(digits) : Math.round(d).toLocaleString('ko-KR')}${unit})</span>`;
+}
+function inspectEffects(u) {
+  const out = [], st = u.statuses || {};
+  const pct = v => `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`;
+  if (u.stun > 0) out.push(['down', `${u.el?.classList.contains('hypnotized') ? '최면' : '기절'} ${u.stun.toFixed(1)}s`]);
+  if (st.freeze) out.push(['down', `빙결 ${Math.max(0, st.freeze.remaining || 0).toFixed(1)}s`]);
+  if (st.burn) out.push(['down', `화상 ${Math.round(st.burn.dps)}/s · ${Math.max(0, st.burn.remaining).toFixed(1)}s`]);
+  if (st.poison) out.push(['down', `중독 ${Math.round(st.poison.dps)}/s · ${Math.max(0, st.poison.remaining).toFixed(1)}s`]);
+  if (st.blizzard) out.push(['down', '블리자드 약화']);
+  Object.values(st.grudges || {}).forEach(m => out.push(['down', `원한 ${Math.ceil(m.remaining)}s`]));
+  if (u._hacked > 0) out.push(['down', `해킹 ${u._hacked.toFixed(1)}s`]);
+  if (u.charmRemaining > 0) out.push(['down', `매혹 ${u.charmRemaining.toFixed(1)}s`]);
+  if (u._blindRemaining > 0) out.push(['down', `눈가림 ${u._blindRemaining.toFixed(1)}s`]);
+  if (u._noHeal > 0) out.push(['down', `회복 불가 ${u._noHeal.toFixed(1)}s`]);
+  if (u.invincible > 0) out.push(['up', `무적 ${u.invincible.toFixed(1)}s`]);
+  if (u.stealth > 0) out.push(['up', `은신 ${u.stealth.toFixed(1)}s`]);
+  if (u.shield > 0) out.push(['up', `쉴드 ${Math.round(u.shield).toLocaleString('ko-KR')}`]);
+  if (u._guardShield > 0) out.push(['up', `수호 쉴드 ${Math.round(u._guardShield).toLocaleString('ko-KR')}`]);
+  if (u._guardBy && u._guardBy.alive) out.push(['up', '수호받는 중']);
+  if (u._realm) out.push(['', u._dive ? '잠수 중' : '아공간']);
+  if (u._negotiating) out.push(['', '협상 중']);
+  // 버프 · 디버프 (같은 능력치끼리 더해서 보여 준다)
+  const names = { atk: '공격력', aspd: '공격 속도', speed: '이동 속도' };
+  const sums = {};
+  Object.values(u.buffs || {}).forEach(b => { if (b && b.remaining > 0 && names[b.stat]) sums[b.stat] = (sums[b.stat] || 0) + b.bonus; });
+  Object.entries(sums).forEach(([k, v]) => { if (Math.abs(v) >= 0.005) out.push([v > 0 ? 'up' : 'down', `${names[k]} ${pct(v)}`]); });
+  return out;
+}
+function renderUnitInspect() {
+  const u = inspectUnit, box = $('unitInspect');
+  if (!u || !box) return;
+  if (!u.alive || !state.units.includes(u)) { box.querySelector('.st').innerHTML = '<div class="dead">쓰러졌습니다</div>'; return; }
+  const base = CHAR_DB[u.charId] || u.def;
+  const lvMult = Math.pow(LEVEL_MULT, (u.level || 1) - 1);
+  const atkNow = Math.max(0, u.def.atk || 0) * atkBuffMult(u);
+  const intBase = attackInterval(u), intNow = intBase / aspdRate(u);
+  const spdBase = u.def.speed || 0, spdNow = spdBase * Math.max(0.1, 1 + buffSum(u, 'speed'));
+  const cell = GRID; // 1칸
+  box.querySelector('.hd b').textContent = u.def.name || base.name;
+  box.querySelector('.hd small').textContent = `${u.side === 'ally' ? '아군' : '적'} · Lv.${u.level || 1}${u.rank >= 1 ? ' · S' : ''}`;
+  box.querySelector('.hd .pic').innerHTML = `<img src="${u.def.portrait || base.portrait}" alt="">`;
+  const rows = [
+    ['체력', `${Math.max(0, Math.round(u.hp)).toLocaleString('ko-KR')} / ${Math.round(u.maxHp).toLocaleString('ko-KR')}`],
+    ['공격력', `${Math.round(atkNow).toLocaleString('ko-KR')}${inspDelta(atkNow, u.def.atk || 0, '', false)}`],
+    ['공격 간격', u.def.noAttack ? '공격 안 함' : `${intNow.toFixed(2)}s${inspDelta(intNow, intBase, 's', true, 2)}`],
+    ['이동 속도', `${(spdNow / cell).toFixed(1)}칸${inspDelta(spdNow / cell, spdBase / cell, '칸', false, 1)}`],
+    ['사거리', `${((u.def.range || 0) / cell).toFixed(1)}칸`],
+  ];
+  if (Math.abs(lvMult - 1) > 0.001) rows.push(['레벨 배율', `×${lvMult.toFixed(2)}`]);
+  const eff = inspectEffects(u);
+  box.querySelector('.st').innerHTML = rows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')
+    + `<div class="fx">${eff.length ? eff.map(([c, t]) => `<i class="${c}">${t}</i>`).join('') : '<i>걸린 효과 없음</i>'}</div>`;
+}
+function openUnitInspect(u) {
+  inspectUnit = u;
+  $('unitInspect').hidden = false;
+  renderUnitInspect();
+  clearInterval(inspectTimer);
+  inspectTimer = setInterval(() => { if (state.screen !== 'battle') closeUnitInspect(); else renderUnitInspect(); }, 250);
+}
+function closeUnitInspect() { inspectUnit = null; clearInterval(inspectTimer); inspectTimer = null; if ($('unitInspect')) $('unitInspect').hidden = true; }
 function attachTooltip(el, c) {
   let timer = null;
   const show = (x, y) => {
@@ -11677,6 +11786,9 @@ function createBotBrain(modeKey, enemy) {
     const group = compGroupIndex(enemy.tp);
     if (group < 1) return { smart: false, accuracy: 0 };
     t = (group - 1) / (COMP_GROUPS.length - 2); // 브론즈 0 → 챌린저 1
+    // 4.4.2: 실버부터는 거의 모든 봇이 똑똑하게 고르고 역할 카운터를 쓴다
+    if (group >= 2) return { smart: Math.random() < 0.92 + 0.08 * t, accuracy: clamp(0.65 + 0.35 * t, 0, 1), counter: true };
+    return { smart: Math.random() < 0.55, accuracy: 0.5, counter: Math.random() < 0.5 };
   } else {
     t = clamp(((Number(enemy.level) || 1) - 6) / 30, 0, 1);
     if (t <= 0) return { smart: false, accuracy: 0 };
@@ -11705,12 +11817,34 @@ function botChooseBans(brain, request) {
   }
   return bans;
 }
+// 4.4.2 역할 카운터: 탱커 → 체력 비례·처형 지후 / 어쌔신 → 탱커·딜러 / 서포터 → 어쌔신 / 물량(소환) → 광역 공격
+const BOT_HP_PERCENT = ['planet', 'tyrant', 'biker', 'lonely', 'curse', 'roulette', 'reaper', 'contractor', 'phantom'];
+const BOT_SUMMONERS = ['necro', 'mafia', 'paladin', 'mini', 'engineer', 'zombie', 'slime', 'ninja', 'egg', 'matrix', 'duet', 'sun', 'skul'];
+const BOT_AOE = ['bat', 'reaper', 'developer', 'god', 'meteor', 'star', 'bomber', 'dragon', 'blizzard', 'func', 'paladin', 'lightning', 'bomb', 'beam', 'demonblade', 'biker', 'hollow', 'hmg', 'dust', 'burning', 'mega'];
+function botRoleCounter(id, theirs, role) { // -0.5 ~ 0.5. role 만 알 때(블라인드)는 역할로만 따진다
+  if (!theirs.length) return 0;
+  const c = CHAR_DB[id]; if (!c) return 0;
+  const myRole = role || c.role;
+  let score = 0;
+  theirs.forEach(other => {
+    const o = CHAR_DB[other]; if (!o) return;
+    if (o.role === 'tank' && !role && BOT_HP_PERCENT.includes(id)) score += 1;
+    if (o.role === 'assassin' && (myRole === 'tank' || myRole === 'dealer')) score += 0.7;
+    if (o.role === 'support' && myRole === 'assassin') score += 1;
+    if (BOT_SUMMONERS.includes(other) && !role && BOT_AOE.includes(id)) score += 1;
+  });
+  return clamp(score / theirs.length, 0, 1) - 0.25;
+}
 function botChoosePick(brain, request) {
   const context = request.context;
-  if (!brain.smart || context.blind) return botWeightedPick(request.options, 1)[0];
+  if (context.blind) { // 블라인드: 역할군만 보고 카운터를 노린다
+    if (!brain.smart || !brain.counter) return botWeightedPick(request.options, 1)[0];
+    return weightedSample(request.options, 1, id => Math.exp(3 * botRoleCounter(id, context.theirs, CHAR_DB[id]?.role)))[0];
+  }
+  if (!brain.smart) return botWeightedPick(request.options, 1)[0];
   const sharp = BOT_SHARPNESS * brain.accuracy;
-  // 후반에는 지금까지 나온 상대 지후를 잡는 지후를 더 쳐준다
-  const counter = context.late ? id => 0.8 * botCounterScore(id, context.theirs) : () => 0;
+  // 후반에는 지금까지 나온 상대 지후를 잡는 지후를 더 쳐준다. 4.4.2: 역할 카운터는 처음부터
+  const counter = id => (context.late ? 0.8 * botCounterScore(id, context.theirs) : 0) + (brain.counter ? 0.6 * botRoleCounter(id, context.theirs) : 0);
   return weightedSample(request.options, 1, id => Math.exp(sharp * (botTierScore(id) + counter(id))))[0];
 }
 // 배치: 탱커는 앞, 딜러는 가운데, 서포터·성장형은 뒤 (적 진영 기준 0.12 = 맨 뒤, 0.42 = 맨 앞)
@@ -12229,7 +12363,7 @@ function startCompPhase(phase) {
   comp.order.push(otherSide(comp.order[0]));
   comp.blind = phase === 5; // PHASE 5 는 등급만 공개된다
   $('cdPhase').textContent = `PHASE ${phase}`;
-  $('cdLog').textContent = `PHASE ${phase} · ${comp.rarity ? RARITY_LABEL[comp.rarity] : '무작위'} 지후 3종${comp.blind ? ' (무엇인지 보이지 않습니다)' : ''}`;
+  $('cdLog').textContent = `PHASE ${phase} · ${comp.rarity ? RARITY_LABEL[comp.rarity] : '무작위'} 지후 3종${comp.blind ? ' (역할군만 보입니다)' : ''}`;
   nextCompTurn();
 }
 function nextCompTurn() {
@@ -12263,7 +12397,7 @@ function compPick(side, id) {
   comp.token++;
   comp.pickedBy[id] = side;
   comp.picks[side].push(id);
-  const name = comp.blind ? `${RARITY_LABEL[CHAR_DB[id].rarity]} 카드` : CHAR_DB[id].name;
+  const name = comp.blind ? `${RARITY_LABEL[CHAR_DB[id].rarity]} ${CHAR_DB[id].roleLabel} 카드` : CHAR_DB[id].name;
   $('cdLog').textContent = side === 'ally' ? `${name}을(를) 골랐습니다.` : `상대가 ${name}을(를) 골랐습니다.`;
   renderCompPicks();
   nextCompTurn();
@@ -12280,7 +12414,7 @@ function renderCompPhase() {
     if (comp.blind && !done) {
       const c = CHAR_DB[id];
       return `<button type="button" class="cd-card blind rarity-${c.rarity}${owner ? ' taken ' + owner : ''}${selected}" data-id="${id}" ${mine && !owner ? '' : 'disabled'}>
-        <span class="cd-back">?</span><b>${RARITY_LABEL[c.rarity]}</b><small>무엇이 나올까요</small>${tag ? `<em>${tag}</em>` : ''}</button>`;
+        <span class="cd-back">?</span><b>${RARITY_LABEL[c.rarity]}</b><small class="cd-role">${c.roleLabel}</small>${tag ? `<em>${tag}</em>` : ''}</button>`; // 4.4.2: 역할군만 공개
     }
     return compCardHtml(id, { cls: owner ? 'taken ' + owner : selected.trim(), disabled: !mine || !!owner, tag });
   }).join('');
@@ -12391,7 +12525,7 @@ function renderCompPicks() {
     const c = CHAR_DB[id];
     // 블라인드 카드는 그 페이즈가 끝날 때까지 가린다
     const hidden = comp.blind && comp.stage === 'pick' && comp.options.includes(id);
-    return hidden ? `<div class="cd-slot rarity-${c.rarity}"><span class="cd-back">?</span></div>`
+    return hidden ? `<div class="cd-slot rarity-${c.rarity}"><span class="cd-back">?</span><small>${c.roleLabel}</small></div>`
       : `<div class="cd-slot rarity-${c.rarity}"><img src="${c.portrait}" alt="${c.name}"><small>${c.name}</small></div>`;
   }).join('');
   $('cdAllyPicks').style.setProperty('--slots', comp.cfg.size);
@@ -13073,7 +13207,7 @@ function levelUpUnit(u) {
   if (u.charId === 'solemn') applySolemnMode(u);
   if (u.charId === 'taeguk') {
     // 레벨업하면 청·적을 다시 굴린다. 그대로일 수도 있다. 조화 여부는 다시 센다.
-    u.taegukBase = Math.random() < 0.5 ? 'blue' : 'red';
+    u.taegukBase = rankS(u, 'taeguk') ? (u.taegukBase === 'blue' ? 'red' : 'blue') : (Math.random() < 0.5 ? 'blue' : 'red'); // 태극 S: 반드시 바뀐다
     if (u.form !== 'harmony') setTaegukForm(u, u.taegukBase);
     checkTaegukHarmony(u.side);
   }
@@ -13320,6 +13454,7 @@ function spawnUnit(side, x, y, charId, opts) {
       return;
     }
     if (v42HandleUnitTap(unit)) return;
+    if (state.phase === 'combat' || state.phase === 'roundEnd' || state.phase === 'deploy') { openUnitInspect(unit); return; } // 4.4.2
     showCharDetail(def, unit);
     showRangeRing(unit);
   });
@@ -14182,7 +14317,7 @@ function triggerTyrantRage(u) {
   }
   state.units.slice().forEach(target => {
     if (!target.alive || target.uid === u.uid || Math.hypot(target.x - u.x, target.y - u.y) > radius) return;
-    if (isHostile(u, target)) dealDamage(u, target, target.hp * u.def.tyrantRageCurrentHpFraction, { isSkill: true, skipAtkBuff: true });
+    if (isHostile(u, target)) { dealDamage(u, target, target.hp * u.def.tyrantRageCurrentHpFraction, { isSkill: true, skipAtkBuff: true }); if (rankS(u, 'tyrant') && target.alive) battleAPI.setBuff(target, 'tyrant-s:' + u.uid, 'atk', -0.05, 999); } // 폭군 S
     else applyDamageRaw(target, 1500, { isSkill: true, src: u, friendlyFire: true });
   });
   spawnDamageNumber(u, '폭군의 분노', { heal: true });
@@ -14423,7 +14558,7 @@ function tickPlanetSatellites() {
         if (Math.hypot(target.x - x, target.y - y) > unitRadius(target) + 24) continue;
         if (state.combatTime - (sat.hits[target.uid] ?? -Infinity) < u.def.orbitPeriod) continue;
         sat.hits[target.uid] = state.combatTime;
-        dealDamage(u, target, Math.max(0, target.hp) * u.def.orbitDamageFraction, { isSkill: true, skipAtkBuff: true });
+        dealDamage(u, target, Math.max(0, rankS(u, 'planet') ? target.maxHp : target.hp) * u.def.orbitDamageFraction, { isSkill: true, skipAtkBuff: true }); // 행성 S: 최대 HP
       }
     }
     while (u._orbiters.length > count) u._orbiters.pop().el.remove();
@@ -14789,24 +14924,20 @@ function aiSteerAndAttack(u, dt) {
       return firstReady - secondReady || Math.hypot(first.x - u.x, first.y - u.y) - Math.hypot(second.x - u.x, second.y - u.y);
     });
     const ally = allies[0];
-    // 3.8: 반경 4칸 안의 아군 쿨타임 게이지를 초당 10%씩 채운다 (가까운 아군을 따라다닌다)
+    // 4.4.2 리워크: 반경 4칸 안의 아군 쿨타임이 4% 빨리 흐른다 (1초에 0.04초 더). 충전 지후가 여러 기면 더해진다.
     const R = u.def.chargeAuraRadius * WORLD_SCALE;
+    const k = u.def.chargeAuraRate * dt; // 이번 틱에 더 흐르는 시간(초)
     allies.forEach(a => {
       if (Math.hypot(a.x - u.x, a.y - u.y) > R + unitRadius(a)) return;
-      const info = skillCdInfo(a);
-      const amount = (info && info.max ? info.max : 5) * u.def.chargeAuraRate * dt;
-      skillCooldownFields(a).forEach(key => { a[key] = Math.max(0, a[key] - amount); });
-      if (a._hit && a._hit.phase === 'cd') a._hit.t = Math.max(0, a._hit.t - a.def.hitCooldown * u.def.chargeAuraRate * dt); // 자객
-      if (a._blade && !a._blade.on) a._blade.t = Math.max(0, a._blade.t - a.def.bladeCooldown * u.def.chargeAuraRate * dt); // 마검
-      // 4.1.6 버그 수정: 숫자 필드가 아닌 쿨타임(지후함수·폭격·마에스트로·빔·흑염룡·폭주족·멈춰·인공위성)도 채운다
-      const k = u.def.chargeAuraRate * dt;
-      if (a._func && a._func.phase === 'cd') a._func.t = Math.max(0, a._func.t - (a.def.funcEvery - a.def.funcAnnounce) * k);
-      if (a._bomb && a._bomb.phase === 'wait') a._bomb.t = Math.max(0, a._bomb.t - (a.def.bombEvery - a.def.bombWarn) * k);
-      if (a._mae && a._mae.phase === 'play') a._mae.t += a.def.maestroTime * k;
-      if (a.charId === 'beam' && a._beamWarmup != null && a._beamWarmup < a.def.beamWarmup) a._beamWarmup = Math.min(a.def.beamWarmup, a._beamWarmup + a.def.beamWarmup * k);
-      if (a.charId === 'blackflame' && !a._dragonDash && a.def.flameGaugeMax) a._flameGauge = Math.min(a.def.flameGaugeMax, (a._flameGauge || 0) + a.def.flameGaugeMax * k);
-      if (a._bike && a._bike.phase === 'windup') a._bike.windup = Math.max(0, a._bike.windup - a.def.bikeChargeTime * k);
-      if ((a.charId === 'stop' || a.charId === 'satellite' || a.charId === 'rock') && a.atkCooldown > 0) a.atkCooldown = Math.max(0, a.atkCooldown - (a.def.atkSpeed || 5) * k);
+      skillCooldownFields(a).forEach(key => { a[key] = Math.max(0, a[key] - k); });
+      if (a._hit && a._hit.phase === 'cd') a._hit.t = Math.max(0, a._hit.t - k); // 자객
+      if (a._blade && !a._blade.on) a._blade.t = Math.max(0, a._blade.t - k); // 마검
+      if (a._func && a._func.phase === 'cd') a._func.t = Math.max(0, a._func.t - k);
+      if (a._bomb && a._bomb.phase === 'wait') a._bomb.t = Math.max(0, a._bomb.t - k);
+      if (a._mae && a._mae.phase === 'play') a._mae.t += k;
+      if (a.charId === 'beam' && a._beamWarmup != null && a._beamWarmup < a.def.beamWarmup) a._beamWarmup = Math.min(a.def.beamWarmup, a._beamWarmup + k);
+      if (a._bike && a._bike.phase === 'windup') a._bike.windup = Math.max(0, a._bike.windup - k);
+      if ((a.charId === 'stop' || a.charId === 'satellite' || a.charId === 'rock') && a.atkCooldown > 0) a.atkCooldown = Math.max(0, a.atkCooldown - k);
     });
     u._chargeFx = (u._chargeFx || 0) - dt;
     if (u._chargeFx <= 0) { u._chargeFx = 1; blastEffect(u.x, u.y, R, u.def.color); }
@@ -15492,8 +15623,8 @@ const battleAPI = {
   },
   rapidFire(c, target) {
     c._shots = (c._shots || 0) + 1;
-    dealDamage(c, target, c.def.atk, { noNum: true });
-    c._accDmg = (c._accDmg || 0) + c.def.atk * atkBuffMult(c); c._accN = (c._accN || 0) + 1;
+    if (dealDamage(c, target, c.def.atk, { noNum: true })) c._accDmg = (c._accDmg || 0) + (c._lastHitDamage || 0); // 4.4.2: 실제 피해로 묶는다
+    c._accN = (c._accN || 0) + 1;
     const iv = c.hmgInterval;
     // 초고속 연사 시 화면 부하를 줄이기 위해 피해 숫자·투사체는 묶어서 표시 (실제 피해는 매 발 적용)
     if (iv >= 0.1 || c._accN >= Math.ceil(0.1 / iv)) { spawnDamageNumber(target, Math.round(c._accDmg), {}); c._accDmg = 0; c._accN = 0; }
@@ -15915,6 +16046,7 @@ function applyDamageRaw(target, amount, opts) {
   finalDmg *= s43TakenMult(target, opts && (opts.src || opts.caster));
   if (target.statuses.freeze && target.statuses.freeze.iceS) finalDmg *= 1.2; // 얼음 S
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
+  const shownDmg = Math.max(0, finalDmg); // 4.4.2: 표시 숫자 = 실제 피해 (쉴드에 막힌 양 포함)
 
   if (target._whiteShield > 0 && finalDmg > 0) finalDmg = absorbWhiteShield(target, finalDmg);
   if (target._guardShield > 0 && finalDmg > 0) finalDmg = absorbGuardShield(target, finalDmg);
@@ -15934,7 +16066,7 @@ function applyDamageRaw(target, amount, opts) {
     target._jawsSecond = true; startDive(target, true); // 죠스 S: 체력이 처음 25%가 되면 한 번 더 잠수
   }
 
-  spawnDamageNumber(target, Math.round(target.charId === 'metal' ? 2 : amount), { dot: opts.isDot, poison: opts.isPoison, critHit });
+  spawnDamageNumber(target, Math.round(shownDmg), { dot: opts.isDot, poison: opts.isPoison, critHit });
   updateUnitBars(target);
 
   if (target.hp <= 0 && target.alive) {
@@ -16534,6 +16666,12 @@ function activateImpeachment(target, opts) {
   target.el.classList.add('has-shield');
   spawnDamageNumber(target, '탄핵', { heal: true });
   updateUnitBars(target);
+  if (rankS(target, 'impeachment')) state.units.forEach(e => { // 탄핵 S: 모든 적 2초 최면
+    if (!e.alive || e.isCastle || !isHostile(target, e)) return;
+    e.stun = Math.max(e.stun || 0, 2);
+    e.el.classList.add('stunned', 'hypnotized');
+    spawnDamageNumber(e, '최면', { crit: true });
+  });
 }
 
 function blastEffect(x, y, radius, color) {
@@ -17631,7 +17769,10 @@ function sunFall(u) {
   circularAttack(u, u.x, u.y, u.def.sunDropRadius, Math.round(u.def.sunDropDamage * Math.pow(LEVEL_MULT, (u.level || 1) - 1)), { isSkill: true, skipAtkBuff: true });
   // 3.8: 착지 범위의 적 2.5초 기절, 부활 후 공격력 +200
   state.units.forEach(e => {
-    if (e.alive && !e.isCastle && e.side !== u.side && !e._flight && Math.hypot(e.x - u.x, e.y - u.y) <= u.def.sunDropRadius + unitRadius(e)) stunUnit(e, u.def.sunDropStun);
+    if (e.alive && !e.isCastle && e.side !== u.side && !e._flight && Math.hypot(e.x - u.x, e.y - u.y) <= u.def.sunDropRadius + unitRadius(e)) {
+      stunUnit(e, u.def.sunDropStun);
+      if (rankS(u, 'sun')) battleAPI.applyBurn(e, 50, 5, u); // 태양 S
+    }
   });
   const bonus = Math.round(u.def.sunReviveAtk * Math.pow(LEVEL_MULT, (u.level || 1) - 1));
   u.def.atk += bonus;
@@ -18182,6 +18323,7 @@ function s43TakenMult(target, caster) {
   if (rankS(target, 'awaken') && !target.awakened) m *= 0.75;
   if (rankS(target, 'roulette') && target._rr && target._rr.phase === 'target') m *= 0.05;
   if (rankS(caster, 'blizzard') && target.statuses && target.statuses.freeze) m *= 1.5;
+  if (rankS(target, 'paladin') && (!target._knightsDone || state.units.some(k => k.alive && k.charId === 'knight' && k.ownerUid === target.uid))) m *= 0.5; // 팔라딘 S
   return m;
 }
 function damageTakenMult38(target) {
@@ -19012,6 +19154,7 @@ function tickNewJihooSkills(u, dt) {
   if (u.charId === 'powermeter') tickPowerMeter(u, dt);
   if (u.charId === 'mafia' && !u._mafiaCalled && (u.hp <= u.maxHp * u.def.mafiaHpThreshold || (rankS(u, 'mafia') && u.hp < u.maxHp))) callHenchman(u); // 마피아 S: 피격 즉시
   if (rankS(u, 'gumiho') && u.hp < u.maxHp * 0.4) battleAPI.setBuff(u, 'gumiho-s', 'atk', 1, 0.25); // 구미호 S
+  if (rankS(u, 'dimension') && u._realm && u.hp < u.maxHp) { u.hp = Math.min(u.maxHp, u.hp + 200 * dt * healRecvMult(u)); updateUnitBars(u); } // 차원 S
   if (u._phantomS && u.stealth > 0 && !state.units.some(a => a !== u && a.alive && !a.isCastle && a.side === u.side)) { // 괴도 S: 혼자 남으면 풀린다
     u.stealth = 0; u._phantomS = false; u.el.classList.remove('stealthed');
   }
@@ -19284,7 +19427,12 @@ function tickHacker(u, dt) {
     if (typing.t < u.def.hackTypeTime) return;
     u._hackTyping = null;
     scheduleTask(() => typing.el.remove(), 500);
-    const victims = state.units.filter(x => x.alive && !x.isCastle && isHostile(u, x) && x.charId === typing.charId);
+    let victims = state.units.filter(x => x.alive && !x.isCastle && isHostile(u, x) && x.charId === typing.charId);
+    if (!victims.length && rankS(u, 'hacker')) { // 해커 S: 없는 지후는 치지 않는다
+      const others = state.units.filter(x => x.alive && !x.isCastle && isHostile(u, x) && CHAR_DB[x.charId]);
+      const pick = others[Math.floor(Math.random() * others.length)];
+      if (pick) { typing.el.textContent = '> ' + CHAR_DB[pick.charId].name; victims = others.filter(x => x.charId === pick.charId); }
+    }
     if (!victims.length) { typing.el.textContent = '> 대상 없음'; return; }
     victims.forEach(x => {
       x._hacked = u.def.hackDuration;
@@ -19440,6 +19588,7 @@ function dealDamage(caster, target, amount, opts) {
   if (target.statuses.freeze && target.statuses.freeze.iceS) finalDmg *= 1.2; // 얼음 S
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
   if (caster) caster._lastHitDamage = Math.max(0, finalDmg); // 쉴드에 막힌 양 포함, 실제로 들어간 피해
+  const shownDmg = Math.max(0, finalDmg); // 4.4.2: 표시 숫자도 이 값
 
   if (target._whiteShield > 0 && finalDmg > 0) finalDmg = absorbWhiteShield(target, finalDmg);
   if (target._guardShield > 0 && finalDmg > 0) finalDmg = absorbGuardShield(target, finalDmg);
@@ -19470,7 +19619,7 @@ function dealDamage(caster, target, amount, opts) {
   if (isBigHit) target.el.classList.add('hit-flash-big');
   scheduleTask(() => { if (target.el) { target.el.classList.remove('hit-flash'); target.el.classList.remove('hit-flash-big'); } }, 220);
 
-  if (!opts.noNum) spawnDamageNumber(target, Math.round(target.charId === 'metal' ? 2 : amount), { crit: opts.isSkill, dot: opts.isDot, critHit });
+  if (!opts.noNum) spawnDamageNumber(target, Math.round(shownDmg), { crit: opts.isSkill, dot: opts.isDot, critHit });
   updateUnitBars(target);
 
   const killed = target.hp <= 0 && target.alive;
@@ -20057,7 +20206,9 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
   const data = TIER_HISTORY[version];
   const keys = Object.keys(data.tiers);
   // 이전 티어표와 비교: 오른 지후는 ▲, 내린 지후는 ▼, 2티어 이상 움직이면 두 개.
-  const prevData = TIER_HISTORY[versions[versions.indexOf(version) + 1]];
+  // 4.4.2: 'x S'(S랭크 기준)는 같은 버전의 A랭크와, 나머지는 이전의 A랭크 기준 표와 비교한다
+  const prevKey = / S$/.test(version) ? version.replace(/ S$/, ' A') : versions.slice(versions.indexOf(version) + 1).find(v => !/ S$/.test(v));
+  const prevData = TIER_HISTORY[prevKey];
   const prevTier = {};
   if (prevData) Object.entries(prevData.tiers).forEach(([t, ids]) => ids.forEach(id => { prevTier[id] = t; }));
   const moveMark = (id, tier) => {
@@ -20070,7 +20221,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
     return diff > 0 ? `<i class="mv up" title="${before}티어 → ${tier}티어">${diff >= 2 ? '▲▲' : '▲'}</i>` : `<i class="mv down" title="${before}티어 → ${tier}티어">${diff <= -2 ? '▼▼' : '▼'}</i>`;
   };
   $('helpBody').innerHTML = `<div class="help-versions">${versions.map(v => `<button type="button" class="${v === version ? 'on' : ''}" data-ver="${v}">v${v}</button>`).join('')}</div>
-    <p class="settlement-note">${data.date} · ${data.note}${data.scale === 5 ? ' · 이때는 5단계였습니다' : ''}. 같은 티어 안에서는 왼쪽일수록 셉니다.${prevData ? ` <span style="color:#d9480f">▲</span> v${versions[versions.indexOf(version) + 1]}보다 상승 · <span style="color:#1c7ed6">▼</span> 하락 · 2티어 이상 움직이면 두 개.` : ''}</p>
+    <p class="settlement-note">${data.date} · ${data.note}${data.scale === 5 ? ' · 이때는 5단계였습니다' : ''}. 같은 티어 안에서는 왼쪽일수록 셉니다.${prevData ? ` <span style="color:#d9480f">▲</span> v${prevKey}보다 상승 · <span style="color:#1c7ed6">▼</span> 하락 · 2티어 이상 움직이면 두 개.` : ''}</p>
     ${keys.map(key => {
       const ids = data.tiers[key].filter(id => CHAR_DB[id]);
       if (!ids.length) return '';
@@ -20128,6 +20279,42 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.4.2': {
+    label: 'v4.4.2 충전 지후 리워크 · S랭크 104종 · 경쟁전 봇',
+    date: '2026.09.29',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🔋', name:'충전 지후', tag:'adjust', color:'#65eb06', portraitKey:'battery', desc:'<b>리워크</b>: 쿨타임 게이지를 초당 10%씩 채우던 것 → 범위 안 아군의 쿨타임이 <b>4% 빨리</b> 찹니다. 여러 기면 <b>중첩</b>. (S: 4% → 5%)' },
+        { emoji:'🪆', name:'저주 지후', tag:'nerf', color:'#6b4bd6', portraitKey:'curse', desc:'공격 간격 <b>1.2초 → 1.65초</b>.' },
+        { emoji:'📈', name:'지후함수', tag:'nerf', color:'#22b14c', portraitKey:'func', desc:'함수 간격 <b>3.2초 → 4.5초</b>.' },
+        { emoji:'🗡️', name:'자객 지후', tag:'nerf', color:'#111111', portraitKey:'hitman', desc:'처치 성공 시 쿨타임 감소 <b>15초 → 8초</b>.' },
+        { emoji:'⚜️', name:'팔라딘 지후', tag:'adjust', color:'#e0b400', portraitKey:'paladin', desc:'팔라딘나이트 HP <b>500</b> · 쉴드 <b>700 → 500</b> · 공격력 <b>60 → 100</b>.' }
+      ] },
+      { title: '신규 S랭크 고유 능력', items: [
+        { emoji:'🌌', name:'차원 지후', tag:'new', color:'#7b3fe0', portraitKey:'dimension', desc:'<b>차원 재생</b> · 아공간에서 초당 <b>200</b> 회복' },
+        { emoji:'📜', name:'청부업자 지후', tag:'new', color:'#d32f2f', portraitKey:'contractor', desc:'<b>빠른 청부</b> · 청부 간격 <b>-1초</b>' },
+        { emoji:'🌀', name:'최면 지후', tag:'new', color:'#6a1fb0', portraitKey:'hypno', desc:'<b>깊은 최면</b> · 최면 지속 <b>+0.5초</b>' },
+        { emoji:'⚖️', name:'탄핵지후', tag:'new', color:'#a728f5', portraitKey:'impeachment', desc:'<b>국민 소환</b> · 효과가 발동하면 <b>모든 적</b>에게 2초 최면' },
+        { emoji:'☯️', name:'태극 지후', tag:'new', color:'#7a4ad9', portraitKey:'taeguk', desc:'<b>음양 전환</b> · 레벨업할 때 <b>반드시</b> 색이 바뀐다' },
+        { emoji:'☀️', name:'태양 지후', tag:'new', color:'#ff7a00', portraitKey:'sun', desc:'<b>작열하는 착지</b> · 떨어질 때 범위 안의 적에게 5초간 초당 <b>50</b> 화상' },
+        { emoji:'⚜️', name:'팔라딘 지후', tag:'new', color:'#e0b400', portraitKey:'paladin', desc:'<b>기사단의 방패</b> · 팔라딘나이트가 모두 쓰러지기 전까지 받는 피해 <b>-50%</b>' },
+        { emoji:'🦷', name:'포식 지후', tag:'new', color:'#c0262d', portraitKey:'glutton', desc:'<b>폭식</b> · 포식 지속 <b>+3초</b>' },
+        { emoji:'👑', name:'폭군 지후', tag:'new', color:'#e01818', portraitKey:'tyrant', desc:'<b>공포 정치</b> · 분노 발동 때 범위 안 적의 공격력 <b>-5%</b> (라운드 끝까지)' },
+        { emoji:'🏎️', name:'폭주족 지후', tag:'new', color:'#f07a1a', portraitKey:'biker', desc:'<b>직진 본능</b> · 돌진 각도 <b>-15° ~ 15°</b>' },
+        { emoji:'💻', name:'해커 지후', tag:'new', color:'#19c7c0', portraitKey:'hacker', desc:'<b>정확한 입력</b> · <b>없는 지후</b>를 타이핑하지 않는다 (대상이 사라지면 다른 적을 해킹)' },
+        { emoji:'🪐', name:'행성 지후', tag:'new', color:'#6777d6', portraitKey:'planet', desc:'<b>질량 붕괴</b> · 위성 피해가 현재 HP 대신 <b>최대 HP</b> 비례' },
+        { emoji:'🎧', name:'DJ 지후', tag:'new', color:'#39ff14', portraitKey:'dj', desc:'<b>앵콜</b> · 버프 <b>+2%</b> · 넉백 확률 <b>+2%</b>' },
+        { emoji:'🃏', name:'NO U 지후', tag:'new', color:'#ffd400', portraitKey:'no_u', desc:'<b>반사 신경</b> · 반사 지속 <b>+0.3초</b>' },
+        { emoji:'🕳️', name:'공허 지후', tag:'adjust', color:'#4b2d7f', portraitKey:'hollow', desc:'<b>빠른 귀환</b> · 포탈이 <b>1초</b> 만에 닫히고, 적이 기절하는 <b>즉시</b> 아군과 함께 탈출 · 공허가 열리기까지 <b>-1.5초</b>' }
+      ] },
+      { title: '경쟁전 · 드래프트', items: [
+        { emoji:'🃏', name:'블라인드 페이즈', tag:'adjust', color:'#111111', desc:'드래프트 마지막 블라인드 페이즈에서 카드의 <b>역할군</b>이 보입니다.' },
+        { emoji:'🔎', name:'전투 중 유닛 정보', tag:'new', color:'#111111', desc:'전투 중 유닛을 누르면 도감 대신 <b>현재 공격력 · 공격 간격 · 이동 속도 · 사거리</b>와 <b>걸린 효과</b>를 간단히 보여줍니다. 버프·디버프가 반영된 값이고, 변화량이 <span style="color:#16a34a">초록(좋음)</span> / <span style="color:#e5322d">빨강(나쁨)</span>으로 표시됩니다.' },
+        { emoji:'🔢', name:'피해 숫자', tag:'fix', color:'#111111', desc:'떠오르는 피해 숫자가 공격력 버프·디버프와 피해 감소를 반영한 <b>실제 피해</b>로 표시됩니다 (가끔 숫자와 실제 피해가 달랐던 문제).' },
+        { emoji:'🤖', name:'경쟁전 봇', tag:'adjust', color:'#111111', desc:'<b>실버부터</b> 거의 모든 봇이 똑똑하게 고르고 <b>역할 카운터</b>를 씁니다: 탱커 → 체력 비례·처형 지후 · 어쌔신 → 탱커·딜러 · 서포터 → 어쌔신 · 소환 물량 → 광역 공격.' }
+      ] }
+    ]
+  },
   '4.4.1': {
     label: 'v4.4.1 메인 퀘스트 · 일일 퀘스트 개편 · 연승 · 마스터리',
     date: '2026.09.29',
@@ -22592,6 +22779,8 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnMenuInstall').addEventListener('click', () => { closeModal('menuModal'); renderInstallGuide(); openModal('installModal'); });
   $('btnMenuHelp').addEventListener('click', () => { closeModal('menuModal'); renderHelp(); openModal('helpModal'); });
   $('btnOpenLook').addEventListener('click', openLookModal);
+  $('btnInspectClose').addEventListener('click', closeUnitInspect);
+  $('btnInspectMore').addEventListener('click', () => { const u = inspectUnit; if (!u) return; closeUnitInspect(); showCharDetail(CHAR_DB[u.charId] || u.def, u); });
   $('btnOpenLevelRewards').addEventListener('click', openLevelRewards);
   $('legendPickGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-pick]'); if (!b || !profile.inventory.legendPick) return;
