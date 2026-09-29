@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.3.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8000,7 +8000,8 @@ function normalizeProfile(raw) {
     draftTickets: safeCount(raw.draftTickets),
     discordRewarded: !!raw.discordRewarded,
     accountNoPassword: !!raw.accountNoPassword,
-    look: normalizeLook(raw.look),
+    // 4.3.1: 프로필은 스크립트 앞부분에서 읽으므로 아래쪽 상수(LOOK_FRAMES 등)를 여기서 쓰면 안 된다. 모양은 쓸 때 myLook() 이 다시 검사한다.
+    look: raw.look && typeof raw.look === 'object' ? { a: String(raw.look.a || '').slice(0, 24), f: String(raw.look.f || 'none').slice(0, 12), t: String(raw.look.t || '').slice(0, 12), c: String(raw.look.c || 'white').slice(0, 12) } : { a: '', f: 'none', t: '', c: 'white' },
     rankedForm: Array.isArray(raw.rankedForm) ? raw.rankedForm.slice(-10).map(x => !!x) : [],
     ticketRegenAt: Math.max(0, Number(raw.ticketRegenAt) || 0),
     newcomer: {
@@ -8027,7 +8028,11 @@ function normalizeProfile(raw) {
 
 function loadProfile() {
   try { return normalizeProfile(JSON.parse(localStorage.getItem(SAVE_KEY))); }
-  catch (err) { return freshProfile(); }
+  catch (err) {
+    // 4.3.1: 읽기에 실패해도 원래 저장 데이터를 지우지 않게 따로 남긴다
+    try { const raw = localStorage.getItem(SAVE_KEY); if (raw && raw.length > 20) localStorage.setItem(SAVE_KEY + '.rescue.' + Date.now(), raw); } catch (e) {}
+    return freshProfile();
+  }
 }
 
 let profile = loadProfile();
@@ -19536,6 +19541,15 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.3.1': {
+    label: 'v4.3.1 긴급 수정',
+    date: '2026.09.29',
+    sections: [
+      { title: '버그 수정', items: [
+        { emoji:'🛠️', name:'저장 데이터', tag:'fix', color:'#e5322d', desc:'4.3에서 게임을 켤 때 이 기기의 저장 데이터를 읽지 못하고 <b>새 계정처럼 시작되던</b> 문제를 고쳤습니다. 온라인 계정이 있다면 프로필에서 <b>내 백업 불러오기</b> 또는 <b>UID로 로그인</b>으로 기록을 되찾을 수 있습니다.' }
+      ] }
+    ]
+  },
   '4.3': {
     label: 'v4.3 프로필 꾸미기 · S랭크 고유 능력 90종',
     date: '2026.09.29',
