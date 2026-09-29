@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.6.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.6.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -4629,6 +4629,22 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
 .fx-typhoon i { position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0deg, rgba(95,191,191,.05), rgba(95,191,191,.75), rgba(255,255,255,.3), rgba(95,191,191,.7), rgba(95,191,191,.05)); -webkit-mask:radial-gradient(closest-side, transparent 22%, #000 26%); mask:radial-gradient(closest-side, transparent 22%, #000 26%); animation:typhoon-spin .5s linear infinite; }
 .fx-typhoon.gone { opacity:0; }
 @keyframes typhoon-spin { to { transform:rotate(360deg); } }
+
+/* 4.6.2 그랜드매치 */
+#btnArenaGrand { width:100%; margin-top:8px; padding:12px; border-radius:14px; font-weight:900; }
+#btnArenaGrand small { font-weight:700; opacity:.6; }
+#grandPanel { position:fixed; left:50%; bottom:10px; transform:translateX(-50%); z-index:60; width:min(760px, calc(100vw - 20px)); display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:12px 14px; border-radius:14px; background:#fff; box-shadow:0 0 0 2px #111, 0 10px 30px rgba(0,0,0,.25); pointer-events:none; }
+#grandPanel .gp-card.enemy { text-align:right; }
+#grandPanel .gp-name { display:block; font:900 20px var(--v4-display, sans-serif); letter-spacing:-.03em; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#grandPanel .gp-bar { position:relative; height:26px; background:#e8e8e5; box-shadow:0 0 0 2px #111; }
+#grandPanel .gp-bar i { position:absolute; left:0; top:0; bottom:0; background:#5cc85a; transition:width .15s; }
+#grandPanel .gp-card.enemy .gp-bar i { left:auto; right:0; }
+#grandPanel .gp-bar span { position:relative; display:block; text-align:center; font:800 15px/26px var(--v4-mono, monospace); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.6); }
+#grandPanel .gp-under { height:4px; margin-top:4px; }
+#grandPanel .gp-stats { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:6px; font-size:12px; color:#555; }
+#grandPanel .gp-card.enemy .gp-stats { justify-content:flex-end; }
+#grandPanel .gp-stats b { color:#111; }
+@media (max-width:560px) { #grandPanel { gap:8px; padding:8px 10px; } #grandPanel .gp-name { font-size:15px; } #grandPanel .gp-bar span { font-size:12px; } }
 </style>
 </head>
 <body>
@@ -5101,6 +5117,7 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
     <div class="arena-pick-grid" id="arenaPickGrid"></div>
     <div class="arena-footer">
       <button class="btn btn-primary" id="btnArenaStart" disabled><span class="v4-sweep light"></span>전투 시작 ▶</button>
+      <button type="button" class="btn btn-secondary" id="btnArenaGrand" disabled>🏆 1:1 그랜드매치 <small>(양쪽 1기씩)</small></button>
     </div>
     </div>
   </div>
@@ -7762,6 +7779,7 @@ function applyMapLayout() {
   if (ew) { MAP_W = compact ? 1080 : 1760; MAP_H = compact ? 720 : 1120; }
   else { MAP_W = compact ? 720 : 1120; MAP_H = compact ? 1080 : 1600; }
   if (state.mode === 'preview') { MAP_W = 600; MAP_H = 360; }
+  if (state.mode === 'arena' && state.grandMatch) { MAP_W = 1000; MAP_H = 1000; } // 그랜드매치: 정사각형
   const w = worldEl();
   if (w) {
     w.classList.toggle('layout-ew', ew);
@@ -11358,6 +11376,8 @@ function updateArenaStart() {
   const eN = arenaCount(state.arenaEnemy);
   const btn = $('btnArenaStart');
   if (btn) btn.disabled = aN < 1 || eN < 1;
+  const grand = $('btnArenaGrand');
+  if (grand) grand.disabled = aN !== 1 || eN !== 1;
 }
 function setArenaPickSide(side) {
   state.arenaPickSide = side === 'enemy' ? 'enemy' : 'ally';
@@ -11557,14 +11577,17 @@ function placeFormation(side, entries) {
     spawnUnit(side, x, y, id, { saved: true, quiet: i > 0, level: entry.level });
   });
 }
-function startArenaMatch() {
+function startArenaMatch(grand) {
   if (!developerMode) return;
   const allies = flattenArenaEntries('ally');
   const enemies = flattenArenaEntries('enemy');
   if (!allies.length || !enemies.length) return;
+  grand = grand === true && allies.length === 1 && enemies.length === 1;
   leaveBattle();
-  withLoading('투기장 입장중', () => {
+  withLoading(grand ? '그랜드매치 입장중' : '투기장 입장중', () => {
     state.mode = 'arena';
+    state.grandMatch = grand;
+    document.body.classList.toggle('grand-match', grand);
     state.matchStartedAt = Date.now();
     state.round = 1;
     state.allyLives = 1;
@@ -11588,7 +11611,7 @@ function startArenaMatch() {
     updateLifeUI();
     showScreen('battle');
     const badge = $('roundBadge');
-    if (badge) badge.innerHTML = 'ARENA';
+    if (badge) badge.innerHTML = grand ? 'GRAND MATCH' : 'ARENA';
     openPoolSheet(false);
     const pa = document.getElementById('poolActions'); if (pa) pa.style.display = 'none';
     $('allyLivesDisplay').style.display = 'flex';
@@ -11602,11 +11625,35 @@ function startArenaMatch() {
           applyMapLayout();
           bindMinimap();
           beginCombatPhase();
+          if (grand) startGrandPanel();
         });
       }));
   });
 }
-
+// 4.6.2 그랜드매치: 정사각형 전장 + 아래에 두 지후의 이름 · HP · 스탯
+function grandUnit(side) { return state.units.find(u => u.side === side && !u.isCastle && !u.ownerUid && !u.isClone) || null; }
+function startGrandPanel() {
+  let el = $('grandPanel');
+  if (!el) { el = document.createElement('div'); el.id = 'grandPanel'; document.body.appendChild(el); }
+  el.style.display = '';
+  clearInterval(startGrandPanel.timer);
+  const card = (u, side) => {
+    if (!u) return `<div class="gp-card ${side}"><b class="gp-name">-</b></div>`;
+    const hp = Math.max(0, Math.round(u.hp)), pct = clamp(u.hp / u.maxHp * 100, 0, 100);
+    const sh = (u.shield || 0) + (u._tiShield || 0);
+    const atk = Math.round((u.def.atk || 0) * atkBuffMult(u));
+    return `<div class="gp-card ${side}"><b class="gp-name" style="color:${u.def.color}">${u.def.name}${u.level > 1 ? ' Lv.' + u.level : ''}</b>
+      <div class="gp-bar"><i style="width:${pct}%"></i><span>${hp.toLocaleString('ko-KR')} / ${Math.round(u.maxHp).toLocaleString('ko-KR')}</span></div>
+      <div class="gp-under" style="background:${u.def.color}"></div>
+      <div class="gp-stats"><span>ATK <b>${atk.toLocaleString('ko-KR')}</b></span><span>공격 간격 <b>${u.def.noAttack ? '-' : (+u.def.atkSpeed).toFixed(2) + 's'}</b></span>${sh > 0 ? `<span>쉴드 <b>${Math.round(sh).toLocaleString('ko-KR')}</b></span>` : ''}<span>입힌 피해 <b>${Math.round(u.dmgDealt || 0).toLocaleString('ko-KR')}</b></span></div></div>`;
+  };
+  const draw = () => {
+    if (!state.grandMatch || state.mode !== 'arena' || state.screen !== 'battle') { el.style.display = 'none'; clearInterval(startGrandPanel.timer); return; }
+    el.innerHTML = card(grandUnit('ally'), 'ally') + card(grandUnit('enemy'), 'enemy');
+  };
+  draw();
+  startGrandPanel.timer = setInterval(draw, 120);
+}
 const lobbyCardArena = $('lobbyCardArena');
 if (lobbyCardArena) {
   lobbyCardArena.addEventListener('click', openArena);
@@ -11615,7 +11662,8 @@ if (lobbyCardArena) {
   });
 }
 $('btnArenaBack').addEventListener('click', () => showScreen('lobby'));
-$('btnArenaStart').addEventListener('click', startArenaMatch);
+$('btnArenaStart').addEventListener('click', () => startArenaMatch(false));
+$('btnArenaGrand').addEventListener('click', () => startArenaMatch(true));
 $('btnArenaRandAlly').addEventListener('click', ev => { ev.stopPropagation(); arenaFillRandom('ally', 6); });
 $('btnArenaRandEnemy').addEventListener('click', ev => { ev.stopPropagation(); arenaFillRandom('enemy', 6); });
 $('btnArenaClearAlly').addEventListener('click', ev => { ev.stopPropagation(); arenaClearSide('ally'); });
@@ -21176,6 +21224,15 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.6.2': {
+    label: 'v4.6.2 투기장 그랜드매치',
+    date: '2026.09.30',
+    sections: [
+      { title: '투기장', items: [
+        { emoji:'🏆', name:'1:1 그랜드매치', tag:'new', color:'#111111', desc:'투기장에서 양쪽에 1기씩 넣으면 <b>그랜드매치</b>를 열 수 있습니다. <b>정사각형 전장</b>에서 싸우고, 아래에 두 지후의 <b>이름 · HP · 공격력 · 공격 간격 · 입힌 피해</b>가 실시간으로 나옵니다.' }
+      ] }
+    ]
+  },
   '4.6.1': {
     label: 'v4.6.1 신규 지후 조정',
     date: '2026.09.29',
