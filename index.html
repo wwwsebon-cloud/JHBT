@@ -4796,7 +4796,7 @@ html[data-theme="light"] .v442-inspect .dead { padding:8px 0; color:#ff6b66; fon
     <div class="v4-band"><div class="v4-gridbg"></div><canvas class="v4-particles" data-n="30"></canvas>
       <div class="v4-band-inner">
         <div class="v4-bandtop"><button type="button" class="v4-back" id="btnLeaderboardBack">← 로비</button><h2>리더보드</h2>
-          <div class="v4-right"><select class="v44-season-select" id="lbSeasonSelect" aria-label="시즌"></select><div class="v4-seg lb-tabs" role="tablist"><button type="button" data-lb="level" class="on">시즌 경험치</button><button type="button" data-lb="comp">경쟁전</button></div></div></div>
+          <div class="v4-right"><select class="v44-season-select" id="lbSeasonSelect" aria-label="시즌"></select><div class="v4-seg lb-tabs" role="tablist"><button type="button" data-lb="level" class="on">레벨</button><button type="button" data-lb="comp">경쟁전</button></div></div></div>
         <div class="v44-season-bar" id="lbSeasonBar"></div>
         <div class="v4-podium" id="lbPodium"></div>
       </div>
@@ -6307,14 +6307,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     // 4.3 프로필 꾸미기: firestore.rules 를 새로 게시하기 전이면 look 없이 다시 쓴다
     await sdk.setDoc(sdk.doc(database, 'leaderboard', auth.currentUser.uid), { ...board, look })
       .catch(() => sdk.setDoc(sdk.doc(database, 'leaderboard', auth.currentUser.uid), board));
-    // 4.4 시즌 리더보드: seasons/{시즌}/lb/{uid} · 이번 시즌 경험치 순 (레벨은 최대 150)
-    const season = callbacks.getSeason ? callbacks.getSeason() : 0;
-    if (season) {
-      await sdk.setDoc(sdk.doc(database, 'seasons', String(season), 'lb', auth.currentUser.uid), {
-        ...board, look, level: Math.min(150, Math.max(1, Number(callbacks.getLevel()) || 1)),
-        xp: Math.min(999999999, Math.max(0, Math.floor(Number(callbacks.getSeasonXp()) || 0)))
-      }).catch(() => {}); // 규칙을 게시하기 전이면 조용히 건너뛴다
-    }
+    // 4.4.3: 레벨 리더보드는 영구 (시즌 보드에 쓰지 않는다)
     // 닉네임 등록은 실패해도 리더보드 갱신과 무관하다 (규칙이 아직 없는 서버 등)
     await claimNickname(profile.nickname).catch(() => {});
     // 경쟁전 리더보드는 따로 둔다. 경쟁전을 한 판이라도 한 사람만 올린다.
@@ -9046,36 +9039,32 @@ function leaderboardDeck(deck, player = {}, clickable = false) {
 }
 
 // 4.4 리더보드는 시즌마다 새로 시작한다. 고른 시즌 번호 (현재 시즌이면 실시간)
+// 4.4.3: 레벨 리더보드는 다시 영구. 시즌(매월 1일 초기화)은 경쟁전만 — 경쟁전 탭에서 지난 시즌 기록을 고를 수 있다
 let lbSeason = 0;
-function renderSeasonControls() {
+function renderSeasonControls(tab = 'level') {
   const cur = compSeason();
-  if (!lbSeason) lbSeason = cur.number === 1 ? -1 : cur.number; // 시즌 1은 4.4 배포(9/29)부터 기록을 모은 이행 기간이라 기본은 전체 기간
+  if (!lbSeason) lbSeason = cur.number;
   const sel = $('lbSeasonSelect');
-  sel.innerHTML = Array.from({ length: cur.number }, (_, i) => cur.number - i).map(n => `<option value="${n}">${seasonLabel(n)}${n === cur.number ? ' (현재)' : ''}</option>`).join('')
-    + '<option value="-1">전체 기간 · 레벨</option>'; // 4.4.3: 시즌과 상관없는 예전 레벨 리더보드
+  const comp = tab === 'comp';
+  sel.hidden = !comp;
+  sel.innerHTML = Array.from({ length: cur.number }, (_, i) => cur.number - i).map(n => `<option value="${n}">경쟁전 ${seasonLabel(n)}${n === cur.number ? ' (현재)' : ''}</option>`).join('');
   sel.value = String(lbSeason);
-  $('lbSeasonBar').innerHTML = lbSeason === -1 ? '<b>전체 기간</b> · 시즌과 상관없이 레벨 순 (경쟁전 탭은 누적 TP)' : lbSeason === cur.number
-    ? `<b>${seasonLabel(cur.number)}</b> · 남은 기간 ${formatRemaining(cur.end - Date.now())} · 시즌이 끝나면 1~50위 보상 (우편)`
-    : `<b>${seasonLabel(lbSeason)}</b> · 종료된 시즌 기록`;
+  $('lbSeasonBar').innerHTML = !comp ? '<b>레벨 리더보드</b> · 초기화되지 않는 영구 순위'
+    : lbSeason === cur.number ? `<b>경쟁전 ${seasonLabel(cur.number)}</b> · 남은 기간 ${formatRemaining(cur.end - Date.now())} · 매월 1일 경쟁전 초기화`
+    : `<b>경쟁전 ${seasonLabel(lbSeason)}</b> · 종료된 시즌 기록`;
 }
 async function openLeaderboard(tab = 'level') {
   showScreen('leaderboard');
   document.querySelectorAll('[data-lb]').forEach(button => button.classList.toggle('on', button.dataset.lb === tab));
-  renderSeasonControls();
+  renderSeasonControls(tab);
   $('leaderboardMessage').textContent = '온라인 순위를 불러오는 중...';
   $('leaderboardList').replaceChildren();
   v4Podium([], tab);
   if (tab === 'comp') return openCompLeaderboard();
   try {
-    let players, seasonal = true;
-    if (lbSeason === -1) { seasonal = false; players = await window.JihooOnline.leaderboard(); }
-    else try { players = await window.JihooOnline.seasonBoard(lbSeason, 'level'); }
-    catch (error) { if (lbSeason !== compSeason().number) throw error; seasonal = false; players = await window.JihooOnline.leaderboard(); } // 규칙 게시 전: 예전 레벨 리더보드
+    const players = await window.JihooOnline.leaderboard(); // 4.4.3: 영구 레벨 리더보드
     if (state.screen !== 'leaderboard') return;
-    players.forEach(player => { player._seasonal = seasonal; });
-    const fresh = seasonal && lbSeason === compSeason().number && players.length < 10;
-    $('leaderboardMessage').textContent = (players.length ? (seasonal ? '이번 시즌에 얻은 경험치 기준 상위 50명 · 순위를 누르면 전적을 볼 수 있습니다.' : '레벨 기준 상위 50명 · 순위를 누르면 전적을 볼 수 있습니다.') : '아직 이 시즌에 등록된 플레이어가 없습니다.')
-      + (fresh ? ' 시즌 기록은 각자 게임을 켜거나 한 판 하면 올라옵니다. 오른쪽 위에서 「전체 기간 · 레벨」도 볼 수 있어요.' : '');
+    $('leaderboardMessage').textContent = players.length ? '레벨 기준 상위 50명 · 순위를 누르면 전적을 볼 수 있습니다.' : '아직 등록된 플레이어가 없습니다.';
     players.forEach((player, index) => {
       const button = document.createElement('button');
       button.type = 'button';
@@ -9179,7 +9168,7 @@ async function loadCompBoard(list, message, stillShown) {
   try {
     const season = list === $('leaderboardList') ? (lbSeason || compSeason().number) : compSeason().number;
     let players, seasonal = true;
-    if (season === -1) { seasonal = false; players = await window.JihooOnline.compLeaderboard(); }
+    if (season === 1) { seasonal = false; players = await window.JihooOnline.compLeaderboard(); } // 시즌 1은 시즌 보드가 4.4 배포 뒤에 생겨서 기존 기록을 쓴다
     else try { players = await window.JihooOnline.seasonBoard(season, 'comp'); }
     catch (error) { if (season !== compSeason().number) throw error; seasonal = false; players = await window.JihooOnline.compLeaderboard(); }
     if (!stillShown()) return;
@@ -9215,7 +9204,7 @@ async function loadCompBoard(list, message, stillShown) {
   }
 }
 document.querySelectorAll('[data-lb]').forEach(button => button.addEventListener('click', () => openLeaderboard(button.dataset.lb)));
-$('lbSeasonSelect').addEventListener('change', () => { lbSeason = Number($('lbSeasonSelect').value) || compSeason().number; /* -1 = 전체 기간 */ openLeaderboard(document.querySelector('[data-lb].on')?.dataset.lb || 'level'); });
+$('lbSeasonSelect').addEventListener('change', () => { lbSeason = Number($('lbSeasonSelect').value) || compSeason().number; openLeaderboard(document.querySelector('[data-lb].on')?.dataset.lb || 'level'); });
 
 function showLeaderboardDetail(player) {
   const body = $('leaderboardDetail');
@@ -20285,11 +20274,12 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
   '4.4.3': {
-    label: 'v4.4.3 리더보드 전체 기간 보기',
+    label: 'v4.4.3 리더보드 영구 순위로 복귀',
     date: '2026.09.29',
     sections: [
       { title: '리더보드', items: [
-        { emoji:'🏆', name:'전체 기간 · 레벨', tag:'new', color:'#111111', desc:'시즌 선택에 <b>전체 기간 · 레벨</b>이 생겼습니다 (예전처럼 레벨 순, 경쟁전 탭은 누적 TP). 시즌 리더보드는 각자 게임을 켜거나 한 판 하면 기록이 올라옵니다.' }
+        { emoji:'🏆', name:'레벨 리더보드', tag:'adjust', color:'#111111', desc:'리더보드 시즌제를 없애고 다시 <b>초기화되지 않는 영구 레벨 순위</b>로 돌아갑니다. 시즌 종료 보상도 없어집니다.' },
+        { emoji:'⚔️', name:'경쟁전', tag:'adjust', color:'#111111', desc:'경쟁전만 <b>매월 1일</b>에 초기화됩니다 (티어 세 묶음 하락). 경쟁전 탭에서 지난 시즌 순위를 볼 수 있습니다.' }
       ] }
     ]
   },
@@ -22097,6 +22087,7 @@ const SEASON_REWARDS = [
   { max: 50, dia: 1000 },
 ];
 async function checkSeasonRewards() {
+  return; // 4.4.3: 리더보드 시즌제 취소 → 시즌 종료 보상 없음 (경쟁전만 매월 초기화)
   const prev = compSeason().number - 1;
   if (prev < 1 || (profile.seasonRewardsDone || []).includes(prev) || !window.JihooOnline.connected()) return;
   const uid = window.JihooOnline.myUid();
