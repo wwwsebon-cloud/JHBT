@@ -9049,7 +9049,7 @@ function leaderboardDeck(deck, player = {}, clickable = false) {
 let lbSeason = 0;
 function renderSeasonControls() {
   const cur = compSeason();
-  if (!lbSeason) lbSeason = cur.number;
+  if (!lbSeason) lbSeason = cur.number === 1 ? -1 : cur.number; // 시즌 1은 4.4 배포(9/29)부터 기록을 모은 이행 기간이라 기본은 전체 기간
   const sel = $('lbSeasonSelect');
   sel.innerHTML = Array.from({ length: cur.number }, (_, i) => cur.number - i).map(n => `<option value="${n}">${seasonLabel(n)}${n === cur.number ? ' (현재)' : ''}</option>`).join('')
     + '<option value="-1">전체 기간 · 레벨</option>'; // 4.4.3: 시즌과 상관없는 예전 레벨 리더보드
@@ -9215,7 +9215,7 @@ async function loadCompBoard(list, message, stillShown) {
   }
 }
 document.querySelectorAll('[data-lb]').forEach(button => button.addEventListener('click', () => openLeaderboard(button.dataset.lb)));
-$('lbSeasonSelect').addEventListener('change', () => { lbSeason = Number($('lbSeasonSelect').value) || compSeason().number; // -1 = 전체 기간 openLeaderboard(document.querySelector('[data-lb].on')?.dataset.lb || 'level'); });
+$('lbSeasonSelect').addEventListener('change', () => { lbSeason = Number($('lbSeasonSelect').value) || compSeason().number; /* -1 = 전체 기간 */ openLeaderboard(document.querySelector('[data-lb].on')?.dataset.lb || 'level'); });
 
 function showLeaderboardDetail(player) {
   const body = $('leaderboardDetail');
