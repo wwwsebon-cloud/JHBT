@@ -6,10 +6,10 @@
 // 변수 (wrangler.toml [vars]): FIREBASE_PROJECT_ID, ALLOWED_ORIGINS(쉼표로 구분)
 
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
-const COLORS = { win: 0x1f9d55, lose: 0xe5322d, draw: 0x8a8a87, join: 0x2f6fed, legend: 0xf2c94c };
+const COLORS = { win: 0x1f9d55, lose: 0xe5322d, draw: 0x8a8a87, join: 0x2f6fed, legend: 0xf2c94c, promo: 0x9b59d0, level: 0x14b8a6, streak: 0xf08c00 };
 const MODES = { ranked: '랭크전', competitive: '경쟁전', draftbattle: '드래프트전' };
 // 같은 플레이어가 너무 자주 보내지 못하게 (워커 인스턴스 안에서만 기억하는 간단한 제한)
-const COOLDOWN_MS = { join: 10 * 60 * 1000, legend: 3000, match: 15000 };
+const COOLDOWN_MS = { join: 10 * 60 * 1000, legend: 3000, match: 15000, promo: 10000, level: 5000, streak: 15000 };
 const lastSent = new Map();
 let jwkCache = { keys: null, until: 0 };
 
@@ -86,6 +86,22 @@ function buildEmbed(body) {
     const name = clean(body.name, 20);
     if (!name) return null;
     return { color: COLORS.legend, description: `🌟 **${nick}** 님이 전설 지후 **${name}** 획득!`, timestamp: at };
+  }
+  if (body.type === 'promo') {
+    const tier = clean(body.tier, 16);
+    if (!tier) return null;
+    return { color: COLORS.promo, description: `🏅 **${nick}** 님이 경쟁전 **${tier}** 승급!`, timestamp: at };
+  }
+  if (body.type === 'level') {
+    const level = num(body.level);
+    if (!level || level < 2 || level > 999) return null;
+    return { color: COLORS.level, description: `⬆️ **${nick}** 님이 **Lv.${level}** 달성!`, timestamp: at };
+  }
+  if (body.type === 'streak') {
+    const streak = num(body.streak);
+    if (!streak || streak < 3 || streak > 9999) return null;
+    const mode = clean(body.mode, 10);
+    return { color: COLORS.streak, description: `🔥 **${nick}** 님 **${streak}연승** 중!${mode ? ` (${mode})` : ''}`, timestamp: at };
   }
   if (body.type === 'match') {
     const mode = MODES[body.mode];
