@@ -7016,6 +7016,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     return sdk.onSnapshot(q, snap => onChange(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => onChange(null));
   }
   window.JihooOnline = { init, code, createAccount, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+    idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
     connected: () => !!(auth && auth.currentUser), enabled: () => !!auth && !backupWriteBlocked };
 })();
 
@@ -7030,7 +7031,7 @@ const PREVIEW_MODE = new URLSearchParams(location.search).has('preview');
 if (PREVIEW_MODE) {
   document.documentElement.classList.add('preview-mode');
   const noop = () => {}, resolved = () => Promise.resolve(null);
-  window.JihooOnline = { init: resolved, code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
+  window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved,
     leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {}, eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
@@ -22236,6 +22237,7 @@ function finishMatch(winnerSide, surrendered = false) {
   state.phase = 'idle';
   showScreen('end');
   const settlement = settleMatch(won, draw, surrendered);
+  if (DISCORD_MATCH_MODES.includes(state.mode)) { try { discordNotify(discordMatchPayload(won, draw, surrendered, settlement)); } catch (error) {} }
   if (draw) {
     $('endTitle').textContent = 'DRAW';
     $('endTitle').className = 'end-title title-font';
@@ -24733,7 +24735,61 @@ function renderNoticeList() {
   list.innerHTML = notices.items.map((e, i) => { const p = noticeParts(e); return `<div class="row" style="animation-delay:${Math.min(0.5, i * 0.03).toFixed(2)}s"><span class="ic">${p.ic}</span><span>${p.html}</span><span class="t">${fmtClock(e.at)}</span></div>`; }).join('');
 }
 $('noticeTicker')?.addEventListener('click', () => { renderNoticeList(); openModal('noticeModal'); });
-function postEvent(type, a = '', b = '') { window.JihooOnline.eventPost(type, a, b).catch(() => {}); }
+function postEvent(type, a = '', b = '') {
+  window.JihooOnline.eventPost(type, a, b).catch(() => {});
+  if (type === 'join') discordNotify({ type: 'join' });
+  if (type === 'gacha' && b === 'legend' && CHAR_DB[a]) discordNotify({ type: 'legend', name: CHAR_DB[a].name });
+}
+// ===== 디스코드 알림 =====
+// 웹후크 주소는 게임에 넣지 않는다 (누구나 볼 수 있음). tools/discord-webhook-worker 의 Cloudflare Worker 주소만 적는다.
+// 비워 두면 아무것도 보내지 않는다.
+const DISCORD_RELAY_URL = '';
+const DISCORD_MATCH_MODES = ['ranked', 'competitive', 'draftbattle'];
+function discordNotify(payload) {
+  if (!DISCORD_RELAY_URL || developerMode || !window.JihooOnline.idToken) return;
+  window.JihooOnline.idToken().then(token => {
+    if (!token) return;
+    return fetch(DISCORD_RELAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ ...payload, nickname: profile.nickname || '' })
+    });
+  }).catch(() => {});
+}
+const discordCharName = id => CHAR_DB[id] ? `${CHAR_DB[id].emoji || ''} ${CHAR_DB[id].name}`.trim() : '';
+// 게임이 끝났을 때: 승패 · 내 덱 · 상대 이름과 덱 · MVP (라운드 합계 가한 피해 1위)
+function discordMatchPayload(won, draw, surrendered, settlement) {
+  const rounds = state.matchStats || [];
+  const merged = new Map();
+  rounds.forEach(r => (r.rows || []).forEach(row => {
+    const key = row.side + ':' + row.id;
+    const m = merged.get(key) || { id: row.id, side: row.side, dealt: 0, kills: 0 };
+    m.dealt += row.dealt || 0; m.kills += row.kills || 0;
+    merged.set(key, m);
+  }));
+  const mvp = side => {
+    const m = [...merged.values()].filter(r => r.side === side && CHAR_DB[r.id]).sort((a, b) => b.dealt - a.dealt)[0];
+    return m && m.dealt > 0 ? { name: CHAR_DB[m.id].name, dealt: Math.round(m.dealt), kills: m.kills } : null;
+  };
+  const allyRounds = rounds.filter(r => r.winner === 'ally').length, enemyRounds = rounds.filter(r => r.winner === 'enemy').length;
+  let extra = '';
+  if (settlement?.competitive) extra = `${settlement.after.name} · ${formatNumber(settlement.after.tp)} TP (${settlement.tp >= 0 ? '+' : ''}${settlement.tp})`;
+  else if (settlement && !settlement.practice && settlement.xp) extra = `경험치 ${settlement.xp > 0 ? '+' : ''}${settlement.xp}${settlement.after.level > settlement.before.level ? ` · Lv.${settlement.after.level} 달성!` : ''}`;
+  return {
+    type: 'match',
+    mode: state.mode,
+    result: draw ? 'draw' : won ? 'win' : 'lose',
+    surrendered: !!surrendered,
+    level: getLevelInfo(profile.totalXp).level,
+    score: rounds.length ? `${allyRounds}:${enemyRounds}` : '',
+    myDeck: [...new Set(state.myDeckIds || [])].map(discordCharName).filter(Boolean),
+    enemyName: state.enemyName || '상대',
+    enemyDeck: [...new Set(state.enemyDeckIds || [])].map(discordCharName).filter(Boolean),
+    mvp: mvp('ally'),
+    enemyMvp: mvp('enemy'),
+    extra
+  };
+}
 
 // ================= 4.1.6 인트로 · 로딩 문구 =================
 const LOAD_LINES = [
