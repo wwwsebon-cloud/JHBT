@@ -223,7 +223,8 @@ service cloud.firestore {
       allow get: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest);
       allow list: if request.auth != null && request.auth.uid == resource.data.guest;
       allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['host', 'guest', 'hostName', 'guestName', 'hostDeck', 'guestDeck', 'status', 'seed', 'at'])
+        && request.resource.data.keys().hasOnly(['host', 'guest', 'hostName', 'guestName', 'hostDeck', 'guestDeck', 'status', 'seed', 'ew', 'at'])
+        && (!('ew' in request.resource.data) || request.resource.data.ew is bool)
         && request.resource.data.host == request.auth.uid
         && request.resource.data.guest is string && request.resource.data.guest != request.auth.uid
         && (exists(/databases/$(database)/documents/friendships/$(request.auth.uid + '_' + request.resource.data.guest))

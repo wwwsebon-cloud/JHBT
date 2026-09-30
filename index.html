@@ -2665,6 +2665,21 @@ html[data-theme="light"] .v4-drawer .menu-list button.v49-lb:hover { padding-lef
 .v50-fr button:disabled { opacity:.4; cursor:default; }
 .v50-empty { padding:24px 8px; text-align:center; color:#8e8e8e; font-size:12px; line-height:1.6; }
 #screen-chat.dm .v50-tabs { display:none; }
+/* 5.0 친선전: 참가자 화면은 전장을 180° 돌리고 지후 · 글자는 바로 세운다. 내 지후를 아군 색으로. */
+#screen-battle.pov-flip .battle-world .unit, #screen-battle.pov-flip .battle-world .fx-damage-num, #screen-battle.pov-flip .battle-world .v42-rowlab, #screen-battle.pov-flip .battle-world .zone-label { rotate:180deg; }
+#screen-battle.pov-flip #miniMapCanvas { transform:rotate(180deg); }
+#screen-battle.pov-flip .unit.ally-unit { border-color:var(--accent-enemy) !important; }
+#screen-battle.pov-flip .unit.enemy-unit { border-color:var(--accent-ally) !important; }
+#screen-battle.pov-flip .unit.ally-unit .unit-hpbar { background:#eb5966 !important; }
+#screen-battle.pov-flip .unit.enemy-unit .unit-hpbar { background:#32c979 !important; }
+.v50-fm { width:min(360px, calc(100vw - 32px)); padding:24px 22px 20px; text-align:center; }
+.v50-fm .ic { font-size:40px; line-height:1; margin-bottom:6px; }
+.v50-fm h2 { margin:0 0 8px; font-size:20px; }
+.v50-fm p { margin:0 0 14px; font-size:13px; line-height:1.6; }
+.v50-fm p small { color:#888; }
+.v50-fm .acts { display:flex; gap:8px; justify-content:center; }
+.v50-fm .acts .btn { min-width:96px; }
+.v50-fm .msg { margin:10px 0 0; min-height:1em; font-size:12px; color:#e5322d; }
 /* 4.1.9 글로벌 채팅 · 폰 화면 (DM 스타일) */
 html[data-theme="light"] .v49-phone-wrap { display:flex; justify-content:center; padding:20px 16px 40px; }
 html[data-theme="light"] .v49-phone { position:relative; width:min(400px,100%); height:min(760px, calc(100vh - 150px)); min-height:520px; display:flex; flex-direction:column; background:#fff; color:#111; border-radius:44px; border:10px solid #111; box-shadow:0 30px 60px -20px rgba(0,0,0,.7), inset 0 0 0 2px #333; overflow:hidden; box-sizing:border-box; animation:popIn .5s cubic-bezier(.2,.8,.2,1); }
@@ -7325,12 +7340,12 @@ window.JIHOO_FIREBASE_CONFIG = {
     return sdk.onSnapshot(q, snap => onChange(snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() })).reverse()), () => onChange(null));
   }
   // 친선전: matches/{id} = { host, guest, hostName, guestName, hostDeck, guestDeck, status, seed, at } · 진행 메시지는 matches/{id}/msgs
-  async function matchInvite(friendUid, friendName, deck) {
+  async function matchInvite(friendUid, friendName, deck, ew) {
     const uid = me();
     const ref = sdk.doc(sdk.collection(database, 'matches'));
     const seed = Math.floor(Math.random() * 2147483647);
-    await sdk.setDoc(ref, { host: uid, guest: friendUid, hostName: nick(), guestName: String(friendName || '').slice(0, 12), hostDeck: deck.slice(0, 5), guestDeck: [], status: 'invite', seed, at: sdk.serverTimestamp() });
-    return { id: ref.id, seed };
+    await sdk.setDoc(ref, { host: uid, guest: friendUid, hostName: nick(), guestName: String(friendName || '').slice(0, 12), hostDeck: deck.slice(0, 5), guestDeck: [], status: 'invite', seed, ew: !!ew, at: sdk.serverTimestamp() });
+    return { id: ref.id, seed, ew: !!ew };
   }
   async function matchUpdate(id, data) { me(); await sdk.updateDoc(sdk.doc(database, 'matches', id), { ...data, at: sdk.serverTimestamp() }); }
   function matchWatch(id, onChange) {
@@ -8543,6 +8558,7 @@ let MAP_W = 1120;
 let MAP_H = 1600;
 function isEastWestLayout() {
   if (PREVIEW_MODE) return true;
+  if (state && state.mode === 'friendly' && state.net) return state.net.ew; // 5.0 친선전: 방장 화면 방향으로 고정 (전장 크기가 같아야 전투가 같다)
   return window.innerWidth >= 800 && window.innerWidth > window.innerHeight;
 }
 function applyMapLayout() {
@@ -8559,8 +8575,8 @@ function applyMapLayout() {
   }
   const elab = document.querySelector('.zone-label-enemy');
   const alab = document.querySelector('.zone-label-ally');
-  if (elab) elab.textContent = ew ? '적 진영' : '적 진영';
-  if (alab) alab.textContent = ew ? '아군 진영' : '아군 진영';
+  if (elab) elab.textContent = netFlip() ? '내 진영' : '적 진영'; // 친선전 참가자는 화면이 180° 돌아 있다
+  if (alab) alab.textContent = netFlip() ? '상대 진영' : '아군 진영';
   syncWorldSize();
   fitCamera();
   if (typeof v42BuildGrid === 'function' && state.units) { v42Resnap(); v42BuildGrid(); }
@@ -8622,7 +8638,7 @@ function applyCamera() {
   if (!w) return;
   clampCamera();
   const { vw, vh } = viewSize();
-  const t = `translate(${vw / 2}px, ${vh / 2}px) scale(${CAM.z}) translate(${-CAM.x}px, ${-CAM.y}px)`;
+  const t = `translate(${vw / 2}px, ${vh / 2}px) scale(${CAM.z})${netFlip() ? ' rotate(180deg)' : ''} translate(${-CAM.x}px, ${-CAM.y}px)`;
   w.style.transform = t;
   const lab = $('zoomLab');
   if (lab) lab.textContent = Math.round(CAM.z * 100) + '%';
@@ -8641,8 +8657,9 @@ function setZoom(z, cx, cy) {
   const wx = CAM.x + (mx - vw / 2) / CAM.z;
   const wy = CAM.y + (my - vh / 2) / CAM.z;
   CAM.z = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
-  CAM.x = wx - (mx - vw / 2) / CAM.z;
-  CAM.y = wy - (my - vh / 2) / CAM.z;
+  const k = netFlip() ? -1 : 1;
+  CAM.x = wx - k * (mx - vw / 2) / CAM.z;
+  CAM.y = wy - k * (my - vh / 2) / CAM.z;
   applyCamera();
 }
 function worldPointFromEvent(e) {
@@ -8650,9 +8667,10 @@ function worldPointFromEvent(e) {
   const r = arena.getBoundingClientRect();
   const { vw, vh } = viewSize();
   const t = e.touches ? e.touches[0] : e;
+  const k = netFlip() ? -1 : 1; // 친선전 참가자: 화면이 180° 돌아 있다
   return {
-    x: CAM.x + (t.clientX - r.left - vw / 2) / CAM.z,
-    y: CAM.y + (t.clientY - r.top - vh / 2) / CAM.z
+    x: CAM.x + k * (t.clientX - r.left - vw / 2) / CAM.z,
+    y: CAM.y + k * (t.clientY - r.top - vh / 2) / CAM.z
   };
 }
 let lastMinimapPaint = -Infinity;
@@ -8773,7 +8791,7 @@ function bindCameraControls() {
     CAM.auto = false;
     const ab = $('btnCamAuto');
     if (ab) { ab.classList.remove('on'); ab.style.background = ''; }
-    CAM.x -= dx / CAM.z; CAM.y -= dy / CAM.z;
+    const k = netFlip() ? -1 : 1; CAM.x -= k * dx / CAM.z; CAM.y -= k * dy / CAM.z;
     applyCamera();
   });
   const endPan = e => {
@@ -9216,6 +9234,7 @@ function freshProfile() {
     ticketRegenAt: 0,
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
     tutorial: { done: false, giftPending: false, giftUsed: false, stage: '', giftIds: [], mailed: false },
+    friendlyRecord: { w: 0, l: 0 },
     mail: [],
     mailFlags: [],
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
@@ -9354,6 +9373,7 @@ function normalizeProfile(raw) {
     mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'epicChar', 'frame'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : {}) })) : [] })) : [],
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
+    friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
     xpBoost: { day: String(rawBoost.day || ''), usesToday: Math.min(2, safeCount(rawBoost.usesToday)), activeUntil: Math.max(0, Number(rawBoost.activeUntil) || 0) },
     achievements: {
       loginDays: safeCount(rawAchievements.loginDays), lastLoginDay: String(rawAchievements.lastLoginDay || ''),
@@ -11356,6 +11376,13 @@ function settleMatch(won, draw, surrendered = false) {
   if (state.matchSettled) return state.lastSettlement;
   state.matchSettled = true;
   profile.activeMatch = null;
+  if (state.mode === 'friendly') { // 5.0 친선전: 친선전 전적만 남긴다
+    const rec = profile.friendlyRecord = profile.friendlyRecord || { w: 0, l: 0 };
+    if (!draw) { if (won) rec.w++; else rec.l++; }
+    saveProfile();
+    state.lastSettlement = { practice: true, friendly: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
+    return state.lastSettlement;
+  }
   if (state.tutMatch && state.tutMatch.replay) { // 4.7.4 튜토리얼 다시하기: 기록 · 보상 · 퀘스트 없음
     state.lastSettlement = { practice: true, tutorialReplay: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
     return state.lastSettlement;
@@ -11781,7 +11808,31 @@ function claimAchievement(key) {
   setTimeout(() => v4RenderQuiet($('achievementsBody'), () => renderAchievements(`◆${rule.reward}을 받았습니다!`)), 900);
 }
 
+// ── 5.0 친선전 록스텝: 두 화면이 같은 전투를 돌리도록 시드 난수 · 전투 시간 예약을 쓴다 (친선전에서만 켠다) ──
+const RAND0 = Math.random.bind(Math); // 화면 연출용 원래 난수 (시드와 무관)
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hashSeed(...parts) { let h = 2166136261; for (const ch of parts.join('|')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+const LOCK = { on: false, rng: RAND0, queue: [], seq: 0, steps: 0 };
+function lockSeed(...parts) { LOCK.rng = mulberry32(hashSeed(...parts)); }
+function simRun(fn) { // 전투 규칙을 돌리는 동안만 Math.random 을 시드 난수로 바꾼다
+  if (!LOCK.on) return fn();
+  const prev = Math.random; Math.random = LOCK.rng;
+  try { return fn(); } finally { Math.random = prev; }
+}
+function lockRunDue() { // 전투 시간이 된 예약 작업 (등록 순서대로)
+  if (!LOCK.queue.length) return;
+  LOCK.queue.sort((a, b) => a.due - b.due || a.seq - b.seq);
+  while (LOCK.queue.length && LOCK.queue[0].due <= state.combatTime + 1e-9) {
+    const task = LOCK.queue.shift();
+    if (task.token === state.lifecycleToken) task.fn();
+  }
+}
 function scheduleTask(fn, delay) {
+  if (LOCK.on && state.phase === 'combat') { // 친선전 전투 중: 벽시계 대신 전투 시간으로 예약
+    const task = { due: state.combatTime + (Number(delay) || 0) / 1000, fn, seq: LOCK.seq++, token: state.lifecycleToken };
+    LOCK.queue.push(task);
+    return task;
+  }
   const token = state.lifecycleToken;
   const handle = setTimeout(() => {
     state.scheduledTasks.delete(handle);
@@ -11794,6 +11845,7 @@ function scheduleTask(fn, delay) {
 
 function cancelRuntimeTasks() {
   state.lifecycleToken++;
+  LOCK.queue = [];
   state.scheduledTasks.forEach(clearTimeout);
   state.scheduledTasks.clear();
   clearPhaseTimer();
@@ -11804,6 +11856,7 @@ function cancelRuntimeTasks() {
 }
 
 function leaveBattle() {
+  if (state.net) { if (!state.net.done && state.screen === 'battle' && !state.matchSettled) netSend({ t: 'bye' }); netCleanup(); } // 5.0 친선전
   cancelRuntimeTasks();
   state.castles = null;
   state.phase = 'idle';
@@ -14899,20 +14952,26 @@ function startMatch(mode = 'ranked', opts = {}) {
 }
 
 function updateLifeUI() {
+  const oppLives = netFlip() ? state.allyLives : state.enemyLives, myLives = netFlip() ? state.enemyLives : state.allyLives;
   for (let i = 0; i < 4; i++) {
     const el = $('enemyLife' + i);
     if (el) {
-      el.classList.toggle('on', i < state.enemyLives);
+      el.classList.toggle('on', i < oppLives);
       el.style.display = (state.mode === 'castle' || (state.mode === 'arena' && i > 0) || (DRAFT_MODES[state.mode] && i > 1)) ? 'none' : '';
     }
   }
   document.querySelectorAll('#allyLivesDisplay .life-pip').forEach((p, i) => {
-    p.classList.toggle('on', i < state.allyLives);
+    p.classList.toggle('on', i < myLives);
     p.style.display = (state.mode === 'castle' || (state.mode === 'arena' && i > 0) || (DRAFT_MODES[state.mode] && i > 1)) ? 'none' : '';
   });
 }
 
-function startRound() {
+function startRound() { // 5.0 친선전: 라운드 준비(지후 복귀 등)도 두 화면이 같은 시드로
+  if (!LOCK.on || !state.net) return startRoundInner();
+  lockSeed(state.net.seed, 'round', state.net.roundNo = (state.net.roundNo || 0) + 1);
+  return simRun(startRoundInner);
+}
+function startRoundInner() {
   cancelRuntimeTasks();
   v41HudClear();
   // 시간 종료 무승부 때 이번 라운드의 배치와 스킬 결과를 버리고 다시 편성한다.
@@ -15055,11 +15114,11 @@ function completeDeployAction(delay = 120) { // 4.6.7: 700ms → 120ms (배치 �
 // 양쪽 라이프가 모두 1이면 데스매치: 6번.
 const DEATHMATCH_DEPLOYS = 6;
 function isDeathmatch() {
-  return (state.mode === 'ranked' || !!DRAFT_MODES[state.mode]) && state.allyLives === 1 && state.enemyLives === 1;
+  return (state.mode === 'ranked' || state.mode === 'friendly' || !!DRAFT_MODES[state.mode]) && state.allyLives === 1 && state.enemyLives === 1;
 }
 function deployChances() {
   if (isDeathmatch()) return DEATHMATCH_DEPLOYS;
-  if (state.mode === 'ranked') return state.round >= 3 ? 3 : 2;
+  if (state.mode === 'ranked' || state.mode === 'friendly') return state.round >= 3 ? 3 : 2;
   return 3;
 }
 function nextDeployCycle() {
@@ -15074,26 +15133,28 @@ function nextDeployCycle() {
   }
   state.phase = 'deploy';
   $('screen-battle').dataset.phase = 'deploy';
-  const allyCount = countedAlive('ally');
-  $('bottomStatusLine').innerHTML = `${isDeathmatch() ? '<b>☠ 데스매치</b> · ' : ''}배치 <b>${state.deployRounds}</b>/${deployMax} · 유닛 <b>${allyCount}</b>/${maxUnitsFor('ally')} · 전열은 먼저 맞고, 후열은 보호받아요`;
+  const me = meSide(), poolRng = state.mode === 'friendly' ? RAND0 : undefined; // 친선전: 내 풀은 나만 굴린다 (시드와 무관)
+  const allyCount = countedAlive(me);
+  $('bottomStatusLine').innerHTML = `${isDeathmatch() ? '<b>☠ 데스매치</b> · ' : ''}배치 <b>${state.deployRounds}</b>/${deployMax} · 유닛 <b>${allyCount}</b>/${maxUnitsFor(me)} · 전열은 먼저 맞고, 후열은 보호받아요`;
 
-  const source = state.allyBench.length ? state.allyBench : (DRAFT_MODES[state.mode] ? state.myDeckIds : playableIds());
-  state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round);
+  const source = state.allyBench.length ? state.allyBench : (DRAFT_MODES[state.mode] || state.mode === 'friendly' ? state.myDeckIds : playableIds());
+  state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round, poolRng);
   // 4.7.0 놓을 수 있는 지후가 하나도 없으면 알아서 리롤 (3번까지). 그래도 없으면 이번 배치는 건너뛴다.
   let rerolls = 0;
-  while (state.pool.length && !state.pool.some(id => poolCardPlayable('ally', id)) && rerolls < 3) {
-    state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round);
+  while (state.pool.length && !state.pool.some(id => poolCardPlayable(me, id)) && rerolls < 3) {
+    state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round, poolRng);
     rerolls++;
   }
   const tutScript = tutDeployScript(); // 4.7.4 튜토리얼: 대본대로 카드 한 장
   if (tutScript) { state.pool = [tutScript.pool]; rerolls = 0; }
-  const stuck = !state.pool.some(id => poolCardPlayable('ally', id));
+  const stuck = !state.pool.some(id => poolCardPlayable(me, id));
   renderPool();
   openPoolSheet(true);
   v42RefreshGrid();
   if (stuck) {
     v42ShowGo('배치 건너뜀', '3번 리롤해도 배치할 수 있는 지후가 없어요', 'info');
     $('bottomStatusLine').innerHTML = '배치할 수 있는 지후가 없어서 <b>3번 리롤</b>했지만 여전히 없어요. 이번 배치는 건너뜁니다.';
+    if (state.mode === 'friendly' && state.net) { netDeployStart(true); return; }
     completeDeployAction(1300);
     return;
   }
@@ -15102,6 +15163,7 @@ function nextDeployCycle() {
     $('bottomStatusLine').innerHTML += ` · <b>배치할 수 있는 지후가 없어서 리롤했어요${rerolls > 1 ? ` (${rerolls}번)` : ''}</b>`;
   }
   if (tutScript) { $('phaseTimer').textContent = '∞'; tutDeployGuide(tutScript); return; } // 튜토리얼 대본 배치는 시간 제한 없음
+  if (state.mode === 'friendly' && state.net) { netDeployStart(false); return; } // 5.0 친선전: 둘 다 고를 때까지
   startPhaseTimer(15, autoPlacePool);
 }
 
@@ -15132,13 +15194,14 @@ function renderPool() {
         <div class="char-mini-stats"><span>HP ${c.hp}</span><span>ATK ${c.atk}</span></div>
       </div>
     `;
-    const playable = poolCardPlayable('ally', id);
+    const playable = poolCardPlayable(meSide(), id);
     if (!playable) { card.classList.add('v470-dead'); card.title = '놓을 자리도, 합칠 지후도 없습니다'; }
     card.addEventListener('click', () => {
-      if (!poolCardPlayable('ally', id)) {
-        const same = state.units.find(u => u.side === 'ally' && u.alive && u.charId === id && !u.ownerUid);
-        $('bottomStatusLine').innerHTML = same && !canMergeInto(same) && !canPlaceNew('ally', id) ? `<b>${c.name}</b>은(는) 최대 레벨(<b>MAX</b>)이고 더 놓을 수도 없습니다.`
-          : !canPlaceNew('ally', id) ? deployLimitText(id) : `놓을 자리가 없고 합칠 <b>${c.name}</b>도 없습니다.`;
+      const me = meSide();
+      if (!poolCardPlayable(me, id)) {
+        const same = state.units.find(u => u.side === me && u.alive && u.charId === id && !u.ownerUid);
+        $('bottomStatusLine').innerHTML = same && !canMergeInto(same) && !canPlaceNew(me, id) ? `<b>${c.name}</b>은(는) 최대 레벨(<b>MAX</b>)이고 더 놓을 수도 없습니다.`
+          : !canPlaceNew(me, id) ? deployLimitText(id) : `놓을 자리가 없고 합칠 <b>${c.name}</b>도 없습니다.`;
         return;
       }
       selectPoolCard(idx);
@@ -15221,6 +15284,7 @@ function tryDeployMergeOrPlace(x, y, clickedUnit) {
 }
 
 $('battleArena').addEventListener('click', e => {
+  if (state.mode === 'friendly' && state.net) { netArenaClick(e); return; } // 5.0 친선전: 배치 액션을 보낸다
   if (!CAM.moved && !V42.moveSel) hideRangeRing(); // 빈 필드를 누르면 사거리 원을 지운다 (드래그는 제외, 유닛 클릭은 전파를 막는다)
   if (state.phase === 'deploy' && pendingPoolIdx === null && !CAM.moved && v42Enabled() && !(e.target.closest && e.target.closest('#miniMap, #camZoom'))) {
     // 카메라 드래그가 포인터를 잡아서 클릭이 유닛이 아니라 전장으로 온다. 누른 자리의 유닛을 직접 찾는다.
@@ -15515,7 +15579,7 @@ function levelUpUnitCore(u) {
   $('bottomStatusLine').innerHTML = u.charId === 'planet'
     ? `<b>${u.def.name}</b> 레벨 <b>${u.level}</b> 상승! (위성 ${Math.min(7, u.level)}개)`
     : `<b>${u.def.name}</b> 레벨 <b>${u.level}</b> 상승! (${raisedStats} +${Math.round((LEVEL_MULT - 1) * 100)}%${supportNote})`;
-  if (u.charId === 'frog' && u.level > levelBefore) scheduleTask(() => rollFrogFate(u), 350);
+  if (u.charId === 'frog' && u.level > levelBefore) { if (LOCK.on) rollFrogFate(u); else scheduleTask(() => rollFrogFate(u), 350); } // 친선전: 배치 때 바로 (시드 난수 안에서)
   if (u.charId === 'sixseven') refreshSixSeven(u);
   if (u.charId === 'duet') syncDuetPartner(u);
 }
@@ -15788,7 +15852,7 @@ function deployFeel(u, kind) {
   world.appendChild(fx);
   setTimeout(() => fx.remove(), 950);
   if (u.tile != null) {
-    const tile = document.querySelector(`.v42-grid.${u.side === 'ally' ? 'ally' : 'enemy'} .v42-tile[data-tile="${u.tile}"]`);
+    const tile = document.querySelector(`.v42-grid.${u.side === meSide() ? 'ally' : 'enemy'} .v42-tile[data-tile="${u.tile}"]`);
     if (tile) { tile.classList.remove('v467-flash'); void tile.offsetWidth; tile.classList.add('v467-flash'); setTimeout(() => tile.classList.remove('v467-flash'), 500); }
   }
   if (enemy) return;
@@ -15926,7 +15990,8 @@ function v42BuildGrid() {
   const th = (V42_DEPTH[1] - V42_DEPTH[0]) * depthDim - 10;
   ['enemy', 'ally'].forEach(side => {
     const grid = document.createElement('div');
-    grid.className = 'v42-grid ' + side;
+    grid.className = 'v42-grid ' + (side === meSide() ? 'ally' : 'enemy'); // 친선전 참가자: 내 쪽 칸을 'ally' 모양으로
+    grid.dataset.side = side;
     for (let tile = 0; tile < V42_COLS * V42_ROWS; tile++) {
       const c = v42TileCenter(side, tile);
       const t = document.createElement('div');
@@ -15936,7 +16001,7 @@ function v42BuildGrid() {
       t.style.width = (ew ? th : tw) + 'px'; t.style.height = (ew ? tw : th) + 'px';
       grid.appendChild(t);
     }
-    if (side === 'ally') V42_ROW_LABEL.forEach((label, row) => {
+    if (side === meSide()) V42_ROW_LABEL.forEach((label, row) => {
       const c = v42TileCenter(side, row * V42_COLS);
       const lab = document.createElement('span');
       lab.className = 'v42-rowlab';
@@ -15956,7 +16021,7 @@ function v42RefreshGrid() {
   const moving = state.phase === 'deploy' && V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
   grid.classList.toggle('picking', !!(pick || moving));
   grid.querySelectorAll('.v42-tile').forEach(t => {
-    const tile = +t.dataset.tile, owner = v42TileUnit('ally', tile);
+    const tile = +t.dataset.tile, owner = v42TileUnit(meSide(), tile);
     t.classList.toggle('filled', !!owner);
     t.classList.toggle('avail', !owner && !!(pick || moving));
     t.classList.toggle('merge', !!pick && !!owner && owner.charId === pick);
@@ -16532,7 +16597,7 @@ function kickHongBall(caster, target) {
       ball.remove();
     }, 240);
   };
-  requestAnimationFrame(() => bounce(target));
+  if (LOCK.on) scheduleTask(() => bounce(target), 0); else requestAnimationFrame(() => bounce(target));
 }
 
 function startGodLaser(u) {
@@ -17649,6 +17714,11 @@ function physSolvePair(a, b) {
 function physicsStep(dt) {
   const units = state.units;
   state.combatTime += dt;
+  if (LOCK.on) { // 친선전: 예약 작업 · 승률 샘플 · 고정 유닛 고정도 스텝 기준 (프레임과 무관)
+    lockRunDue();
+    if (++LOCK.steps % 15 === 0) oddsSampleNow();
+    for (const u of units) if (u.alive && u.def.immobile && u._anchor && !u._realm) { u.x = u._anchor.x; u.y = u._anchor.y; u.xPrev = u.x; u.yPrev = u.y; u.vx = 0; u.vy = 0; }
+  }
   refreshGenesisAuras();
   for (let i = 0; i < units.length; i++) {
     const u = units[i];
@@ -17861,7 +17931,13 @@ function bootPreview() {
   window.addEventListener('resize', () => { if (state.mode === 'preview') fitCamera(); });
   runPreviewBattle();
 }
-function beginCombatPhase() {
+function beginCombatPhase() { // 5.0 친선전: 전투 시작도 시드 난수로 (예약 작업 · 스텝 카운터 초기화)
+  if (!LOCK.on) return beginCombatPhaseInner();
+  LOCK.steps = 0; LOCK.queue = [];
+  if (state.net) lockSeed(state.net.seed, state.round, state.net.fight = (state.net.fight || 0) + 1, 'combat');
+  return simRun(beginCombatPhaseInner);
+}
+function beginCombatPhaseInner() {
   state.phase = 'combat';
   $('screen-battle').dataset.phase = 'combat';
   v4Ring(1, 1);
@@ -18471,11 +18547,11 @@ function applyDamageRaw(target, amount, opts) {
 function combatTick(ts) {
   if (state.phase !== 'combat') return;
   const limit = state.mode === 'castle' ? CASTLE_ROUND_TIME_LIMIT : state.mode === 'preview' ? PREVIEW_TIME_LIMIT : state.mode === 'wwe' && state.wwe ? state.wwe.timeLimit : COMBAT_TIME_LIMIT;
-  const remaining = Math.max(0, Math.ceil(limit - (ts - state.combatStartTs) / 1000));
+  const remaining = Math.max(0, Math.ceil(limit - (LOCK.on ? state.combatTime : (ts - state.combatStartTs) / 1000)));
   $('phaseTimer').textContent = remaining;
   $('phaseTimer').classList.toggle('urgent', remaining <= 10);
   v4Ring(remaining, limit);
-  if (remaining === 0) {
+  if (remaining === 0 && !LOCK.on) {
     if (state.mode === 'castle') endRoundCombat(null);
     else if (state.mode === 'wwe') endRoundCombat(wweJudge(), true);
     else {
@@ -18500,7 +18576,14 @@ function combatTick(ts) {
   let steps = 0;
   while (state.physAcc >= PHYS.STEP && steps < 10) {
     state.physAcc -= PHYS.STEP;
-    physicsStep(PHYS.STEP);
+    if (LOCK.on) {
+      simRun(() => physicsStep(PHYS.STEP));
+      if (state.phase === 'combat' && state.combatTime >= limit - 1e-9) { // 친선전: 시간 초과도 전투 시간으로 (두 화면 같은 스텝)
+        const allyPercent = simRun(updateOddsBar);
+        endRoundCombat(allyPercent > 50 ? 'ally' : allyPercent < 50 ? 'enemy' : 'draw', true);
+        return;
+      }
+    } else physicsStep(PHYS.STEP);
     steps++;
     if (state.phase !== 'combat') return;
   }
@@ -18508,7 +18591,7 @@ function combatTick(ts) {
   const alpha = clamp(state.physAcc / PHYS.STEP, 0, 1);
   state.units.forEach(u => {
     if (!u.alive) return;
-    if (u.def.immobile && u._anchor && !u._realm) { u.x = u._anchor.x; u.y = u._anchor.y; u.xPrev = u.x; u.yPrev = u.y; u.vx = 0; u.vy = 0; }
+    if (!LOCK.on && u.def.immobile && u._anchor && !u._realm) { u.x = u._anchor.x; u.y = u._anchor.y; u.xPrev = u.x; u.yPrev = u.y; u.vx = 0; u.vy = 0; }
     physSyncDom(u, alpha);
     if (u.def.isStreamAttacker && u._engaged) {
       const t = getNearestEnemy(u);
@@ -23073,7 +23156,7 @@ function spawnDamageNumber(target, amount, opts) {
   el.className = 'fx-damage-num' + (typeof amount === 'number' ? ' num' : (opts.crit ? ' crit-like' : '') + (opts.heal ? ' heal-like' : '')) + kind;
   if (typeof amount === 'string') el.textContent = amount;
   else el.textContent = (opts.critHit ? '💥' : '') + (opts.heal ? '+' : '-') + amount + (opts.poison ? '☠️' : (opts.dot ? '🔥' : ''));
-  el.style.left = (target.x + (Math.random()*16-8)) + 'px';
+  el.style.left = (target.x + (RAND0()*16-8)) + 'px'; // 연출용 난수 (친선전 시드와 무관)
   el.style.top = (target.y - 12) + 'px';
   worldEl().appendChild(el);
   dmgNumLive++;
@@ -23513,11 +23596,14 @@ function endRoundCombat(winnerSide, timedOut = false) {
   if (winnerSide === 'ally') state.enemyLives = Math.max(0, state.enemyLives - 1);
   else if (winnerSide === 'enemy') state.allyLives = Math.max(0, state.allyLives - 1);
   updateLifeUI();
+  if (state.mode === 'friendly') netRoundEnd(winnerSide); // 5.0 친선전: 방장 결과와 맞춰 본다
 
   const overlay = $('roundOverlay'), title = $('resultTitle'), sub = $('resultSub');
-  const lifeSide = winnerSide === 'ally' ? 'enemy' : winnerSide === 'enemy' ? 'ally' : null;
-  const beforeLives = lifeSide === 'enemy' ? previousEnemyLives : previousAllyLives;
-  const afterLives = lifeSide === 'enemy' ? state.enemyLives : state.allyLives;
+  const lifeWinner = netFlip() ? ({ ally: 'enemy', enemy: 'ally' }[winnerSide] || winnerSide) : winnerSide;
+  const lifeSide = lifeWinner === 'ally' ? 'enemy' : lifeWinner === 'enemy' ? 'ally' : null;
+  const lostSide = winnerSide === 'ally' ? 'enemy' : 'ally'; // 실제로 라이프를 잃은 쪽 (시점과 무관)
+  const beforeLives = lostSide === 'enemy' ? previousEnemyLives : previousAllyLives;
+  const afterLives = lostSide === 'enemy' ? state.enemyLives : state.allyLives;
   $('lifeTransition').innerHTML = lifeSide ? Array.from({ length: beforeLives }, (_, i) => `<span class="life-pip on ${lifeSide}${i >= afterLives ? ' lost' : ''}"></span>`).join('') : '';
   if (state.mode === 'arena') {
     if (winnerSide === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = timedOut ? '100초 종료 · 승률 우세' : '투기장 전멸전 승리'; }
@@ -23531,8 +23617,10 @@ function endRoundCombat(winnerSide, timedOut = false) {
     return;
   }
 
-  if (winnerSide === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = `${timedOut ? '100초 종료 · 승률 우세 · ' : ''}적 라이프 -1 (남은 라이프 ${state.enemyLives})`; }
-  else if (winnerSide === 'enemy') { title.textContent = 'LOSE'; title.className = 'result-title lose'; sub.textContent = `${timedOut ? '100초 종료 · 상대 승률 우세 · ' : ''}내 라이프 -1 (남은 라이프 ${state.allyLives})`; }
+  const seen = netFlip() ? ({ ally: 'enemy', enemy: 'ally' }[winnerSide] || winnerSide) : winnerSide; // 친선전 참가자 시점
+  const myLeft = netFlip() ? state.enemyLives : state.allyLives, oppLeft = netFlip() ? state.allyLives : state.enemyLives;
+  if (seen === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = `${timedOut ? '100초 종료 · 승률 우세 · ' : ''}적 라이프 -1 (남은 라이프 ${oppLeft})`; }
+  else if (seen === 'enemy') { title.textContent = 'LOSE'; title.className = 'result-title lose'; sub.textContent = `${timedOut ? '100초 종료 · 상대 승률 우세 · ' : ''}내 라이프 -1 (남은 라이프 ${myLeft})`; }
   else { title.textContent = 'DRAW'; title.className = 'result-title'; sub.textContent = '무승부'; }
   overlay.classList.add('show');
 
@@ -23547,7 +23635,7 @@ function endRoundCombat(winnerSide, timedOut = false) {
 }
 
 function finishMatch(winnerSide, surrendered = false) {
-  const won = winnerSide ? winnerSide === 'ally' : state.enemyLives <= 0;
+  const won = winnerSide ? winnerSide === meSide() : (meSide() === 'ally' ? state.enemyLives <= 0 : state.allyLives <= 0);
   const draw = winnerSide === 'draw' || (!winnerSide && state.enemyLives > 0 && state.allyLives > 0);
   cancelRuntimeTasks();
   state.phase = 'idle';
@@ -23587,6 +23675,9 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.round(after.progress * 100)}%"></div></div>
       <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대).</div>`;
+  } else if (settlement.friendly) {
+    const rec = profile.friendlyRecord || { w: 0, l: 0 };
+    card.innerHTML = `<div class="settlement-row"><span>🤝 친선전</span><b>vs ${escapeHtml(state.enemyName || '친구')}</b></div><div class="settlement-row"><span>친선전 전적</span><b>${rec.w}승 ${rec.l}패</b></div><div class="settlement-note">친선전은 경험치 · 재화 · 랭크 전적에 들어가지 않아요.</div>`;
   } else if (settlement.tutorialReplay) {
     card.innerHTML = '<div class="settlement-row"><span>튜토리얼 다시하기</span><b>연습 모드</b></div><div class="settlement-note">다시하기는 전적 · 경험치 · 재화 · 퀘스트에 들어가지 않아요. 상자? 안 준다니까.</div>';
   } else if (settlement.practice) {
@@ -23621,6 +23712,10 @@ function finishMatch(winnerSide, surrendered = false) {
     if (progress === 100) $('screen-end').classList.add('settlement-complete');
   }, 250 + index * stepDelay));
   tutAfterMatch(); // 4.7.4 튜토리얼: 보상 대본
+  if (state.mode === 'friendly' && state.net) { // 5.0 친선전: 끝 (상대도 같은 결과를 따로 계산한다)
+    if (state.net.role === 'host' && !window.__JH_NET_TEST) window.JihooOnline.matchUpdate(state.net.id, { status: 'done' }).catch(() => {});
+    netCleanup();
+  }
 }
 
 $('btnRestart').addEventListener('click', () => {
@@ -26591,6 +26686,331 @@ $('chatForm')?.addEventListener('submit', async event => {
   input.disabled = false; input.focus();
 });
 
+// ================= 5.0 실시간 친선전 =================
+// 방장(host) = 'ally', 참가자(guest) = 'enemy' 로 두 화면이 똑같은 전투를 돌린다 (LOCK: 시드 난수 · 전투 시간 예약).
+// 참가자 화면은 전장을 180° 돌려서 자기 진영이 아래(오른쪽)에 오게 보여 준다.
+// 배치: 매 배치마다 두 사람이 동시에 고르고(15초), 둘 다 도착하면 방장 → 참가자 순서로 같은 시드로 적용한다.
+// 라운드가 끝나면 방장이 결과(라이프 · 해시)를 보내고, 참가자 결과와 다르면 방장 기준으로 맞춘다.
+const NET_ACT_TIME = 15, NET_GONE_MS = 50000, NET_HB_MS = 12000;
+function meSide() { return state.mode === 'friendly' && state.net ? state.net.side : 'ally'; }
+function oppSide() { return meSide() === 'ally' ? 'enemy' : 'ally'; }
+function netFlip() { return state.mode === 'friendly' && state.net && state.net.side === 'enemy'; }
+function netLog(...args) { if (window.__JH_NET_DEBUG) console.log('[net]', ...args); }
+
+// ── 전송: Firestore (matches/{id}/msgs) · 테스트용 BroadcastChannel ──
+function netTransport(id) {
+  if (window.__JH_NET_TEST) {
+    const ch = new BroadcastChannel('jh-net-' + id);
+    const me = window.__JH_NET_TEST.uid;
+    return {
+      send: body => { ch.postMessage({ from: me, ...body }); return Promise.resolve(); },
+      listen: fn => { ch.onmessage = e => fn(e.data); return () => ch.close(); },
+    };
+  }
+  return {
+    send: body => window.JihooOnline.matchSend(id, body),
+    listen: fn => window.JihooOnline.matchMessages(id, fn),
+  };
+}
+function netMyUid() { return window.__JH_NET_TEST ? window.__JH_NET_TEST.uid : window.JihooOnline.myUid(); }
+function netSend(body) {
+  const net = state.net; if (!net || !net.tx) return;
+  net.tx.send(body).catch(error => netLog('send fail', error && error.message));
+}
+
+// ── 시작 ──
+function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName, hostDeck, guestDeck, ew }
+  leaveBattle();
+  const host = cfg.role === 'host';
+  state.mode = 'friendly';
+  state.maxUnits = 10;
+  state.maxUnitsBonus = { ally: 0, enemy: 0 };
+  state.poolSize = 3;
+  state.net = {
+    id: cfg.id, role: cfg.role, side: host ? 'ally' : 'enemy', seed: cfg.seed, ew: !!cfg.ew,
+    oppName: host ? cfg.guestName : cfg.hostName, acts: {}, ends: {}, myEnds: {}, lastSeen: Date.now(), done: false, fight: 0,
+  };
+  LOCK.on = true; LOCK.queue = [];
+  state.matchStartedAt = Date.now();
+  state.round = 1; state.allyLives = RANKED_LIVES; state.enemyLives = RANKED_LIVES; state.placements = []; state.matchStats = [];
+  state.reaperGrudges = {}; state.zombieCarry = null; state.duetSeekUsed = {};
+  state.myDeckIds = (host ? cfg.hostDeck : cfg.guestDeck).slice(0, 5);
+  state.enemyDeckIds = (host ? cfg.guestDeck : cfg.hostDeck).slice(0, 5);
+  state.enemyName = state.net.oppName;
+  state.enemyLevel = 1; state.botSkill = 0;
+  state.matchSettled = false; state.lastSettlement = null; state.tutMatch = null;
+  $('screen-battle').classList.toggle('pov-flip', netFlip());
+  resetBattlePresentation();
+  const badge = $('roundBadge');
+  if (badge) badge.innerHTML = `🤝 친선전 · ROUND <span id="roundNum">1</span>`;
+  updateLifeUI();
+  showScreen('battle');
+  applyMapLayout();
+  const net = state.net;
+  net.tx = netTransport(cfg.id);
+  net.unlisten = net.tx.listen(netOnMessage);
+  netSend({ t: 'hello' });
+  net.hb = setInterval(() => {
+    if (!state.net || state.net !== net || net.done) return;
+    netSend({ t: 'hb' });
+    if (Date.now() - net.lastSeen > NET_GONE_MS) netOpponentGone();
+  }, NET_HB_MS);
+  if (!window.__JH_NET_TEST) window.JihooOnline.presencePing('battle');
+  showMatchupPreview(startRound);
+}
+function netCleanup() {
+  const net = state.net;
+  if (!net) return;
+  net.done = true;
+  clearInterval(net.hb); clearTimeout(net.waitTimer);
+  try { net.unlisten && net.unlisten(); } catch (error) {}
+  LOCK.on = false; LOCK.queue = [];
+  $('screen-battle').classList.remove('pov-flip');
+  state.net = null;
+  if (!window.__JH_NET_TEST) window.JihooOnline.presencePing('lobby');
+}
+
+// ── 메시지 ──
+function netOnMessage(msg) {
+  const net = state.net;
+  if (!net || net.done || !msg || msg.from === netMyUid()) return;
+  net.lastSeen = Date.now();
+  netLog('recv', msg.t, msg.k || '');
+  if (msg.t === 'act') { net.acts[msg.k + '-' + oppSide()] = msg.act; netTryResolve(); return; }
+  if (msg.t === 'end') { net.ends[msg.r] = msg; netCheckEnd(msg.r); return; }
+  if (msg.t === 'surrender') { netFinish(meSide(), '상대가 항복했어요'); return; }
+  if (msg.t === 'bye') { netOpponentGone(); return; }
+}
+function netOpponentGone() {
+  const net = state.net;
+  if (!net || net.done || state.matchSettled) return;
+  netFinish(meSide(), '상대의 연결이 끊겨서 승리했어요');
+}
+function netFinish(winnerSide, note, surrendered = false) {
+  const net = state.net;
+  if (!net || net.done) return;
+  if (state.screen !== 'battle' || state.matchSettled) return;
+  finishMatch(winnerSide, surrendered);
+  if (note) $('endSub').textContent = note;
+}
+
+// ── 배치 ──
+function netDeployKey() { return state.round + '-' + state.deployRounds; }
+function netDeployStart(stuck) { // nextDeployCycle 에서: 풀을 보여준 뒤
+  const net = state.net;
+  net.cur = netDeployKey();
+  if (net.acts[net.cur + '-' + meSide()]) { netWaiting(); return; }
+  if (stuck) { netSubmit({ kind: 'skip' }); return; }
+  startPhaseTimer(NET_ACT_TIME, netAutoAct);
+}
+function netAutoAct() { // 15초 안에 못 골랐으면 알아서 하나 (골라 둔 카드 우선)
+  if (state.phase !== 'deploy' || !state.net) return;
+  const me = meSide();
+  const playable = state.pool.map((id, i) => i).filter(i => poolCardPlayable(me, state.pool[i]));
+  const idx = pendingPoolIdx != null && playable.includes(pendingPoolIdx) ? pendingPoolIdx : playable[0];
+  if (idx == null) { netSubmit({ kind: 'skip' }); return; }
+  const charId = state.pool[idx];
+  const same = mergeTargetFor(me, charId);
+  if (same) { netSubmit({ kind: 'merge', charId, tile: same.tile }); return; }
+  const tile = countedAlive(me) < maxUnitsFor(me) && canPlaceNew(me, charId) ? v42PickTile(me, charId, v42RoleRow(charId)) : null;
+  netSubmit(tile != null ? { kind: 'place', charId, tile } : { kind: 'skip' });
+}
+function netArenaClick(e) { // 친선전 배치: 내 진영 칸을 눌러 놓거나 합친다
+  if (state.phase !== 'deploy' || pendingPoolIdx === null) { CAM.moved = false; return; }
+  if (CAM.moved && !(e.target.closest && e.target.closest('.unit'))) { CAM.moved = false; return; }
+  CAM.moved = false;
+  if (e.target.closest && e.target.closest('#miniMap, #camZoom, .battle-bottom, .battle-topbar')) return;
+  const me = meSide();
+  const charId = state.pool[pendingPoolIdx];
+  const { x, y } = worldPointFromEvent(e);
+  const tile = v42TileAt(me, x, y);
+  if (tile == null) { $('bottomStatusLine').textContent = '내 진영 칸 안에만 배치할 수 있어요!'; return; }
+  const owner = v42TileUnit(me, tile);
+  if (owner) {
+    if (owner.charId !== charId) { $('bottomStatusLine').innerHTML = `이미 <b>${owner.def.name}</b>이(가) 있는 칸이에요. 빈 칸이나 같은 지후 칸을 누르세요`; return; }
+    if (!canMergeInto(owner)) { $('bottomStatusLine').innerHTML = `<b>${owner.def.name}</b>은(는) 이미 최대 레벨(<b>MAX</b>)이에요.`; return; }
+    netSubmit({ kind: 'merge', charId, tile });
+    return;
+  }
+  if (countedAlive(me) >= maxUnitsFor(me) || !canPlaceNew(me, charId)) {
+    const same = mergeTargetFor(me, charId);
+    if (same) { netSubmit({ kind: 'merge', charId, tile: same.tile }); return; }
+    $('bottomStatusLine').innerHTML = !canPlaceNew(me, charId) ? deployLimitText(charId) : '더 놓을 자리가 없어요. 같은 지후에 겹쳐 레벨업하세요.';
+    return;
+  }
+  netSubmit({ kind: 'place', charId, tile });
+}
+function netSubmit(act) {
+  const net = state.net;
+  if (!net || state.phase !== 'deploy') return;
+  const key = netDeployKey();
+  if (net.acts[key + '-' + meSide()]) return;
+  clearPhaseTimer();
+  net.acts[key + '-' + meSide()] = act;
+  if (act.charId) { const i = state.allyBench.indexOf(act.charId); if (i >= 0) state.allyBench.splice(i, 1); }
+  pendingPoolIdx = null; state.pendingPick = false;
+  document.querySelectorAll('.pool-card').forEach(el => el.classList.add('picked'));
+  netSend({ t: 'act', k: key, act });
+  netWaiting();
+  netTryResolve();
+}
+function netWaiting() {
+  const net = state.net;
+  state.phase = 'deploy-wait';
+  $('screen-battle').dataset.phase = 'deploy-resolve';
+  v42RefreshGrid();
+  $('bottomStatusLine').innerHTML = `⏳ <b>${escapeHtml(net.oppName)}</b>님이 고르는 중…`;
+  $('phaseTimer').textContent = '…';
+  clearTimeout(net.waitTimer);
+  net.waitTimer = setTimeout(() => { if (state.net === net && state.phase === 'deploy-wait') $('bottomStatusLine').innerHTML = `⏳ <b>${escapeHtml(net.oppName)}</b>님의 응답이 늦어요… (연결이 끊기면 자동으로 승리 처리)`; }, (NET_ACT_TIME + 8) * 1000);
+}
+function netTryResolve() {
+  const net = state.net;
+  if (!net || state.phase !== 'deploy-wait') return;
+  const key = netDeployKey();
+  const a = net.acts[key + '-ally'], b = net.acts[key + '-enemy'];
+  if (!a || !b || net.resolved === key) return;
+  net.resolved = key;
+  clearTimeout(net.waitTimer);
+  // 방장 → 참가자 순서로, 액션마다 같은 시드로 적용한다
+  [['ally', a], ['enemy', b]].forEach(([side, act]) => {
+    lockSeed(net.seed, key, side, 'act');
+    simRun(() => netApplyAct(side, act));
+  });
+  lockSeed(net.seed, key, 'harmony');
+  simRun(() => { checkTaegukHarmony('ally'); checkTaegukHarmony('enemy'); });
+  v42RefreshGrid();
+  state.phase = 'deploy-resolve';
+  scheduleTask(nextDeployCycle, 350);
+}
+function netApplyAct(side, act) {
+  if (!act || act.kind === 'skip' || !CHAR_DB[act.charId]) return;
+  const charId = act.charId;
+  if (act.kind === 'merge') {
+    let u = act.tile != null ? v42TileUnit(side, act.tile) : null;
+    if (!u || u.charId !== charId || !canMergeInto(u)) u = mergeTargetFor(side, charId);
+    if (!u) return;
+    levelUpUnit(u);
+    const pl = state.placements.find(p => p.id === u.placementId);
+    if (pl) pl.level = u.level;
+    return;
+  }
+  if (countedAlive(side) >= maxUnitsFor(side) || !canPlaceNew(side, charId)) {
+    const u = mergeTargetFor(side, charId);
+    if (u) { levelUpUnit(u); const pl = state.placements.find(p => p.id === u.placementId); if (pl) pl.level = u.level; }
+    return;
+  }
+  let tile = act.tile;
+  if (tile == null || v42TileBlocked(side, tile, charId)) tile = v42PickTile(side, charId, v42RoleRow(charId));
+  if (tile != null) v42Spawn(side, tile, charId);
+}
+
+// ── 라운드 결과 ──
+function netStateHash() {
+  let h = 0;
+  state.units.forEach(u => { if (u.isCastle) return; h = (h * 31 + Math.round(u.alive ? u.hp : -1) + (u.alive ? 7 : 0)) | 0; });
+  return h;
+}
+function netRoundEnd(winnerSide) { // endRoundCombat 에서 라이프를 바꾼 직후
+  const net = state.net;
+  if (!net) return;
+  const r = state.round;
+  const mine = { r, w: winnerSide, lives: [state.allyLives, state.enemyLives], h: netStateHash() };
+  net.myEnds[r] = mine;
+  if (net.role === 'host') netSend({ t: 'end', ...mine });
+  netCheckEnd(r);
+}
+function netCheckEnd(r) { // 참가자: 방장 결과와 다르면 방장 기준으로 맞춘다
+  const net = state.net;
+  if (!net || net.role !== 'guest') return;
+  const host = net.ends[r], mine = net.myEnds[r];
+  if (!host || !mine || mine.checked) return;
+  mine.checked = true;
+  if (host.h !== mine.h) console.warn('[친선전] 라운드', r, '결과 해시가 달라요', host.h, mine.h);
+  if (host.lives[0] !== mine.lives[0] || host.lives[1] !== mine.lives[1]) {
+    state.allyLives = host.lives[0]; state.enemyLives = host.lives[1];
+    updateLifeUI();
+    v42ShowGo('동기화', '방장 화면 결과로 맞췄어요', 'info');
+  }
+}
+
+// ── 초대 ──
+const FRIENDLY = { invites: [], seen: new Set(), unsub: null, pending: null };
+function friendlyInvitesPending() { return FRIENDLY.invites.length; }
+function startInvites() {
+  if (FRIENDLY.unsub || !window.JihooOnline.connected()) return;
+  FRIENDLY.unsub = window.JihooOnline.invitesSubscribe(list => {
+    const fresh = (list || []).filter(m => m.status === 'invite' && (!m.at || Date.now() - m.at < 120000));
+    FRIENDLY.invites = fresh;
+    renderSocialBadge();
+    const next = fresh.find(m => !FRIENDLY.seen.has(m.id));
+    if (next) showFriendlyInvite(next);
+  });
+}
+function friendlyModal(html) {
+  let el = $('friendlyModal');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'app-modal'; el.id = 'friendlyModal';
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+    el.innerHTML = '<div class="modal-card v50-fm"></div>';
+    document.body.appendChild(el);
+  }
+  el.querySelector('.v50-fm').innerHTML = html;
+  openModal('friendlyModal');
+  return el;
+}
+function showFriendlyInvite(m) {
+  FRIENDLY.seen.add(m.id);
+  if (state.screen === 'battle' && state.phase !== 'idle') { // 게임 중이면 자동으로 거절
+    window.JihooOnline.matchUpdate(m.id, { status: 'declined' }).catch(() => {});
+    return;
+  }
+  const el = friendlyModal(`<div class="ic">⚔</div><h2>친선전 신청</h2><p><b>${escapeHtml(m.hostName)}</b>님이 친선전을 신청했어요.<br><small>라이프 3 · 기록과 보상은 없어요</small></p>
+    <div class="acts"><button type="button" class="btn" data-a="no">거절</button><button type="button" class="btn btn-primary" data-a="yes">수락</button></div><p class="msg"></p>`);
+  el.querySelector('[data-a="no"]').onclick = () => { closeModal('friendlyModal'); window.JihooOnline.matchUpdate(m.id, { status: 'declined' }).catch(() => {}); };
+  el.querySelector('[data-a="yes"]').onclick = async () => {
+    const deck = currentDeck();
+    if (deck.length !== 5) { el.querySelector('.msg').textContent = '덱에 지후 5기를 먼저 채워 주세요.'; return; }
+    el.querySelectorAll('button').forEach(b => { b.disabled = true; });
+    try {
+      await window.JihooOnline.matchUpdate(m.id, { status: 'accepted', guestDeck: deck });
+      closeModal('friendlyModal');
+      closeChat();
+      startFriendlyMatch({ id: m.id, role: 'guest', seed: m.seed, hostName: m.hostName, guestName: profile.nickname, hostDeck: m.hostDeck, guestDeck: deck, ew: m.ew });
+    } catch (error) { el.querySelector('.msg').textContent = error.message || '수락하지 못했어요 (이미 취소됐을 수 있어요).'; el.querySelectorAll('button').forEach(b => { b.disabled = false; }); }
+  };
+}
+async function friendlyInvite(f) {
+  const deck = currentDeck();
+  if (deck.length !== 5) { friendMsg('덱에 지후 5기를 먼저 채워 주세요.', 'err'); return; }
+  if (FRIENDLY.pending) return;
+  let inv;
+  try { inv = await window.JihooOnline.matchInvite(f.uid, f.nickname, deck, isEastWestLayout()); }
+  catch (error) { friendMsg(error.message || '신청하지 못했어요.', 'err'); return; }
+  const cancel = async status => {
+    if (!FRIENDLY.pending || FRIENDLY.pending.id !== inv.id) return;
+    FRIENDLY.pending.unwatch(); clearTimeout(FRIENDLY.pending.timer); FRIENDLY.pending = null;
+    if (status) await window.JihooOnline.matchUpdate(inv.id, { status }).catch(() => {});
+  };
+  const el = friendlyModal(`<div class="ic">⏳</div><h2>친선전 신청 중</h2><p><b>${escapeHtml(f.nickname)}</b>님의 수락을 기다리고 있어요…</p><div class="acts"><button type="button" class="btn" data-a="cancel">취소</button></div>`);
+  el.querySelector('[data-a="cancel"]').onclick = () => { closeModal('friendlyModal'); cancel('cancel'); };
+  FRIENDLY.pending = {
+    id: inv.id,
+    timer: setTimeout(() => { closeModal('friendlyModal'); cancel('cancel'); friendMsg(`${f.nickname}님이 응답하지 않았어요.`, 'err'); }, 60000),
+    unwatch: window.JihooOnline.matchWatch(inv.id, m => {
+      if (!m || !FRIENDLY.pending || FRIENDLY.pending.id !== inv.id) return;
+      if (m.status === 'declined') { closeModal('friendlyModal'); cancel(null); friendMsg(`${f.nickname}님이 친선전을 거절했어요.`, 'err'); }
+      if (m.status === 'accepted') {
+        closeModal('friendlyModal'); cancel(null);
+        window.JihooOnline.matchUpdate(inv.id, { status: 'playing' }).catch(() => {});
+        closeChat();
+        startFriendlyMatch({ id: inv.id, role: 'host', seed: inv.seed, hostName: profile.nickname, guestName: f.nickname, hostDeck: deck, guestDeck: m.guestDeck || [], ew: inv.ew });
+      }
+    }),
+  };
+}
+
 // 공지 띠: 누군가의 레벨업 · 가입 · 영웅 이상 뽑기 · 랭크업 · 마스터리 · 경쟁전 승급
 const notices = { items: [], idx: 0, timer: 0, unsub: null };
 function noticeParts(e) {
@@ -26956,7 +27376,10 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnSurrenderCancel').addEventListener('click', () => closeModal('surrenderModal'));
   $('btnSurrenderConfirm').addEventListener('click', () => {
     closeModal('surrenderModal');
-    if (state.screen === 'battle' && !state.matchSettled) finishMatch('enemy', true);
+    if (state.screen === 'battle' && !state.matchSettled) {
+      if (state.mode === 'friendly' && state.net) { netSend({ t: 'surrender' }); finishMatch(oppSide(), true); return; } // 5.0 친선전
+      finishMatch('enemy', true);
+    }
   });
   window.addEventListener('resize', () => { applyMapLayout(); });
   initPatchUI();
@@ -27203,6 +27626,11 @@ document.addEventListener('DOMContentLoaded', () => {
 renderLobbyPreview();
 initPatchUI();
 
+function oddsSampleNow() { // 친선전: 전투 스텝 안에서만 승률 샘플을 쌓는다 (프레임 속도와 무관)
+  const dmg = side => state.units.reduce((sum, u) => sum + (u.alive && !u.isCastle && u.side === side ? Math.max(0, u.dmgDealt || 0) : 0), 0);
+  state.oddsSamples.push({ time: state.combatTime, ally: dmg('ally'), enemy: dmg('enemy') });
+  while (state.oddsSamples.length > 2 && state.oddsSamples[0].time < state.combatTime - 3) state.oddsSamples.shift();
+}
 function updateOddsBar() {
   const live = state.units.filter(u => u.alive && !u.isCastle);
   const side = name => {
@@ -27227,7 +27655,7 @@ function updateOddsBar() {
   const enemyHealth = castleMode ? Math.max(0, state.castles.enemy.hp) : enemy.health;
 
   // 최근 3초의 실제 피해량으로 스킬·사거리·교전 여부를 반영한다.
-  if (state.phase === 'combat' && (!state.oddsSamples.length || state.combatTime - state.oddsSamples.at(-1).time >= 0.25)) {
+  if (state.phase === 'combat' && !LOCK.on && (!state.oddsSamples.length || state.combatTime - state.oddsSamples.at(-1).time >= 0.25)) {
     state.oddsSamples.push({ time: state.combatTime, ally: ally.damage, enemy: enemy.damage });
     while (state.oddsSamples.length > 2 && state.oddsSamples[0].time < state.combatTime - 3) state.oddsSamples.shift();
   }
@@ -27246,10 +27674,11 @@ function updateOddsBar() {
     : enemyHealth <= 0 ? 1 : allyHealth <= 0 ? 0
     : allyPower + enemyPower > 0 ? allyPower / (allyPower + enemyPower) : 0.5;
   const percent = Math.round(allyOdds * 100);
-  $('oddsAllyFill').style.width = percent + '%';
-  $('oddsEnemyFill').style.width = (100 - percent) + '%';
-  $('oddsAllyLab').textContent = `아군 ${percent}%`;
-  $('oddsEnemyLab').textContent = `적 ${100 - percent}%`;
+  const shown = netFlip() ? 100 - percent : percent; // 친선전 참가자는 내 쪽이 '아군'
+  $('oddsAllyFill').style.width = shown + '%';
+  $('oddsEnemyFill').style.width = (100 - shown) + '%';
+  $('oddsAllyLab').textContent = `아군 ${shown}%`;
+  $('oddsEnemyLab').textContent = `적 ${100 - shown}%`;
   $('oddsHpLab').textContent = castleMode
     ? `예상 우세 · 적 성 ${Math.round(enemyHealth).toLocaleString()} : 아군 성 ${Math.round(allyHealth).toLocaleString()} · 화력 반영`
     : `예상 우세 · 적 생존 ${enemy.count} : 아군 생존 ${ally.count} · 체력·화력·최근 피해 반영`;
