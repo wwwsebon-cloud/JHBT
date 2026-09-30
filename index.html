@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.6.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.6.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -4630,21 +4630,314 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
 .fx-typhoon.gone { opacity:0; }
 @keyframes typhoon-spin { to { transform:rotate(360deg); } }
 
-/* 4.6.2 그랜드매치 */
-#btnArenaGrand { width:100%; margin-top:8px; padding:12px; border-radius:14px; font-weight:900; }
-#btnArenaGrand small { font-weight:700; opacity:.6; }
-#grandPanel { position:fixed; left:50%; bottom:10px; transform:translateX(-50%); z-index:60; width:min(760px, calc(100vw - 20px)); display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:12px 14px; border-radius:14px; background:#fff; box-shadow:0 0 0 2px #111, 0 10px 30px rgba(0,0,0,.25); pointer-events:none; }
-#grandPanel .gp-card.enemy { text-align:right; }
-#grandPanel .gp-name { display:block; font:900 20px var(--v4-display, sans-serif); letter-spacing:-.03em; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#grandPanel .gp-bar { position:relative; height:26px; background:#e8e8e5; box-shadow:0 0 0 2px #111; }
-#grandPanel .gp-bar i { position:absolute; left:0; top:0; bottom:0; background:#5cc85a; transition:width .15s; }
-#grandPanel .gp-card.enemy .gp-bar i { left:auto; right:0; }
-#grandPanel .gp-bar span { position:relative; display:block; text-align:center; font:800 15px/26px var(--v4-mono, monospace); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.6); }
-#grandPanel .gp-under { height:4px; margin-top:4px; }
-#grandPanel .gp-stats { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:6px; font-size:12px; color:#555; }
-#grandPanel .gp-card.enemy .gp-stats { justify-content:flex-end; }
-#grandPanel .gp-stats b { color:#111; }
-@media (max-width:560px) { #grandPanel { gap:8px; padding:8px 10px; } #grandPanel .gp-name { font-size:15px; } #grandPanel .gp-bar span { font-size:12px; } }
+/* ===== 4.6.3 WWE ===== */
+@keyframes wweIn { from { opacity:0; transform:translateY(10px) scale(.97); } to { opacity:1; transform:none; } }
+@keyframes wweShake { 0%,100% { transform:translateX(0); } 20% { transform:translateX(-6px); } 40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(3px); } }
+@keyframes wwePulse { 0%,100% { box-shadow:0 0 0 0 rgba(229,50,45,.55); } 50% { box-shadow:0 0 0 8px rgba(229,50,45,0); } }
+@keyframes wweSweep { from { transform:translateX(-120%) skewX(-18deg); } to { transform:translateX(320%) skewX(-18deg); } }
+.v4-tile#btnOpenWwe { background:linear-gradient(135deg,#111 0%,#2a0d0d 55%,#6b0f0f 100%); color:#fff; border-color:#111; }
+.v4-tile#btnOpenWwe .t { color:#fff; letter-spacing:.02em; }
+.v4-tile#btnOpenWwe .d { color:#f3c2c0; }
+.v4-tile#btnOpenWwe .num { color:rgba(255,255,255,.18); }
+.v4-tile#btnOpenWwe .ico { background:#e5322d; color:#fff; font:900 12px var(--v4-mono); letter-spacing:.04em; }
+.v4-tile#btnOpenWwe.wwe-locked { filter:grayscale(.85); opacity:.72; }
+.v4-tile#btnOpenWwe.wwe-locked .ico::after { content:'🔒'; position:absolute; font-size:14px; right:-4px; bottom:-4px; }
+.v4-tile#btnOpenWwe.shake { animation:wweShake .45s; }
+
+#screen-wwe, #screen-wweBracket { background:#0c0c0d; color:#f2f2f0; overflow:hidden; }
+#screen-wwe .wwe-hero { position:relative; flex:none; padding:0 20px 14px; background:radial-gradient(ellipse 70% 120% at 50% 0%, rgba(229,50,45,.35), transparent 70%), linear-gradient(180deg,#1a0707,#0c0c0d); border-bottom:1px solid #2a2a2a; overflow:hidden; }
+#screen-wwe .wwe-hero::after { content:''; position:absolute; top:0; bottom:0; left:0; width:30%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent); animation:wweSweep 3.5s 0.4s ease-in-out infinite; pointer-events:none; }
+.wwe-top { display:flex; align-items:center; gap:12px; padding:14px 0 6px; }
+.wwe-top .v4-back, #screen-wweBracket .v4-back { border:1px solid #444; background:transparent; color:#eee; border-radius:999px; padding:7px 13px; font:800 12px inherit; cursor:pointer; }
+.wwe-logo { display:flex; align-items:baseline; gap:10px; animation:wweIn .5s both; }
+.wwe-logo b { font:900 44px/1 var(--v4-display); letter-spacing:-.04em; background:linear-gradient(180deg,#fff 30%,#f5b0ae); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 0 30px rgba(229,50,45,.35); }
+.wwe-logo span { font:800 10px var(--v4-mono); letter-spacing:.28em; color:#e8a6a3; }
+.wwe-rule { margin:6px 0 12px; font-size:12px; color:#d8d8d4; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.wwe-rule b { padding:3px 8px; border-radius:6px; background:#e5322d; color:#fff; font-size:11px; letter-spacing:.06em; }
+.wwe-tabs { display:flex; gap:6px; }
+.wwe-tabs button { flex:1; max-width:180px; padding:10px 12px; border-radius:12px; border:1px solid #333; background:#161616; color:#bbb; font:900 14px inherit; cursor:pointer; transition:background .2s,color .2s,border-color .2s, transform .2s; }
+.wwe-tabs button:hover { color:#fff; border-color:#666; }
+.wwe-tabs button.on { background:#f2f2f0; color:#111; border-color:#f2f2f0; transform:translateY(-1px); }
+.wwe-body { flex:1; min-height:0; overflow-y:auto; padding:14px 20px 90px; display:flex; flex-direction:column; gap:12px; }
+.wwe-av { position:relative; display:inline-grid; place-items:center; width:30px; height:30px; flex:none; border-radius:50%; background:#fff; overflow:hidden; box-shadow:0 0 0 2px var(--rc,#888); }
+.wwe-av img { width:100%; height:100%; object-fit:contain; }
+.wwe-av.big { width:84px; height:84px; box-shadow:0 0 0 3px var(--rc,#888), 0 10px 30px rgba(0,0,0,.5); }
+.wwe-duel { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:stretch; }
+.wwe-corner { position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px 12px 14px; border-radius:18px; border:2px solid #2a2a2a; background:linear-gradient(180deg, color-mix(in srgb, var(--cc) 22%, #141414), #121212); color:#f2f2f0; font:inherit; cursor:pointer; transition:border-color .2s, transform .2s, box-shadow .2s; animation:wweIn .4s both; overflow:hidden; }
+.wwe-corner.active { border-color:var(--cc); box-shadow:0 0 0 3px color-mix(in srgb, var(--cc) 35%, transparent), 0 16px 40px -18px var(--cc); transform:translateY(-2px); }
+.wwe-corner .lab { font:900 10px var(--v4-mono); letter-spacing:.24em; color:var(--cc); }
+.wwe-corner b { font:900 18px var(--v4-display); letter-spacing:-.02em; }
+.wwe-corner small { font-size:11px; color:#aaa; }
+.wwe-empty { display:grid; place-items:center; width:84px; height:84px; border-radius:50%; border:2px dashed #444; font:900 30px var(--v4-display); color:#555; }
+.wwe-swap { align-self:center; display:flex; flex-direction:column; align-items:center; gap:2px; width:62px; height:62px; border-radius:50%; border:0; background:#e5322d; color:#fff; font:900 20px inherit; cursor:pointer; justify-content:center; box-shadow:0 10px 30px -10px #e5322d; transition:transform .25s; }
+.wwe-swap:hover { transform:rotate(180deg); }
+.wwe-swap small { font:900 10px var(--v4-mono); letter-spacing:.1em; }
+.wwe-roster { border:1px solid #2a2a2a; border-radius:16px; background:#131313; padding:12px; }
+.wwe-roster-h { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.wwe-roster-h span { font:900 11px var(--v4-mono); letter-spacing:.24em; color:#e5322d; }
+.wwe-roster-h em { font-style:normal; font-size:12px; color:#bbb; }
+.wwe-roster-h em b { color:#fff; }
+.wwe-chips { display:flex; flex-wrap:wrap; gap:6px; max-height:132px; overflow-y:auto; }
+.wwe-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 4px; border-radius:999px; border:1px solid #333; background:#1b1b1b; color:#eee; font:700 12px inherit; cursor:pointer; animation:wweIn .3s both; }
+.wwe-chip:hover { border-color:#e5322d; text-decoration:line-through; }
+.wwe-chip i { display:grid; place-items:center; width:18px; height:18px; border-radius:50%; background:var(--tc,#e5322d); color:#fff; font:900 10px var(--v4-mono); font-style:normal; }
+.wwe-none { color:#777; font-size:12px; padding:6px; }
+.wwe-opt { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.wwe-opt .k { min-width:66px; font:800 11px var(--v4-mono); letter-spacing:.1em; color:#999; }
+.wwe-seg { display:inline-flex; gap:4px; padding:3px; border-radius:12px; background:#1b1b1b; border:1px solid #2a2a2a; flex-wrap:wrap; }
+.wwe-seg button { padding:6px 11px; border-radius:9px; border:0; background:transparent; color:#aaa; font:800 12px inherit; cursor:pointer; }
+.wwe-seg button.on { background:#f2f2f0; color:#111; }
+.wwe-pickbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; position:sticky; top:-14px; z-index:3; padding:8px 0; background:#0c0c0d; }
+#wweSearch { flex:1; min-width:140px; padding:9px 12px; border-radius:10px; border:1px solid #333; background:#161616; color:#fff; font:inherit; font-size:13px; outline:none; }
+#wweSearch:focus { border-color:#e5322d; }
+.wwe-filters, .wwe-bulk { display:flex; gap:4px; flex-wrap:wrap; }
+.wwe-filters button, .wwe-bulk button { padding:7px 10px; border-radius:9px; border:1px solid #2e2e2e; background:#161616; color:#bbb; font:800 11px inherit; cursor:pointer; }
+.wwe-filters button.on { background:#e5322d; border-color:#e5322d; color:#fff; }
+.wwe-bulk button:hover, .wwe-filters button:hover { color:#fff; border-color:#666; }
+.wwe-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px; }
+.wwe-pick { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 4px 7px; border-radius:12px; border:1px solid #262626; background:#151515; color:#ddd; font:inherit; cursor:pointer; transition:transform .15s, border-color .15s, background .15s; animation:wweIn .3s both; }
+.wwe-pick:hover { transform:translateY(-2px); border-color:#555; }
+.wwe-pick .pic { width:52px; height:52px; border-radius:50%; background:#fff; overflow:hidden; display:grid; place-items:center; box-shadow:0 0 0 2px var(--rc,#666); }
+.wwe-pick .pic img { width:100%; height:100%; object-fit:contain; }
+.wwe-pick .nm { font-size:11px; font-weight:800; text-align:center; line-height:1.2; word-break:keep-all; }
+.wwe-pick.on { border-color:#e5322d; background:linear-gradient(180deg,#2a1111,#151515); }
+.wwe-pick.c1 { border-color:#2f6fed; background:linear-gradient(180deg,#101a33,#151515); }
+.wwe-pick .tag { position:absolute; top:5px; right:5px; min-width:18px; padding:1px 5px; border-radius:999px; background:#e5322d; color:#fff; font:900 9px/16px var(--v4-mono); font-style:normal; }
+.wwe-pick.c1 .tag { background:#2f6fed; }
+.wwe-startbar { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:12px; padding:12px 20px calc(12px + env(safe-area-inset-bottom)); background:linear-gradient(0deg,#0c0c0d 70%,rgba(12,12,13,0)); z-index:5; }
+#wweStartInfo { flex:1; min-width:0; font:800 14px inherit; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#wweStartInfo em { font-style:normal; color:#e5322d; margin:0 6px; font-weight:900; }
+#wweStartInfo .warn { color:#ffb4b0; }
+.wwe-go, #btnWweStart { position:relative; overflow:hidden; padding:14px 26px; border-radius:14px; border:0; background:#e5322d; color:#fff; font:900 15px inherit; cursor:pointer; box-shadow:0 14px 30px -12px #e5322d; transition:transform .15s, opacity .2s; }
+#btnWweStart:not(:disabled)::after { content:''; position:absolute; top:0; bottom:0; width:30%; left:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent); animation:wweSweep 2.2s ease-in-out infinite; }
+#btnWweStart:disabled { opacity:.35; cursor:not-allowed; box-shadow:none; }
+#btnWweStart:not(:disabled):hover { transform:translateY(-1px); }
+
+/* 대진표 */
+.wwe-br-top { flex:none; display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 20px 12px; border-bottom:1px solid #222; background:linear-gradient(180deg,#1a0707,#0c0c0d); }
+.wwe-br-title { display:flex; flex-direction:column; }
+.wwe-br-title b { font:900 22px var(--v4-display); letter-spacing:-.03em; }
+.wwe-br-title small { font-size:12px; color:#e8a6a3; }
+.wwe-br-prog { flex:1; min-width:140px; display:flex; flex-direction:column; gap:4px; }
+.wwe-br-prog .bar { height:6px; border-radius:6px; background:#262626; overflow:hidden; }
+.wwe-br-prog .bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#e5322d,#f2c94c); transition:width .5s cubic-bezier(.2,.8,.2,1); }
+.wwe-br-prog span { font:700 11px var(--v4-mono); color:#999; }
+#wweBrAuto { padding:8px 12px; border-radius:999px; border:1px solid #444; background:transparent; color:#bbb; font:800 12px inherit; cursor:pointer; }
+#wweBrAuto.on { border-color:#2fb344; color:#8ce99a; }
+.wwe-bracket { flex:1; min-height:0; overflow:auto; display:flex; gap:22px; padding:18px 20px 110px; align-items:stretch; }
+.br-col { flex:none; width:168px; display:flex; flex-direction:column; }
+.br-h { flex:none; margin-bottom:10px; text-align:center; font:900 11px var(--v4-mono); letter-spacing:.2em; color:#e5322d; }
+.br-list { flex:1; display:flex; flex-direction:column; justify-content:space-around; gap:8px; }
+.br-m { position:relative; display:flex; flex-direction:column; gap:2px; padding:5px; border-radius:10px; border:1px solid #262626; background:#141414; transition:border-color .3s, box-shadow .3s; }
+.br-col:not(:last-child) .br-m::after { content:''; position:absolute; right:-12px; top:50%; width:12px; height:1px; background:#333; }
+.br-m.bye { opacity:.45; }
+.br-m.next { border-color:#f2c94c; box-shadow:0 0 0 2px rgba(242,201,76,.25), 0 0 24px -6px rgba(242,201,76,.6); animation:wwePulse 1.6s infinite; }
+.br-m.flash { border-color:#e5322d; animation:wweIn .5s both; }
+.bs { display:flex; align-items:center; gap:6px; padding:3px 6px 3px 3px; border-radius:7px; font-size:11px; font-weight:800; color:#ddd; min-height:26px; }
+.bs .wwe-av { width:22px; height:22px; }
+.bs .nm { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bs.empty { color:#555; font-weight:700; padding-left:8px; }
+.bs.win { background:linear-gradient(90deg,rgba(47,179,68,.25),transparent); color:#fff; }
+.bs.win i { font:900 9px var(--v4-mono); font-style:normal; color:#8ce99a; }
+.bs.lose { opacity:.4; text-decoration:line-through; }
+.br-col.champ { width:190px; }
+.br-champ { display:flex; flex-direction:column; align-items:center; gap:8px; padding:18px 10px; border-radius:16px; border:2px solid #f2c94c; background:radial-gradient(circle at 50% 30%, rgba(242,201,76,.25), #141414 70%); animation:wweIn .6s both; }
+.br-champ b { font:900 16px var(--v4-display); text-align:center; }
+.br-champ .cup { font-size:28px; }
+.wwe-br-bottom { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 20px calc(12px + env(safe-area-inset-bottom)); background:linear-gradient(0deg,#0c0c0d 72%,rgba(12,12,13,0)); z-index:4; }
+#wweBrNext { flex:1; min-width:200px; display:flex; flex-direction:column; gap:3px; }
+#wweBrNext .lab { font:900 10px var(--v4-mono); letter-spacing:.2em; color:#f2c94c; }
+#wweBrNext b { display:flex; align-items:center; gap:8px; font:900 16px var(--v4-display); flex-wrap:wrap; }
+#wweBrNext em { font-style:normal; color:#e5322d; }
+#wweBrCountdown { font:800 12px var(--v4-mono); color:#8ce99a; min-width:110px; }
+.wwe-br-bottom button { padding:12px 16px; border-radius:12px; border:1px solid #444; background:#1a1a1a; color:#eee; font:900 13px inherit; cursor:pointer; }
+.wwe-br-bottom button:disabled { opacity:.35; cursor:not-allowed; }
+#btnWweBrPlay { background:#e5322d; border-color:#e5322d; color:#fff; box-shadow:0 12px 26px -12px #e5322d; }
+
+/* 전투 중 (WWE) */
+body.wwe-mode #oddsWrap, body.wwe-mode .battle-dock, body.wwe-mode .v41-dock, body.wwe-mode .pool-sheet, body.wwe-mode #btnStats, body.wwe-mode .v42-go, body.wwe-mode .zone-line, body.wwe-mode .zone-label, body.wwe-mode .v4-phase-chip { display:none !important; }
+body.wwe-mode .battle-world { background:radial-gradient(circle at 50% 50%, rgba(229,50,45,.07), transparent 60%), repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 1px, transparent 1px 60px), repeating-linear-gradient(90deg, rgba(0,0,0,.035) 0 1px, transparent 1px 60px), #f4f3ef; box-shadow:inset 0 0 0 6px #111, inset 0 0 0 10px #e5322d; }
+body.wwe-mode .round-badge { background:#e5322d !important; color:#fff !important; letter-spacing:.04em; }
+body.wwe-mode .unit.ally-unit .unit-icon { box-shadow:0 0 0 3px #e5322d, 0 0 14px rgba(229,50,45,.55); border-radius:50%; }
+body.wwe-mode .unit.enemy-unit .unit-icon { box-shadow:0 0 0 3px #2f6fed, 0 0 14px rgba(47,111,237,.55); border-radius:50%; }
+body.wwe-mode .unit.wwe-team .unit-icon { box-shadow:0 0 0 3px var(--team), 0 0 14px var(--team); border-radius:50%; }
+body.wwe-mode .battle-stage { margin-bottom:150px; }
+body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
+@media (max-width:640px) { body.wwe-mode .battle-stage { margin-bottom:128px; } }
+
+.wwe-panel { position:fixed; left:50%; bottom:10px; transform:translateX(-50%); z-index:60; width:min(860px, calc(100vw - 16px)); display:grid; gap:10px; pointer-events:none; }
+.wwe-panel.duel { grid-template-columns:1fr 1fr; }
+.wwe-panel.ffa { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); width:min(1100px, calc(100vw - 16px)); max-height:40vh; overflow-y:auto; pointer-events:auto; }
+.wp-card { position:relative; display:flex; flex-direction:column; gap:5px; padding:10px 12px 11px; border-radius:16px; background:rgba(14,14,15,.92); color:#f2f2f0; border:1px solid rgba(255,255,255,.08); box-shadow:0 18px 40px -18px rgba(0,0,0,.8), inset 0 3px 0 var(--tc); backdrop-filter:blur(6px); animation:wpIn .5s cubic-bezier(.2,.9,.2,1) both; overflow:hidden; }
+@keyframes wpIn { from { opacity:0; transform:translateY(24px) scale(.96); } to { opacity:1; transform:none; } }
+.wp-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 90% at 0% 0%, color-mix(in srgb, var(--tc) 22%, transparent), transparent 60%); pointer-events:none; }
+.wwe-panel.duel .wp-card.enemy::before { background:radial-gradient(ellipse 80% 90% at 100% 0%, color-mix(in srgb, var(--tc) 22%, transparent), transparent 60%); }
+.wp-fx { position:relative; display:flex; flex-wrap:wrap; gap:4px; min-height:18px; }
+.wwe-panel.duel .wp-card.enemy .wp-fx, .wwe-panel.duel .wp-card.enemy .wp-head { flex-direction:row-reverse; text-align:right; }
+.wp-fx span { padding:2px 7px; border-radius:999px; font:800 10px/14px inherit; animation:wpChip .3s both; }
+@keyframes wpChip { from { opacity:0; transform:scale(.7); } to { opacity:1; transform:none; } }
+.wp-fx .debuff { background:rgba(229,50,45,.22); color:#ffb4b0; box-shadow:inset 0 0 0 1px rgba(229,50,45,.5); }
+.wp-fx .buff { background:rgba(47,179,68,.2); color:#8ce99a; box-shadow:inset 0 0 0 1px rgba(47,179,68,.45); }
+.wp-fx .ai { background:rgba(242,201,76,.18); color:#ffe08a; box-shadow:inset 0 0 0 1px rgba(242,201,76,.45); }
+.wp-head { position:relative; display:flex; align-items:center; gap:9px; }
+.wp-pic { width:40px; height:40px; flex:none; border-radius:50%; background:#fff; overflow:hidden; display:grid; place-items:center; box-shadow:0 0 0 2px var(--tc); }
+.wp-pic img { width:100%; height:100%; object-fit:contain; }
+.wp-id { min-width:0; display:flex; flex-direction:column; }
+.wp-id small { font:900 9px var(--v4-mono); letter-spacing:.2em; color:var(--tc); }
+.wp-id b { font:900 17px var(--v4-display); letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wp-ko { margin-left:auto; display:none; padding:3px 9px; border-radius:6px; background:#e5322d; color:#fff; font:900 12px var(--v4-mono); transform:rotate(-8deg); }
+.wwe-panel.duel .wp-card.enemy .wp-ko { margin-left:0; margin-right:auto; }
+.wp-hp { position:relative; height:20px; border-radius:6px; background:#2a2a2a; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+.wp-hp i { position:absolute; left:0; top:0; bottom:0; width:100%; }
+.wp-hp .ghost { background:#f2c94c; transition:width .6s .35s ease-out; }
+.wp-hp .fill { background:linear-gradient(180deg,#6fe06d,#2fb344); transition:width .15s linear; }
+.wwe-panel.duel .wp-card.enemy .wp-hp i { left:auto; right:0; }
+.wp-hp .t { position:relative; display:block; text-align:center; font:800 12px/20px var(--v4-mono); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7); }
+.wp-card.low .wp-hp .fill { background:linear-gradient(180deg,#ff7a73,#e5322d); animation:wpLow .7s ease-in-out infinite alternate; }
+@keyframes wpLow { to { filter:brightness(1.35); } }
+.wp-sub { position:relative; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.wp-sh, .wp-cd { position:relative; height:14px; border-radius:5px; background:#232323; overflow:hidden; }
+.wp-sh i, .wp-cd i { position:absolute; left:0; top:0; bottom:0; width:0; transition:width .15s linear; }
+.wp-sh i { background:linear-gradient(90deg,#4dabf7,#a5d8ff); }
+.wp-cd i { background:linear-gradient(90deg,#7048e8,#b197fc); }
+.wp-sh span, .wp-cd span { position:relative; display:block; padding:0 6px; font:800 9px/14px var(--v4-mono); color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wp-card:not(.has-sh) .wp-sh span { color:#666; }
+.wp-card.ready .wp-cd i { background:linear-gradient(90deg,#f2c94c,#ffe08a); box-shadow:0 0 10px #f2c94c; }
+.wp-card.ready .wp-cd span { color:#111; }
+.wp-card.hit { animation:wpHit .28s; }
+@keyframes wpHit { 0% { transform:translateX(0); } 25% { transform:translateX(-5px); background:rgba(80,14,14,.95); } 60% { transform:translateX(4px); } 100% { transform:none; } }
+.wp-card.ko { filter:grayscale(1); opacity:.55; }
+.wp-card.ko .wp-ko { display:inline-block; animation:wpKo .4s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes wpKo { from { transform:rotate(-8deg) scale(2.4); opacity:0; } to { transform:rotate(-8deg) scale(1); opacity:1; } }
+.wwe-panel.ffa .wp-card { padding:7px 9px 8px; gap:4px; border-radius:12px; }
+.wwe-panel.ffa .wp-pic { width:28px; height:28px; }
+.wwe-panel.ffa .wp-id b { font-size:13px; }
+.wwe-panel.ffa .wp-hp { height:14px; }
+.wwe-panel.ffa .wp-hp .t { font-size:9px; line-height:14px; }
+.wwe-panel.ffa .wp-sh, .wwe-panel.ffa .wp-cd { height:10px; }
+.wwe-panel.ffa .wp-sh span, .wwe-panel.ffa .wp-cd span { font-size:8px; line-height:10px; }
+.wwe-panel.ffa .wp-fx { min-height:14px; }
+.wwe-panel.ffa .wp-fx span { font-size:9px; line-height:12px; padding:1px 5px; }
+@media (max-width:640px) {
+  .wwe-panel.duel { gap:6px; }
+  .wp-card { padding:8px 9px 9px; }
+  .wp-pic { width:30px; height:30px; }
+  .wp-id b { font-size:14px; }
+  .wp-fx span { font-size:9px; }
+  .wwe-logo b { font-size:34px; }
+  .wwe-duel { grid-template-columns:1fr; }
+  .wwe-swap { justify-self:center; }
+}
+
+/* 인트로 */
+.wwe-intro { position:fixed; inset:0; z-index:1150; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; font-family:var(--v4-display); }
+.wwe-intro[hidden] { display:none; }
+.wwe-intro.out { animation:wiOut .38s forwards; }
+@keyframes wiOut { to { opacity:0; transform:scale(1.06); } }
+.wi-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 50%, #3a0b0b 0%, #0a0a0b 70%); }
+.wi-i3 .wi-bg { background:radial-gradient(ellipse at 50% 50%, #4a3a0b 0%, #120c02 55%, #000 80%); }
+.wi-streaks { position:absolute; inset:-20%; background:repeating-linear-gradient(100deg, transparent 0 60px, rgba(255,255,255,.035) 60px 62px); animation:wiStreak 1.2s linear infinite; }
+@keyframes wiStreak { to { transform:translateX(62px); } }
+.wi-i1 .wi-bg { animation:wiRed 1s ease-in-out infinite alternate; }
+@keyframes wiRed { to { filter:brightness(1.35) saturate(1.3); } }
+.wi-spot { position:absolute; top:-30%; left:50%; width:60%; height:160%; transform:translateX(-50%) rotate(12deg); background:linear-gradient(180deg, rgba(255,240,200,.18), transparent 70%); opacity:0; }
+.wi-i2 .wi-spot, .wi-i3 .wi-spot { animation:wiSpot 3s ease-in-out infinite; }
+@keyframes wiSpot { 0% { opacity:0; transform:translateX(-80%) rotate(12deg); } 50% { opacity:1; } 100% { opacity:0; transform:translateX(-20%) rotate(-12deg); } }
+.wi-pre { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:4; pointer-events:none; opacity:0; }
+.wi-pre span { font:900 22px var(--v4-mono); letter-spacing:1em; color:#f2c94c; }
+.wi-pre b { font:900 min(22vw,180px)/0.9 var(--v4-display); letter-spacing:-.05em; background:linear-gradient(180deg,#fff7d6,#f2c94c 55%,#b8860b); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 40px rgba(242,201,76,.6)); }
+.wi-pre.semi b { font-size:min(16vw,130px); background:linear-gradient(180deg,#fff,#ffb4b0 60%,#e5322d); -webkit-background-clip:text; background-clip:text; }
+.play .wi-pre { animation:wiPre 2.1s ease-out forwards; }
+.wi-i3.play .wi-pre { animation:wiPre 3.6s ease-out forwards; }
+@keyframes wiPre { 0% { opacity:0; transform:scale(2.2); letter-spacing:.3em; } 18% { opacity:1; transform:scale(1); } 70% { opacity:1; transform:scale(.96); } 100% { opacity:0; transform:scale(.8); } }
+.wi-round { position:absolute; top:9%; left:0; right:0; text-align:center; z-index:3; opacity:0; }
+.wi-round span { display:inline-block; padding:8px 22px; border-radius:999px; background:#e5322d; font:900 18px var(--v4-display); letter-spacing:.02em; box-shadow:0 10px 40px -8px #e5322d; }
+.wi-i3 .wi-round span { background:linear-gradient(90deg,#b8860b,#f2c94c,#b8860b); color:#111; font-size:22px; }
+.wi-side { position:absolute; top:50%; width:min(46vw,520px); display:flex; align-items:center; gap:18px; z-index:2; opacity:0; }
+.wi-side.ally { right:calc(50% + 50px); flex-direction:row-reverse; text-align:right; transform:translate(-120%, -50%); }
+.wi-side.enemy { left:calc(50% + 50px); transform:translate(120%, -50%); }
+.wi-pic { flex:none; width:min(24vw,200px); height:min(24vw,200px); border-radius:50%; background:#fff; overflow:hidden; display:grid; place-items:center; box-shadow:0 0 0 6px var(--cc), 0 0 60px var(--cc); }
+.wi-pic img { width:100%; height:100%; object-fit:contain; }
+.wi-info { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.wi-info small { font:900 12px var(--v4-mono); letter-spacing:.3em; color:var(--cc); }
+.wi-info b { font:900 min(6vw,46px)/1 var(--v4-display); letter-spacing:-.04em; word-break:keep-all; text-shadow:0 4px 30px rgba(0,0,0,.6); }
+.wi-info span { font-size:13px; color:#ccc; }
+.wi-info em { font:800 12px var(--v4-mono); font-style:normal; color:#999; }
+.wi-vs { position:absolute; top:50%; left:50%; z-index:3; transform:translate(-50%,-50%) scale(3); opacity:0; }
+.wi-vs b { display:block; font:900 min(14vw,110px)/1 var(--v4-display); font-style:italic; letter-spacing:-.06em; background:linear-gradient(180deg,#fff,#ffcf8a 50%,#e5322d); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 30px rgba(229,50,45,.8)); }
+/* 타임라인: --t0 = 등장 시작 */
+.play .wi-round { animation:wiDrop .5s var(--t0,0s) cubic-bezier(.2,1.4,.4,1) forwards; }
+.play .wi-side { animation:wiSlide .7s var(--t0,0s) cubic-bezier(.15,.9,.2,1.05) forwards; }
+.play .wi-vs { animation:wiVs .5s calc(var(--t0,0s) + .55s) cubic-bezier(.2,1.6,.4,1) forwards; }
+.wwe-intro { --t0:.15s; }
+.wi-i1 { --t0:.3s; }
+.wi-i2 { --t0:1.9s; }
+.wi-i3 { --t0:3.3s; }
+.wwe-intro.short { --t0:0s; }
+.wi-i3 .wi-side { animation-duration:1.3s !important; }
+@keyframes wiDrop { from { opacity:0; transform:translateY(-30px) scale(.8); } to { opacity:1; transform:none; } }
+@keyframes wiSlide { to { opacity:1; transform:translate(0,-50%); } }
+@keyframes wiVs { 0% { opacity:0; transform:translate(-50%,-50%) scale(3) rotate(-10deg); } 100% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0); } }
+.wi-count { position:absolute; left:0; right:0; bottom:12%; z-index:5; text-align:center; font:900 min(24vw,170px)/1 var(--v4-display); color:#fff; text-shadow:0 0 50px rgba(229,50,45,.9); opacity:0; }
+.wi-count.pop { animation:wiCount .7s cubic-bezier(.2,1.4,.4,1) forwards; }
+.wi-count.fight { color:#f2c94c; font-style:italic; letter-spacing:-.04em; text-shadow:0 0 60px rgba(242,201,76,.9); }
+@keyframes wiCount { 0% { opacity:0; transform:scale(2.6); } 30% { opacity:1; transform:scale(1); } 80% { opacity:1; } 100% { opacity:0; transform:scale(.85); } }
+.wi-flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:6; }
+.wwe-intro.go .wi-flash { animation:wiFlash .6s ease-out; }
+.wi-i2.play .wi-flash, .wi-i3.play .wi-flash { animation:wiLightning 2.4s steps(1) 1; }
+@keyframes wiFlash { 0% { opacity:.85; } 100% { opacity:0; } }
+@keyframes wiLightning { 0%,100% { opacity:0; } 20% { opacity:.55; } 22% { opacity:0; } 26% { opacity:.35; } 28% { opacity:0; } }
+.wwe-intro.shake { animation:wweShake .35s; }
+.wi-i3 .wi-pic { box-shadow:0 0 0 6px var(--cc), 0 0 0 12px rgba(242,201,76,.55), 0 0 90px var(--cc); }
+.wi-skip { position:absolute; right:16px; bottom:16px; z-index:8; padding:9px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.3); background:rgba(0,0,0,.4); color:#fff; font:800 12px inherit; cursor:pointer; }
+.wi-title { position:absolute; top:10%; left:0; right:0; z-index:3; display:flex; flex-direction:column; align-items:center; gap:6px; animation:wiDrop .6s .1s both; }
+.wi-title small { font:900 12px var(--v4-mono); letter-spacing:.4em; color:#e5322d; }
+.wi-title b { font:900 min(10vw,72px)/1 var(--v4-display); letter-spacing:-.04em; }
+.wi-title span { font-size:13px; color:#bbb; }
+.wi-royal { position:relative; z-index:2; display:flex; flex-wrap:wrap; justify-content:center; gap:12px; max-width:min(92vw,900px); margin-top:4vh; }
+.wi-r { display:flex; flex-direction:column; align-items:center; gap:4px; width:92px; opacity:0; animation:wiPop .45s cubic-bezier(.2,1.5,.4,1) forwards; }
+.wi-r .wwe-av { width:64px; height:64px; box-shadow:0 0 0 3px var(--tc), 0 0 24px var(--tc); }
+.wi-r i { font:900 11px var(--v4-mono); font-style:normal; color:var(--tc); }
+.wi-r span { font-size:12px; font-weight:800; text-align:center; word-break:keep-all; }
+@keyframes wiPop { from { opacity:0; transform:scale(.3) translateY(30px); } to { opacity:1; transform:none; } }
+@media (max-width:720px) {
+  .wi-side { width:88vw; }
+  .wi-side.ally { top:30%; right:auto; left:6vw; transform:translate(-130%, -50%); flex-direction:row; text-align:left; }
+  .wi-side.enemy { top:66%; left:auto; right:6vw; transform:translate(130%, -50%); flex-direction:row-reverse; text-align:right; }
+  .wi-vs { top:48%; }
+  .wi-pic { width:28vw; height:28vw; }
+  .wi-info b { font-size:7.5vw; }
+  .wi-count { bottom:4%; }
+}
+
+/* 결과 */
+.wwe-result { position:fixed; inset:0; z-index:1140; display:flex; align-items:center; justify-content:center; padding:16px; }
+.wwe-result[hidden] { display:none; }
+.wr-bg { position:absolute; inset:0; background:rgba(5,5,6,.78); backdrop-filter:blur(3px); animation:wiFlash .4s reverse both; }
+.wr-rays { position:absolute; left:50%; top:45%; width:1600px; height:1600px; margin:-800px 0 0 -800px; background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.06) 0 6deg, transparent 6deg 18deg); animation:wrSpin 16s linear infinite; pointer-events:none; }
+@keyframes wrSpin { to { transform:rotate(360deg); } }
+.wr-card { position:relative; z-index:2; width:min(420px,100%); max-height:92vh; overflow-y:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:24px 20px 20px; border-radius:24px; background:linear-gradient(180deg,#1a1a1b,#0f0f10); color:#fff; box-shadow:0 0 0 2px var(--wc), 0 30px 80px -20px var(--wc); animation:wrIn .6s cubic-bezier(.2,1.3,.3,1) both; }
+@keyframes wrIn { from { opacity:0; transform:scale(.7) translateY(40px); } to { opacity:1; transform:none; } }
+.wr-card.champ { box-shadow:0 0 0 3px #f2c94c, 0 0 0 7px rgba(242,201,76,.25), 0 30px 100px -10px #f2c94c; }
+.wr-k { font:900 14px var(--v4-mono); letter-spacing:.4em; color:var(--wc); }
+.wr-card.champ .wr-k { color:#f2c94c; font-size:18px; }
+.wr-pic { width:130px; height:130px; border-radius:50%; background:#fff; overflow:hidden; display:grid; place-items:center; box-shadow:0 0 0 5px var(--wc), 0 0 50px var(--wc); animation:wrPic .9s .15s cubic-bezier(.2,1.6,.4,1) both; }
+.wr-card.champ .wr-pic { box-shadow:0 0 0 5px #f2c94c, 0 0 70px #f2c94c; }
+.wr-pic img { width:100%; height:100%; object-fit:contain; }
+@keyframes wrPic { from { transform:scale(.2) rotate(-25deg); opacity:0; } to { transform:none; opacity:1; } }
+.wr-name { font:900 30px var(--v4-display); letter-spacing:-.03em; text-align:center; }
+.wr-sub { font-size:13px; color:#bbb; text-align:center; }
+.wr-rank { list-style:none; margin:6px 0 0; padding:0; width:100%; display:flex; flex-direction:column; gap:4px; }
+.wr-rank li { display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:10px; background:#1b1b1b; font-size:12px; opacity:0; animation:wweIn .35s forwards; }
+.wr-rank li:first-child { background:linear-gradient(90deg,rgba(242,201,76,.25),#1b1b1b); }
+.wr-rank li span { font:900 11px var(--v4-mono); color:#f2c94c; min-width:30px; }
+.wr-btns { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+.wr-btns button { padding:12px 18px; border-radius:12px; border:1px solid #444; background:#1f1f1f; color:#fff; font:900 13px inherit; cursor:pointer; }
+.wr-btns button:first-child { background:#e5322d; border-color:#e5322d; }
+.wr-auto { font:800 11px var(--v4-mono); color:#8ce99a; min-height:14px; }
+.wr-confetti i { position:absolute; top:-10px; left:var(--x); width:8px; height:14px; background:hsl(var(--h),85%,60%); animation:wrFall 3s var(--d) linear infinite; z-index:1; }
+@keyframes wrFall { to { transform:translateY(110vh) rotate(720deg); } }
+
 </style>
 </head>
 <body>
@@ -4802,6 +5095,7 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
       <div class="v4-tilewrap" style="animation-delay:1.11s"><button type="button" class="v4-tile" id="btnOpenAttendance" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">08</span><span class="ico v4-ico">D+</span><span class="reddot"></span><div class="t">신규 유저 출석부</div><div class="d">첫 게임 완료 후 해금 · 7일 보상</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:1.18s"><button type="button" class="v4-tile" id="btnOpenAchievements" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">09</span><span class="ico v4-ico">★</span><span class="reddot"></span><div class="t">퀘스트 · 업적</div><div class="d">다이아 · 테두리 · 칭호 획득</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:1.25s"><button type="button" class="v4-tile" id="btnOpenChat" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">10</span><span class="ico v4-ico">DM</span><span class="reddot"></span><div class="t">글로벌 채팅</div><div class="d">모든 플레이어와 대화 · 폰 화면처럼</div></button></div>
+      <div class="v4-tilewrap" style="animation-delay:1.32s"><button type="button" class="v4-tile" id="btnOpenWwe" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">11</span><span class="ico v4-ico">WWE</span><span class="reddot"></span><div class="t">WWE</div><div class="d">1:1 · 토너먼트 · 개인전 · 전술 봇 룰</div></button></div>
       </div>
       <div class="v4-foot">
         <button type="button" class="v4-patchbtn" id="btnLobbyPatch"><span>패치노트 <span class="v4-version">4.0</span></span><span>↗</span></button>
@@ -5117,10 +5411,44 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
     <div class="arena-pick-grid" id="arenaPickGrid"></div>
     <div class="arena-footer">
       <button class="btn btn-primary" id="btnArenaStart" disabled><span class="v4-sweep light"></span>전투 시작 ▶</button>
-      <button type="button" class="btn btn-secondary" id="btnArenaGrand" disabled>🏆 1:1 그랜드매치 <small>(양쪽 1기씩)</small></button>
     </div>
     </div>
   </div>
+
+  <!-- 4.6.3 WWE -->
+  <div id="screen-wwe" class="screen">
+    <div class="wwe-hero">
+      <div class="wwe-top"><button type="button" class="v4-back" id="btnWweBack">← 로비</button></div>
+      <div class="wwe-logo"><b>WWE</b><span>WORLD WIDE JIHOO ENTERTAINMENT</span></div>
+      <div class="wwe-rule"><b>특수 룰</b>모든 지후가 전술 봇으로 싸웁니다 · 공격 예고 회피 · 운석 피하기 · 거리 조절 · 저체력 후퇴</div>
+      <nav class="wwe-tabs" id="wweTabs" aria-label="WWE 방식"><button type="button" data-wwe-mode="duel">1:1 단판</button><button type="button" data-wwe-mode="tourney">토너먼트</button><button type="button" data-wwe-mode="ffa">개인전</button></nav>
+    </div>
+    <div class="wwe-body">
+      <section id="wweSetup"></section>
+      <div class="wwe-pickbar"><input type="search" id="wweSearch" placeholder="지후 이름 검색" autocomplete="off"><div class="wwe-filters" id="wweFilters"></div><div class="wwe-bulk" id="wweBulk"></div></div>
+      <div class="wwe-grid" id="wweGrid"></div>
+    </div>
+    <div class="wwe-startbar"><div id="wweStartInfo"></div><button type="button" id="btnWweStart" disabled>링 입장 ▶</button></div>
+  </div>
+  <div id="screen-wweBracket" class="screen">
+    <div class="wwe-br-top">
+      <button type="button" class="v4-back" id="btnWweBrBack">← WWE</button>
+      <div class="wwe-br-title"><b id="wweBrTitle">토너먼트</b><small id="wweBrSub"></small></div>
+      <div class="wwe-br-prog"><div class="bar"><i id="wweBrProg"></i></div><span id="wweBrCount"></span></div>
+      <button type="button" id="wweBrAuto">자동 진행</button>
+    </div>
+    <div class="wwe-bracket" id="wweBracket"></div>
+    <div class="wwe-br-bottom">
+      <div id="wweBrNext"></div>
+      <span id="wweBrCountdown"></span>
+      <button type="button" id="btnWweBrSkipAll" title="남은 경기를 관전 없이 결과만 냅니다">⏭ 남은 경기 즉시 결과</button>
+      <button type="button" id="btnWweBrSkip" title="이 경기를 관전 없이 결과만 냅니다">⏩ 이 경기 결과만</button>
+      <button type="button" id="btnWweBrPlay">관전 ▶</button>
+    </div>
+  </div>
+  <div class="wwe-intro" id="wweIntro" hidden></div>
+  <div class="wwe-result" id="wweResult" hidden></div>
+  <div class="wwe-panel" id="wwePanel" hidden></div>
 
   <!-- 배틀 화면 -->
   <div id="screen-battle" class="screen">
@@ -7779,7 +8107,7 @@ function applyMapLayout() {
   if (ew) { MAP_W = compact ? 1080 : 1760; MAP_H = compact ? 720 : 1120; }
   else { MAP_W = compact ? 720 : 1120; MAP_H = compact ? 1080 : 1600; }
   if (state.mode === 'preview') { MAP_W = 600; MAP_H = 360; }
-  if (state.mode === 'arena' && state.grandMatch) { MAP_W = 1000; MAP_H = 1000; } // 그랜드매치: 정사각형
+  if (state.mode === 'wwe' && state.wwe) { const size = state.wwe.ffa ? 1300 : 1000; MAP_W = size; MAP_H = size; } // 4.6.3 WWE: 정사각형 링
   const w = worldEl();
   if (w) {
     w.classList.toggle('layout-ew', ew);
@@ -11376,8 +11704,6 @@ function updateArenaStart() {
   const eN = arenaCount(state.arenaEnemy);
   const btn = $('btnArenaStart');
   if (btn) btn.disabled = aN < 1 || eN < 1;
-  const grand = $('btnArenaGrand');
-  if (grand) grand.disabled = aN !== 1 || eN !== 1;
 }
 function setArenaPickSide(side) {
   state.arenaPickSide = side === 'enemy' ? 'enemy' : 'ally';
@@ -11577,17 +11903,14 @@ function placeFormation(side, entries) {
     spawnUnit(side, x, y, id, { saved: true, quiet: i > 0, level: entry.level });
   });
 }
-function startArenaMatch(grand) {
+function startArenaMatch() {
   if (!developerMode) return;
   const allies = flattenArenaEntries('ally');
   const enemies = flattenArenaEntries('enemy');
   if (!allies.length || !enemies.length) return;
-  grand = grand === true && allies.length === 1 && enemies.length === 1;
   leaveBattle();
-  withLoading(grand ? '그랜드매치 입장중' : '투기장 입장중', () => {
+  withLoading('투기장 입장중', () => {
     state.mode = 'arena';
-    state.grandMatch = grand;
-    document.body.classList.toggle('grand-match', grand);
     state.matchStartedAt = Date.now();
     state.round = 1;
     state.allyLives = 1;
@@ -11611,7 +11934,7 @@ function startArenaMatch(grand) {
     updateLifeUI();
     showScreen('battle');
     const badge = $('roundBadge');
-    if (badge) badge.innerHTML = grand ? 'GRAND MATCH' : 'ARENA';
+    if (badge) badge.innerHTML = 'ARENA';
     openPoolSheet(false);
     const pa = document.getElementById('poolActions'); if (pa) pa.style.display = 'none';
     $('allyLivesDisplay').style.display = 'flex';
@@ -11625,35 +11948,837 @@ function startArenaMatch(grand) {
           applyMapLayout();
           bindMinimap();
           beginCombatPhase();
-          if (grand) startGrandPanel();
         });
       }));
   });
 }
-// 4.6.2 그랜드매치: 정사각형 전장 + 아래에 두 지후의 이름 · HP · 스탯
-function grandUnit(side) { return state.units.find(u => u.side === side && !u.isCastle && !u.ownerUid && !u.isClone) || null; }
-function startGrandPanel() {
-  let el = $('grandPanel');
-  if (!el) { el = document.createElement('div'); el.id = 'grandPanel'; document.body.appendChild(el); }
-  el.style.display = '';
-  clearInterval(startGrandPanel.timer);
-  const card = (u, side) => {
-    if (!u) return `<div class="gp-card ${side}"><b class="gp-name">-</b></div>`;
-    const hp = Math.max(0, Math.round(u.hp)), pct = clamp(u.hp / u.maxHp * 100, 0, 100);
-    const sh = (u.shield || 0) + (u._tiShield || 0);
-    const atk = Math.round((u.def.atk || 0) * atkBuffMult(u));
-    return `<div class="gp-card ${side}"><b class="gp-name" style="color:${u.def.color}">${u.def.name}${u.level > 1 ? ' Lv.' + u.level : ''}</b>
-      <div class="gp-bar"><i style="width:${pct}%"></i><span>${hp.toLocaleString('ko-KR')} / ${Math.round(u.maxHp).toLocaleString('ko-KR')}</span></div>
-      <div class="gp-under" style="background:${u.def.color}"></div>
-      <div class="gp-stats"><span>ATK <b>${atk.toLocaleString('ko-KR')}</b></span><span>공격 간격 <b>${u.def.noAttack ? '-' : (+u.def.atkSpeed).toFixed(2) + 's'}</b></span>${sh > 0 ? `<span>쉴드 <b>${Math.round(sh).toLocaleString('ko-KR')}</b></span>` : ''}<span>입힌 피해 <b>${Math.round(u.dmgDealt || 0).toLocaleString('ko-KR')}</b></span></div></div>`;
+/* ===================== 4.6.3 WWE (구 그랜드매치) =====================
+   Lv.10부터 여는 공식 관전 모드. 1:1 단판 · 토너먼트(4강 ~ 전원) · 개인전(최대 15인, 전원이 서로 다른 팀).
+   WWE 특수 룰: 모든 지후가 전술 봇(wweTactics)으로 움직인다 — 공격 예고 회피 · 운석/폭발 피하기 · 거리 조절 · 저체력 후퇴.
+   진영: 1:1 · 토너먼트는 'ally'(레드 코너) / 'enemy'(블루 코너). 개인전은 'w0' … 'w14' (진영이 다르면 서로 적). */
+const WWE_MIN_LEVEL = 10;
+const WWE_FFA_MAX = 15;
+const WWE_TEAM_COLORS = ['#e5322d', '#2f6fed', '#2fb344', '#f59f00', '#9b59d0', '#12b3b3', '#e8590c', '#d6336c', '#5c6bc0', '#74b816', '#1c9ed6', '#c9a227', '#ae3ec9', '#0ca678', '#8d6e63'];
+const WWE_CORNER = { ally: { name: 'RED CORNER', color: '#e5322d' }, enemy: { name: 'BLUE CORNER', color: '#2f6fed' } };
+const WWE = {
+  mode: 'duel', level: 1, filter: 'all', search: '', auto: true, introFull: true,
+  picks: { duel: [null, null], tourney: [], ffa: [] }, corner: 0,
+  t: null,        // 진행 중인 토너먼트
+  bulk: false,    // 남은 경기 즉시 진행 중
+};
+try {
+  const saved = JSON.parse(localStorage.getItem('jihooBattle.wwe') || '{}');
+  ['mode', 'level', 'auto', 'introFull'].forEach(k => { if (saved[k] != null) WWE[k] = saved[k]; });
+} catch (error) {}
+function wweSavePrefs() { try { localStorage.setItem('jihooBattle.wwe', JSON.stringify({ mode: WWE.mode, level: WWE.level, auto: WWE.auto, introFull: WWE.introFull })); } catch (error) {} }
+function wweUnlocked() { return developerMode || getLevelInfo(profile.totalXp).level >= WWE_MIN_LEVEL; }
+function wweIds() {
+  const order = { hidden: 0, legend: 1, epic: 2, rare: 3, common: 4 };
+  return playableIds().sort((a, b) => (order[CHAR_DB[a].rarity] - order[CHAR_DB[b].rarity]) || CHAR_DB[a].name.localeCompare(CHAR_DB[b].name, 'ko'));
+}
+function wweShort(id) { return (CHAR_DB[id]?.name || id).replace(/ ?지후$/, ''); }
+function wweShuffle(list) { const a = list.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function wweEsc(text) { return String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
+
+/* ---------- 로비 타일 ---------- */
+function renderWweTile() {
+  const tile = $('btnOpenWwe');
+  if (!tile) return;
+  const open = wweUnlocked();
+  tile.classList.toggle('wwe-locked', !open);
+  const d = tile.querySelector('.d');
+  if (d) d.textContent = open ? '1:1 · 토너먼트 · 개인전 · 전술 봇 룰' : `Lv.${WWE_MIN_LEVEL}부터 입장 (현재 Lv.${getLevelInfo(profile.totalXp).level})`;
+}
+function openWwe() {
+  if (!wweUnlocked()) {
+    const tile = $('btnOpenWwe');
+    if (tile) { tile.classList.remove('shake'); void tile.offsetWidth; tile.classList.add('shake'); }
+    renderWweTile();
+    return;
+  }
+  wweCleanupBattle();
+  showScreen('wwe');
+  renderWweLobby();
+}
+
+/* ---------- 로비 화면 ---------- */
+function wweSelected() {
+  if (WWE.mode === 'duel') return WWE.picks.duel.filter(Boolean);
+  return WWE.picks[WWE.mode];
+}
+function wweBracketSize(n) { let s = 2; while (s < n) s *= 2; return s; }
+function wweRoundName(players) { return players === 2 ? '결승전' : players === 4 ? '준결승' : `${players}강`; }
+function renderWweLobby() {
+  document.querySelectorAll('#wweTabs [data-wwe-mode]').forEach(b => b.classList.toggle('on', b.dataset.wweMode === WWE.mode));
+  $('screen-wwe').dataset.mode = WWE.mode;
+  renderWweSetup();
+  renderWweFilters();
+  renderWweGrid();
+  renderWweStart();
+}
+function wweCardHtml(id, cls = '') {
+  const c = CHAR_DB[id];
+  return `<span class="wwe-av ${cls}" style="--rc:${rarityColorVar(c.rarity)}">${portraitHtml(c)}</span>`;
+}
+function renderWweSetup() {
+  const box = $('wweSetup');
+  const lv = `<div class="wwe-opt"><span class="k">지후 레벨</span><div class="wwe-seg" id="wweLevelSeg">${[1, 2, 3, 4, 5, 6, 7].map(n => `<button type="button" data-lv="${n}" class="${WWE.level === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>`;
+  if (WWE.mode === 'duel') {
+    const slot = (i, side) => {
+      const id = WWE.picks.duel[i], corner = WWE_CORNER[side];
+      return `<button type="button" class="wwe-corner ${side}${WWE.corner === i ? ' active' : ''}" data-corner="${i}" style="--cc:${corner.color}">
+        <span class="lab">${corner.name}</span>
+        ${id ? `${wweCardHtml(id, 'big')}<b>${wweEsc(CHAR_DB[id].name)}</b><small>${RARITY_LABEL[CHAR_DB[id].rarity]} · ${CHAR_DB[id].roleLabel || ''}</small>` : '<span class="wwe-empty">?</span><b>지후 선택</b><small>아래 목록에서 누르세요</small>'}
+      </button>`;
+    };
+    box.innerHTML = `<div class="wwe-duel">${slot(0, 'ally')}<button type="button" class="wwe-swap" id="btnWweSwap" title="코너 바꾸기">⇄<small>VS</small></button>${slot(1, 'enemy')}</div>${lv}`;
+    box.querySelectorAll('[data-corner]').forEach(b => b.addEventListener('click', () => {
+      const i = Number(b.dataset.corner);
+      if (WWE.corner === i && WWE.picks.duel[i]) WWE.picks.duel[i] = null; // 이미 고른 코너를 다시 누르면 비운다
+      WWE.corner = i;
+      renderWweLobby();
+    }));
+    $('btnWweSwap').addEventListener('click', () => { WWE.picks.duel.reverse(); renderWweLobby(); });
+  } else {
+    const list = WWE.picks[WWE.mode];
+    const n = list.length;
+    let info;
+    if (WWE.mode === 'tourney') {
+      const size = wweBracketSize(Math.max(2, n));
+      info = n < 4 ? `4명 이상 고르세요 · 지금 ${n}명` : `<b>${n}명</b> · ${wweRoundName(size)}부터 · 경기 ${n - 1}개${size > n ? ` · 부전승 ${size - n}명` : ''}`;
+    } else info = n < 3 ? `3명 이상 고르세요 · 지금 ${n}/${WWE_FFA_MAX}` : `<b>${n}명</b> 개인전 · 모두 서로 다른 팀 · 원형 배치`;
+    const opts = WWE.mode === 'tourney' ? `
+      <div class="wwe-opt"><span class="k">다음 경기</span><div class="wwe-seg" id="wweAutoSeg"><button type="button" data-auto="1" class="${WWE.auto ? 'on' : ''}">자동으로 넘어가기</button><button type="button" data-auto="0" class="${WWE.auto ? '' : 'on'}">수동으로 넘어가기</button></div></div>
+      <div class="wwe-opt"><span class="k">인트로</span><div class="wwe-seg" id="wweIntroSeg"><button type="button" data-intro="1" class="${WWE.introFull ? 'on' : ''}">전체 연출</button><button type="button" data-intro="0" class="${WWE.introFull ? '' : 'on'}">짧게</button></div></div>` : '';
+    box.innerHTML = `<div class="wwe-roster"><div class="wwe-roster-h"><span>${WWE.mode === 'tourney' ? 'ENTRANTS' : 'BATTLE ROYALE'}</span><em>${info}</em></div>
+      <div class="wwe-chips">${n ? list.map((id, i) => `<button type="button" class="wwe-chip" data-rm="${id}" style="animation-delay:${Math.min(i, 30) * 0.015}s${WWE.mode === 'ffa' ? `;--tc:${WWE_TEAM_COLORS[i]}` : ''}">${WWE.mode === 'ffa' ? `<i>${i + 1}</i>` : ''}${wweCardHtml(id)}<span>${wweEsc(wweShort(id))}</span></button>`).join('') : '<span class="wwe-none">아래에서 지후를 눌러 추가하세요</span>'}</div></div>${opts}${lv}`;
+    box.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { WWE.picks[WWE.mode] = WWE.picks[WWE.mode].filter(x => x !== b.dataset.rm); renderWweLobby(); }));
+    box.querySelectorAll('[data-auto]').forEach(b => b.addEventListener('click', () => { WWE.auto = b.dataset.auto === '1'; wweSavePrefs(); renderWweSetup(); }));
+    box.querySelectorAll('[data-intro]').forEach(b => b.addEventListener('click', () => { WWE.introFull = b.dataset.intro === '1'; wweSavePrefs(); renderWweSetup(); }));
+  }
+  box.querySelectorAll('[data-lv]').forEach(b => b.addEventListener('click', () => { WWE.level = Number(b.dataset.lv); wweSavePrefs(); renderWweSetup(); }));
+}
+function renderWweFilters() {
+  const f = [['all', '전체'], ['hidden', '히든'], ['legend', '전설'], ['epic', '영웅'], ['rare', '희귀'], ['common', '일반']];
+  $('wweFilters').innerHTML = f.map(([k, l]) => `<button type="button" data-f="${k}" class="${WWE.filter === k ? 'on' : ''}">${l}</button>`).join('');
+  $('wweFilters').querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { WWE.filter = b.dataset.f; renderWweFilters(); renderWweGrid(); }));
+  const bulk = WWE.mode === 'duel' ? [['rand2', '🎲 랜덤 대진'], ['clear', '비우기']]
+    : WWE.mode === 'tourney' ? [['all', '전체 선택'], ['r8', '랜덤 8'], ['r16', '랜덤 16'], ['r32', '랜덤 32'], ['clear', '비우기']]
+    : [['r4', '랜덤 4'], ['r8', '랜덤 8'], ['r15', '랜덤 15'], ['clear', '비우기']];
+  $('wweBulk').innerHTML = bulk.map(([k, l]) => `<button type="button" data-bulk="${k}">${l}</button>`).join('');
+  $('wweBulk').querySelectorAll('[data-bulk]').forEach(b => b.addEventListener('click', () => wweBulk(b.dataset.bulk)));
+}
+function wweBulk(kind) {
+  const pool = wweIds().filter(id => WWE.filter === 'all' || CHAR_DB[id].rarity === WWE.filter);
+  const src = pool.length ? pool : wweIds();
+  if (kind === 'clear') { if (WWE.mode === 'duel') WWE.picks.duel = [null, null]; else WWE.picks[WWE.mode] = []; WWE.corner = 0; }
+  else if (kind === 'rand2') { const r = wweShuffle(src); WWE.picks.duel = [r[0], r[1] || r[0]]; }
+  else if (kind === 'all') WWE.picks.tourney = src.slice();
+  else { const n = Number(kind.slice(1)); WWE.picks[WWE.mode] = wweShuffle(src).slice(0, WWE.mode === 'ffa' ? Math.min(n, WWE_FFA_MAX) : n); }
+  renderWweLobby();
+}
+function renderWweGrid() {
+  const q = WWE.search.trim();
+  const ids = wweIds().filter(id => (WWE.filter === 'all' || CHAR_DB[id].rarity === WWE.filter) && (!q || CHAR_DB[id].name.includes(q)));
+  const sel = WWE.mode === 'duel' ? WWE.picks.duel : WWE.picks[WWE.mode];
+  $('wweGrid').innerHTML = ids.map((id, i) => {
+    const c = CHAR_DB[id];
+    const idx = sel.indexOf(id);
+    const tag = WWE.mode === 'duel' ? (idx === 0 ? 'RED' : idx === 1 ? 'BLUE' : '') : idx >= 0 ? (WWE.mode === 'ffa' ? String(idx + 1) : '✓') : '';
+    return `<button type="button" class="wwe-pick${idx >= 0 ? ' on' : ''}${WWE.mode === 'duel' && idx >= 0 ? ' c' + idx : ''}" data-id="${id}" style="--rc:${rarityColorVar(c.rarity)};animation-delay:${Math.min(i, 40) * 0.008}s">
+      <span class="pic">${portraitHtml(c)}</span><span class="nm">${wweEsc(wweShort(id))}</span>${tag ? `<i class="tag">${tag}</i>` : ''}</button>`;
+  }).join('') || '<div class="wwe-none">검색 결과가 없습니다.</div>';
+  $('wweGrid').querySelectorAll('[data-id]').forEach(b => b.addEventListener('click', () => wwePick(b.dataset.id)));
+}
+function wwePick(id) {
+  if (WWE.mode === 'duel') {
+    const d = WWE.picks.duel;
+    d[WWE.corner] = id;
+    if (!d[1 - WWE.corner]) WWE.corner = 1 - WWE.corner; // 빈 코너로 자동 이동 (같은 지후끼리도 가능)
+  } else {
+    const list = WWE.picks[WWE.mode];
+    const i = list.indexOf(id);
+    if (i >= 0) list.splice(i, 1);
+    else if (WWE.mode === 'ffa' && list.length >= WWE_FFA_MAX) { renderWweStart(`개인전은 최대 ${WWE_FFA_MAX}명입니다.`); return; }
+    else list.push(id);
+  }
+  renderWweSetup(); renderWweGrid(); renderWweStart();
+}
+function renderWweStart(warn = '') {
+  const sel = wweSelected();
+  let ok = false, text = '';
+  if (WWE.mode === 'duel') { ok = sel.length === 2; text = ok ? `${wweShort(sel[0])} <em>VS</em> ${wweShort(sel[1])}` : '두 코너에 지후를 한 명씩 넣으세요'; }
+  else if (WWE.mode === 'tourney') { ok = sel.length >= 4; text = ok ? `${sel.length}인 토너먼트 · ${wweRoundName(wweBracketSize(sel.length))}부터` : '토너먼트는 4명 이상'; }
+  else { ok = sel.length >= 3; text = ok ? `${sel.length}인 개인전` : '개인전은 3~15명'; }
+  $('wweStartInfo').innerHTML = warn ? `<span class="warn">${warn}</span>` : text;
+  $('btnWweStart').disabled = !ok;
+  $('btnWweStart').textContent = WWE.mode === 'tourney' ? '대진표 만들기 ▶' : '링 입장 ▶';
+}
+function wweStart() {
+  const sel = wweSelected();
+  const level = WWE.level;
+  if (WWE.mode === 'duel' && sel.length === 2) {
+    const [a, b] = WWE.picks.duel;
+    wweStartBattle({ kind: 'duel', ids: [a, b], level, label: '1:1 단판', intensity: 1, onEnd: res => wweShowResult(res, { buttons: [['again', '재대결'], ['lobby', 'WWE 로비']] }) });
+  } else if (WWE.mode === 'tourney' && sel.length >= 4) {
+    WWE.t = wweBuildBracket(sel, level);
+    showScreen('wweBracket');
+    renderWweBracket();
+    if (WWE.auto) wweQueueNext(2600);
+  } else if (WWE.mode === 'ffa' && sel.length >= 3) {
+    const ids = sel.slice();
+    wweStartBattle({ kind: 'ffa', ids, level, label: `${ids.length}인 개인전`, intensity: 1, onEnd: res => wweShowResult(res, { buttons: [['again', '다시 하기'], ['lobby', 'WWE 로비']] }) });
+  }
+}
+
+/* ---------- 토너먼트 ---------- */
+function wweBuildBracket(ids, level) {
+  const size = wweBracketSize(ids.length);
+  const seeds = wweShuffle(ids);
+  const firstCount = size / 2, byes = size - ids.length;
+  const byeAt = new Set();
+  for (let i = 0; i < byes; i++) byeAt.add(Math.floor((i + 0.5) * firstCount / byes)); // 부전승을 대진표에 고르게 흩는다
+  const rounds = [];
+  let k = 0;
+  rounds.push(Array.from({ length: firstCount }, (_, i) => byeAt.has(i) ? { a: seeds[k++], b: null } : { a: seeds[k++], b: seeds[k++] }));
+  for (let n = firstCount / 2; n >= 1; n /= 2) rounds.push(Array.from({ length: n }, () => ({ a: null, b: null })));
+  const t = { size, rounds, level, count: ids.length, champion: null, log: [], startedAt: Date.now() };
+  rounds.forEach((r, ri) => r.forEach((m, mi) => { m.r = ri; m.i = mi; m.winner = null; }));
+  rounds[0].forEach(m => { if (m.b == null) wweAdvance(t, m, 'a', true); });
+  return t;
+}
+function wweAdvance(t, m, slot, bye = false) {
+  m.winner = m[slot];
+  m.bye = bye;
+  const next = t.rounds[m.r + 1];
+  if (!next) { t.champion = m.winner; return; }
+  const nm = next[Math.floor(m.i / 2)];
+  nm[m.i % 2 === 0 ? 'a' : 'b'] = m.winner;
+  // 상대 칸이 부전승 경기(선수가 한 명뿐)에서 올라올 일이 없으면 그대로 기다린다
+}
+function wweNextMatch(t) {
+  for (const r of t.rounds) for (const m of r) if (!m.winner && m.a && m.b) return m;
+  return null;
+}
+function wweMatchLabel(t, m) {
+  const players = t.size / Math.pow(2, m.r);
+  const name = wweRoundName(players);
+  const total = t.rounds[m.r].length;
+  return total > 1 ? `${name} ${m.i + 1}경기` : name;
+}
+function wweIntensity(t, m) {
+  const players = t.size / Math.pow(2, m.r);
+  return players === 2 ? 3 : players === 4 ? 2 : players === 8 ? 1 : 0;
+}
+function renderWweBracket(flash) {
+  const t = WWE.t;
+  if (!t) return;
+  const next = wweNextMatch(t);
+  const done = t.rounds.flat().filter(m => m.winner && !m.bye).length;
+  const total = t.count - 1;
+  $('wweBrTitle').textContent = `${t.count}인 토너먼트`;
+  $('wweBrSub').textContent = t.champion ? `우승 · ${CHAR_DB[t.champion].name}` : next ? `${wweMatchLabel(t, next)} 준비` : '';
+  $('wweBrProg').style.width = (total ? done / total * 100 : 0).toFixed(1) + '%';
+  $('wweBrCount').textContent = `${done} / ${total} 경기`;
+  $('wweBrAuto').textContent = WWE.auto ? '⏵ 자동 진행 켜짐' : '⏸ 수동 진행';
+  $('wweBrAuto').classList.toggle('on', WWE.auto);
+  const slot = (id, m, which) => {
+    if (!id) return `<div class="bs empty">${m.r === 0 && which === 'b' ? '부전승' : '—'}</div>`;
+    const win = m.winner === id, lose = m.winner && !win;
+    return `<div class="bs${win ? ' win' : ''}${lose ? ' lose' : ''}">${wweCardHtml(id)}<span class="nm">${wweEsc(wweShort(id))}</span>${win && !m.bye ? '<i>W</i>' : ''}</div>`;
   };
+  $('wweBracket').innerHTML = t.rounds.map((r, ri) => {
+    const players = t.size / Math.pow(2, ri);
+    return `<div class="br-col" style="--gap:${Math.pow(2, ri)}"><div class="br-h">${wweRoundName(players)}</div><div class="br-list">${r.map(m => `<div class="br-m${m === next ? ' next' : ''}${m.bye ? ' bye' : ''}${m.winner ? ' done' : ''}${flash === m ? ' flash' : ''}" data-r="${ri}" data-i="${m.i}">${slot(m.a, m, 'a')}${slot(m.b, m, 'b')}</div>`).join('')}</div></div>`;
+  }).join('') + (t.champion ? `<div class="br-col champ"><div class="br-h">CHAMPION</div><div class="br-list"><div class="br-champ">${wweCardHtml(t.champion, 'big')}<b>${wweEsc(CHAR_DB[t.champion].name)}</b><span class="cup">🏆</span></div></div></div>` : '');
+  const nb = $('wweBrNext');
+  if (t.champion) {
+    nb.innerHTML = `<span class="lab">대회 종료</span><b>🏆 ${wweEsc(CHAR_DB[t.champion].name)} 우승</b>`;
+    $('btnWweBrPlay').disabled = true; $('btnWweBrSkip').disabled = true; $('btnWweBrSkipAll').disabled = true;
+  } else if (next) {
+    nb.innerHTML = `<span class="lab">NEXT · ${wweMatchLabel(t, next)}</span><b>${wweCardHtml(next.a)}${wweEsc(wweShort(next.a))} <em>VS</em> ${wweEsc(wweShort(next.b))}${wweCardHtml(next.b)}</b>`;
+    $('btnWweBrPlay').disabled = WWE.bulk; $('btnWweBrSkip').disabled = WWE.bulk; $('btnWweBrSkipAll').disabled = WWE.bulk;
+  }
+  const cur = $('wweBracket').querySelector('.br-m.next, .br-m.flash');
+  if (cur && !WWE.bulk) cur.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+}
+function wweQueueNext(delay) {
+  clearTimeout(WWE.nextTimer);
+  const t = WWE.t;
+  if (!t || t.champion || !WWE.auto) { $('wweBrCountdown').textContent = ''; return; }
+  const at = Date.now() + delay;
+  const tick = () => {
+    if (state.screen !== 'wweBracket' || !WWE.auto || WWE.bulk || WWE.t !== t) { $('wweBrCountdown').textContent = ''; return; }
+    const left = Math.ceil((at - Date.now()) / 1000);
+    if (left <= 0) { $('wweBrCountdown').textContent = ''; wwePlayNext(false); return; }
+    $('wweBrCountdown').textContent = `${left}초 뒤 다음 경기`;
+    WWE.nextTimer = setTimeout(tick, 250);
+  };
+  tick();
+}
+function wwePlayNext(instant) {
+  const t = WWE.t;
+  const m = t && wweNextMatch(t);
+  if (!m) return;
+  clearTimeout(WWE.nextTimer);
+  const cfg = {
+    kind: 'duel', ids: [m.a, m.b], level: t.level, label: `${wweMatchLabel(t, m)}`, intensity: wweIntensity(t, m), instant: !!instant,
+    shortIntro: !WWE.introFull && wweIntensity(t, m) < 3,
+    onEnd: res => wweTourneyResult(m, res, instant)
+  };
+  if (instant) return wweStartBattle(cfg);
+  wweStartBattle(cfg);
+}
+function wweTourneyResult(m, res, instant) {
+  const t = WWE.t;
+  if (!t) return;
+  wweAdvance(t, m, res.winnerId === m.a ? 'a' : 'b');
+  t.log.push({ a: m.a, b: m.b, w: res.winnerId, label: wweMatchLabel(t, m) });
+  if (instant) return;
+  const champion = !!t.champion;
+  wweShowResult(res, {
+    sub: champion ? '🏆 토너먼트 우승!' : `${wweMatchLabel(t, m)} 승리 · 다음 라운드 진출`,
+    champion,
+    buttons: champion ? [['bracket', '대진표 보기'], ['lobby', 'WWE 로비']] : [['bracket', '대진표로']],
+    auto: champion ? 0 : (WWE.auto ? 3200 : 0),
+    onAuto: () => wweBackToBracket(m)
+  });
+}
+function wweBackToBracket(flash) {
+  wweCleanupBattle();
+  showScreen('wweBracket');
+  renderWweBracket(flash);
+  if (WWE.t && !WWE.t.champion && WWE.auto) wweQueueNext(2600);
+}
+async function wweSkipAll() {
+  const t = WWE.t;
+  if (!t || WWE.bulk) return;
+  WWE.bulk = true;
+  clearTimeout(WWE.nextTimer);
+  renderWweBracket();
+  let m;
+  while ((m = wweNextMatch(t)) && WWE.t === t && state.screen === 'wweBracket') {
+    wwePlayNext(true);
+    renderWweBracket(m);
+    $('wweBrCountdown').textContent = '결과 계산 중…';
+    await new Promise(r => setTimeout(r, 30));
+  }
+  WWE.bulk = false;
+  $('wweBrCountdown').textContent = '';
+  renderWweBracket();
+}
+
+/* ---------- 전투 ---------- */
+function wweCleanupBattle() {
+  document.body.classList.remove('wwe-mode', 'wwe-ffa');
+  const p = $('wwePanel'); if (p) { p.hidden = true; p.innerHTML = ''; }
+  clearInterval(WWE.panelTimer);
+  const intro = $('wweIntro'); if (intro) { intro.hidden = true; intro.innerHTML = ''; }
+  const r = $('wweResult'); if (r) { r.hidden = true; r.innerHTML = ''; }
+  clearTimeout(WWE.resultTimer);
+  const ex = $('btnExitBattle'); if (ex) ex.textContent = '항복';
+  if (state.mode === 'wwe') { leaveBattle(); state.mode = 'idle'; state.wwe = null; }
+}
+function wweDecorateEl(el, side) {
+  const color = state.wwe && state.wwe.colors && state.wwe.colors[side];
+  if (!color) return;
+  el.classList.add('wwe-team');
+  el.style.setProperty('--team', color);
+}
+function wweStartBattle(cfg) {
+  const ex = $('btnExitBattle');
+  leaveBattle();
+  state.mode = 'wwe';
+  const ffa = cfg.kind === 'ffa';
+  const sides = ffa ? cfg.ids.map((_, i) => 'w' + i) : ['ally', 'enemy'];
+  state.wwe = {
+    ...cfg, sides, ffa,
+    sideIds: Object.fromEntries(sides.map((s, i) => [s, cfg.ids[i]])),
+    colors: Object.fromEntries(sides.map((s, i) => [s, ffa ? WWE_TEAM_COLORS[i] : WWE_CORNER[s].color])),
+    timeLimit: ffa ? 150 : 100,
+    deaths: [], seen: {}
+  };
+  document.body.classList.add('wwe-mode');
+  document.body.classList.toggle('wwe-ffa', ffa);
+  state.matchStartedAt = Date.now();
+  state.round = 1; state.allyLives = 1; state.enemyLives = 1;
+  state.myDeckIds = ffa ? cfg.ids.slice() : [cfg.ids[0]];
+  state.enemyDeckIds = ffa ? cfg.ids.slice() : [cfg.ids[1]];
+  state.matchStats = []; state.matchSettled = false; state.lastSettlement = null; state.placements = [];
+  state.reaperGrudges = {}; state.zombieCarry = null; state.duetSeekUsed = {};
+  state.units = []; state.smokeZones = [];
+  (state.dustZones || []).forEach(zone => zone.el && zone.el.remove());
+  state.dustZones = []; state.fireTrails = []; state.pendingExplosions = []; state.pendingMeteors = [];
+  state.deadThisRound = { ally: [], enemy: [] };
+  if (!cfg.instant) {
+    showScreen('battle');
+    const badge = $('roundBadge'); if (badge) badge.textContent = 'WWE · ' + cfg.label;
+    if (ex) ex.textContent = '나가기';
+    openPoolSheet(false);
+    const pa = document.getElementById('poolActions'); if (pa) pa.style.display = 'none';
+    resetBattlePresentation();
+  }
+  clearArenaUnits();
+  applyMapLayout();
+  const lv = Math.max(1, Math.min(7, cfg.level || 1));
+  if (ffa) {
+    const R = Math.min(MAP_W, MAP_H) * 0.38, cx = MAP_W / 2, cy = MAP_H / 2;
+    cfg.ids.forEach((id, i) => {
+      const a = -Math.PI / 2 + i * Math.PI * 2 / cfg.ids.length;
+      spawnUnit(sides[i], cx + Math.cos(a) * R, cy + Math.sin(a) * R, id, { saved: true, quiet: true, level: lv });
+    });
+  } else {
+    spawnUnit('ally', MAP_W * 0.3, MAP_H * 0.5, cfg.ids[0], { saved: true, quiet: true, level: lv });
+    spawnUnit('enemy', MAP_W * 0.7, MAP_H * 0.5, cfg.ids[1], { saved: true, quiet: true, level: lv });
+  }
+  if (cfg.instant) return wweRunInstant();
+  bindMinimap();
+  wweIntro(cfg, () => { beginCombatPhase(); wwePanelStart(); });
+}
+// 관전 없이 결과만: 화면에 그리지 않고 전투를 끝까지 돌린다
+function wweRunInstant() {
+  const saved = { spawnDamageNumber, physSyncDom, updateUnitBars, drawMinimap, v41HudTick, v41Kill, v41Callout };
+  spawnDamageNumber = () => {}; physSyncDom = () => {}; updateUnitBars = () => {}; drawMinimap = () => {};
+  v41HudTick = () => {}; v41Kill = () => {}; v41Callout = () => {};
+  try {
+    beginCombatPhase();
+    cancelAnimationFrame(state.combatRAF);
+    let ts = state.combatStartTs, guard = 0;
+    while (state.phase === 'combat' && guard++ < 4000) {
+      ts += 100;
+      combatTick(ts);
+      cancelAnimationFrame(state.combatRAF);
+    }
+    if (state.phase === 'combat') endRoundCombat(wweJudge(), true);
+  } finally {
+    spawnDamageNumber = saved.spawnDamageNumber; physSyncDom = saved.physSyncDom; updateUnitBars = saved.updateUnitBars; drawMinimap = saved.drawMinimap;
+    v41HudTick = saved.v41HudTick; v41Kill = saved.v41Kill; v41Callout = saved.v41Callout;
+    leaveBattle();
+    document.body.classList.remove('wwe-mode', 'wwe-ffa');
+    state.mode = 'idle';
+  }
+}
+function wweMainUnit(side) {
+  let best = null;
+  for (const u of state.units) {
+    if (u.side !== side || u.isCastle || u.ownerUid || u.isClone || u.skipCount) continue;
+    if (!best || (u.alive && !best.alive)) best = u;
+  }
+  return best;
+}
+// 시간 종료 · 동시 전멸: 남은 체력 비율 → 입힌 피해 → 무작위
+function wweJudge() {
+  const sides = (state.wwe && state.wwe.sides) || ['ally', 'enemy'];
+  const score = side => {
+    const us = state.units.filter(u => u.side === side && !u.isCastle && !u.skipCount && !u.ownerUid);
+    const hp = us.reduce((s, u) => s + (u.alive ? Math.max(0, u.hp + (u.shield || 0)) / Math.max(1, u.maxHp) : 0), 0);
+    const dmg = state.units.filter(u => u.side === side).reduce((s, u) => s + (u.dmgDealt || 0), 0);
+    return hp * 1e7 + dmg + Math.random();
+  };
+  return sides.slice().sort((a, b) => score(b) - score(a))[0];
+}
+function wweRoundEnd(winnerSide, timedOut) {
+  cancelRuntimeTasks();
+  state.phase = 'roundEnd';
+  $('battleArena').classList.remove('final-moment');
+  worldEl().classList.remove('cinematic-zoom');
+  $('finalMoment').classList.remove('show');
+  state.units.forEach(u => u.el?.classList.remove('final-drift'));
+  state.units.forEach(clearTelegraph);
+  const w = state.wwe;
+  if (!w) return;
+  let side = winnerSide;
+  if (!side || side === 'draw' || !w.sideIds[side]) side = wweJudge();
+  wweRecordDeaths(true);
+  const order = w.deaths.slice().reverse().filter(s => s !== side);
+  const res = {
+    kind: w.kind, winnerSide: side, winnerId: w.sideIds[side], timedOut: !!timedOut,
+    loserIds: w.sides.filter(s => s !== side).map(s => w.sideIds[s]),
+    ranking: [side, ...order, ...w.sides.filter(s => s !== side && !order.includes(s))].map(s => w.sideIds[s]),
+    seconds: Math.round(state.combatTime || 0),
+    unit: wweMainUnit(side)
+  };
+  clearInterval(WWE.panelTimer);
+  const cb = w.onEnd;
+  if (cb) cb(res);
+}
+// 개인전 탈락 순서 기록 (패널 갱신 때마다)
+function wweRecordDeaths(final) {
+  const w = state.wwe;
+  if (!w) return;
+  w.sides.forEach(side => {
+    if (w.deaths.includes(side)) return;
+    const alive = state.units.some(u => u.side === side && u.alive && !u.isCastle);
+    const pending = state.pendingExplosions.some(e => e.skulRevive && e.skulRevive.side === side || e.sunRevive && e.sunRevive.side === side);
+    if (!alive && !pending) w.deaths.push(side);
+  });
+}
+
+/* ---------- 결과 · 우승 ---------- */
+function wweShowResult(res, opts = {}) {
+  const box = $('wweResult');
+  const c = CHAR_DB[res.winnerId];
+  const w = state.wwe;
+  const color = w ? w.colors[res.winnerSide] : '#e5322d';
+  const u = res.unit;
+  const hpPct = u && u.alive ? Math.round(clamp(u.hp / u.maxHp, 0, 1) * 100) : 0;
+  const ffaRank = res.kind === 'ffa' ? `<ol class="wr-rank">${res.ranking.map((id, i) => `<li style="animation-delay:${(0.6 + i * 0.07).toFixed(2)}s">${wweCardHtml(id)}<span>${i + 1}위</span><b>${wweEsc(CHAR_DB[id].name)}</b></li>`).join('')}</ol>` : '';
+  box.innerHTML = `<div class="wr-bg"></div><div class="wr-rays"></div>${opts.champion ? '<div class="wr-confetti">' + Array.from({ length: 40 }, (_, i) => `<i style="--x:${Math.random() * 100}%;--d:${(Math.random() * 2).toFixed(2)}s;--h:${Math.floor(Math.random() * 360)}"></i>`).join('') + '</div>' : ''}
+    <div class="wr-card${opts.champion ? ' champ' : ''}" style="--wc:${color}">
+      <span class="wr-k">${opts.champion ? 'CHAMPION' : res.kind === 'ffa' ? 'LAST ONE STANDING' : 'WINNER'}</span>
+      <div class="wr-pic">${c ? portraitHtml(c) : ''}</div>
+      <b class="wr-name">${c ? wweEsc(c.name) : ''}</b>
+      <span class="wr-sub">${opts.sub || (res.timedOut ? '시간 종료 · 판정승' : 'K.O. 승리')} · ${res.seconds}초${u && u.alive ? ` · 남은 체력 ${hpPct}%` : ''}</span>
+      ${ffaRank}
+      <div class="wr-btns">${(opts.buttons || []).map(([k, l]) => `<button type="button" data-wr="${k}">${l}</button>`).join('')}</div>
+      <span class="wr-auto" id="wweResultAuto"></span>
+    </div>`;
+  box.hidden = false;
+  const act = k => {
+    clearTimeout(WWE.resultTimer);
+    if (k === 'lobby') { WWE.t = null; wweCleanupBattle(); showScreen('wwe'); renderWweLobby(); }
+    else if (k === 'bracket') { wweBackToBracket(); }
+    else if (k === 'again') { const cfg = state.wwe ? { ...state.wwe } : null; wweCleanupBattle(); if (cfg) wweStartBattle({ kind: cfg.kind, ids: cfg.ids, level: cfg.level, label: cfg.label, intensity: cfg.intensity, onEnd: cfg.onEnd }); }
+  };
+  box.querySelectorAll('[data-wr]').forEach(b => b.addEventListener('click', () => act(b.dataset.wr)));
+  if (opts.auto) {
+    const at = Date.now() + opts.auto;
+    const tick = () => {
+      const left = Math.ceil((at - Date.now()) / 1000);
+      if (box.hidden) return;
+      if (left <= 0) { (opts.onAuto || (() => act('bracket')))(); return; }
+      const el = $('wweResultAuto'); if (el) el.textContent = `${left}초 뒤 대진표로`;
+      WWE.resultTimer = setTimeout(tick, 250);
+    };
+    tick();
+  }
+}
+
+/* ---------- 인트로 (1:1 · 개인전) ---------- */
+function wweStatLine(id, level) {
+  const c = CHAR_DB[id], f = Math.pow(LEVEL_MULT, Math.max(0, (level || 1) - 1));
+  return `HP ${formatNumber(Math.round(c.hp * f))} · ATK ${formatNumber(Math.round((c.atk || 0) * f))}`;
+}
+function wweIntro(cfg, done) {
+  const box = $('wweIntro');
+  const lvl = cfg.intensity || 0;
+  const reduced = typeof v4Reduced === 'function' && v4Reduced();
+  const short = cfg.shortIntro || reduced;
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    box.classList.add('out');
+    scheduleTask(() => { box.hidden = true; box.innerHTML = ''; box.className = 'wwe-intro'; }, 380);
+    done();
+  };
+  const L = cfg.level || 1;
+  let html;
+  if (cfg.kind === 'ffa') {
+    html = `<div class="wi-bg"></div><div class="wi-streaks"></div>
+      <div class="wi-title"><small>WWE BATTLE ROYALE</small><b>${cfg.ids.length}인 개인전</b><span>최후의 1인이 승리합니다</span></div>
+      <div class="wi-royal">${cfg.ids.map((id, i) => `<div class="wi-r" style="--tc:${WWE_TEAM_COLORS[i]};animation-delay:${(0.35 + i * 0.09).toFixed(2)}s"><i>${i + 1}</i>${wweCardHtml(id)}<span>${wweEsc(wweShort(id))}</span></div>`).join('')}</div>`;
+  } else {
+    const side = (id, s) => {
+      const c = CHAR_DB[id];
+      return `<div class="wi-side ${s}" style="--cc:${WWE_CORNER[s].color}"><div class="wi-pic">${portraitHtml(c)}</div><div class="wi-info"><small>${WWE_CORNER[s].name}</small><b>${wweEsc(c.name)}</b><span>${RARITY_LABEL[c.rarity]} · ${c.roleLabel || ''}${L > 1 ? ` · Lv.${L}` : ''}</span><em>${wweStatLine(id, L)}</em></div></div>`;
+    };
+    const pre = lvl >= 3 ? '<div class="wi-pre"><span>THE</span><b>FINAL</b></div>' : lvl === 2 ? '<div class="wi-pre semi"><b>SEMI FINAL</b></div>' : '';
+    html = `<div class="wi-bg"></div><div class="wi-streaks"></div><div class="wi-spot"></div>${pre}
+      <div class="wi-round"><span>${wweEsc(cfg.label)}</span></div>
+      ${side(cfg.ids[0], 'ally')}<div class="wi-vs"><b>VS</b></div>${side(cfg.ids[1], 'enemy')}`;
+  }
+  box.className = `wwe-intro wi-i${lvl}${short ? ' short' : ''}`;
+  box.innerHTML = html + '<div class="wi-count" id="wweCount"></div><div class="wi-flash"></div><button type="button" class="wi-skip" id="btnWweIntroSkip">건너뛰기 ▸</button>';
+  box.hidden = false;
+  void box.offsetWidth;
+  box.classList.add('play');
+  $('btnWweIntroSkip').addEventListener('click', finish);
+  // 강도별 타임라인 (초): 등장 → 카운트다운 시작 · 한 숫자 길이
+  const plan = short ? { start: 0.9, step: 0.55 } : [{ start: 2.2, step: 0.8 }, { start: 2.7, step: 0.85 }, { start: 4.2, step: 0.95 }, { start: 6.4, step: 1.1 }][lvl] || { start: 2.2, step: 0.8 };
+  const count = $('wweCount');
+  const show = (text, cls) => {
+    if (finished) return;
+    count.textContent = text;
+    count.className = 'wi-count ' + (cls || '');
+    void count.offsetWidth;
+    count.classList.add('pop');
+    if (lvl >= 2 && !short) { box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+  };
+  [3, 2, 1].forEach((n, i) => scheduleTask(() => show(String(n)), (plan.start + i * plan.step) * 1000));
+  scheduleTask(() => { show('FIGHT!', 'fight'); box.classList.add('go'); }, (plan.start + 3 * plan.step) * 1000);
+  scheduleTask(finish, (plan.start + 3 * plan.step + 0.7) * 1000);
+}
+
+/* ---------- 하단 스탯 패널 ---------- */
+const WWE_STAT_LABEL = { atk: '공격력', speed: '이동속도', aspd: '공격속도', range: '사거리' };
+function wweEffects(u) {
+  const out = [];
+  const add = (text, kind) => out.push({ text, kind });
+  const sums = {};
+  for (const k in u.buffs) { const b = u.buffs[k]; if (!b || !b.bonus) continue; sums[b.stat] = (sums[b.stat] || 0) + b.bonus; }
+  for (const stat in sums) {
+    const v = sums[stat];
+    if (Math.abs(v) < 0.005) continue;
+    if (stat === 'range') add(`사거리 ${v > 0 ? '+' : ''}${(v / GRID).toFixed(1)}칸`, v > 0 ? 'buff' : 'debuff');
+    else add(`${WWE_STAT_LABEL[stat] || stat} ${v > 0 ? '+' : ''}${Math.round(v * 100)}%`, v > 0 ? 'buff' : 'debuff');
+  }
+  const st = u.statuses || {};
+  if (st.burn) add(`화상 ${Math.round(st.burn.dps)}/초`, 'debuff');
+  if (st.poison) add(`중독 ${Math.round(st.poison.dps)}/초`, 'debuff');
+  if (st.freeze) add('빙결', 'debuff');
+  if (st.blizzard) add('눈보라', 'debuff');
+  if ((u.stun || 0) > 0) add('기절', 'debuff');
+  if (u.charmRemaining > 0) add('매혹', 'debuff');
+  if (u._hypno) add('최면', 'debuff');
+  if (u._hacked > 0) add('해킹', 'debuff');
+  if (u._lockedFor > 0) add('잠금', 'debuff');
+  if (u._blindRemaining > 0) add('눈가림', 'debuff');
+  if (u._noHeal > 0) add('회복 불가', 'debuff');
+  if (u._fearT > 0) add('공포', 'debuff');
+  if (u.statuses && u.statuses.poison && typeof healRecvMult === 'function' && healRecvMult(u) < 1 && healRecvMult(u) > 0) add(`받는 회복 -${Math.round((1 - healRecvMult(u)) * 100)}%`, 'debuff');
+  if (u.invincible > 0) add('무적', 'buff');
+  if (u.stealth > 0) add('은신', 'buff');
+  if (u._portalProtection > 0) add('보호', 'buff');
+  if (u._instinctDr > 0) add('피해 -20%', 'buff');
+  if (u._uniGuard) add('피해 감소', 'buff');
+  if (u.berserked) add('광폭화', 'buff');
+  if (u.awakened) add('각성', 'buff');
+  if (u._realm) add('아공간', 'buff');
+  if (u._wweAct) add(u._wweAct, 'ai');
+  return out;
+}
+function wweCdInfo(u) {
+  const info = skillCdInfo(u);
+  if (info && info.max > 0) return { p: 1 - clamp(info.cur / info.max, 0, 1), label: '스킬', left: info.cur };
+  if (u.def.noAttack) return null;
+  const iv = Math.max(0.1, attackInterval(u) || 1);
+  const cd = Math.max(0, u.atkCooldown || 0);
+  return { p: 1 - clamp(cd / iv, 0, 1), label: '공격', left: cd };
+}
+function wwePanelStart() {
+  const panel = $('wwePanel');
+  const w = state.wwe;
+  if (!panel || !w) return;
+  panel.hidden = false;
+  panel.className = 'wwe-panel ' + (w.ffa ? 'ffa' : 'duel');
+  panel.innerHTML = w.sides.map((side, i) => {
+    const id = w.sideIds[side], c = CHAR_DB[id];
+    return `<div class="wp-card ${side}" data-side="${side}" style="--tc:${w.colors[side]};animation-delay:${(i * 0.05).toFixed(2)}s">
+      <div class="wp-fx"></div>
+      <div class="wp-head"><span class="wp-pic">${portraitHtml(c)}</span><div class="wp-id"><small>${w.ffa ? `TEAM ${i + 1}` : WWE_CORNER[side].name}</small><b>${wweEsc(c.name)}</b></div><span class="wp-ko">K.O.</span></div>
+      <div class="wp-hp"><i class="ghost"></i><i class="fill"></i><span class="t"></span></div>
+      <div class="wp-sub"><div class="wp-sh"><i></i><span></span></div><div class="wp-cd"><i></i><span></span></div></div>
+    </div>`;
+  }).join('');
+  const cards = [...panel.querySelectorAll('.wp-card')].map(el => ({ el, side: el.dataset.side, fx: el.querySelector('.wp-fx'), fill: el.querySelector('.fill'), ghost: el.querySelector('.ghost'), t: el.querySelector('.wp-hp .t'), sh: el.querySelector('.wp-sh i'), sht: el.querySelector('.wp-sh span'), cd: el.querySelector('.wp-cd i'), cdt: el.querySelector('.wp-cd span'), last: null, fxKey: '' }));
   const draw = () => {
-    if (!state.grandMatch || state.mode !== 'arena' || state.screen !== 'battle') { el.style.display = 'none'; clearInterval(startGrandPanel.timer); return; }
-    el.innerHTML = card(grandUnit('ally'), 'ally') + card(grandUnit('enemy'), 'enemy');
+    if (state.mode !== 'wwe' || state.screen !== 'battle' || !state.wwe) { clearInterval(WWE.panelTimer); return; }
+    wweRecordDeaths(false);
+    cards.forEach(card => {
+      const u = wweMainUnit(card.side);
+      const anyAlive = state.units.some(x => x.side === card.side && x.alive && !x.isCastle);
+      if (!u) return;
+      const pct = u.alive ? clamp(u.hp / u.maxHp, 0, 1) : 0;
+      const w100 = (pct * 100).toFixed(1) + '%';
+      if (card.fill.style.width !== w100) { card.fill.style.width = w100; card.ghost.style.width = w100; }
+      if (card.last != null && pct < card.last - 0.02) { card.el.classList.remove('hit'); void card.el.offsetWidth; card.el.classList.add('hit'); }
+      card.last = pct;
+      card.t.textContent = u.alive ? `${formatNumber(Math.max(0, Math.round(u.hp)))} / ${formatNumber(Math.round(u.maxHp))}` : (anyAlive ? '소환체 생존' : 'K.O.');
+      card.el.classList.toggle('low', u.alive && pct <= 0.25);
+      card.el.classList.toggle('ko', !anyAlive);
+      const sh = Math.max(0, (u.shield || 0) + (u._tiShield || 0) + (u._whiteShield || 0) + (u._guardShield || 0));
+      const shMax = Math.max(sh, u.maxShield || 0, 1);
+      card.sh.style.width = (sh > 0 ? clamp(sh / shMax, 0, 1) * 100 : 0).toFixed(1) + '%';
+      card.sht.textContent = sh > 0 ? `쉴드 ${formatNumber(Math.round(sh))}` : '쉴드 없음';
+      card.el.classList.toggle('has-sh', sh > 0);
+      const cd = u.alive ? wweCdInfo(u) : null;
+      card.cd.style.width = (cd ? cd.p * 100 : 0).toFixed(1) + '%';
+      card.cdt.textContent = !cd ? '-' : cd.p >= 0.98 ? `${cd.label} 준비` : `${cd.label} ${cd.left.toFixed(1)}s`;
+      card.el.classList.toggle('ready', !!cd && cd.p >= 0.98);
+      const fx = u.alive ? wweEffects(u) : [];
+      const key = fx.map(f => f.kind + f.text).join('|');
+      if (key !== card.fxKey) {
+        card.fxKey = key;
+        card.fx.innerHTML = fx.slice(0, w.ffa ? 3 : 7).map(f => `<span class="${f.kind}">${wweEsc(f.text)}</span>`).join('');
+      }
+    });
+    if (w.ffa) { // 살아있는 팀이 앞으로
+      const order = cards.slice().sort((a, b) => (a.el.classList.contains('ko') - b.el.classList.contains('ko')));
+      order.forEach((c, i) => { c.el.style.order = i; });
+    }
   };
   draw();
-  startGrandPanel.timer = setInterval(draw, 120);
+  clearInterval(WWE.panelTimer);
+  WWE.panelTimer = setInterval(draw, 100);
 }
+
+/* ---------- WWE 특수 룰: 전술 봇 ----------
+   기본 AI가 이동 방향(desVx/desVy)을 정한 뒤, 위험할 때만 덮어쓴다.
+   1) 적의 공격 예고(부채꼴·원·돌격 직사각형), 떨어지는 운석·별똥별, 폭발 예정 지점, 폭격 조준, 암석지대에서 빠져나간다.
+   2) 원거리 지후는 쿨타임 동안 근접 지후에게서 거리를 벌린다(카이팅).
+   3) 체력이 25% 아래면 공격 준비가 될 때까지 잠깐 물러난다(최대 3초).
+   4) 원거리 지후는 공격을 기다리는 동안 좌우로 움직인다.
+   반응 속도와 판단은 약간의 무작위를 두어 가끔은 못 피한다. */
+const WWE_DODGE_CHANCE = 0.82;
+function wweCanAct(u) {
+  if (!u.alive || u.isCastle || u.def.immobile || !(u.def.speed > 0)) return false;
+  if (u.statuses.freeze || (u.stun || 0) > 0 || (u.knockStun || 0) > 0 || (u.physLock || 0) > 0) return false;
+  if (u._dragonDash || u._bike || u._flight || u._leap || u._uniDash || u._dive || u._lassoPull || u._distanceKnock || u._knockSlide) return false;
+  if (u._dosaDir || u._rankSpin || u._arcadeType || u._awakening != null || u._bolting || u._realm || u._negotiating) return false;
+  if (u.charge && u.charge.phase && u.charge.phase !== 'idle' && u.charge.phase !== 'done') return false;
+  if (u.charmRemaining > 0 || u._hypno || u._fearT > 0 || u._duetSeek) return false;
+  return true;
+}
+function wweThreats(u) {
+  const out = [], R = unitRadius(u);
+  for (const m of state.pendingMeteors) if (m.caster && m.caster.side !== u.side) out.push({ k: 'c', x: m.x, y: m.y, r: m.radius + R + 12, key: m });
+  for (const e of state.pendingExplosions) if (e.x != null && e.radius && (!e.caster || e.caster.side !== u.side)) out.push({ k: 'c', x: e.x, y: e.y, r: e.radius + R + 12, key: e });
+  for (const z of state.rockZones || []) if (z.side !== u.side) out.push({ k: 'c', x: z.x, y: z.y, r: z.r + R * 0.5 + 8, key: z, soft: true });
+  for (const e of state.units) {
+    if (!e.alive || e.side === u.side || e.isCastle || !sameRealm(u, e)) continue;
+    if (e.tg && e.tg.angle != null) {
+      const spec = telegraphSpec(e);
+      if (spec && !spec.heal) out.push({ k: spec.shape === 'circle' ? 'c' : 'fan', x: e.x, y: e.y, r: spec.reach + R + 8, half: spec.half, ang: e.tg.angle, key: e.tg, from: e });
+    }
+    if (e.charge && e.charge.phase === 'windup') out.push({ k: 'rect', x: e.x, y: e.y, ang: e.charge.dirAng || 0, len: 440 * WORLD_SCALE, hw: 28 * WORLD_SCALE + R + 10, key: e.charge, from: e });
+    if (e._bomb && e._bomb.phase === 'aim' && e._bomb.x != null) out.push({ k: 'c', x: e._bomb.x, y: e._bomb.y, r: e.def.bombRadius + R + 10, key: e._bomb });
+  }
+  return out;
+}
+function wweInThreat(u, th) {
+  const dx = u.x - th.x, dy = u.y - th.y, d = Math.hypot(dx, dy);
+  if (th.k === 'c') return d < th.r;
+  if (th.k === 'fan') {
+    if (d > th.r) return false;
+    if (d < unitRadius(u)) return true;
+    let a = Math.atan2(dy, dx) - th.ang;
+    while (a > Math.PI) a -= Math.PI * 2;
+    while (a < -Math.PI) a += Math.PI * 2;
+    return Math.abs(a) <= th.half + Math.asin(Math.min(1, unitRadius(u) / Math.max(d, 1))) + 0.08;
+  }
+  if (th.k === 'rect') {
+    const cs = Math.cos(th.ang), sn = Math.sin(th.ang);
+    const along = dx * cs + dy * sn, perp = Math.abs(-dx * sn + dy * cs);
+    return along > -unitRadius(u) && along < th.len && perp < th.hw;
+  }
+  return false;
+}
+function wweClampPt(p) { const pad = PHYS.WALL_PAD + 6; return { x: clamp(p.x, pad, MAP_W - pad), y: clamp(p.y, pad, MAP_H - pad) }; }
+function wweEscapePoint(u, th) {
+  const dx = u.x - th.x, dy = u.y - th.y, d = Math.hypot(dx, dy);
+  if (th.k === 'rect') {
+    const cs = Math.cos(th.ang), sn = Math.sin(th.ang);
+    const perp = -dx * sn + dy * cs;
+    let s = perp >= 0 ? 1 : -1;
+    const need = th.hw - Math.abs(perp) + 16;
+    let p = wweClampPt({ x: u.x - sn * s * need, y: u.y + cs * s * need });
+    if (Math.hypot(p.x - u.x, p.y - u.y) < need * 0.5) { s = -s; p = wweClampPt({ x: u.x - sn * s * (th.hw + Math.abs(perp) + 16), y: u.y + cs * s * (th.hw + Math.abs(perp) + 16) }); }
+    return p;
+  }
+  let ox = dx / (d || 1), oy = dy / (d || 1);
+  if (d < 2) { const a = Math.random() * Math.PI * 2; ox = Math.cos(a); oy = Math.sin(a); }
+  const radial = wweClampPt({ x: th.x + ox * (th.r + 16), y: th.y + oy * (th.r + 16) });
+  if (th.k !== 'fan') {
+    // 벽에 막혀 바깥으로 못 나가면 옆으로 돈다
+    if (Math.hypot(radial.x - th.x, radial.y - th.y) < th.r) { const a = Math.atan2(oy, ox) + (u._sidestep || 1) * Math.PI / 2; return wweClampPt({ x: th.x + Math.cos(a) * (th.r + 16), y: th.y + Math.sin(a) * (th.r + 16) }); }
+    return radial;
+  }
+  let a = Math.atan2(dy, dx) - th.ang;
+  while (a > Math.PI) a -= Math.PI * 2;
+  while (a < -Math.PI) a += Math.PI * 2;
+  const edge = th.ang + (a >= 0 ? 1 : -1) * (th.half + 0.6);
+  const lateral = wweClampPt({ x: th.x + Math.cos(edge) * Math.max(d, unitRadius(u) * 2), y: th.y + Math.sin(edge) * Math.max(d, unitRadius(u) * 2) });
+  return Math.hypot(lateral.x - u.x, lateral.y - u.y) < Math.hypot(radial.x - u.x, radial.y - u.y) ? lateral : radial;
+}
+function wweDecide(u, key) {
+  u._wweDec = u._wweDec || new Map();
+  let dec = u._wweDec.get(key);
+  if (!dec) {
+    const skill = WWE_DODGE_CHANCE + (u.def.speed >= 110 ? 0.08 : 0) - (u.def.role === 'tank' ? 0.1 : 0);
+    dec = { dodge: Math.random() < skill, at: state.combatTime + 0.06 + Math.random() * 0.2, shown: false };
+    u._wweDec.set(key, dec);
+    if (u._wweDec.size > 40) u._wweDec.delete(u._wweDec.keys().next().value);
+  }
+  return dec;
+}
+function wweTactics(u, dt) {
+  u._wweAct = '';
+  if (!wweCanAct(u)) return;
+  // 내 공격 예고가 70% 이상 찼으면 공격을 마무리한다 (근접 부채꼴 싸움)
+  const mySpec = u.tg ? telegraphSpec(u) : null;
+  const myWind = mySpec ? telegraphWindup(u, mySpec) : 0;
+  const committing = mySpec && myWind > 0 && u.atkCooldown <= myWind * 0.3;
+  // 1) 회피
+  let danger = null, dangerD = Infinity;
+  for (const th of wweThreats(u)) {
+    if (!wweInThreat(u, th)) continue;
+    if (committing && th.k === 'fan') continue;
+    const dec = wweDecide(u, th.key);
+    if (!dec.dodge || state.combatTime < dec.at) continue;
+    const d = Math.hypot(u.x - th.x, u.y - th.y);
+    const pri = th.soft ? d + 1e4 : d;
+    if (pri < dangerD) { danger = { th, dec }; dangerD = pri; }
+  }
+  if (danger) {
+    const p = wweEscapePoint(u, danger.th);
+    moveToward(u, p.x, p.y, dt, 1, null);
+    u._wweAct = danger.th.k === 'c' && !danger.th.from ? '회피 · 낙하 지점' : '회피 · 공격 예고';
+    if (!danger.dec.shown && !danger.th.soft) { danger.dec.shown = true; spawnDamageNumber(u, '회피!', { heal: true }); }
+    return;
+  }
+  if (u.def.noAttack || u.def.isHealer) return;
+  const foe = getNearestEnemy(u);
+  if (!foe) return;
+  const d = Math.hypot(foe.x - u.x, foe.y - u.y) || 1;
+  const away = n => wweClampPt({ x: u.x + (u.x - foe.x) / d * n, y: u.y + (u.y - foe.y) / d * n });
+  const reach = attackDist(u, foe);
+  const ratio = u.hp / Math.max(1, u.maxHp), foeRatio = foe.hp / Math.max(1, foe.maxHp);
+  // 3) 저체력 후퇴 (공격이 준비되면 다시 싸운다)
+  if (ratio < 0.25 && foeRatio > ratio + 0.15 && (u._wweFlee || 0) < 3 && u.atkCooldown > 0.5 && d < reach + 2.5 * GRID && !foe.def.noAttack) {
+    u._wweFlee = (u._wweFlee || 0) + dt;
+    let p = away(160);
+    if (Math.hypot(p.x - u.x, p.y - u.y) < 40) { const a = Math.atan2(u.y - foe.y, u.x - foe.x) + (u._sidestep || 1) * Math.PI / 2; p = wweClampPt({ x: u.x + Math.cos(a) * 160, y: u.y + Math.sin(a) * 160 }); }
+    moveToward(u, p.x, p.y, dt, 1, null);
+    u._wweAct = '후퇴';
+    return;
+  }
+  const ranged = !u.def.isMelee && (u.def.range || 0) >= 2.5 * GRID;
+  if (!ranged) return;
+  // 2) 카이팅: 근접 지후가 다가오면 쿨타임 동안 뒤로
+  if (foe.def.isMelee && d < reach * 0.62 && u.atkCooldown > 0.25 && u.def.speed >= (foe.def.speed || 80) * 0.75) {
+    let p = away(120);
+    if (Math.hypot(p.x - u.x, p.y - u.y) < 40) { const a = Math.atan2(u.y - foe.y, u.x - foe.x) + (u._sidestep || 1) * Math.PI / 2; p = wweClampPt({ x: u.x + Math.cos(a) * 120, y: u.y + Math.sin(a) * 120 }); u._sidestep = -(u._sidestep || 1); }
+    moveToward(u, p.x, p.y, dt, 1, null);
+    u._wweAct = '거리 벌리기';
+    return;
+  }
+  // 4) 무빙: 사거리 안에서 공격을 기다리는 동안 옆으로
+  if (u._engaged && d <= reach && u.atkCooldown > 0.35) {
+    u._wweOrbitT = (u._wweOrbitT || 0) - dt;
+    if (u._wweOrbitT <= 0) { u._wweOrbitT = 1 + Math.random() * 1.6; u._wweOrbit = Math.random() < 0.5 ? -1 : 1; }
+    const a = Math.atan2(u.y - foe.y, u.x - foe.x) + (u._wweOrbit || 1) * 0.35;
+    const keep = clamp(d, reach * 0.6, reach * 0.9);
+    const p = wweClampPt({ x: foe.x + Math.cos(a) * keep, y: foe.y + Math.sin(a) * keep });
+    moveToward(u, p.x, p.y, dt, 0.55, null);
+    u._wweAct = '';
+  }
+}
+
+/* ---------- 연결 ---------- */
+$('btnOpenWwe')?.addEventListener('click', openWwe);
+$('btnWweBack').addEventListener('click', () => { WWE.t = null; wweCleanupBattle(); showScreen('lobby'); renderAccountUI(); });
+document.querySelectorAll('#wweTabs [data-wwe-mode]').forEach(b => b.addEventListener('click', () => { WWE.mode = b.dataset.wweMode; wweSavePrefs(); renderWweLobby(); }));
+$('wweSearch').addEventListener('input', e => { WWE.search = e.target.value; renderWweGrid(); });
+$('btnWweStart').addEventListener('click', wweStart);
+$('btnWweBrBack').addEventListener('click', () => { clearTimeout(WWE.nextTimer); WWE.bulk = false; WWE.t = null; showScreen('wwe'); renderWweLobby(); });
+$('wweBrAuto').addEventListener('click', () => { WWE.auto = !WWE.auto; wweSavePrefs(); renderWweBracket(); if (WWE.auto) wweQueueNext(1800); else { clearTimeout(WWE.nextTimer); $('wweBrCountdown').textContent = ''; } });
+$('btnWweBrPlay').addEventListener('click', () => wwePlayNext(false));
+$('btnWweBrSkip').addEventListener('click', () => { const m = WWE.t && wweNextMatch(WWE.t); if (!m) return; clearTimeout(WWE.nextTimer); wwePlayNext(true); renderWweBracket(m); if (WWE.auto && !WWE.t.champion) wweQueueNext(2600); });
+$('btnWweBrSkipAll').addEventListener('click', wweSkipAll);
+setInterval(() => { if (state.screen === 'lobby') renderWweTile(); }, 2000);
+renderWweTile();
+
 const lobbyCardArena = $('lobbyCardArena');
 if (lobbyCardArena) {
   lobbyCardArena.addEventListener('click', openArena);
@@ -11662,8 +12787,7 @@ if (lobbyCardArena) {
   });
 }
 $('btnArenaBack').addEventListener('click', () => showScreen('lobby'));
-$('btnArenaStart').addEventListener('click', () => startArenaMatch(false));
-$('btnArenaGrand').addEventListener('click', () => startArenaMatch(true));
+$('btnArenaStart').addEventListener('click', () => startArenaMatch());
 $('btnArenaRandAlly').addEventListener('click', ev => { ev.stopPropagation(); arenaFillRandom('ally', 6); });
 $('btnArenaRandEnemy').addEventListener('click', ev => { ev.stopPropagation(); arenaFillRandom('enemy', 6); });
 $('btnArenaClearAlly').addEventListener('click', ev => { ev.stopPropagation(); arenaClearSide('ally'); });
@@ -13891,6 +15015,7 @@ function spawnUnit(side, x, y, charId, opts) {
   scaleCombatDef(def);
   const el = document.createElement('div');
   el.className = 'unit ' + (side === 'ally' ? 'ally-unit' : 'enemy-unit');
+  if (state.mode === 'wwe') wweDecorateEl(el, side); // 4.6.3 WWE 개인전 팀 색
   if (def.small) el.classList.add('unit-small');
   if (def.big) el.classList.add('unit-big');
   el.style.left = x + 'px'; el.style.top = y + 'px';
@@ -14437,7 +15562,7 @@ function v41NextCallout() {
   const { u, label } = next;
   el.className = 'v41-callout ' + (u.side === 'enemy' ? 'enemy' : 'ally');
   el.innerHTML = `<span class="v41-av" style="--rc:${V41_RING[u.def.rarity] || '#d6d6d3'}">${portraitHtml(u.def)}</span><span class="t"><span class="k"></span><b></b></span>`;
-  el.querySelector('.k').textContent = (u.side === 'enemy' ? 'ENEMY SKILL' : 'SKILL');
+  el.querySelector('.k').textContent = state.mode === 'wwe' ? ((WWE_CORNER[u.side] && WWE_CORNER[u.side].name) || 'SKILL') : (u.side === 'enemy' ? 'ENEMY SKILL' : 'SKILL');
   el.querySelector('b').textContent = u.def.name + ' · ' + label;
   void el.offsetWidth;
   el.classList.add('show');
@@ -15873,6 +16998,7 @@ function physicsStep(dt) {
   for (let i = 0; i < units.length; i++) {
     if (units[i].alive && !units[i].isCastle) aiSteerAndAttack(units[i], dt);
   }
+  if (state.mode === 'wwe') for (let i = 0; i < units.length; i++) if (units[i].alive && !units[i].isCastle) wweTactics(units[i], dt); // 4.6.3 WWE 전술 봇
   if (state.phase !== "combat") return;
 
   for (let i = 0; i < units.length; i++) {
@@ -15890,6 +17016,11 @@ function physicsStep(dt) {
     if (u.charge && u.charge.phase === "charging") chargeScanHits(u, u.charge);
   }
 
+  if (state.mode === 'wwe') { // 4.6.3 WWE: 살아남은 진영이 하나(또는 없음)면 끝 (개인전은 진영이 여러 개)
+    const aliveSides = new Set(units.filter(u => u.alive && !u.isCastle).map(u => u.side));
+    if (!state.pendingExplosions.length && !state.pendingMeteors.length && aliveSides.size <= 1) beginFinalMoment(aliveSides.size ? [...aliveSides][0] : 'draw');
+    return;
+  }
   const aliveAllies = units.filter((u) => u.side === "ally" && u.alive && !u.isCastle).length;
   const aliveEnemies = units.filter((u) => u.side === "enemy" && u.alive && !u.isCastle).length;
   if (state.mode !== 'castle' && !state.pendingExplosions.length && !state.pendingMeteors.length && (aliveAllies === 0 || aliveEnemies === 0)) {
@@ -16651,13 +17782,14 @@ function applyDamageRaw(target, amount, opts) {
 
 function combatTick(ts) {
   if (state.phase !== 'combat') return;
-  const limit = state.mode === 'castle' ? CASTLE_ROUND_TIME_LIMIT : state.mode === 'preview' ? PREVIEW_TIME_LIMIT : COMBAT_TIME_LIMIT;
+  const limit = state.mode === 'castle' ? CASTLE_ROUND_TIME_LIMIT : state.mode === 'preview' ? PREVIEW_TIME_LIMIT : state.mode === 'wwe' && state.wwe ? state.wwe.timeLimit : COMBAT_TIME_LIMIT;
   const remaining = Math.max(0, Math.ceil(limit - (ts - state.combatStartTs) / 1000));
   $('phaseTimer').textContent = remaining;
   $('phaseTimer').classList.toggle('urgent', remaining <= 10);
   v4Ring(remaining, limit);
   if (remaining === 0) {
     if (state.mode === 'castle') endRoundCombat(null);
+    else if (state.mode === 'wwe') endRoundCombat(wweJudge(), true);
     else {
       // 판정에는 화면에 보이는 정수 승률을 그대로 사용한다. 50:50은 재경기다.
       const allyPercent = updateOddsBar();
@@ -20039,6 +21171,12 @@ function slotJackpot(u) {
   state.lastDeathPoint = { x: u.x, y: u.y };
   const loser = u.side === 'ally' ? 'enemy' : 'ally';
   if (state.mode === 'castle') { finishMatch(u.side); return; }
+  if (state.mode === 'wwe') { // 개인전 포함: 다른 모든 진영이 쓰러진다
+    state.units.forEach(e => { if (e.alive && e.side !== u.side && !e.isCastle) { e._devoured = true; e.hp = 0; killUnit(e); } });
+    state.pendingExplosions = []; state.pendingMeteors = [];
+    beginFinalMoment(u.side);
+    return;
+  }
   // 라이프를 1로 만들고 이번 라운드를 이긴 것으로 끝내 남은 라이프까지 전부 깎는다
   if (loser === 'enemy') state.enemyLives = Math.min(state.enemyLives, 1); else state.allyLives = Math.min(state.allyLives, 1);
   state.units.forEach(e => { if (e.alive && e.side === loser && !e.isCastle) { e._devoured = true; e.hp = 0; killUnit(e); } });
@@ -20879,6 +22017,7 @@ function updateStatusIcons(u) {
 function beginFinalMoment(winnerSide) {
   if (state.phase !== 'combat' || state.mode === 'castle') return;
   state.phase = 'finalMoment';
+  if (state.mode === 'wwe' && state.wwe && state.wwe.instant) { endRoundCombat(winnerSide); return; } // 즉시 결과: 연출 없이
   const focus = state.lastDeathPoint;
   if (focus && Number.isFinite(focus.x) && Number.isFinite(focus.y)) {
     const world = worldEl();
@@ -20932,6 +22071,7 @@ function recordRoundStats(winnerSide, timedOut) {
   state.matchStats.push({ round: state.round, winner: winnerSide, timedOut, seconds: Math.round(state.combatTime || 0), rows: list });
 }
 function endRoundCombat(winnerSide, timedOut = false) {
+  if (state.mode === 'wwe') { wweRoundEnd(winnerSide, timedOut); return; } // 4.6.3 WWE는 따로 정산
   recordRoundStats(winnerSide, timedOut);
   cancelRuntimeTasks();
   state.phase = 'roundEnd';
@@ -21224,6 +22364,24 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.6.3': {
+    label: 'v4.6.3 WWE — 그랜드매치 리뉴얼',
+    date: '2026.09.30',
+    sections: [
+      { title: 'WWE', items: [
+        { emoji:'🏆', name:'WWE 오픈', tag:'new', color:'#e5322d', desc:'투기장의 임시 기능이던 그랜드매치가 <b>WWE</b>라는 공식 모드로 바뀝니다. 로비 <b>11번 타일</b>에서 <b>Lv.10</b>부터 입장할 수 있어요. 모든 지후를 골라 관전할 수 있고 보상은 없습니다.' },
+        { emoji:'⚔️', name:'1:1 단판', tag:'new', color:'#111111', desc:'레드 코너와 블루 코너에 지후를 한 명씩 넣고 바로 싸웁니다. 코너 바꾸기 · 랜덤 대진 · 지후 레벨(1~7) 설정.' },
+        { emoji:'🗂', name:'토너먼트', tag:'new', color:'#f2c94c', desc:'원하는 지후를 <b>4명부터 전원(107명 이상)</b>까지 고르면 대진표를 자동으로 만듭니다. 인원이 2의 거듭제곱이 아니면 부전승을 고르게 흩어요. <b>자동으로 넘어가기 · 수동으로 넘어가기</b>, 한 경기 또는 <b>남은 경기 전부 즉시 결과</b>도 가능합니다.' },
+        { emoji:'👑', name:'개인전', tag:'new', color:'#9b59d0', desc:'최대 <b>15명</b>이 전부 <b>서로 다른 팀</b>이 되어 싸웁니다. 원형으로 자동 배치되고 최후의 1인이 승리. 끝나면 순위를 보여줍니다.' },
+        { emoji:'🎬', name:'1:1 인트로', tag:'new', color:'#e5322d', desc:'경기 전 두 지후가 양쪽에서 등장하는 1:1 인트로와 <b>3 · 2 · 1 카운트다운</b>. <b>결승전으로 갈수록</b> 8강 붉은 조명 → 준결승 SEMI FINAL · 번개 · 화면 흔들림 → 결승 THE FINAL · 스포트라이트로 점점 길고 긴장감 있게 바뀝니다.' },
+        { emoji:'🤖', name:'특수 룰 · 전술 봇', tag:'new', color:'#f59f00', desc:'WWE에서만 지후들이 상황을 보고 움직입니다. 적의 <b>공격 예고(차징) 범위에서 빠져나가고</b>, <b>운석 · 별똥별 · 폭발 · 폭격 · 돌격 경로를 피하고</b>, 원거리 지후는 근접 지후에게서 <b>거리를 벌리고</b>, 체력이 낮으면 공격이 준비될 때까지 <b>물러났다가</b> 다시 싸웁니다. 반응에는 약간의 운이 섞여 가끔은 못 피해요.' },
+        { emoji:'📊', name:'하단 스탯 패널', tag:'new', color:'#2f6fed', desc:'새 패널: 체력바(맞으면 노란 잔상이 천천히 줄고 카드가 흔들림 · 25% 이하 붉게 깜빡임) · 그 아래 <b>쉴드 게이지</b>와 <b>쿨타임 게이지</b>, 체력바 위에는 걸린 효과(<b>공격력 -50%</b> · 화상 · 중독 · 빙결 · 기절 · 무적 · 회피 기동 등). 입힌 피해 표시는 뺐습니다. 쓰러지면 K.O. 도장.' }
+      ] },
+      { title: '투기장', items: [
+        { emoji:'🧹', name:'그랜드매치 버튼 삭제', tag:'adjust', color:'#888888', desc:'1:1 그랜드매치는 WWE로 옮겨졌습니다.' }
+      ] }
+    ]
+  },
   '4.6.2': {
     label: 'v4.6.2 투기장 그랜드매치',
     date: '2026.09.30',
@@ -23744,6 +24902,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ex = $('btnExitBattle');
   if (ex) ex.addEventListener('click', ev => {
     ev.stopPropagation();
+    if (state.screen === 'battle' && state.mode === 'wwe') { const t = WWE.t; wweCleanupBattle(); if (t && !t.champion) { showScreen('wweBracket'); renderWweBracket(); } else { WWE.t = null; showScreen('wwe'); renderWweLobby(); } return; }
     if (state.screen === 'battle' && !state.matchSettled) openModal('surrenderModal');
   });
   $('btnSurrenderCancel').addEventListener('click', () => closeModal('surrenderModal'));
