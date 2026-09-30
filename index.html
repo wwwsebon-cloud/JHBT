@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.7.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.7.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -1856,6 +1856,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 .fx-genesis-ring svg { display:block; overflow:visible; animation:genRing 24s linear infinite; }
 .fx-genesis-ring circle { fill:rgba(217,217,225,.07); stroke:#9aa0b4; stroke-width:3; stroke-dasharray:16 26; stroke-linecap:round; }
 .fx-genesis-ring.enemy circle { stroke:#c49aa0; }
+.fx-genesis-ring.alone circle { stroke:#e5322d; fill:rgba(229,50,45,.05); } /* 4.7.3 혼자일 때 약화 표시 */
 @keyframes genRing { to { transform:rotate(360deg); } }
 .fx-genesis-break { width:0; height:0; z-index:9; pointer-events:none; }
 .fx-genesis-break i { position:absolute; left:-60px; top:-60px; width:120px; height:120px; border-radius:50%; border:4px dashed #d9d9e1; animation:v467ring .6s ease-out forwards; }
@@ -6410,7 +6411,8 @@ const CHARACTER_BALANCE = {
   genesis: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 99, atk: 299, atkSpeed: 1, range: 270, speed: 81,
-    genesisRadius: 157.5, genesisShield: 9999, genesisTransfer: 0.9 // 4.7.2 리워크: 범위 내 아군 피해 90%를 제네시스 쉴드가 대신 받는다
+    genesisRadius: 247.5, genesisShield: 9999, genesisTransfer: 0.9, // 4.7.2 리워크: 범위 내 아군 피해 90%를 제네시스 쉴드가 대신 받는다 · 4.7.3 반지름 5.5칸
+    genesisAloneTaken: 1.5 // 4.7.3 [약화] 범위에 아군이 없으면 받는 피해 150% (무효화도 꺼진다)
   },
   dust: {
     hp: 1800, atk: 80, atkSpeed: 0.5, range: 180, speed: 67.5,
@@ -8242,7 +8244,7 @@ const CHAR_DB = {
     id: 'genesis', name: '제네시스 지후', emoji: '✧', role: 'support', roleLabel: '서포터',
     rarity: 'hidden', color: '#d9d9e1', portrait: PORTRAITS.genesis,
     ...CHARACTER_BALANCE.genesis,
-    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. HP 99 · <b>제네시스 쉴드 9,999</b>. 주변 <b>3.5칸</b>(점선 원) 안의 아군은 받는 피해의 <b>10%</b>만 받고, 나머지 <b>90%</b>는 제네시스 쉴드가 대신 받는다. 쉴드가 깨지기 전까지 자신이 받는 피해는 <b>100% 무효</b>.'
+    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. HP 99 · <b>제네시스 쉴드 9,999</b>. 주변 <b>5.5칸</b>(점선 원) 안의 아군은 받는 피해의 <b>10%</b>만 받고, 나머지 <b>90%</b>는 제네시스 쉴드가 대신 받는다. 쉴드가 깨지기 전까지 자신이 받는 피해는 <b>100% 무효</b>. <b>[약화]</b> 범위에 아군이 한 명도 없으면 자신이 받는 피해 <b>150%</b>.'
   },
   dust: {
     id: 'dust', name: '황사 지후', emoji: '🌪️', role: 'support', roleLabel: '서포터',
@@ -16676,14 +16678,17 @@ function refreshGenesisAuras() {
     if (on) (casters || (casters = [])).push(u);
     genesisRing(u, on);
   }
-  if (!casters) return;
+  for (const u of state.units) if (u.charId === 'genesis') u._genAlone = u.alive;
   for (const ally of state.units) {
-    if (!ally.alive || ally.isCastle) continue;
-    for (const c of casters) {
-      if (ally === c || ally.side !== c.side || !sameRealm(ally, c)) continue;
-      if (Math.hypot(ally.x - c.x, ally.y - c.y) <= c.def.genesisRadius) { ally._genGuardBy = c; break; }
+    if (!ally.alive || ally.isCastle || ally.charId === 'genesis' && !ally.ownerUid) continue;
+    for (const c of state.units) {
+      if (c.charId !== 'genesis' || !c.alive || ally.side !== c.side || !sameRealm(ally, c)) continue;
+      if (Math.hypot(ally.x - c.x, ally.y - c.y) > c.def.genesisRadius) continue;
+      c._genAlone = false; // 4.7.3 범위에 아군이 있다
+      if (!ally._genGuardBy && casters && casters.includes(c)) ally._genGuardBy = c;
     }
   }
+  state.units.forEach(u => { if (u.charId === 'genesis' && u._genRing) u._genRing.classList.toggle('alone', !!u._genAlone); });
 }
 // 범위를 간격이 넓은 점선 원으로 그린다
 function genesisRing(u, on) {
@@ -16701,6 +16706,7 @@ function genesisRing(u, on) {
 // 피해 계산 끝에서 부른다. 제네시스 본인은 쉴드가 있으면 0, 범위 내 아군은 90% 를 쉴드로 넘긴다.
 function genesisIntercept(target, dmg) {
   if (!(dmg > 0)) return dmg;
+  if (target.charId === 'genesis' && target._genAlone) return dmg * target.def.genesisAloneTaken; // 4.7.3 [약화] 혼자면 무효화 없이 150%
   if (target.charId === 'genesis' && target._genShield > 0) {
     if (!(target._genNullT > state.combatTime)) { target._genNullT = state.combatTime + 0.6; spawnDamageNumber(target, '✧ 무효', { heal: true }); }
     return 0;
@@ -23564,6 +23570,15 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.7.3': {
+    label: 'v4.7.3 긴급 조정',
+    date: '2026.09.30',
+    sections: [
+      { title: '긴급 조정', items: [
+        { emoji:'✧', name:'제네시스 지후', tag:'adjust', color:'#d9d9e1', portraitKey:'genesis', desc:'효과 반지름 <b>3.5칸 → 5.5칸</b>. 새 <b>[약화]</b>: 범위에 아군이 한 명도 없으면 자신이 받는 피해 <b>150%</b> (피해 무효화도 꺼집니다). 혼자일 때는 점선 원이 빨갛게 변해요.' }
+      ] }
+    ]
+  },
   '4.7.2': {
     label: 'v4.7.2 밸런스 패치 · 제네시스 리워크 · 최적화',
     date: '2026.09.30',
