@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.7.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.7.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -855,6 +855,7 @@ html, body {
 @keyframes v470strike { 0% { opacity:1; transform:scaleY(.2); transform-origin:50% 0; } 25% { opacity:1; transform:scaleY(1); } 100% { opacity:0; transform:scaleY(1); } }
 @keyframes v470flash { 0% { opacity:0; transform:scale(.4); } 30% { opacity:1; transform:scale(1.2); } 100% { opacity:0; transform:scale(1.6); } }
 .fx-typhoon.grinding { filter:drop-shadow(0 0 10px rgba(229,50,45,.8)); }
+.unit.typhoon-s2 { filter:saturate(2.2) brightness(.72) contrast(1.15) drop-shadow(0 0 10px #1e7f7f); border-color:#1e6f6f !important; box-shadow:0 0 0 3px rgba(30,111,111,.55), 0 0 16px rgba(30,127,127,.8) !important; }
 /* 4.7.0 놓을 수 없는 풀 카드 · MAX 배지 */
 .pool-card.v470-dead { filter:grayscale(1); opacity:.38; cursor:not-allowed; }
 .pool-card.v470-dead:active { transform:none; }
@@ -6601,15 +6602,16 @@ const CHARACTER_BALANCE = {
     tiShieldPerHit: 125, tiShieldTime: 1, tiShieldMax: 5000
   },
   typhoon: {
-    hp: 2000, atk: 30, atkSpeed: 0.2, range: 135, speed: 90,
+    hp: 2600, atk: 30, atkSpeed: 0.2, range: 405, speed: 90, // 4.7.2 HP 2600 · 사거리 9칸
     typhoonSpeed: 54, typhoonTick: 0.4, typhoonDamage: 200,
-    typhoonTime: 6.5, typhoonHoming: 3.2, typhoonInsideSlow: 0.6, typhoonRamp: 20 // 4.7.0
+    typhoonTime: 6.5, typhoonHoming: 3.2, typhoonInsideSlow: 0.6, typhoonRamp: 20, // 4.7.0
+    stage1Time: 4, stage2Time: 2.5, stage2Crit: 0.1 // 4.7.2 폼 변화: 1단계 4초 ↔ 2단계 2.5초 (크리티컬 10%)
   },
   cloud: {
-    hp: 2300, atk: 0, atkSpeed: 1, range: 45, speed: 63,
+    hp: 2800, atk: 0, atkSpeed: 1, range: 45, speed: 63, // 4.7.2 HP 2800
     noAttack: true,
-    cloudRadius: 90, cloudSlow: 0.5, cloudDps: 225,
-    cloudEvery: 0.5 // 4.7.0 0.5초마다 225
+    cloudRadius: 90, cloudSlow: 0.5, cloudDps: 320, // 4.7.2 225 → 320
+    cloudEvery: 0.5 // 4.7.0 0.5초마다
   },
   golf: {
     hp: 2200, atk: 800, atkSpeed: 4, range: 72, speed: 67.5,
@@ -6643,7 +6645,7 @@ const CHARACTER_BALANCE = {
   },
   parasite: {
     hp: 1900, atk: 10, atkSpeed: 0.5, range: 112.5, speed: 58.5,
-    bugEvery: 9, ctrlTime: 6, ctrlHp: 0.25, ctrlSpeed: 2, ctrlDr: 0.6
+    bugEvery: 6.5, ctrlTime: 6, ctrlHp: 0.25, ctrlSpeed: 2, ctrlDr: 0.6
   },
   flower: {
     hp: 2000, atk: 0, atkSpeed: 1, range: 45, speed: 72,
@@ -6662,14 +6664,14 @@ const CHARACTER_BALANCE = {
   beatmania: {
     hp: 2200, atk: 0, atkSpeed: 1, range: 225, speed: 67.5,
     noAttack: true, holdRange: true,
-    noteMin: 0.3, noteMax: 0.7, noteDamage: 400, noteSpeed: 16, beatWindow: 0.15, beatTeleport: 1.5, beatRadius: 1, beatDamage: 400
+    noteMin: 0.3, noteMax: 0.7, noteDamage: 290, noteSpeed: 16, beatWindow: 0.15, beatTeleport: 1.5, beatRadius: 1, beatDamage: 400
   },
   gun: {
     hp: 2200, atk: 350, atkSpeed: 1.8, range: 202.5, speed: 81,
     shotMax: 1200, shotMin: 100
   },
   bug: {
-    hp: 1250, atk: 0, atkSpeed: 1, range: 45, speed: 157.5,
+    hp: 1800, atk: 0, atkSpeed: 1, range: 45, speed: 157.5,
     noAttack: true
   },
   nuke: {
@@ -8275,13 +8277,13 @@ const CHAR_DB = {
     id: 'typhoon', name: '태풍 지후', emoji: '🌀', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#5fbfbf', portrait: PORTRAITS.typhoon,
     ...CHARACTER_BALANCE.typhoon,
-    skillDesc: 'ATK 30 · 공격 간격 <b>0.2초</b>. 일반 공격이 <b>크리티컬</b>로 맞으면 제자리에 유닛 크기의 <b>태풍</b>을 부른다. 태풍은 <b>6.5초</b> 동안 <b>가장 가까운 적에게 유도</b>되고 (뒤로 갈 수도 있다), 안에 있는 적에게 <b>0.4초마다 200</b> 피해를 준다. 적과 겹쳐 있으면 태풍의 이동속도 <b>-60%</b> · 겹쳐 있는 동안 피해가 <b>1초마다 +20</b>씩 커진다.'
+    skillDesc: 'ATK 30 · 공격 간격 <b>0.2초</b> · 사거리 <b>9칸</b>. <b>[폼 변화]</b> 1단계(<b>4초</b>)와 2단계(<b>2.5초</b>)를 계속 오간다. 2단계에서는 색이 진해지고 크리티컬 확률이 <b>10%</b>로 오른다. 일반 공격이 <b>크리티컬</b>로 맞으면 제자리에 유닛 크기의 <b>태풍</b>을 부른다. 태풍은 <b>6.5초</b> 동안 <b>가장 가까운 적에게 유도</b>되고 (뒤로 갈 수도 있다), 안에 있는 적에게 <b>0.4초마다 200</b> 피해를 준다. 적과 겹쳐 있으면 태풍의 이동속도 <b>-60%</b> · 겹쳐 있는 동안 피해가 <b>1초마다 +20</b>씩 커진다.'
   },
   cloud: {
     id: 'cloud', name: '먹구름 지후', emoji: '⛈️', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#4a4a52', portrait: PORTRAITS.cloud,
     ...CHARACTER_BALANCE.cloud,
-    skillDesc: '공격하지 않는다. 자신 주변 <b>반경 2칸</b>이 먹구름 지역: 안에 있는 적은 이동속도 <b>-50%</b> · <b>0.5초마다 225</b> 피해 (번개가 떨어진다). 적에게 붙어 다닌다.'
+    skillDesc: '공격하지 않는다. 자신 주변 <b>반경 2칸</b>이 먹구름 지역: 안에 있는 적은 이동속도 <b>-50%</b> · <b>0.5초마다 320</b> 피해 (번개가 떨어진다). 적에게 붙어 다닌다.'
   },
   // ── 4.7.0 신규 ──
   enhance: {
@@ -8299,7 +8301,7 @@ const CHAR_DB = {
     id: 'parasite', name: '기생충 지후', emoji: '🪱', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#7f9a2e', portrait: PORTRAITS.parasite || jhPlaceholder('🪱', '#7f9a2e'),
     ...CHARACTER_BALANCE.parasite,
-    skillDesc: 'ATK 10 · 공격 간격 0.5초 · 사거리 2.5칸. <b>9초마다</b> 몸에서 <b>버러지후</b>(HP 1,250 · 이동속도 3.5칸, 기생충 레벨만큼 강해짐)를 내보낸다. 버러지후는 가장 가까운 적을 쫓아가, 닿으면 그 적에게 붙어 <b>[조종]</b>: 그 적은 제 편을 공격하고 이동속도 <b>+2칸</b>. 체력이 <b>25%</b> 아래가 되거나 <b>6초</b>가 지나면 풀린다. 조종 중에는 기생충 지후가 받는 피해 <b>60%</b> 감소 · 버러지후 쿨타임이 줄지 않는다.'
+    skillDesc: 'ATK 10 · 공격 간격 0.5초 · 사거리 2.5칸. <b>6.5초마다</b> 몸에서 <b>버러지후</b>(HP 1,800 ·이동속도 3.5칸, 기생충 레벨만큼 강해짐)를 내보낸다. 버러지후는 가장 가까운 적을 쫓아가, 닿으면 그 적에게 붙어 <b>[조종]</b>: 그 적은 제 편을 공격하고 이동속도 <b>+2칸</b>. 체력이 <b>25%</b> 아래가 되거나 <b>6초</b>가 지나면 풀린다. 조종 중에는 기생충 지후가 받는 피해 <b>60%</b> 감소 · 버러지후 쿨타임이 줄지 않는다.'
   },
   flower: {
     id: 'flower', name: '꽃 지후', emoji: '🌺', role: 'dealer', roleLabel: '딜러',
@@ -8324,7 +8326,7 @@ const CHAR_DB = {
     id: 'beatmania', name: '비트마니아 지후', emoji: '🎵', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#b14bff', portrait: PORTRAITS.beatmania || jhPlaceholder('🎵', '#b14bff'),
     ...CHARACTER_BALANCE.beatmania,
-    skillDesc: '공격하지 않는다. 필드를 <b>4줄</b>로 나눠 <b>0.3~0.7초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 적진에서 아군 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>400</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.15초 전부터 0.15초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 1칸 적에게 <b>400</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
+    skillDesc: '공격하지 않는다. 필드를 <b>4줄</b>로 나눠 <b>0.3~0.7초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 적진에서 아군 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>290</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.15초 전부터 0.15초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 1칸 적에게 <b>400</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
   },
   gun: {
     id: 'gun', name: '총 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -21112,6 +21114,16 @@ function tickNew47(u, dt) {
       return;
     }
     case 'lantern': if (!u._realm) tickLantern(u, dt); break;
+    case 'typhoon': { // 4.7.2 폼 변화: 1단계 4초 ↔ 2단계 2.5초, 2단계에서는 크리티컬 확률 10%
+      if (u._tyStage == null) { u._tyStage = 1; u._tyT = d.stage1Time; }
+      u._tyT -= dt;
+      if (u._tyT > 0) break;
+      u._tyStage = u._tyStage === 1 ? 2 : 1;
+      u._tyT += u._tyStage === 2 ? d.stage2Time : d.stage1Time;
+      u.el.classList.toggle('typhoon-s2', u._tyStage === 2);
+      if (u._tyStage === 2) { spawnDamageNumber(u, '🌀 2단계', { crit: true }); spawnBurst(u.el, '#1e7f7f'); }
+      break;
+    }
     case 'beatmania': {
       if (!u._beatInit) { u._beatInit = true; const keys = Object.keys(BEAT_DIRS); beatBorder(u, BEAT_DIRS[keys[Math.floor(Math.random() * 4)]].color); }
       if (u._beatDodge > 0) { u._beatDodge = Math.max(0, u._beatDodge - dt); u.el.classList.toggle('n47-dodge', u._beatDodge > 0); }
@@ -21228,6 +21240,11 @@ function resetNew47State() {
   document.querySelectorAll('.n47-fx').forEach(el => el.remove());
   state.n47 = null;
   state.nukes = []; // 4.7.0 핵은 그 라운드 안에 떨어지지 않으면 사라진다 (한 방을 노리는 지후)
+}
+// 크리티컬 확률 (기본 2%, 태풍 2단계 10%)
+function critChanceOf(caster) {
+  if (caster && caster.charId === 'typhoon' && caster._tyStage === 2) return caster.def.stage2Crit;
+  return CRIT_CHANCE;
 }
 // 받는 피해 회피 (dealDamage · applyDamageRaw)
 function dodge47(target) {
@@ -22719,7 +22736,7 @@ function dealDamage(caster, target, amount, opts) {
     return false;
   }
   if (!opts.skipAtkBuff) amount *= atkBuffMult(caster);
-  const critHit = amount > 0 && Math.random() < CRIT_CHANCE;
+  const critHit = amount > 0 && Math.random() < critChanceOf(caster);
   if (critHit) amount *= 2;
   if (critHit && caster && caster.charId === 'typhoon' && caster.alive && !opts.isSkill && !opts.isDot && !opts.reflected && !opts.fromDeath) spawnTyphoon(caster);
   if (target.charId === 'impeachment' && amount > 0) activateImpeachment(target, opts);
@@ -23461,6 +23478,18 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.7.2': {
+    label: 'v4.7.2 밸런스 패치',
+    date: '2026.09.30',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🌀', name:'태풍 지후', tag:'buff', color:'#5fbfbf', portraitKey:'typhoon', desc:'HP <b>2,000 → 2,600</b> · 사거리 <b>3칸 → 9칸</b>. 새 패시브 <b>[폼 변화]</b>: 1단계(4초)와 2단계(2.5초)를 계속 오가며, 2단계에서는 색이 진해지고 <b>크리티컬 확률 10%</b>.' },
+        { emoji:'⛈️', name:'먹구름 지후', tag:'buff', color:'#4a4a52', portraitKey:'cloud', desc:'HP <b>2,300 → 2,800</b> · 피해 <b>0.5초마다 225 → 320</b>.' },
+        { emoji:'🪱', name:'기생충 지후', tag:'buff', color:'#7f9a2e', portraitKey:'parasite', desc:'버러지후 소환 <b>9초 → 6.5초</b> · 버러지후 HP <b>1,250 → 1,800</b>.' },
+        { emoji:'🎵', name:'비트마니아 지후', tag:'nerf', color:'#b14bff', portraitKey:'beatmania', desc:'음표 피해 <b>400 → 290</b>.' }
+      ] }
+    ]
+  },
   '4.7.1': {
     label: 'v4.7.1 밸런스 패치',
     date: '2026.09.30',
