@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.6.6"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.6.7"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -789,6 +789,59 @@ html, body {
   position: absolute; width: 36px; height: 36px; border-radius: 50%; pointer-events: none; z-index: 9;
   transform: translate(-50%, -50%); animation: burst-out 0.4s ease-out forwards;
 }
+/* 4.6.7 밴·픽: 떠오르거나 튀지 않고 테두리로만 */
+html[data-theme="light"] #app .v4-cd .cd-card, html[data-theme="light"] #app .v4-cd .cd-card:hover:not(:disabled) { transform:none !important; transition:border-color .08s, box-shadow .08s; }
+html[data-theme="light"] #app .v4-cd .cd-card:hover:not(:disabled) { border-color:#888; }
+html[data-theme="light"] #app .v4-cd .cd-card.selected { border-color:#111 !important; box-shadow:0 0 0 3px #111, 0 0 0 6px rgba(242,201,76,.75) !important; background:#fffaf0 !important; }
+html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e5322d !important; box-shadow:0 0 0 3px #e5322d, 0 0 0 6px rgba(229,50,45,.22) !important; background:#fff5f5 !important; }
+.v4-cd .cd-stage { overflow-anchor:none; }
+.v467-myturn { position:absolute; left:50%; top:42%; z-index:60; pointer-events:none; display:flex; flex-direction:column; align-items:center; gap:8px; padding:22px 42px; border-radius:20px; background:rgba(17,17,17,.92); color:#fff; box-shadow:0 0 0 3px #f2c94c, 0 24px 60px -18px rgba(0,0,0,.7); opacity:0; transform:translate(-50%,-50%) scale(.7); }
+.v467-myturn b { font:900 38px/1 'Pretendard Variable','Pretendard',sans-serif; letter-spacing:-.02em; color:#ffe27a; text-shadow:0 0 18px rgba(242,201,76,.6); white-space:nowrap; }
+.v467-myturn span { font:700 14px/1.2 'Pretendard Variable','Pretendard',sans-serif; color:#d8d8d4; white-space:nowrap; }
+.v467-myturn.show { animation:v467myturn 1.3s cubic-bezier(.2,.9,.3,1.2) forwards; }
+@keyframes v467myturn { 0% { opacity:0; transform:translate(-50%,-50%) scale(.7); } 16% { opacity:1; transform:translate(-50%,-50%) scale(1.06); } 26% { transform:translate(-50%,-50%) scale(1); } 78% { opacity:1; transform:translate(-50%,-50%) scale(1); } 100% { opacity:0; transform:translate(-50%,-58%) scale(.96); } }
+@media (max-width:520px) { .v467-myturn { padding:16px 26px; } .v467-myturn b { font-size:30px; } .v467-myturn span { font-size:12px; } }
+/* 4.6.7 배치 손맛 */
+.unit.v467-drop { animation: v467drop .46s cubic-bezier(.2,.9,.3,1) both !important; }
+.unit.v467-merge { animation: v467merge .52s cubic-bezier(.2,.9,.3,1) both !important; }
+@keyframes v467drop {
+  0% { transform: translate(-50%, -50%) translateY(-70px) scale(.55); opacity: 0; }
+  42% { transform: translate(-50%, -50%) scale(1.2, .8); opacity: 1; }
+  66% { transform: translate(-50%, -50%) scale(.93, 1.08); }
+  84% { transform: translate(-50%, -50%) scale(1.03, .97); }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+@keyframes v467merge {
+  0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  25% { transform: translate(-50%, -50%) scale(1.38); filter: brightness(1.9) saturate(1.4); }
+  55% { transform: translate(-50%, -50%) scale(.9); filter: brightness(1.2); }
+  78% { transform: translate(-50%, -50%) scale(1.06); }
+  100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+}
+.v467-land { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 12; }
+.v467-land .ring { position: absolute; left: 0; top: 0; width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2); border-radius: 50%; border: 7px solid var(--c); box-shadow: 0 0 18px var(--c), 0 0 6px var(--c) inset; opacity: 0; animation: v467ring .5s .12s cubic-bezier(.1,.7,.3,1) forwards; }
+.v467-land .ring.r2 { border-width: 3px; animation-delay: .2s; animation-duration: .6s; }
+.v467-land.enemy .ring { animation-delay: 0s; border-width: 3px; }
+.v467-land.merge .ring { border-width: 10px; animation-delay: 0s; }
+.v467-land.merge .ring.r2 { animation-delay: .1s; }
+@keyframes v467ring { 0% { transform: scale(.45); opacity: .95; } 100% { transform: scale(2.3); opacity: 0; } }
+.v467-land b { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); opacity: 0; transform: rotate(var(--a)) translateX(0) scale(1);
+  animation: v467spark var(--t) .14s cubic-bezier(.15,.8,.3,1) forwards; }
+.v467-land.merge b { width: 16px; height: 16px; left: -8px; top: -8px; background: #fff3c4; box-shadow: 0 0 10px #f2c94c, 0 0 2px #fff; animation-delay: .04s; }
+@keyframes v467spark { 0% { opacity: 1; transform: rotate(var(--a)) translateX(calc(var(--s) * .3)) scale(1.1); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(.2); } }
+.v467-land .txt { position: absolute; left: 0; top: calc(var(--s) * -.75); transform: translate(-50%, 0); white-space: nowrap; font: 900 30px/1 'Pretendard Variable','Pretendard',sans-serif; letter-spacing: .02em; color: #fff; text-shadow: 0 2px 0 #b8860b, 0 0 12px rgba(242,201,76,.9), 0 3px 8px rgba(0,0,0,.4);
+  animation: v467txt .9s cubic-bezier(.2,.9,.3,1.2) forwards; }
+.v467-land .txt em { font-style: normal; color: #ffe27a; }
+@keyframes v467txt { 0% { opacity: 0; transform: translate(-50%, 14px) scale(.5); } 22% { opacity: 1; transform: translate(-50%, 0) scale(1.15); } 38% { transform: translate(-50%, 0) scale(1); } 78% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px) scale(1); } }
+.v42-tile.v467-flash { animation: v467tile .5s ease-out; }
+@keyframes v467tile { 0% { background: rgba(255,255,255,.85); box-shadow: 0 0 0 3px rgba(255,255,255,.9) inset; } 100% { } }
+.battle-arena.v467-thump { animation: v467thump .2s ease-out; }
+@keyframes v467thump { 0% { translate: 0 0; } 30% { translate: 0 3px; } 60% { translate: 0 -1px; } 100% { translate: 0 0; } }
+.pool-card { touch-action: manipulation; transition: transform .12s ease; }
+.pool-card:active { transform: scale(.94); }
+.pool-card.v467-pick { animation: v467pick .28s cubic-bezier(.2,.9,.3,1.4); }
+@keyframes v467pick { 0% { transform: scale(.92); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .unit.v467-drop, .unit.v467-merge, .battle-arena.v467-thump { animation: none !important; } }
 @keyframes burst-out {
   0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
   100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
@@ -13854,6 +13907,29 @@ $('btnCompMatch').addEventListener('click', () => {
 
 // 같은 지후를 짧은 시간 안에 두 번 누르면 true (더블클릭·두 번 탭 공용)
 // 4.1.4: 시간 제한 없이, 이미 골라 둔 지후를 한 번 더 누르면 확정된다.
+// 4.6.7 밴·픽 선택: 판 전체를 다시 그리면 화면이 튀므로, 테두리(selected)와 아래 안내만 그 자리에서 바꾼다
+function cdMarkSelected(id, barText, hintText) {
+  comp.selected = id;
+  const stage = $('cdStage');
+  stage.querySelectorAll('.cd-card.selected').forEach(el => el.classList.remove('selected'));
+  const card = stage.querySelector(`.cd-card[data-id="${id}"]`);
+  if (card) card.classList.add('selected');
+  const bar = stage.querySelector('.cd-ban-bar');
+  if (bar && barText != null) bar.querySelector('span').textContent = barText;
+  if (bar && hintText != null) bar.querySelector('small').textContent = hintText;
+}
+// 4.6.7 내 픽 차례 오버레이 (연속 픽이면 픽마다 한 번씩)
+function cdShowMyTurn(sub) {
+  const screen = $('screen-compdraft');
+  if (!screen) return;
+  let el = $('cdMyTurn');
+  if (!el) { el = document.createElement('div'); el.id = 'cdMyTurn'; el.className = 'v467-myturn'; el.innerHTML = '<b>내 픽 차례!</b><span></span>'; screen.appendChild(el); }
+  el.querySelector('span').textContent = sub || '지후를 두 번 누르면 확정';
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(cdShowMyTurn.t);
+  cdShowMyTurn.t = setTimeout(() => el.classList.remove('show'), 1300);
+  try { if (navigator.vibrate) navigator.vibrate([10, 40, 10]); } catch (error) {}
+}
 function compDoubleTap(id) {
   const hit = comp.selected === id;
   comp.lastTap = hit ? null : { id, at: Date.now() };
@@ -14022,8 +14098,12 @@ function renderCompBan() {
       if (!comp.banDraft.includes(id)) comp.banDraft.push(id);
       comp.selected = null;
       if (comp.banDraft.length >= COMP_BAN_COUNT) { confirmCompBan(); return; }
-    } else comp.selected = id;
-    renderCompBan();
+      card.classList.remove('selected'); card.classList.add('banned-mine'); card.disabled = true; // 4.6.7 다시 그리지 않고 그 자리에서 밴 표시
+      const bar = $('cdStage').querySelector('.cd-ban-bar');
+      if (bar) { bar.querySelector('span').textContent = `밴 ${comp.banDraft.length} / ${COMP_BAN_COUNT}`; bar.querySelector('small').textContent = '지후를 누르고, 한 번 더 누르면 밴이 확정됩니다'; }
+      return;
+    }
+    cdMarkSelected(id, null, `${CHAR_DB[id].name} · 한 번 더 누르면 밴`);
   }));
   bindCompInfo($('cdStage'));
 }
@@ -14102,6 +14182,7 @@ function nextCompTurn() {
   comp.selected = null;
   comp.lastTap = null;
   renderCompPhase();
+  if (side === 'ally') cdShowMyTurn(`PHASE ${comp.phase} · 지후를 두 번 누르면 확정`); // 4.6.7
   if (side === 'ally') compSetTimer(COMP_PICK_SECONDS, () => {
     const chosen = comp.selected && comp.options.includes(comp.selected) && !comp.pickedBy[comp.selected] ? comp.selected : randomRemaining();
     applyDraftAction('ally', { type: 'pick', id: chosen });
@@ -14145,8 +14226,7 @@ function renderCompPhase() {
   $('cdStage').querySelectorAll('.cd-card:not(:disabled)').forEach(card => card.addEventListener('click', () => {
     const id = card.dataset.id;
     if (compDoubleTap(id)) { applyDraftAction('ally', { type: 'pick', id }); return; }
-    comp.selected = id;
-    renderCompPhase();
+    cdMarkSelected(id);
   }));
   bindCompInfo($('cdStage'));
 }
@@ -14171,8 +14251,13 @@ function nextSnakeTurn() {
   comp.turnKey++;
   comp.selected = null;
   comp.lastTap = null;
-  renderSnake();
+  { const scroll = $('cdStage').scrollTop; renderSnake(); $('cdStage').scrollTop = scroll; }
   if (side === 'ally') {
+    // 4.6.7 내 픽 차례 오버레이: 연속 픽이면 몇 번째인지
+    let run = 0, nth = 0;
+    for (let i = comp.pickIndex; i < SNAKE_ORDER.length && snakeSide(i) === 'ally'; i++) run++;
+    for (let i = comp.pickIndex - 1; i >= 0 && snakeSide(i) === 'ally'; i--) nth++;
+    cdShowMyTurn(run + nth > 1 ? `연속 ${run + nth}픽 중 ${nth + 1}번째 · 두 번 누르면 확정` : '지후를 두 번 누르면 확정');
     compSetTimer(COMP_PICK_SECONDS, () => {
       const rest = snakeAvailable('ally');
       applyDraftAction('ally', { type: 'pick', id: comp.selected && rest.includes(comp.selected) ? comp.selected : rest[Math.floor(Math.random() * rest.length)] });
@@ -14193,8 +14278,10 @@ function snakePick(side, id) {
   $('cdLog').textContent = side === 'ally' ? `${CHAR_DB[id].name}을(를) 골랐습니다.` : `상대가 ${CHAR_DB[id].name}을(를) 골랐습니다.`;
   renderCompPicks();
   comp.turn = null;
+  const scroll = $('cdStage').scrollTop;
   renderSnake(); // 다음 차례까지 잠깐 판을 잠근다
-  scheduleTask(nextSnakeTurn, 500);
+  $('cdStage').scrollTop = scroll;
+  scheduleTask(nextSnakeTurn, 250);
 }
 function renderSnake() {
   const mine = comp.turn === 'ally';
@@ -14219,10 +14306,7 @@ function renderSnake() {
   $('cdStage').querySelectorAll('.cd-card:not(:disabled)').forEach(card => card.addEventListener('click', () => {
     const id = card.dataset.id;
     if (compDoubleTap(id)) { applyDraftAction('ally', { type: 'pick', id }); return; }
-    comp.selected = id;
-    const scroll = $('cdStage').scrollTop;
-    renderSnake();
-    $('cdStage').scrollTop = scroll;
+    cdMarkSelected(id, CHAR_DB[id].name, '한 번 더 누르면 확정');
   }));
   bindCompInfo($('cdStage'));
 }
@@ -14517,7 +14601,7 @@ function clearArenaUnits() {
   document.querySelectorAll('.unit, .fx-pulse, .fx-dagger, .fx-projectile, .fx-syringe-shot, .fx-glitch-burst, .fx-burst, .fx-death-fx, .lone-radius-ring, .unit-range-ring, .fx-slash, .fx-flame-stream, .fx-telegraph, .fx-charge-rect, .fx-lasso, .fx-mine, .fx-mine-blast, .fx-bolt, .fx-god-laser, .fx-hong-ball, .fx-smoke, .fx-dragon-fire, .fx-meteor, .fx-hollow-zone, .fx-beam, .fx-orbit-satellite, .fx-dust-zone').forEach(el => el.remove()); if (state) state.mines = [];
 }
 
-function completeDeployAction(delay = 700) {
+function completeDeployAction(delay = 120) { // 4.6.7: 700ms → 120ms (배치 직후 바로 다음 선택)
   if (state.phase !== 'deploy') return;
   state.phase = 'deploy-resolve';
   clearPhaseTimer();
@@ -14636,7 +14720,10 @@ function selectPoolCard(idx) {
   state.pendingPick = true;
   document.querySelectorAll('.pool-card').forEach((el, i) => {
     el.style.borderColor = i === idx ? 'var(--accent-gold)' : 'var(--border-warm)';
+    el.classList.remove('v467-pick');
+    if (i === idx) { void el.offsetWidth; el.classList.add('v467-pick'); }
   });
+  try { if (navigator.vibrate) navigator.vibrate(6); } catch (error) {}
   $('bottomStatusLine').innerHTML = v42Enabled()
     ? `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 빈 칸에 놓거나, 같은 지후 칸(금색)에 겹쳐 레벨업`
     : `<b>${CHAR_DB[state.pool[idx]].name}</b> 선택됨 — 아군 진영을 터치하세요`;
@@ -14905,6 +14992,11 @@ function activateGodTrueForm(u, quiet) {
 
 
 function levelUpUnit(u) {
+  const before = u && u.level;
+  levelUpUnitCore(u);
+  if (u && !u._settingLevel && u.level !== before && (state.phase === 'deploy' || state.phase === 'deploy-resolve')) deployFeel(u, u.side === 'ally' ? 'merge' : 'enemy'); // 4.6.7
+}
+function levelUpUnitCore(u) {
   // 봇 히든은 합쳐 레벨업하지 않는다. 스킬로 레벨이 바뀌는 경우(setUnitLevel)는 예외.
   if (u.side === 'enemy' && CHAR_DB[u.charId].rarity === 'hidden' && state.mode !== 'arena' && !u._settingLevel) return;
   const levelBefore = u._settingLevel ? u._levelBefore : (Number.isFinite(u.level) ? u.level : 1);
@@ -15159,6 +15251,7 @@ function spawnUnit(side, x, y, charId, opts) {
   if (charId === 'taeguk' && !opts.saved) checkTaegukHarmony(side);
   if (charId === 'solemn') applySolemnMode(unit);
   if (!opts.quiet) spawnBurst(el, def.color);
+  if (!opts.quiet && !opts.saved && !opts.asExtra && (state.phase === 'deploy' || state.phase === 'deploy-resolve')) queueMicrotask(() => deployFeel(unit, side === 'ally' ? 'place' : 'enemy'));
 
   el.addEventListener('click', e => {
     e.stopPropagation();
@@ -15197,6 +15290,42 @@ function spawnUnit(side, x, y, charId, opts) {
   return unit;
 }
 
+// 4.6.7 배치 손맛: 위에서 톡 떨어져 찌그러졌다 펴지고, 충격파 · 파편 · 칸 반짝임 · 살짝 흔들림 · 짧은 진동
+// kind: place(내 배치) · merge(합체 레벨업) · enemy(상대 배치, 가볍게)
+function deployFeel(u, kind) {
+  if (!u || !u.el || !u.alive) return;
+  const world = worldEl();
+  if (!world) return;
+  const merge = kind === 'merge', enemy = kind === 'enemy';
+  u.el.classList.remove('v467-drop', 'v467-merge');
+  void u.el.offsetWidth;
+  u.el.classList.add(merge ? 'v467-merge' : 'v467-drop');
+  setTimeout(() => u.el && u.el.classList.remove('v467-drop', 'v467-merge'), 600);
+  const size = u.el.offsetWidth || 74;
+  const fx = document.createElement('div');
+  fx.className = 'v467-land ' + kind;
+  fx.style.left = u.x + 'px'; fx.style.top = u.y + 'px';
+  fx.style.setProperty('--s', size + 'px');
+  fx.style.setProperty('--c', merge ? '#f2c94c' : enemy ? '#e5322d' : (u.def.color || '#f2c94c'));
+  let html = '<i class="ring"></i>' + (enemy ? '' : '<i class="ring r2"></i>');
+  const sparks = enemy ? 0 : merge ? 14 : 10;
+  for (let i = 0; i < sparks; i++) {
+    const a = (360 / sparks) * i + Math.random() * 18;
+    html += `<b style="--a:${a.toFixed(0)}deg;--d:${(size * (0.75 + Math.random() * 0.55)).toFixed(0)}px;--t:${(0.38 + Math.random() * 0.2).toFixed(2)}s"></b>`;
+  }
+  if (merge) html += `<span class="txt">LEVEL UP <em>Lv.${u.level}</em></span>`;
+  fx.innerHTML = html;
+  world.appendChild(fx);
+  setTimeout(() => fx.remove(), 950);
+  if (u.tile != null) {
+    const tile = document.querySelector(`.v42-grid.${u.side === 'ally' ? 'ally' : 'enemy'} .v42-tile[data-tile="${u.tile}"]`);
+    if (tile) { tile.classList.remove('v467-flash'); void tile.offsetWidth; tile.classList.add('v467-flash'); setTimeout(() => tile.classList.remove('v467-flash'), 500); }
+  }
+  if (enemy) return;
+  const arena = $('battleArena');
+  if (arena) { arena.classList.remove('v467-thump'); void arena.offsetWidth; arena.classList.add('v467-thump'); setTimeout(() => arena.classList.remove('v467-thump'), 220); }
+  try { if (navigator.vibrate) navigator.vibrate(merge ? [14, 50, 22] : 12); } catch (error) {}
+}
 function spawnBurst(el, color) {
   const b = document.createElement('div');
   b.className = 'fx-burst';
@@ -22409,6 +22538,20 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.6.7': {
+    label: 'v4.6.7 손맛 업데이트',
+    date: '2026.09.30',
+    sections: [
+      { title: '전투 배치', items: [
+        { emoji:'⚡', name:'배치 딜레이 제거', tag:'adjust', color:'#111111', desc:'지후를 놓은 뒤 다음 카드를 고를 수 있을 때까지의 대기 <b>0.7초 → 0.12초</b>.' },
+        { emoji:'💥', name:'배치 이펙트', tag:'new', color:'#f2c94c', desc:'지후가 위에서 <b>톡 떨어져 착지</b>하고, 충격파 · 파편 · 칸 반짝임 · 살짝 흔들림이 따라옵니다. 합체하면 금빛 폭발과 <b>LEVEL UP</b> 글자가 뜹니다. 휴대폰에서는 짧게 진동해요.' }
+      ] },
+      { title: '드래프트전 · 경쟁전', items: [
+        { emoji:'🎯', name:'밴 · 픽 선택', tag:'adjust', color:'#e5322d', desc:'지후를 누를 때 화면이 튀던 문제를 고쳤습니다. 고른 지후는 <b>테두리</b>로 표시되고(밴은 빨강), 같은 지후를 한 번 더 누르면 바로 확정됩니다.' },
+        { emoji:'📣', name:'내 픽 차례!', tag:'new', color:'#f2c94c', desc:'내가 고를 차례가 오면 화면 가운데에 <b>내 픽 차례!</b>가 뜹니다. 두 번 연속으로 고를 때는 픽마다 한 번씩 떠요.' }
+      ] }
+    ]
+  },
   '4.6.6': {
     label: 'v4.6.6 디스코드 알림',
     date: '2026.09.30',
