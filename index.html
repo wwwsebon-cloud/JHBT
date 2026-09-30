@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.7.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.7.4"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2583,6 +2583,10 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 .v49-tut-next.gift { background:linear-gradient(135deg,#ff6b35,#e5322d); animation:v49TutPulseBtn 1s infinite; }
 @keyframes v49TutPulseBtn { 50% { transform:scale(1.06); } }
 .v49-tut.wait .v49-tut-next { display:none; }
+/* 4.7.4 전투·덱 설정 중 대사: 화면을 가리지 않고 말풍선만 */
+.v49-tut.soft .v49-tut-curtain, .v49-tut.soft .v49-tut-hole { display:none; }
+.tut-glow { outline:3px solid #ff6b35 !important; outline-offset:3px; animation:tutGlow 1s ease-in-out infinite; }
+@keyframes tutGlow { 50% { outline-color:rgba(255,107,53,.25); } }
 @media (max-width:640px) { .v49-tut-face { width:64px; height:64px; } .v49-tut-bubble p { font-size:13px; } .v49-tut-card { gap:8px; } }
 /* 4.2 랭크 효과 목록 */
 .v422-glow { display:flex; align-items:center; gap:10px; margin:8px 0; padding:10px 12px; border-radius:12px; border:1px solid #f2c94c; background:linear-gradient(135deg,rgba(242,201,76,.16),rgba(242,201,76,.03)); }
@@ -5116,7 +5120,7 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
     <div class="v49-tut-card" id="tutCard">
       <div class="v49-tut-face" id="tutFace"></div>
       <div class="v49-tut-bubble">
-        <span class="v49-tut-name">화염 지후</span>
+        <span class="v49-tut-name" id="tutName">화염 지후</span>
         <p id="tutText"></p>
         <div class="v49-tut-actions"><span class="v49-tut-dots" id="tutDots"></span><button type="button" class="v49-tut-skip" id="btnTutSkip">건너뛰기</button><button type="button" class="v49-tut-next" id="btnTutNext">다음 ▸</button></div>
       </div>
@@ -9073,7 +9077,7 @@ function freshProfile() {
     rankedForm: [],
     ticketRegenAt: 0,
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
-    tutorial: { done: false, giftPending: false, giftUsed: false },
+    tutorial: { done: false, giftPending: false, giftUsed: false, stage: '', giftIds: [], mailed: false },
     mail: [],
     mailFlags: [],
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
@@ -9209,9 +9213,9 @@ function normalizeProfile(raw) {
       noticePending: !!rawNewcomer.noticePending,
     },
     // 4.1.9 튜토리얼: 이 필드가 없던 기존 유저(닉네임 있음)는 이미 본 것으로 친다
-    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'frame'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : {}) })) : [] })) : [],
+    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'epicChar', 'frame'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : {}) })) : [] })) : [],
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
-    tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
+    tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     xpBoost: { day: String(rawBoost.day || ''), usesToday: Math.min(2, safeCount(rawBoost.usesToday)), activeUntil: Math.max(0, Number(rawBoost.activeUntil) || 0) },
     achievements: {
       loginDays: safeCount(rawAchievements.loginDays), lastLoginDay: String(rawAchievements.lastLoginDay || ''),
@@ -11193,6 +11197,7 @@ function performGacha(box, cost, useTicket = false) {
     profile.gachaHistory.push({ id, mode, duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at:Date.now() });
   }
   profile.gachaHistory = profile.gachaHistory.slice(-200);
+  if (giftBonus) profile.tutorial.giftIds = results.map(r => r.id).filter(id => ['epic', 'legend'].includes(CHAR_DB[id]?.rarity)); // 4.7.4 덱 설정 안내용
   recordDailyProgress('gacha', results.length);
   { const best = results.map(r => CHAR_DB[r.id]).filter(c => c && GACHA_RARITY_ORDER[c.rarity] >= 2).sort((a, b) => GACHA_RARITY_ORDER[b.rarity] - GACHA_RARITY_ORDER[a.rarity])[0];
     if (best) postEvent('gacha', best.id, best.rarity); }
@@ -14718,7 +14723,7 @@ function renderCompTile() {
   }
 }
 
-function startMatch(mode = 'ranked') {
+function startMatch(mode = 'ranked', opts = {}) {
   if (mode === 'castle') return; // 3.6: 성뿌수기 모드는 삭제되었다.
   leaveBattle();
   state.maxUnits = 10;
@@ -14738,6 +14743,8 @@ function startMatch(mode = 'ranked') {
     state.enemyLevel = mmrEnemyLevel();
     state.enemyDeckIds = buildEnemyDeck(state.enemyLevel);
     state.botSkill = mmrBotSkill(state.enemyLevel);
+    state.tutMatch = opts.tutorial ? { deployed: 0, free: false, shown: {} } : null; // 4.7.4 튜토리얼 대본 매치
+    if (state.tutMatch) { state.enemyName = '쉴드 좋아하는 봇'; state.enemyLevel = 1; state.enemyDeckIds = TUT_ENEMY_DECK.slice(); state.botSkill = 0; }
     state.matchSettled = false;
     state.lastSettlement = null;
     resetBattlePresentation();
@@ -14831,6 +14838,7 @@ function startRound() {
   }
   updateOddsBar();
   bindMinimap();
+  if (tutJawsRound()) return; // 4.7.4 튜토리얼 3라운드: 죠스 지원 후 바로 전투
   nextDeployCycle();
 }
 
@@ -14893,7 +14901,8 @@ function completeDeployAction(delay = 120) { // 4.6.7: 700ms → 120ms (배치 �
   state.pendingPick = false;
   V42.moveSel = null; hideRangeRing();
   document.querySelectorAll('.pool-card').forEach(el => el.classList.add('picked'));
-  enemyAutoDeployOne();
+  if (tutMatch()) state.tutMatch.deployed++;
+  if (!tutBotDeploy()) enemyAutoDeployOne();
   checkTaegukHarmony('ally');
   checkTaegukHarmony('enemy');
   v42RefreshGrid();
@@ -14914,7 +14923,7 @@ function deployChances() {
 function nextDeployCycle() {
   state.deployRounds++;
   const deployMax = deployChances();
-  if (state.deployRounds > deployMax) { beginCombatPhase(); return; }
+  if (state.deployRounds > deployMax) { if (!tutBeforeCombat()) beginCombatPhase(); return; }
   if (state.deployRounds === 1) {
     const dm = isDeathmatch();
     $('screen-battle').classList.toggle('deathmatch', dm);
@@ -14934,6 +14943,8 @@ function nextDeployCycle() {
     state.pool = rollDeployPool(source, state.myDeckIds, state.poolSize || 3, state.round);
     rerolls++;
   }
+  const tutScript = tutDeployScript(); // 4.7.4 튜토리얼: 대본대로 카드 한 장
+  if (tutScript) { state.pool = [tutScript.pool]; rerolls = 0; }
   const stuck = !state.pool.some(id => poolCardPlayable('ally', id));
   renderPool();
   openPoolSheet(true);
@@ -14948,6 +14959,7 @@ function nextDeployCycle() {
     v42ShowGo('리롤!', `배치할 수 있는 지후가 없어서 리롤했어요${rerolls > 1 ? ` (${rerolls}번)` : ''}`, 'info');
     $('bottomStatusLine').innerHTML += ` · <b>배치할 수 있는 지후가 없어서 리롤했어요${rerolls > 1 ? ` (${rerolls}번)` : ''}</b>`;
   }
+  if (tutScript) { $('phaseTimer').textContent = '∞'; tutDeployGuide(tutScript); return; } // 튜토리얼 대본 배치는 시간 제한 없음
   startPhaseTimer(15, autoPlacePool);
 }
 
@@ -15049,6 +15061,7 @@ function tryDeployMergeOrPlace(x, y, clickedUnit) {
       Math.hypot(u.x - x, u.y - y) <= 96 * WORLD_SCALE
     );
   }
+  if (!mergeTarget && tutForceMergeId() === charId) mergeTarget = mergeTargetFor('ally', charId); // 튜토리얼: 어디를 눌러도 합친다
   if (mergeTarget && !canMergeInto(mergeTarget)) {
     $('bottomStatusLine').innerHTML = `<b>${mergeTarget.def.name}</b>은(는) 이미 최대 레벨(<b>MAX</b>)입니다.`;
     return true; // 판정은 끝났지만 배치 기회는 쓰지 않는다
@@ -18261,7 +18274,7 @@ function applyDamageRaw(target, amount, opts) {
     dealDamage(target, source, amount, { isSkill: true, reflected: true, noEvade: true, skipAtkBuff: true });
     return false;
   }
-  const critHit = amount > 0 && Math.random() < CRIT_CHANCE;
+  const critHit = amount > 0 && !(source && source.side === 'enemy' && tutMatch()) && Math.random() < CRIT_CHANCE;
   if (critHit) amount *= 2;
   let finalDmg = amount;
   if (target.charId === 'impeachment' && amount > 0) activateImpeachment(target, opts);
@@ -21316,6 +21329,7 @@ function resetNew47State() {
 }
 // 크리티컬 확률 (기본 2%, 태풍 2단계 10%)
 function critChanceOf(caster) {
+  if (caster && caster.side === 'enemy' && tutMatch()) return 0; // 4.7.4 튜토리얼 봇은 크리티컬 없음 (돌발상황 방지)
   if (caster && caster.charId === 'typhoon' && caster._tyStage === 2) return caster.def.stage2Crit;
   return CRIT_CHANCE;
 }
@@ -23380,10 +23394,13 @@ function endRoundCombat(winnerSide, timedOut = false) {
   else { title.textContent = 'DRAW'; title.className = 'result-title'; sub.textContent = '무승부'; }
   overlay.classList.add('show');
 
-  scheduleTask(() => {
-    overlay.classList.remove('show');
+  const proceed = () => {
     if (state.enemyLives <= 0 || state.allyLives <= 0) finishMatch(winnerSide);
     else { state.round++; startRound(); }
+  };
+  scheduleTask(() => {
+    overlay.classList.remove('show');
+    if (!tutRoundEnd(winnerSide, proceed)) proceed(); // 4.7.4 튜토리얼 대사
   }, 1800);
 }
 
@@ -23459,6 +23476,7 @@ function finishMatch(winnerSide, surrendered = false) {
     $('settlementProgressLabel').textContent = progress === 100 ? '정산 완료' : `정산 중 · ${progress}%`;
     if (progress === 100) $('screen-end').classList.add('settlement-complete');
   }, 250 + index * stepDelay));
+  tutAfterMatch(); // 4.7.4 튜토리얼: 보상 대본
 }
 
 $('btnRestart').addEventListener('click', () => {
@@ -23572,6 +23590,17 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.7.4': {
+    label: 'v4.7.4 튜토리얼 개편',
+    date: '2026.09.30',
+    sections: [
+      { title: '튜토리얼', items: [
+        { emoji:'🔥', name:'새 튜토리얼', tag:'new', color:'#e5322d', portraitKey:'fire', desc:'화염 지후가 진행하는 <b>실전 튜토리얼</b>. 버튼 설명이 끝나면 오픈권을.. 안 주고 바로 <b>연습 랭크전</b>을 합니다. 지후 놓기 → 봇의 수 → 합치기(레벨업) → <b>지원 요청</b>까지 대본대로 배우고, 끝나면 상자 · 덱 설정 안내 · 우편함 선물이 기다려요.' },
+        { emoji:'🎁', name:'튜토리얼 보상', tag:'adjust', color:'#f2c94c', desc:'끝까지 마치면 <b>지후 상자 오픈권</b>(영웅 · 전설 확정) + 우편함에 <b>랜덤 영웅 지후 1기</b> · <b>골드 5,000</b>.' },
+        { emoji:'🏳️', name:'항복', tag:'adjust', color:'#555555', desc:'튜토리얼 매치에서는 항복할 수 없습니다. 도망 못 가지롱.' }
+      ] }
+    ]
+  },
   '4.7.3': {
     label: 'v4.7.3 긴급 조정',
     date: '2026.09.30',
@@ -25611,7 +25640,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
+const MAIL_REWARD_KINDS = { legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
 function mailRewardText(rewards) { return rewards.map(r => r.kind === 'frame' ? `◎ ${frameInfo(r.id)?.name || '테두리'} 테두리` : `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 function sendMail(mail) {
   profile.mail = (profile.mail || []).concat({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, icon: '✉', body: '', rewards: [], ...mail }).slice(-60);
@@ -25667,8 +25696,8 @@ function claimMail(mail) {
   mail.rewards.forEach(r => {
     if (r.kind === 'diamonds') profile.diamonds += r.amount;
     else if (r.kind === 'gold') profile.gold += r.amount;
-    else if (r.kind === 'legendChar') { // 4.4 랜덤 전설 지후
-      const pool = playableIds().filter(id => CHAR_DB[id].rarity === 'legend');
+    else if (r.kind === 'legendChar' || r.kind === 'epicChar') { // 4.4 랜덤 전설 지후 · 4.7.4 랜덤 영웅 지후
+      const pool = playableIds().filter(id => CHAR_DB[id].rarity === (r.kind === 'epicChar' ? 'epic' : 'legend'));
       for (let i = 0; i < r.amount && pool.length; i++) grantCharacter(pool[Math.floor(Math.random() * pool.length)]);
     }
     else if (r.kind === 'frame') grantFrame(r.id, Math.max(0, Number(r.until) || 0));
@@ -25750,52 +25779,76 @@ function redeemCode(code) {
   return result;
 }
 
-// ================= 4.1.9 튜토리얼 (화염 지후가 진행) =================
-const TUT_STEPS = [
-  { text: '안녕! 나는 <b>화염 지후</b>. 지후배틀에 온 걸 환영해. 처음이지? 딱 1분만 내가 안내할게. 🔥' },
-  { target: 'btnStartGame', text: '여기가 <b>게임 시작</b>. 덱의 지후 5기로 라이프 3 랭크전을 해. 라운드마다 배치 풀에서 지후를 골라 놓기만 하면 알아서 싸워.' },
-  { target: 'btnEnterDraft', text: '<b>덱 설정</b>에서 출전할 지후 5기를 고를 수 있어. 전투 중 같은 지후를 겹쳐 놓으면 레벨이 올라 (HP·ATK +20%).' },
-  { target: 'btnOpenGacha', text: '<b>캐릭터 뽑기</b>. 다이아 100으로 1회, 1,000으로 지후 상자. 상자는 일반·희귀 8기에 운이 좋으면 영웅·전설·히든까지 딸려 나와.' },
-  { target: 'btnOpenQuests', text: '<b>일일 퀘스트</b>로 다이아를 모아. 600P를 채우면 ◆500 보상이야. 매일 리셋되니까 꼭 들러.' },
-  { target: 'btnOpenShop', text: '<b>일일 상점</b>엔 매일 무료 보상이 있어. 지후를 골드로 살 수도 있으니 잊지 말고 챙겨.' },
-  { target: 'btnOpenAttendance', text: '첫 게임을 끝내면 <b>신규 유저 출석부</b>가 열려. 7일 동안 골드·다이아·모집권을 줘. 받은 모집권은 <b>인벤토리</b>에서 써.' },
-  { target: 'btnOpenChat', text: '<b>글로벌 채팅</b>에서 다른 플레이어와 이야기할 수 있어. 폰 화면처럼 생겼지? 욕은 자동으로 가려지니까 사이좋게.' },
-  { target: 'btnOpenMenu', text: '☰ 메뉴에는 <b>🏆 리더보드</b>, 도움말(티어리스트), 패치노트가 있어. 이 튜토리얼도 도움말에서 언제든 다시 볼 수 있어.' },
-  { gift: true, text: '여기까지 들어줘서 고마워! 선물로 <b>지후 상자 오픈권</b> 1장을 줄게. 바로 열어보자. 🎁', replayText: '여기까지야! 선물 오픈권은 처음 한 번만 줘. 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 🔥' },
-  { target: 'btnGachaEleven', wait: true, text: '<b>지후 상자</b> 버튼을 눌러! 오픈권으로 여니까 다이아는 안 들어. 뭐가 나올지 두근두근…' },
-  { final: true, text: '오, 좋은 지후들이 왔네! 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 첫 승리하면 출석부도 열려. 행운을 빌어! 🔥' }
+// ================= 4.7.4 튜토리얼 (화염 지후가 진행 · 개그) =================
+// 로비 버튼 설명 → "상자 오픈권을.. 안 줄 거지롱" → 대본 매치(1R 승 · 2R 쉴드한테 패 · 3R 죠스 지원 승 · 이후 자유)
+// → 끝나면 상자(영웅·전설 확정) → 덱 설정 안내 → 우편함에 화염 지후의 선물.
+// 대사 한 줄 = { who, text, target?, wait?, soft?, pos?, btn?, after?, onShow?, skip? }
+//   target: 요소 id 또는 요소를 돌려주는 함수 (강조 테두리) · wait: 참이 되면 다음 줄로 (버튼 숨김)
+//   soft: 화면을 가리지 않고 말풍선만 (전투 · 덱 설정 화면) · pos: 'top' | 'bottom'
+const TUT_LOBBY = [
+  { text: '안녕! 나는 <b>화염 지후</b>. 지후배틀에 온 걸 환영해. 처음이지? 딱 1분만 내가 안내할게. 🔥', skip: true },
+  { target: 'btnStartGame', text: '여기가 <b>게임 시작</b>. 덱의 지후 5기로 라이프 3 랭크전을 해. 라운드마다 배치 풀에서 지후를 골라 놓기만 하면 알아서 싸워.', skip: true },
+  { target: 'btnEnterDraft', text: '<b>덱 설정</b>에서 출전할 지후 5기를 고를 수 있어. 전투 중 같은 지후를 겹쳐 놓으면 레벨이 올라 (HP·ATK +20%).', skip: true },
+  { target: 'btnOpenGacha', text: '<b>캐릭터 뽑기</b>. 다이아 100으로 1회, 1,000으로 지후 상자. 상자는 일반·희귀 8기에 운이 좋으면 영웅·전설·히든까지 딸려 나와.', skip: true },
+  { target: 'btnOpenQuests', text: '<b>일일 퀘스트</b>로 다이아를 모아. 600P를 채우면 ◆500 보상이야. 매일 리셋되니까 꼭 들러.', skip: true },
+  { target: 'btnOpenShop', text: '<b>일일 상점</b>엔 매일 무료 보상이 있어. 지후를 골드로 살 수도 있으니 잊지 말고 챙겨.', skip: true },
+  { target: 'btnOpenAttendance', text: '첫 게임을 끝내면 <b>신규 유저 출석부</b>가 열려. 7일 동안 골드·다이아·모집권을 줘. 받은 모집권은 <b>인벤토리</b>에서 써.', skip: true },
+  { target: 'btnOpenChat', text: '<b>글로벌 채팅</b>에서 다른 플레이어와 이야기할 수 있어. 폰 화면처럼 생겼지? 욕은 자동으로 가려지니까 사이좋게.', skip: true },
+  { target: 'btnOpenMenu', text: '☰ 메뉴에는 <b>🏆 리더보드</b>, 도움말(티어리스트), 패치노트가 있어. 이 튜토리얼도 도움말에서 언제든 다시 볼 수 있어.', skip: true },
 ];
-const tut = { step: -1, replay: false, active: false, typing: 0, timer: 0, box: false };
+const TUT_GREED = [
+  { text: '튜토리얼 들어줘서 고마워! 보상으로 <b>지후 상자 오픈권</b>을..', btn: '받기 🎁', mark: 'greed' },
+  { text: '<b>안 줄 거지롱</b> 😝' },
+  { text: '상자깡만 하고 1승 0패 찍고 도망칠 수도 있으니까.. 조금 잡아놔야겠어. 후후 🔥' },
+  { text: '자, 게임을 시작하지. 상대 덱은 <b>화염 · 힐 · 쉴드 · 얼음 · 독</b>. 너랑 똑같은 기본 덱이야.', btn: '게임 시작 ⚔' },
+];
+const TUT_REPLAY_END = [{ text: '여기까지야! 오픈권? 그건 처음 한 번만 (안) 줘. 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 🔥', btn: '끝!' }];
+const TUT_ENEMY_DECK = ['fire', 'medic', 'shield', 'ice', 'poison'];
+
+const tut = { steps: [], i: -1, done: null, running: false, replay: false, typing: 0, timer: 0, full: '', box: false };
 function tutEl() { return $('tutorialOverlay'); }
-function startTutorial(replay = false) {
-  if (tut.active) return;
-  tut.replay = replay; tut.active = true; tut.box = false;
-  const face = $('tutFace'); if (face) face.innerHTML = portraitHtml(CHAR_DB.fire);
+function tutTarget(step) { return !step || !step.target ? null : typeof step.target === 'function' ? step.target() : $(step.target); }
+function tutRun(steps, done) {
+  tut.steps = steps; tut.done = done || null; tut.running = true;
   tutEl().hidden = false;
+  if (!tut.timer) tut.timer = setInterval(tutTick, 250);
   tutGo(0);
-  if (!tut.timer) tut.timer = setInterval(() => { if (tut.active) tutPlace(); }, 250);
 }
-function tutEnd() {
-  tut.active = false; tut.step = -1;
+function tutHide() {
+  tut.running = false; tut.i = -1;
   tutEl().hidden = true;
   clearTimeout(tut.typing);
+  document.querySelectorAll('.tut-glow').forEach(el => el.classList.remove('tut-glow'));
   if (tut.timer) { clearInterval(tut.timer); tut.timer = 0; }
 }
+function tutTick() {
+  if (!tut.running || tut.box) return;
+  const step = tut.steps[tut.i];
+  if (step && step.wait && step.wait()) { tutAdvance(); return; }
+  tutPlace();
+}
 function tutGo(i) {
-  const step = TUT_STEPS[i];
-  if (!step) { tutEnd(); return; }
-  tut.step = i;
+  const step = tut.steps[i];
+  if (!step) { const done = tut.done; tutHide(); if (done) done(); return; }
+  tut.i = i;
+  if (step.onShow) step.onShow();
   const ov = tutEl();
-  ov.classList.toggle('center', !step.target);
+  const who = CHAR_DB[step.who || 'fire'];
+  $('tutFace').innerHTML = portraitHtml(who);
+  $('tutFace').style.borderColor = who.color;
+  $('tutName').textContent = who.name;
+  ov.classList.toggle('soft', !!step.soft);
+  ov.classList.toggle('center', !step.soft && !step.target);
   ov.classList.toggle('wait', !!step.wait);
-  $('btnTutSkip').hidden = tut.replay ? !!step.gift : (!!step.gift || !!step.wait || !!step.final);
+  $('btnTutSkip').hidden = !step.skip;
   const next = $('btnTutNext');
-  next.className = 'v49-tut-next' + (step.gift ? ' gift' : '');
-  next.textContent = step.final ? '시작하기 🔥' : step.gift ? (tut.replay ? '끝!' : '선물 받기 🎁') : '다음 ▸';
-  $('tutDots').innerHTML = TUT_STEPS.filter(s => !s.wait && !s.final).map((s, k) => `<i class="${k <= Math.min(i, 9) ? 'on' : ''}"></i>`).join('');
-  tutType(step.replayText && tut.replay ? step.replayText : step.text);
-  const target = step.target && $(step.target);
-  if (target) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  next.className = 'v49-tut-next' + (step.btn ? ' gift' : '');
+  next.textContent = step.btn || '다음 ▸';
+  const n = tut.steps.length;
+  $('tutDots').innerHTML = n > 1 && n <= 16 ? tut.steps.map((s, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('') : '';
+  tutType(step.text);
+  const target = tutTarget(step);
+  if (target && !step.soft) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   tutPlace();
 }
 function tutType(html) {
@@ -25813,10 +25866,12 @@ function tutType(html) {
   tut.full = html;
 }
 function tutPlace() {
-  const step = TUT_STEPS[tut.step]; if (!step) return;
+  const step = tut.steps[tut.i]; if (!step) return;
   const W = window.innerWidth, H = window.innerHeight, pad = 8;
-  const target = step.target && $(step.target);
-  const r = target ? target.getBoundingClientRect() : null;
+  const target = tutTarget(step);
+  document.querySelectorAll('.tut-glow').forEach(el => { if (el !== target) el.classList.remove('tut-glow'); });
+  if (step.soft && target) target.classList.add('tut-glow');
+  const r = target && !step.soft ? target.getBoundingClientRect() : null;
   const box = r ? { top: Math.max(0, r.top - pad), left: Math.max(0, r.left - pad), w: Math.min(W, r.width + pad * 2), h: r.height + pad * 2 } : { top: H / 2, left: W / 2, w: 0, h: 0 };
   const set = (id, css) => Object.assign($(id).style, css);
   set('tutCurT', { top: 0, left: 0, width: W + 'px', height: box.top + 'px' });
@@ -25829,55 +25884,281 @@ function tutPlace() {
   const card = $('tutCard');
   const ch = card.offsetHeight || 160;
   let top;
-  if (!r) top = (H - ch) / 2;
+  if (step.pos === 'top') top = 72;
+  else if (step.pos === 'bottom') top = H - ch - 12;
+  else if (!r) top = (H - ch) / 2;
   else if (box.top + box.h + ch + 24 < H) top = box.top + box.h + 14;
   else if (box.top - ch - 14 > 0) top = box.top - ch - 14;
   else top = H - ch - 12;
   card.style.top = Math.max(8, Math.min(H - ch - 8, top)) + 'px';
 }
+function tutAdvance() {
+  const step = tut.steps[tut.i]; if (!step) return;
+  if (step.after) step.after();
+  if (!tut.running || tut.steps[tut.i] !== step) return; // after 에서 다른 대본으로 넘어갔다
+  tutGo(tut.i + 1);
+}
 function tutNext() {
-  const step = TUT_STEPS[tut.step]; if (!step) return;
+  const step = tut.steps[tut.i]; if (!step) return;
   if (tut.typing && $('tutText').querySelector('span')) { clearTimeout(tut.typing); $('tutText').innerHTML = tut.full; return; } // 타이핑 중이면 먼저 다 보여준다
   if (step.wait) return;
-  if (step.final) { tutEnd(); showScreen('lobby'); renderAccountUI(); return; }
-  if (step.gift) {
-    if (tut.replay) { tutEnd(); return; }
-    if (profile.tutorial.giftPending || profile.tutorial.giftUsed) { tutOpenGachaForGift(); return; } // 두 번 눌러도 한 장만
-    profile.inventory.boxTicket = (profile.inventory.boxTicket || 0) + 1;
-    profile.tutorial.giftPending = true; profile.tutorial.done = true;
-    saveProfile(); renderAccountUI();
-    tutOpenGachaForGift();
-    return;
+  tutAdvance();
+}
+function tutSkip() { // 로비 설명만 건너뛸 수 있다 (대본 매치는 못 도망간다)
+  const k = tut.steps.findIndex(s => !s.skip);
+  if (k > tut.i) tutGo(k);
+}
+
+// ── 1) 로비 ──
+function startTutorial(replay = false) {
+  if (tut.running) return;
+  tut.replay = replay;
+  tutRun(TUT_LOBBY.concat(replay ? TUT_REPLAY_END : TUT_GREED), replay ? null : startTutorialMatch);
+}
+
+// ── 2) 대본 매치 ──
+function tutMatch() { return state.tutMatch && state.mode === 'ranked' ? state.tutMatch : null; }
+function startTutorialMatch() {
+  profile.tutorial.stage = 'match'; saveProfile();
+  showScreen('lobby');
+  state.myDeckIds = STARTER_IDS.slice();
+  startMatch('ranked', { tutorial: true });
+}
+// 라운드-배치 번호별 대본: 풀에 뜨는 카드 · 합치기 강제 · 봇의 수 · 대사
+const TUT_DEPLOY = {
+  '1-1': { pool: 'fire', bot: { place: 'shield', tile: 11 }, steps: () => [
+    { soft: true, pos: 'top', text: '자, 여기가 <b>전장</b>이야! 아래 <b>화염 지후</b> 카드를 누르고, 아군 진영 빈 칸에 놓아보자!', target: tutPoolTarget, wait: () => tutMatch()?.deployed >= 1 },
+  ] },
+  '1-2': { pool: 'ice', bot: { merge: 'shield' }, steps: () => [
+    { soft: true, pos: 'top', text: '봤지? <b>너가 지후를 놓으면 저 녀석도 지후를 하나 뽑아서 놔.</b> 저건.. <b>쉴드 지후</b>네.' },
+    { soft: true, pos: 'top', text: '이번엔 <b>얼음 지후</b>를 놓아보자! 얼려놓고 태우면 개꿀이야.', target: tutPoolTarget, wait: () => tutMatch()?.deployed >= 2 },
+  ] },
+  '2-1': { pool: 'fire', merge: true, bot: { place: 'shield', tile: 12 }, steps: () => [
+    { soft: true, pos: 'top', text: '이번엔 <b>업그레이드</b>! 같은 지후를 합치면 더 세져. (레벨마다 HP·ATK +20%)' },
+    { soft: true, pos: 'top', text: '<b>화염 지후</b> 카드를 누르고, 필드에 있는 <b>화염 지후</b> 위에 겹쳐봐!', target: () => tutPoolTarget() || tutUnitTarget('fire'), wait: () => tutMatch()?.deployed >= 3 },
+  ] },
+  '2-2': { pool: 'ice', merge: true, bot: { place: 'shield', tile: 10 }, steps: () => [
+    { soft: true, pos: 'top', text: '어..? 쟤 쉴드를 또 놨네. 신경 쓰지 말고 <b>얼음 지후</b>도 합쳐보자!', target: () => tutPoolTarget() || tutUnitTarget('ice'), wait: () => tutMatch()?.deployed >= 4 },
+  ] },
+};
+const TUT_BEFORE_COMBAT = {
+  1: [{ soft: true, pos: 'top', text: '상대가 쉴드를 합쳐서 <b>레벨업</b>했어! 그래도 쫄지 마. 준비 끝났으면 알아서 싸워. 넌 구경만 하면 돼 🍿', btn: '전투 시작 ⚔' }],
+  2: [{ soft: true, pos: 'top', text: '쉴드만 세 마리..? 저 봇 취향 확실하네. 뭐, 레벨 2짜리 둘이면 이기겠지! 가자!', btn: '전투 시작 ⚔' }],
+};
+function tutPoolTarget() { return pendingPoolIdx === null ? document.querySelector('#poolRow .pool-card') : null; }
+function tutUnitTarget(id) { return state.units.find(u => u.side === 'ally' && u.alive && u.charId === id && !u.ownerUid)?.el || null; }
+function tutDeployScript() {
+  const tm = tutMatch();
+  return tm && !tm.free ? TUT_DEPLOY[`${state.round}-${state.deployRounds}`] || null : null;
+}
+function tutForceMergeId() { const sc = tutDeployScript(); return sc && sc.merge ? sc.pool : null; }
+function tutDeployGuide(sc) { tutRun(sc.steps()); }
+function tutBeforeCombat() {
+  const tm = tutMatch();
+  const lines = tm && !tm.free && TUT_BEFORE_COMBAT[state.round];
+  if (!lines || tm.shown['combat' + state.round]) return false;
+  tm.shown['combat' + state.round] = true;
+  tutRun(lines, () => { if (state.phase === 'deploy' || state.phase === 'deploy-resolve') beginCombatPhase(); });
+  return true;
+}
+// 봇의 수 (대본대로). 대본이 없으면 평소 봇
+function tutBotDeploy() {
+  const tm = tutMatch();
+  if (!tm || tm.free) return false;
+  const sc = TUT_DEPLOY[`${state.round}-${state.deployRounds}`];
+  if (!sc) return false;
+  const bot = sc.bot;
+  if (bot.merge) {
+    const same = mergeTargetFor('enemy', bot.merge);
+    if (same) {
+      levelUpUnit(same);
+      const pl = state.placements.find(p => p.id === same.placementId);
+      if (pl) pl.level = same.level;
+    }
+    return true;
   }
-  tutGo(tut.step + 1);
+  let tile = bot.tile;
+  if (tile == null || v42TileBlocked('enemy', tile, bot.place)) tile = v42PickTile('enemy', bot.place, 0);
+  if (tile != null) v42Spawn('enemy', tile, bot.place);
+  return true;
+}
+// 라운드가 끝났을 때 대본. 처리했으면 true (대사가 끝나면 proceed 를 부른다)
+function tutRoundEnd(winnerSide, proceed) {
+  const tm = tutMatch();
+  if (!tm || winnerSide === 'draw' || state.allyLives <= 0 || state.enemyLives <= 0) return false;
+  const won = winnerSide === 'ally';
+  let lines = null;
+  if (!tm.free && state.round === 1) {
+    lines = won
+      ? [{ text: '잘했다! 🔥 이기면 상대 <b>라이프</b>가 하나 깎여. 상대 라이프를 전부 깎으면 승리야.' }]
+      : [{ text: '어..? 이게 지네? 괜찮아, 다음 라운드에 복수하자!' }];
+  } else if (!tm.free && state.round === 2 && !won) {
+    tm.jaws = true;
+    lines = [
+      { who: 'shield', text: '튜토리얼에서 쉴드 지후한테 발렸죠?' },
+      { who: 'shield', text: '킹받죠?' },
+      { text: '줴줴이야..' },
+      { text: '크윽.. 쉴드가 너무 강하군.' },
+      { text: '원래는 안 되지만.. 이번만 <b>지원 요청</b>을 해줄게!', btn: '지원 요청 📞' },
+    ];
+  } else if (!tm.free && won) { // 2라운드를 이겼거나 3라운드(죠스) 승리
+    tm.free = true;
+    lines = state.round === 3
+      ? [{ text: '봤냐? 이게 <b>지원</b>의 힘이야 ㅋㅋ' }, { text: '상대 라이프가 <b>1개</b> 남았어. 자, 그럼 이제 <b>자유롭게</b> 싸워봐!' }, { text: '배치 시간은 15초, 같은 지후를 겹치면 레벨업. 기억나지? 🔥', btn: '가보자고' }]
+      : [{ who: 'shield', text: '...? 이걸 이겨?' }, { text: '오 너 재능 있다. 지원 없이도 되겠는데? 이제 <b>자유롭게</b> 싸워봐! 🔥', btn: '가보자고' }];
+  } else if (!won) { // 자유롭게 싸우다 졌다 (또는 3라운드 패배)
+    tm.free = true;
+    if (!tm.jawsMax) {
+      lines = [
+        { text: '아니 이걸 지네' },
+        { text: '이거 원래 지면 안 되는데..' },
+        { who: 'jaws', text: '상어상어..? (죠스 지후 전원 <b>만렙</b>)', after: tutMaxJaws },
+        { who: 'shield', text: '아니' },
+      ];
+    } else lines = [{ text: '...만렙 죠스를 주고도 지는 건 좀.' }, { text: '괜찮아. 원래 튜토리얼은 지라고 있는 거야. (아님)' }];
+  }
+  if (!lines) return false;
+  tutRun(lines.map(l => ({ soft: true, pos: 'top', ...l })), proceed);
+  return true;
+}
+// 3라운드: 죠스 지후 3기 지원 → 바로 전투
+function tutJawsRound() {
+  const tm = tutMatch();
+  if (!tm || !tm.jaws || tm.jawsDone) return false;
+  tm.jawsDone = true;
+  for (let i = 0; i < 3; i++) {
+    const tile = v42PickTile('ally', 'jaws', 0);
+    if (tile == null) break;
+    const u = v42Spawn('ally', tile, 'jaws');
+    if (u) spawnDamageNumber(u, '🦈 지원!', { crit: true });
+  }
+  state.phase = 'deploy-resolve';
+  tutRun([
+    { who: 'shield', text: '오우쒯...' },
+    { text: 'ㅋㅋㅋㅋㅋ' },
+    { who: 'jaws', text: '상어상어!!!!', btn: '전투 시작 🦈' },
+  ].map(l => ({ soft: true, pos: 'top', ...l })), () => beginCombatPhase());
+  return true;
+}
+function tutMaxJaws() {
+  const tm = tutMatch(); if (tm) tm.jawsMax = true;
+  state.placements.forEach(p => { if (p.side === 'ally' && p.charId === 'jaws') p.level = MAX_UNIT_LEVEL; });
+  state.units.forEach(u => { if (u.side === 'ally' && u.alive && u.charId === 'jaws') setUnitLevel(u, MAX_UNIT_LEVEL); });
+}
+// 매치가 끝나면 정산 화면 위에서 바로 보상 대본
+function tutAfterMatch() {
+  if (!state.tutMatch) return;
+  state.tutMatch = null;
+  profile.tutorial.stage = 'reward'; saveProfile();
+  setTimeout(() => { if (!tut.running) tutRewardScript(); }, 2600);
+}
+
+// ── 3) 보상: 상자 → 덱 설정 → 우편함 ──
+function tutRewardScript() {
+  tutRun([
+    { text: '줴줴이야~ 🔥' },
+    { text: '수고했어! 약속대로 이제 <b>상자</b>를 열게 해줄게.', btn: '받기 🎁', after: tutGrantBox },
+    { text: '이거 비싼 거야. 다이아 1,000개짜리라고.' },
+    { text: '좋은 거 안 떴다고 게임 끄고 자러 가지 말아라.', btn: '열러 가기' },
+  ], tutOpenGachaForGift);
+}
+function tutGrantBox() {
+  if (profile.tutorial.giftPending || profile.tutorial.giftUsed) return; // 두 번 눌러도 한 장만
+  profile.inventory.boxTicket = (profile.inventory.boxTicket || 0) + 1;
+  profile.tutorial.giftPending = true;
+  saveProfile(); renderAccountUI();
 }
 function tutOpenGachaForGift() {
+  leaveBattle();
   $('gachaResult').innerHTML = ''; renderAccountUI(); showScreen('gacha'); renderGachaView('normal'); renderGachaBoxButton();
-  tutGo(TUT_STEPS.findIndex(s => s.wait));
+  tutRun([{ target: 'btnGachaEleven', wait: () => false, text: '<b>지후 상자</b> 버튼을 눌러! 오픈권으로 여니까 다이아는 안 들어. 뭐가 나올지 두근두근…' }]);
   setTimeout(tutPlace, 350);
 }
-function tutSkip() {
-  const giftIdx = TUT_STEPS.findIndex(s => s.gift);
-  if (tut.step < giftIdx) tutGo(giftIdx);
+function tutOnBoxOpened() { if (tut.running) { tut.box = true; tutEl().hidden = true; } } // 상자 연출 동안은 숨긴다
+function tutAfterBox() { // 상자 결과 창을 닫으면
+  if (!tut.box) return;
+  tut.box = false;
+  tutHide();
+  if (profile.tutorial.stage) { profile.tutorial.stage = 'deck'; saveProfile(); tutDeckScript(); }
+  else tutRun([{ text: '오, 좋은 지후들이 왔네! 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 🔥', btn: '시작하기 🔥' }], () => { profile.tutorial.done = true; saveProfile(); showScreen('lobby'); renderAccountUI(); });
 }
-function tutOnBoxOpened() { if (tut.active) { tut.box = true; tutEl().hidden = true; } } // 상자 연출 동안은 숨긴다
-function tutAfterBox() { // 상자 결과 창을 닫으면 마지막 한마디
-  if (!tut.active || !tut.box) return;
-  tut.box = false; tutEl().hidden = false;
-  tutGo(TUT_STEPS.findIndex(s => s.final));
+// 도움말 최신 티어표 기준 티어 (1~6). 표에 없으면 3티어로 본다.
+const TUT_TIER_TALK = { 1: '저거 개좋던데?', 2: '저거 쓸만하던데?', 3: '저거 은근 좋은 지후인데?', 4: '저거 잘 쓰면 좋은 지후인데?', 5: '말조심해 임마', 6: '말조심해 임마' };
+function tutTierOf(id) {
+  const latest = TIER_HISTORY[Object.keys(TIER_HISTORY)[0]];
+  for (const src of [latest && latest.tiers, BOT_TIER_LIST]) {
+    if (!src) continue;
+    const hit = Object.entries(src).find(([, ids]) => ids.includes(id));
+    if (hit && /^[1-6]$/.test(hit[0])) return Number(hit[0]);
+  }
+  return 3;
 }
+function tutGiftId(rarity) { return (profile.tutorial.giftIds || []).find(id => CHAR_DB[id]?.rarity === rarity && isUnlocked(id)) || null; }
+function tutDraftCard(id) { return document.querySelector(`#draftGrid .char-card[data-id="${id}"]`); }
+function tutDeckScript() {
+  const legend = tutGiftId('legend'), epic = tutGiftId('epic');
+  const L = legend && CHAR_DB[legend], E = epic && CHAR_DB[epic];
+  const equip = (id, c, label) => id ? [{ soft: true, pos: 'bottom', target: () => tutDraftCard(id),
+    onShow: () => setTimeout(() => tutDraftCard(id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150),
+    text: `${label} <b>${c.name}</b>를 눌러서 <b>장착</b>! 덱이 꽉 차 있으면 위에서 뺄 지후를 고르면 돼.`, wait: () => state.draftSelected.includes(id) }] : [];
+  tutRun([
+    ...(L ? [
+      { text: `요이. <b>전설 지후</b>네? (<b>${L.name}</b>)` },
+      { text: '..근데 표정이 별로 안 좋아 보이는데' },
+      { text: 'SSS 뽑기에서 C급 뜬 기분이냐?' },
+      { who: 'ice', text: TUT_TIER_TALK[tutTierOf(legend)] },
+      { text: '어이쿠' },
+      { who: 'ice', text: '그래도 잘 쓰면 좋아.' },
+      { text: '아 그래?' },
+      { who: 'ice', text: '그래. 개발자 양반이 너무 센 친구들은 수시로 <b>너프</b>하고, 약해빠진 애들은 <b>버프</b>하니까.' },
+      { who: 'ice', text: '자세한 성능은 <b>도움말</b>에서 <b>티어리스트</b>를 보면 돼. AI 친구가 10000판씩 돌려서 측정한 거란다.' },
+      { who: 'ice', text: '다만 항상 최신 버전은 아니고, 상황에 따라 다를뿐더러..' },
+      { who: 'ice', text: '별로 믿을 만하지 못하니까 너무 의존하진 말고.' },
+    ] : [{ text: '오, 좋은 지후들이 왔네!' }]),
+    { text: '<b>덱 설정</b>에서 방금 얻은 지후를 넣어보자!', btn: '덱 설정으로', after: () => { showScreen('lobby'); renderAccountUI(); } },
+    { target: 'btnEnterDraft', wait: () => state.screen === 'draft', text: '여기 <b>덱 설정</b>을 눌러!' },
+    ...equip(epic, E, '먼저 영웅 지후'),
+    ...equip(legend, L, '이번엔 전설 지후'),
+    { soft: true, pos: 'bottom', text: '좋아.. 이제 더 강해졌군.' },
+    { soft: true, pos: 'bottom', text: '이렇게 전설 지후 들고 자꾸 지면 <b>내가 찾아간다</b>. 🔥' },
+    { soft: true, pos: 'bottom', text: '아, 그리고 <b>우편함</b>도 확인해봐. 내가 뭐 좀 넣어놨어.' },
+    { soft: true, pos: 'bottom', text: '그럼 즐겜해줘! 튜토리얼 들어줘서 고마워!', btn: '끝! 🔥' },
+  ], tutFinish);
+}
+function tutFinish() {
+  if (!profile.tutorial.mailed) {
+    profile.tutorial.mailed = true;
+    sendMail({ title: '화염 지후의 선물', icon: '🔥', body: '튜토리얼 끝까지 들어줘서 고마워. 이번엔 진짜 줌. 줴줴이야~', rewards: [{ kind: 'epicChar', amount: 1 }, { kind: 'gold', amount: 5000 }] });
+  }
+  profile.tutorial.done = true; profile.tutorial.stage = '';
+  saveProfile(); renderAccountUI();
+}
+
 function maybeStartTutorial() {
-  if (PREVIEW_MODE || tut.active || !profile.nickname || !profile.tutorial || state.screen !== 'lobby') return;
+  if (PREVIEW_MODE || tut.running || !profile.nickname || !profile.tutorial || state.screen !== 'lobby') return;
   if (document.querySelector('.app-modal.show') || $('updateOverlay').classList.contains('show') || $('sessionOverlay').classList.contains('show')) return;
-  if (!profile.tutorial.done) { startTutorial(false); return; }
-  if (profile.tutorial.giftPending) {
-    if ((profile.inventory.boxTicket || 0) <= 0) { profile.tutorial.giftPending = false; saveProfile(); return; }
-    startTutorial(false); tutOpenGachaForGift(); // 새로고침해도 선물 상자부터 이어서
+  const t = profile.tutorial;
+  if (t.stage === 'match') { tutRun([{ text: '어디 가! 튜토리얼 아직 안 끝났어. 다시 한 판 하자 🔥', btn: '게임 시작 ⚔' }], startTutorialMatch); return; }
+  if (t.stage === 'reward' || (t.stage === 'deck' && t.giftPending)) {
+    if (t.giftPending && (profile.inventory.boxTicket || 0) > 0) tutOpenGachaForGift(); else tutRewardScript();
+    return;
+  }
+  if (t.stage === 'deck') { tutDeckScript(); return; }
+  if (!t.done) { startTutorial(false); return; }
+  if (t.giftPending) { // 예전 튜토리얼에서 받은 오픈권
+    if ((profile.inventory.boxTicket || 0) <= 0) { t.giftPending = false; saveProfile(); return; }
+    tutOpenGachaForGift();
   }
 }
 $('btnTutNext').addEventListener('click', tutNext);
 $('btnTutSkip').addEventListener('click', tutSkip);
-window.addEventListener('resize', () => { if (tut.active) tutPlace(); });
+window.addEventListener('resize', () => { if (tut.running) tutPlace(); });
+// 튜토리얼 매치에서는 항복할 수 없다
+$('btnExitBattle').addEventListener('click', e => {
+  if (!tutMatch()) return;
+  e.stopImmediatePropagation(); e.preventDefault();
+  v42ShowGo('항복 불가', '튜토리얼에선 도망 못 가지롱 🔥', 'info');
+}, true);
 
 // ================= 4.1.4 글로벌 채팅 · 공지 =================
 // 욕설 검열: 글자 사이의 공백·기호·자모 흉내를 무시하고 찾아서 *로 가린다. 보낼 때와 보여줄 때 모두 거친다.
