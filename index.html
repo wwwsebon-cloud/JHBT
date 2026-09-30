@@ -5289,6 +5289,7 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
       <div class="v441-mq" id="mainQuestStrip" hidden></div>
       <div class="v4-notices">
         <div id="abandonNotice" class="settlement-note" hidden></div>
+        <div id="devBoostNotice" class="settlement-note" hidden></div>
         <div id="attendanceNotice" class="settlement-note" hidden>🎉 신규 유저 출석부가 해금되었습니다! 출석부에서 보상을 받으세요.</div>
       </div>
       <div class="v4-tiles">
@@ -9710,6 +9711,8 @@ function renderAccountUI() {
   document.body.classList.toggle('reduce-motion', profile.settings.reduceMotion);
   renderCompTile();
   renderCoopTile(); // 5.1
+  const dbn = $('devBoostNotice'); // 개발자 부스트 이벤트 안내 (끝나면 자동으로 숨김)
+  if (dbn) { const on = devBoostActive(); dbn.hidden = !on; if (on) { const h = Math.max(1, Math.ceil((DEV_BOOST.until - Date.now()) / 3600000)); dbn.innerHTML = `🎉 <b>개발자 부스트</b> 진행 중 · 게임에서 이기면 <b>다이아 100~200</b> 무조건 지급 · 약 ${h}시간 남음`; } }
   applyGridSetting();
   const presets = $('deckPresets');
   if (presets) {
@@ -11386,6 +11389,10 @@ function performGacha(box, cost, useTicket = false) {
   showGachaReveal(0);
 }
 
+// 개발자 부스트 이벤트 (72시간): 승리하면 무조건 다이아 100~200
+const DEV_BOOST = { from: Date.UTC(2026, 8, 30, 16, 50), until: Date.UTC(2026, 9, 3, 16, 50) };
+function devBoostActive(now = Date.now()) { return now >= DEV_BOOST.from && now < DEV_BOOST.until; }
+const PER_GAME_DIAMONDS = 50; // 드래프트전 · 경쟁전: 한 판마다 (항복 제외)
 function settleMatch(won, draw, surrendered = false) {
   if (state.matchSettled) return state.lastSettlement;
   state.matchSettled = true;
@@ -11470,7 +11477,10 @@ function settleMatch(won, draw, surrendered = false) {
     profile.competitive.promo = Math.max(claimed, compGroupIndex(after.tp));
     if (promoGroups.length) postEvent('promo', COMP_GROUP_LABELS[promoGroups[promoGroups.length - 1]] || after.name);
     profile.diamonds += promoDiamonds;
-    state.lastSettlement = { competitive: true, surrendered, tp: after.tp - before.tp, before, after, promoGroups, promoDiamonds, enemyTp: enemyTier.tp, tierDiff, tpMult };
+    const playDiamonds = surrendered ? 0 : PER_GAME_DIAMONDS;
+    const devDiamonds = devBoostActive() && won && !draw && !surrendered ? 100 + Math.floor(Math.random() * 101) : 0;
+    profile.diamonds += playDiamonds + devDiamonds;
+    state.lastSettlement = { competitive: true, surrendered, tp: after.tp - before.tp, before, after, promoGroups, promoDiamonds, playDiamonds, devDiamonds, enemyTp: enemyTier.tp, tierDiff, tpMult };
     comp = null;
     saveProfile();
     window.JihooOnline.publish().catch(() => {});
@@ -11507,6 +11517,9 @@ function settleMatch(won, draw, surrendered = false) {
     if (!castleMode) { profile.losses++; if (state.mode === 'ranked') recordRankedForm(false); }
   }
   if (xp > 0 && profile.xpBoost.activeUntil > Date.now()) xp *= 2;
+  let diaLabel = '부스트 보너스';
+  if (devBoostActive() && !draw && won && !surrendered) { diamonds = Math.max(diamonds, 100 + Math.floor(Math.random() * 101)); diaLabel = '🎉 개발자 부스트'; }
+  if (state.mode === 'draftbattle' && !surrendered) { diamonds += PER_GAME_DIAMONDS; diaLabel = diaLabel === '부스트 보너스' ? '한 판 보상' : diaLabel + ' + 한 판'; }
   // 4.4.1 연승 보너스: 3연승 +10, 4연승 +20 … 10연승 +80 경험치
   let streakXp = 0;
   if (!draw && !surrendered) profile.winStreak = won ? (profile.winStreak || 0) + 1 : 0;
@@ -11524,7 +11537,7 @@ function settleMatch(won, draw, surrendered = false) {
     profile.pendingLevelCelebration = { from: before.level, to: after.level, diamonds: 0 };
     postEvent('level', after.level);
   }
-  state.lastSettlement = { practice: false, surrendered, xp, diamonds, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, streak: profile.winStreak || 0, streakXp };
+  state.lastSettlement = { practice: false, surrendered, xp, diamonds, diaLabel, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, streak: profile.winStreak || 0, streakXp };
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   return state.lastSettlement;
@@ -23733,10 +23746,11 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="settlement-row"><span>티어 점수</span><b class="${settlement.tp > 0 ? 'gain' : settlement.tp < 0 ? 'loss' : ''}">${settlement.tp > 0 ? '+' : settlement.tp < 0 ? '' : '±'}${settlement.tp} TP</b></div>
       ${settlement.tpMult && settlement.tp ? `<div class="settlement-row"><span>상대</span><b>${compTierBadge(settlement.enemyTp)} · ${settlement.tierDiff > 0 ? '+' : ''}${settlement.tierDiff}칸 · ×${settlement.tpMult.toFixed(2)}</b></div>` : ''}
       <div class="settlement-row"><span>티어</span><b>${compTierBadge(before.tp)} → ${compTierBadge(after.tp)}${moved}</b></div>
+      ${settlement.playDiamonds || settlement.devDiamonds ? `<div class="settlement-row"><span>${settlement.devDiamonds ? '한 판 보상 · 🎉 개발자 부스트' : '한 판 보상'}</span><b class="gain">+${formatNumber((settlement.playDiamonds || 0) + (settlement.devDiamonds || 0))} ◆</b></div>` : ''}
       ${settlement.promoDiamonds ? `<div class="settlement-row"><span>승급 보상</span><b class="gain">${settlement.promoGroups.map(group => COMP_GROUP_LABELS[group]).join(' · ')} 첫 승급 +${formatNumber(settlement.promoDiamonds)} ◆</b></div>` : ''}
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.round(after.progress * 100)}%"></div></div>
-      <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대).</div>`;
+      <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대). 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외).</div>`;
   } else if (settlement.coop) {
     const lv = settlement.after.level > settlement.before.level;
     const xpRatio = settlement.after.required ? settlement.after.current / settlement.after.required * 100 : 100;
@@ -23766,13 +23780,13 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="v4-boxes">
         <div><b class="${settlement.xp >= 0 ? '' : 'loss'}">${settlement.xp >= 0 ? '+' : ''}${settlement.xp}</b><span>EXP</span></div>
         <div><b>● ${formatNumber(settlement.gold || 0)}</b><span>골드</span></div>
-        <div><b>◆ ${formatNumber((settlement.diamonds || 0) + (settlement.levelBonus || 0))}</b><span>${settlement.levelBonus ? '레벨업 보너스' : '부스트 보너스'}</span></div>
+        <div><b>◆ ${formatNumber((settlement.diamonds || 0) + (settlement.levelBonus || 0))}</b><span>${settlement.levelBonus ? '레벨업 보너스' : settlement.diaLabel || '부스트 보너스'}</span></div>
       </div>
       ${settlement.xp && settlement.enemyLevel ? `<div class="settlement-row"><span>상대 레벨</span><b>Lv.${settlement.enemyLevel} (${settlement.levelDiff > 0 ? '+' : ''}${settlement.levelDiff}) · ×${settlement.xpMult.toFixed(2)}</b></div>` : ''}
       ${settlement.streakXp ? `<div class="settlement-row"><span>🔥 ${settlement.streak}연승 보너스</span><b class="gain">+${settlement.streakXp} EXP</b></div>` : ''}
       ${settlement.draftTicket ? `<div class="settlement-row"><span>티켓</span><b class="gain">+${settlement.draftTicket} 🎟️ (보유 ${profile.draftTickets || 0}/${TICKET_MAX})</b></div>` : ''}
       <div class="v4-lvline"><div class="t"><span>Lv.${settlement.before.level}${levelUp ? ` → Lv.${settlement.after.level}` : ''}</span><span>EXP ${formatNumber(settlement.after.current)} / ${formatNumber(settlement.after.required)}</span></div><div class="bar"><div style="width:${xpRatio}%"></div></div></div>
-      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? '드래프트전: 승리 시 EXP +100~150 · 패배 시 변동 없음 · 재화와 전적은 기록되지 않습니다' : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50'}</div>`;
+      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? `드래프트전: 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외) · 승리 시 EXP +100~150 · 패배 시 변동 없음${devBoostActive() ? ' · 🎉 개발자 부스트: 승리 시 ◆100~200' : ''}` : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50' + (devBoostActive() ? ' · 🎉 개발자 부스트 중: 승리하면 다이아 100~200 무조건' : '')}</div>`;
   }
   card.insertAdjacentHTML('afterbegin', '<div class="settlement-heading"><span>전투 보상</span><b id="settlementProgressLabel">정산 중 · 0%</b></div><div class="settlement-progress"><span id="settlementProgressFill"></span></div>');
   const steps = Array.from(card.children).filter(el => !el.classList.contains('settlement-heading') && !el.classList.contains('settlement-progress'));
