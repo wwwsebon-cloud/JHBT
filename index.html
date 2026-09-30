@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.7.4"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.0.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -817,12 +817,14 @@ html, body {
 .n47-beam.atk { background:linear-gradient(0deg,transparent,rgba(255,159,26,.45) 20%,#ff9f1a 38%,#fff3c4 50%,#ff9f1a 62%,rgba(255,159,26,.45) 80%,transparent); }
 .n47-beam.heal { background:linear-gradient(0deg,transparent,rgba(60,207,106,.45) 20%,#3ccf6a 38%,#e6ffe8 50%,#3ccf6a 62%,rgba(60,207,106,.45) 80%,transparent); }
 .n47-beam.dim { opacity:.28; }
-.n47-note { transform:translate(-50%,-50%); z-index:6; opacity:.82; }
+.n47-note { left:0; top:0; z-index:6; opacity:.82; will-change:transform; pointer-events:none; } /* 5.0 성능: 이동은 transform 하나 (GPU) */
+.n47-note .nb { width:100%; height:100%; }
 .n47-note svg { width:100%; height:100%; overflow:visible; }
 .n47-note path.body { fill:#fff; opacity:.85; }
-.n47-note path.line { fill:none; stroke:var(--nc); stroke-width:8; stroke-linejoin:round; stroke-linecap:round; filter:drop-shadow(0 0 6px var(--nc)); }
-.n47-note.hit { animation:n47notehit .16s ease-out forwards; }
-@keyframes n47notehit { to { opacity:0; transform:translate(-50%,-50%) scale(1.3); } }
+.n47-note path.glow { fill:none; stroke:var(--nc); stroke-width:20; stroke-linejoin:round; opacity:.28; } /* drop-shadow 필터 대신 굵은 반투명 선 */
+.n47-note path.line { fill:none; stroke:var(--nc); stroke-width:8; stroke-linejoin:round; stroke-linecap:round; }
+.n47-note.hit .nb { animation:n47notehit .16s ease-out forwards; }
+@keyframes n47notehit { to { opacity:0; transform:scale(1.3); } }
 .n47-beat-ghost { width:60px; height:60px; margin:-30px 0 0 -30px; border-radius:50%; border:3px dashed #fff; opacity:.7; animation:v470flash .3s ease-out forwards; }
 .n47-beat-ring { transform:translate(-50%,-50%); border-radius:50%; border:4px solid var(--nc); box-shadow:0 0 16px var(--nc); animation:v467ring .42s cubic-bezier(.1,.7,.3,1) forwards; z-index:9; }
 .unit.n47-dodge { opacity:.55; }
@@ -955,9 +957,9 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
   filter: blur(1px);
   animation: flame-flicker 0.12s linear infinite alternate;
 }
-@keyframes flame-flicker {
-  0% { opacity: 0.85; filter: blur(1px) brightness(1); }
-  100% { opacity: 1; filter: blur(1.5px) brightness(1.15); }
+@keyframes flame-flicker { /* 5.0 성능: 필터 대신 투명도만 */
+  0% { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 .fx-flame-stream.fading { animation: none; opacity: 0; transition: opacity 0.15s ease; }
 
@@ -6642,6 +6644,7 @@ const CHARACTER_BALANCE = {
   },
   // ── 4.6 신규 ──
   train: {
+    deployLimit: 1, // 5.0 출격제한: 한 진영 전장에 1기만
     hp: 1600, atk: 140, atkSpeed: 1, range: 126, speed: 99,
     trainShots: 3, trainShotGap: 0.1, // 일반 공격: 연기 3연발
     trainFirst: 2, trainDashSpeed: 720, trainHit: 1000, trainSplash: 300, trainSplashRadius: 45, trainDr: 0.35,
@@ -6721,6 +6724,7 @@ const CHARACTER_BALANCE = {
     rocketRadius: 1, rocketFlight: 0.8, rocketFireTime: 3, rocketFireDps: 150
   },
   beatmania: {
+    deployLimit: 1, // 5.0 출격제한: 한 진영 전장에 1기만
     hp: 2200, atk: 0, atkSpeed: 1, range: 225, speed: 67.5,
     noAttack: true, holdRange: true,
     noteMin: 0.3, noteMax: 0.7, noteDamage: 290, noteSpeed: 16, beatWindow: 0.15, beatTeleport: 1.5, beatRadius: 1, beatDamage: 400
@@ -8423,7 +8427,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#2f7fe0', portrait: PORTRAITS.train,
     ...CHARACTER_BALANCE.train,
     customAttack(caster, target) { trainAttack(caster, target); },
-    skillDesc: '일반 공격: 연기를 <b>0.1초 간격 3연발</b> (140 × 3). 라운드 시작 때 <b>적 진영 2개 · 아군 진영 2개</b> 신호기를 무작위로 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 <b>4개를 모두</b> 한 번씩 거쳐 초당 <b>16칸</b>으로 돌진한다 (순서는 무작위). 돌진이 끝나면 다음 돌진까지 <b>3.25초</b>, 돌진 중 직접 부딪힌 적 1기당 <b>-0.5초</b> (최소 0.1초). 돌진 중 받는 피해 <b>35%</b> 감소 · 유닛 관통, 직접 부딪힌 적 <b>1,000</b> · 주변 1칸 적 <b>300</b>. 돌진이 끝나고 1초 뒤 신호기가 다시 세워지고, 1초 뒤 다시 돌진한다.'
+    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. 일반 공격: 연기를 <b>0.1초 간격 3연발</b> (140 × 3). 라운드 시작 때 <b>적 진영 2개 · 아군 진영 2개</b> 신호기를 무작위로 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 <b>4개를 모두</b> 한 번씩 거쳐 초당 <b>16칸</b>으로 돌진한다 (순서는 무작위). 돌진이 끝나면 다음 돌진까지 <b>3.25초</b>, 돌진 중 직접 부딪힌 적 1기당 <b>-0.5초</b> (최소 0.1초). 돌진 중 받는 피해 <b>35%</b> 감소 · 유닛 관통, 직접 부딪힌 적 <b>1,000</b> · 주변 1칸 적 <b>300</b>. 돌진이 끝나고 1초 뒤 신호기가 다시 세워지고, 1초 뒤 다시 돌진한다.'
   },
   berserker: {
     id: 'berserker', name: '버서커 지후', emoji: '🪓', role: 'dealer', roleLabel: '딜러',
@@ -8490,7 +8494,7 @@ const CHAR_DB = {
     id: 'beatmania', name: '비트마니아 지후', emoji: '🎵', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#b14bff', portrait: PORTRAITS.beatmania || jhPlaceholder('🎵', '#b14bff'),
     ...CHARACTER_BALANCE.beatmania,
-    skillDesc: '공격하지 않는다. 필드를 <b>4줄</b>로 나눠 <b>0.3~0.7초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 적진에서 아군 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>290</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.15초 전부터 0.15초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 1칸 적에게 <b>400</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
+    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. 공격하지 않는다. 필드를 <b>4줄</b>로 나눠 <b>0.3~0.7초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 적진에서 아군 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>290</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.15초 전부터 0.15초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 1칸 적에게 <b>400</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
   },
   gun: {
     id: 'gun', name: '총 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -15221,7 +15225,7 @@ function renderPool() {
     row.parentNode.insertBefore(actions, row.nextSibling);
   }
   actions.innerHTML = ''; // 4.7.0 스킵 삭제: 배치 기회마다 반드시 하나를 놓거나 합친다
-  if (v42Enabled()) {
+  if (v42Enabled() && state.mode !== 'friendly') { // 5.0 친선전: 진형 버튼은 내 화면만 바꿔서 두 화면이 어긋난다 → 숨김
     const presets = document.createElement('div');
     presets.className = 'v42-presets';
     presets.innerHTML = '<span class="lab">진형</span>';
@@ -15793,6 +15797,12 @@ function spawnUnit(side, x, y, charId, opts) {
     e.stopPropagation();
     if (!unit.alive) return;
     // 배치 단계에서 풀 카드 선택 중이면: 같은 종류면 합성, 아니면 상세 숨김
+    if (state.phase === 'deploy' && pendingPoolIdx !== null && state.mode === 'friendly' && state.net) { // 5.0 친선전: 합치기도 액션으로 보낸다
+      const pickId = state.pool[pendingPoolIdx];
+      if (unit.side === meSide() && unit.charId === pickId && canMergeInto(unit)) netSubmit({ kind: 'merge', charId: pickId, tile: unit.tile });
+      else netArenaClick(e);
+      return;
+    }
     if (state.phase === 'deploy' && pendingPoolIdx !== null) {
       const pickId = state.pool[pendingPoolIdx];
       if (unit.side === 'ally' && unit.charId === pickId && !canMergeInto(unit)) { $('bottomStatusLine').innerHTML = `<b>${unit.def.name}</b>은(는) 이미 최대 레벨(<b>MAX</b>)입니다.`; return; }
@@ -16047,7 +16057,7 @@ function v42SelectForMove(u) {
 }
 // 배치 단계에서 내 지후를 눌렀을 때. 처리했으면 true.
 function v42HandleUnitTap(u) {
-  if (!v42Enabled() || state.phase !== 'deploy' || pendingPoolIdx !== null || u.side !== 'ally' || u.tile == null) return false;
+  if (!v42Enabled() || state.mode === 'friendly' || state.phase !== 'deploy' || pendingPoolIdx !== null || u.side !== 'ally' || u.tile == null) return false;
   const sel = V42.moveSel && V42.moveSel.alive ? V42.moveSel : null;
   if (sel === u) { v42SelectForMove(null); return false; } // 두 번째 탭: 상세 정보
   if (sel) {
@@ -19422,16 +19432,18 @@ function updateFlameStream(caster, target) {
     stream = document.createElement('div');
     stream.className = 'fx-flame-stream';
     stream.style.height = '18px';
+    stream.style.left = '0px'; stream.style.top = '0px'; stream.style.transformOrigin = '0 0';
     worldEl().appendChild(stream);
     caster.streamEl = stream;
   }
   const dx = target.x - caster.x, dy = target.y - caster.y;
   const dist = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-  stream.style.left = caster.x + 'px';
-  stream.style.top = caster.y + 'px';
-  stream.style.width = dist + 'px';
-  stream.style.transform = `translateY(-50%) rotate(${angle}deg)`;
+  // 5.0 성능: 위치 · 각도는 transform 하나로, 길이는 4px 넘게 바뀔 때만 (레이아웃을 줄인다)
+  const w = Math.round(dist / 4) * 4;
+  if (stream._w !== w) { stream._w = w; stream.style.width = w + 'px'; }
+  const tf = `translate(${caster.x.toFixed(1)}px, ${caster.y.toFixed(1)}px) rotate(${angle.toFixed(1)}deg) translateY(-50%)`;
+  if (stream._tf !== tf) { stream._tf = tf; stream.style.transform = tf; }
 }
 
 function clearFlameStream(caster) {
@@ -21291,7 +21303,8 @@ function spawnNote(u) {
   const vx = -f.x * d.noteSpeed * GRID, vy = -f.y * d.noteSpeed * GRID;
   const x = ew ? (f.x > 0 ? MAP_W - size / 2 : size / 2) : laneSize * (lane + 0.5);
   const y = ew ? laneSize * (lane + 0.5) : (f.y > 0 ? MAP_H - size / 2 : size / 2);
-  const el = n47Fx('n47-note', x, y, `<svg viewBox="0 0 100 100"><path class="body" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /><path class="line" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /></svg>`);
+  const el = n47Fx('n47-note', null, null, `<div class="nb"><svg viewBox="0 0 100 100"><path class="glow" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /><path class="body" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /><path class="line" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /></svg></div>`);
+  el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   el.style.width = el.style.height = size + 'px';
   el.style.setProperty('--nc', dir.color);
   el.querySelector('svg').style.transform = `rotate(${dir.rot}deg)`;
@@ -21544,7 +21557,7 @@ function tickNew47Global(dt) {
       return false;
     }
     n.x += n.vx * dt; n.y += n.vy * dt;
-    n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px';
+    n.el.style.transform = `translate(${n.x.toFixed(1)}px, ${n.y.toFixed(1)}px) translate(-50%, -50%)`; // 5.0 성능: left/top 대신 transform
     if (n.x < -n.size || n.y < -n.size || n.x > MAP_W + n.size || n.y > MAP_H + n.size) { n.el.remove(); return false; }
     return true;
   });
@@ -23832,6 +23845,31 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.0.0': {
+    label: 'v5.0 온라인 업데이트 · 친구 · 친선전',
+    date: '2026.09.30',
+    sections: [
+      { title: '친구', items: [
+        { emoji:'👥', name:'친구 시스템', tag:'new', color:'#3797f0', desc:'<b>채팅 → 친구 탭</b>에서 닉네임으로 친구 요청. 받은 요청 수락 · 거절, 친구 목록에 <b>접속 중 / 게임 중</b> 표시. 온라인 계정이 있어야 해요.' },
+        { emoji:'💬', name:'1:1 채팅', tag:'new', color:'#7b4dff', desc:'친구와 둘이서만 대화. 새 메시지가 오면 채팅 버튼과 친구 탭에 <b>빨간 배지</b>가 떠요. 욕설은 똑같이 가려져요.' }
+      ] },
+      { title: '친선전', items: [
+        { emoji:'⚔️', name:'실시간 친선전', tag:'new', color:'#e5322d', desc:'친구 목록의 <b>⚔ 친선전</b>으로 신청 → 친구가 수락하면 바로 시작. 라이프 3 · 랭크전과 같은 규칙. 매 배치마다 <b>둘이 동시에 15초 안에</b> 골라 놓고, 전투는 두 화면에서 똑같이 흘러가요. 내 진영이 항상 아래(오른쪽)에 보여요.' },
+        { emoji:'🤝', name:'친선전 규칙', tag:'adjust', color:'#555555', desc:'경험치 · 재화 · 랭크 전적 · 지후 랭크 효과 없음 (친선전 전적만 따로 기록). 항복할 수 있고, 상대 연결이 끊기면 승리. 게임 중에 온 신청은 자동으로 거절돼요.' }
+      ] },
+      { title: '밸런스', items: [
+        { emoji:'🎵', name:'비트마니아 지후', tag:'nerf', color:'#b14bff', portraitKey:'beatmania', desc:'출격 제한 <b>1기</b> — 전장에 한 명만 둘 수 있어요.' },
+        { emoji:'🚅', name:'신칸센 지후', tag:'nerf', color:'#2f7fe0', portraitKey:'train', desc:'출격 제한 <b>1기</b> — 전장에 한 명만 둘 수 있어요.' }
+      ] },
+      { title: '최적화', items: [
+        { emoji:'⚡', name:'비트마니아 렉 개선', tag:'fix', color:'#555555', desc:'음표 · 화염 줄기 · 승률 막대를 가볍게 다시 그려서, 비트마니아 지후가 있는 전투의 <b>프레임 끊김을 크게 줄였어요</b> (그리기 부담 약 40% 감소).' }
+      ] },
+      { title: '그 밖에', items: [
+        { emoji:'🏆', name:'리더보드', tag:'adjust', color:'#f2c94c', desc:'리더보드에 들어갈 때마다 <b>내 최신 정보</b>(덱 · 테두리 · 칭호 · 전적)를 먼저 올리고 순위를 불러와요.' },
+        { emoji:'🔥', name:'튜토리얼 다시하기', tag:'adjust', color:'#e5322d', portraitKey:'fire', desc:'도움말의 튜토리얼 다시하기에서 <b>연습 랭크전까지</b> 다시 할 수 있어요. 보상과 기록은 없어요. (상자? 안 줘요)' }
+      ] }
+    ]
+  },
   '4.7.4': {
     label: 'v4.7.4 튜토리얼 개편',
     date: '2026.09.30',
@@ -27678,13 +27716,19 @@ function updateOddsBar() {
     : allyPower + enemyPower > 0 ? allyPower / (allyPower + enemyPower) : 0.5;
   const percent = Math.round(allyOdds * 100);
   const shown = netFlip() ? 100 - percent : percent; // 친선전 참가자는 내 쪽이 '아군'
-  $('oddsAllyFill').style.width = shown + '%';
-  $('oddsEnemyFill').style.width = (100 - shown) + '%';
-  $('oddsAllyLab').textContent = `아군 ${shown}%`;
-  $('oddsEnemyLab').textContent = `적 ${100 - shown}%`;
-  $('oddsHpLab').textContent = castleMode
+  // 5.0 성능: 매 프레임 불리므로 바뀐 값만 쓴다
+  const hpText = castleMode
     ? `예상 우세 · 적 성 ${Math.round(enemyHealth).toLocaleString()} : 아군 성 ${Math.round(allyHealth).toLocaleString()} · 화력 반영`
     : `예상 우세 · 적 생존 ${enemy.count} : 아군 생존 ${ally.count} · 체력·화력·최근 피해 반영`;
+  const key = shown + '|' + hpText;
+  if (updateOddsBar.last !== key) {
+    updateOddsBar.last = key;
+    $('oddsAllyFill').style.width = shown + '%';
+    $('oddsEnemyFill').style.width = (100 - shown) + '%';
+    $('oddsAllyLab').textContent = `아군 ${shown}%`;
+    $('oddsEnemyLab').textContent = `적 ${100 - shown}%`;
+    $('oddsHpLab').textContent = hpText;
+  }
   return percent;
 }
 function renderStatsPanel() {
