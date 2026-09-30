@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.7.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.7.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6633,13 +6633,13 @@ const CHARACTER_BALANCE = {
     lanternHeal: 30, lanternDim: 1.5, lanternDimValue: 2
   },
   rocket: {
-    hp: 1800, atk: 850, atkSpeed: 6.5, range: 360, speed: 54,
+    hp: 1800, atk: 650, atkSpeed: 6.5, range: 360, speed: 54,
     rocketRadius: 1, rocketFlight: 0.8, rocketFireTime: 3, rocketFireDps: 150
   },
   beatmania: {
     hp: 2200, atk: 0, atkSpeed: 1, range: 225, speed: 67.5,
     noAttack: true, holdRange: true,
-    noteMin: 0.5, noteMax: 2.5, noteDamage: 400, noteSpeed: 8, beatWindow: 0.15, beatTeleport: 1.5, beatRadius: 1, beatDamage: 400
+    noteMin: 0.2, noteMax: 0.5, noteDamage: 650, noteSpeed: 16, beatWindow: 0.15, beatTeleport: 1.5, beatRadius: 1, beatDamage: 400
   },
   gun: {
     hp: 2200, atk: 350, atkSpeed: 1.8, range: 202.5, speed: 81,
@@ -6652,7 +6652,7 @@ const CHARACTER_BALANCE = {
   nuke: {
     hp: 600, atk: 150, atkSpeed: 2, range: 72, speed: 67.5,
     isMelee: true,
-    nukeLaunch: 1, nukeFlight: 30
+    nukeLaunch: 1, nukeFlight: 38
   },
 };
 
@@ -8295,13 +8295,13 @@ const CHAR_DB = {
     rarity: 'epic', color: '#d9480f', portrait: PORTRAITS.rocket || jhPlaceholder('🚀', '#d9480f'),
     ...CHARACTER_BALANCE.rocket,
     customAttack(caster, target) { rocketShot(caster, target); },
-    skillDesc: 'ATK 850 · 공격 간격 6.5초 · 사거리 8칸. 박격포처럼 대상 자리에 로켓을 쏘아 <b>반경 1칸</b> 광역 피해를 주고, 그 자리에 <b>3초</b> 동안 <b>불길</b>을 남긴다 (초당 150).'
+    skillDesc: 'ATK 650 · 공격 간격 6.5초 · 사거리 8칸. 박격포처럼 대상 자리에 로켓을 쏘아 <b>반경 1칸</b> 광역 피해를 주고, 그 자리에 <b>3초</b> 동안 <b>불길</b>을 남긴다 (초당 150).'
   },
   beatmania: {
     id: 'beatmania', name: '비트마니아 지후', emoji: '🎵', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#b14bff', portrait: PORTRAITS.beatmania || jhPlaceholder('🎵', '#b14bff'),
     ...CHARACTER_BALANCE.beatmania,
-    skillDesc: '공격하지 않는다. 필드를 <b>4줄</b>로 나눠 <b>0.5~2.5초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 적진에서 아군 쪽으로 흘려보낸다. 화살표는 처음 닿은 적에게 <b>400</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.15초 전부터 0.15초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 1칸 적에게 <b>400</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
+    skillDesc: '공격하지 않는다. 필드를 <b>4줄</b>로 나눠 <b>0.2~0.5초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 적진에서 아군 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>650</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.15초 전부터 0.15초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 1칸 적에게 <b>400</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
   },
   gun: {
     id: 'gun', name: '총 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -8323,7 +8323,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#6fbf2a', portrait: PORTRAITS.nuke || jhPlaceholder('☢️', '#6fbf2a'),
     ...CHARACTER_BALANCE.nuke,
     onRestore(u, p) { if (p.launched) nukeBecomeLaunched(u); },
-    skillDesc: '소환되고 <b>1초</b> 뒤 <b>핵</b>을 발사하고 <b>핵날린 지후</b>가 된다 (HP 600 · ATK 150 · 공격 간격 2초 · 근접). 핵은 <b>30초</b> 뒤 적진에 떨어져 <b>모든 적을 즉사</b>시킨다 (부활 · 무적 무시). 그 라운드 안에 떨어지지 않으면 핵은 사라진다. 한 번 핵날린 지후가 되면 다음 라운드에도 핵날린 지후다.'
+    skillDesc: '소환되고 <b>1초</b> 뒤 <b>핵</b>을 발사하고 <b>핵날린 지후</b>가 된다 (HP 600 · ATK 150 · 공격 간격 2초 · 근접). 핵은 <b>38초</b> 뒤 적진에 떨어져 <b>모든 적을 즉사</b>시킨다 (부활 · 무적 무시). 그 라운드 안에 떨어지지 않으면 핵은 사라진다. 한 번 핵날린 지후가 되면 다음 라운드에도 핵날린 지후다.'
   },
   golf: {
     id: 'golf', name: '골프 지후', emoji: '🏌️', role: 'dealer', roleLabel: '딜러',
@@ -20908,13 +20908,13 @@ function spawnNote(u) {
   const f = n47Forward(u.side); // 적 진영 쪽 → 노트는 반대로 (적진 → 아군 쪽) 흐른다
   const lane = Math.floor(Math.random() * 4);
   const laneSize = (ew ? MAP_H : MAP_W) / 4;
-  const size = laneSize * 0.86;
+  const size = laneSize * 1.0; // 4.7.1 음표 크기 증가
   const dirKey = Object.keys(BEAT_DIRS)[Math.floor(Math.random() * 4)];
   const dir = BEAT_DIRS[dirKey];
   const vx = -f.x * d.noteSpeed * GRID, vy = -f.y * d.noteSpeed * GRID;
   const x = ew ? (f.x > 0 ? MAP_W - size / 2 : size / 2) : laneSize * (lane + 0.5);
   const y = ew ? laneSize * (lane + 0.5) : (f.y > 0 ? MAP_H - size / 2 : size / 2);
-  const el = n47Fx('n47-note', x, y, `<svg viewBox="0 0 100 100"><path class="body" d="M12 41 C30 39 45 42 60 40 L58 18 C70 28 82 40 91 50 C81 61 70 72 59 83 L61 60 C45 58 30 61 12 59 C11 53 13 47 12 41 Z" /><path class="line" d="M12 41 C30 39 45 42 60 40 L58 18 C70 28 82 40 91 50 C81 61 70 72 59 83 L61 60 C45 58 30 61 12 59 C11 53 13 47 12 41 Z" /></svg>`);
+  const el = n47Fx('n47-note', x, y, `<svg viewBox="0 0 100 100"><path class="body" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /><path class="line" d="M5 38 C27 36 44 39 58 37 L56 8 C71 21 85 36 96 50 C84 64 71 79 57 92 L59 63 C44 61 26 64 5 62 C4 54 6 46 5 38 Z" /></svg>`);
   el.style.width = el.style.height = size + 'px';
   el.style.setProperty('--nc', dir.color);
   el.querySelector('svg').style.transform = `rotate(${dir.rot}deg)`;
@@ -23399,6 +23399,17 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.7.1': {
+    label: 'v4.7.1 밸런스 패치',
+    date: '2026.09.30',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🎵', name:'비트마니아 지후', tag:'buff', color:'#b14bff', portraitKey:'beatmania', desc:'음표 크기 증가 · 떨어지는 속도 <b>2배</b> · 피해 <b>400 → 650</b> · 간격 <b>0.5~2.5초 → 0.2~0.5초</b>.' },
+        { emoji:'☢️', name:'핵미사일 지후', tag:'nerf', color:'#6fbf2a', portraitKey:'nuke', desc:'핵이 떨어지기까지 <b>30초 → 38초</b>.' },
+        { emoji:'🚀', name:'로켓병 지후', tag:'nerf', color:'#d9480f', portraitKey:'rocket', desc:'로켓 피해 <b>850 → 650</b>.' }
+      ] }
+    ]
+  },
   '4.7.0': {
     label: 'v4.7 신규 지후 8종 · 배치 규칙 개편',
     date: '2026.09.30',
