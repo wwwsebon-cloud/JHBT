@@ -6412,6 +6412,7 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 99, atk: 299, atkSpeed: 1, range: 270, speed: 81,
     genesisRadius: 247.5, genesisShield: 9999, genesisTransfer: 0.9, // 4.7.2 리워크: 범위 내 아군 피해 90%를 제네시스 쉴드가 대신 받는다 · 4.7.3 반지름 5.5칸
+    genesisAtkBuff: 0.15, // 범위 내 아군 공격력 +15%
     genesisAloneTaken: 1.5 // 4.7.3 [약화] 범위에 아군이 없으면 받는 피해 150% (무효화도 꺼진다)
   },
   dust: {
@@ -8244,7 +8245,7 @@ const CHAR_DB = {
     id: 'genesis', name: '제네시스 지후', emoji: '✧', role: 'support', roleLabel: '서포터',
     rarity: 'hidden', color: '#d9d9e1', portrait: PORTRAITS.genesis,
     ...CHARACTER_BALANCE.genesis,
-    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. HP 99 · <b>제네시스 쉴드 9,999</b>. 주변 <b>5.5칸</b>(점선 원) 안의 아군은 받는 피해의 <b>10%</b>만 받고, 나머지 <b>90%</b>는 제네시스 쉴드가 대신 받는다. 쉴드가 깨지기 전까지 자신이 받는 피해는 <b>100% 무효</b>. <b>[약화]</b> 범위에 아군이 한 명도 없으면 자신이 받는 피해 <b>150%</b>.'
+    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. HP 99 · <b>제네시스 쉴드 9,999</b>. 주변 <b>5.5칸</b>(점선 원) 안의 아군은 받는 피해의 <b>10%</b>만 받고, 나머지 <b>90%</b>는 제네시스 쉴드가 대신 받으며, 공격력이 <b>15%</b> 오른다. 쉴드가 깨지기 전까지 자신이 받는 피해는 <b>100% 무효</b>. <b>[약화]</b> 범위에 아군이 한 명도 없으면 자신이 받는 피해 <b>150%</b>.'
   },
   dust: {
     id: 'dust', name: '황사 지후', emoji: '🌪️', role: 'support', roleLabel: '서포터',
@@ -16685,6 +16686,7 @@ function refreshGenesisAuras() {
       if (c.charId !== 'genesis' || !c.alive || ally.side !== c.side || !sameRealm(ally, c)) continue;
       if (Math.hypot(ally.x - c.x, ally.y - c.y) > c.def.genesisRadius) continue;
       c._genAlone = false; // 4.7.3 범위에 아군이 있다
+      battleAPI.setBuff(ally, 'genesis-atk', 'atk', c.def.genesisAtkBuff, 0.25); // 범위 내 아군 공격력 +15%
       if (!ally._genGuardBy && casters && casters.includes(c)) ally._genGuardBy = c;
     }
   }
