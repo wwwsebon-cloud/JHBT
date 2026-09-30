@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.0.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.1.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -864,6 +864,8 @@ html, body {
 .pool-card.v470-dead { filter:grayscale(1); opacity:.38; cursor:not-allowed; }
 .pool-card.v470-dead:active { transform:none; }
 .unit .unit-level.max { font-size:9px; letter-spacing:-.02em; background:linear-gradient(135deg,#f2c94c,#e07b00) !important; color:#fff !important; padding:0 3px; min-width:auto; }
+.unit .unit-level.coop-over { width:auto; min-width:18px; padding:0 4px; border-radius:9px; font-size:10px; background:linear-gradient(135deg,#b30f2b,#ff4d4d) !important; color:#fff !important; }
+.unit.coop-mate .coop-tag { position:absolute; top:-7px; left:-7px; padding:0 4px; border-radius:6px; background:#12a594; color:#fff; font:800 9px/14px system-ui, sans-serif; letter-spacing:.02em; pointer-events:none; box-shadow:0 1px 3px #0005; }
 /* 4.6.7 밴·픽: 떠오르거나 튀지 않고 테두리로만 */
 html[data-theme="light"] #app .v4-cd .cd-card, html[data-theme="light"] #app .v4-cd .cd-card:hover:not(:disabled) { transform:none !important; transition:border-color .08s, box-shadow .08s; }
 html[data-theme="light"] #app .v4-cd .cd-card:hover:not(:disabled) { border-color:#888; }
@@ -5301,6 +5303,7 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
       <div class="v4-tilewrap" style="animation-delay:1.18s"><button type="button" class="v4-tile" id="btnOpenAchievements" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">09</span><span class="ico v4-ico">★</span><span class="reddot"></span><div class="t">퀘스트 · 업적</div><div class="d">다이아 · 테두리 · 칭호 획득</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:1.25s"><button type="button" class="v4-tile" id="btnOpenChat" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">10</span><span class="ico v4-ico">DM</span><span class="reddot"></span><div class="t">채팅 · 친구</div><div class="d">전체 채팅 · 친구 · 1:1 대화 · 친선전</div></button></div>
       <div class="v4-tilewrap" style="animation-delay:1.32s"><button type="button" class="v4-tile" id="btnOpenWwe" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">11</span><span class="ico v4-ico">WWE</span><span class="reddot"></span><div class="t">WWE</div><div class="d">1:1 · 토너먼트 · 개인전 · 전술 봇 룰</div></button></div>
+      <div class="v4-tilewrap" style="animation-delay:1.39s"><button type="button" class="v4-tile" id="btnStartCoop" data-fx="tilt"><span class="v4-gloss"></span><span class="v4-dashin"></span><span class="num">12</span><span class="ico v4-ico">2:2</span><span class="reddot"></span><span class="v465-newtag">NEW</span><div class="t">협동전</div><div class="d"><span id="coopTileDesc">AI 파트너 · 무한 웨이브</span></div></button></div>
       </div>
       <div class="v4-foot">
         <button type="button" class="v4-patchbtn" id="btnLobbyPatch"><span>패치노트 <span class="v4-version">4.0</span></span><span>↗</span></button>
@@ -9027,7 +9030,7 @@ function healRecvMult(u) {
 }
 const RANK_S_TEMP_ATK = 0.05;
 const RANK_STAT_STEPS = [null, null, { hp: 0.10, atk: 0.10 }, { hp: 0.20, atk: 0.20 }]; // 랭크 번호(0=A … 3=SSR)에 오를 때 얻는 것
-const RANK_EFFECT_MODES = ['ranked', 'competitive', 'draftbattle']; // 투기장 · 미리보기는 랭크 효과 없음
+const RANK_EFFECT_MODES = ['ranked', 'competitive', 'draftbattle', 'coop']; // 투기장 · 미리보기는 랭크 효과 없음
 function rankStatBonus(r) { // r 랭크까지 쌓인 HP·공격력 보너스 (합산)
   let hp = 0, atk = 0;
   for (let i = 2; i <= r; i++) { hp += RANK_STAT_STEPS[i].hp; atk += RANK_STAT_STEPS[i].atk; }
@@ -9239,6 +9242,7 @@ function freshProfile() {
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
     tutorial: { done: false, giftPending: false, giftUsed: false, stage: '', giftIds: [], mailed: false },
     friendlyRecord: { w: 0, l: 0 },
+    coopBest: 0,
     mail: [],
     mailFlags: [],
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
@@ -9378,6 +9382,7 @@ function normalizeProfile(raw) {
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
+    coopBest: Math.max(0, Math.floor(Number(raw.coopBest) || 0)), // 5.1 협동전 최고 웨이브
     xpBoost: { day: String(rawBoost.day || ''), usesToday: Math.min(2, safeCount(rawBoost.usesToday)), activeUntil: Math.max(0, Number(rawBoost.activeUntil) || 0) },
     achievements: {
       loginDays: safeCount(rawAchievements.loginDays), lastLoginDay: String(rawAchievements.lastLoginDay || ''),
@@ -9703,6 +9708,7 @@ function renderAccountUI() {
   renderLobbyBadges();
   document.body.classList.toggle('reduce-motion', profile.settings.reduceMotion);
   renderCompTile();
+  renderCoopTile(); // 5.1
   applyGridSetting();
   const presets = $('deckPresets');
   if (presets) {
@@ -10648,7 +10654,7 @@ function poolCardPlayable(side, charId) {
 // 내 풀과 봇의 풀이 같은 함수를 쓴다 (온라인이 되어도 그대로).
 const HIDDEN_POOL_CHANCE = 0.1;
 const HIDDEN_POOL_FROM_ROUND = 2;
-const FIXED_POOL_MODES = ['ranked', 'competitive'];
+const FIXED_POOL_MODES = ['ranked', 'competitive', 'coop'];
 function rollDeployPool(bench, deckIds, size, round, rng = Math.random) {
   const fixed = FIXED_POOL_MODES.includes(state.mode);
   const normal = (fixed ? deckIds : bench).filter(id => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden');
@@ -11388,6 +11394,30 @@ function settleMatch(won, draw, surrendered = false) {
     if (!draw) { if (won) rec.w++; else rec.l++; }
     saveProfile();
     state.lastSettlement = { practice: true, friendly: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
+    return state.lastSettlement;
+  }
+  if (state.mode === 'coop' && state.coop) { // 5.1 협동전: 버틴 웨이브만큼 보상 (포기해도 받는다)
+    const waves = coopClearedWaves();
+    const best = profile.coopBest || 0, newBest = waves > best;
+    const before = getLevelInfo(profile.totalXp);
+    let xp = waves * 6;
+    if (xp > 0 && profile.xpBoost.activeUntil > Date.now()) xp *= 2;
+    const gold = waves * 50, diamonds = Math.floor(waves / 10) * 20;
+    profile.totalXp += xp; profile.gold += gold; profile.diamonds += diamonds;
+    addSeasonXp(xp);
+    if (newBest) profile.coopBest = waves;
+    profile.playMs += Math.max(0, Date.now() - (state.matchStartedAt || Date.now()));
+    state.matchStartedAt = 0;
+    if (waves >= 5) { recordDailyProgress('games', 1); st44Add('games'); }
+    const after = getLevelInfo(profile.totalXp);
+    if (after.level > profile.highestRewardedLevel) {
+      profile.highestRewardedLevel = after.level;
+      profile.pendingLevelCelebration = { from: before.level, to: after.level, diamonds: 0 };
+      postEvent('level', after.level);
+    }
+    state.lastSettlement = { coop: true, waves, best: Math.max(best, waves), newBest, surrendered, xp, gold, diamonds, levelBonus: 0, before, after };
+    saveProfile();
+    window.JihooOnline.publish().catch(() => {});
     return state.lastSettlement;
   }
   if (state.tutMatch && state.tutMatch.replay) { // 4.7.4 튜토리얼 다시하기: 기록 · 보상 · 퀘스트 없음
@@ -12165,6 +12195,7 @@ document.addEventListener('click', e => {
   const got = claimMainQuest();
   if (got) { v4RewardPop($('mainQuestStrip'), '+ ' + got); v4BumpDiamond(); renderAccountUI(); }
 });
+$('btnStartCoop').addEventListener('click', () => startCoop()); // 5.1 협동전
 $('btnStartGame').addEventListener('click', () => {
   const deck = currentDeck();
   if (deck.length !== 5) { state.draftSelected = deck; draftPendingEquip = null; renderDraftGrid(); $('draftGrid').scrollTop = 0; showScreen('draft'); return; }
@@ -14959,17 +14990,18 @@ function startMatch(mode = 'ranked', opts = {}) {
 }
 
 function updateLifeUI() {
+  const exitBtn = $('btnExitBattle'); if (exitBtn) exitBtn.textContent = state.mode === 'coop' ? '그만' : '항복'; // 5.1 협동전
   const oppLives = netFlip() ? state.allyLives : state.enemyLives, myLives = netFlip() ? state.enemyLives : state.allyLives;
   for (let i = 0; i < 4; i++) {
     const el = $('enemyLife' + i);
     if (el) {
       el.classList.toggle('on', i < oppLives);
-      el.style.display = (state.mode === 'castle' || (state.mode === 'arena' && i > 0) || (DRAFT_MODES[state.mode] && i > 1)) ? 'none' : '';
+      el.style.display = (state.mode === 'castle' || state.mode === 'coop' || (state.mode === 'arena' && i > 0) || (DRAFT_MODES[state.mode] && i > 1)) ? 'none' : '';
     }
   }
   document.querySelectorAll('#allyLivesDisplay .life-pip').forEach((p, i) => {
     p.classList.toggle('on', i < myLives);
-    p.style.display = (state.mode === 'castle' || (state.mode === 'arena' && i > 0) || (DRAFT_MODES[state.mode] && i > 1)) ? 'none' : '';
+    p.style.display = (state.mode === 'castle' || state.mode === 'coop' || (state.mode === 'arena' && i > 0) || (DRAFT_MODES[state.mode] && i > 1)) ? 'none' : '';
   });
 }
 
@@ -15024,6 +15056,9 @@ function startRoundInner() {
     if (back && p.tile != null) back.tile = p.tile;
     if (back && p.grown) back._grown = true;
     if (back && back.def.onRestore) back.def.onRestore(back, p); // 4.7.0 강화 수치 · 핵날린 지후
+    if (back && state.mode === 'coop' && state.coop) { // 5.1 협동전: 정비 뒤에도 체력 비율 유지 · AI 파트너 표시
+      if (p.mate) coopMarkMate(back);
+    }
   });
   // 좀비 S: 지난 라운드에 좀비로 만든 적이 있으면 이번 라운드에 아군 좀비 1기
   if (state.zombieCarry) {
@@ -15110,7 +15145,8 @@ function completeDeployAction(delay = 120) { // 4.6.7: 700ms → 120ms (배치 �
   V42.moveSel = null; hideRangeRing();
   document.querySelectorAll('.pool-card').forEach(el => el.classList.add('picked'));
   if (tutMatch()) state.tutMatch.deployed++;
-  if (!tutBotDeploy()) enemyAutoDeployOne();
+  if (state.mode === 'coop') coopPartnerDeployOne(); // 5.1 협동전: 내가 하나 놓으면 AI 파트너도 하나
+  else if (!tutBotDeploy()) enemyAutoDeployOne();
   checkTaegukHarmony('ally');
   checkTaegukHarmony('enemy');
   v42RefreshGrid();
@@ -15124,6 +15160,7 @@ function isDeathmatch() {
   return (state.mode === 'ranked' || state.mode === 'friendly' || !!DRAFT_MODES[state.mode]) && state.allyLives === 1 && state.enemyLives === 1;
 }
 function deployChances() {
+  if (state.mode === 'coop') return COOP.DEPLOYS; // 5.1 협동전: 정비마다 5번
   if (isDeathmatch()) return DEATHMATCH_DEPLOYS;
   if (state.mode === 'ranked' || state.mode === 'friendly') return state.round >= 3 ? 3 : 2;
   return 3;
@@ -15137,6 +15174,7 @@ function nextDeployCycle() {
     $('screen-battle').classList.toggle('deathmatch', dm);
     if (dm) v42ShowGo('DEATHMATCH', `양쪽 라이프 1 · 이번 라운드 배치 ${DEATHMATCH_DEPLOYS}번`, 'dm');
     else if (state.mode === 'ranked' && state.round === 3) v42ShowGo(`ROUND ${state.round}`, '지금부터 라운드마다 배치 3번', 'info');
+    else if (state.mode === 'coop' && state.coop) v42ShowGo(state.coop.wave ? '정비 시간' : '협동전', `나와 AI 파트너 각자 배치 ${COOP.DEPLOYS}번 · 아군 최대 ${COOP.CAP}기`, 'info');
   }
   state.phase = 'deploy';
   $('screen-battle').dataset.phase = 'deploy';
@@ -17795,6 +17833,7 @@ function physicsStep(dt) {
   }
   const aliveAllies = units.filter((u) => u.side === "ally" && u.alive && !u.isCastle).length;
   const aliveEnemies = units.filter((u) => u.side === "enemy" && u.alive && !u.isCastle).length;
+  if (state.mode === 'coop') { coopStep(aliveAllies, aliveEnemies); return; } // 5.1 협동전
   if (state.mode !== 'castle' && !state.pendingExplosions.length && !state.pendingMeteors.length && (aliveAllies === 0 || aliveEnemies === 0)) {
     beginFinalMoment(aliveAllies > 0 ? "ally" : (aliveEnemies > 0 ? "enemy" : "draw"));
   }
@@ -17982,6 +18021,7 @@ function beginCombatPhaseInner() {
   state.combatLastTs = performance.now();
   state.combatStartTs = state.combatLastTs;
   state.combatTime = 0;
+  if (state.mode === 'coop') coopCombatStart(); // 5.1 협동전: 첫 무리 · 정비 전에 남은 적
   genesisReset();
   refreshGenesisAuras();
   state.oddsSamples = [];
@@ -18560,10 +18600,10 @@ function applyDamageRaw(target, amount, opts) {
 function combatTick(ts) {
   if (state.phase !== 'combat') return;
   const limit = state.mode === 'castle' ? CASTLE_ROUND_TIME_LIMIT : state.mode === 'preview' ? PREVIEW_TIME_LIMIT : state.mode === 'wwe' && state.wwe ? state.wwe.timeLimit : COMBAT_TIME_LIMIT;
-  const remaining = Math.max(0, Math.ceil(limit - (LOCK.on ? state.combatTime : (ts - state.combatStartTs) / 1000)));
-  $('phaseTimer').textContent = remaining;
-  $('phaseTimer').classList.toggle('urgent', remaining <= 10);
-  v4Ring(remaining, limit);
+  const coopMode = state.mode === 'coop'; // 5.1 협동전: 시간 제한 없음 (타이머는 다음 무리까지)
+  const remaining = coopMode ? 1 : Math.max(0, Math.ceil(limit - (LOCK.on ? state.combatTime : (ts - state.combatStartTs) / 1000)));
+  if (!coopMode) $('phaseTimer').textContent = remaining;
+  if (!coopMode) { $('phaseTimer').classList.toggle('urgent', remaining <= 10); v4Ring(remaining, limit); }
   if (remaining === 0 && !LOCK.on) {
     if (state.mode === 'castle') endRoundCombat(null);
     else if (state.mode === 'wwe') endRoundCombat(wweJudge(), true);
@@ -18577,7 +18617,7 @@ function combatTick(ts) {
   const rawDt = Math.min((ts - state.combatLastTs) / 1000, 0.1);
   state.combatLastTs = ts;
 
-  if (state.speedMultiplier === 1 && ts - state.combatStartTs >= AUTO_FAST_FORWARD_MS) {
+  if (state.speedMultiplier === 1 && !coopMode && ts - state.combatStartTs >= AUTO_FAST_FORWARD_MS) {
     state.speedMultiplier = 2;
     $('battleArena').classList.add('fast-forward');
     $('bottomStatusLine').innerHTML = '⏩ <b>2배속</b> — 전투가 길어져 속도를 올렸습니다';
@@ -23015,6 +23055,7 @@ function dealDamage(caster, target, amount, opts) {
   if (!target.alive) return false;
   if (target.invincible > 0) return false;
   opts = opts || {};
+  if (state.coop && state.mode === 'coop' && caster && caster.side === 'enemy' && !opts.reflected) amount *= caster._coopDmg || coopExtraMult(Math.max(1, state.coop.wave)); // 5.1 협동전: 레벨 7을 넘는 적의 피해
   // crossRealm: 아공간의 공허 지후가 필드의 적을 치는 한 번만 층을 넘는다
   if (target._flight || target._leap || (caster && !opts.fromDeath && !(opts.crossRealm ? caster.side !== target.side : isHostile(caster, target)))) return false;
   if (caster && !opts.crossRealm && !sameRealm(caster, target)) return false;
@@ -23662,7 +23703,11 @@ function finishMatch(winnerSide, surrendered = false) {
     const streak = profile.winStreak || 0;
     if (won && !draw && !surrendered && discordStreakMilestone(streak)) discordNotify({ type: 'streak', streak, mode: DISCORD_MODE_LABEL[state.mode] || '' }); // 4.6.8
   }
-  if (draw) {
+  if (state.mode === 'coop' && settlement.coop) { // 5.1 협동전
+    $('endTitle').textContent = `WAVE ${settlement.waves}`;
+    $('endTitle').className = 'end-title title-font' + (settlement.newBest ? ' win' : '');
+    $('endSub').textContent = surrendered ? '협동전을 그만뒀어요' : state.coop.reason === 'overrun' ? '적이 너무 많이 몰려왔어요' : '아군이 전멸했어요';
+  } else if (draw) {
     $('endTitle').textContent = 'DRAW';
     $('endTitle').className = 'end-title title-font';
     $('endSub').textContent = state.mode === 'arena' ? '투기장 무승부' : '무승부입니다';
@@ -23691,6 +23736,19 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.round(after.progress * 100)}%"></div></div>
       <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대).</div>`;
+  } else if (settlement.coop) {
+    const lv = settlement.after.level > settlement.before.level;
+    const xpRatio = settlement.after.required ? settlement.after.current / settlement.after.required * 100 : 100;
+    card.innerHTML = `
+      <div class="settlement-row"><span>🤝 협동전 · AI 파트너 ${escapeHtml(state.coop.partner.name)}</span><b>${settlement.waves}웨이브 버팀</b></div>
+      <div class="settlement-row"><span>최고 기록</span><b class="${settlement.newBest ? 'gain' : ''}">${settlement.best}웨이브${settlement.newBest ? ' · 신기록!' : ''}</b></div>
+      <div class="v4-boxes">
+        <div><b>+${settlement.xp}</b><span>EXP</span></div>
+        <div><b>● ${formatNumber(settlement.gold)}</b><span>골드</span></div>
+        <div><b>◆ ${formatNumber(settlement.diamonds)}</b><span>10웨이브마다</span></div>
+      </div>
+      <div class="v4-lvline"><div class="t"><span>Lv.${settlement.before.level}${lv ? ` → Lv.${settlement.after.level}` : ''}</span><span>EXP ${formatNumber(settlement.after.current)} / ${formatNumber(settlement.after.required)}</span></div><div class="bar"><div style="width:${xpRatio}%"></div></div></div>
+      <div class="settlement-note">버틴 웨이브마다 EXP 6 · 골드 50, 10웨이브마다 다이아 20. 그만둬도 버틴 만큼 받아요. 5웨이브 이상이면 일일 플레이에 들어가요.</div>`;
   } else if (settlement.friendly) {
     const rec = profile.friendlyRecord || { w: 0, l: 0 };
     card.innerHTML = `<div class="settlement-row"><span>🤝 친선전</span><b>vs ${escapeHtml(state.enemyName || '친구')}</b></div><div class="settlement-row"><span>친선전 전적</span><b>${rec.w}승 ${rec.l}패</b></div><div class="settlement-note">친선전은 경험치 · 재화 · 랭크 전적에 들어가지 않아요.</div>`;
@@ -23757,6 +23815,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
   if (tab === 'rules') {
     $('helpBody').innerHTML = [
       ['⚔️ 일반전', '덱의 지후 5종으로 싸웁니다. 라운드마다 배치 풀에서 지후를 골라 배치합니다 (1~2라운드 2번, 3라운드부터 3번). 양쪽 라이프가 모두 1이 되면 <b>데스매치</b>로 배치 6번. 같은 지후를 겹치면 레벨이 오릅니다 (HP·ATK +20%). 라이프 3을 먼저 깎으면 이깁니다. 이기면 🎟️ 티켓 1장.'],
+      ['🤝 협동전', 'AI 파트너와 아군 진영(최대 24기)을 같이 씁니다. 적진에서 10초마다 지후 무리가 몰려오고, 웨이브가 시작될 때마다 아군 체력 35% 회복. 10웨이브마다 정비 시간(쓰러진 아군 복귀 · 각자 배치 5번). 아군이 전멸하면 끝나고, 버틴 웨이브만큼 보상을 받습니다.'],
       ['🎯 드래프트전 · 경쟁전', '밴과 픽으로 지후를 정해 싸웁니다. 한 판에 🎟️ 티켓 1장 (최대 15장, 일반전 승리·일일 퀘스트로 획득, 3장보다 적으면 15분마다 1장 자동 충전). 경쟁전은 골드부터 라이프 4, 그 아래는 3판 2선승입니다. 라운드마다 배치 3번, 양쪽 라이프가 모두 1이면 <b>데스매치</b>로 6번. 밴·픽은 지후를 누르고 <b>한 번 더</b> 누르면 확정됩니다.'],
       ['💥 크리티컬', '모든 피해는 2% 확률로 2배가 됩니다.'],
       ['🏷️ 등급과 역할', '일반 · 희귀 · 영웅 · 전설 · 히든. 탱커는 앞에서 버티고, 딜러는 피해를 넣고, 서포터는 아군을 돕고, 컨트롤러는 적을 묶고, 어쌔신은 뒤를 노립니다.'],
@@ -23845,6 +23904,18 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.1.0': {
+    label: 'v5.1 협동전 · 무한 웨이브',
+    date: '2026.09.30',
+    sections: [
+      { title: '협동전', items: [
+        { emoji:'🤝', name:'협동전 (2:2)', tag:'new', color:'#12a594', desc:'로비 <b>12번 협동전</b>. 내 덱 + <b>AI 파트너</b>의 덱으로 아군 진영(<b>최대 24기</b>)을 같이 써요. 배치 때 내가 하나 놓으면 파트너도 하나 놓아요 (파트너 지후는 <b>AI</b> 표시).' },
+        { emoji:'🌊', name:'무한 웨이브', tag:'new', color:'#3797f0', desc:'전투가 끊기지 않고 적진에서 <b>10초마다</b> 지후 무리가 몰려와요. 웨이브가 시작될 때마다 아군 체력 <b>35% 회복</b>. 처음엔 일반 등급 무리 → 희귀 · 영웅 · 전설 순으로 섞여 나오고, 적 레벨은 <b>7을 넘어 끝없이</b> 올라요.' },
+        { emoji:'🛠️', name:'정비 시간', tag:'new', color:'#555555', desc:'<b>10웨이브마다</b> 남은 적을 정리하면 정비 시간. 쓰러진 아군까지 모두 제자리로 돌아오고, 나와 파트너가 각자 <b>배치 5번</b>. 30초 안에 못 잡은 적은 정비가 끝나면 다시 나와요.' },
+        { emoji:'🏁', name:'끝 · 보상', tag:'new', color:'#f2c94c', desc:'아군이 전멸하거나 적이 40기 넘게 쌓이면 끝. 버틴 웨이브마다 <b>EXP 6 · 골드 50</b>, 10웨이브마다 <b>다이아 20</b>. 그만둬도 버틴 만큼 받아요. 최고 기록은 로비 타일에 표시돼요.' }
+      ] }
+    ]
+  },
   '5.0.0': {
     label: 'v5.0 온라인 업데이트 · 친구 · 친선전',
     date: '2026.09.30',
@@ -27052,6 +27123,260 @@ async function friendlyInvite(f) {
   };
 }
 
+// 5.1 2:2 협동전: AI 파트너와 아군 진영(24칸)을 같이 쓰고, 적진에서 10초마다 몰려오는 무리를 끝없이 막는다.
+// 웨이브 시작마다 아군 체력 35% 회복 · 10웨이브마다 정비(각자 배치 5번) · 아군이 전멸하면 끝.
+// 적은 웨이브가 오를수록 등급이 오르고 레벨이 7을 넘어 끝없이 오른다 (7 넘는 레벨은 체력 · 피해 배율로).
+const COOP = {
+  WAVE_SEC: 10, MAINT_EVERY: 10, DEPLOYS: 5, CAP: 24, HEAL: 0.35, CLEAR_SEC: 30, OVERRUN: 40, FIRST_WAVE_AT: 1.5,
+  BASE: 0.5, GROW: 1.016, // 적 전투력 = BASE × GROW^(웨이브-1) (체력 · 피해에 각각)
+};
+function coopPower(w) { return COOP.BASE * Math.pow(COOP.GROW, Math.max(0, w - 1)); }
+// 보이는 레벨: 전투력을 레벨업 배율(1.2)로 환산 (7을 넘어도 계속 오른다)
+function coopEnemyLevel(w) { return Math.max(1, 1 + Math.floor(Math.log(coopPower(w)) / Math.log(LEVEL_MULT) + 1e-9)); }
+function coopWaveCount(w) { return Math.min(9, 3 + Math.floor(w / 8)); }
+function coopExtraMult(w) { // 실제 레벨(최대 7)로 못 채운 나머지 배율
+  return coopPower(w) / Math.pow(LEVEL_MULT, Math.min(MAX_UNIT_LEVEL, coopEnemyLevel(w)) - 1);
+}
+// 웨이브가 오를수록 높은 등급이 섞인다
+function coopRarityWeights(w) {
+  return {
+    common: w <= 4 ? 1 : Math.max(0.12, 1 - (w - 4) * 0.06),
+    rare: w < 5 ? 0 : Math.min(1, (w - 4) * 0.15),
+    epic: w < 15 ? 0 : Math.min(1, (w - 14) * 0.08),
+    legend: w < 30 ? 0 : Math.min(1.2, (w - 29) * 0.05),
+    hidden: w < 60 ? 0 : 0.04,
+  };
+}
+const COOP_ENEMY_BAN = ['broker', 'impeachment', 'mimic', 'rank', 'contractor', 'dimension', 'hollow', 'phantom', 'hypno', 'no_u'];
+function coopRarityLabel(w) {
+  return w >= 60 ? '히든' : w >= 30 ? '전설' : w >= 15 ? '영웅' : w >= 5 ? '희귀' : '일반';
+}
+function coopEnemyPool() {
+  if (coopEnemyPool.cache) return coopEnemyPool.cache;
+  const by = {};
+  playableIds().forEach(id => { if (COOP_ENEMY_BAN.includes(id)) return; const r = CHAR_DB[id].rarity; (by[r] = by[r] || []).push(id); });
+  return coopEnemyPool.cache = by;
+}
+function coopWavePack(w) {
+  const pool = coopEnemyPool(), weights = coopRarityWeights(w);
+  const rarities = Object.keys(weights).filter(r => weights[r] > 0 && pool[r] && pool[r].length);
+  const kinds = w < 3 ? 1 : w < 12 ? 2 : Math.random() < 0.5 ? 2 : 3;
+  const ids = [];
+  for (let i = 0; i < kinds; i++) {
+    const r = weightedSample(rarities, 1, x => weights[x])[0];
+    const id = pickRandom(pool[r].filter(x => !ids.includes(x)), 1)[0];
+    if (id) ids.push(id);
+  }
+  const total = coopWaveCount(w), pack = [];
+  ids.forEach((id, i) => { const n = i === ids.length - 1 ? total - pack.length : Math.max(1, Math.round(total / ids.length)); for (let k = 0; k < n; k++) pack.push(id); });
+  return pack;
+}
+function coopEnemyPoint(charId) {
+  const ew = isEastWestLayout(), body = { def: CHAR_DB[charId], level: 1 };
+  let x = 0, y = 0;
+  for (let tries = 0; tries < 24; tries++) {
+    const depth = 0.05 + Math.random() * 0.22, across = 0.1 + Math.random() * 0.8;
+    x = ew ? MAP_W * depth : MAP_W * across; y = ew ? MAP_H * across : MAP_H * depth;
+    if (!state.units.some(u => u.alive && Math.hypot(u.x - x, u.y - y) < bodySeparation(body, u))) break;
+  }
+  return { x, y };
+}
+function coopSpawnEnemy(charId, w, hpRatio = 1) {
+  const lv = coopEnemyLevel(w), pt = coopEnemyPoint(charId);
+  const u = spawnUnit('enemy', pt.x, pt.y, charId, { saved: true, level: Math.min(MAX_UNIT_LEVEL, lv) });
+  if (!u) return null;
+  const mult = coopExtraMult(w);
+  u.coopWave = w; u.coopLv = lv; u._coopDmg = mult;
+  u.maxHp = Math.round(u.maxHp * mult); u.hp = Math.max(1, Math.round(u.maxHp * hpRatio));
+  if (u.maxShield) { u.maxShield = Math.round(u.maxShield * mult); u.shield = u.maxShield; }
+  if (lv > 1) {
+    let badge = u.el.querySelector('.unit-level');
+    if (!badge) { badge = document.createElement('div'); badge.className = 'unit-level'; u.el.appendChild(badge); }
+    badge.textContent = lv >= MAX_UNIT_LEVEL ? (lv === MAX_UNIT_LEVEL ? 'MAX' : String(lv)) : String(lv);
+    badge.classList.toggle('max', lv === MAX_UNIT_LEVEL);
+    badge.classList.toggle('coop-over', lv > MAX_UNIT_LEVEL);
+  }
+  physInitBody(u);
+  if (state.phase === 'combat') { readyRoundSkills(u); if (u.def.onRoundStart) u.def.onRoundStart(u, battleAPI); }
+  updateUnitBars(u);
+  return u;
+}
+function coopSpawnWave(w) {
+  const c = state.coop;
+  // 웨이브 시작: 아군 회복
+  state.units.forEach(u => {
+    if (!u.alive || u.side !== 'ally' || u.isCastle || !(u.maxHp > 0) || u.hp >= u.maxHp) return;
+    u.hp = Math.min(u.maxHp, u.hp + u.maxHp * COOP.HEAL);
+    updateUnitBars(u);
+  });
+  // 오래전에 쓰러진 적은 목록에서 뺀다 (긴 게임에서 느려지지 않게)
+  state.units = state.units.filter(u => {
+    if (u.alive || u.side !== 'enemy' || !u.coopWave || u.coopWave > w - 2) return true;
+    if (u.el) u.el.remove();
+    if (u.ringEl) u.ringEl.remove();
+    return false;
+  });
+  const pack = coopWavePack(w);
+  pack.forEach(id => coopSpawnEnemy(id, w));
+  if (state.units.some(u => u.alive && u.charId === 'genesis')) refreshGenesisAuras();
+  const prev = coopRarityLabel(w - 1), now = coopRarityLabel(w);
+  if (w === 1) v42ShowGo('WAVE 1', '적진에서 10초마다 무리가 몰려와요', 'info');
+  else if (now !== prev) v42ShowGo(`WAVE ${w}`, `이제 ${now} 등급 지후가 섞여 나와요`, 'info');
+  else if (w % COOP.MAINT_EVERY === 0) v42ShowGo(`WAVE ${w}`, '이 웨이브를 막으면 정비 시간', 'info');
+  else if (coopEnemyLevel(w) !== coopEnemyLevel(w - 1)) v42ShowGo(`WAVE ${w}`, `적 레벨 ${coopEnemyLevel(w)}`, 'info');
+  c.lastPack = pack;
+  coopRenderHud(true);
+}
+function coopCombatStart() {
+  const c = state.coop;
+  c.clearing = false;
+  c.nextAt = COOP.FIRST_WAVE_AT;
+  (c.carry || []).forEach(e => coopSpawnEnemy(e.id, e.wave, e.hp));
+  c.carry = [];
+  c.hudKey = '';
+  coopRenderHud(true);
+}
+// 물리 스텝마다 (전투 시간 기준)
+function coopStep(aliveAllies, aliveEnemies) {
+  const c = state.coop;
+  if (!c || state.phase !== 'combat') return;
+  if (aliveAllies === 0 && !state.pendingExplosions.length && !state.pendingMeteors.length) { coopGameOver('wipe'); return; }
+  if (aliveEnemies > COOP.OVERRUN) { coopGameOver('overrun'); return; }
+  const t = state.combatTime || 0;
+  if (c.clearing) {
+    if (aliveEnemies === 0 || t >= c.clearAt) { coopMaintenance(); return; }
+  } else if (t >= c.nextAt) {
+    coopSpawnWave(++c.wave);
+    c.nextAt = t + COOP.WAVE_SEC;
+    if (c.wave % COOP.MAINT_EVERY === 0) { c.clearing = true; c.clearAt = t + COOP.CLEAR_SEC; }
+  }
+  coopRenderHud(false, aliveAllies, aliveEnemies);
+}
+function coopRenderHud(force, aliveAllies, aliveEnemies) {
+  const c = state.coop;
+  if (!c) return;
+  const t = state.combatTime || 0;
+  const left = c.clearing ? Math.max(0, Math.ceil(c.clearAt - t)) : Math.max(0, Math.ceil(c.nextAt - t));
+  if (aliveEnemies == null) aliveEnemies = state.units.filter(u => u.side === 'enemy' && u.alive).length;
+  if (aliveAllies == null) aliveAllies = countedAlive('ally');
+  const key = [c.wave, left, c.clearing, aliveEnemies, countedAlive('ally'), state.phase].join('|');
+  if (!force && key === c.hudKey) return;
+  c.hudKey = key;
+  const wv = $('coopWave'); if (wv) wv.textContent = c.wave;
+  if (state.phase === 'combat') {
+    $('phaseTimer').textContent = left;
+    $('phaseTimer').classList.toggle('urgent', !c.clearing && left <= 3);
+    $('bottomStatusLine').innerHTML = c.clearing
+      ? `🧹 <b>WAVE ${c.wave}</b> 정리 중 · 남은 적 <b>${aliveEnemies}</b>기를 잡으면 정비 시간 (${left}초)`
+      : `🌊 <b>WAVE ${c.wave}</b> · 다음 무리까지 <b>${left}</b>초 · 적 <b>${aliveEnemies}</b>기 · 아군 <b>${countedAlive('ally')}</b>/${COOP.CAP} · 최고 ${profile.coopBest || 0}웨이브`;
+  }
+}
+function coopMaintenance() {
+  const c = state.coop;
+  c.clearing = false;
+  c.maint = (c.maint || 0) + 1;
+  recordRoundStats('ally', false); // 통계: 정비 한 번 = 한 라운드
+  // 시간 안에 못 잡은 적은 정비가 끝나면 다시 나온다
+  c.carry = state.units.filter(u => u.alive && u.side === 'enemy' && u.coopWave && !u.skipCount).map(u => ({ id: u.charId, wave: u.coopWave, hp: u.maxHp ? u.hp / u.maxHp : 1 }));
+  // 정비: 쓰러진 아군도 전부 제자리로 돌아온다 (일반전 라운드처럼). 적 배치 기록은 남기지 않는다.
+  state.placements = state.placements.filter(p => p.side === 'ally');
+  c.hp = null;
+  state.phase = 'roundEnd';
+  cancelRuntimeTasks();
+  state.round++;
+  startRound();
+}
+function coopGameOver(reason) {
+  if (state.phase !== 'combat') return;
+  state.phase = 'finalMoment';
+  state.coop.reason = reason;
+  recordRoundStats('enemy', false);
+  $('phaseTimer').textContent = 'END';
+  $('bottomStatusLine').innerHTML = reason === 'overrun' ? `💥 적이 <b>${COOP.OVERRUN}기</b> 넘게 몰려왔어요` : '💥 <b>아군 전멸</b>';
+  $('finalMoment').classList.add('show');
+  scheduleTask(() => { $('finalMoment').classList.remove('show'); finishMatch('enemy'); }, 2000);
+}
+// 버틴 웨이브 = 전멸한 웨이브 직전까지
+function coopClearedWaves() {
+  const c = state.coop;
+  if (!c) return 0;
+  return Math.max(0, c.reason ? c.wave - 1 : c.clearing || state.phase !== 'combat' ? c.wave : c.wave - 1);
+}
+function coopPartnerDeck(myDeck) {
+  const all = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden' && !myDeck.includes(id) && !CHAR_DB[id].deployLimit);
+  return weightedSample(all, 5, id => Math.exp(3 * botTierScore(id)));
+}
+function coopMarkMate(u) {
+  if (!u || !u.el) return;
+  u.coopMate = true;
+  u.el.classList.add('coop-mate');
+  if (!u.el.querySelector('.coop-tag')) u.el.insertAdjacentHTML('beforeend', '<span class="coop-tag">AI</span>');
+}
+// AI 파트너의 배치 한 번: 합치기 우선, 아니면 역할 줄에 새로 놓는다
+function coopPartnerDeployOne() {
+  const c = state.coop;
+  if (!c) return;
+  const deck = c.partner.deck;
+  const pool = rollDeployPool(deck, deck, state.poolSize || 3, state.round);
+  if (!pool.length) return;
+  const full = countedAlive('ally') >= maxUnitsFor('ally');
+  const mergeable = pool.filter(id => { const m = mergeTargetFor('ally', id); return m && m.coopMate; });
+  const placeable = full ? [] : pool.filter(id => canPlaceNew('ally', id) && v42PickTile('ally', id, v42RoleRow(id)) != null);
+  const mine = state.units.filter(u => u.alive && u.coopMate && !u.skipCount).length;
+  const merge = mergeable.length && (!placeable.length || mine >= 12 || Math.random() < 0.45);
+  const charId = weightedSample(merge ? mergeable : placeable, 1, id => Math.exp(2 * botTierScore(id)))[0];
+  if (!charId) return;
+  if (merge) {
+    const same = mergeTargetFor('ally', charId);
+    levelUpUnit(same);
+    const pl = state.placements.find(p => p.id === same.placementId);
+    if (pl) pl.level = same.level;
+    return;
+  }
+  if (!placeable.includes(charId)) return;
+  const tile = v42PickTile('ally', charId, v42RoleRow(charId));
+  if (tile == null) return;
+  const u = v42Spawn('ally', tile, charId);
+  if (!u) return;
+  coopMarkMate(u);
+  const pl = state.placements.find(p => p.id === u.placementId);
+  if (pl) pl.mate = true;
+}
+function startCoop() {
+  const deck = currentDeck();
+  if (deck.length !== 5) { state.draftSelected = deck; draftPendingEquip = null; renderDraftGrid(); $('draftGrid').scrollTop = 0; showScreen('draft'); return; }
+  leaveBattle();
+  state.maxUnits = COOP.CAP;
+  state.maxUnitsBonus = { ally: 0, enemy: 0 };
+  state.poolSize = 3;
+  withLoading('협동전 준비중', () => {
+    state.mode = 'coop';
+    state.myDeckIds = deck;
+    state.matchStartedAt = Date.now();
+    abandonNotice = '';
+    state.round = 1; state.allyLives = 1; state.enemyLives = 1; state.placements = []; state.matchStats = [];
+    state.reaperGrudges = {}; state.zombieCarry = null; state.duetSeekUsed = {};
+    state.castles = null;
+    state.enemyName = '지후 무리'; state.enemyLevel = 1; state.enemyDeckIds = []; state.botSkill = 0.8;
+    state.tutMatch = null;
+    state.matchSettled = false;
+    state.lastSettlement = null;
+    const partnerDeck = coopPartnerDeck(deck);
+    state.coop = { wave: 0, nextAt: 0, clearing: false, clearAt: 0, maint: 0, carry: [], hp: null, reason: '', hudKey: '',
+      partner: { name: BOT_NICKNAMES[Math.floor(Math.random() * BOT_NICKNAMES.length)], deck: partnerDeck } };
+    resetBattlePresentation();
+    const badge = $('roundBadge');
+    if (badge) badge.innerHTML = '🤝 WAVE <span id="coopWave">0</span>';
+    updateLifeUI();
+    showScreen('battle');
+    startRound();
+  });
+}
+function renderCoopTile() {
+  const d = $('coopTileDesc');
+  if (d) d.textContent = `AI 파트너 · 무한 웨이브 · 최고 ${profile.coopBest || 0}웨이브`;
+}
+
 // 공지 띠: 누군가의 레벨업 · 가입 · 영웅 이상 뽑기 · 랭크업 · 마스터리 · 경쟁전 승급
 const notices = { items: [], idx: 0, timer: 0, unsub: null };
 function noticeParts(e) {
@@ -27412,7 +27737,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (ex) ex.addEventListener('click', ev => {
     ev.stopPropagation();
     if (state.screen === 'battle' && state.mode === 'wwe') { const t = WWE.t; wweCleanupBattle(); if (t && !t.champion) { showScreen('wweBracket'); renderWweBracket(); } else { WWE.t = null; showScreen('wwe'); renderWweLobby(); } return; }
-    if (state.screen === 'battle' && !state.matchSettled) openModal('surrenderModal');
+    if (state.screen === 'battle' && !state.matchSettled) {
+      const coop = state.mode === 'coop'; // 5.1 협동전: 항복 대신 그만두기 (버틴 만큼 보상)
+      $('surrenderModal').querySelector('h2').textContent = coop ? '협동전을 그만할까요?' : '항복하시겠습니까?';
+      $('surrenderModal').querySelector('p').textContent = coop ? `지금까지 버틴 ${coopClearedWaves()}웨이브만큼 보상을 받아요.` : '항복하면 현재 게임은 패배로 기록됩니다.';
+      $('btnSurrenderConfirm').textContent = coop ? '그만하기' : '항복하기';
+      openModal('surrenderModal');
+    }
   });
   $('btnSurrenderCancel').addEventListener('click', () => closeModal('surrenderModal'));
   $('btnSurrenderConfirm').addEventListener('click', () => {
