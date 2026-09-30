@@ -11218,6 +11218,10 @@ function settleMatch(won, draw, surrendered = false) {
   if (state.matchSettled) return state.lastSettlement;
   state.matchSettled = true;
   profile.activeMatch = null;
+  if (state.tutMatch && state.tutMatch.replay) { // 4.7.4 튜토리얼 다시하기: 기록 · 보상 · 퀘스트 없음
+    state.lastSettlement = { practice: true, tutorialReplay: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
+    return state.lastSettlement;
+  }
   const usedIds = [...new Set(state.myDeckIds)].filter(id => CHAR_DB[id]);
   profile.lastDeck = usedIds.slice(0, 5);
   usedIds.forEach(id => { profile.useCount[id] = (profile.useCount[id] || 0) + 1; });
@@ -14734,7 +14738,7 @@ function startMatch(mode = 'ranked', opts = {}) {
     state.matchStartedAt = Date.now();
     // 랭크전 도중 창을 닫거나 새로고침하면 다음 접속 때 패배로 처리한다
     abandonNotice = '';
-    if (mode === 'ranked') { profile.activeMatch = { mode, startedAt: state.matchStartedAt }; saveProfile(); }
+    if (mode === 'ranked' && opts.tutorial !== 'replay') { profile.activeMatch = { mode, startedAt: state.matchStartedAt }; saveProfile(); }
     state.round = 1; state.allyLives = RANKED_LIVES; state.enemyLives = RANKED_LIVES; state.placements = []; state.matchStats = [];
     state.reaperGrudges = {};
     state.zombieCarry = null; state.duetSeekUsed = {};
@@ -14743,7 +14747,7 @@ function startMatch(mode = 'ranked', opts = {}) {
     state.enemyLevel = mmrEnemyLevel();
     state.enemyDeckIds = buildEnemyDeck(state.enemyLevel);
     state.botSkill = mmrBotSkill(state.enemyLevel);
-    state.tutMatch = opts.tutorial ? { deployed: 0, free: false, shown: {} } : null; // 4.7.4 튜토리얼 대본 매치
+    state.tutMatch = opts.tutorial ? { deployed: 0, free: false, shown: {}, replay: opts.tutorial === 'replay' } : null; // 4.7.4 튜토리얼 대본 매치
     if (state.tutMatch) { state.enemyName = '쉴드 좋아하는 봇'; state.enemyLevel = 1; state.enemyDeckIds = TUT_ENEMY_DECK.slice(); state.botSkill = 0; }
     state.matchSettled = false;
     state.lastSettlement = null;
@@ -23411,7 +23415,7 @@ function finishMatch(winnerSide, surrendered = false) {
   state.phase = 'idle';
   showScreen('end');
   const settlement = settleMatch(won, draw, surrendered);
-  if (DISCORD_MATCH_MODES.includes(state.mode)) {
+  if (DISCORD_MATCH_MODES.includes(state.mode) && !settlement.tutorialReplay) {
     try { discordNotify(discordMatchPayload(won, draw, surrendered, settlement)); } catch (error) {}
     const streak = profile.winStreak || 0;
     if (won && !draw && !surrendered && discordStreakMilestone(streak)) discordNotify({ type: 'streak', streak, mode: DISCORD_MODE_LABEL[state.mode] || '' }); // 4.6.8
@@ -23445,6 +23449,8 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.round(after.progress * 100)}%"></div></div>
       <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대).</div>`;
+  } else if (settlement.tutorialReplay) {
+    card.innerHTML = '<div class="settlement-row"><span>튜토리얼 다시하기</span><b>연습 모드</b></div><div class="settlement-note">다시하기는 전적 · 경험치 · 재화 · 퀘스트에 들어가지 않아요. 상자? 안 준다니까.</div>';
   } else if (settlement.practice) {
     card.innerHTML = surrendered
       ? '<div class="settlement-row"><span>항복</span><b>패배 기록 +1</b></div><div class="settlement-note">경험치와 재화는 변동되지 않으며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.</div>'
@@ -23495,7 +23501,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
   $('helpTabs').innerHTML = tabs.map(([key, label]) => `<button type="button" class="${key === tab ? 'on' : ''}" data-help="${key}">${label}</button>`).join('');
   $('helpTabs').querySelectorAll('[data-help]').forEach(b => b.addEventListener('click', () => renderHelp(b.dataset.help)));
   if (tab === 'tutorial') {
-    $('helpBody').innerHTML = `<div class="help-rule" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fff;border:3px solid #ff6b35;display:grid;place-items:center;flex:none">${portraitHtml(CHAR_DB.fire)}</span><div style="flex:1;min-width:200px"><b>화염 지후의 안내</b><p>게임 시작 · 덱 설정 · 뽑기 · 퀘스트 · 상점 · 출석부 · 채팅 · 메뉴를 화염 지후가 1분 안에 알려줍니다. 처음 완료할 때만 지후 상자 오픈권을 선물해요.</p><button type="button" class="btn btn-primary" id="btnHelpTutorial" style="margin-top:8px">튜토리얼 다시 보기</button></div></div>`;
+    $('helpBody').innerHTML = `<div class="help-rule" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fff;border:3px solid #ff6b35;display:grid;place-items:center;flex:none">${portraitHtml(CHAR_DB.fire)}</span><div style="flex:1;min-width:200px"><b>화염 지후의 안내</b><p>로비 버튼 설명부터 <b>연습 랭크전</b>(지후 놓기 · 합치기 · 지원 요청)까지 화염 지후가 다시 알려줍니다. 다시하기는 전적 · 보상에 들어가지 않아요. 상자? 안 줘요.</p><button type="button" class="btn btn-primary" id="btnHelpTutorial" style="margin-top:8px">튜토리얼 다시하기</button></div></div>`;
     $('btnHelpTutorial').addEventListener('click', () => { closeModal('helpModal'); closeModal('menuModal'); showScreen('lobby'); renderAccountUI(); startTutorial(profile.tutorial?.done !== false); });
     return;
   }
@@ -25802,7 +25808,13 @@ const TUT_GREED = [
   { text: '상자깡만 하고 1승 0패 찍고 도망칠 수도 있으니까.. 조금 잡아놔야겠어. 후후 🔥' },
   { text: '자, 게임을 시작하지. 상대 덱은 <b>화염 · 힐 · 쉴드 · 얼음 · 독</b>. 너랑 똑같은 기본 덱이야.', btn: '게임 시작 ⚔' },
 ];
-const TUT_REPLAY_END = [{ text: '여기까지야! 오픈권? 그건 처음 한 번만 (안) 줘. 이제 <b>덱 설정</b>에서 편성하고 <b>게임 시작</b>을 눌러봐. 🔥', btn: '끝!' }];
+// 도움말 → 튜토리얼 다시하기: 대본 매치까지 전부 다시 하지만 보상은 없다
+const TUT_REPLAY_INTRO = [
+  { text: '뭐? 아직도 이해가 안 가는 부분이 있어?' },
+  { text: '좋아.. 이 형님이 다시 알려주지. 🔥' },
+  { text: '근데 그런다고 <b>상자</b> 같은 건 안 준다.' },
+];
+const TUT_REPLAY_GO = [{ text: '자, 게임을 시작하지. 상대 덱은 <b>화염 · 힐 · 쉴드 · 얼음 · 독</b>. 이번 판은 <b>연습</b>이라 기록도 보상도 없어.', btn: '게임 시작 ⚔' }];
 const TUT_ENEMY_DECK = ['fire', 'medic', 'shield', 'ice', 'poison'];
 
 const tut = { steps: [], i: -1, done: null, running: false, replay: false, typing: 0, timer: 0, full: '', box: false };
@@ -25913,16 +25925,17 @@ function tutSkip() { // 로비 설명만 건너뛸 수 있다 (대본 매치는 
 function startTutorial(replay = false) {
   if (tut.running) return;
   tut.replay = replay;
-  tutRun(TUT_LOBBY.concat(replay ? TUT_REPLAY_END : TUT_GREED), replay ? null : startTutorialMatch);
+  if (replay) tutRun(TUT_REPLAY_INTRO.concat(TUT_LOBBY, TUT_REPLAY_GO), () => startTutorialMatch(true));
+  else tutRun(TUT_LOBBY.concat(TUT_GREED), () => startTutorialMatch(false));
 }
 
 // ── 2) 대본 매치 ──
 function tutMatch() { return state.tutMatch && state.mode === 'ranked' ? state.tutMatch : null; }
-function startTutorialMatch() {
-  profile.tutorial.stage = 'match'; saveProfile();
+function startTutorialMatch(replay = false) {
+  if (!replay) { profile.tutorial.stage = 'match'; saveProfile(); }
   showScreen('lobby');
   state.myDeckIds = STARTER_IDS.slice();
-  startMatch('ranked', { tutorial: true });
+  startMatch('ranked', { tutorial: replay ? 'replay' : true });
 }
 // 라운드-배치 번호별 대본: 풀에 뜨는 카드 · 합치기 강제 · 봇의 수 · 대사
 const TUT_DEPLOY = {
@@ -26048,7 +26061,19 @@ function tutMaxJaws() {
 // 매치가 끝나면 정산 화면 위에서 바로 보상 대본
 function tutAfterMatch() {
   if (!state.tutMatch) return;
+  const replay = state.tutMatch.replay;
   state.tutMatch = null;
+  if (replay) { // 다시하기: 보상 없음
+    setTimeout(() => {
+      if (tut.running) return;
+      tutRun([
+        { text: '줴줴이야~ 복습 끝! 🔥' },
+        { text: '보상? 아까 말했지. <b>안 준다</b>고.' },
+        { text: '궁금한 건 도움말에 다 있어. 그럼 즐겜!', btn: '로비로' },
+      ], () => { leaveBattle(); showScreen('lobby'); renderAccountUI(); });
+    }, 2600);
+    return;
+  }
   profile.tutorial.stage = 'reward'; saveProfile();
   setTimeout(() => { if (!tut.running) tutRewardScript(); }, 2600);
 }
