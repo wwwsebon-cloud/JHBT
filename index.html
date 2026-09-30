@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="4.6.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="4.6.4"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -5954,9 +5954,10 @@ const CHARACTER_BALANCE = {
     shieldDamageMultiplier: 0.7
   },
   assassin: {
-    hp: 1600, atk: 300, atkSpeed: 0.4, range: 72, speed: 160,
+    hp: 1600, atk: 300, atkSpeed: 0.6, range: 72, speed: 160,
     isMelee: true,
-    teleportDelay: 2
+    teleportDelay: 2,
+    assassinStealth: 0.6
   },
   combo: {
     hp: 2500, atk: 100, atkSpeed: 0.7, range: 270, speed: 120,
@@ -6072,7 +6073,7 @@ const CHARACTER_BALANCE = {
     cloneHpFraction: 0.5
   },
   mini: {
-    hp: 500, atk: 100, atkSpeed: 0.6, range: 72, speed: 130,
+    hp: 700, atk: 150, atkSpeed: 0.6, range: 72, speed: 130,
     isMelee: true,
     skipHpMult: true,
     small: true
@@ -6124,7 +6125,7 @@ const CHARACTER_BALANCE = {
     boltChainDelay: 0.5
   },
   slime: {
-    hp: 1800, atk: 800, atkSpeed: 3, range: 45, speed: 67.5,
+    hp: 2000, atk: 600, atkSpeed: 3, range: 45, speed: 67.5,
     skipHpMult: true,
     isMelee: true
   },
@@ -6289,7 +6290,8 @@ const CHARACTER_BALANCE = {
     hp: 2800, atk: 100, atkSpeed: 1, range: 90, speed: 67.5,
     hollowOpenDelay: 3, hollowOpenTime: 2.75, hollowZoneScale: 4.4, // 공허지역 반지름 = 유닛 반지름 × 4.4 (3.7.3: 기존 2배의 2.2배)
     hollowRealmMove: 3, hollowRealmSpeed: 180, hollowStrike: 1400, hollowStunDelay: 1, hollowStun: 2,
-    hollowRealmAtk: 1000, hollowRealmSplash: 90
+    hollowRealmAtk: 1000, hollowRealmSplash: 90,
+    hollowStrikeScatter: 7
   },
   star: {
     hp: 2200, atk: 190, atkSpeed: 1.5, range: 360, speed: 67.5,
@@ -6317,9 +6319,9 @@ const CHARACTER_BALANCE = {
   },
   hitman: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
-    hp: 2800, atk: 4000, atkSpeed: 9, range: 72, speed: 0,
+    hp: 2800, atk: 1800, atkSpeed: 9, range: 72, speed: 0,
     isMelee: true, immobile: true,
-    hitCooldown: 5, hitStealth: 1, hitReturn: 0.6, hitDamage: 2000, hitKillRefund: 4 // 4.6 리워크: 혼자 남으면 자객 모드
+    hitCooldown: 5, hitStealth: 1, hitReturn: 0.6, hitDamage: 1200, hitKillRefund: 4 // 4.6 리워크: 혼자 남으면 자객 모드
   },
   // 3.8 신규
   moon: {
@@ -6353,7 +6355,7 @@ const CHARACTER_BALANCE = {
   },
   func: {
     hp: 2000, atk: 150, atkSpeed: 1.2, range: 270, speed: 72,
-    funcEvery: 4.5, funcAnnounce: 2, funcWarn: 1, funcMin: 1000, funcMax: 2000, funcStun: 2, funcUnit: 67.5
+    funcEvery: 4.5, funcAnnounce: 2, funcWarn: 1, funcMin: 700, funcMax: 1300, funcStun: 2, funcUnit: 67.5
   },
   zombie: {
     hp: 3000, atk: 144, atkSpeed: 0.8, range: 72, speed: 58.5,
@@ -6401,7 +6403,7 @@ const CHARACTER_BALANCE = {
     hp: 1800, atk: 0, atkSpeed: 1, range: 180, speed: 67.5,
     noAttack: true, holdRange: true,
     supplyEvery: 5, supplyMax: 3, supplyNear: 135, supplyHpGain: 0.3, supplyHeal: 1500, supplyAtkGain: 0.25,
-    supplyDropRadius: 45, supplyDropDamage: 800, supplyFall: 1, crateRadius: 22
+    supplyDropRadius: 45, supplyDropDamage: 400, supplyFall: 1, crateRadius: 22
   },
   maestro: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
@@ -6431,14 +6433,15 @@ const CHARACTER_BALANCE = {
   train: {
     hp: 3000, atk: 140, atkSpeed: 1, range: 126, speed: 99,
     trainShots: 3, trainShotGap: 0.1, // 일반 공격: 연기 3연발
-    trainFirst: 2, trainDashSpeed: 697.5, trainHit: 1400, trainSplash: 300, trainSplashRadius: 45, trainDr: 0.35,
+    trainFirst: 2, trainDashSpeed: 720, trainHit: 1000, trainSplash: 300, trainSplashRadius: 45, trainDr: 0.35,
     trainRelocate: 1, trainRedash: 1, trainSignalGap: 225,
     trainFireTime: 1.5, trainFireEvery: 0.5, trainFireDamage: 120 // S
   },
   berserker: {
-    hp: 2400, atk: 300, atkSpeed: 1, range: 72, speed: 99,
+    hp: 2400, atk: 320, atkSpeed: 1, range: 72, speed: 99,
     isMelee: true,
-    bskHp: 0.3, bskDr: 0.25, bskAtk: 1
+    bskHp: 0.4, bskDr: 0.25, bskAtk: 1,
+    bskAtkSpeed: 0.7
   },
   titanium: {
     hp: 2100, atk: 800, atkSpeed: 4.2, range: 72, speed: 58.5,
@@ -6455,7 +6458,7 @@ const CHARACTER_BALANCE = {
     cloudRadius: 90, cloudSlow: 0.5, cloudDps: 450
   },
   golf: {
-    hp: 2200, atk: 800, atkSpeed: 8, range: 72, speed: 67.5,
+    hp: 2200, atk: 800, atkSpeed: 4, range: 72, speed: 67.5,
     isMelee: true,
     golfAir: 4, golfWarn: 1, golfFall: 600, golfRadius: 45, golfSplash: 800, golfStun: 1.5, golfHoleInOne: 1200
   },
@@ -6469,7 +6472,7 @@ const CHARACTER_BALANCE = {
     mortarRadius: 54, mortarFlight: 0.9
   },
   meatshield: {
-    hp: 12500, atk: 100, atkSpeed: 1.5, range: 72, speed: 45,
+    hp: 8500, atk: 100, atkSpeed: 2.5, range: 72, speed: 45,
     isMelee: true, big: true // 4.6.1: 몸집이 조금 크다
   },
   powermeter: {
@@ -7385,7 +7388,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#4b2d7f', portrait: PORTRAITS.hollow,
     ...CHARACTER_BALANCE.hollow,
     customAttack(caster, target) { hollowAttack(caster, target); },
-    skillDesc: '라운드 시작 <b>3초</b> 뒤 자신 주변(반지름 = 유닛의 4.4배)에 <b>공허지역</b>을 연다. <b>2.75초</b> 뒤 닫히며 공허 지후와 지역에 닿은 아군이 <b>아공간</b>으로 들어간다. 아공간에서 공허 지후는 가장 가까운 적에게 다가가고, 3초 뒤 그 자리에 공허지역이 다시 열려 닿은 적에게 <b>1,400</b> 피해를 주고 1초 뒤 <b>2초 기절</b>시킨다. 적이 기절하는 <b>즉시</b> 아공간의 아군이 모두 그 자리로 나오고 공허가 닫힌다 (라운드당 1번). 아공간 안에서는 ATK <b>1,000</b>, 반경 2칸 광역 공격.'
+    skillDesc: '라운드 시작 <b>3초</b> 뒤 자신 주변(반지름 = 유닛의 4.4배)에 <b>공허지역</b>을 연다. <b>2.75초</b> 뒤 닫히며 공허 지후와 지역에 닿은 아군이 <b>아공간</b>으로 들어간다. 아공간에서 공허 지후는 가장 가까운 적에게 다가가고, 3초 뒤 그 적 자리에서 <b>0~7칸</b> 벗어난 곳에 공허지역이 다시 열려 닿은 적에게 <b>1,400</b> 피해를 주고 1초 뒤 <b>2초 기절</b>시킨다. 적이 기절하는 <b>즉시</b> 아공간의 아군이 모두 그 자리로 나오고 공허가 닫힌다 (라운드당 1번). 아공간 안에서는 ATK <b>1,000</b>, 반경 2칸 광역 공격.'
   },
   star: {
     id: 'star', name: '별 지후', emoji: '⭐', role: 'dealer', roleLabel: '딜러',
@@ -7451,7 +7454,7 @@ const CHAR_DB = {
     id: 'func', name: '지후함수', emoji: '📈', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#22b14c', portrait: PORTRAITS.func,
     ...CHARACTER_BALANCE.func,
-    skillDesc: '<b>4.5초마다</b> 자신을 원점으로 무작위 함수의 그래프를 그린다 (y=ax, y=sin x, y=tan x, y²=4px, y=ax², 하트 방정식 등 30종). 선에 걸친 모든 적은 <b>1,000~2,000</b> 사이 무작위 피해를 받고 <b>2초</b> 기절한다. 2초 전에 그릴 함수를 말하고, 1초 전에 선을 빨갛게 예고한다.'
+    skillDesc: '<b>4.5초마다</b> 자신을 원점으로 무작위 함수의 그래프를 그린다 (y=ax, y=sin x, y=tan x, y²=4px, y=ax², 하트 방정식 등 30종). 선에 걸친 모든 적은 <b>700~1,300</b> 사이 무작위 피해를 받고 <b>2초</b> 기절한다. 2초 전에 그릴 함수를 말하고, 1초 전에 선을 빨갛게 예고한다.'
   },
   zombie: {
     id: 'zombie', name: '좀비 지후', emoji: '🧟', role: 'tank', roleLabel: '탱커',
@@ -7513,7 +7516,7 @@ const CHAR_DB = {
     id: 'supply', name: '보급병 지후', emoji: '📦', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#4f7a2c', portrait: PORTRAITS.supply, portraitCrate: PORTRAITS.supply_crate,
     ...CHARACTER_BALANCE.supply,
-    skillDesc: '[보급요청] <b>5초마다</b> <b>가장 앞에 선 아군</b> 주변 3칸 안에 보급을 떨어뜨린다 (필드에 최대 3개). 떨어질 때 반경 1칸의 적에게 <b>800</b> 피해. 보급에 닿아 먹은 아군은 최대 체력 <b>+30%</b>, 체력 <b>1,500</b> 회복, 공격력 <b>+25%</b> (라운드 끝까지, 중첩).'
+    skillDesc: '[보급요청] <b>5초마다</b> <b>필드 전체의 무작위 자리</b>에 보급을 떨어뜨린다 (필드에 최대 3개). 떨어질 때 반경 1칸의 적에게 <b>400</b> 피해. 보급에 닿아 먹은 아군은 최대 체력 <b>+30%</b>, 체력 <b>1,500</b> 회복, 공격력 <b>+25%</b> (라운드 끝까지, 중첩).'
   },
   maestro: {
     id: 'maestro', name: '마에스트로 지후', emoji: '🎻', role: 'support', roleLabel: '서포터',
@@ -7571,7 +7574,7 @@ const CHAR_DB = {
     id: 'hitman', name: '자객 지후', emoji: '🥷', role: 'assassin', roleLabel: '어쌔신',
     rarity: 'legend', color: '#1a1a1a', portrait: PORTRAITS.hitman, portraitKill: PORTRAITS.hitman_kill,
     ...CHARACTER_BALANCE.hitman,
-    skillDesc: '평소에는 움직이지 않는다 (근접 ATK 4,000). <b>아군에 자객 지후만 남으면</b> 자객 모드가 된다. 자객 모드: 즉시 1초간 은신한 뒤 <b>체력이 가장 높은 적</b>에게 순간이동해 <b>2,000</b> 피해를 주고 0.6초 뒤 제자리로 돌아온다. 쿨타임 <b>5초</b>, 이 피해로 처치하면 쿨타임 <b>-4초</b>. 출격제한 1기.'
+    skillDesc: '평소에는 움직이지 않는다 (근접 ATK <b>1,800</b>). <b>아군에 자객 지후만 남으면</b> 자객 모드가 된다. 자객 모드: 즉시 1초간 은신한 뒤 <b>체력이 가장 높은 적</b>에게 순간이동해 <b>1,200</b> 피해를 주고 0.6초 뒤 제자리로 돌아온다. 쿨타임 <b>5초</b>, 이 피해로 처치하면 쿨타임 <b>-4초</b>. 출격제한 1기.'
   },
   sun: {
     id: 'sun', name: '태양 지후', emoji: '☀️', role: 'dealer', roleLabel: '딜러',
@@ -7641,7 +7644,7 @@ const CHAR_DB = {
     id: 'assassin', name: '암살 지후', emoji: '🗡️', role: 'assassin', roleLabel: '어쌔신',
     rarity: 'epic', color: '#d94b7a', portrait: PORTRAITS.assassin,
     ...CHARACTER_BALANCE.assassin,
-    skillDesc: '전투 시작 <b>2초 후</b> 순간이동(이펙트) + <b>1초 은신</b> + 첫 타격 <b>x2</b>. 근접 120°',
+    skillDesc: '전투 시작 <b>2초 후</b> 순간이동(이펙트) + <b>0.6초 은신</b> + 첫 타격 <b>x2</b>. 공격 간격 <b>0.6초</b> · 근접 120°',
     onRoundStart(caster, battle) {
       caster._assassinTeleTimer = caster.def.teleportDelay;
       caster._assassinTeleDone = false;
@@ -8025,17 +8028,17 @@ const CHAR_DB = {
   },
   // ── 4.6 신규 ──
   train: {
-    id: 'train', name: '철도 지후', emoji: '🚆', role: 'controller', roleLabel: '컨트롤러',
+    id: 'train', name: '신칸센 지후', emoji: '🚆', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#2f7fe0', portrait: PORTRAITS.train,
     ...CHARACTER_BALANCE.train,
     customAttack(caster, target) { trainAttack(caster, target); },
-    skillDesc: '일반 공격: 연기를 <b>0.1초 간격 3연발</b> (140 × 3). 라운드 시작 때 <b>적 진영 2개 · 아군 진영 2개</b> 신호기를 무작위로 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 <b>4개를 모두</b> 한 번씩 거쳐 초당 <b>15.5칸</b>으로 돌진한다 (순서는 무작위). 돌진 중 받는 피해 <b>35%</b> 감소 · 유닛 관통, 직접 부딪힌 적 <b>1,400</b> · 주변 1칸 적 <b>300</b>. 돌진이 끝나고 1초 뒤 신호기가 다시 세워지고, 1초 뒤 다시 돌진한다.'
+    skillDesc: '일반 공격: 연기를 <b>0.1초 간격 3연발</b> (140 × 3). 라운드 시작 때 <b>적 진영 2개 · 아군 진영 2개</b> 신호기를 무작위로 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 <b>4개를 모두</b> 한 번씩 거쳐 초당 <b>16칸</b>으로 돌진한다 (순서는 무작위). 돌진 중 받는 피해 <b>35%</b> 감소 · 유닛 관통, 직접 부딪힌 적 <b>1,000</b> · 주변 1칸 적 <b>300</b>. 돌진이 끝나고 1초 뒤 신호기가 다시 세워지고, 1초 뒤 다시 돌진한다.'
   },
   berserker: {
     id: 'berserker', name: '버서커 지후', emoji: '🪓', role: 'dealer', roleLabel: '딜러',
     rarity: 'rare', color: '#f08a00', portrait: PORTRAITS.berserker, portraitBerserk: PORTRAITS.berserker_mode,
     ...CHARACTER_BALANCE.berserker,
-    skillDesc: '근접. 체력이 <b>30%</b> 아래가 되면 <b>버서커 모드</b>: 받는 피해 <b>25%</b> 감소 · 공격력 <b>+100%</b> (라운드 끝까지).'
+    skillDesc: '근접 ATK <b>320</b>. 체력이 <b>40%</b> 아래가 되면 <b>버서커 모드</b>: 받는 피해 <b>25%</b> 감소 · 공격력 <b>+100%</b> · 공격 간격 <b>0.7초</b> (라운드 끝까지).'
   },
   titanium: {
     id: 'titanium', name: '티타늄 지후', emoji: '🔩', role: 'tank', roleLabel: '탱커',
@@ -8060,14 +8063,14 @@ const CHAR_DB = {
     rarity: 'legend', color: '#1fbf3a', portrait: PORTRAITS.golf,
     ...CHARACTER_BALANCE.golf,
     customAttack(caster, target) { golfAttack(caster, target); },
-    skillDesc: '근접 ATK <b>800</b> · 공격 간격 8초. 맞은 적은 <b>하늘로 날아가</b> 게임에서 사라졌다가 <b>4초</b> 뒤 그 적의 진영 무작위 자리에 떨어진다 (1초 전 경고). 떨어진 적은 <b>600</b>, 반경 1칸의 그 편 유닛은 <b>800</b> 피해와 <b>1.5초 기절</b>. 다른 적 위에 거의 포개어 떨어지면 <b>홀인원</b>: 깔린 적은 <b>1,200</b> 추가 피해.'
+    skillDesc: '근접 ATK <b>800</b> · 공격 간격 <b>4초</b>. 맞은 적은 <b>하늘로 날아가</b> 게임에서 사라졌다가 <b>4초</b> 뒤 그 적의 진영 무작위 자리에 떨어진다 (1초 전 경고). 떨어진 적은 <b>600</b>, 반경 1칸의 그 편 유닛은 <b>800</b> 피해와 <b>1.5초 기절</b>. 다른 적 위에 거의 포개어 떨어지면 <b>홀인원</b>: 깔린 적은 <b>1,200</b> 추가 피해.'
   },
   archer: {
     id: 'archer', name: '아처 지후', emoji: '🏹', role: 'dealer', roleLabel: '딜러',
     rarity: 'rare', color: '#1e7a2e', portrait: PORTRAITS.archer,
     ...CHARACTER_BALANCE.archer,
     customAttack(caster, target) { archerShot(caster, target); },
-    skillDesc: '사거리 <b>10칸</b>. 화살이 일직선으로 날아가 처음 닿은 적에게 <b>400</b>. <b>20%</b> 확률로 <b>황금 화살</b>: <b>500</b> 피해로 모든 적을 관통하며 끝까지 날아간다.'
+    skillDesc: '사거리 <b>10칸</b>. 화살이 일직선으로 날아가 처음 닿은 적에게 <b>400</b>. <b>20%</b> 확률로 <b>황금 화살</b>: <b>500</b> 피해로 모든 적을 관통하며 끝까지 날아간다. 아처가 쓰러져도 날아가던 화살은 맞힌다.'
   },
   mortar: {
     id: 'mortar', name: '박격포 지후', emoji: '💣', role: 'dealer', roleLabel: '딜러',
@@ -8080,7 +8083,7 @@ const CHAR_DB = {
     id: 'meatshield', name: '고기방패 지후', emoji: '🥩', role: 'tank', roleLabel: '탱커',
     rarity: 'rare', color: '#555555', portrait: PORTRAITS.meatshield,
     ...CHARACTER_BALANCE.meatshield,
-    skillDesc: 'HP <b>12,500</b>. 몸집이 조금 크다. 공격(ATK 100)은 형편없지만 탱킹 역할에는 충실하다.'
+    skillDesc: 'HP <b>8,500</b>. 몸집이 조금 크다. 공격(ATK 100 · 2.5초)은 형편없지만 탱킹 역할에는 충실하다.'
   },
 };
 
@@ -8353,7 +8356,7 @@ function bindCameraControls() {
 }
 
 // 합체 레벨업 1회당 HP·ATK 증가율 (레벨마다 복리: Lv.n 배율 = LEVEL_MULT ^ (n-1))
-const LEVEL_MULT = 1.1; // 3.8.3: 레벨업당 능력치 +25% → +10%
+const LEVEL_MULT = 1.2; // 4.6.4: 레벨업(합체)당 능력치 +10% → +20%
 // 합체 레벨업 1회당 화상·독·쉴드·회복 등 효과량 증가율 (HP·ATK와 달리 +25%, 복리)
 const SUPPORT_MULT = 1.25;
 function supportMult(u) { return Math.pow(SUPPORT_MULT, Math.max(0, ((u && u.level) || 1) - 1)); }
@@ -10159,7 +10162,15 @@ function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
   const all = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden');
   const skill = botLevelSkill(level);
   let deck;
-  if (level <= 3) {
+  if (level === 1) {
+    // 4.6.4 1레벨 봇: 일반 4 + 티어표 5~6티어 1
+    const common = all.filter(id => CHAR_DB[id].rarity === 'common');
+    deck = pickRandom(common, Math.min(4, common.length));
+    const low = [...(BOT_TIER_LIST['5'] || []), ...(BOT_TIER_LIST['6'] || [])].filter(id => all.includes(id) && !deck.includes(id));
+    deck = deck.concat(pickRandom(low, 1));
+    const rest = all.filter(id => !deck.includes(id));
+    deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
+  } else if (level <= 3) {
     // 3.8.2 초보자: 일반 4 + 희귀 1
     const common = all.filter(id => CHAR_DB[id].rarity === 'common');
     const rare = all.filter(id => CHAR_DB[id].rarity === 'rare');
@@ -13590,7 +13601,10 @@ function mmrState() {
   if (slump) offset = Math.min(offset, -3);
   return { offset, slump, net };
 }
+// 4.6.4 초보자 보호: 계정을 만든 뒤 첫 3판은 무조건 1레벨 봇
+function newbieProtected() { return (profile.rankedForm || []).length < 3 && (profile.wins || 0) + (profile.losses || 0) < 3; }
 function mmrEnemyLevel() {
+  if (newbieProtected()) return 1;
   const myLevel = getLevelInfo(profile.totalXp).level;
   const { offset } = mmrState();
   return Math.max(1, Math.min(100, myLevel + offset + randomBetween(-BOT_LEVEL_SPREAD, BOT_LEVEL_SPREAD)));
@@ -17497,7 +17511,7 @@ const battleAPI = {
     spawnBurst(caster.el, '#d94b7a');
     physSnap(caster, target.x + Math.cos(angle) * offset, target.y + Math.sin(angle) * offset);
     spawnBurst(caster.el, '#d94b7a');
-    caster.stealth = rankS(caster, 'assassin') ? 2 : 1; // 암살 S: +1초
+    caster.stealth = (caster.def.assassinStealth ?? 1) + (rankS(caster, 'assassin') ? 1 : 0); // 4.6.4 기본 0.6초 · 암살 S: +1초
     if (caster.el) caster.el.classList.add('stealthed');
     dealDamage(caster, target, caster.def.atk * 2, { isSkill: true });
   },
@@ -19514,8 +19528,12 @@ function tickHollow(u, dt) {
     h.realm = enterRealm(u, members, 999, () => { u.def.atk = baseAtk; clearHollowZone(h); h.phase = 'done'; });
     h.phase = 'realm'; h.t = u.def.hollowRealmMove;
   } else if (h.phase === 'realm') {
-    // 필드 좌표 그대로 공허지역을 열고, 닿은 적에게 한 번 피해
-    h.x = u.x; h.y = u.y; h.r = unitRadius(u) * u.def.hollowZoneScale;
+    // 4.6.4: 대상(가장 가까운 적) 자리에서 0~7칸 오차로 공허지역을 열고, 닿은 적에게 한 번 피해
+    let foe = null, best = Infinity;
+    state.units.forEach(e => { if (!e.alive || e.isCastle || e.side === u.side || e._realm || e._flight) return; const d = Math.hypot(e.x - u.x, e.y - u.y); if (d < best) { best = d; foe = e; } });
+    const base = foe || u, off = Math.random() * (u.def.hollowStrikeScatter ?? 0) * GRID, oa = Math.random() * Math.PI * 2;
+    h.x = clamp(base.x + Math.cos(oa) * off, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD); h.y = clamp(base.y + Math.sin(oa) * off, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
+    h.r = unitRadius(u) * u.def.hollowZoneScale;
     h.el = hollowZoneEl(h.x, h.y, h.r, 'strike');
     const damage = Math.round(u.def.hollowStrike * skillLevelFactor(u));
     h.hit = state.units.filter(e => e.alive && !e.isCastle && e.side !== u.side && !e._realm && !e._flight && touching(e, h.r));
@@ -19964,6 +19982,7 @@ function trainAttack(u, target) {
 function tickBerserker(u) {
   if (!u._bsk && u.hp > 0 && u.hp < u.maxHp * u.def.bskHp) {
     u._bsk = true;
+    if (u.def.bskAtkSpeed) { u.def.atkSpeed = u.def.bskAtkSpeed; u.atkCooldown = Math.min(u.atkCooldown || 0, u.def.atkSpeed); } // 4.6.4 버서커 모드 공격 간격
     u.el.classList.add('berserker-mode');
     battleAPI.setImage(u, u.def.portraitBerserk);
     spawnBurst(u.el, '#ff6e00');
@@ -20132,7 +20151,7 @@ function archerShot(caster, target) {
     left: golden ? rayToWall(caster.x, caster.y, cs, sn) : caster.def.range + unitRadius(target) + GRID,
     speed: caster.def.arrowSpeed * (golden ? 1.5 : 1), hit: new Set([caster.uid]), el,
     onHit(other) {
-      if (!isHostile(caster, other)) return;
+      if (!other.alive || other.side === caster.side || (caster.alive && !isHostile(caster, other))) return; // 4.6.4: 아처가 죽어도 날아가던 화살은 맞힌다
       if (golden) { dealDamage(caster, other, Math.round(caster.def.goldenArrowDamage * lv), { isSkill: true, fromDeath: true }); return; }
       if (dealDamage(caster, other, caster.def.atk, { fromDeath: !caster.alive }) && caster.def.onHit) caster.def.onHit(caster, other, battleAPI);
       return 'stop';
@@ -20959,12 +20978,9 @@ function tickSupply(u, dt) {
   if (u._supplyCd > 0) return;
   if (state.crates.filter(c => c.side === u.side).length >= u.def.supplyMax) return;
   u._supplyCd = u.def.supplyEvery;
-  // 가장 앞(적 진영 쪽)에 선 아군 주변 3칸 안
-  const dir = bikerDirection(u);
-  const front = state.units.filter(a => a.alive && !a.isCastle && a.side === u.side && !a._realm)
-    .sort((a, b) => (b.x * dir.x + b.y * dir.y) - (a.x * dir.x + a.y * dir.y))[0] || u;
-  const ang = Math.random() * Math.PI * 2, dist = Math.random() * u.def.supplyNear;
-  const p = { x: clamp(front.x + Math.cos(ang) * dist, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), y: clamp(front.y + Math.sin(ang) * dist, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD) };
+  // 4.6.4: 필드 전체의 무작위 자리
+  const pad = PHYS.WALL_PAD + 10;
+  const p = { x: pad + Math.random() * (MAP_W - pad * 2), y: pad + Math.random() * (MAP_H - pad * 2) };
   const el = fx38('fx-crate falling', p.x, p.y, `<img src="${u.def.portraitCrate}" alt="">`);
   el.style.setProperty('--fall', u.def.supplyFall + 's');
   state.crates.push({ caster: u, side: u.side, x: p.x, y: p.y, fall: u.def.supplyFall, el, r: u.def.crateRadius, def: u.def, level: u.level || 1 });
@@ -22277,7 +22293,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
   }
   if (tab === 'rules') {
     $('helpBody').innerHTML = [
-      ['⚔️ 일반전', '덱의 지후 5종으로 싸웁니다. 라운드마다 배치 풀에서 지후를 골라 배치합니다 (1~3라운드 2번, 4라운드부터 3번). 양쪽 라이프가 모두 1이 되면 <b>데스매치</b>로 배치 6번. 같은 지후를 겹치면 레벨이 오릅니다 (HP·ATK +10%). 라이프 3을 먼저 깎으면 이깁니다. 이기면 🎟️ 티켓 1장.'],
+      ['⚔️ 일반전', '덱의 지후 5종으로 싸웁니다. 라운드마다 배치 풀에서 지후를 골라 배치합니다 (1~3라운드 2번, 4라운드부터 3번). 양쪽 라이프가 모두 1이 되면 <b>데스매치</b>로 배치 6번. 같은 지후를 겹치면 레벨이 오릅니다 (HP·ATK +20%). 라이프 3을 먼저 깎으면 이깁니다. 이기면 🎟️ 티켓 1장.'],
       ['🎯 드래프트전 · 경쟁전', '밴과 픽으로 지후를 정해 싸웁니다. 한 판에 🎟️ 티켓 1장 (최대 15장, 일반전 승리·일일 퀘스트로 획득, 3장보다 적으면 15분마다 1장 자동 충전). 경쟁전은 골드부터 라이프 4, 그 아래는 3판 2선승입니다. 라운드마다 배치 3번, 양쪽 라이프가 모두 1이면 <b>데스매치</b>로 6번. 밴·픽은 지후를 누르고 <b>한 번 더</b> 누르면 확정됩니다.'],
       ['💥 크리티컬', '모든 피해는 2% 확률로 2배가 됩니다.'],
       ['🏷️ 등급과 역할', '일반 · 희귀 · 영웅 · 전설 · 히든. 탱커는 앞에서 버티고, 딜러는 피해를 넣고, 서포터는 아군을 돕고, 컨트롤러는 적을 묶고, 어쌔신은 뒤를 노립니다.'],
@@ -22364,6 +22380,34 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '4.6.4': {
+    label: 'v4.6.4 밸런스 패치 · 초보자 보호',
+    date: '2026.09.30',
+    sections: [
+      { title: '시스템', items: [
+        { emoji:'🐣', name:'초보자 보호', tag:'system', color:'#2fb344', desc:'계정을 만든 뒤 <b>첫 3판</b>은 무조건 <b>1레벨 봇</b>과 매칭됩니다. 1레벨 봇은 <b>일반 지후 4기 + 티어표 5~6티어 지후 1기</b>를 들고 옵니다.' },
+        { emoji:'⬆️', name:'합체 능력치', tag:'buff', color:'#f59f00', desc:'같은 지후를 겹쳐 레벨이 오를 때 HP · ATK 증가량 <b>+10% → +20%</b>.' }
+      ] },
+      { title: '밸런스 · 상향', items: [
+        { emoji:'🐭', name:'미니 지후', tag:'buff', color:'#f2e38a', portraitKey:'mini', desc:'HP <b>500 → 700</b> · ATK <b>100 → 150</b>.' },
+        { emoji:'🪓', name:'버서커 지후', tag:'buff', color:'#ff6e00', portraitKey:'berserker', desc:'ATK <b>300 → 320</b> · 버서커 모드 발동 체력 <b>30% → 40%</b> · 버서커 모드 공격 간격 <b>0.7초</b>.' },
+        { emoji:'🏹', name:'아처 지후', tag:'buff', color:'#2f9e44', portraitKey:'archer', desc:'화살이 날아가는 도중 아처가 쓰러져도 <b>화살은 피해를 줍니다</b>.' },
+        { emoji:'🏌️', name:'골프 지후', tag:'buff', color:'#2f9e44', portraitKey:'golf', desc:'공격 간격 <b>8초 → 4초</b>.' }
+      ] },
+      { title: '밸런스 · 하향', items: [
+        { emoji:'🗡️', name:'암살 지후', tag:'nerf', color:'#d94b7a', portraitKey:'assassin', desc:'공격 간격 <b>0.4 → 0.6초</b> · 기본 은신 <b>1 → 0.6초</b>.' },
+        { emoji:'🥩', name:'고기방패 지후', tag:'nerf', color:'#c0504d', portraitKey:'meatshield', desc:'HP <b>12,500 → 8,500</b> · 공격 간격 <b>1.5 → 2.5초</b>.' },
+        { emoji:'🥷', name:'자객 지후', tag:'nerf', color:'#333333', portraitKey:'hitman', desc:'근접 ATK <b>4,000 → 1,800</b> · 자객 피해 <b>2,000 → 1,200</b>.' },
+        { emoji:'📐', name:'지후함수', tag:'nerf', color:'#1c7ed6', portraitKey:'func', desc:'함수 피해 <b>1,000~2,000 → 700~1,300</b>.' }
+      ] },
+      { title: '밸런스 · 조정', items: [
+        { emoji:'📦', name:'보급병 지후', tag:'adjust', color:'#8a6d3b', portraitKey:'supply', desc:'보급이 <b>필드 전체의 무작위 자리</b>에 떨어집니다 · 낙하 피해 <b>800 → 400</b>.' },
+        { emoji:'🟦', name:'슬라임 지후', tag:'adjust', color:'#12a8ef', portraitKey:'slime', desc:'HP <b>1,800 → 2,000</b> · ATK <b>800 → 600</b>.' },
+        { emoji:'🕳️', name:'공허 지후', tag:'adjust', color:'#5f3dc4', portraitKey:'hollow', desc:'두 번째로 열리는 공허지역이 대상 자리에서 <b>0~7칸</b> 벗어난 곳에 생깁니다.' },
+        { emoji:'🚅', name:'신칸센 지후', tag:'adjust', color:'#2f7fe0', portraitKey:'train', desc:'이름 변경 (철도 지후 → <b>신칸센 지후</b>) · 충돌 피해 <b>1,400 → 1,000</b> · 돌진 속도 <b>15.5 → 16칸</b>.' }
+      ] }
+    ]
+  },
   '4.6.3': {
     label: 'v4.6.3 WWE — 그랜드매치 리뉴얼',
     date: '2026.09.30',
@@ -24408,7 +24452,7 @@ function redeemCode(code) {
 const TUT_STEPS = [
   { text: '안녕! 나는 <b>화염 지후</b>. 지후배틀에 온 걸 환영해. 처음이지? 딱 1분만 내가 안내할게. 🔥' },
   { target: 'btnStartGame', text: '여기가 <b>게임 시작</b>. 덱의 지후 5기로 라이프 3 랭크전을 해. 라운드마다 배치 풀에서 지후를 골라 놓기만 하면 알아서 싸워.' },
-  { target: 'btnEnterDraft', text: '<b>덱 설정</b>에서 출전할 지후 5기를 고를 수 있어. 전투 중 같은 지후를 겹쳐 놓으면 레벨이 올라 (HP·ATK +10%).' },
+  { target: 'btnEnterDraft', text: '<b>덱 설정</b>에서 출전할 지후 5기를 고를 수 있어. 전투 중 같은 지후를 겹쳐 놓으면 레벨이 올라 (HP·ATK +20%).' },
   { target: 'btnOpenGacha', text: '<b>캐릭터 뽑기</b>. 다이아 100으로 1회, 1,000으로 지후 상자. 상자는 일반·희귀 8기에 운이 좋으면 영웅·전설·히든까지 딸려 나와.' },
   { target: 'btnOpenQuests', text: '<b>일일 퀘스트</b>로 다이아를 모아. 600P를 채우면 ◆500 보상이야. 매일 리셋되니까 꼭 들러.' },
   { target: 'btnOpenShop', text: '<b>일일 상점</b>엔 매일 무료 보상이 있어. 지후를 골드로 살 수도 있으니 잊지 말고 챙겨.' },
