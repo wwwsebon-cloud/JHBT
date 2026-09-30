@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.1.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.1.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2582,6 +2582,7 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 .v49-tut-dots i.on { background:#ff6b35; }
 .v49-tut-skip { border:0; background:none; color:#888; font:700 12px inherit; cursor:pointer; padding:8px; }
 .v49-tut-skip[hidden] { display:none; }
+.v49-tut-skip.armed { color:#e5322d; }
 .v49-tut-next { border:0; border-radius:999px; background:#171717; color:#fff; font:900 13px inherit; padding:9px 18px; cursor:pointer; transition:background .2s; }
 .v49-tut-next:hover { background:#ff6b35; }
 .v49-tut-next.gift { background:linear-gradient(135deg,#ff6b35,#e5322d); animation:v49TutPulseBtn 1s infinite; }
@@ -5168,7 +5169,7 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
       <div class="v49-tut-bubble">
         <span class="v49-tut-name" id="tutName">화염 지후</span>
         <p id="tutText"></p>
-        <div class="v49-tut-actions"><span class="v49-tut-dots" id="tutDots"></span><button type="button" class="v49-tut-skip" id="btnTutSkip">건너뛰기</button><button type="button" class="v49-tut-next" id="btnTutNext">다음 ▸</button></div>
+        <div class="v49-tut-actions"><span class="v49-tut-dots" id="tutDots"></span><button type="button" class="v49-tut-skip" id="btnTutSkipAll" hidden>튜토리얼 스킵</button><button type="button" class="v49-tut-skip" id="btnTutSkip">건너뛰기</button><button type="button" class="v49-tut-next" id="btnTutNext">다음 ▸</button></div>
       </div>
     </div>
   </div>
@@ -23904,6 +23905,16 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.1.1': {
+    label: 'v5.1.1 튜토리얼 스킵',
+    date: '2026.09.30',
+    sections: [
+      { title: '튜토리얼', items: [
+        { emoji:'⏭️', name:'튜토리얼 스킵', tag:'new', color:'#e5322d', portraitKey:'fire', desc:'튜토리얼 말풍선의 <b>튜토리얼 스킵</b>을 두 번 누르면 바로 끝나요. 대본 매치 중에는 <b>항복</b> 버튼을 누르면 스킵할 수 있어요.' },
+        { emoji:'📬', name:'스킵 보상', tag:'adjust', color:'#f2c94c', desc:'아직 못 받은 튜토리얼 보상은 <b>우편함</b>으로: 지후 상자 오픈권(<b>영웅 · 전설 확정</b>) · 랜덤 영웅 지후 1기 · 골드 5,000. 튜토리얼 다시하기는 도움말에서 언제든.' }
+      ] }
+    ]
+  },
   '5.1.0': {
     label: 'v5.1 협동전 · 무한 웨이브',
     date: '2026.09.30',
@@ -25991,7 +26002,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
+const MAIL_REWARD_KINDS = { legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
 function mailRewardText(rewards) { return rewards.map(r => r.kind === 'frame' ? `◎ ${frameInfo(r.id)?.name || '테두리'} 테두리` : `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 function sendMail(mail) {
   profile.mail = (profile.mail || []).concat({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, icon: '✉', body: '', rewards: [], ...mail }).slice(-60);
@@ -26052,6 +26063,10 @@ function claimMail(mail) {
       for (let i = 0; i < r.amount && pool.length; i++) grantCharacter(pool[Math.floor(Math.random() * pool.length)]);
     }
     else if (r.kind === 'frame') grantFrame(r.id, Math.max(0, Number(r.until) || 0));
+    else if (r.kind === 'tutorialBox') { // 5.1.1 튜토리얼 스킵 보상: 영웅 · 전설 확정 오픈권
+      profile.inventory.boxTicket = (profile.inventory.boxTicket || 0) + r.amount;
+      if (profile.tutorial && !profile.tutorial.giftUsed) profile.tutorial.giftPending = true;
+    }
     else profile.inventory[r.kind] = (profile.inventory[r.kind] || 0) + r.amount;
   });
   return true;
@@ -26198,6 +26213,7 @@ function tutGo(i) {
   ov.classList.toggle('center', !step.soft && !step.target);
   ov.classList.toggle('wait', !!step.wait);
   $('btnTutSkip').hidden = !step.skip;
+  const all = $('btnTutSkipAll'); all.hidden = !tutSkippable(); all.classList.remove('armed'); all.textContent = '튜토리얼 스킵';
   const next = $('btnTutNext');
   next.className = 'v49-tut-next' + (step.btn ? ' gift' : '');
   next.textContent = step.btn || '다음 ▸';
@@ -26260,6 +26276,28 @@ function tutNext() {
   if (tut.typing && $('tutText').querySelector('span')) { clearTimeout(tut.typing); $('tutText').innerHTML = tut.full; return; } // 타이핑 중이면 먼저 다 보여준다
   if (step.wait) return;
   tutAdvance();
+}
+// 5.1.1 튜토리얼 통째로 스킵: 두 번 눌러 확정. 아직 못 받은 보상은 우편함으로 (다시하기는 보상 없음)
+function tutSkippable() { return !!(tut.running && !tut.box && (tut.replay || state.tutMatch || (profile.tutorial && (!profile.tutorial.done || profile.tutorial.stage)))); }
+function tutSkipAll() {
+  const btn = $('btnTutSkipAll');
+  if (!btn.classList.contains('armed')) { btn.classList.add('armed'); btn.textContent = '한 번 더 누르면 스킵'; return; }
+  const replay = tut.replay || !!(state.tutMatch && state.tutMatch.replay);
+  tutHide();
+  if (state.tutMatch) { state.tutMatch = null; profile.activeMatch = null; leaveBattle(); }
+  showScreen('lobby');
+  if (!replay) {
+    const t = profile.tutorial;
+    const rewards = [];
+    if (!t.giftPending && !t.giftUsed) rewards.push({ kind: 'tutorialBox', amount: 1 });
+    if (!t.mailed) rewards.push({ kind: 'epicChar', amount: 1 }, { kind: 'gold', amount: 5000 });
+    t.mailed = true;
+    if (rewards.length) sendMail({ title: '화염 지후의 선물 (튜토리얼 스킵)', icon: '🔥', body: '바쁜가 보네? 튜토리얼 보상은 여기 넣어둘게. 상자 오픈권은 영웅 · 전설 확정이야. 모르는 건 도움말에서 튜토리얼 다시하기!', rewards });
+    t.done = true; t.stage = '';
+    saveProfile();
+  }
+  renderAccountUI();
+  if (!replay) setTimeout(() => { const mb = $('btnOpenMail'); if (mb && state.screen === 'lobby') v4RewardPop(mb, '📬 튜토리얼 보상은 우편함에!'); }, 400);
 }
 function tutSkip() { // 로비 설명만 건너뛸 수 있다 (대본 매치는 못 도망간다)
   const k = tut.steps.findIndex(s => !s.skip);
@@ -26515,19 +26553,21 @@ function maybeStartTutorial() {
   }
   if (t.stage === 'deck') { tutDeckScript(); return; }
   if (!t.done) { startTutorial(false); return; }
-  if (t.giftPending) { // 예전 튜토리얼에서 받은 오픈권
+  if (t.giftPending && !t.mailed) { // 예전 튜토리얼에서 받은 오픈권 (스킵으로 우편 받은 오픈권은 알아서 연다)
     if ((profile.inventory.boxTicket || 0) <= 0) { t.giftPending = false; saveProfile(); return; }
     tutOpenGachaForGift();
   }
 }
 $('btnTutNext').addEventListener('click', tutNext);
 $('btnTutSkip').addEventListener('click', tutSkip);
+$('btnTutSkipAll').addEventListener('click', tutSkipAll);
 window.addEventListener('resize', () => { if (tut.running) tutPlace(); });
 // 튜토리얼 매치에서는 항복할 수 없다
 $('btnExitBattle').addEventListener('click', e => {
   if (!tutMatch()) return;
   e.stopImmediatePropagation(); e.preventDefault();
   v42ShowGo('항복 불가', '튜토리얼에선 도망 못 가지롱 🔥', 'info');
+  if (!tut.running && !tutMatch().replay) tutRun([{ text: '도망은 못 가지롱. 대신 <b>튜토리얼 스킵</b>은 할 수 있어. 보상은 우편함에 넣어줄게.', btn: '계속하기' }]); // 5.1.1
 }, true);
 
 // ================= 4.1.4 글로벌 채팅 · 공지 =================
