@@ -5,7 +5,7 @@
 
 - 지후 초상화는 ../index.html 의 PORTRAITS 에서 id 로 꺼내 HTML 안에 넣는다 (파일 하나로 완결).
 - 폰트는 Pretendard (CDN). 로컬 폰트로 렌더링하려면 환경변수 JHBT_FONT=/path/PretendardVariable.ttf
-- JSON 형식은 4.6.4.json 을 참고. groups[].kind 는 buff(상향) · nerf(하향) · adjust(조정) · new(신규) · fix(수정).
+- JSON 형식은 4.6.4.json 을 참고. 지후가 아닌 항목은 id 대신 icon(이모지)을 쓴다 (4.6.5.json). groups[].kind 는 buff(상향) · nerf(하향) · adjust(조정) · new(신규) · fix(수정).
   lines 의 한 줄은 [항목, 이전, 이후] 또는 [설명 문장] 하나.
 """
 import html
@@ -48,13 +48,13 @@ def line_html(line, color):
 
 
 def build(data):
-    ids = [it['id'] for g in data['groups'] for it in g['items']]
+    ids = [it['id'] for g in data['groups'] for it in g['items'] if it.get('id')]
     pics = portraits(ids)
     font_face = ''
     local_font = os.environ.get('JHBT_FONT')
     if local_font:
         font_face = f"@font-face {{ font-family:'Pretendard Variable'; src:url('file://{local_font}') format('truetype'); font-weight:100 900; }}"
-    count = sum(len(g['items']) for g in data['groups'])
+    count = len(ids)
     hi_html = ''
     for h in data.get('highlights', []):
         color = KIND.get(h.get('kind', 'adjust'), KIND['adjust'])[1]
@@ -66,11 +66,12 @@ def build(data):
         label, color = KIND.get(g['kind'], KIND['adjust'])
         cards = ''
         for it in g['items']:
-            pic = pics.get(it['id'])
-            img = f'<img src="{pic}" alt="">' if pic else f'<span class="ph">{esc(it["name"][:1])}</span>'
+            pic = pics.get(it.get('id'))
+            img = f'<img src="{pic}" alt="">' if pic else f'<span class="ph{" ico" if it.get("icon") else ""}">{esc(it.get("icon") or it["name"][:1])}</span>'
+            suffix = '<span>지후</span>' if it.get('id') else ''
             tag = f'<span class="tag">{esc(it["tag"])}</span>' if it.get('tag') else ''
             lines = ''.join(line_html(l, color) for l in it['lines'])
-            cards += f'<div class="card" style="--c:{color}"><div class="pic">{img}</div><div class="body"><div class="nm"><b>{esc(it["name"])}</b><span>지후</span>{tag}</div>{lines}</div></div>'
+            cards += f'<div class="card" style="--c:{color}"><div class="pic">{img}</div><div class="body"><div class="nm"><b>{esc(it["name"])}</b>{suffix}{tag}</div>{lines}</div></div>'
         groups_html += f'<section class="grp"><div class="gh"><span class="chip" style="background:{color}">{esc(g.get("label", label))}</span><i></i><small>{len(g["items"])}</small></div><div class="cards">{cards}</div></section>'
     return f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=1080">
@@ -115,6 +116,7 @@ body {{ background:#e9e8e4; font-family:'Pretendard Variable','Pretendard','Appl
 .pic {{ flex:none; width:76px; height:76px; border-radius:50%; background:#f6f5f1; box-shadow:0 0 0 3px var(--c); display:grid; place-items:center; overflow:hidden; }}
 .pic img {{ width:100%; height:100%; object-fit:contain; }}
 .pic .ph {{ font-size:30px; font-weight:900; color:#aaa; }}
+.pic .ph.ico {{ font-size:36px; color:inherit; }}
 .body {{ flex:1; min-width:0; display:flex; flex-direction:column; gap:7px; }}
 .nm {{ display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }}
 .nm b {{ font-size:22px; font-weight:900; letter-spacing:-.03em; }}
@@ -136,7 +138,7 @@ body {{ background:#e9e8e4; font-family:'Pretendard Variable','Pretendard','Appl
   <header class="top">
     <div class="brand"><i></i>지후끼리 야차까는겜 · JHBT</div>
     <div class="ver"><b>v{esc(data["version"])}</b><span><strong>{esc(data["title"])}</strong><em>{esc(data.get("subtitle", ""))}</em></span></div>
-    <div class="meta"><span>{esc(data["date"])}</span><span>PATCH NOTES</span><span>지후 {count}종</span></div>
+    <div class="meta"><span>{esc(data["date"])}</span><span>PATCH NOTES</span>{f'<span>지후 {count}종</span>' if count else ''}</div>
   </header>
   {f'<div class="hl">{hi_html}</div>' if hi_html else ''}
   {groups_html}
