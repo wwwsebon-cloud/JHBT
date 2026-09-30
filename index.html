@@ -4745,7 +4745,30 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
 .fx-train-signal.next i { animation:train-sig .35s ease-in-out infinite alternate; }
 .fx-train-signal.passed { opacity:.35; }
 @keyframes train-sig { to { transform:scale(1.25); } }
-.unit.train-dash { filter:drop-shadow(0 0 10px rgba(47,127,224,.9)); }
+.unit.train-dash { filter:drop-shadow(0 0 10px rgba(47,127,224,.9)) drop-shadow(0 0 3px #fff); }
+/* 신칸센 돌진 이펙트 */
+.t48-wind { position:absolute; left:50%; top:50%; width:0; height:0; z-index:-1; pointer-events:none; }
+.t48-wind i { position:absolute; left:10px; height:3px; border-radius:2px; background:linear-gradient(90deg, rgba(255,255,255,.95), rgba(47,127,224,.6) 45%, transparent); animation:t48wind .22s linear infinite; }
+.t48-wind i:nth-child(1) { top:-26px; width:70px; animation-delay:0s; }
+.t48-wind i:nth-child(2) { top:-12px; width:110px; animation-delay:.05s; }
+.t48-wind i:nth-child(3) { top:0; width:140px; height:5px; animation-delay:.1s; }
+.t48-wind i:nth-child(4) { top:12px; width:105px; animation-delay:.03s; }
+.t48-wind i:nth-child(5) { top:26px; width:75px; animation-delay:.08s; }
+@keyframes t48wind { from { transform:translateX(0); opacity:1; } to { transform:translateX(40px); opacity:.2; } }
+.fx-train-rail { width:26px; height:44px; z-index:1; pointer-events:none; animation:t48rail 1.5s ease-in forwards; }
+.fx-train-rail::before, .fx-train-rail::after { content:''; position:absolute; left:-2px; right:-2px; height:4px; border-radius:2px; background:#7a8594; box-shadow:0 1px 0 rgba(0,0,0,.35); }
+.fx-train-rail::before { top:6px; } .fx-train-rail::after { bottom:6px; }
+.fx-train-rail i { position:absolute; left:8px; top:0; bottom:0; width:10px; border-radius:2px; background:#8a5a35; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); }
+@keyframes t48rail { 0% { opacity:0; } 8% { opacity:1; } 70% { opacity:.9; } 100% { opacity:0; } }
+.fx-train-burst { transform:translate(-50%,-50%); z-index:8; pointer-events:none; }
+.fx-train-burst i { position:absolute; inset:0; border-radius:50%; border:6px solid #2f7fe0; box-shadow:0 0 18px #7fb2ff, inset 0 0 12px #fff; animation:v467ring .5s cubic-bezier(.1,.7,.3,1) forwards; }
+.fx-train-pass { width:70px; height:70px; transform:translate(-50%,-50%); z-index:3; pointer-events:none; }
+.fx-train-pass i { position:absolute; inset:0; border-radius:50%; background:radial-gradient(closest-side,#fff,rgba(47,127,224,.6),transparent); animation:v470flash .45s ease-out forwards; }
+.fx-train-hit { width:0; height:0; z-index:10; pointer-events:none; }
+.fx-train-hit i { position:absolute; left:0; top:-2px; width:34px; height:4px; border-radius:2px; background:linear-gradient(90deg,#fff,#ffd84a,transparent); transform-origin:0 50%; animation:t48spark .38s ease-out forwards; }
+.fx-train-hit i:nth-child(1) { --r:-50deg; } .fx-train-hit i:nth-child(2) { --r:-25deg; } .fx-train-hit i:nth-child(3) { --r:0deg; }
+.fx-train-hit i:nth-child(4) { --r:25deg; } .fx-train-hit i:nth-child(5) { --r:50deg; } .fx-train-hit i:nth-child(6) { --r:180deg; }
+@keyframes t48spark { from { transform:rotate(var(--r)) scaleX(.2); opacity:1; } to { transform:rotate(var(--r)) translateX(26px) scaleX(1); opacity:0; } }
 .fx-dragon-fire.fx-train-fire { transform-origin:left center; }
 .fx-projectile.fx-smoke-puff { width:18px !important; height:18px !important; border-radius:50% !important; background:radial-gradient(circle at 40% 40%, #fff, #c9c9c9 55%, rgba(150,150,150,.4)) !important; box-shadow:0 0 6px rgba(120,120,120,.5) !important; }
 .unit.berserker-mode { filter:drop-shadow(0 0 8px rgba(255,110,0,.95)); }
@@ -6559,7 +6582,7 @@ const CHARACTER_BALANCE = {
   },
   // ── 4.6 신규 ──
   train: {
-    hp: 3000, atk: 140, atkSpeed: 1, range: 126, speed: 99,
+    hp: 1600, atk: 140, atkSpeed: 1, range: 126, speed: 99,
     trainShots: 3, trainShotGap: 0.1, // 일반 공격: 연기 3연발
     trainFirst: 2, trainDashSpeed: 720, trainHit: 1000, trainSplash: 300, trainSplashRadius: 45, trainDr: 0.35,
     trainRelocate: 1, trainRedash: 1, trainSignalGap: 225,
@@ -20311,13 +20334,48 @@ function startTrainDash(u) {
   u.el.classList.add('train-dash');
   battleAPI.setImage(u, u.def.portrait);
   clearTelegraph(u);
+  trainDashFx(u, 'start');
   v41Callout(u, v41SkillName(u));
   trainSegment(u);
+}
+// 신칸센 돌진 이펙트: 뒤에 깔리는 철도 · 바람 줄기 · 출발 충격파 · 충돌 불꽃
+function trainDashFx(u, kind) {
+  const d = u._trainDash;
+  if (kind === 'end') { u.el.querySelector('.t48-wind')?.remove(); return; }
+  if (kind === 'start') {
+    const ring = fx38('fx-train-burst', u.x, u.y, '<i></i>');
+    ring.style.width = ring.style.height = unitRadius(u) * 5 + 'px';
+    scheduleTask(() => ring.remove(), 500);
+    spawnDamageNumber(u, '🚄 출발!', { crit: true });
+  }
+  let wind = u.el.querySelector('.t48-wind');
+  if (!wind) { wind = document.createElement('span'); wind.className = 't48-wind'; wind.innerHTML = '<i></i><i></i><i></i><i></i><i></i>'; u.el.prepend(wind); }
+  if (d && d.ang != null) wind.style.transform = `translate(-50%,-50%) rotate(${d.ang * 180 / Math.PI + 180}deg)`;
+}
+function trainLayRails(u, d) {
+  const step = GRID * 0.42;
+  let dx = u.x - d.railX, dy = u.y - d.railY, dist = Math.hypot(dx, dy);
+  const deg = (d.ang || 0) * 180 / Math.PI;
+  while (dist >= step) {
+    d.railX += dx / dist * step; d.railY += dy / dist * step;
+    const el = fx38('fx-train-rail', d.railX, d.railY, '<i></i>');
+    el.style.transform = `translate(-50%,-50%) rotate(${deg}deg)`;
+    scheduleTask(() => el.remove(), 1500);
+    dx = u.x - d.railX; dy = u.y - d.railY; dist = Math.hypot(dx, dy);
+  }
+}
+function trainImpactFx(e, ang) {
+  const el = fx38('fx-train-hit', e.x, e.y, '<i></i><i></i><i></i><i></i><i></i><i></i>');
+  el.style.transform = `translate(-50%,-50%) rotate(${(ang || 0) * 180 / Math.PI}deg)`;
+  scheduleTask(() => el.remove(), 380);
 }
 function trainSegment(u) {
   const d = u._trainDash;
   const sg = d.route[d.idx];
   sg.el.classList.add('next');
+  d.ang = Math.atan2(sg.y - u.y, sg.x - u.x);
+  d.railX = u.x; d.railY = u.y;
+  trainDashFx(u, 'turn');
   if (!rankS(u, 'train')) return;
   const fire = document.createElement('div');
   fire.className = 'fx-dragon-fire fx-train-fire';
@@ -20340,6 +20398,7 @@ function trainDashStep(u, dt) {
   const nx = reach ? sg.x : u.x + dx / dist * step, ny = reach ? sg.y : u.y + dy / dist * step;
   u.vx = dist ? dx / dist * u.def.trainDashSpeed : 0; u.vy = dist ? dy / dist * u.def.trainDashSpeed : 0;
   u.x = clamp(nx, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD); u.y = clamp(ny, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
+  trainLayRails(u, d);
   if (d.trail) {
     d.trail.endX = u.x; d.trail.endY = u.y;
     d.trail.el.style.width = Math.hypot(u.x - d.trail.startX, u.y - d.trail.startY) + 'px';
@@ -20352,6 +20411,7 @@ function trainDashStep(u, dt) {
     if (gap <= r && !d.hit.has(e.uid)) {
       d.hit.add(e.uid); d.splash.add(e.uid);
       spawnSlash(u, e);
+      trainImpactFx(e, d.ang);
       dealDamage(u, e, Math.round(u.def.trainHit * lv), { isSkill: true, skipAtkBuff: true });
     } else if (gap <= r + u.def.trainSplashRadius && !d.splash.has(e.uid)) {
       d.splash.add(e.uid);
@@ -20362,6 +20422,7 @@ function trainDashStep(u, dt) {
   if (!reach) return;
   sg.el.classList.remove('next');
   sg.el.classList.add('passed');
+  fx38Flash('fx-train-pass', sg.x, sg.y, 0, 450, '<i></i>');
   endTrainTrail(d, u);
   d.idx++;
   if (d.idx < d.route.length) { trainSegment(u); return; }
@@ -20369,6 +20430,7 @@ function trainDashStep(u, dt) {
   u._trainDash = null;
   u.vx = 0; u.vy = 0;
   u.el.classList.remove('train-dash');
+  trainDashFx(u, 'end');
   // 4.7.0 다음 돌진까지 3.25초, 이번 돌진에서 직접 부딪힌 적 1기당 -0.5초 (최소 0.1초). 절반은 신호기 옮기기, 절반은 대기
   const cd = Math.max(u.def.trainCdMin, u.def.trainCooldown - u.def.trainCdPerHit * hits);
   u._train.cd = cd;
