@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.6.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.6.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6909,7 +6909,7 @@ const CHARACTER_BALANCE = {
     typhoonLvRadius: 0.08,
     typhoonLvTime: 0.5,
     hp: 2400, atk: 20, atkSpeed: 0.2, range: 405, speed: 90, // 5.5 HP 1600 · 사거리 9칸
-    typhoonSpeed: 108, typhoonTick: 0.4, typhoonDamage: 320, // 5.5 200 → 160
+    typhoonSpeed: 108, typhoonTick: 0.4, typhoonDamage: 200, // 5.6.1 320 → 200
     typhoonTime: 5, typhoonHoming: 3.2, typhoonInsideSlow: 0.6, typhoonRamp: 20, // 4.7.0
     stage1Time: 4, stage2Time: 2.5, stage2Crit: 0.1 // 4.7.2 폼 변화: 1단계 4초 ↔ 2단계 2.5초 (크리티컬 10%)
   },
@@ -8821,7 +8821,7 @@ const CHAR_DB = {
     id: 'typhoon', name: '태풍 지후', emoji: '🌀', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#5fbfbf', portrait: PORTRAITS.typhoon,
     ...CHARACTER_BALANCE.typhoon,
-    skillDesc: 'ATK 20 · 공격 간격 <b>0.2초</b> · 사거리 <b>9칸</b>. <b>[폼 변화]</b> 1단계(<b>4초</b>)와 2단계(<b>2.5초</b>)를 계속 오간다. 2단계에서는 색이 진해지고 크리티컬 확률이 <b>10%</b>로 오른다. 일반 공격이 <b>크리티컬</b>로 맞으면 제자리에 유닛 크기의 <b>태풍</b>을 부른다. 태풍은 <b>5초</b> 동안 초당 <b>2.4칸</b>으로 <b>가장 가까운 적에게 유도</b>되고 (뒤로 갈 수도 있다), 안에 있는 적에게 <b>0.4초마다 320</b> 피해를 준다. 적과 겹쳐 있으면 태풍의 이동속도 <b>-60%</b> · 겹쳐 있는 동안 피해가 <b>1초마다 +20</b>씩 커진다. 레벨업마다 태풍 반경 <b>+8%</b> · 지속 <b>+0.5초</b>.'
+    skillDesc: 'ATK 20 · 공격 간격 <b>0.2초</b> · 사거리 <b>9칸</b>. <b>[폼 변화]</b> 1단계(<b>4초</b>)와 2단계(<b>2.5초</b>)를 계속 오간다. 2단계에서는 색이 진해지고 크리티컬 확률이 <b>10%</b>로 오른다. 일반 공격이 <b>크리티컬</b>로 맞으면 제자리에 유닛 크기의 <b>태풍</b>을 부른다. 태풍은 <b>5초</b> 동안 초당 <b>2.4칸</b>으로 <b>가장 가까운 적에게 유도</b>되고 (뒤로 갈 수도 있다), 안에 있는 적에게 <b>0.4초마다 200</b> 피해를 준다. 적과 겹쳐 있으면 태풍의 이동속도 <b>-60%</b> · 겹쳐 있는 동안 피해가 <b>1초마다 +20</b>씩 커진다. 레벨업마다 태풍 반경 <b>+8%</b> · 지속 <b>+0.5초</b>.'
   },
   cloud: {
     id: 'cloud', name: '먹구름 지후', emoji: '⛈️', role: 'dealer', roleLabel: '딜러',
@@ -21841,7 +21841,7 @@ function spawnTyphoon(u) {
   const el = fx38('fx-typhoon', u.x, u.y, '<i></i>');
   el.style.width = el.style.height = r * 2 + 'px';
   state.typhoons.push({ owner: u, side: u.side, x: u.x, y: u.y, r, el, fwd: typhoonForward(u.side), ang: typhoonForward(u.side),
-    life: u.def.typhoonTime + (u.def.typhoonLvTime || 0) * lv, speed: u.def.typhoonSpeed, // 5.6 레벨업마다 +0.5초 tick: 0, every: u.def.typhoonTick,
+    life: u.def.typhoonTime + (u.def.typhoonLvTime || 0) * lv, speed: u.def.typhoonSpeed, tick: 0, every: u.def.typhoonTick, // 5.6 레벨업마다 지속 +0.5초
     dmg: Math.round(u.def.typhoonDamage * skillLevelFactor(u)), turn: u.def.typhoonHoming, ramp: 0, rampPerSec: u.def.typhoonRamp, slow: u.def.typhoonInsideSlow });
   spawnDamageNumber(u, '🌀 태풍', { heal: true });
 }
@@ -25267,6 +25267,18 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.6.1': {
+    label: 'v5.6.1 태풍 버그 수정 · 조정',
+    date: '2026.10.01',
+    sections: [
+      { title: '수정', items: [
+        { emoji:'🌪', name:'태풍 지후', tag:'fix', color:'#15aabf', portraitKey:'typhoon', desc:'5.6에서 <b>태풍이 피해를 전혀 주지 못하던</b> 버그를 고쳤어요.' }
+      ] },
+      { title: '하향', items: [
+        { emoji:'🌪', name:'태풍 지후', tag:'nerf', color:'#15aabf', portraitKey:'typhoon', desc:'태풍 피해 <b>320 → 200</b> (0.4초마다).' }
+      ] }
+    ]
+  },
   '5.6.0': {
     label: 'v5.6 대규모 밸런스 패치',
     date: '2026.10.01',
