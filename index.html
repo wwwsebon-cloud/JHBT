@@ -550,10 +550,12 @@ html, body {
 .fx-func { left:0; top:0; overflow:visible; z-index:5; }
 .fx-func polyline { fill:none; stroke-linecap:round; stroke-linejoin:round; }
 .fx-func.func-axes polyline { stroke:rgba(90,90,90,.45); stroke-dasharray:8 6; }
-.fx-func.func-warn polyline { stroke:rgba(230,30,30,.36); animation:func-warn .9s ease-in-out infinite alternate; } /* 5.5.1 깜빡임 대신 느린 맥동 (광과민성) */
-@keyframes func-warn { from { stroke:rgba(230,30,30,.24); } to { stroke:rgba(230,30,30,.42); } }
-.fx-func.func-fire polyline { stroke:var(--func-color, #22b14c); filter:drop-shadow(0 0 5px var(--func-color, #22b14c)); }
-.fx-func.func-fire { animation:tri-fade .65s ease-in forwards; }
+.fx-func.func-warn polyline { stroke:rgb(230,30,30); }
+.fx-func.func-warn { opacity:.3; will-change:opacity; animation:func-warn .9s ease-in-out infinite alternate; } /* 5.5.1 깜빡임 대신 느린 맥동 (광과민성) · 5.7.2 선 색 대신 레이어 불투명도만 (렉) */
+@keyframes func-warn { from { opacity:.24; } to { opacity:.42; } }
+.fx-func.func-fire polyline { stroke:var(--func-color, #22b14c); }
+.fx-func.func-fire polyline.glow { stroke-opacity:.28; } /* 5.7.2 drop-shadow 필터 대신 굵은 반투명 선 (렉) */
+.fx-func.func-fire { will-change:opacity; animation:tri-fade .65s ease-in forwards; }
 .func-bubble { position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); padding:3px 9px; border:2px solid #1a6b2a; border-radius:12px;
   background:#f4fff2; color:#0d3b16; font:700 13px/1.3 'Cambria Math','Times New Roman',serif; font-style:italic; white-space:nowrap; z-index:9; pointer-events:none; box-shadow:0 2px 6px rgba(0,0,0,.2); }
 .func-bubble::after { content:''; position:absolute; left:50%; top:100%; margin-left:-5px; border:5px solid transparent; border-top-color:#1a6b2a; }
@@ -1796,6 +1798,15 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .v52-popcard.shown { animation:v52reveal .45s ease-out; }
 .v52-popcard.shown i { font-style:normal; font-size:34px; } .v52-popcard.shown b { font-size:15px; }
 .v52-popcard.done { opacity:.6; }
+.v52-popgrid { grid-template-columns:repeat(4, minmax(0, 1fr)); }
+.v52-popcard.paid { position:relative; justify-content:flex-start; padding-top:22px; }
+.v52-popcard .tag { position:absolute; top:7px; left:8px; font-style:normal; font-size:10px; font-weight:800; padding:1px 7px; border-radius:99px; background:#3a2a52; color:#d9b8ff; }
+.v52-popcard.bundle .tag { background:#ff4d8d; color:#fff; }
+.v52-popcard img.emo { width:64px; height:64px; object-fit:contain; background:#fff; border-radius:10px; padding:3px; }
+.v52-popcard ul { list-style:none; margin:0; padding:0; font-size:12px; font-weight:700; line-height:1.5; text-align:left; }
+.v52-popcard .pay { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:auto; }
+.v52-popcard .pay .v4-darkbtn { padding-left:10px; padding-right:10px; font-size:12px; white-space:nowrap; }
+@media (max-width:760px) { .v52-popgrid { grid-template-columns:1fr 1fr; } }
 @keyframes v52reveal { from { transform:rotateY(90deg) scale(.9); } to { transform:none; } }
 /* 5.3 🗿 파동 · 영혼 · 핵폭발 · 핵 지후 들썩 */
 .fx-moai-wave { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:5; }
@@ -6863,7 +6874,7 @@ const CHARACTER_BALANCE = {
   },
   func: {
     hp: 2000, atk: 150, atkSpeed: 1.2, range: 270, speed: 72,
-    funcEvery: 5.5, funcAnnounce: 2, funcWarn: 1, funcMin: 1000, funcMax: 1000, funcStun: 2, funcUnit: 67.5
+    funcEvery: 5.5, funcAnnounce: 2, funcWarn: 1, funcMin: 500, funcMax: 1000, funcStun: 2, funcUnit: 67.5
   },
   zombie: {
     hp: 3000, atk: 144, atkSpeed: 0.8, range: 72, speed: 58.5,
@@ -8282,7 +8293,7 @@ const CHAR_DB = {
     id: 'func', name: '지후함수', emoji: '📈', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#22b14c', portrait: PORTRAITS.func,
     ...CHARACTER_BALANCE.func,
-    skillDesc: '<b>5.5초마다</b> 자신을 원점으로 무작위 함수의 그래프를 그린다 (y=ax, y=sin x, y=tan x, y²=4px, y=ax², 하트 방정식 등). 선에 걸친 모든 적은 <b>1,000</b> 피해를 받고 <b>2초</b> 기절한다. 2초 전에 그릴 함수를 말하고, 1초 전에 선을 빨갛게 예고한다.'
+    skillDesc: '<b>5.5초마다</b> 자신을 원점으로 무작위 함수의 그래프를 그린다 (y=ax, y=sin x, y=tan x, y²=4px, y=ax², 하트 방정식 등). 선에 걸친 모든 적은 <b>500~1,000</b> 사이 무작위 피해를 받고 <b>2초</b> 기절한다. 2초 전에 그릴 함수를 말하고, 1초 전에 선을 빨갛게 예고한다.'
   },
   zombie: {
     id: 'zombie', name: '좀비 지후', emoji: '🧟', role: 'tank', roleLabel: '탱커',
@@ -9853,7 +9864,8 @@ function normalizeProfile(raw) {
     gachaPity: Math.max(0, Math.min(GACHA_PITY - 1, Math.floor(Number(raw.gachaPity) || 0))),
     mileage: safeCount(raw.mileage), // 5.2 뽑기 마일리지
     mileageBuys: raw.mileageBuys && typeof raw.mileageBuys === 'object' ? Object.fromEntries(Object.entries(raw.mileageBuys).slice(-40).map(([k, v]) => [String(k).slice(0, 40), safeCount(v)])) : {},
-    popup: raw.popup && typeof raw.popup === 'object' && typeof raw.popup.key === 'string' && raw.popup.free && raw.popup.paid ? { key: raw.popup.key.slice(0, 20), free: { id: String(raw.popup.free.id || '').slice(0, 20), open: !!raw.popup.free.open, done: !!raw.popup.free.done }, paid: { id: String(raw.popup.paid.id || '').slice(0, 20), open: !!raw.popup.paid.open, done: !!raw.popup.paid.done } } : null, // 5.2 팝업스토어
+    popup: raw.popup && typeof raw.popup === 'object' && typeof raw.popup.key === 'string' && raw.popup.free ? { key: raw.popup.key.slice(0, 20), free: { id: String(raw.popup.free.id || '').slice(0, 20), open: !!raw.popup.free.open, done: !!raw.popup.free.done },
+      paid: Array.isArray(raw.popup.paid) ? raw.popup.paid.slice(0, 3).filter(x => x && typeof x === 'object').map(x => ({ id: String(x.id || '').slice(0, 20), open: !!x.open, done: !!x.done, ...(typeof x.emo === 'string' && /^(art|gif)_\d{2}$/.test(x.emo) ? { emo: x.emo } : {}) })) : null } : null, // 5.2 팝업스토어 · 5.7.2 유료 3칸
     gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
     decks,
     archivedDecks,
@@ -11792,21 +11804,52 @@ function renderShop() {
   renderEmoShop();
   renderPopupStore();
 }
-// 5.2 팝업스토어: 12~15시 · 20~23시(내 시간)만 연다. 열 때마다 새 매물 2개(무료 1 · 골드 1), 리롤 없음. 가려진 카드를 눌러 확인.
+// 5.2 팝업스토어: 12~15시 · 20~23시(내 시간)만 연다. 열 때마다 무료 1 + 유료 3칸, 리롤 없음. 가려진 카드를 눌러 확인.
+// 5.7.2 상향: 무료 희귀 → 영웅 지후 · 유료 1 → 3칸 · 묶음 매물 · 가끔 이모티콘 · 골드 전용 / 다이아 전용 / 둘 다.
+// 값 기준 (◆1 ≈ ●10): 상자 오픈권 ◆1,000 · 전설 확정 ●20,000 · 선택 전설 ≈ ◆3,000 · 선택 영웅 ●9,000 · 마일리지 1P ≈ ●100
+//   임테기 ≈ ●8,000 · 이모티콘 ◆500 · 티켓 ●1,000 · 부스트 티켓 ≈ ◆120. 팝업은 같은 값이거나 살짝 비싸게 (묶음은 합과 비슷하게).
+// 히든 관련 재화는 팔지 않는다.
 const POPUP_HOURS = [[12, 15], [20, 23]];
 const POPUP_FREE = [
   { id: 'dia200', icon: '◆', name: '다이아 200', give: () => { profile.diamonds += 200; } },
   { id: 'gold2500', icon: '●', name: '골드 2,500', give: () => { profile.gold += 2500; } },
-  { id: 'rareChar', icon: '★', name: '랜덤 희귀 지후', give: () => popupGrantChar('rare') },
+  { id: 'epicChar', icon: '★', name: '랜덤 영웅 지후', give: () => popupGrantChar('epic') },
   { id: 'ticket2', icon: '🎟️', name: '티켓 2장', give: () => { grantTickets(2); } },
   { id: 'boost2', icon: '🎫', name: '부스트 티켓 2장', give: () => { profile.inventory.boostTicket = (profile.inventory.boostTicket || 0) + 2; } },
 ];
+const popInv = (k, n) => () => { profile.inventory[k] = (profile.inventory[k] || 0) + n; };
+const popMile = n => () => { profile.mileage = (profile.mileage || 0) + n; };
+const popTicketCan = n => () => (profile.draftTickets || 0) + n <= TICKET_MAX ? '' : `티켓이 넘쳐요 (지금 ${profile.draftTickets || 0}/${TICKET_MAX}장)`;
+// parts: [아이콘 · 이름 · 주는 함수] — 둘 이상이면 묶음. emo: 이모티콘이 하나 들어 있다 (칸을 만들 때 안 가진 것 중 하나로 정해 둔다).
 const POPUP_PAID = [
-  { id: 'glowRare3', icon: '✦', name: '빛나는 희귀조각 ×3', gold: 9000, give: () => { profile.inventory.glowRare = (profile.inventory.glowRare || 0) + 3; } },
-  { id: 'glowEpic1', icon: '✦', name: '빛나는 영웅조각 ×1', gold: 10000, give: () => { profile.inventory.glowEpic = (profile.inventory.glowEpic || 0) + 1; } },
-  { id: 'glowLegend1', icon: '✦', name: '빛나는 전설조각 ×1', gold: 25000, give: () => { profile.inventory.glowLegend = (profile.inventory.glowLegend || 0) + 1; } },
-  { id: 'legendChar', icon: '★', name: '랜덤 전설 지후', gold: Math.round(SHOP_PRICE.legend * 0.8), was: SHOP_PRICE.legend, give: () => popupGrantChar('legend') },
+  { id: 'box1', w: 3, dia: 1100, parts: [['🎁', '지후 상자 오픈권 (8연 뽑기)', popInv('boxTicket', 1)]] },
+  { id: 'box3', w: 1, dia: 3200, parts: [['🎁', '지후 상자 오픈권 ×3', popInv('boxTicket', 3)]] },
+  { id: 'legendTicket', w: 3, gold: 22000, dia: 2200, parts: [['★', '전설 지후 확정권', popInv('legendTicket', 1)]] },
+  { id: 'legendPick', w: 1.5, dia: 3500, parts: [['🎟', '선택 전설 지후 모집권', popInv('legendPick', 1)]] },
+  { id: 'epicPick', w: 3, gold: 9500, parts: [['🎟', '선택 영웅 지후 모집권', popInv('epicPick', 1)]] },
+  { id: 'epicTicket2', w: 2, gold: 16000, parts: [['★', '랜덤 영웅 모집권 ×2', popInv('epicTicket', 2)]] },
+  { id: 'mileage100', w: 2, dia: 1100, parts: [['🏷', '마일리지 100P', popMile(100)]] },
+  { id: 'mileage30', w: 2, gold: 3500, parts: [['🏷', '마일리지 30P', popMile(30)]] },
+  { id: 'luck2', w: 2, gold: 17000, dia: 1700, parts: [['🎲', '임테기 ×2', popInv('luckTicket', 2)]] },
+  { id: 'glowLegend1', w: 2, gold: 26000, parts: [['✦', '빛나는 전설조각 ×1', popInv('glowLegend', 1)]] },
+  { id: 'glowEpic2', w: 1.5, gold: 21000, dia: 2100, parts: [['✦', '빛나는 영웅조각 ×2', popInv('glowEpic', 2)]] },
+  { id: 'glowRare5', w: 1.5, gold: 15500, parts: [['✦', '빛나는 희귀조각 ×5', popInv('glowRare', 5)]] },
+  { id: 'tickets3', w: 2, gold: 3300, can: popTicketCan(3), parts: [['🎟️', '티켓 3장', () => { grantTickets(3); }]] },
+  { id: 'boost3', w: 2, dia: 400, parts: [['🎫', '부스트 티켓 3장', popInv('boostTicket', 3)]] },
+  { id: 'emote', w: 2.5, gold: 6500, dia: 600, emo: true, parts: [] },
+  // 묶음
+  { id: 'bLegendBox', w: 1.2, dia: 3400, parts: [['★', '전설 지후 확정권', popInv('legendTicket', 1)], ['🎁', '지후 상자 오픈권', popInv('boxTicket', 1)]] },
+  { id: 'bEpicLuck', w: 1.2, gold: 19500, parts: [['🎟', '선택 영웅 지후 모집권', popInv('epicPick', 1)], ['🎲', '임테기', popInv('luckTicket', 1)], ['🎫', '부스트 티켓 2장', popInv('boostTicket', 2)]] },
+  { id: 'bMileTicket', w: 1.2, gold: 9000, can: popTicketCan(3), parts: [['🏷', '마일리지 50P', popMile(50)], ['🎟️', '티켓 3장', () => { grantTickets(3); }]] },
+  { id: 'bGlow', w: 1, dia: 4800, parts: [['✦', '빛나는 전설조각 ×1', popInv('glowLegend', 1)], ['✦', '빛나는 영웅조각 ×2', popInv('glowEpic', 2)]] },
+  { id: 'bEmoLuck', w: 1.2, dia: 1500, emo: true, parts: [['🎲', '임테기', popInv('luckTicket', 1)]] },
 ];
+const popupPaidDef = id => POPUP_PAID.find(x => x.id === id) || null;
+function popupLines(item, slot) { // [아이콘, 이름] 목록 (이모티콘 포함)
+  const lines = item.parts.map(([icon, name]) => [icon, name]);
+  if (item.emo && slot.emo && emoDef(slot.emo)) lines.unshift(['😀', `이모티콘 '${emoDef(slot.emo).name}'`]);
+  return lines;
+}
 function popupGrantChar(rarity) {
   const pool = playableIds().filter(id => CHAR_DB[id].rarity === rarity);
   const id = pool[Math.floor(Math.random() * pool.length)];
@@ -11825,13 +11868,29 @@ function popupNextOpen(now = new Date()) {
   const next = POPUP_HOURS.find(([a]) => now.getHours() < a);
   return next ? `오늘 오후 ${next[0] === 12 ? 12 : next[0] - 12}시` : '내일 오후 12시';
 }
+function popupRollPaid() { // 서로 다른 매물 3개 (무게대로) · 이모티콘 매물은 안 가진 것이 있을 때만
+  const unowned = EMOTICONS.map(e => e.k).filter(k => !emoOwned(k));
+  const out = [], used = new Set();
+  while (out.length < 3) {
+    const pool = POPUP_PAID.filter(x => !used.has(x.id) && (!x.emo || unowned.length > out.filter(o => o.emo).length));
+    if (!pool.length) break;
+    const item = weightedSample(pool, 1, x => x.w)[0];
+    used.add(item.id);
+    const slot = { id: item.id, open: false, done: false };
+    if (item.emo) { const left = unowned.filter(k => !out.some(o => o.emo === k)); slot.emo = left[Math.floor(Math.random() * left.length)]; }
+    out.push(slot);
+  }
+  return out;
+}
 function popupState() {
   const w = popupWindow();
   if (!w) return null;
-  if (!profile.popup || profile.popup.key !== w.key) {
+  const pop = profile.popup;
+  if (!pop || pop.key !== w.key || !Array.isArray(pop.paid)) {
+    const keepFree = pop && pop.key === w.key && pop.free ? { ...pop.free, id: pop.free.id === 'rareChar' ? 'epicChar' : pop.free.id } : null; // 5.7.2 이전 형식: 무료 칸은 그대로
     profile.popup = { key: w.key,
-      free: { id: POPUP_FREE[Math.floor(Math.random() * POPUP_FREE.length)].id, open: false, done: false },
-      paid: { id: POPUP_PAID[Math.floor(Math.random() * POPUP_PAID.length)].id, open: false, done: false } };
+      free: keepFree || { id: POPUP_FREE[Math.floor(Math.random() * POPUP_FREE.length)].id, open: false, done: false },
+      paid: popupRollPaid() };
     saveProfile();
   }
   return { ...profile.popup, end: w.end };
@@ -11839,36 +11898,59 @@ function popupState() {
 function renderPopupStore(message = '') {
   const box = $('popupStore'); if (!box) return;
   const st = popupState();
-  if (!st) { box.innerHTML = `<div class="v52-pop closed"><div class="h"><b>🎪 팝업스토어</b><span>지금은 닫혀 있어요 · 다음 오픈 ${popupNextOpen()}</span></div><small>매일 오후 12~3시 · 오후 8~11시에만 열려요. 열 때마다 새 매물!</small></div>`; return; }
+  if (!st) { box.innerHTML = `<div class="v52-pop closed"><div class="h"><b>🎪 팝업스토어</b><span>지금은 닫혀 있어요 · 다음 오픈 ${popupNextOpen()}</span></div><small>매일 오후 12~3시 · 오후 8~11시에만 열려요. 무료 매물 1개 + 유료 매물 3개.</small></div>`; return; }
   const left = Math.max(0, st.end - Date.now()), mm = Math.floor(left / 60000);
-  const card = (slot, item, kind) => {
-    const s2 = st[slot];
-    if (!item) return '';
-    if (!s2.open) return `<button type="button" class="v52-popcard covered" data-popopen="${slot}"><span class="q">?</span><small>${kind === 'free' ? '무료 매물' : '골드 매물'} · 눌러서 확인</small></button>`;
-    const btn = s2.done ? `<button type="button" class="v4-darkbtn" disabled>${kind === 'free' ? '수령 완료' : '구매 완료'}</button>`
-      : kind === 'free' ? `<button type="button" class="v4-darkbtn" data-popbuy="${slot}">무료로 받기</button>`
-      : `<button type="button" class="v4-darkbtn" data-popbuy="${slot}">${item.was ? `<span class="was">● ${formatNumber(item.was)}</span>` : ''}● ${formatNumber(item.gold)}</button>`;
-    return `<div class="v52-popcard shown${s2.done ? ' done' : ''}"><i>${item.icon}</i><b>${item.name}</b><small>${kind === 'free' ? 'FREE' : item.was ? '-20%' : '골드 매물'}</small>${btn}</div>`;
-  };
+  const covered = (key, label) => `<button type="button" class="v52-popcard covered" data-popopen="${key}"><span class="q">?</span><small>${label} · 눌러서 확인</small></button>`;
+  const freeItem = POPUP_FREE.find(x => x.id === st.free.id);
+  const freeCard = !freeItem ? '' : !st.free.open ? covered('free', '무료 매물')
+    : `<div class="v52-popcard shown${st.free.done ? ' done' : ''}"><i>${freeItem.icon}</i><b>${freeItem.name}</b><small>FREE</small><button type="button" class="v4-darkbtn" ${st.free.done ? 'disabled' : 'data-popbuy="free"'}>${st.free.done ? '수령 완료' : '무료로 받기'}</button></div>`;
+  const paidCards = st.paid.map((slot, i) => {
+    const item = popupPaidDef(slot.id); if (!item) return '';
+    if (!slot.open) return covered('p' + i, `매물 ${i + 1}`);
+    const lines = popupLines(item, slot), bundle = lines.length > 1;
+    const tag = bundle ? '묶음' : item.gold && item.dia ? '골드 · 다이아' : item.gold ? '골드 전용' : '다이아 전용';
+    const pic = item.emo && slot.emo ? `<img class="emo" src="${emoSrc(slot.emo)}" alt="">` : `<i>${lines[0][0]}</i>`;
+    const pay = slot.done ? `<button type="button" class="v4-darkbtn" disabled>구매 완료</button>`
+      : `<div class="pay">${item.gold ? `<button type="button" class="v4-darkbtn" data-popbuy="p${i}" data-cur="gold">● ${formatNumber(item.gold)}</button>` : ''}${item.dia ? `<button type="button" class="v4-darkbtn dia" data-popbuy="p${i}" data-cur="dia">◆ ${formatNumber(item.dia)}</button>` : ''}</div>`;
+    return `<div class="v52-popcard shown paid${slot.done ? ' done' : ''}${bundle ? ' bundle' : ''}"><em class="tag">${tag}</em>${pic}${bundle ? `<ul>${lines.map(([ic, nm]) => `<li>${ic} ${escapeHtml(nm)}</li>`).join('')}</ul>` : `<b>${escapeHtml(lines[0][1])}</b>`}${pay}</div>`;
+  }).join('');
   box.innerHTML = `<div class="v52-pop"><div class="h"><b>🎪 팝업스토어 <em>OPEN</em></b><span>${Math.floor(mm / 60)}시간 ${mm % 60}분 뒤 닫힘 · 리롤 없음</span></div>`
     + (message ? `<div class="settlement-note">${message}</div>` : '')
-    + `<div class="v52-popgrid">${card('free', POPUP_FREE.find(x => x.id === st.free.id), 'free')}${card('paid', POPUP_PAID.find(x => x.id === st.paid.id), 'paid')}</div></div>`;
+    + `<div class="v52-popgrid">${freeCard}${paidCards}</div></div>`;
 }
-function popupAction(slot, open) {
+async function popupAction(slotKey, open, cur = 'gold') {
   const st = popupState(); if (!st) { renderPopupStore(); return; }
-  const s2 = profile.popup[slot];
-  if (open) { s2.open = true; saveProfile(); renderPopupStore(); return; }
-  if (!s2.open || s2.done) return;
-  const item = (slot === 'free' ? POPUP_FREE : POPUP_PAID).find(x => x.id === s2.id);
-  if (!item) return;
-  if (slot === 'paid' && profile.gold < item.gold) { renderPopupStore('골드가 부족해요.'); return; }
-  if (slot === 'paid') profile.gold -= item.gold;
-  s2.done = true;
-  const got = item.give();
+  const slot = slotKey === 'free' ? profile.popup.free : profile.popup.paid[+String(slotKey).slice(1)];
+  if (!slot) return;
+  if (open) { slot.open = true; saveProfile(); renderPopupStore(); return; }
+  if (!slot.open || slot.done) return;
+  if (slotKey === 'free') {
+    const item = POPUP_FREE.find(x => x.id === slot.id); if (!item) return;
+    slot.done = true;
+    const got = item.give();
+    recordDailyProgress('shopBuy', 1);
+    saveProfile(); renderAccountUI();
+    renderPopupStore(`${item.name} 받았어요!${got && got.id ? ` → ${CHAR_DB[got.id].name}${got.duplicate ? ` (중복 조각 +${DUPLICATE_SHARDS})` : ' (새 지후)'}` : ''}`);
+    if (got && got.id) playSummonReveal([got]);
+    return;
+  }
+  const item = popupPaidDef(slot.id); if (!item) return;
+  const price = cur === 'dia' ? item.dia : item.gold; if (!price) return;
+  const wallet = cur === 'dia' ? profile.diamonds : profile.gold;
+  if (wallet < price) { renderPopupStore(cur === 'dia' ? '다이아가 부족해요.' : '골드가 부족해요.'); return; }
+  const block = item.can ? item.can() : ''; if (block) { renderPopupStore(block); return; }
+  if (item.emo && (!slot.emo || emoOwned(slot.emo))) { renderPopupStore('이미 가진 이모티콘이에요.'); return; }
+  const lines = popupLines(item, slot);
+  const ok = await v55Dialog({ icon: '🎪', title: '팝업스토어 매물을 살까요?', html: `${lines.map(([ic, nm]) => `${ic} ${escapeHtml(nm)}`).join('<br>')}<br><b>${cur === 'dia' ? '◆' : '●'} ${formatNumber(price)}</b>`, ok: '구매', cancel: '취소' });
+  if (!ok || slot.done || (cur === 'dia' ? profile.diamonds : profile.gold) < price) return;
+  if (cur === 'dia') profile.diamonds -= price; else profile.gold -= price;
+  slot.done = true;
+  item.parts.forEach(([, , give]) => give());
+  let note = '';
+  if (item.emo && slot.emo) note = emoGrant(slot.emo);
   recordDailyProgress('shopBuy', 1);
   saveProfile(); renderAccountUI();
-  renderPopupStore(`${item.name} ${slot === 'free' ? '받았어요!' : '구매 완료!'}${got && got.id ? ` → ${CHAR_DB[got.id].name}${got.duplicate ? ` (중복 조각 +${DUPLICATE_SHARDS})` : ' (새 지후)'}` : ''}`);
-  if (got && got.id) playSummonReveal([got]);
+  renderPopupStore(`${lines.map(l => l[1]).join(' + ')} 구매 완료!${note}`);
 }
 function claimFreeShopReward() {
   ensureDailyState();
@@ -23175,19 +23257,40 @@ function funcWorldSegments(u, curve, ox, oy, angle) {
     });
     if (cur.length > 1) out.push(cur);
   });
-  return out;
+  return out.map(seg => funcSimplify(seg, 0.75)).filter(seg => seg.length > 1);
 }
-function funcSvg(segs, cls, width) {
+// 5.7.2 렉: 곡선 하나가 수천 개 점이었다 → 화면에서 0.75px 안쪽으로 벗어나는 점은 버린다 (모양은 그대로, 점은 수십~수백 개)
+function funcSimplify(pts, eps) {
+  if (pts.length < 3) return pts;
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop();
+    const [ax, ay] = pts[a], [bx, by] = pts[b], dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+    let far = -1, fd = eps;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs((pts[i][0] - ax) * dy - (pts[i][1] - ay) * dx) / len;
+      if (d > fd) { fd = d; far = i; }
+    }
+    if (far > 0) { keep[far] = 1; stack.push([a, far], [far, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+function funcSvg(segs, cls, width, glow = 0) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('class', 'fx-n38 fx-func ' + cls);
   svg.setAttribute('width', MAP_W); svg.setAttribute('height', MAP_H);
   svg.setAttribute('viewBox', `0 0 ${MAP_W} ${MAP_H}`);
   segs.forEach(seg => {
-    const line = document.createElementNS(ns, 'polyline');
-    line.setAttribute('points', seg.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '));
-    line.setAttribute('stroke-width', width);
-    svg.appendChild(line);
+    const pts = seg.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    for (const [w, c] of glow ? [[glow, 'glow'], [width, '']] : [[width, '']]) {
+      const line = document.createElementNS(ns, 'polyline');
+      line.setAttribute('points', pts);
+      line.setAttribute('stroke-width', w);
+      if (c) line.setAttribute('class', c);
+      svg.appendChild(line);
+    }
   });
   worldEl().appendChild(svg);
   return svg;
@@ -23236,7 +23339,7 @@ function tickFunc(u, dt) {
   // 발사
   if (f.warn) { f.warn.remove(); f.warn = null; }
   if (f.svg) { f.svg.remove(); f.svg = null; }
-  const shot = funcSvg(f.segs, 'func-fire', Math.max(3, thick));
+  const shot = funcSvg(f.segs, 'func-fire', Math.max(3, thick), Math.max(3, thick) + 8);
   shot.style.setProperty('--func-color', u.def.color);
   scheduleTask(() => shot.remove(), 650);
   if (u._bubble38) { const b = u._bubble38; u._bubble38 = null; scheduleTask(() => b.remove(), 400); }
@@ -25489,6 +25592,13 @@ function renderEmoShop() {
     : '<div class="emo-shop-h"><span>EMOTE</span><b>오늘의 이모티콘</b><small>모든 이모티콘을 모았어요!</small></div>';
   box.querySelectorAll('[data-emo-buy]').forEach(b => b.addEventListener('click', () => emoBuy(b.dataset.emoBuy)));
 }
+function emoGrant(key) { // 보유에 넣고 빈 칸에 장착 · 안내 문구를 돌려준다
+  if (!emoDef(key) || emoOwned(key)) return '';
+  profile.emos = [...(profile.emos || []), key];
+  const slots = emoEquipped(), free = slots.indexOf(null);
+  if (free >= 0) { slots[free] = key; profile.emoSlots = slots; }
+  return free >= 0 ? ` · ${free + 1}번 칸에 장착했어요` : ' · 장착 칸이 꽉 차서 인벤토리에서 바꿔 끼울 수 있어요';
+}
 async function emoBuy(key) {
   const offer = (profile.daily.shop.emoOffers || []).find(o => o.k === key);
   if (!offer || offer.sold || emoOwned(key)) return;
@@ -25497,12 +25607,10 @@ async function emoBuy(key) {
   if (profile.diamonds < EMO_PRICE || emoOwned(key)) return;
   profile.diamonds -= EMO_PRICE;
   offer.sold = true;
-  profile.emos = [...(profile.emos || []), key];
-  const slots = emoEquipped(), free = slots.indexOf(null);
-  if (free >= 0) { slots[free] = key; profile.emoSlots = slots; }
+  const note = emoGrant(key);
   recordDailyProgress('shopBuy', 1);
   saveProfile();
-  setShopMessage(`이모티콘 '${emoDef(key).name}' 구매 완료${free >= 0 ? ` · ${free + 1}번 칸에 장착했어요` : ' · 장착 칸이 꽉 차서 인벤토리에서 바꿔 끼울 수 있어요'}`);
+  setShopMessage(`이모티콘 '${emoDef(key).name}' 구매 완료${note}`);
   renderShop();
 }
 $('btnEmo').addEventListener('click', event => { event.stopPropagation(); emoSheetOpen(); });
@@ -25620,10 +25728,14 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
   '5.7.2': {
-    label: 'v5.7.2 랜턴 하향 · 봇 이모티콘 개선',
+    label: 'v5.7.2 팝업스토어 상향 · 랜턴 · 지후함수 하향 · 봇 이모티콘',
     date: '2026.10.01',
     sections: [
+      { title: '상향', items: [
+        { emoji:'🎪', name:'팝업스토어', tag:'buff', color:'#1f9d55', desc:'무료 매물 <b>랜덤 희귀 → 영웅 지후</b>. 유료 매물이 <b>1칸 → 3칸</b>이 되고 지후 상자 오픈권 · 전설 지후 확정권 · 선택 영웅/전설 모집권 · 마일리지 · 임테기 · 빛나는 조각 · 티켓 · 부스트 티켓을 팔아요. 가끔 <b>이모티콘</b>과 <b>2~3개 묶음</b>도 나와요. 매물마다 <b>골드 전용 · 다이아 전용 · 둘 다</b> 가능.' }
+      ] },
       { title: '하향', items: [
+        { emoji:'∑', name:'지후함수', tag:'nerf', color:'#e5322d', portraitKey:'func', desc:'함수 피해 <b>1,000 → 500~1,000 무작위</b>. 렉 최적화: 그래프 점 수를 크게 줄이고 (평균 535 → 64개), 무거운 발광 효과 · 선 색 애니메이션을 가벼운 방식으로 바꿨어요.' },
         { emoji:'🏮', name:'랜턴 지후', tag:'nerf', color:'#e5322d', portraitKey:'lantern', desc:'공격 빔 <b>30 → 19</b> (0.1초마다) · 사거리 <b>7칸 → 6칸</b> · <b>다른 랜턴 지후는 회복하지 않아요</b>.' }
       ] },
       { title: '조정', items: [
@@ -30247,7 +30359,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnOpenShop').addEventListener('click', () => { setShopMessage(''); renderShop(); showScreen('shop'); });
   $('btnShopBack').addEventListener('click', () => { renderAccountUI(); showScreen('lobby'); });
   $('btnShopReroll').addEventListener('click', rerollDailyShop);
-  $('popupStore').addEventListener('click', e => { const o = e.target.closest('[data-popopen]'); if (o) { o.classList.add('flip'); setTimeout(() => popupAction(o.dataset.popopen, true), 260); return; } const b = e.target.closest('[data-popbuy]'); if (b) popupAction(b.dataset.popbuy, false); });
+  $('popupStore').addEventListener('click', e => { const o = e.target.closest('[data-popopen]'); if (o) { o.classList.add('flip'); setTimeout(() => popupAction(o.dataset.popopen, true), 260); return; } const b = e.target.closest('[data-popbuy]'); if (b) popupAction(b.dataset.popbuy, false, b.dataset.cur || 'gold'); });
   setInterval(() => { if (state.screen === 'shop') renderPopupStore(); }, 30000);
   $('btnExchangeSmall').addEventListener('click', () => exchangeDiamonds(100, 1000));
   $('v55DlgOk').addEventListener('click', () => v55DialogClose(true));
