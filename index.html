@@ -11178,7 +11178,7 @@ function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
     // 4.6.4 1레벨 봇: 일반 4 + 티어표 5~6티어 1
     const common = all.filter(id => CHAR_DB[id].rarity === 'common');
     deck = pickRandom(common, Math.min(4, common.length));
-    const low = [...(BOT_TIER_LIST['5'] || []), ...(BOT_TIER_LIST['6'] || [])].filter(id => all.includes(id) && !deck.includes(id));
+    const low = [...(botTierList()['5'] || []), ...(botTierList()['6'] || [])].filter(id => all.includes(id) && !deck.includes(id));
     deck = deck.concat(pickRandom(low, 1));
     const rest = all.filter(id => !deck.includes(id));
     deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
@@ -11191,15 +11191,15 @@ function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
     deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
   } else if (level <= 6) {
     // 4~6레벨: 티어표 4티어 1 + 5~6티어 4
-    const tier4 = (BOT_TIER_LIST['4'] || []).filter(id => all.includes(id));
-    const low = [...(BOT_TIER_LIST['5'] || []), ...(BOT_TIER_LIST['6'] || [])].filter(id => all.includes(id));
+    const tier4 = (botTierList()['4'] || []).filter(id => all.includes(id));
+    const low = [...(botTierList()['5'] || []), ...(botTierList()['6'] || [])].filter(id => all.includes(id));
     deck = pickRandom(tier4, 1).concat(pickRandom(low, 4));
     const rest = all.filter(id => !deck.includes(id));
     deck = deck.concat(pickRandom(rest, Math.max(0, 5 - deck.length)));
   } else {
     // 레벨이 오를수록 티어표 상위 지후를 들고 오려 한다 (최대 약 15배, 낮은 티어도 가끔 나온다)
     // 3.8.3 초보자: 12레벨까지는 1~2티어 지후가 거의 나오지 않는다
-    const top = new Set([...(BOT_TIER_LIST['1'] || []), ...(BOT_TIER_LIST['2'] || []), ...BOT_PRIORITY]);
+    const top = new Set([...(botTierList()['1'] || []), ...(botTierList()['2'] || []), ...BOT_PRIORITY]);
     const rookie = level <= 12;
     if (level >= 20) deck = botRankedDeck(all, level); // 5.5.1 1티어 1~2기 + 2~3티어 (가끔 1티어 하위권)
     else {
@@ -11217,8 +11217,8 @@ function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
 }
 
 // 5.5.1 랭크전 봇 덱: 1티어(최상위 포함) 1~2기 · 나머지는 2~3티어에서 무작위 · 가끔 1티어 하위권
-function botTopTier(all) { return all.filter(id => BOT_PRIORITY.has(id) || (BOT_TIER_LIST['1'] || []).includes(id)); }
-function botMidPool(all, exclude) { const mid = new Set([...(BOT_TIER_LIST['2'] || []), ...(BOT_TIER_LIST['3'] || [])]); return all.filter(id => mid.has(id) && !BOT_PRIORITY.has(id) && !exclude.includes(id)); }
+function botTopTier(all) { return all.filter(id => BOT_PRIORITY.has(id) || (botTierList()['1'] || []).includes(id)); }
+function botMidPool(all, exclude) { const mid = new Set([...(botTierList()['2'] || []), ...(botTierList()['3'] || [])]); return all.filter(id => mid.has(id) && !BOT_PRIORITY.has(id) && !exclude.includes(id)); }
 function botRankedDeck(all, level) {
   const t1 = botTopTier(all);
   const r = Math.random();
@@ -14876,7 +14876,32 @@ const BOT_TIER_SCORE = (() => {
 })();
 const BOT_MATCHUP_INDEX = Object.fromEntries(BOT_MATCHUP_IDS.map((id, index) => [id, index]));
 const BOT_PRIORITY = new Set(['train', 'berserk', 'cactus', 'beatmania', 'func', 'biker']);
-function botTierScore(id) { return BOT_PRIORITY.has(id) ? 1.1 : BOT_TIER_SCORE[id] ?? 0.5; } // 표에 없는 새 지후는 3티어 중간
+function botTierScore(id) {
+  if (BOT_PRIORITY.has(id)) return 1.1;
+  const old = botOldTierScore();
+  return (old ? old[id] : BOT_TIER_SCORE[id]) ?? 0.5; // 표에 없는 새 지후는 3티어 중간
+}
+// 5.6.1 랭크전 봇은 매 판 최신 ~ 가장 오래된 티어표 중 하나를 무작위로 쓴다 (급격한 메타 변화 완화) · 드래프트 · 경쟁전은 최신 표
+function botTierList() {
+  const h = state.mode === 'ranked' && state.botTierVer && TIER_HISTORY[state.botTierVer];
+  return h ? h.tiers : BOT_TIER_LIST;
+}
+const BOT_OLD_SCORE = {};
+function botOldTierScore() {
+  const ver = state.mode === 'ranked' && state.botTierVer;
+  const h = ver && TIER_HISTORY[ver];
+  if (!h) return null;
+  if (!BOT_OLD_SCORE[ver]) {
+    const scale = h.scale || 6, score = {};
+    Object.entries(h.tiers).forEach(([tier, ids]) => ids.forEach((id, pos) => {
+      const level = tier === '?' ? (scale + 1) / 2 : Number(tier);
+      score[id] = ((scale - level) + 0.8 * (1 - pos / ids.length)) / (scale - 0.2);
+    }));
+    BOT_OLD_SCORE[ver] = score;
+  }
+  return BOT_OLD_SCORE[ver];
+}
+function pickBotTierVersion() { const vs = Object.keys(TIER_HISTORY).filter(v => !/ S$/.test(v)); return vs[Math.floor(Math.random() * vs.length)] || null; }
 function botMatchup(id, other) { // id 가 other 를 1:1 로 이길 확률 (모르면 0.5)
   const a = BOT_MATCHUP_INDEX[id], b = BOT_MATCHUP_INDEX[other];
   if (a === undefined || b === undefined) return 0.5;
@@ -15821,6 +15846,7 @@ function startMatch(mode = 'ranked', opts = {}) {
     state.castles = mode === 'castle' ? {} : null;
     state.enemyName = BOT_NICKNAMES[Math.floor(Math.random() * BOT_NICKNAMES.length)];
     state.enemyLevel = mmrEnemyLevel();
+    state.botTierVer = mode === 'ranked' ? pickBotTierVersion() : null; // 5.6.1 랭크전: 무작위 티어표
     state.enemyDeckIds = buildEnemyDeck(state.enemyLevel);
     state.botSkill = mmrBotSkill(state.enemyLevel);
     state.tutMatch = opts.tutorial ? { deployed: 0, free: false, shown: {}, replay: opts.tutorial === 'replay' } : null; // 4.7.4 튜토리얼 대본 매치
