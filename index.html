@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.5.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.5.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7026,7 +7026,7 @@ const CHARACTER_BALANCE = {
   },
   soulstealer: { // 5.3 신규
     hp: 1900, atk: 300, atkSpeed: 1, range: 270, speed: 54,
-    soulDelay: 2, soulAtk: 50
+    soulDelay: 2, soulAtk: 30, soulHeal: 200 // 5.5.2 영혼당 공격력 50 → 30 · 영혼 얻을 때 HP 200 회복
   },
   moai: { // 5.3 신규
     hp: 2222, atk: 0, atkSpeed: 1, range: 67.5, speed: 0,
@@ -8849,7 +8849,7 @@ const CHAR_DB = {
     id: 'lantern', name: '랜턴 지후', emoji: '🏮', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#f2a93b', portrait: PORTRAITS.lantern || jhPlaceholder('🏮', '#f2a93b'),
     ...CHARACTER_BALANCE.lantern,
-    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 15), 가장 가까운 아군에게 <b>회복 빔</b>(0.1초마다 30)을 하나씩 꽂는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
+    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 30 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 45)을 하나씩 꽂는다. 체력이 가득 찬 아군에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
   },
   rocket: {
     id: 'rocket', name: '로켓병 지후', emoji: '🚀', role: 'dealer', roleLabel: '딜러',
@@ -8947,7 +8947,7 @@ const CHAR_DB = {
     id: 'soulstealer', name: '소울스틸러 지후', emoji: '👻', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#3fd0c9', portrait: PORTRAITS.soulstealer || jhPlaceholder('👻', '#3fd0c9'),
     ...CHARACTER_BALANCE.soulstealer,
-    skillDesc: '사거리 6칸 · ATK 300 · 공격 간격 1초. 아군 · 적 가리지 않고 <b>누군가 쓰러지면 영혼</b>이 생기고, <b>2초</b> 뒤 소울스틸러 지후가 흡수한다. 영혼 1개당 공격력 <b>+50</b> (이번 라운드 동안). 양쪽에 소울스틸러가 있으면 각자 영혼을 하나씩 얻는다.'
+    skillDesc: '사거리 6칸 · ATK 300 · 공격 간격 1초. 아군 · 적 가리지 않고 <b>누군가 쓰러지면 영혼</b>이 생기고, <b>2초</b> 뒤 소울스틸러 지후가 흡수한다. 영혼 1개당 공격력 <b>+30</b> (이번 라운드 동안), 영혼을 얻을 때마다 HP <b>200</b> 회복. 양쪽에 소울스틸러가 있으면 각자 영혼을 하나씩 얻는다.'
   },
   moai: {
     id: 'moai', name: '🗿 지후', emoji: '🗿', role: 'support', roleLabel: '서포터',
@@ -9462,7 +9462,7 @@ const RANK_S_ABILITIES = {
   electric: { name: '과전류', desc: '기절 확률 <b>20% → 30%</b>', apply(d) { d.zapStunChance = 0.3; } },
   blessing: { name: '이중 축복', desc: '라운드마다 축복을 <b>2개</b> 얻는다', apply(d) { d.blessCount = 2; } },
   tesla: { name: '고전압', desc: '전기장 피해 <b>100 → 150</b>', apply(d) { d.teslaFieldDamage = 150; } },
-  soulstealer: { name: '영혼 포식', desc: '영혼 1개당 공격력 <b>+60</b>', apply(d) { d.soulAtk = 60; } },
+  soulstealer: { name: '영혼 포식', desc: '영혼 1개당 공격력 <b>+40</b>', apply(d) { d.soulAtk = 40; } },
   moai: { name: '큰 파동', desc: '파동 반경 <b>+0.5칸</b>', apply(d) { d.moaiRadius += 22.5; } },
   biker: { name: '직진 본능', desc: '돌진 각도 <b>-30° ~ 30°</b>', apply(d) { d.bikeAngleSpread = 30; } },
   hacker: { name: '정확한 입력', desc: '<b>없는 지후</b>를 타이핑하지 않는다 (대상이 사라지면 다른 적을 해킹)' },
@@ -22236,15 +22236,23 @@ function tickLantern(u, dt) {
     dealDamage(u, t, amount, { noNum: true, isSkill: true });
     atk.shown += amount;
   }, dt);
-  lanternStep(u, heal, () => {
-    let best = null, bd = Infinity;
+  const healPick = () => { // 5.5.2 체력이 가득 찬 아군은 빼고, 체력 비율이 가장 낮은 아군
+    let best = null, br = Infinity;
     state.units.forEach(a => {
-      if (a === u || !a.alive || a.isCastle || a.side !== u.side || !sameRealm(u, a) || a._flight) return;
-      const dist = Math.hypot(a.x - u.x, a.y - u.y);
-      if (dist <= d.range + unitRadius(a) && dist < bd) { bd = dist; best = a; }
+      if (a === u || !a.alive || a.isCastle || a.side !== u.side || !sameRealm(u, a) || a._flight || a.hp >= a.maxHp) return;
+      if (Math.hypot(a.x - u.x, a.y - u.y) > d.range + unitRadius(a)) return;
+      const r = a.hp / a.maxHp;
+      if (r < br) { br = r; best = a; }
     });
     return best;
-  }, (t, dim) => { heal.shown += healUnit(t, dim ? d.lanternDimValue : d.lanternHeal * supportMult(u), true); }, dt);
+  };
+  u._lanternRepick = (u._lanternRepick || 0) - dt;
+  if (heal.target && (heal.target.hp >= heal.target.maxHp || u._lanternRepick <= 0)) { // 다 찼거나 0.5초마다 더 다친 아군으로 바꾼다
+    const next = healPick();
+    if (next !== heal.target) { heal.target = next; heal.dim = 0; }
+  }
+  if (u._lanternRepick <= 0) u._lanternRepick = 0.5;
+  lanternStep(u, heal, healPick, (t, dim) => { heal.shown += healUnit(t, dim ? d.lanternDimValue : d.lanternHeal * supportMult(u), true); }, dt);
   u._lanternNum = (u._lanternNum || 0) + dt;
   if (u._lanternNum >= 1) { // 숫자는 1초마다 모아서
     u._lanternNum = 0;
@@ -24742,6 +24750,7 @@ function soulOnDeath(u) {
       st._souls = (st._souls || 0) + 1;
       st.def.atk += st.def.soulAtk;
       spawnDamageNumber(st, '👻 +' + st.def.soulAtk, { heal: true });
+      if (st.def.soulHeal) healUnit(st, st.def.soulHeal); // 5.5.2 영혼을 얻으면 HP 회복
     });
   }, CHARACTER_BALANCE.soulstealer.soulDelay * 1000);
 }
@@ -25228,6 +25237,16 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.5.2': {
+    label: 'v5.5.2 소울스틸러 · 랜턴 조정',
+    date: '2026.10.01',
+    sections: [
+      { title: '조정', items: [
+        { emoji:'👻', name:'소울스틸러 지후', tag:'adjust', color:'#3fd0c9', portraitKey:'soulstealer', desc:'영혼 1개당 공격력 <b>+50 → +30</b> · 영혼을 얻을 때마다 <b>HP 200 회복</b>. 랭크 S: +60 → +40.' },
+        { emoji:'🏮', name:'랜턴 지후', tag:'adjust', color:'#f2a900', portraitKey:'lantern', desc:'회복 빔이 <b>체력이 가득 찬 아군</b>에게는 쏘지 않고, <b>체력이 가장 낮은 아군</b>을 노려요.' }
+      ] }
+    ]
+  },
   '5.5.1': {
     label: 'v5.5.1 신규 지후 조정 · 협동전 정리 · 버그 수정',
     date: '2026.10.01',
