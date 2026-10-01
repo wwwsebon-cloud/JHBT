@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.7.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.7.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7015,7 +7015,7 @@ const CHARACTER_BALANCE = {
     eatDelay: 0.5, eatHold: 2, eatCd: 3, spitHit: 400, spitSelf: 700, spitSpeed: 18
   },
   lantern: {
-    hp: 2400, atk: 19, atkSpeed: 0.1, range: 315, speed: 58.5, // 5.7.1 공격력 30 → 19 · 회복 31.5 · 흡혈 50%
+    hp: 2400, atk: 19, atkSpeed: 0.1, range: 270, speed: 58.5, // 5.7.2 공격력 30 → 19 · 사거리 7 → 6칸
     noAttack: true, holdRange: true, lifesteal: 0.5,
     lanternHeal: 31.5, lanternDim: 1.5, lanternDimValue: 2
   },
@@ -8913,7 +8913,7 @@ const CHAR_DB = {
     id: 'lantern', name: '랜턴 지후', emoji: '🏮', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#f2a93b', portrait: PORTRAITS.lantern || jhPlaceholder('🏮', '#f2a93b'),
     ...CHARACTER_BALANCE.lantern,
-    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 19 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 31.5)을 하나씩 꽂는다. 체력이 가득 찬 아군에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
+    skillDesc: '사거리 <b>6칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 19 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 31.5)을 하나씩 꽂는다. 체력이 가득 찬 아군과 <b>다른 랜턴 지후</b>에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
   },
   rocket: {
     id: 'rocket', name: '로켓병 지후', emoji: '🚀', role: 'dealer', roleLabel: '딜러',
@@ -22319,7 +22319,7 @@ function tickLantern(u, dt) {
   const healPick = () => { // 5.5.2 체력이 가득 찬 아군은 빼고, 체력 비율이 가장 낮은 아군
     let best = null, br = Infinity;
     state.units.forEach(a => {
-      if (a === u || !a.alive || a.isCastle || a.side !== u.side || !sameRealm(u, a) || a._flight || a.hp >= a.maxHp) return;
+      if (a === u || a.charId === 'lantern' || !a.alive || a.isCastle || a.side !== u.side || !sameRealm(u, a) || a._flight || a.hp >= a.maxHp) return; // 5.7.2 랜턴끼리는 회복하지 않는다
       if (Math.hypot(a.x - u.x, a.y - u.y) > d.range + unitRadius(a)) return;
       const r = a.hp / a.maxHp;
       if (r < br) { br = r; best = a; }
@@ -25619,6 +25619,18 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.7.2': {
+    label: 'v5.7.2 랜턴 하향 · 봇 이모티콘 개선',
+    date: '2026.10.01',
+    sections: [
+      { title: '하향', items: [
+        { emoji:'🏮', name:'랜턴 지후', tag:'nerf', color:'#e5322d', portraitKey:'lantern', desc:'공격 빔 <b>30 → 19</b> (0.1초마다) · 사거리 <b>7칸 → 6칸</b> · <b>다른 랜턴 지후는 회복하지 않아요</b>.' }
+      ] },
+      { title: '조정', items: [
+        { emoji:'🤖', name:'봇 이모티콘', tag:'adjust', color:'#2f6fed', desc:'봇이 배치 · 전투 중에도 <b>불쑥 한마디</b>씩 해요 (팽팽할수록 자주). 판 내내 <b>기분</b>이 쌓여 같은 상황에도 반응이 달라지고, 반응 타이밍 · 쉬는 시간이 매번 달라요. 가끔 연달아 두 개, 한꺼번에 여럿 쓰러지면 반응, 내 이모티콘에도 더 자주 받아쳐요.' }
+      ] }
+    ]
+  },
   '5.7.0': {
     label: 'v5.7 이모티콘',
     date: '2026.10.01',
