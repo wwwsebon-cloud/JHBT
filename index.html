@@ -12362,7 +12362,7 @@ function renderInventory(message = '') {
     </div>
     <div class="v4-tickets">
       <div class="v4-ticket"><b>🎟️ 티켓</b><span class="cnt">${profile.draftTickets || 0} / ${TICKET_MAX}</span><small>드래프트전·경쟁전 한 판에 1장. 일반전 승리 시 1장, 일일 퀘스트 450P 구간 보상 1장. 3장보다 적으면 15분마다 1장 자동 충전 · <b id="inventoryTicketRegen">${ticketRegenText() || '자동 충전 완료 (3장 이상)'}</b></small></div>
-      <div class="v4-ticket v55-luck"><b>🎲 운테기 (운빨테스트기)</b><span class="cnt">×${profile.inventory.luckTicket || 0}</span><small>일반 · 희귀 · 영웅 · 전설 중 <b>각 25%</b> 확률로 지후 1기 · 업데이트마다 우편으로 1개 지급${!profile.inventory.luckTicket && unreadMailCount() ? ' · <b>우편함을 확인하세요!</b>' : ''}</small><button type="button" class="v4-darkbtn" data-reward-action="luckTicket" ${profile.inventory.luckTicket ? '' : 'disabled'}>운 테스트</button></div>
+      <div class="v4-ticket v55-luck"><b>🎲 임테기 (임시 운빨 테스트기)</b><span class="cnt">×${profile.inventory.luckTicket || 0}</span><small>일반 · 희귀 · 영웅 · 전설 중 <b>각 25%</b> 확률로 지후 1기 · 업데이트마다 우편으로 1개 지급${!profile.inventory.luckTicket && unreadMailCount() ? ' · <b>우편함을 확인하세요!</b>' : ''}</small><button type="button" class="v4-darkbtn" data-reward-action="luckTicket" ${profile.inventory.luckTicket ? '' : 'disabled'}>운 테스트</button></div>
       <div class="v4-ticket"><b>랜덤 영웅 모집권</b><span class="cnt">×${profile.inventory.epicTicket}</span><small>영웅 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="epicTicket" ${profile.inventory.epicTicket ? '' : 'disabled'}>사용</button></div>
       ${profile.inventory.legendPick ? `<div class="v4-ticket"><b>선택 전설 지후 모집권</b><span class="cnt">×${profile.inventory.legendPick}</span><small>원하는 전설 지후 1기 모집 · 중복은 조각</small><button type="button" class="v4-darkbtn" data-reward-action="legendPick">고르기</button></div>` : ''}
       ${profile.inventory.hiddenTicket ? `<div class="v4-ticket"><b>⚡ 히든 지후 확정권</b><span class="cnt">×${profile.inventory.hiddenTicket}</span><small>히든 지후 1기 모집 · 중복은 조각</small><button type="button" class="v4-darkbtn" data-reward-action="hiddenTicket">사용</button></div>` : ''}
@@ -12500,7 +12500,7 @@ async function useInventoryAction(action, confirmed = false) {
     const id = choices[Math.floor(Math.random() * choices.length)];
     const duplicate = grantCharacter(id);
     const verdict = { common: '😇 운빨 꽝… 일반', rare: '🙂 그럭저럭 희귀', epic: '😎 오 영웅!', legend: '🤩 운빨 만렙! 전설!' }[rarity];
-    message = `운테기 결과: ${verdict} — ${CHAR_DB[id].name} ${duplicate ? `(중복 조각 +${DUPLICATE_SHARDS})` : '해금!'}`;
+    message = `임테기 결과: ${verdict} — ${CHAR_DB[id].name} ${duplicate ? `(중복 조각 +${DUPLICATE_SHARDS})` : '해금!'}`;
     summon = { id, duplicate };
     if (rarity === 'legend') postEvent('gacha', id, rarity);
   } else if (action === 'epicTicket' || action === 'legendTicket' || action === 'hiddenTicket') { // 5.4 히든 지후 확정권
@@ -27560,15 +27560,16 @@ function renderPatchNotes(ver, body = $('patchBody')) {
 function grantUpdateGift() { // 5.5 업데이트마다 운테기 1개
   const ver = gameVersion();
   { // 이전 업데이트 때 안 받은 운테기 우편은 지운다 (오래 쉬다 와도 한 번에 여러 개 받지 않게)
-    const mine = `v${ver} 업데이트 선물 · 운테기`;
+    const mine = `v${ver} 업데이트 선물 · 임테기`;
     const before = (profile.mail || []).length;
-    profile.mail = (profile.mail || []).filter(m => m.claimed || m.title === mine || !/^v[\d.]+ 업데이트 선물 · 운테기$/.test(m.title || ''));
+    (profile.mail || []).forEach(m => { if (!m.claimed && m.title === `v${ver} 업데이트 선물 · 운테기`) { m.title = mine; } }); // 이름 변경 전 받은 이번 버전 우편은 유지
+    profile.mail = (profile.mail || []).filter(m => m.claimed || m.title === mine || !/^v[\d.]+ 업데이트 선물 · [운임]테기$/.test(m.title || ''));
     if (profile.mail.length !== before) { saveProfile(); if (typeof renderMailDot === 'function') renderMailDot(); }
   }
   if (!profile.nickname || profile.luckGiftVer === ver) return;
-  if ((profile.mail || []).some(m => m.title === `v${ver} 업데이트 선물 · 운테기`)) { profile.luckGiftVer = ver; return; }
+  if ((profile.mail || []).some(m => m.title === `v${ver} 업데이트 선물 · 임테기`)) { profile.luckGiftVer = ver; return; }
   profile.luckGiftVer = ver;
-  sendMail({ icon: '🎲', title: `v${ver} 업데이트 선물 · 운테기`, body: '운테기(운빨테스트기)로 운을 시험해 보세요! 일반 · 희귀 · 영웅 · 전설 중 하나가 각 25% 확률로 나와요. 인벤토리에서 사용할 수 있어요.', rewards: [{ kind: 'luckTicket', amount: 1 }] });
+  sendMail({ icon: '🎲', title: `v${ver} 업데이트 선물 · 임테기`, body: '임테기(임시 운빨 테스트기)로 운을 시험해 보세요! 일반 · 희귀 · 영웅 · 전설 중 하나가 각 25% 확률로 나와요. 인벤토리에서 사용할 수 있어요.', rewards: [{ kind: 'luckTicket', amount: 1 }] });
   saveProfile();
   if (typeof renderMailDot === 'function') renderMailDot();
 }
@@ -27732,7 +27733,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { luckTicket: ['🎲', '운테기 (운빨테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
+const MAIL_REWARD_KINDS = { luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
 function mailRewardText(rewards) { return rewards.map(r => r.kind === 'frame' ? `◎ ${frameInfo(r.id)?.name || '테두리'} 테두리` : `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 function sendMail(mail) {
   profile.mail = (profile.mail || []).concat({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, icon: '✉', body: '', rewards: [], ...mail }).slice(-60);
