@@ -7015,7 +7015,7 @@ const CHARACTER_BALANCE = {
     eatDelay: 0.5, eatHold: 2, eatCd: 3, spitHit: 400, spitSelf: 700, spitSpeed: 18
   },
   lantern: {
-    hp: 2400, atk: 30, atkSpeed: 0.1, range: 315, speed: 58.5, // 5.5.1 공격력 +100% · 회복 +50% · 흡혈 50%
+    hp: 2400, atk: 19, atkSpeed: 0.1, range: 315, speed: 58.5, // 5.7.1 공격력 30 → 19 · 회복 31.5 · 흡혈 50%
     noAttack: true, holdRange: true, lifesteal: 0.5,
     lanternHeal: 31.5, lanternDim: 1.5, lanternDimValue: 2
   },
@@ -8913,7 +8913,7 @@ const CHAR_DB = {
     id: 'lantern', name: '랜턴 지후', emoji: '🏮', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#f2a93b', portrait: PORTRAITS.lantern || jhPlaceholder('🏮', '#f2a93b'),
     ...CHARACTER_BALANCE.lantern,
-    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 30 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 31.5)을 하나씩 꽂는다. 체력이 가득 찬 아군에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
+    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 19 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 31.5)을 하나씩 꽂는다. 체력이 가득 찬 아군에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
   },
   rocket: {
     id: 'rocket', name: '로켓병 지후', emoji: '🚀', role: 'dealer', roleLabel: '딜러',
@@ -25509,79 +25509,112 @@ $('btnEmo').addEventListener('click', event => { event.stopPropagation(); emoShe
 document.addEventListener('pointerdown', event => { if (!event.target.closest('.emo-sheet, #btnEmo')) emoSheetClose(); });
 
 /* ── 봇의 속마음 ──
-   봇은 판마다 성격이 하나 정해진다: 매너(manner) · 도발(cocky) · 소심(timid).
-   전투에서 일어난 일을 '감정'으로 읽고(이기는 중 · 뒤집힘 · 무너짐 · 전멸 · 마지막 라이프 …),
-   성격이 그 감정을 어떤 얼굴로 드러낼지 고른다 — 같은 역전승도 매너 봇은 박수, 도발 봇은 역따봉을 띄운다.
-   말수: 한 번 쓰면 6초는 쉬고, 라운드마다 3번까지만. 중요한 일일수록(weight) 쓸 확률이 높다.
-   같은 그림을 연달아 쓰지 않게 최근 4개는 피한다. */
+   봇은 판마다 성격(매너 · 도발 · 소심)과 수다 정도가 정해진다.
+   ▸ 기분(heat): 이기면 오르고 지면 내려간다. 판 내내 쌓여서 같은 일에도 그때 기분에 따라 다른 얼굴이 나온다
+     (연패 중인 도발 봇은 분노 · 위협, 연승 중인 소심 봇은 행복 · 여유).
+   ▸ 사건 반응: 판 시작 · 유불리 · 역전 · 전멸 · 몰살(짧은 시간에 여럿 쓰러짐) · 전설 지후 사망 · 마지막 라이프 · 내 이모티콘.
+   ▸ 혼잣말: 정해진 때가 아니라 0.4초마다 작은 확률로 불쑥 말을 건다. 팽팽할수록, 수다스러울수록 자주.
+   ▸ 사람처럼: 반응 지연 0.3~3초(가끔 한참 늦게) · 쉬는 시간 2~9초 무작위 · 가끔 연달아 두 개 · 가끔 그냥 넘김.
+   같은 그림을 연달아 쓰지 않게 최근 5개는 피한다. */
 const BOT_TEMPER = {
-  manner: { talk: 0.75, read: { greet:['hi'], ahead:['chill','joy'], behind:['think','confused'], won:['joy'], wonBig:['joy','chill'], flip:['joy','brag'], lost:['hurt'], crushed:['despair'], choke:['confused'], lastLife:['despair','think'], duel:['threat','think'], starDown:['hurt'], starKill:['joy'], reply:['hi','joy'] } },
-  cocky:  { talk: 1.0,  read: { greet:['threat','brag','mock'], ahead:['mock','brag'], behind:['threat'], won:['brag','mock'], wonBig:['mock'], flip:['brag','mock'], lost:['hurt','threat'], crushed:['confused','hurt'], choke:['confused','hurt'], lastLife:['threat'], duel:['threat','brag'], starDown:['hurt'], starKill:['mock','threat'], reply:['mock','threat'] } },
-  timid:  { talk: 0.6,  read: { greet:['hi','think'], ahead:['joy'], behind:['confused','despair'], won:['joy'], wonBig:['joy'], flip:['confused','joy'], lost:['despair','hurt'], crushed:['despair'], choke:['confused','despair'], lastLife:['despair'], duel:['think','confused'], starDown:['despair','hurt'], starKill:['joy','confused'], reply:['hi','confused'] } },
+  manner: { talk: 1.0, read: { greet:['hi'], ahead:['chill','joy'], behind:['think','confused'], won:['joy'], wonBig:['joy','chill'], flip:['joy','brag'], lost:['hurt','think'], crushed:['despair'], choke:['confused'], lastLife:['despair','think'], duel:['threat','think'], starDown:['hurt'], starKill:['joy'], massacre:['joy','brag'], massacred:['confused','hurt'], reply:['hi','joy'], idleUp:['chill','joy'], idleDown:['think','hurt'], idleEven:['think','chill'] } },
+  cocky:  { talk: 1.3, read: { greet:['threat','brag','mock'], ahead:['mock','brag'], behind:['threat'], won:['brag','mock'], wonBig:['mock'], flip:['brag','mock'], lost:['hurt','threat'], crushed:['confused','hurt'], choke:['confused','hurt'], lastLife:['threat'], duel:['threat','brag'], starDown:['hurt','threat'], starKill:['mock','threat'], massacre:['mock','brag'], massacred:['hurt','threat'], reply:['mock','threat'], idleUp:['mock','chill'], idleDown:['threat','hurt'], idleEven:['threat','think'] } },
+  timid:  { talk: 0.85, read: { greet:['hi','think'], ahead:['joy'], behind:['confused','despair'], won:['joy'], wonBig:['joy'], flip:['confused','joy'], lost:['despair','hurt'], crushed:['despair'], choke:['confused','despair'], lastLife:['despair'], duel:['think','confused'], starDown:['despair','hurt'], starKill:['joy','confused'], massacre:['joy','confused'], massacred:['despair','confused'], reply:['hi','confused'], idleUp:['joy','chill'], idleDown:['despair','confused'], idleEven:['think','confused'] } },
 };
+// 기분이 아주 좋거나 나쁘면 성격과 상관없이 그쪽 얼굴이 섞여 나온다
+const HEAT_MOODS = { high: ['brag', 'joy', 'chill', 'mock'], low: ['hurt', 'despair', 'confused'] };
+const emoRnd = (a, b) => a + Math.random() * (b - a);
 const botMind = {
-  temper: 'manner', quietUntil: 0, roundTalk: 0, recent: [], fight: null,
+  temper: 'manner', chatty: 1, heat: 0, quietUntil: 0, recent: [], fight: null, deaths: [], lastPulse: 0,
   on() { return state.screen === 'battle' && !state.net && !state.tutMatch && !['preview', 'coop', 'friendly'].includes(state.mode); },
-  // feeling: BOT_TEMPER.read 의 키 · weight: 0~1 (얼마나 큰일인가)
-  feel(feeling, weight, delay = 900) {
-    if (!this.on()) return;
+  // feeling: BOT_TEMPER.read 의 키 · weight: 0~1 (얼마나 큰일인가) · force: 쉬는 중이어도 (큰일)
+  feel(feeling, weight, { delay = [300, 2200], force = false } = {}) {
+    if (!this.on()) return false;
     const now = Date.now(), t = BOT_TEMPER[this.temper];
-    if (now < this.quietUntil || this.roundTalk >= 3 || Math.random() > weight * t.talk) return;
-    const moods = t.read[feeling]; if (!moods) return;
+    if (now < this.quietUntil && !(force && Math.random() < 0.7)) return false;
+    if (Math.random() > Math.min(0.97, weight * t.talk * this.chatty)) return false;
+    let moods = t.read[feeling]; if (!moods) return false;
+    if (Math.abs(this.heat) >= 0.55 && Math.random() < 0.35) moods = HEAT_MOODS[this.heat > 0 ? 'high' : 'low'];
     const pool = EMOTICONS.filter(e => e.mood.some(m => moods.includes(m)) && !this.recent.includes(e.k));
-    if (!pool.length) return;
+    if (!pool.length) return false;
     const pick = pool[Math.floor(Math.random() * pool.length)].k;
-    this.quietUntil = now + 6000; this.roundTalk++;
-    this.recent = [pick, ...this.recent].slice(0, 4);
-    setTimeout(() => { if (this.on()) emoShow('bot', pick); }, 300 + Math.random() * delay);
+    this.recent = [pick, ...this.recent].slice(0, 5);
+    // 반응 지연: 대개 빠르게, 가끔 한참 뒤에 ("아 근데 아까 그거")
+    const wait = Math.random() < 0.12 ? emoRnd(2500, 4500) : emoRnd(delay[0], delay[1]);
+    this.quietUntil = now + wait + emoRnd(2000, 9000) / this.chatty;
+    setTimeout(() => {
+      if (!this.on()) return;
+      emoShow('bot', pick);
+      // 가끔 연달아 하나 더 (말이 끝나기 전에 덧붙이는 느낌)
+      if (Math.random() < 0.14 * this.chatty) {
+        const more = EMOTICONS.filter(e => e.mood.some(m => moods.includes(m)) && !this.recent.includes(e.k));
+        const k2 = more.length && more[Math.floor(Math.random() * more.length)].k;
+        if (k2) { this.recent = [k2, ...this.recent].slice(0, 5); setTimeout(() => { if (this.on()) emoShow('bot', k2); }, emoRnd(1300, 2600)); }
+      }
+    }, wait);
+    return true;
   },
   odds() { return this.fight ? this.fight.last : 0.5; },
   matchStart() {
     const temps = Object.keys(BOT_TEMPER);
     this.temper = temps[Math.floor(Math.random() * temps.length)];
-    this.recent = []; this.quietUntil = 0;
+    this.chatty = emoRnd(0.75, 1.35); this.heat = 0; this.recent = []; this.quietUntil = 0;
   },
+  mood(delta) { this.heat = clamp(this.heat * 0.8 + delta, -1, 1); },
   roundStart() {
     if (!this.on()) return;
-    this.roundTalk = 0;
-    if (state.round === 1) { this.matchStart(); this.feel('greet', 0.75, 2400); return; }
-    if (state.enemyLives === 1 && state.allyLives === 1) this.feel('duel', 0.8, 1800);
-    else if (state.enemyLives === 1) this.feel('lastLife', 0.7, 1800);
+    if (state.round === 1) { this.matchStart(); this.feel('greet', 0.9, { delay: [600, 3500] }); return; }
+    if (state.enemyLives === 1 && state.allyLives === 1) this.feel('duel', 0.85, { delay: [800, 4000] });
+    else if (state.enemyLives === 1) this.feel('lastLife', 0.75, { delay: [800, 4000] });
   },
-  combatStart() { this.fight = { start: { ally: emoAlive('ally'), enemy: emoAlive('enemy') }, low: 1, high: 0, last: 0.5, read: false, swing: false }; },
-  oddsTick(allyOdds) { // 봇 = 적 진영
+  combatStart() { this.deaths = []; this.fight = { start: { ally: emoAlive('ally'), enemy: emoAlive('enemy') }, low: 1, high: 0, last: 0.5, read: false, swing: false }; },
+  oddsTick(allyOdds) { // 봇 = 적 진영 (매 프레임)
     const f = this.fight; if (!f || !this.on() || state.phase !== 'combat') return;
     const b = f.last = 1 - allyOdds;
-    if (state.combatTime < 2.5) return;
+    if (state.combatTime < 2) return;
     f.low = Math.min(f.low, b); f.high = Math.max(f.high, b);
-    if (!f.read) { f.read = true; if (b >= 0.72) this.feel('ahead', 0.45); else if (b <= 0.28) this.feel('behind', 0.45); }
+    if (!f.read && state.combatTime > emoRnd(2, 5)) { f.read = true; if (b >= 0.7) this.feel('ahead', 0.6); else if (b <= 0.3) this.feel('behind', 0.6); }
     if (f.swing) return;
-    if (b <= 0.12 && f.high >= 0.55) { f.swing = true; this.feel('choke', 0.9, 500); }
-    else if (b >= 0.88 && f.low <= 0.4) { f.swing = true; this.feel('flip', 0.9, 500); }
+    if (b <= 0.12 && f.high >= 0.55) { f.swing = true; this.feel('choke', 0.95, { delay: [200, 1200], force: true }); }
+    else if (b >= 0.88 && f.low <= 0.4) { f.swing = true; this.feel('flip', 0.95, { delay: [200, 1200], force: true }); }
   },
   unitDown(u) {
     if (!this.on() || state.phase !== 'combat' || u.isClone || u.ownerUid) return;
+    const now = Date.now();
+    this.deaths = this.deaths.filter(d => now - d.t < 2500).concat({ t: now, side: u.side });
+    const burst = this.deaths.filter(d => d.side === u.side).length;
+    if (burst === 3) { this.feel(u.side === 'enemy' ? 'massacred' : 'massacre', 0.75, { delay: [300, 1500] }); return; } // 한꺼번에 쓰러졌다
     const rar = CHAR_DB[u.charId]?.rarity;
-    if (rar === 'legend' || rar === 'hidden' || (u.level || 1) >= 5) this.feel(u.side === 'enemy' ? 'starDown' : 'starKill', 0.4, 600);
+    if (rar === 'legend' || rar === 'hidden' || (u.level || 1) >= 5) this.feel(u.side === 'enemy' ? 'starDown' : 'starKill', 0.55, { delay: [200, 1400] });
   },
   roundEnd(winnerSide) {
     const f = this.fight; this.fight = null;
     if (!f || !this.on() || winnerSide === 'draw') return;
     const won = winnerSide === 'enemy', kept = side => f.start[side] ? emoAlive(side) / f.start[side] : 0;
-    this.quietUntil = Math.min(this.quietUntil, Date.now() + 500); this.roundTalk = Math.min(this.roundTalk, 2); // 결과 반응은 남겨 둔다
-    if (won && f.low <= 0.25) this.feel('flip', 1);
-    else if (!won && f.high >= 0.75) this.feel('choke', 1);
-    else if (won && kept('enemy') >= 0.6) this.feel('wonBig', 0.9);
-    else if (!won && kept('ally') >= 0.6) this.feel('crushed', 0.9);
-    else this.feel(won ? 'won' : 'lost', 0.6);
+    this.mood(won ? 0.35 : -0.35);
+    const big = { delay: [400, 2600], force: true };
+    if (won && f.low <= 0.25) this.feel('flip', 1, big);
+    else if (!won && f.high >= 0.75) this.feel('choke', 1, big);
+    else if (won && kept('enemy') >= 0.6) this.feel('wonBig', 0.95, big);
+    else if (!won && kept('ally') >= 0.6) this.feel('crushed', 0.95, big);
+    else this.feel(won ? 'won' : 'lost', 0.75, big);
   },
-  heard() { // 사람이 이모티콘을 보냈다
+  heard() { // 사람이 이모티콘을 보냈다 — 대부분 받아친다
     if (!this.on()) return;
-    this.quietUntil = Math.min(this.quietUntil, Date.now() + 800);
-    if (state.round <= 1 && state.phase !== 'combat') this.feel('greet', 0.75, 1600);
-    else this.feel(this.odds() >= 0.6 ? 'ahead' : this.odds() <= 0.4 ? 'behind' : 'reply', 0.45, 1600);
+    const opts = { delay: [700, 2800], force: true };
+    if (state.round <= 1 && state.phase !== 'combat') this.feel('greet', 0.9, opts);
+    else this.feel(this.odds() >= 0.6 ? 'ahead' : this.odds() <= 0.4 ? 'behind' : 'reply', 0.7, opts);
+  },
+  // 0.4초마다: 정해진 때가 아니라 불쑥 한마디 (배치 중에도). 팽팽하거나 기분이 크게 흔들렸을수록 자주.
+  pulse() {
+    if (!this.on() || (state.phase !== 'combat' && state.phase !== 'deploy')) return;
+    const b = this.odds(), tension = state.phase === 'combat' ? 1 - Math.abs(b - 0.5) * 1.2 : 0.25;
+    const perSec = 0.035 * this.chatty * (0.6 + tension + Math.abs(this.heat) * 0.6);
+    if (Math.random() > perSec * 0.4) return;
+    this.feel(state.phase === 'deploy' ? (this.heat > 0.2 ? 'idleUp' : this.heat < -0.2 ? 'idleDown' : 'idleEven') : b >= 0.62 ? 'idleUp' : b <= 0.38 ? 'idleDown' : 'idleEven', 0.85, { delay: [0, 1500] });
   },
 };
+setInterval(() => botMind.pulse(), 400);
 const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.skipCount && !u.ownerUid && u.side === side).length;
 
 /* ===== 패치 노트 ===== */
