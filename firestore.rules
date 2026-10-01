@@ -150,6 +150,19 @@ service cloud.firestore {
       allow create, update: if owner(userId) && validCompLeaderboard(request.resource.data);
     }
 
+    // 5.4 협동전 리더보드: 최고 웨이브 · 덱
+    match /coopLeaderboard/{userId} {
+      allow get, list: if true;
+      allow delete: if owner(userId);
+      allow create, update: if owner(userId)
+        && request.resource.data.keys().hasAll(['nickname', 'wave', 'deck', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'wave', 'deck', 'updatedAt'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
+        && request.resource.data.wave is int && request.resource.data.wave >= 0 && request.resource.data.wave <= 99999
+        && validDeck(request.resource.data.deck)
+        && request.resource.data.updatedAt is timestamp;
+    }
+
     match /leaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId);
