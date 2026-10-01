@@ -25646,6 +25646,7 @@ const SFX = {
   match_lose:   { gap: 1,    vol: 1,   desc: '경기 패배 (결과 화면)' },
   // ── 기타
   emote:        { gap: 0.1,  vol: 0.8, desc: '이모티콘 (파일이 없으면 지금의 뽁 소리)' },
+  attack:       { gap: 0.06, vol: 0.35, desc: '일반 공격 (자기 소리가 없는 지후 전부)' },
   mail:         { gap: 1,    vol: 0.7, desc: '우편 · 선물 받기' },
 };
 const SFX_VOL_KEY = 'jihoo-sfx-vol';
@@ -25674,12 +25675,12 @@ if (location.protocol !== 'file:') fetch('sfx/char/list.json').then(r => r.ok ? 
 const sfxBurst = []; // 한꺼번에 너무 많이 울리지 않게 (0.15초 안에 6개까지)
 function sfxChar(u, kind) {
   if (!u || !u.charId || !sfxCharList || state.mode === 'preview' || state.screen !== 'battle') return;
-  const name = `char/${u.charId}_${kind}`;
-  if (!sfxCharList.has(`${u.charId}_${kind}`)) return;
+  let name = `char/${u.charId}_${kind}`, def = SFX_CHAR_KIND[kind];
+  if (!sfxCharList.has(`${u.charId}_${kind}`)) { if (kind !== 'attack') return; name = 'attack'; def = SFX.attack; } // 자기 공격 소리가 없으면 공통 공격 소리
   const now = performance.now();
   while (sfxBurst.length && now - sfxBurst[0] > 150) sfxBurst.shift();
   if (sfxBurst.length >= 6) return;
-  if (sfxPlay(name, SFX_CHAR_KIND[kind], u.side === meSide() ? 1 : 0.7) !== null) sfxBurst.push(now);
+  if (sfxPlay(name, def, u.side === meSide() ? 1 : 0.7) !== null) sfxBurst.push(now);
 }
 function sfxPlay(name, def, volMul = 1) {
   if (!def || sfxState.vol <= 0 || sfxState.missing[name]) return false;
@@ -25696,7 +25697,27 @@ function sfxPlay(name, def, volMul = 1) {
   sfxLoad(name).then(buf => { if (buf && performance.now() / 1000 - now < 0.5) play(buf); }); // 처음 한 번은 받는 동안 늦으면 건너뛴다
   return false;
 }
-function sfxSetVolume(v) { sfxState.vol = clamp(Math.round(Number(v) || 0), 0, 100); try { localStorage.setItem(SFX_VOL_KEY, String(sfxState.vol)); } catch (error) {} }
+function sfxSetVolume(v) { sfxState.vol = clamp(Math.round(Number(v) || 0), 0, 100); try { localStorage.setItem(SFX_VOL_KEY, String(sfxState.vol)); } catch (error) {} sfxLoopTick(); }
+// 지후가 전장에 있는 동안 계속 도는 소리: sfx/char/<id>_loop.mp3 (예: DJ 지후의 음악). 여러 기 있어도 하나만 돈다.
+const SFX_LOOP_VOL = 0.35;
+const sfxLoops = {}; // id -> { src, gain }
+function sfxLoopTick() {
+  const want = new Set();
+  if (sfxCharList && sfxState.vol > 0 && state.screen === 'battle' && state.mode !== 'preview' && ['deploy', 'deploy-resolve', 'combat', 'finalMoment', 'roundEnd'].includes(state.phase))
+    state.units.forEach(u => { if (u.alive && !u.isCastle && sfxCharList.has(u.charId + '_loop')) want.add(u.charId); });
+  Object.keys(sfxLoops).forEach(id => { if (!want.has(id)) { try { sfxLoops[id].src.stop(); } catch (error) {} delete sfxLoops[id]; } });
+  want.forEach(id => {
+    if (sfxLoops[id]) { sfxLoops[id].gain.gain.value = SFX_LOOP_VOL * sfxState.vol / 100; return; }
+    const name = `char/${id}_loop`, buf = sfxState.buf[name];
+    if (!buf) { sfxLoad(name); return; } // 받는 중이면 다음 틱에
+    const ctx = sfxCtx(); if (!ctx) return;
+    const src = ctx.createBufferSource(), gain = ctx.createGain();
+    src.buffer = buf; src.loop = true; gain.gain.value = SFX_LOOP_VOL * sfxState.vol / 100;
+    src.connect(gain).connect(ctx.destination); src.start();
+    sfxLoops[id] = { src, gain };
+  });
+}
+setInterval(sfxLoopTick, 400);
 // 첫 터치 때 오디오를 깨우고 자주 쓰는 소리를 미리 받아 둔다
 document.addEventListener('pointerdown', function sfxWarm() {
   document.removeEventListener('pointerdown', sfxWarm, true);
