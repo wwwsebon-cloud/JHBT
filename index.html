@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.7.6"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.7.6"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6321,6 +6321,8 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
 <div class="app-modal" id="settingsModal" role="dialog" aria-modal="true"><div class="modal-card">
   <div class="modal-head"><h2 class="title-font">환경설정</h2><button type="button" class="modal-close" data-close-modal="settingsModal">✕</button></div>
   <p class="settings-intro">나에게 맞는 전장 화면을 설정하세요.</p>
+  <div class="settings-section-label">효과음</div>
+  <div class="settings-option"><span class="settings-option-icon">🔊</span><span class="settings-option-copy"><b>효과음 음량 <span id="sfxVolLab">70</span></b><small>0이면 꺼져요 · 이 기기에 저장</small></span><input type="range" id="sfxVol" min="0" max="100" step="5" value="70" style="width:120px"></div>
   <div class="settings-section-label">화면 · 접근성</div>
   <label class="settings-option" for="reduceMotionSetting"><span class="settings-option-icon">✦</span><span class="settings-option-copy"><b>움직임 줄이기</b><small>전투 결과와 정산 등 일회성 연출의 움직임을 최소화합니다.</small></span><input type="checkbox" id="reduceMotionSetting"><span class="settings-switch" aria-hidden="true"></span></label>
   <div class="settings-section-label">개발자 모드</div>
@@ -10242,6 +10244,7 @@ function claimDailyTier(p) {
   return got.join(' · ');
 }
 function recordDailyProgress(key, amount = 1) {
+  if (key === 'shopBuy') sfx('buy'); // 5.7.6 효과음: 모든 구매가 여기를 지난다
   ensureDailyState();
   const quest = DAILY_QUESTS.find(item => item.key === key);
   if (!quest) return { completed: false, chestRewarded: false };
@@ -10931,7 +10934,7 @@ function renderAchScreen(message = '') {
   if (achTab === 'ach') renderAch44(message); else renderAchievements(message);
 }
 function openLookModal() { lookTab = 'a'; renderLookModal(); openModal('lookModal'); }
-function openModal(id) { const el = $(id); if (el) el.classList.add('show'); }
+function openModal(id) { const el = $(id); if (el) { if (!el.classList.contains('show')) sfx(id === 'levelUpModal' ? 'levelup' : 'open'); el.classList.add('show'); } }
 function closeModal(id) {
   const el = $(id);
   if (el) el.classList.remove('show');
@@ -11807,6 +11810,7 @@ function renderGachaPool() {
 }
 function showGachaMulti(results) {
   gachaRevealResults = results;
+  { const top = results.reduce((m, r) => Math.max(m, GACHA_RARITY_ORDER[CHAR_DB[r.id]?.rarity] || 0), 0); sfx('gacha_' + Object.keys(GACHA_RARITY_ORDER).find(k => GACHA_RARITY_ORDER[k] === top)); } // 5.7.6 가장 높은 등급 소리
   const overlay = $('gachaMulti');
   $('gachaMultiGrid').innerHTML = results.map((result, i) => {
     const c = CHAR_DB[result.id], hi = GACHA_RARITY_ORDER[c.rarity] >= 2;
@@ -12228,6 +12232,7 @@ function showGachaReveal(index) {
   const overlay = $('gachaReveal');
   overlay.style.setProperty('--rarity-color', rarityColorVar(character.rarity));
   overlay.classList.remove('tap', 'fx-legend', 'fx-hidden', 'rarity-common', 'rarity-rare', 'rarity-epic', 'rarity-legend', 'rarity-hidden');
+  sfx('gacha_' + character.rarity); // 5.7.6 효과음
   overlay.classList.add('rarity-' + character.rarity);
   overlay.classList.add('show', 'opening');
   overlay.setAttribute('aria-hidden', 'false');
@@ -17095,6 +17100,7 @@ function spawnUnit(side, x, y, charId, opts) {
 // kind: place(내 배치) · merge(합체 레벨업) · enemy(상대 배치, 가볍게)
 function deployFeel(u, kind) {
   if (!u || !u.el || !u.alive) return;
+  if (kind === 'merge' || kind === 'place') sfx(kind); // 5.7.6 효과음
   const world = worldEl();
   if (!world) return;
   const merge = kind === 'merge', enemy = kind === 'enemy';
@@ -17535,7 +17541,9 @@ function v41Kill(victim) {
   setTimeout(() => row.remove(), 6000);
 }
 function v41Callout(u, label) {
+  if (state.mode !== 'preview' && state.phase === 'combat' && u && u.def) sfxChar(u, 'skill'); // 5.7.6 지후 고유 스킬 효과음
   if (state.mode === 'preview' || state.phase !== 'combat' || !u || !u.def || !v41Tracked(u)) return;
+  if (u.side === meSide() && !(sfxCharList && sfxCharList.has(u.charId + '_skill'))) sfx('skill'); // 5.7.6 효과음 (지후 고유 소리가 있으면 그것만)
   V41.callQ = V41.callQ.filter(c => c.u !== u).concat({ u, label }).slice(-2);
   if (!V41.callBusy) v41NextCallout();
 }
@@ -19212,6 +19220,7 @@ function beginCombatPhase() { // 5.0 친선전: 전투 시작도 시드 난수�
 }
 function beginCombatPhaseInner() {
   state.phase = 'combat';
+  if (state.mode !== 'preview' && state.screen === 'battle') sfx('battle_start'); // 5.7.6 효과음
   botMind.combatStart(); // 5.7 봇 이모티콘
   $('screen-battle').dataset.phase = 'combat';
   v4Ring(1, 1);
@@ -20247,6 +20256,7 @@ const WINDUP_GRACE = 1.35;
 function performAttack(caster, target) {
   if (caster.charId === 'dust' && caster.def.onAttack) caster.def.onAttack(caster, target, battleAPI);
   fireTelegraph(caster); // 예고가 가득 찬 순간 = 공격 발동
+  sfxChar(caster, 'attack'); // 5.7.6 지후 고유 효과음
   caster.el.style.filter = 'brightness(1.3)';
   scheduleTask(() => caster.el && (caster.el.style.filter = ''), 120);
   if (telegraphSpec(caster)) attackLunge(caster, target);
@@ -24766,6 +24776,7 @@ function killUnit(u) {
   if (u.def.berserk && !u.berserked) { triggerBerserk(u); return; }
   u.alive = false;
   onDeath47(u); // 4.7.0
+  if (state.mode !== 'preview' && state.screen === 'battle') sfx('death'); // 5.7.6 효과음
   botMind.unitDown(u); // 5.7 봇 이모티콘
   u.vx = 0; u.vy = 0; u.physLock = 0; u.desVx = 0; u.desVy = 0;
   u.el.classList.add('dead');
@@ -25260,6 +25271,7 @@ function recordRoundStats(winnerSide, timedOut) {
 }
 function endRoundCombat(winnerSide, timedOut = false) {
   botMind.roundEnd(winnerSide); // 5.7 봇 이모티콘
+  if (state.mode !== 'preview' && winnerSide !== 'draw' && state.screen === 'battle') sfx(winnerSide === meSide() ? 'round_win' : 'round_lose'); // 5.7.6 효과음
   if (state.mode === 'wwe') { wweRoundEnd(winnerSide, timedOut); return; } // 4.6.3 WWE는 따로 정산
   recordRoundStats(winnerSide, timedOut);
   cancelRuntimeTasks();
@@ -25389,6 +25401,7 @@ function finishMatch(winnerSide, surrendered = false) {
   cancelRuntimeTasks();
   state.phase = 'idle';
   showScreen('end');
+  if (!draw) sfx(won ? 'match_win' : 'match_lose'); // 5.7.6 효과음
   const settlement = settleMatch(won, draw, surrendered);
   if (DISCORD_MATCH_MODES.includes(state.mode) && !settlement.tutorialReplay) {
     try { discordNotify(discordMatchPayload(won, draw, surrendered, settlement)); } catch (error) {}
@@ -25602,6 +25615,120 @@ $('btnStatsClose').addEventListener('click', () => $('statsModal').classList.rem
 $('statsModal').addEventListener('click', event => { if (event.target.id === 'statsModal') $('statsModal').classList.remove('show'); });
 $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('arena'); renderArenaList(); });
 
+/* ===== 5.7.6 효과음 =====
+   sfx/ 폴더에 아래 이름으로 파일만 넣으면 그 순간부터 소리가 난다 (없으면 조용히 건너뛴다 · 코드 수정 필요 없음).
+   형식: mp3 (권장) · 다른 형식이면 SFX_EXT 만 바꾸면 된다. 처음 울릴 때 한 번만 받아서 메모리에 둔다.
+   설정 > 효과음: 음량 0~100 · 끄기 (이 기기에 저장). 같은 소리는 너무 몰리지 않게 최소 간격(gap 초)을 둔다.
+   목록과 설명은 sfx/README.md 에도 있다. */
+const SFX_EXT = 'mp3';
+const SFX = {
+  // ── 화면 · 메뉴
+  click:        { gap: 0.04, vol: 0.5, desc: '버튼 누를 때' },
+  open:         { gap: 0.1,  vol: 0.6, desc: '창 · 모달 열 때' },
+  buy:          { gap: 0.2,  vol: 0.8, desc: '상점 · 팝업스토어 · 마일리지 구매 완료' },
+  levelup:      { gap: 1,    vol: 0.9, desc: '계정 레벨업' },
+  // ── 뽑기
+  gacha_common: { gap: 0.15, vol: 0.7, desc: '뽑기 공개 · 일반' },
+  gacha_rare:   { gap: 0.15, vol: 0.8, desc: '뽑기 공개 · 희귀' },
+  gacha_epic:   { gap: 0.15, vol: 0.9, desc: '뽑기 공개 · 영웅' },
+  gacha_legend: { gap: 0.15, vol: 1,   desc: '뽑기 공개 · 전설' },
+  gacha_hidden: { gap: 0.15, vol: 1,   desc: '뽑기 공개 · 히든' },
+  // ── 배치
+  place:        { gap: 0.08, vol: 0.7, desc: '내 지후 배치' },
+  merge:        { gap: 0.1,  vol: 0.8, desc: '합체 · 레벨업 (배치 중)' },
+  // ── 전투
+  battle_start: { gap: 1,    vol: 0.9, desc: '전투 시작' },
+  skill:        { gap: 0.25, vol: 0.6, desc: '스킬 이름이 뜰 때 (내 편)' },
+  death:        { gap: 0.12, vol: 0.5, desc: '지후가 쓰러질 때' },
+  round_win:    { gap: 1,    vol: 0.9, desc: '라운드 승리' },
+  round_lose:   { gap: 1,    vol: 0.9, desc: '라운드 패배' },
+  match_win:    { gap: 1,    vol: 1,   desc: '경기 승리 (결과 화면)' },
+  match_lose:   { gap: 1,    vol: 1,   desc: '경기 패배 (결과 화면)' },
+  // ── 기타
+  emote:        { gap: 0.1,  vol: 0.8, desc: '이모티콘 (파일이 없으면 지금의 뽁 소리)' },
+  attack:       { gap: 0.06, vol: 0.35, desc: '일반 공격 (자기 소리가 없는 지후 전부)' },
+  mail:         { gap: 1,    vol: 0.7, desc: '우편 · 선물 받기' },
+};
+const SFX_VOL_KEY = 'jihoo-sfx-vol';
+const sfxState = { ctx: null, buf: {}, loading: {}, missing: {}, last: {}, vol: (() => { try { const v = localStorage.getItem(SFX_VOL_KEY); return v == null ? 70 : clamp(Number(v) || 0, 0, 100); } catch (error) { return 70; } })() };
+function sfxCtx() {
+  if (!sfxState.ctx) { try { sfxState.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (error) { return null; } }
+  if (sfxState.ctx.state === 'suspended') sfxState.ctx.resume().catch(() => {});
+  return sfxState.ctx;
+}
+function sfxLoad(name) {
+  if (sfxState.buf[name] || sfxState.loading[name] || sfxState.missing[name] || location.protocol === 'file:') return sfxState.loading[name] || Promise.resolve(sfxState.buf[name]);
+  const ctx = sfxCtx(); if (!ctx) return Promise.resolve(null);
+  sfxState.loading[name] = fetch(`sfx/${name}.${SFX_EXT}`).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    .then(data => new Promise((ok, bad) => ctx.decodeAudioData(data, ok, bad)))
+    .then(buf => { sfxState.buf[name] = buf; return buf; })
+    .catch(() => { sfxState.missing[name] = true; return null; }) // 파일이 아직 없다 — 다시 묻지 않는다
+    .finally(() => { delete sfxState.loading[name]; });
+  return sfxState.loading[name];
+}
+// 소리 내기. 반환값: 파일로 울렸으면 true (이모티콘처럼 대신 낼 소리가 있을 때 쓴다)
+function sfx(name, volMul = 1) { return sfxPlay(name, SFX[name], volMul); }
+// 지후 고유 효과음: sfx/char/<지후 id>_attack.mp3 (일반 공격) · _skill.mp3 (스킬) — sfx/char/list.json 에 적힌 것만 받는다 (없는 파일을 묻지 않게)
+const SFX_CHAR_KIND = { attack: { gap: 0.09, vol: 0.45 }, skill: { gap: 0.3, vol: 0.8 } };
+let sfxCharList = null;
+if (location.protocol !== 'file:') fetch('sfx/char/list.json').then(r => r.ok ? r.json() : []).then(a => { sfxCharList = new Set(Array.isArray(a) ? a : []); }).catch(() => { sfxCharList = new Set(); });
+const sfxBurst = []; // 한꺼번에 너무 많이 울리지 않게 (0.15초 안에 6개까지)
+function sfxChar(u, kind) {
+  if (!u || !u.charId || !sfxCharList || state.mode === 'preview' || state.screen !== 'battle') return;
+  let name = `char/${u.charId}_${kind}`, def = SFX_CHAR_KIND[kind];
+  if (!sfxCharList.has(`${u.charId}_${kind}`)) { if (kind !== 'attack') return; name = 'attack'; def = SFX.attack; } // 자기 공격 소리가 없으면 공통 공격 소리
+  const now = performance.now();
+  while (sfxBurst.length && now - sfxBurst[0] > 150) sfxBurst.shift();
+  if (sfxBurst.length >= 6) return;
+  if (sfxPlay(name, def, u.side === meSide() ? 1 : 0.7) !== null) sfxBurst.push(now);
+}
+function sfxPlay(name, def, volMul = 1) {
+  if (!def || sfxState.vol <= 0 || sfxState.missing[name]) return false;
+  const now = performance.now() / 1000;
+  if (now - (sfxState.last[name] || 0) < def.gap) return null; // 너무 잦다
+  sfxState.last[name] = now;
+  const play = buf => {
+    const ctx = sfxCtx(); if (!buf || !ctx) return;
+    const src = ctx.createBufferSource(), gain = ctx.createGain();
+    gain.gain.value = def.vol * volMul * (sfxState.vol / 100);
+    src.buffer = buf; src.connect(gain).connect(ctx.destination); src.start();
+  };
+  if (sfxState.buf[name]) { play(sfxState.buf[name]); return true; }
+  sfxLoad(name).then(buf => { if (buf && performance.now() / 1000 - now < 0.5) play(buf); }); // 처음 한 번은 받는 동안 늦으면 건너뛴다
+  return false;
+}
+function sfxSetVolume(v) { sfxState.vol = clamp(Math.round(Number(v) || 0), 0, 100); try { localStorage.setItem(SFX_VOL_KEY, String(sfxState.vol)); } catch (error) {} sfxLoopTick(); }
+// 지후가 전장에 있는 동안 계속 도는 소리: sfx/char/<id>_loop.mp3 (예: DJ 지후의 음악). 여러 기 있어도 하나만 돈다.
+const SFX_LOOP_VOL = 0.35;
+const sfxLoops = {}; // id -> { src, gain }
+function sfxLoopTick() {
+  const want = new Set();
+  if (sfxCharList && sfxState.vol > 0 && state.screen === 'battle' && state.mode !== 'preview' && ['deploy', 'deploy-resolve', 'combat', 'finalMoment', 'roundEnd'].includes(state.phase))
+    state.units.forEach(u => { if (u.alive && !u.isCastle && sfxCharList.has(u.charId + '_loop')) want.add(u.charId); });
+  Object.keys(sfxLoops).forEach(id => { if (!want.has(id)) { try { sfxLoops[id].src.stop(); } catch (error) {} delete sfxLoops[id]; } });
+  want.forEach(id => {
+    if (sfxLoops[id]) { sfxLoops[id].gain.gain.value = SFX_LOOP_VOL * sfxState.vol / 100; return; }
+    const name = `char/${id}_loop`, buf = sfxState.buf[name];
+    if (!buf) { sfxLoad(name); return; } // 받는 중이면 다음 틱에
+    const ctx = sfxCtx(); if (!ctx) return;
+    const src = ctx.createBufferSource(), gain = ctx.createGain();
+    src.buffer = buf; src.loop = true; gain.gain.value = SFX_LOOP_VOL * sfxState.vol / 100;
+    src.connect(gain).connect(ctx.destination); src.start();
+    sfxLoops[id] = { src, gain };
+  });
+}
+setInterval(sfxLoopTick, 400);
+// 첫 터치 때 오디오를 깨우고 자주 쓰는 소리를 미리 받아 둔다
+document.addEventListener('pointerdown', function sfxWarm() {
+  document.removeEventListener('pointerdown', sfxWarm, true);
+  sfxCtx(); ['click', 'open', 'place', 'merge', 'battle_start', 'skill', 'death', 'round_win', 'round_lose', 'emote'].forEach(sfxLoad);
+}, true);
+// 버튼 누르는 소리 (전장 안 · 슬라이더는 빼고)
+document.addEventListener('click', event => {
+  const b = event.target.closest('button, .v4-tile, [role="button"]');
+  if (b && !b.disabled && !event.target.closest('#battleWorld, input[type="range"]')) sfx('click');
+}, true);
+
 /* ===== 5.7 이모티콘 =====
    전투 화면 EMOTE 버튼 → 하단 시트에서 고르면 전장 모서리에 '말 카드'로 3초 동안 찍힌다 (재사용 대기 5초 · 효과음).
    상대 편은 왼쪽 위(적 색 띠), 내 편은 오른쪽 아래(아군 색 띠). 친선전 참가자 화면도 내 진영이 아래라 그대로 맞는다.
@@ -25633,7 +25760,8 @@ const EMO_SHOW_MS = 3000, EMO_COOL_MS = 5000, EMO_SLOTS = 8, EMO_PRICE = 500; //
 const emoDef = k => EMOTICONS.find(e => e.k === k) || null;
 const emoSrc = k => emoDef(k) ? `emo/${k}.${k.startsWith('gif') ? 'gif' : 'png'}` : '';
 const emoUi = { coolUntil: 0, raf: 0, audio: null, pick: -1 };
-function emoSound() { // 짧은 '뽁' — 오디오 파일 없이 만든다
+function emoSound() { // 짧은 '뽁' — sfx/emote 파일이 있으면 그걸 쓰고, 없으면 바로 만든다
+  if (sfx('emote')) return;
   try {
     const ctx = emoUi.audio = emoUi.audio || new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state === 'suspended') ctx.resume();
@@ -28529,6 +28657,7 @@ function renderMailDot() {
 function claimMail(mail) {
   if (!mail || mail.claimed) return false;
   mail.claimed = true;
+  sfx('mail'); // 5.7.6 효과음
   mail.rewards.forEach(r => {
     if (r.kind === 'diamonds') profile.diamonds += r.amount;
     else if (r.kind === 'gold') profile.gold += r.amount;
@@ -30771,6 +30900,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) { $('restoreMessage').textContent = error.message; }
     finally { button.disabled = false; }
   });
+  $('sfxVol').value = sfxState.vol; $('sfxVolLab').textContent = sfxState.vol; // 5.7.6 효과음 음량
+  $('sfxVol').addEventListener('input', e => { sfxSetVolume(e.target.value); $('sfxVolLab').textContent = sfxState.vol; });
+  $('sfxVol').addEventListener('change', () => sfx('click'));
   $('reduceMotionSetting').addEventListener('change', e => { profile.settings.reduceMotion = e.target.checked; saveProfile(); });
   $('btnDeveloperToggle').addEventListener('click', () => {
     if (developerMode || devDeviceTrusted()) { setDeveloperMode(!developerMode); return; } // 인증된 기기는 원터치
