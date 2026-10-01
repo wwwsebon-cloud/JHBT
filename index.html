@@ -1091,6 +1091,7 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .v57-maint small { color:#8a8a86; font-size:12px; }
 .v57-maint .until { font:800 14px var(--v4-mono, monospace); color:#ffd166; padding:6px 12px; border:1px dashed #ffd16688; border-radius:999px; }
 .v57-maint .until[hidden] { display:none; }
+.v57-maintbar { position:fixed; left:50%; top:8px; transform:translateX(-50%); z-index:99999; max-width:calc(100vw - 20px); padding:7px 14px; border-radius:999px; background:#171717; color:#ffd166; font:800 12px inherit; box-shadow:0 4px 14px rgba(0,0,0,.3); text-align:center; pointer-events:none; }
 .v57-maint .wwe { margin-top:6px; padding:11px 18px; border-radius:12px; border:0; background:#e5322d; color:#fff; font:900 15px inherit; cursor:pointer; }
 .v57-devquick { position:fixed; left:10px; bottom:10px; z-index:100001; font:800 11px var(--v4-mono, monospace); letter-spacing:.08em; padding:6px 10px; border-radius:999px; border:1.5px solid #171717; background:#fff; color:#171717; cursor:pointer; opacity:.75; }
 .v57-devquick[hidden] { display:none; }
@@ -9968,7 +9969,7 @@ function normalizeProfile(raw) {
         ? { season: safeCount(raw.competitive.finalSnap.season), tp: safeCount(raw.competitive.finalSnap.tp), wins: safeCount(raw.competitive.finalSnap.wins), losses: safeCount(raw.competitive.finalSnap.losses), deck: (Array.isArray(raw.competitive.finalSnap.deck) ? raw.competitive.finalSnap.deck : []).filter(id => typeof id === 'string' && /^[a-z_]{1,24}$/.test(id)).slice(0, 3) } : null
     },
     activeMatch: raw.activeMatch && typeof raw.activeMatch === 'object'
-      ? { mode: String(raw.activeMatch.mode || 'ranked'), startedAt: Math.max(0, Number(raw.activeMatch.startedAt) || 0) } : null,
+      ? { mode: String(raw.activeMatch.mode || 'ranked'), startedAt: Math.max(0, Number(raw.activeMatch.startedAt) || 0), ...(raw.activeMatch.maint ? { maint: true } : {}) } : null, // 5.7.6 점검 중이던 판 표시
     daily: {
       day: String(rawDaily.day || ''),
       points: Math.max(0, Math.floor(Number(rawDaily.points) || 0)),
@@ -10301,6 +10302,13 @@ function enableDeveloperMode() {
 // 5.7.4 서버 점검: 점검 중이면 개발자 모드가 아닌 사람은 게임을 할 수 없다
 let maintState = null, maintTimer = null;
 const maintOn = () => !!(maintState && maintState.on) && !(maintState.until && Date.now() >= maintState.until); // 끝나는 시각이 지나면 저절로 열린다
+const maintInMatch = () => !!state.maintShield && ['battle', 'compdraft', 'loading'].includes(state.screen) && !state.matchSettled; // 점검 전에 시작한 판은 끝까지 할 수 있다
+function maintMarkMatch() { // 점검이 걸린 순간 하고 있던 판 → 져도 점수가 떨어지지 않는다
+  if (state.maintShield || state.matchSettled || !['battle', 'compdraft', 'loading'].includes(state.screen)) return;
+  state.maintShield = true;
+  if (profile.activeMatch) { profile.activeMatch.maint = true; saveProfile(); }
+  if (!$('maintBar')) { const bar = document.createElement('div'); bar.id = 'maintBar'; bar.className = 'v57-maintbar'; bar.textContent = '🛠 서버 점검이 시작됐어요 · 이 판은 끝까지 할 수 있고, 져도 점수가 떨어지지 않아요'; document.body.appendChild(bar); }
+}
 const maintInWwe = () => ['wwe', 'wweBracket'].includes(state.screen) || (state.mode === 'wwe' && state.screen === 'battle'); // 점검 중에도 WWE는 할 수 있다
 function maintUntilText(until) {
   if (!until) return '';
@@ -10309,7 +10317,9 @@ function maintUntilText(until) {
   return `${hm}까지 · ${m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`} 남음`;
 }
 function maintApply() {
-  const on = maintOn(), block = on && !developerMode && !maintInWwe();
+  const on = maintOn();
+  if (on) maintMarkMatch();
+  const block = on && !developerMode && !maintInWwe() && !maintInMatch();
   clearTimeout(maintTimer);
   if (on) maintTimer = setTimeout(maintApply, 30000); // 남은 시간 · 자동 열림
   if (on && maintState.until) { $('maintUntil').hidden = false; $('maintUntil').textContent = '⏰ ' + maintUntilText(maintState.until); } else $('maintUntil').hidden = true;
@@ -12409,6 +12419,7 @@ function settleMatch(won, draw, surrendered = false) {
   if (state.matchSettled) return state.lastSettlement;
   state.matchSettled = true;
   profile.activeMatch = null;
+  const maintShield = !!state.maintShield && !won && !draw; // 5.7.6 서버 점검 중에 하던 판은 져도 점수가 떨어지지 않는다
   if (state.mode === 'friendly') { // 5.0 친선전: 친선전 전적만 남긴다
     const rec = profile.friendlyRecord = profile.friendlyRecord || { w: 0, l: 0 };
     if (!draw) { if (won) rec.w++; else rec.l++; }
@@ -12477,9 +12488,9 @@ function settleMatch(won, draw, surrendered = false) {
     const enemyTier = compTierInfo(state.enemyTp ?? before.tp);
     const tierDiff = enemyTier.index - before.index;
     let tp = 0, tpMult = 1;
-    if (!draw && !surrendered) profile.winStreak = won ? (profile.winStreak || 0) + 1 : 0; else if (surrendered) profile.winStreak = 0;
+    if (!maintShield) { if (!draw && !surrendered) profile.winStreak = won ? (profile.winStreak || 0) + 1 : 0; else if (surrendered) profile.winStreak = 0; }
     if (!draw && won) { tpMult = diffMult(tierDiff, COMP_TIER_DIFF_BONUS); tp = Math.round(compWinTp(before.index) * tpMult); profile.competitive.wins++; }
-    else if (!draw) { tpMult = diffMult(-tierDiff, COMP_TIER_DIFF_BONUS); tp = -Math.min(COMP_LOSS_CAP, Math.round(compLossTp(before.index) * tpMult)); profile.competitive.losses++; }
+    else if (!draw && !maintShield) { tpMult = diffMult(-tierDiff, COMP_TIER_DIFF_BONUS); tp = -Math.min(COMP_LOSS_CAP, Math.round(compLossTp(before.index) * tpMult)); profile.competitive.losses++; }
     profile.competitive.tp = Math.max(0, profile.competitive.tp + tp);
     profile.competitive.peak = Math.max(profile.competitive.peak, profile.competitive.tp);
     profile.competitive.lastDeck = state.myDeckIds.filter(id => CHAR_DB[id]).slice(0, 3);
@@ -12527,8 +12538,8 @@ function settleMatch(won, draw, surrendered = false) {
     }
   } else if (!draw && (!castleMode || surrendered)) {
     xpMult = diffMult(-levelDiff, LEVEL_DIFF_BONUS);
-    xp = castleMode ? 0 : -Math.round((30 + Math.floor(Math.random() * 21)) * xpMult);
-    if (!castleMode) { profile.losses++; if (state.mode === 'ranked') recordRankedForm(false); }
+    xp = castleMode || maintShield ? 0 : -Math.round((30 + Math.floor(Math.random() * 21)) * xpMult);
+    if (!castleMode && !maintShield) { profile.losses++; if (state.mode === 'ranked') recordRankedForm(false); }
   }
   const ticketBoost = !!state.ticketBoost && !draw; // 5.2 부스트 티켓: 이기면 ×2, 지면 잃는 것도 ×2 (경험치 부스트와 중첩 안 됨)
   if (ticketBoost) xp *= 2;
@@ -12540,7 +12551,7 @@ function settleMatch(won, draw, surrendered = false) {
   state.ticketBoost = false;
   // 4.4.1 연승 보너스: 3연승 +10, 4연승 +20 … 10연승 +80 경험치
   let streakXp = 0;
-  if (!draw && !surrendered) profile.winStreak = won ? (profile.winStreak || 0) + 1 : 0;
+  if (!draw && !surrendered && !maintShield) profile.winStreak = won ? (profile.winStreak || 0) + 1 : 0;
   else if (surrendered) profile.winStreak = 0;
   if (!draw && won && xp > 0) { streakXp = Math.max(0, Math.min(profile.winStreak || 0, 10) - 2) * 10; xp += streakXp; }
   if (state.mode === 'duo') { if (xp > 0) xp = Math.round(xp * DUO_REWARD); gold = Math.round(gold * DUO_REWARD); diamonds = Math.round(diamonds * DUO_REWARD); } // 5.4 2:2 대전: 보상 1.2배
@@ -12565,6 +12576,13 @@ function settleMatch(won, draw, surrendered = false) {
 // 끝나지 않은 랭크전 기록이 남아 있으면 (도중에 끄거나 나감) 일반 패배와 같이 처리한다.
 function settleAbandonedMatch() {
   if (!profile.activeMatch) return;
+  if (profile.activeMatch.maint) { // 5.7.6 서버 점검 중이던 판은 나가도 패배로 치지 않는다
+    profile.activeMatch = null;
+    abandonNotice = '서버 점검으로 중단된 경기는 패배로 치지 않았어요. (점수 변화 없음)';
+    persistProfile();
+    window.JihooOnline.queueSave();
+    return;
+  }
   if (profile.activeMatch.mode === 'competitive') {
     profile.activeMatch = null;
     const before = compTierInfo(profile.competitive.tp);
@@ -12975,6 +12993,7 @@ function cancelRuntimeTasks() {
 
 function leaveBattle() {
   emoClear(); // 5.7
+  state.maintShield = false; $('maintBar')?.remove(); // 5.7.6
   if (state.net) { if (!state.net.done && state.screen === 'battle' && !state.matchSettled) netSend({ t: 'bye' }); netCleanup(); } // 5.0 친선전
   cancelRuntimeTasks();
   state.castles = null;
@@ -25395,6 +25414,7 @@ function finishMatch(winnerSide, surrendered = false) {
       ? (won ? '투기장에서 적을 전멸시켰습니다' : '투기장에서 전멸했습니다')
       : (won ? '라이프를 먼저 0으로 만들었습니다' : '라이프가 먼저 0이 되었습니다');
   }
+  if (state.maintShield && !won && !draw && state.mode !== 'friendly' && state.mode !== 'coop') $('endSub').textContent += ' · 🛠 서버 점검 중이라 점수가 떨어지지 않았어요';
   const again = $('btnArenaAgain');
   if (again) again.style.display = state.mode === 'arena' ? 'inline-flex' : 'none';
   const card = $('settlementCard');
@@ -25879,11 +25899,12 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
   '5.7.6': {
-    label: 'v5.7.6 경쟁전 점수 조정',
+    label: 'v5.7.6 경쟁전 점수 조정 · 점검 중 경기 보호',
     date: '2026.10.02',
     sections: [
       { title: '조정', items: [
-        { emoji:'🏆', name:'경쟁전 승리 TP', tag:'adjust', color:'#2f6fed', desc:'플래티넘 200대 → 다이아 90대로 <b>한 번에 뚝 떨어지던</b> 점수를, 플래티넘 III 부터 <b>한 칸씩 조금씩</b> 줄어들게 바꿨어요. 플래티넘 II 약 195 · 다이아 III 약 150 · 에이스 III 약 105 · 마스터 III 약 70 · <b>그랜드마스터 ~ 챌린저 약 50</b> (±10%). 골드까지는 그대로 200~240.' }
+        { emoji:'🏆', name:'경쟁전 승리 TP', tag:'adjust', color:'#2f6fed', desc:'플래티넘 200대 → 다이아 90대로 <b>한 번에 뚝 떨어지던</b> 점수를, 플래티넘 III 부터 <b>한 칸씩 조금씩</b> 줄어들게 바꿨어요. 플래티넘 II 약 195 · 다이아 III 약 150 · 에이스 III 약 105 · 마스터 III 약 70 · <b>그랜드마스터 ~ 챌린저 약 50</b> (±10%). 골드까지는 그대로 200~240.' },
+        { emoji:'🛠', name:'점검 중 경기 보호', tag:'adjust', color:'#2f6fed', desc:'랭크전 · 경쟁전 · 2:2 대전을 하다가 <b>서버 점검이 시작되면</b> 그 판은 끝까지 할 수 있고, <b>져도 점수(경험치 · TP)가 떨어지지 않아요</b>. 점검 때문에 중간에 나가도 패배로 치지 않아요.' }
       ] }
     ]
   },
