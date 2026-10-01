@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.7.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.7.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -4610,6 +4610,32 @@ html[data-theme="light"] #app #screen-battle.deathmatch .battle-arena::after { c
   html[data-theme="light"] #app .v4-hud .btn-stats { padding:6px 7px; font-size:10px; }
 }
 @media (max-width:640px) { html[data-theme="light"] #app #screen-battle[data-phase="deploy"] .minimap { display:none; } }
+/* 5.7.2 휴대폰: 버튼이 늘면서(EMOTE) 상단바가 넘쳐 승률 글자가 '배치 단계'와 겹치고 '스탯 · 항복'이 세로로 꺾였다
+   → 두 줄로: 위 줄 = 라운드 · 단계 | 버튼 · 타이머, 아래 줄 = 승률 막대 (전체 폭) */
+@media (max-width:640px) {
+  html[data-theme="light"] #app #screen-battle .battle-topbar.v4-hud { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"hl hr" "ho ho"; row-gap:6px; column-gap:6px; padding:6px 8px; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .v4-hud-left { grid-area:hl; flex-direction:row; align-items:center; gap:5px; min-width:0; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .v4-hud-right { grid-area:hr; gap:4px; flex-wrap:nowrap; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .odds-wrap { grid-area:ho; min-width:0; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .btn-stats { white-space:nowrap; padding:5px 7px; font-size:10px; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .v4-phase-chip { white-space:nowrap; font-size:10px; padding:4px 7px; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .round-badge { white-space:nowrap; }
+  html[data-theme="light"] #app #screen-battle .v4-hud .v4-tring { width:36px; height:36px; flex:none; }
+}
+@media (max-width:640px) { html[data-theme="light"] #app #screen-battle .v4-hud .v4-tring .phase-timer { font-size:9px; letter-spacing:-.06em; } }
+@media (max-width:430px) { html[data-theme="light"] #app #screen-battle .v4-hud .v4-phase-chip { display:none; } }
+/* 5.7.2 휴대폰 경쟁전 밴픽: 슬롯이 큰 크기로 덮여 오른쪽이 잘리고, 밴 6개가 세로로 쌓여 카드를 가렸다
+   → 밴은 픽 줄 위에 가로 한 줄, 픽 슬롯은 화면 폭에 맞춰 작게 */
+@media (max-width:760px) {
+  html[data-theme="light"] #app #screen-compdraft .v47-cd-top .v4-cd-row { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px 8px; padding:0 10px; }
+  html[data-theme="light"] #app #screen-compdraft .v47-cd-top .v4-cd-bans { order:-1; width:100%; flex-direction:row; justify-content:center; gap:8px; margin-top:6px; }
+  html[data-theme="light"] #app #screen-compdraft .cd-timer::after { animation:none; }
+  html[data-theme="light"] #app #screen-compdraft .v47-cd-top .v4-cd-bans #cdBanRow { width:auto; max-width:none; flex-wrap:nowrap; gap:4px; }
+  html[data-theme="light"] #app #screen-compdraft .v4-ban { width:30px; height:30px; }
+  html[data-theme="light"] #app #screen-compdraft .v47-cd-top .cd-picks { flex-wrap:nowrap; gap:5px; width:auto; max-width:none; margin:0; }
+  html[data-theme="light"] #app #screen-compdraft .v47-cd-top .cd-slot { width:min(54px, calc((100vw - 60px) / 6 - 5px)); height:auto; aspect-ratio:3 / 4; padding:3px; }
+  html[data-theme="light"] #app #screen-compdraft .v47-cd-top .cd-slot small { display:none; }
+}
 /* ─── 4.1 뽑기 v2 (7a): 천장 · 소환 풀 · 탭해서 공개 · 10+1 그리드 ─── */
 @keyframes v42Flash { 0% { opacity:.85; } 100% { opacity:0; } }
 @keyframes v42Invert { 0% { opacity:1; } 100% { opacity:0; } }
@@ -6981,9 +7007,9 @@ const CHARACTER_BALANCE = {
     stage1Time: 4, stage2Time: 2.5, stage2Crit: 0.1 // 4.7.2 폼 변화: 1단계 4초 ↔ 2단계 2.5초 (크리티컬 10%)
   },
   cloud: {
-    hp: 4600, atk: 0, atkSpeed: 1, range: 45, speed: 63, // 4.7.2 HP 2800
+    hp: 3800, atk: 0, atkSpeed: 1, range: 45, speed: 63, // 5.7.3 HP 4600 → 3800
     noAttack: true,
-    cloudRadius: 112.5, cloudSlow: 0.5, cloudDps: 240, // 5.6 2.5칸 (레벨업마다 +0.1칸) · 5.6.1 400 → 240
+    cloudRadius: 112.5, cloudSlow: 0.5, cloudDps: 140, // 5.6 2.5칸 (레벨업마다 +0.1칸) · 5.7.3 240 → 140
     cloudEvery: 0.5 // 4.7.0 0.5초마다
   },
   golf: {
@@ -8894,7 +8920,7 @@ const CHAR_DB = {
     id: 'cloud', name: '먹구름 지후', emoji: '⛈️', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#4a4a52', portrait: PORTRAITS.cloud,
     ...CHARACTER_BALANCE.cloud,
-    skillDesc: '공격하지 않는다. 자신 주변 <b>반경 2.5칸</b>(레벨업마다 <b>+0.1칸</b>)이 먹구름 지역: 안에 있는 적은 이동속도 <b>-50%</b> · <b>0.5초마다 240</b> 피해 (번개가 떨어진다). 적에게 붙어 다닌다.'
+    skillDesc: '공격하지 않는다. 자신 주변 <b>반경 2.5칸</b>(레벨업마다 <b>+0.1칸</b>)이 먹구름 지역: 안에 있는 적은 이동속도 <b>-50%</b> · <b>0.5초마다 140</b> 피해 (번개가 떨어진다). 적에게 붙어 다닌다.'
   },
   // ── 4.7.0 신규 ──
   enhance: {
@@ -25727,6 +25753,19 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.7.3': {
+    label: 'v5.7.3 먹구름 하향 · 휴대폰 화면 개선',
+    date: '2026.10.01',
+    sections: [
+      { title: '하향', items: [
+        { emoji:'🌧', name:'먹구름 지후', tag:'nerf', color:'#e5322d', portraitKey:'cloud', desc:'체력 <b>4,600 → 3,800</b> · 먹구름 피해 <b>240 → 140</b> (0.5초마다).' }
+      ] },
+      { title: '수정', items: [
+        { emoji:'📱', name:'휴대폰 전투 상단바', tag:'fix', color:'#f08c00', desc:'버튼이 늘면서 승률 글자가 겹치고 <b>스탯 · 항복</b> 버튼이 세로로 꺾이던 문제. 상단바를 <b>두 줄</b>(버튼 / 승률 막대)로 나눴어요.' },
+        { emoji:'📱', name:'휴대폰 경쟁전 밴픽', tag:'fix', color:'#f08c00', desc:'픽 칸이 화면 밖으로 잘리고 밴 목록이 세로로 쌓여 카드를 가리던 문제. 밴은 <b>가로 한 줄</b>, 픽 칸은 화면 폭에 맞춰 줄였어요.' }
+      ] }
+    ]
+  },
   '5.7.2': {
     label: 'v5.7.2 팝업스토어 상향 · 랜턴 · 지후함수 하향 · 봇 이모티콘',
     date: '2026.10.01',
