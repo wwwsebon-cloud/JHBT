@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.7.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.7.4"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -1887,14 +1887,22 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .fx-n55-dub { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:5; }
 .fx-n55-dub i { position:absolute; inset:0; border-radius:50%; border:5px solid #b06bff; box-shadow:0 0 18px #7d2cff inset; animation:moaiWave .7s ease-out forwards; }
 .fx-n55-dub i + i { animation-delay:.12s; border-color:#ff5ad8; }
-.fx-n55-speaker { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:6; width:34px; height:34px; display:grid; place-items:center; }
-.fx-n55-speaker b { font-size:26px; filter:drop-shadow(0 2px 3px rgba(0,0,0,.5)); position:relative; z-index:1; }
-.fx-n55-speaker i { position:absolute; left:50%; top:50%; width:var(--r); height:var(--r); transform:translate(-50%,-50%) scale(.2); border-radius:50%; border:3px solid rgba(176,107,255,.8); opacity:0; }
+.fx-n55-speaker { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:6; width:40px; height:40px; display:grid; place-items:center; }
+/* 5.7.4 네모난 앰프 (스피커 두 개) · 바닥에 네모 범위 · 0.5초마다 네모 충격파 */
+.fx-n55-speaker b { position:relative; z-index:2; width:40px; height:40px; box-sizing:border-box; border-radius:6px; background:#1d1530; border:3px solid #b06bff; box-shadow:0 3px 8px rgba(0,0,0,.45); display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; padding:3px 0; }
+.fx-n55-speaker b s { display:block; width:15px; height:15px; border-radius:50%; background:radial-gradient(circle,#e3c8ff 0 22%,#3b2560 26% 55%,#9b5cff 60%); text-decoration:none; }
+.fx-n55-speaker b s + s { width:11px; height:11px; }
+.fx-n55-speaker.pulse b { animation:n55thump .3s ease-out; }
+@keyframes n55thump { 30% { transform:scale(1.18); } }
+.fx-n55-speaker u { position:absolute; left:50%; top:50%; width:var(--r); height:var(--r); transform:translate(-50%,-50%); border:2px dashed rgba(176,107,255,.75); background:rgba(176,107,255,.12); border-radius:4px; z-index:0; }
+.fx-n55-speaker i { position:absolute; left:50%; top:50%; width:var(--r); height:var(--r); transform:translate(-50%,-50%) scale(.2); border-radius:4px; border:5px solid rgba(190,120,255,.95); background:rgba(176,107,255,.28); opacity:0; z-index:1; }
+.fx-n55-note { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:7; font:900 30px sans-serif; color:#8a3cff; text-shadow:0 0 3px #fff, 0 0 6px #fff, 0 2px 3px rgba(0,0,0,.35); animation:n55note .55s ease-out forwards; }
+@keyframes n55note { from { opacity:1; transform:translate(-50%,-50%) scale(.6); } to { opacity:0; transform:translate(-50%,-160%) scale(1.25); } }
 .fx-n55-speaker.pulse i { animation:n55pulse .45s ease-out; }
 @keyframes n55pulse { from { transform:translate(-50%,-50%) scale(.2); opacity:1; } to { transform:translate(-50%,-50%) scale(1); opacity:0; } }
 .fx-n55-laser { position:absolute; pointer-events:none; z-index:6; transform-origin:0 50%; }
-.fx-n55-laser i { position:absolute; inset:0; border-radius:99px; background:linear-gradient(90deg, #fff, #ff2e4d 30%, rgba(255,46,77,.2)); box-shadow:0 0 10px #ff2e4d; animation:n55fade .18s linear forwards; }
-.fx-n55-laser.big i { background:linear-gradient(180deg, rgba(255,46,77,.3), #ff6b81 35%, #fff 50%, #ff6b81 65%, rgba(255,46,77,.3)); box-shadow:0 0 28px #ff2e4d; animation:n55flick .12s linear infinite alternate; }
+.fx-n55-laser i { position:absolute; inset:0; border-radius:99px; background:linear-gradient(90deg, #fff, #22d0f2 30%, rgba(34,208,242,.2)); box-shadow:0 0 10px #22d0f2; animation:n55fade .18s linear forwards; } /* 5.7.4 레이저 지후 그림 색(하늘색)에 맞춤 */
+.fx-n55-laser.big i { background:linear-gradient(180deg, rgba(34,208,242,.3), #7fe4f8 35%, #fff 50%, #7fe4f8 65%, rgba(34,208,242,.3)); box-shadow:0 0 28px #22d0f2; animation:n55flick .12s linear infinite alternate; }
 @keyframes n55fade { from { opacity:1; } to { opacity:0; } }
 @keyframes n55flick { from { opacity:.75; } to { opacity:1; } }
 .fx-n55-zap { position:absolute; pointer-events:none; z-index:7; transform-origin:0 50%; }
@@ -7086,8 +7094,8 @@ const CHARACTER_BALANCE = {
   dubstep: { // 5.5 신규
     hp: 2600, atk: 0, atkSpeed: 1, range: 180, speed: 72,
     noAttack: true, holdRange: true,
-    dubEvery: 5, dubRadiusCells: 4, dubDamage: 200, dubSpeakerChance: 1, // 5.5.1 25% → 100%
-    dubSpeakerTime: 2.5, dubSpeakerTick: 0.5, dubSpeakerDamage: 160, dubSpeakerRadiusCells: 1.5
+    dubEvery: 5, dubRadiusCells: 4, dubDamage: 800, dubSpeakerChance: 1, // 5.5.1 25% → 100% · 5.7.4 파동 200 → 800
+    dubSpeakerTime: 2.5, dubSpeakerTick: 0.5, dubSpeakerDamage: 210, dubSpeakerRadiusCells: 3 // 5.7.4 스피커 160 → 210 · 네모 범위 (중심에서 한 변까지 1.5 → 3칸)
   },
   laser: { // 5.5 신규
     hp: 2800, atk: 250, atkSpeed: 1.2, range: 270, speed: 67.5, // 5.5.1 200 → 250
@@ -8996,14 +9004,14 @@ const CHAR_DB = {
     id: 'dubstep', name: '덥스텝 지후', emoji: '🔊', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#7d2cff', portrait: PORTRAITS.dubstep || jhPlaceholder('🔊', '#7d2cff'),
     ...CHARACTER_BALANCE.dubstep,
-    skillDesc: '일반 공격 대신 <b>5초마다</b> 반경 <b>4칸</b> 원형 파동으로 적에게 <b>200</b> 피해. 파동마다 무작위 적 근처에 <b>스피커</b>를 떨어뜨린다 (유닛 아님 · <b>2.5초</b> 동안 0.5초마다 <b>160</b> 피해).'
+    skillDesc: '일반 공격 대신 <b>5초마다</b> 반경 <b>4칸</b> 원형 파동으로 적에게 <b>800</b> 피해. 파동마다 무작위 적 근처에 네모난 <b>스피커</b>를 떨어뜨린다 (유닛 아님 · 한 변 <b>6칸</b> 네모 범위 · <b>2.5초</b> 동안 0.5초마다 <b>210</b> 피해).'
   },
   laser: {
     id: 'laser', name: '레이저 지후', emoji: '🔦', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#ff2e4d', portrait: PORTRAITS.laser || jhPlaceholder('🔦', '#ff2e4d'),
     ...CHARACTER_BALANCE.laser,
     customAttack(caster, target) { laserStrike(caster, target); },
-    skillDesc: 'HP 2,800 · ATK 250 · 공격 간격 1.2초 · 사거리 6칸. 폭이 몸 반지름의 <b>1/4</b>인 <b>관통 · 무한 사거리</b> 레이저로 공격한다. <b>9번째</b> 공격마다 강화 레이저: 폭 <b>몸 지름의 1.5배</b>, <b>2초</b> 동안 안에 있는 적에게 0.25초마다 <b>150</b> 피해.'
+    skillDesc: 'HP 2,800 · ATK 250 · 공격 간격 1.2초 · 사거리 6칸. 폭이 몸 반지름의 <b>1/4</b>인 <b>관통 · 무한 사거리</b> 레이저로 공격한다. <b>9번째</b> 공격마다 강화 레이저: 폭 <b>몸 지름의 1.5배</b>, <b>2초</b> 동안 안에 있는 적에게 0.25초마다 <b>150</b> 피해. 강화 레이저를 쏘는 동안과 끝난 뒤 <b>1초</b>는 움직이지 못한다.'
   },
   quickfreeze: {
     id: 'quickfreeze', name: '쾌속냉각 지후', emoji: '🧊', role: 'controller', roleLabel: '컨트롤러',
@@ -9555,7 +9563,7 @@ const RANK_S_ABILITIES = {
   tyrant: { name: '공포 정치', desc: '분노 발동 때 범위 안 적의 공격력 <b>-5%</b> (라운드 끝까지)' },
   blackhole: { name: '사건의 지평선', desc: '끌어당기는 거리 <b>20% → 30%</b>', apply(d) { d.bhPull = 0.3; } },
   ufc: { name: '챔피언 벨트', desc: '이긴 팀의 공격력 · 공격속도 <b>+10% → +15%</b>', apply(d) { d.ufcWinAtk = 0.15; d.ufcWinAspd = 0.15; } },
-  dubstep: { name: '베이스 드롭', desc: '스피커 피해 <b>160 → 200</b>', apply(d) { d.dubSpeakerDamage = 200; } },
+  dubstep: { name: '베이스 드롭', desc: '스피커 피해 <b>210 → 260</b>', apply(d) { d.dubSpeakerDamage = 260; } },
   laser: { name: '오버클럭', desc: '강화 레이저 <b>9번째 → 7번째</b> 공격마다', apply(d) { d.laserEvery = 7; } },
   quickfreeze: { name: '순간 동결', desc: '빙결될 때마다 늘어나는 받는 피해 <b>+15% → +25%</b>', apply(d) { d.frostBonus = 0.25; } },
   water: { name: '해일', desc: '파도 넉백 <b>5칸 → 7칸</b>', apply(d) { d.waveKnockCells = 7; } },
@@ -18200,6 +18208,7 @@ function statusAndTimers(u, dt) {
     u._turretCd = (u._turretCd == null ? u.def.turretCooldown : u._turretCd) - dt;
     if (u._turretCd <= 0) { spawnTurret(u); u._turretCd += u.def.turretCooldown; }
   }
+  if (u._laserRoot > 0) u._laserRoot = Math.max(0, u._laserRoot - dt); // 5.7.4 레이저 강화 중 고정
   if (u._lockedFor > 0) {
     u._lockedFor = Math.max(0, u._lockedFor - dt);
     u.el.classList.toggle('locked-unit', u._lockedFor > 0);
@@ -18688,7 +18697,7 @@ function physIntegrate(u, dt) {
   if (u._dragonDash) { blackflameDashStep(u, dt); return; }
   if (u._uniDash) { unicornDashStep(u, dt); return; }
   if (u._trainDash) { trainDashStep(u, dt); return; }
-  if (u._lockedFor > 0) { u.vx = 0; u.vy = 0; return; }
+  if (u._lockedFor > 0 || u._laserRoot > 0) { u.vx = 0; u.vy = 0; return; }
   if (u._flight || u._leap) return;
   if (u._knockSlide) {
     const slide = u._knockSlide;
@@ -22654,7 +22663,7 @@ function tickNew47(u, dt) {
           const t = foes[Math.floor(Math.random() * foes.length)], a = Math.random() * Math.PI * 2, r = Math.random() * GRID;
           const { W, H } = arenaBounds();
           const x = clamp(t.x + Math.cos(a) * r, 30, W - 30), y = clamp(t.y + Math.sin(a) * r, 30, H - 30);
-          const el = fx38('fx-n55-speaker', x, y, '<b>🔊</b><i></i>');
+          const el = fx38('fx-n55-speaker', x, y, '<u></u><i></i><b><s></s><s></s></b>'); // 5.7.4 네모 앰프 · 바닥 네모 범위 · 네모 충격파
           el.style.setProperty('--r', d.dubSpeakerRadiusCells * GRID * 2 + 'px');
           n55().speakers.push({ owner: u, side: u.side, x, y, t: d.dubSpeakerTime, tick: 0, el });
           v41Callout(u, v41SkillName(u));
@@ -24721,6 +24730,7 @@ function laserStrike(u, target) {
     const width = unitRadius(u) * 2 * 1.5;
     const el = fx38('fx-n55-laser big', u.x, u.y, '<i></i>');
     n55().beams.push({ owner: u, side: u.side, ang, width, t: d.laserBigTime, tick: 0, el });
+    u._laserRoot = d.laserBigTime + 1; // 5.7.4 강화 레이저 동안 + 끝나고 1초 못 움직인다
     v41Callout(u, v41SkillName(u));
     return;
   }
@@ -24794,7 +24804,12 @@ function tickNew55(dt) {
       sp.tick += CHARACTER_BALANCE.dubstep.dubSpeakerTick;
       const R = (sp.owner.def.dubSpeakerRadiusCells || 1.5) * GRID;
       sp.el.classList.remove('pulse'); void sp.el.offsetWidth; sp.el.classList.add('pulse');
-      state.units.forEach(e => { if (e.alive && !e.isCastle && e.side !== sp.side && !e._realm && !e._flight && Math.hypot(e.x - sp.x, e.y - sp.y) <= R + unitRadius(e)) dealDamage(sp.owner, e, sp.owner.def.dubSpeakerDamage, { isSkill: true, fromDeath: !sp.owner.alive }); });
+      state.units.forEach(e => {
+        if (!e.alive || e.isCastle || e.side === sp.side || e._realm || e._flight) return;
+        if (Math.max(Math.abs(e.x - sp.x), Math.abs(e.y - sp.y)) > R + unitRadius(e)) return; // 5.7.4 네모 범위
+        const note = fx38('fx-n55-note', e.x, e.y - unitRadius(e), '♪'); setTimeout(() => note.remove(), 600); // 맞은 적 위에 음표
+        dealDamage(sp.owner, e, sp.owner.def.dubSpeakerDamage, { isSkill: true, fromDeath: !sp.owner.alive }); });
+
     }
     if (sp.t <= 0) { sp.el.remove(); return false; }
     return true;
@@ -25658,14 +25673,14 @@ const BOT_TEMPER = {
 // 기분이 아주 좋거나 나쁘면 성격과 상관없이 그쪽 얼굴이 섞여 나온다
 const HEAT_MOODS = { high: ['brag', 'joy', 'chill', 'mock'], low: ['hurt', 'despair', 'confused'] };
 const emoRnd = (a, b) => a + Math.random() * (b - a);
+const BOT_EMO_GAP = 4000; // 5.7.4 봇 이모티콘은 최소 4초 간격 — 몰리면 버리지 않고 줄 세워 차례로
 const botMind = {
-  temper: 'manner', chatty: 1, heat: 0, quietUntil: 0, recent: [], fight: null, deaths: [], lastPulse: 0,
+  temper: 'manner', chatty: 1, heat: 0, quietUntil: 0, recent: [], fight: null, deaths: [], lastPulse: 0, queue: [], lastShown: 0, flushT: null,
   on() { return state.screen === 'battle' && !state.net && !state.tutMatch && !['preview', 'coop', 'friendly'].includes(state.mode); },
   // feeling: BOT_TEMPER.read 의 키 · weight: 0~1 (얼마나 큰일인가) · force: 쉬는 중이어도 (큰일)
   feel(feeling, weight, { delay = [300, 2200], force = false } = {}) {
     if (!this.on()) return false;
     const now = Date.now(), t = BOT_TEMPER[this.temper];
-    if (now < this.quietUntil && !(force && Math.random() < 0.7)) return false;
     if (Math.random() > Math.min(0.97, weight * t.talk * this.chatty)) return false;
     let moods = t.read[feeling]; if (!moods) return false;
     if (Math.abs(this.heat) >= 0.55 && Math.random() < 0.35) moods = HEAT_MOODS[this.heat > 0 ? 'high' : 'low'];
@@ -25678,21 +25693,36 @@ const botMind = {
     this.quietUntil = now + wait + emoRnd(2000, 9000) / this.chatty;
     setTimeout(() => {
       if (!this.on()) return;
-      emoShow('bot', pick);
-      // 가끔 연달아 하나 더 (말이 끝나기 전에 덧붙이는 느낌)
+      this.say(pick);
+      // 가끔 하나 더 덧붙인다 (대기열이라 4초 뒤에 나온다)
       if (Math.random() < 0.14 * this.chatty) {
         const more = EMOTICONS.filter(e => e.mood.some(m => moods.includes(m)) && !this.recent.includes(e.k));
         const k2 = more.length && more[Math.floor(Math.random() * more.length)].k;
-        if (k2) { this.recent = [k2, ...this.recent].slice(0, 5); setTimeout(() => { if (this.on()) emoShow('bot', k2); }, emoRnd(1300, 2600)); }
+        if (k2) { this.recent = [k2, ...this.recent].slice(0, 5); this.say(k2); }
       }
     }, wait);
     return true;
+  },
+  say(key) { // 대기열에 넣고 4초 간격으로 하나씩
+    if (this.queue.length >= 3) return;
+    this.queue.push(key);
+    this.flush();
+  },
+  flush() {
+    clearTimeout(this.flushT);
+    if (!this.queue.length) return;
+    if (!this.on()) { this.queue = []; return; }
+    const wait = this.lastShown + BOT_EMO_GAP - Date.now();
+    if (wait > 0) { this.flushT = setTimeout(() => this.flush(), wait); return; }
+    emoShow('bot', this.queue.shift());
+    this.lastShown = Date.now();
+    if (this.queue.length) this.flushT = setTimeout(() => this.flush(), BOT_EMO_GAP);
   },
   odds() { return this.fight ? this.fight.last : 0.5; },
   matchStart() {
     const temps = Object.keys(BOT_TEMPER);
     this.temper = temps[Math.floor(Math.random() * temps.length)];
-    this.chatty = emoRnd(0.75, 1.35); this.heat = 0; this.recent = []; this.quietUntil = 0;
+    this.chatty = emoRnd(0.75, 1.35); this.heat = 0; this.recent = []; this.quietUntil = 0; this.queue = []; this.lastShown = 0;
   },
   mood(delta) { this.heat = clamp(this.heat * 0.8 + delta, -1, 1); },
   roundStart() {
@@ -25741,7 +25771,7 @@ const botMind = {
   },
   // 0.4초마다: 정해진 때가 아니라 불쑥 한마디 (배치 중에도). 팽팽하거나 기분이 크게 흔들렸을수록 자주.
   pulse() {
-    if (!this.on() || (state.phase !== 'combat' && state.phase !== 'deploy')) return;
+    if (!this.on() || (state.phase !== 'combat' && state.phase !== 'deploy') || this.queue.length) return;
     const b = this.odds(), tension = state.phase === 'combat' ? 1 - Math.abs(b - 0.5) * 1.2 : 0.25;
     const perSec = 0.035 * this.chatty * (0.6 + tension + Math.abs(this.heat) * 0.6);
     if (Math.random() > perSec * 0.4) return;
@@ -25753,6 +25783,20 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.7.4': {
+    label: 'v5.7.4 덥스텝 상향 · 네모난 스피커 · 레이저 조정',
+    date: '2026.10.01',
+    sections: [
+      { title: '상향', items: [
+        { emoji:'🔊', name:'덥스텝 지후', tag:'buff', color:'#1f9d55', portraitKey:'dubstep', desc:'파동 피해 <b>200 → 800</b> · 스피커 피해 <b>160 → 210</b> (0.5초마다) · 스피커 범위 <b>반지름 1.5칸 원 → 한 변 6칸 네모</b> · S랭크 베이스 드롭 스피커 피해 <b>200 → 260</b>.' }
+      ] },
+      { title: '조정', items: [
+        { emoji:'🔦', name:'레이저 지후', tag:'adjust', color:'#2f6fed', portraitKey:'laser', desc:'레이저 색이 레이저 지후 그림 색(<b>하늘색</b>)으로 바뀌어요. 강화 레이저를 쏘는 동안과 끝난 뒤 <b>1초</b>는 움직이지 못해요.' },
+        { emoji:'🤖', name:'봇 이모티콘', tag:'adjust', color:'#2f6fed', desc:'봇 이모티콘이 연달아 터지지 않게 <b>최소 4초 간격</b>으로 하나씩 차례대로 나와요 (몰려도 버리지 않고 줄 세움).' },
+        { emoji:'🔊', name:'스피커 이펙트', tag:'adjust', color:'#2f6fed', desc:'스피커가 <b>네모난 앰프</b> 모양이 되고, 범위가 바닥에 네모로 표시돼요. 0.5초마다 네모 충격파가 퍼지고 맞은 적 위에 <b>음표</b>가 튀어요.' }
+      ] }
+    ]
+  },
   '5.7.3': {
     label: 'v5.7.3 먹구름 하향 · 휴대폰 화면 개선',
     date: '2026.10.01',
