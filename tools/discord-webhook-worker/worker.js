@@ -122,11 +122,11 @@ function buildEmbed(body) {
     const result = ['win', 'lose', 'draw'].includes(body.result) ? body.result : null;
     if (!mode || !result) return null;
     const head = result === 'win' ? '🏆 승리' : result === 'lose' ? '💀 패배' : '🤝 무승부';
-    const enemy = clean(body.enemyName, 16) || '상대';
+    const enemy = clean(body.enemyName, 40) || '상대';
     const score = /^\d{1,2}:\d{1,2}$/.test(String(body.score || '')) ? ` · ${body.score}` : '';
     const level = num(body.level);
     const fields = [];
-    const nickPlain = plain(body.nickname, 12) || '플레이어', enemyPlain = plain(body.enemyName, 16) || '상대';
+    const nickPlain = plain(body.nickname, 12) || '플레이어', enemyPlain = plain(body.enemyName, 40) || '상대';
     const deck = (label, names) => { const l = list(names); if (l.length) fields.push({ name: label, value: l.join('\n'), inline: true }); };
     deck(`${nickPlain}${level ? ` (Lv.${level})` : ''}`, body.myDeck);
     deck(enemyPlain, body.enemyDeck);
