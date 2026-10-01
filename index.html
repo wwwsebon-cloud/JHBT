@@ -29116,7 +29116,8 @@ function coopStep(aliveAllies, aliveEnemies) {
   const c = state.coop;
   if (!c || state.phase !== 'combat') return;
   if (aliveAllies === 0 && !state.pendingExplosions.length && !state.pendingMeteors.length) { coopGameOver('wipe'); return; }
-  if (aliveEnemies > COOP.OVERRUN) { coopGameOver('overrun'); return; }
+  const waveFoes = state.units.filter(u => u.side === 'enemy' && u.alive && !u.isCastle && u.coopWave).length; // 웨이브로 나온 지후만 센다 (소환물 제외)
+  if (waveFoes > COOP.OVERRUN) { coopGameOver('overrun'); return; }
   const t = state.combatTime || 0;
   if (c.clearing) {
     if (aliveEnemies === 0 || t >= c.clearAt) { coopMaintenance(); return; }
@@ -29143,7 +29144,7 @@ function coopRenderHud(force, aliveAllies, aliveEnemies) {
     $('phaseTimer').classList.toggle('urgent', !c.clearing && left <= 3);
     $('bottomStatusLine').innerHTML = c.clearing
       ? `🧹 <b>WAVE ${c.wave}</b> 정리 중 · 남은 적 <b>${aliveEnemies}</b>기를 잡으면 정비 시간 (${left}초)`
-      : `🌊 <b>WAVE ${c.wave}</b> · 다음 무리까지 <b>${left}</b>초 · 적 <b>${aliveEnemies}</b>기 · 아군 <b>${countedAlive('ally')}</b>/${COOP.CAP} · 최고 ${profile.coopBest || 0}웨이브`;
+      : `🌊 <b>WAVE ${c.wave}</b> · 다음 무리까지 <b>${left}</b>초 · 적 <b>${state.units.filter(u => u.side === 'enemy' && u.alive && u.coopWave).length}</b>/${COOP.OVERRUN}기 · 아군 <b>${countedAlive('ally')}</b>/${COOP.CAP} · 최고 ${profile.coopBest || 0}웨이브`;
   }
 }
 function coopMaintenance() {
