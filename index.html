@@ -6976,7 +6976,7 @@ const CHARACTER_BALANCE = {
   blackhole: { // 5.5 신규
     hp: 2400, atk: 0, atkSpeed: 1, range: 225, speed: 67.5,
     noAttack: true, holdRange: true,
-    bhEvery: 5, bhRadiusCells: 10, bhDamage: 250, bhPull: 0.2 // 5.5.1 180 → 250
+    bhEvery: 5, bhRadiusCells: 10, bhDamage: 400, bhPull: 0.2 // 5.5.1 180 → 400
   },
   ufc: { // 5.5 신규
     hp: 2000, atk: 111, atkSpeed: 1, range: 225, speed: 99,
@@ -6985,7 +6985,8 @@ const CHARACTER_BALANCE = {
   dubstep: { // 5.5 신규
     hp: 2100, atk: 0, atkSpeed: 1, range: 180, speed: 72,
     noAttack: true, holdRange: true,
-    dubEvery: 5, dubRadiusCells: 4, dubDamage: 200, dubSpeakerChance: 0.25, dubSpeakerTime: 2.5, dubSpeakerTick: 0.5, dubSpeakerDamage: 160, dubSpeakerRadiusCells: 1.5
+    dubEvery: 5, dubRadiusCells: 4, dubDamage: 200, dubSpeakerChance: 1, // 5.5.1 25% → 100%
+    dubSpeakerTime: 2.5, dubSpeakerTick: 0.5, dubSpeakerDamage: 160, dubSpeakerRadiusCells: 1.5
   },
   laser: { // 5.5 신규
     hp: 1900, atk: 250, atkSpeed: 1.2, range: 270, speed: 67.5, // 5.5.1 200 → 250
@@ -7007,6 +7008,7 @@ const CHARACTER_BALANCE = {
   electric: { // 5.5 신규
     hp: 1500, atk: 180, atkSpeed: 0.8, range: 72, speed: 162,
     isMelee: true, small: true,
+    zapCountWeights: [35, 27, 19, 12, 7], // 5.5.1 소환 1~5마리 (많을수록 드묾)
     zapChain: [0.8, 0.6], zapRadiusCells: 3, zapStunChance: 0.2, zapStun: 0.5
   },
   blessing: { // 5.5 신규
@@ -8880,7 +8882,7 @@ const CHAR_DB = {
     id: 'blackhole', name: '블랙홀 지후', emoji: '🕳️', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#2b1d4f', portrait: PORTRAITS.blackhole || jhPlaceholder('🕳️', '#2b1d4f'),
     ...CHARACTER_BALANCE.blackhole,
-    skillDesc: '공격하지 않는다. <b>5초마다 [중력장]</b>: 반경 <b>10칸</b> 안의 적에게 <b>250</b> 피해를 주고, 자신과의 거리의 <b>20%</b>만큼 끌어당긴다.'
+    skillDesc: '공격하지 않는다. <b>5초마다 [중력장]</b>: 반경 <b>10칸</b> 안의 적에게 <b>400</b> 피해를 주고, 자신과의 거리의 <b>20%</b>만큼 끌어당긴다.'
   },
   ufc: {
     id: 'ufc', name: 'UFC 지후', emoji: '🥊', role: 'support', roleLabel: '서포터',
@@ -8892,7 +8894,7 @@ const CHAR_DB = {
     id: 'dubstep', name: '덥스텝 지후', emoji: '🔊', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#7d2cff', portrait: PORTRAITS.dubstep || jhPlaceholder('🔊', '#7d2cff'),
     ...CHARACTER_BALANCE.dubstep,
-    skillDesc: '일반 공격 대신 <b>5초마다</b> 반경 <b>4칸</b> 원형 파동으로 적에게 <b>200</b> 피해. 파동마다 <b>25%</b> 확률로 무작위 적 근처에 <b>스피커</b>를 떨어뜨린다 (유닛 아님 · <b>2.5초</b> 동안 0.5초마다 <b>160</b> 피해).'
+    skillDesc: '일반 공격 대신 <b>5초마다</b> 반경 <b>4칸</b> 원형 파동으로 적에게 <b>200</b> 피해. 파동마다 무작위 적 근처에 <b>스피커</b>를 떨어뜨린다 (유닛 아님 · <b>2.5초</b> 동안 0.5초마다 <b>160</b> 피해).'
   },
   laser: {
     id: 'laser', name: '레이저 지후', emoji: '🔦', role: 'dealer', roleLabel: '딜러',
@@ -8926,7 +8928,7 @@ const CHAR_DB = {
     rarity: 'rare', color: '#ffd21f', portrait: PORTRAITS.electric || jhPlaceholder('⚡', '#ffd21f'),
     ...CHARACTER_BALANCE.electric,
     onAttack(caster, target) { electricZap(caster, target); },
-    skillDesc: 'HP 1,500 · ATK 180 · 근접 · 공격 간격 0.8초 · 이동속도 3.6칸. 공격하면 가까운 적 <b>2명</b>에게 전기가 튄다 (<b>80%</b> · <b>60%</b>). 공격할 때 <b>20%</b> 확률로 <b>0.5초 기절</b>. 몸집이 작다.'
+    skillDesc: 'HP 1,500 · ATK 180 · 근접 · 공격 간격 0.8초 · 이동속도 3.6칸. 공격하면 가까운 적 <b>2명</b>에게 전기가 튄다 (<b>80%</b> · <b>60%</b>). 공격할 때 <b>20%</b> 확률로 <b>0.5초 기절</b>. 몸집이 작다. 놓을 때 <b>1~5마리</b>가 무작위로 나온다 (많을수록 드묾 · 1마리 35% · 2마리 27% · 3마리 19% · 4마리 12% · 5마리 7%, 추가분은 유닛 수에 안 셈).'
   },
   blessing: {
     id: 'blessing', name: '축복 지후', emoji: '🙏', role: 'support', roleLabel: '서포터',
@@ -9451,7 +9453,7 @@ const RANK_S_ABILITIES = {
   tyrant: { name: '공포 정치', desc: '분노 발동 때 범위 안 적의 공격력 <b>-5%</b> (라운드 끝까지)' },
   blackhole: { name: '사건의 지평선', desc: '끌어당기는 거리 <b>20% → 30%</b>', apply(d) { d.bhPull = 0.3; } },
   ufc: { name: '챔피언 벨트', desc: '이긴 팀의 공격력 · 공격속도 <b>+10% → +15%</b>', apply(d) { d.ufcWinAtk = 0.15; d.ufcWinAspd = 0.15; } },
-  dubstep: { name: '베이스 드롭', desc: '스피커 확률 <b>25% → 40%</b>', apply(d) { d.dubSpeakerChance = 0.4; } },
+  dubstep: { name: '베이스 드롭', desc: '스피커 피해 <b>160 → 200</b>', apply(d) { d.dubSpeakerDamage = 200; } },
   laser: { name: '오버클럭', desc: '강화 레이저 <b>12번째 → 9번째</b> 공격마다', apply(d) { d.laserEvery = 9; } },
   quickfreeze: { name: '순간 동결', desc: '빙결될 때마다 늘어나는 받는 피해 <b>+15% → +25%</b>', apply(d) { d.frostBonus = 0.25; } },
   water: { name: '해일', desc: '파도 넉백 <b>5칸 → 7칸</b>', apply(d) { d.waveKnockCells = 7; } },
@@ -13004,7 +13006,7 @@ function openCoopLobby() {
   const done = profile.coopMilestones || [], best = profile.coopBest || 0;
   const next = COOP_MILESTONES.find(m => !done.includes(m.w));
   $('coopLobbyBody').innerHTML = `<div class="v54-best"><span>내 최고 기록</span><b>WAVE ${best}</b><small>${next ? `다음 웨이브 보상: <b>${next.w}웨이브</b> · ${next.label}` : '웨이브 보상을 모두 받았어요!'}</small></div>
-    <p class="v54-h" style="font-size:11px;opacity:.7;margin:4px 0 0">슬롯머신 · UFC · 핵미사일 지후는 협동전에 나오지 않아요.</p>
+    <p class="v54-h" style="font-size:11px;opacity:.7;margin:4px 0 0">🚫 <b>협동전 금지 캐릭터</b>: 슬롯머신 · 핵미사일 (덱에 있으면 들어갈 수 없어요) · UFC 지후는 협동전에 나오지 않아요.</p>
     <b class="v54-h">🎁 웨이브 보상 <small>(처음 도달할 때 한 번)</small></b>
     <div class="v54-track">${COOP_MILESTONES.map(m => `<div class="${done.includes(m.w) ? 'got' : best >= m.w ? 'ready' : ''}"><b>${m.w}</b><span>${m.label}</span>${done.includes(m.w) ? '<i>✓</i>' : ''}</div>`).join('')}</div>
     <b class="v54-h">🏆 협동전 리더보드</b>
@@ -16718,6 +16720,22 @@ function spawnUnit(side, x, y, charId, opts) {
     spawnUnit(side, x - extraOffset, y, 'mini', { saved: true, quiet: true, asExtra: true, skipCount: true, level: opts.level, ownerUid: unit.uid });
     spawnUnit(side, x + extraOffset, y, 'mini', { saved: true, quiet: true, asExtra: true, skipCount: true, level: opts.level, ownerUid: unit.uid });
     if (rankS(unit, 'mini')) spawnUnit(side, x, y + extraOffset, 'mini', { saved: true, quiet: true, asExtra: true, skipCount: true, level: opts.level, ownerUid: unit.uid }); // 미니 S
+  }
+  if (charId === 'electric' && !opts.asExtra) { // 5.5.1 전기 지후: 1~5마리 (추가분은 유닛 수에 안 셈)
+    const pl = state.placements.find(p => p.id === unit.placementId);
+    let n = pl && pl.zapN;
+    if (!n) {
+      const w = def.zapCountWeights || [1], total = w.reduce((a, b) => a + b, 0);
+      let r = Math.random() * total; n = 1;
+      for (let i = 0; i < w.length; i++) { r -= w[i]; if (r < 0) { n = i + 1; break; } }
+      if (pl) pl.zapN = n;
+    }
+    const off = bodySeparation(unit, { def, level: opts.level || 1 }) + 4;
+    for (let i = 1; i < n; i++) {
+      const a = (i - 1) / Math.max(1, n - 1) * Math.PI * 2;
+      spawnUnit(side, x + Math.cos(a) * off, y + Math.sin(a) * off, 'electric', { saved: true, quiet: true, asExtra: true, skipCount: true, level: opts.level, ownerUid: unit.uid });
+    }
+    if (n > 1 && !opts.quiet && unit.el) spawnDamageNumber(unit, `⚡ ×${n}`, { heal: true });
   }
   if (charId === 'duet' && !opts.asExtra) {
     const placement = state.placements.find(p => p.id === unit.placementId);
@@ -25225,7 +25243,9 @@ const PATCH_NOTES = {
       { title: '상향', items: [
         { emoji:'🔦', name:'레이저 지후', tag:'buff', color:'#ff2e4d', portraitKey:'laser', desc:'공격력 <b>200 → 250</b> · 강화 레이저 0.25초마다 <b>100 → 150</b>.' },
         { emoji:'🪩', name:'수은 지후', tag:'buff', color:'#b8c2cc', portraitKey:'mercury', desc:'체력 <b>2,500 → 3,000</b>.' },
-        { emoji:'🕳️', name:'블랙홀 지후', tag:'buff', color:'#2b1d4f', portraitKey:'blackhole', desc:'중력장 피해 <b>180 → 250</b>.' },
+        { emoji:'🕳️', name:'블랙홀 지후', tag:'buff', color:'#2b1d4f', portraitKey:'blackhole', desc:'중력장 피해 <b>180 → 400</b>.' },
+        { emoji:'🔊', name:'덥스텝 지후', tag:'buff', color:'#7d2cff', portraitKey:'dubstep', desc:'스피커를 떨어뜨릴 확률 <b>25% → 100%</b>. 랭크 S: 스피커 피해 160 → 200.' },
+        { emoji:'⚡', name:'전기 지후', tag:'buff', color:'#ffd21f', portraitKey:'electric', desc:'놓을 때 <b>1~5마리</b>가 무작위로 나와요 (많을수록 드묾 · 1마리 35% → 5마리 7%). 추가분은 유닛 수에 세지 않아요.' },
         { emoji:'🦋', name:'솔렘라멘트 지후', tag:'buff', color:'#9a9aa6', portraitKey:'solemn_black', desc:'[흑] 체력 <b>1,700 → 2,400</b> · [백] 쉴드 <b>2,000 → 2,500</b>.' },
         { emoji:'🚆', name:'신칸센 지후', tag:'buff', color:'#2f7fe0', portraitKey:'train', desc:'돌진 피해 <b>900 → 1,200</b>.' },
         { emoji:'🏮', name:'랜턴 지후', tag:'buff', color:'#f2a900', portraitKey:'lantern', desc:'공격력 <b>+100%</b> (15 → 30) · 회복량 <b>+50%</b> (30 → 45) · 입힌 피해의 <b>50%</b>만큼 자신도 회복.' }
@@ -25234,7 +25254,7 @@ const PATCH_NOTES = {
         { emoji:'🌀', name:'테슬라코일 지후', tag:'nerf', color:'#3fe0ff', portraitKey:'tesla', desc:'전기 공전 속도 <b>-50%</b>.' }
       ] },
       { title: '수정', items: [
-        { emoji:'🤝', name:'협동전', tag:'fix', color:'#12a594', desc:'<b>슬롯머신 · UFC · 핵미사일</b> 지후가 협동전에 나오지 않아요 (내 배치 · AI 파트너 · 적 웨이브).' },
+        { emoji:'🚫', name:'협동전 금지 캐릭터', tag:'adjust', color:'#12a594', desc:'<b>슬롯머신</b>은 과도한 도박으로 파산, <b>핵미사일 지후</b>는 불법 무기 개발로 잡혀가서 덱에 있으면 협동전에 들어갈 수 없어요. <b>UFC 지후</b>는 협동전에 나오지 않아요 (AI 파트너 · 적 웨이브 포함).' },
         { emoji:'🎲', name:'운테기', tag:'fix', color:'#e8a800', desc:'인벤토리에 운테기가 안 보이던 문제. 이제 항상 표시되고, 다른 기기 백업을 불러와도 이번 업데이트 운테기를 다시 받아요.' },
         { emoji:'📱', name:'태블릿 화면 회전', tag:'fix', color:'#555555', desc:'경기 중 화면 비율이 바뀌면 전장 좌표가 꼬이던 문제. 경기 동안은 전장 방향이 고정되고 화면에 맞게 다시 맞춰져요.' },
         { emoji:'📈', name:'지후함수 예고선', tag:'fix', color:'#555555', portraitKey:'func', desc:'공격 전 빨간 예고선이 빠르게 깜빡이던 문제 (광과민성). 부드럽게 맥동하도록 바꿨어요.' }
@@ -29181,9 +29201,21 @@ function coopPartnerDeployOne(deck = state.coop?.partner?.deck) {
   const pl = state.placements.find(p => p.id === u.placementId);
   if (pl) pl.mate = true;
 }
+// 5.5.1 협동전 금지 캐릭터: 덱에 있으면 들어갈 수 없다
+const COOP_BANNED = {
+  slot: '슬롯머신은 과도한 도박으로 인해 파산하여 협동전에 들어갈 수 없습니다',
+  nuke: '핵미사일 지후는 불법 무기를 개발하다가 잡혀가서 협동전에 참가할 수 없습니다'
+};
+function coopBanCheck(deck) {
+  const banned = deck.filter(id => COOP_BANNED[id]);
+  if (!banned.length) return true;
+  v55Dialog({ icon: '🚫', title: '협동전 금지 캐릭터', html: banned.map(id => `<p style="margin:6px 0"><b>${escapeHtml(COOP_BANNED[id])}</b></p>`).join('') + '<small>덱에서 빼고 다시 시도해 주세요.</small>' });
+  return false;
+}
 function startCoop() {
   const deck = currentDeck();
   if (deck.length !== 5) { state.draftSelected = deck; draftPendingEquip = null; renderDraftGrid(); $('draftGrid').scrollTop = 0; showScreen('draft'); return; }
+  if (!coopBanCheck(deck)) return; // 5.5.1
   leaveBattle();
   state.maxUnits = COOP.CAP;
   state.maxUnitsBonus = { ally: 0, enemy: 0 };
