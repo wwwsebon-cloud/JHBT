@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.7.5"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.7.6"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -15074,10 +15074,17 @@ const randomBetween = (min, max) => min + Math.floor(Math.random() * (max - min 
 const COMP_HIGH_FROM = COMP_TIER_NAMES.indexOf('다이아 III');
 const COMP_LOSS_CAP = 200;
 function compHighTier(tierIndex) { return tierIndex < COMP_HIGH_FROM ? -1 : clamp((tierIndex - COMP_HIGH_FROM) / (COMP_GRANDMASTER - COMP_HIGH_FROM), 0, 1); }
+// 5.7.6 얻는 TP: 골드까지 200~240, 플래티넘 III 부터 한 칸씩 같은 비율로 줄어 그랜드마스터 III 부터 챌린저까지 약 50.
+//   (전에는 플래티넘 200대 → 다이아 III 90대로 한 번에 뚝 떨어졌다)
+const COMP_WIN_FADE_FROM = COMP_TIER_NAMES.indexOf('플래티넘 III');
+function compWinCenter(tierIndex) {
+  if (tierIndex < COMP_WIN_FADE_FROM) return 220;
+  const t = clamp((tierIndex - COMP_WIN_FADE_FROM) / (COMP_GRANDMASTER - COMP_WIN_FADE_FROM), 0, 1);
+  return 220 * Math.pow(50 / 220, t); // 220 → 194 → 171 → 150 … → 55 → 50
+}
 function compWinTp(tierIndex = 0) {
-  const u = compHighTier(tierIndex);
-  if (u < 0) return randomBetween(200, 240);
-  const center = 100 - 30 * u;
+  if (tierIndex < COMP_WIN_FADE_FROM) return randomBetween(200, 240);
+  const center = compWinCenter(tierIndex);
   return randomBetween(Math.round(center * 0.9), Math.round(center * 1.1));
 }
 // 상대와의 차이 보정: 경쟁전 티어 1칸당 12%, 레벨 1당 6%. 이기면 상대가 높을수록 많이 얻고, 지면 상대가 높을수록 덜 잃는다.
@@ -25402,7 +25409,7 @@ function finishMatch(winnerSide, surrendered = false) {
       ${settlement.promoDiamonds ? `<div class="settlement-row"><span>승급 보상</span><b class="gain">${settlement.promoGroups.map(group => COMP_GROUP_LABELS[group]).join(' · ')} 첫 승급 +${formatNumber(settlement.promoDiamonds)} ◆</b></div>` : ''}
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
       <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.round(after.progress * 100)}%"></div></div>
-      <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (다이아부터 점점 줄어 그랜드마스터 약 70) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대). 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외).</div>`;
+      <div class="settlement-note">경쟁전은 경험치 대신 티어 점수(TP)가 오릅니다. 승리 +200~240 TP (플래티넘부터 한 칸씩 조금씩 줄어 그랜드마스터 · 챌린저 약 50) · 패배 시 티어가 높을수록 더 많이 잃습니다 (최대 200). 상대 티어가 한 칸 높을 때마다 얻는 TP +12% · 잃는 TP -12% (낮으면 반대). 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외).</div>`;
   } else if (settlement.coop) {
     const lv = settlement.after.level > settlement.before.level;
     const xpRatio = settlement.after.required ? settlement.after.current / settlement.after.required * 100 : 100;
@@ -25871,6 +25878,15 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.7.6': {
+    label: 'v5.7.6 경쟁전 점수 조정',
+    date: '2026.10.02',
+    sections: [
+      { title: '조정', items: [
+        { emoji:'🏆', name:'경쟁전 승리 TP', tag:'adjust', color:'#2f6fed', desc:'플래티넘 200대 → 다이아 90대로 <b>한 번에 뚝 떨어지던</b> 점수를, 플래티넘 III 부터 <b>한 칸씩 조금씩</b> 줄어들게 바꿨어요. 플래티넘 II 약 195 · 다이아 III 약 150 · 에이스 III 약 105 · 마스터 III 약 70 · <b>그랜드마스터 ~ 챌린저 약 50</b> (±10%). 골드까지는 그대로 200~240.' }
+      ] }
+    ]
+  },
   '5.7.5': {
     label: 'v5.7.5 서버 점검 안내 · 업데이트 감지 개선',
     date: '2026.10.02',
