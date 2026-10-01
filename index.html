@@ -1865,7 +1865,8 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .v55-rteam.tA h3 { color:#2f6fe0; } .v55-rteam.tB h3 { color:#e03131; }
 .v55-rslot { border:1px solid rgba(127,127,127,.35); border-radius:12px; padding:8px; margin-bottom:6px; display:flex; flex-direction:column; gap:5px; }
 .v55-rslot.me { box-shadow:0 0 0 2px #ffcf5a inset; }
-.v55-rslot.empty { align-items:center; justify-content:center; min-height:62px; opacity:.45; border-style:dashed; font-size:12px; }
+.v55-rslot.empty { align-items:center; justify-content:center; min-height:62px; opacity:.6; border-style:dashed; font-size:12px; }
+.v55-rslot.empty .btn { padding:4px 10px; font-size:11px; margin-top:4px; }
 .v55-rslot .nm { display:flex; align-items:center; gap:6px; min-width:0; } .v55-rslot .nm b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 .v55-rslot .nm em { font-style:normal; font-size:10px; font-weight:900; background:#111; color:#fff; border-radius:5px; padding:1px 5px; }
 .v55-rslot .dk { display:flex; gap:3px; } .v55-rslot .dk img { width:26px; height:26px; border-radius:6px; background:#fff; border:1px solid rgba(0,0,0,.15); object-fit:cover; }
@@ -27361,6 +27362,12 @@ function renderPatchNotes(ver, body = $('patchBody')) {
 // 업데이트 뒤 처음 로비에 들어오면 이번 버전 패치노트를 오버레이로 한 번 보여 준다
 function grantUpdateGift() { // 5.5 업데이트마다 운테기 1개
   const ver = gameVersion();
+  { // 이전 업데이트 때 안 받은 운테기 우편은 지운다 (오래 쉬다 와도 한 번에 여러 개 받지 않게)
+    const mine = `v${ver} 업데이트 선물 · 운테기`;
+    const before = (profile.mail || []).length;
+    profile.mail = (profile.mail || []).filter(m => m.claimed || m.title === mine || !/^v[\d.]+ 업데이트 선물 · 운테기$/.test(m.title || ''));
+    if (profile.mail.length !== before) { saveProfile(); if (typeof renderMailDot === 'function') renderMailDot(); }
+  }
   if (!profile.nickname || profile.luckGiftVer === ver) return;
   if ((profile.mail || []).some(m => m.title === `v${ver} 업데이트 선물 · 운테기`)) { profile.luckGiftVer = ver; return; }
   profile.luckGiftVer = ver;
@@ -28498,7 +28505,7 @@ function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName
     if (!state.net || state.net !== net || net.done) return;
     netSend({ t: 'hb' });
     if (net.team) { // 5.5 2:2: 한 명이라도 끊기면 그 팀이 진다
-      const gone = net.players.find(p => p.uid !== netMyUid() && Date.now() - (net.seen[p.uid] || 0) > NET_GONE_MS);
+      const gone = net.players.find(p => !p.bot && p.uid !== netMyUid() && Date.now() - (net.seen[p.uid] || 0) > NET_GONE_MS);
       if (gone) netSideLost(gone.side, gone.name);
     } else if (Date.now() - net.lastSeen > NET_GONE_MS) netOpponentGone();
   }, NET_HB_MS);
@@ -28524,7 +28531,10 @@ function netOnMessage(msg) {
   net.lastSeen = Date.now();
   if (net.team) { if (!net.sideOf[msg.from]) return; net.seen[msg.from] = Date.now(); }
   netLog('recv', msg.t, msg.k || '');
-  if (msg.t === 'act') { net.acts[msg.k + '-' + (net.team ? msg.from : oppSide())] = msg.act; netTryResolve(); return; }
+  if (msg.t === 'act') {
+    const bot = net.team && msg.as && msg.from === net.hostUid && net.players.some(p => p.bot && p.uid === msg.as);
+    net.acts[msg.k + '-' + (bot ? msg.as : net.team ? msg.from : oppSide())] = msg.act; netTryResolve(); return;
+  }
   if (msg.t === 'end') { if (net.team && msg.from !== net.hostUid) return; net.ends[msg.r] = msg; netCheckEnd(msg.r); return; }
   if (net.team && (msg.t === 'surrender' || msg.t === 'bye')) { const p = net.players.find(x => x.uid === msg.from); netSideLost(net.sideOf[msg.from], p ? p.name : '', msg.t === 'surrender'); return; }
   if (msg.t === 'surrender') { netFinish(meSide(), '상대가 항복했어요'); return; }
@@ -28551,9 +28561,31 @@ function netFinish(winnerSide, note, surrendered = false) {
 
 // ── 배치 ──
 function netDeployKey() { return state.round + '-' + state.deployRounds; }
+// 2:2 온라인 봇: 방장 화면이 봇의 배치를 대신 골라 보낸다 (전투는 네 화면이 똑같이 계산)
+function netBotAct(p) {
+  const side = p.side;
+  const pool = rollDeployPool(p.deck, p.deck, state.poolSize || 3, state.round, RAND0);
+  const merge = pool.filter(id => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden' && mergeTargetFor(side, id));
+  const place = countedAlive(side) < maxUnitsFor(side) ? pool.filter(id => canPlaceNew(side, id)) : [];
+  if (merge.length && (!place.length || RAND0() < 0.5)) {
+    const id = merge.slice().sort((a, b) => botTierScore(b) - botTierScore(a))[0];
+    return { kind: 'merge', charId: id, tile: mergeTargetFor(side, id).tile };
+  }
+  if (!place.length) return { kind: 'skip' };
+  const id = weightedSample(place, 1, x => Math.exp(3 * botTierScore(x)))[0];
+  const tile = v42PickTile(side, id, v42RoleRow(id));
+  return tile != null ? { kind: 'place', charId: id, tile } : { kind: 'skip' };
+}
 function netDeployStart(stuck) { // nextDeployCycle 에서: 풀을 보여준 뒤
   const net = state.net;
   net.cur = netDeployKey();
+  if (net.team && net.role === 'host') net.players.filter(p => p.bot).forEach(p => {
+    const k = net.cur + '-' + p.uid;
+    if (net.acts[k]) return;
+    const act = netBotAct(p);
+    net.acts[k] = act;
+    netSend({ t: 'act', k: net.cur, act, as: p.uid });
+  });
   if (net.acts[net.cur + '-' + netMe()]) { netWaiting(); return; }
   if (stuck) { netSubmit({ kind: 'skip' }); return; }
   startPhaseTimer(NET_ACT_TIME, netAutoAct);
@@ -28856,7 +28888,7 @@ async function leaveRoom(quiet) {
   if (!quiet) { renderRoomList(null); ROOMS.unsubList = window.JihooOnline.roomsSubscribe(list => renderRoomList(list)); }
 }
 function roomPlayers(room) {
-  return Object.entries(room.players || {}).map(([uid, p]) => ({ uid, name: String(p.n || '?'), team: p.t === 'B' ? 'B' : 'A', deck: Array.isArray(p.d) ? p.d.filter(id => CHAR_DB[id]).slice(0, 5) : [], j: Number(p.j) || 0 }))
+  return Object.entries(room.players || {}).map(([uid, p]) => ({ uid, name: String(p.n || '?'), team: p.t === 'B' ? 'B' : 'A', deck: Array.isArray(p.d) ? p.d.filter(id => CHAR_DB[id]).slice(0, 5) : [], j: Number(p.j) || 0, bot: !!p.bot }))
     .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : 0) || a.j - b.j || (a.uid < b.uid ? -1 : 1));
 }
 function renderRoom() {
@@ -28866,14 +28898,14 @@ function renderRoom() {
   $('roomHead').textContent = '🌐 ' + room.title;
   const col = t => {
     const list = ps.filter(p => p.team === t);
-    const slots = list.map(p => `<div class="v55-rslot${p.uid === me ? ' me' : ''}" data-uid="${p.uid}"><div class="nm"><b></b>${p.uid === room.host ? '<em>방장</em>' : ''}</div>
+    const slots = list.map(p => `<div class="v55-rslot${p.uid === me ? ' me' : ''}" data-uid="${p.uid}"><div class="nm"><b></b>${p.uid === room.host ? '<em>방장</em>' : ''}${p.bot ? '<em>🤖 봇</em>' : ''}</div>
       <div class="dk">${p.deck.map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('')}</div>
-      ${host ? `<div class="ops"><button type="button" class="btn" data-move="${p.uid}">${ps.filter(x => x.team !== t).length >= 2 ? '⇄ 맞바꾸기' : t === 'A' ? 'B팀으로 →' : '← A팀으로'}</button>${p.uid !== me ? `<button type="button" class="btn" data-kick="${p.uid}">내보내기</button>` : ''}</div>` : ''}</div>`).join('');
-    return `<div class="v55-rteam t${t}"><h3>${t === 'A' ? '🔵 A팀' : '🔴 B팀'} <small>${list.length}/2</small></h3>${slots}${'<div class="v55-rslot empty">빈 자리</div>'.repeat(Math.max(0, 2 - list.length))}</div>`;
+      ${host ? `<div class="ops"><button type="button" class="btn" data-move="${p.uid}">${ps.filter(x => x.team !== t).length >= 2 ? '⇄ 맞바꾸기' : t === 'A' ? 'B팀으로 →' : '← A팀으로'}</button>${p.uid !== me ? `<button type="button" class="btn" data-kick="${p.uid}">${p.bot ? '봇 빼기' : '내보내기'}</button>` : ''}</div>` : ''}</div>`).join('');
+    return `<div class="v55-rteam t${t}"><h3>${t === 'A' ? '🔵 A팀' : '🔴 B팀'} <small>${list.length}/2</small></h3>${slots}${(host ? `<div class="v55-rslot empty">빈 자리<button type="button" class="btn" data-addbot="${t}">🤖 봇 추가</button></div>` : '<div class="v55-rslot empty">빈 자리</div>').repeat(Math.max(0, 2 - list.length))}</div>`;
   };
   const a = ps.filter(p => p.team === 'A').length, b = ps.filter(p => p.team === 'B').length, ready = a === 2 && b === 2;
   $('roomBody').innerHTML = `<div class="v55-rteams">${col('A')}<div class="v55-rvs">VS</div>${col('B')}</div>
-    <p class="v55-rnote">${host ? (ready ? '팀이 다 찼어요. 시작하세요!' : '두 팀을 <b>2명씩</b> 맞추면 시작할 수 있어요. 팀은 방장이 바꿀 수 있어요.') : '방장이 팀을 맞추고 시작할 때까지 기다려 주세요…'}</p>
+    <p class="v55-rnote">${host ? (ready ? '팀이 다 찼어요. 시작하세요!' : '두 팀을 <b>2명씩</b> 맞추면 시작할 수 있어요. 팀은 방장이 바꿀 수 있고, 빈 자리는 <b>🤖 봇</b>으로 채울 수 있어요.') : '방장이 팀을 맞추고 시작할 때까지 기다려 주세요…'}</p>
     <div class="modal-actions"><button type="button" class="btn btn-secondary" id="btnRoomLeave">${host ? '방 닫기' : '나가기'}</button><button type="button" class="btn" id="btnRoomDeck">내 덱 다시 보내기</button>${host ? `<button type="button" class="btn btn-primary" id="btnRoomStart" ${ready ? '' : 'disabled'}>게임 시작 ▶</button>` : ''}</div>`;
   $('roomBody').querySelectorAll('.v55-rslot[data-uid]').forEach(el => { el.querySelector('.nm b').textContent = ps.find(p => p.uid === el.dataset.uid).name; });
   $('btnRoomLeave').onclick = () => leaveRoom(false);
@@ -28890,6 +28922,13 @@ function renderRoom() {
     }
     window.JihooOnline.roomUpdate(room.id, upd).catch(e => roomMsg(e.message, 'err'));
   });
+  $('roomBody').querySelectorAll('[data-addbot]').forEach(bt => bt.onclick = () => {
+    if (ps.length >= 4 || ps.filter(x => x.team === bt.dataset.addbot).length >= 2) return;
+    const used = new Set(ps.map(x => x.name)), names = BOT_NICKNAMES.filter(n => !used.has(n));
+    const lv = getLevelInfo(profile.totalXp).level;
+    const id = 'bot_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    window.JihooOnline.roomUpdate(room.id, { [`players.${id}`]: { n: String(names[Math.floor(Math.random() * names.length)] || '봇').slice(0, 16), t: bt.dataset.addbot, d: buildEnemyDeck(lv).filter(x => CHAR_DB[x].rarity !== 'hidden').concat(playableIds().filter(x => CHAR_DB[x].rarity !== 'hidden')).filter((x, i, a) => a.indexOf(x) === i).slice(0, 5), j: Date.now(), bot: true } }).catch(e => roomMsg(e.message, 'err'));
+  });
   $('roomBody').querySelectorAll('[data-kick]').forEach(bt => bt.onclick = () => window.JihooOnline.roomKick(room.id, bt.dataset.kick).catch(e => roomMsg(e.message, 'err')));
   if ($('btnRoomStart')) $('btnRoomStart').onclick = async () => {
     if (ps.some(p => p.deck.length !== 5)) { roomMsg('덱이 5기가 아닌 플레이어가 있어요.', 'err'); return; }
@@ -28903,7 +28942,7 @@ function startRoomMatch(room) {
   if (ROOMS.unsubRoom) { ROOMS.unsubRoom(); ROOMS.unsubRoom = null; }
   ROOMS.roomId = null; ROOMS.room = null;
   closeModal('roomModal');
-  const players = ps.map(p => ({ uid: p.uid, name: p.name, side: p.team === 'A' ? 'ally' : 'enemy', deck: p.deck }));
+  const players = ps.map(p => ({ uid: p.uid, name: p.name, side: p.team === 'A' ? 'ally' : 'enemy', deck: p.deck, bot: p.bot }));
   const mine = players.find(p => p.uid === me);
   if (!mine) return;
   startFriendlyMatch({ id: room.id, role: room.host === me ? 'host' : 'guest', seed: room.seed, ew: !!room.ew, team: true, players, side: mine.side, hostName: room.hostName, guestName: '', hostUid: room.host });
@@ -29077,7 +29116,8 @@ function coopStep(aliveAllies, aliveEnemies) {
   const c = state.coop;
   if (!c || state.phase !== 'combat') return;
   if (aliveAllies === 0 && !state.pendingExplosions.length && !state.pendingMeteors.length) { coopGameOver('wipe'); return; }
-  if (aliveEnemies > COOP.OVERRUN) { coopGameOver('overrun'); return; }
+  const waveFoes = state.units.filter(u => u.side === 'enemy' && u.alive && !u.isCastle && u.coopWave).length; // 웨이브로 나온 지후만 센다 (소환물 제외)
+  if (waveFoes > COOP.OVERRUN) { coopGameOver('overrun'); return; }
   const t = state.combatTime || 0;
   if (c.clearing) {
     if (aliveEnemies === 0 || t >= c.clearAt) { coopMaintenance(); return; }
@@ -29104,7 +29144,7 @@ function coopRenderHud(force, aliveAllies, aliveEnemies) {
     $('phaseTimer').classList.toggle('urgent', !c.clearing && left <= 3);
     $('bottomStatusLine').innerHTML = c.clearing
       ? `🧹 <b>WAVE ${c.wave}</b> 정리 중 · 남은 적 <b>${aliveEnemies}</b>기를 잡으면 정비 시간 (${left}초)`
-      : `🌊 <b>WAVE ${c.wave}</b> · 다음 무리까지 <b>${left}</b>초 · 적 <b>${aliveEnemies}</b>기 · 아군 <b>${countedAlive('ally')}</b>/${COOP.CAP} · 최고 ${profile.coopBest || 0}웨이브`;
+      : `🌊 <b>WAVE ${c.wave}</b> · 다음 무리까지 <b>${left}</b>초 · 적 <b>${state.units.filter(u => u.side === 'enemy' && u.alive && u.coopWave).length}</b>/${COOP.OVERRUN}기 · 아군 <b>${countedAlive('ally')}</b>/${COOP.CAP} · 최고 ${profile.coopBest || 0}웨이브`;
   }
 }
 function coopMaintenance() {
