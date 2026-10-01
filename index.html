@@ -25673,14 +25673,14 @@ const BOT_TEMPER = {
 // 기분이 아주 좋거나 나쁘면 성격과 상관없이 그쪽 얼굴이 섞여 나온다
 const HEAT_MOODS = { high: ['brag', 'joy', 'chill', 'mock'], low: ['hurt', 'despair', 'confused'] };
 const emoRnd = (a, b) => a + Math.random() * (b - a);
-const BOT_EMO_GAP = 4000; // 5.7.4 봇 이모티콘은 최소 4초 간격 — 몰리면 버리지 않고 줄 세워 차례로
 const botMind = {
-  temper: 'manner', chatty: 1, heat: 0, quietUntil: 0, recent: [], fight: null, deaths: [], lastPulse: 0, queue: [], lastShown: 0, flushT: null,
+  temper: 'manner', chatty: 1, heat: 0, quietUntil: 0, recent: [], fight: null, deaths: [], lastPulse: 0,
   on() { return state.screen === 'battle' && !state.net && !state.tutMatch && !['preview', 'coop', 'friendly'].includes(state.mode); },
   // feeling: BOT_TEMPER.read 의 키 · weight: 0~1 (얼마나 큰일인가) · force: 쉬는 중이어도 (큰일)
   feel(feeling, weight, { delay = [300, 2200], force = false } = {}) {
     if (!this.on()) return false;
     const now = Date.now(), t = BOT_TEMPER[this.temper];
+    if (now < this.quietUntil && !(force && Math.random() < 0.7)) return false;
     if (Math.random() > Math.min(0.97, weight * t.talk * this.chatty)) return false;
     let moods = t.read[feeling]; if (!moods) return false;
     if (Math.abs(this.heat) >= 0.55 && Math.random() < 0.35) moods = HEAT_MOODS[this.heat > 0 ? 'high' : 'low'];
@@ -25693,36 +25693,21 @@ const botMind = {
     this.quietUntil = now + wait + emoRnd(2000, 9000) / this.chatty;
     setTimeout(() => {
       if (!this.on()) return;
-      this.say(pick);
-      // 가끔 하나 더 덧붙인다 (대기열이라 4초 뒤에 나온다)
+      emoShow('bot', pick);
+      // 가끔 연달아 하나 더 (말이 끝나기 전에 덧붙이는 느낌)
       if (Math.random() < 0.14 * this.chatty) {
         const more = EMOTICONS.filter(e => e.mood.some(m => moods.includes(m)) && !this.recent.includes(e.k));
         const k2 = more.length && more[Math.floor(Math.random() * more.length)].k;
-        if (k2) { this.recent = [k2, ...this.recent].slice(0, 5); this.say(k2); }
+        if (k2) { this.recent = [k2, ...this.recent].slice(0, 5); setTimeout(() => { if (this.on()) emoShow('bot', k2); }, emoRnd(1300, 2600)); }
       }
     }, wait);
     return true;
-  },
-  say(key) { // 대기열에 넣고 4초 간격으로 하나씩
-    if (this.queue.length >= 3) return;
-    this.queue.push(key);
-    this.flush();
-  },
-  flush() {
-    clearTimeout(this.flushT);
-    if (!this.queue.length) return;
-    if (!this.on()) { this.queue = []; return; }
-    const wait = this.lastShown + BOT_EMO_GAP - Date.now();
-    if (wait > 0) { this.flushT = setTimeout(() => this.flush(), wait); return; }
-    emoShow('bot', this.queue.shift());
-    this.lastShown = Date.now();
-    if (this.queue.length) this.flushT = setTimeout(() => this.flush(), BOT_EMO_GAP);
   },
   odds() { return this.fight ? this.fight.last : 0.5; },
   matchStart() {
     const temps = Object.keys(BOT_TEMPER);
     this.temper = temps[Math.floor(Math.random() * temps.length)];
-    this.chatty = emoRnd(0.75, 1.35); this.heat = 0; this.recent = []; this.quietUntil = 0; this.queue = []; this.lastShown = 0;
+    this.chatty = emoRnd(0.75, 1.35); this.heat = 0; this.recent = []; this.quietUntil = 0;
   },
   mood(delta) { this.heat = clamp(this.heat * 0.8 + delta, -1, 1); },
   roundStart() {
@@ -25771,7 +25756,7 @@ const botMind = {
   },
   // 0.4초마다: 정해진 때가 아니라 불쑥 한마디 (배치 중에도). 팽팽하거나 기분이 크게 흔들렸을수록 자주.
   pulse() {
-    if (!this.on() || (state.phase !== 'combat' && state.phase !== 'deploy') || this.queue.length) return;
+    if (!this.on() || (state.phase !== 'combat' && state.phase !== 'deploy')) return;
     const b = this.odds(), tension = state.phase === 'combat' ? 1 - Math.abs(b - 0.5) * 1.2 : 0.25;
     const perSec = 0.035 * this.chatty * (0.6 + tension + Math.abs(this.heat) * 0.6);
     if (Math.random() > perSec * 0.4) return;
@@ -25792,7 +25777,6 @@ const PATCH_NOTES = {
       ] },
       { title: '조정', items: [
         { emoji:'🔦', name:'레이저 지후', tag:'adjust', color:'#2f6fed', portraitKey:'laser', desc:'레이저 색이 레이저 지후 그림 색(<b>하늘색</b>)으로 바뀌어요. 강화 레이저를 쏘는 동안과 끝난 뒤 <b>1초</b>는 움직이지 못해요.' },
-        { emoji:'🤖', name:'봇 이모티콘', tag:'adjust', color:'#2f6fed', desc:'봇 이모티콘이 연달아 터지지 않게 <b>최소 4초 간격</b>으로 하나씩 차례대로 나와요 (몰려도 버리지 않고 줄 세움).' },
         { emoji:'🔊', name:'스피커 이펙트', tag:'adjust', color:'#2f6fed', desc:'스피커가 <b>네모난 앰프</b> 모양이 되고, 범위가 바닥에 네모로 표시돼요. 0.5초마다 네모 충격파가 퍼지고 맞은 적 위에 <b>음표</b>가 튀어요.' }
       ] }
     ]
