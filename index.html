@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.6.3"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.7.0"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -1023,6 +1023,62 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
   position: absolute; inset: 0; background: rgba(255,255,255,0.86); display: none;
   align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(3px);
 }
+/* 5.7 이모티콘 — 전투 화면 톤(종이 · 먹선 · 모노 키커)에 맞춘 '말 카드'와 하단 시트 */
+#emoLayer { position:absolute; inset:0; pointer-events:none; z-index:40; }
+.emo-card { position:absolute; width:118px; background:var(--v4-paper,#f4f4f2); border:1.5px solid var(--v4-ink,#171717); border-radius:6px; box-shadow:4px 4px 0 rgba(0,0,0,.18); overflow:hidden; }
+.emo-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--emo-side); }
+.emo-card.opp { --emo-side:var(--accent-enemy); top:12px; left:12px; animation:emoStampL .34s cubic-bezier(.2,1.4,.4,1) both; }
+.emo-card.mine { --emo-side:var(--accent-ally); bottom:14px; right:12px; animation:emoStampR .34s cubic-bezier(.2,1.4,.4,1) both; }
+.emo-card .who { display:flex; align-items:center; gap:5px; padding:4px 7px 3px 10px; font:800 9px var(--v4-mono,monospace); letter-spacing:.08em; color:var(--v4-ink,#171717); border-bottom:1px dashed var(--v4-line,#d6d6d3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.emo-card .who i { width:6px; height:6px; border-radius:50%; background:var(--emo-side); flex:none; }
+.emo-card img { display:block; width:100%; aspect-ratio:1; object-fit:contain; padding:6px 6px 6px 10px; box-sizing:border-box; background:#fff; }
+.emo-card.cover img { object-fit:cover; padding:0 0 0 4px; }
+.emo-card.out { animation:emoFade .28s ease forwards; }
+@keyframes emoStampL { 0% { opacity:0; transform:scale(1.5) rotate(-12deg); } 100% { opacity:1; transform:rotate(-3deg); } }
+@keyframes emoStampR { 0% { opacity:0; transform:scale(1.5) rotate(12deg); } 100% { opacity:1; transform:rotate(3deg); } }
+@keyframes emoFade { to { opacity:0; transform:translateY(-8px); } }
+@media (max-width:700px) { .emo-card { width:86px; } }
+#btnEmo { position:relative; overflow:hidden; letter-spacing:.06em; }
+#btnEmo::after { content:''; position:absolute; left:0; bottom:0; height:3px; width:calc(var(--emo-cd, 0) * 100%); background:var(--v4-red,#e5322d); }
+.emo-sheet { position:fixed; left:50%; bottom:0; transform:translateX(-50%); z-index:200; width:min(440px, 100vw); max-height:min(460px, 70vh); display:flex; flex-direction:column; background:var(--v4-paper,#f4f4f2); border:1.5px solid var(--v4-ink,#171717); border-bottom:none; border-radius:14px 14px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.22); animation:sheetIn .24s ease both; }
+.emo-sheet .hd { display:flex; align-items:center; gap:8px; padding:10px 14px 8px; border-bottom:1px solid var(--v4-line,#d6d6d3); font:800 10px var(--v4-mono,monospace); letter-spacing:.2em; color:var(--v4-ink,#171717); }
+.emo-sheet .hd .tabs { margin-left:auto; display:flex; gap:4px; letter-spacing:0; }
+.emo-sheet .hd .tabs button { font:700 11px var(--v4-display,inherit); border:1px solid var(--v4-line,#d6d6d3); background:#fff; border-radius:999px; padding:3px 10px; cursor:pointer; color:#555; }
+.emo-sheet .hd .tabs button.on { background:var(--v4-ink,#171717); color:#fff; border-color:var(--v4-ink,#171717); }
+.emo-sheet .hd .x { margin-left:auto; border:none; background:none; font-size:16px; cursor:pointer; color:#555; }
+.emo-sheet .grid { overflow:auto; padding:10px 12px; display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+.emo-sheet .grid button { position:relative; border:1px dashed var(--v4-line,#d6d6d3); background:#fff; border-radius:6px; padding:3px; cursor:pointer; }
+.emo-sheet .grid button:hover, .emo-sheet .grid button:focus-visible { border:1px solid var(--v4-ink,#171717); }
+.emo-sheet .grid button span { position:absolute; left:4px; top:3px; font:700 8px var(--v4-mono,monospace); color:#aaa; }
+.emo-sheet .grid img { display:block; width:100%; aspect-ratio:1; object-fit:contain; }
+.emo-sheet .grid .empty { grid-column:1 / -1; text-align:center; padding:22px 0; font-size:12px; color:#888; }
+.emo-sheet .ft { display:flex; justify-content:space-between; gap:8px; padding:7px 14px 10px; border-top:1px dashed var(--v4-line,#d6d6d3); font:700 11px var(--v4-display,inherit); color:#666; }
+.emo-sheet .ft b { color:var(--v4-red,#e5322d); }
+@media (max-width:700px) { .emo-sheet .grid { grid-template-columns:repeat(5, 1fr); } }
+.emo-sheet .grid.slots { grid-template-columns:repeat(4, 1fr); }
+.emo-sheet .grid .empty-slot { display:flex; align-items:center; justify-content:center; aspect-ratio:1; font-size:22px; color:#c8c8c4; cursor:default; }
+.emo-locker { margin-top:18px; display:flex; flex-direction:column; gap:10px; }
+.emo-locker .v4-h3 small { font:700 11px var(--v4-mono,monospace); color:#888; margin-left:6px; }
+.emo-slots { display:grid; grid-template-columns:repeat(8, minmax(0, 1fr)); gap:6px; max-width:640px; }
+.emo-slots button { position:relative; min-width:0; box-sizing:border-box; aspect-ratio:1; border:1.5px dashed var(--v4-line,#d6d6d3); border-radius:8px; background:#fff; cursor:pointer; font-size:20px; color:#c8c8c4; padding:4px; }
+.emo-slots button.on { border:2px solid var(--v4-red,#e5322d); background:#fff4f2; }
+.emo-slots button span { position:absolute; left:4px; top:2px; font:800 9px var(--v4-mono,monospace); color:#999; }
+.emo-slots button { display:flex; align-items:center; justify-content:center; }
+.emo-slots button img { display:block; width:100%; height:100%; min-height:0; object-fit:contain; }
+.emo-slots button i { position:absolute; right:-6px; top:-6px; width:18px; height:18px; border-radius:50%; background:var(--v4-ink,#171717); color:#fff; font:700 10px/18px sans-serif; font-style:normal; }
+.emo-owned { display:grid; grid-template-columns:repeat(auto-fill, minmax(74px, 1fr)); gap:6px; }
+.emo-owned button, .emo-sheet .grid button { min-width:0; box-sizing:border-box; }
+.emo-owned button { border:1px solid var(--v4-line,#d6d6d3); border-radius:8px; background:#fff; padding:4px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.emo-owned button.equipped { border-color:var(--v4-ink,#171717); box-shadow:inset 0 -3px 0 var(--accent-ally); }
+.emo-owned img { width:100%; aspect-ratio:1; object-fit:contain; }
+.emo-owned em { font-style:normal; font-size:10px; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.emo-hint { font-size:11.5px; color:#777; }
+.emo-shop-h { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin:18px 0 8px; }
+.emo-shop-h span { font:800 10px var(--v4-mono,monospace); letter-spacing:.2em; color:#999; }
+.emo-shop-h b { font-size:15px; font-weight:900; }
+.emo-shop-h small { font-size:11.5px; color:#777; }
+.emo-offer .pic img { object-fit:contain !important; }
+@media (max-width:700px) { .emo-slots { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
 .round-overlay.show { display: flex; }
 .round-result-box { text-align: center; padding: 32px 40px; }
 .round-result-box .result-title { font-size: 38px; margin-bottom: 8px; }
@@ -5693,6 +5749,7 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
       <div class="v4-msg" id="shopMessage" aria-live="polite"></div>
       <div id="popupStore"></div>
       <div class="v4-shopgrid" id="shopOffers"></div>
+      <div id="shopEmoOffers"></div>
       <div class="v4-exchange">
         <b class="h">다이아 환전소</b>
         <div class="grid2">
@@ -5898,6 +5955,7 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
         <div class="odds-hp" id="oddsHpLab">예상 우세 · 전력 분석 중</div>
       </div>
       <div class="v4-hud-right">
+        <button type="button" class="btn-stats" id="btnEmo" title="이모티콘">EMOTE</button>
         <button type="button" class="btn-stats" id="btnSpeed2" title="1.5배속 켜기/끄기">⏩ 1×</button>
         <button type="button" class="btn-stats" id="btnStats">스탯</button>
         <button type="button" class="btn-stats" id="btnExitBattle">항복</button>
@@ -9727,6 +9785,7 @@ function freshProfile() {
     coopBest: 0,
     coopMilestones: [],
     giftSeen: [], seenPatch: '', luckGiftVer: '',
+    emos: ['art_40', 'art_29', 'art_15', 'art_30'], emoSlots: [...['art_40', 'art_29', 'art_15', 'art_30'], null, null, null, null], // 5.7 이모티콘: 보유 · 장착 8칸
     boostArmed: false,
     mail: [],
     mailFlags: [],
@@ -9874,6 +9933,8 @@ function normalizeProfile(raw) {
     coopMilestones: Array.isArray(raw.coopMilestones) ? raw.coopMilestones.filter(n => Number.isInteger(n) && n > 0 && n <= 1000).slice(0, 40) : [], // 5.4 받은 웨이브 보상
     boostArmed: !!raw.boostArmed, // 5.2 부스트 티켓: 다음 판에 쓰기
     giftSeen: Array.isArray(raw.giftSeen) ? raw.giftSeen.filter(x => typeof x === 'string' && x.length <= 40).slice(-300) : [], // 5.5 받은 운영 우편
+    emos: [...new Set(['art_40', 'art_29', 'art_15', 'art_30', ...(Array.isArray(raw.emos) ? raw.emos : []).filter(k => typeof k === 'string' && /^(art|gif)_\d{2}$/.test(k))])], // 5.7 기본 4개는 늘 보유
+    emoSlots: (Array.isArray(raw.emoSlots) ? raw.emoSlots : ['art_40', 'art_29', 'art_15', 'art_30']).concat(Array(8).fill(null)).slice(0, 8).map(k => typeof k === 'string' && /^(art|gif)_\d{2}$/.test(k) ? k : null),
     seenPatch: String(raw.seenPatch || '').slice(0, 16), // 5.5 업데이트 패치노트 오버레이를 본 버전
     luckGiftVer: String(raw.luckGiftVer || '').slice(0, 16), // 5.5 운테기를 받은 버전
     xpBoost: { day: String(rawBoost.day || ''), usesToday: Math.min(2, safeCount(rawBoost.usesToday)), activeUntil: Math.max(0, Number(rawBoost.activeUntil) || 0) },
@@ -11728,6 +11789,7 @@ function renderShop() {
   const freeButton = $('btnClaimShopFree');
   if (freeButton && !shop.freeClaimed) freeButton.addEventListener('click', claimFreeShopReward);
   document.querySelectorAll('.shop-buy-btn').forEach(button => button.addEventListener('click', () => buyShopOffer(button.dataset.offerId, button.dataset.pay === 'dia')));
+  renderEmoShop();
   renderPopupStore();
 }
 // 5.2 팝업스토어: 12~15시 · 20~23시(내 시간)만 연다. 열 때마다 새 매물 2개(무료 1 · 골드 1), 리롤 없음. 가려진 카드를 눌러 확인.
@@ -11852,6 +11914,7 @@ function rerollDailyShop() {
   shop.rerolls++;
   shop.offerSerial = Math.max(0, Number(shop.offerSerial) || 0) + 1;
   shop.offers = generatePaidShopOffers(shop.offerSerial);
+  shop.emoOffers = emoRollOffers(); // 5.7 이모티콘 매물도 같이 바뀐다
   saveProfile();
   setShopMessage(`상점을 새로고침했습니다. (${shop.rerolls}/${SHOP_REROLL_MAX})${free ? ' · 오늘의 무료 리롤' : ''}`);
   renderShop();
@@ -12373,6 +12436,7 @@ function renderInventory(message = '') {
     <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${RARITY_LABEL[r]} 지후 아무나의 조각으로 쓸 수 있어요 · 덱 설정에서 지후를 눌러 랭크업할 때 사용</small></div>`).join('')}</div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}`;
+  renderEmoLocker(); // 5.7
 }
 function activateXpBoost() {
   ensureDailyState();
@@ -12696,6 +12760,7 @@ function cancelRuntimeTasks() {
 }
 
 function leaveBattle() {
+  emoClear(); // 5.7
   if (state.net) { if (!state.net.done && state.screen === 'battle' && !state.matchSettled) netSend({ t: 'bye' }); netCleanup(); } // 5.0 친선전
   cancelRuntimeTasks();
   state.castles = null;
@@ -15888,6 +15953,7 @@ function startRound() { // 5.0 친선전: 라운드 준비(지후 복귀 등)도
 }
 function startRoundInner() {
   cancelRuntimeTasks();
+  botMind.roundStart(); // 5.7 봇 이모티콘
   v41HudClear();
   // 시간 종료 무승부 때 이번 라운드의 배치와 스킬 결과를 버리고 다시 편성한다.
   state.roundStartPlacements = state.placements.map(p => ({ ...p }));
@@ -18900,6 +18966,7 @@ function beginCombatPhase() { // 5.0 친선전: 전투 시작도 시드 난수�
 }
 function beginCombatPhaseInner() {
   state.phase = 'combat';
+  botMind.combatStart(); // 5.7 봇 이모티콘
   $('screen-battle').dataset.phase = 'combat';
   v4Ring(1, 1);
   clearPhaseTimer();
@@ -24432,6 +24499,7 @@ function killUnit(u) {
   if (u.def.berserk && !u.berserked) { triggerBerserk(u); return; }
   u.alive = false;
   onDeath47(u); // 4.7.0
+  botMind.unitDown(u); // 5.7 봇 이모티콘
   u.vx = 0; u.vy = 0; u.physLock = 0; u.desVx = 0; u.desVy = 0;
   u.el.classList.add('dead');
   spawnDeathEffect(u);
@@ -24918,6 +24986,7 @@ function recordRoundStats(winnerSide, timedOut) {
   state.matchStats.push({ round: state.round, winner: winnerSide, timedOut, seconds: Math.round(state.combatTime || 0), rows: list });
 }
 function endRoundCombat(winnerSide, timedOut = false) {
+  botMind.roundEnd(winnerSide); // 5.7 봇 이모티콘
   if (state.mode === 'wwe') { wweRoundEnd(winnerSide, timedOut); return; } // 4.6.3 WWE는 따로 정산
   recordRoundStats(winnerSide, timedOut);
   cancelRuntimeTasks();
@@ -25259,8 +25328,277 @@ $('btnStatsClose').addEventListener('click', () => $('statsModal').classList.rem
 $('statsModal').addEventListener('click', event => { if (event.target.id === 'statsModal') $('statsModal').classList.remove('show'); });
 $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('arena'); renderArenaList(); });
 
+/* ===== 5.7 이모티콘 =====
+   전투 화면 EMOTE 버튼 → 하단 시트에서 고르면 전장 모서리에 '말 카드'로 3초 동안 찍힌다 (재사용 대기 5초 · 효과음).
+   상대 편은 왼쪽 위(적 색 띠), 내 편은 오른쪽 아래(아군 색 띠). 친선전 참가자 화면도 내 진영이 아래라 그대로 맞는다.
+   온라인(친선전 · 2:2)은 대전 메시지 통로로 { t:'emo', key } 를 보낸다 — 전투 계산과 무관해서 락스텝 해시에 영향이 없다.
+   그림 파일: emo/<키>.png|gif · 시트 미리보기: emo/thumb/<키>.png
+   mood: 봇이 고를 때 쓰는 감정 묶음 (hi 인사 · joy 기쁨 · brag 뽐냄 · mock 조롱 · threat 위협 · chill 여유 · confused 당황 · hurt 아픔 · despair 절망 · think 고민) */
+const EMOTICONS = [
+  { k:'gif_01', name:'협박', mood:['threat'] }, { k:'gif_02', name:'몽둥이', mood:['threat'] }, { k:'gif_03', name:'내가 뭘 본 거지', mood:['confused','mock'] },
+  { k:'gif_04', name:'자빠짐', mood:['hurt'] }, { k:'gif_05', name:'너 멍청하냐', mood:['mock'] }, { k:'gif_06', name:'한판 더', mood:['joy'], cover:true },
+  { k:'gif_07', name:'비옴', mood:['despair'] }, { k:'gif_08', name:'절망', mood:['despair'] }, { k:'gif_09', name:'AURA 2', mood:['brag'] },
+  { k:'gif_10', name:'난 여기서 빠질게', mood:['chill','despair'] }, { k:'gif_11', name:'식은땀', mood:['confused','think'] }, { k:'gif_12', name:'안녕히계세요 여러분', mood:['despair'] },
+  { k:'gif_13', name:'역따봉', mood:['mock'] },
+  { k:'art_01', name:'차가움', mood:['threat','chill'] }, { k:'art_02', name:'어림도없지', mood:['brag'] }, { k:'art_03', name:'커피 한잔', mood:['chill'] },
+  { k:'art_04', name:'AURA', mood:['brag'] }, { k:'art_05', name:'저격', mood:['threat'] }, { k:'art_06', name:'각성', mood:['brag'] },
+  { k:'art_07', name:'항복하시지', mood:['mock','threat'] }, { k:'art_08', name:'항복할게', mood:['despair'] }, { k:'art_09', name:'어휴', mood:['hurt'] },
+  { k:'art_10', name:'박수', mood:['joy'] }, { k:'art_11', name:'재미없음', mood:['chill','mock'] }, { k:'art_12', name:'행복', mood:['joy'] },
+  { k:'art_13', name:'분노', mood:['hurt'] }, { k:'art_14', name:'울음', mood:['despair'] }, { k:'art_15', name:'망했네', mood:['despair','hurt'] },
+  { k:'art_16', name:'거지', mood:['despair'] }, { k:'art_17', name:'으악 안돼!', mood:['hurt'] }, { k:'art_18', name:'제발요', mood:['despair'] },
+  { k:'art_19', name:'멈춰', mood:['threat'] }, { k:'art_20', name:'음흉', mood:['mock'] }, { k:'art_21', name:'Peak', mood:['brag'] },
+  { k:'art_22', name:'각성 2', mood:['brag'] }, { k:'art_23', name:'계산중', mood:['think'] }, { k:'art_24', name:'나한테 왜그래', mood:['hurt','confused'] },
+  { k:'art_25', name:'노', mood:['mock','hurt'] }, { k:'art_26', name:'당황', mood:['confused'] }, { k:'art_27', name:'돈많음', mood:['brag'] },
+  { k:'art_28', name:'두뇌풀가동', mood:['think'] }, { k:'art_29', name:'따봉', mood:['hi','joy'] }, { k:'art_30', name:'물음표', mood:['confused'] },
+  { k:'art_31', name:'방아쇠', mood:['threat'] }, { k:'art_32', name:'불편', mood:['hurt'] }, { k:'art_33', name:'안 돼!!!', mood:['hurt'] },
+  { k:'art_34', name:'오케이', mood:['hi'] }, { k:'art_35', name:'이해안됨', mood:['confused'] }, { k:'art_36', name:'재미있다', mood:['chill','joy'] },
+  { k:'art_37', name:'짖궂음', mood:['mock'] }, { k:'art_38', name:'팀할래', mood:['hi'] }, { k:'art_39', name:'편안', mood:['chill'] },
+  { k:'art_40', name:'헬로우', mood:['hi'] }, { k:'art_41', name:'화장실좀', mood:['chill','think'] }, { k:'art_42', name:'휘파람', mood:['mock','chill'] },
+];
+const EMO_SHOW_MS = 3000, EMO_COOL_MS = 5000, EMO_SLOTS = 8, EMO_PRICE = 500; // 상점 매물 ◆500
+const emoDef = k => EMOTICONS.find(e => e.k === k) || null;
+const emoSrc = k => emoDef(k) ? `emo/${k}.${k.startsWith('gif') ? 'gif' : 'png'}` : '';
+const emoUi = { coolUntil: 0, raf: 0, audio: null, pick: -1 };
+function emoSound() { // 짧은 '뽁' — 오디오 파일 없이 만든다
+  try {
+    const ctx = emoUi.audio = emoUi.audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime, osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(380, t); osc.frequency.exponentialRampToValueAtTime(1500, t + 0.05); osc.frequency.exponentialRampToValueAtTime(820, t + 0.1);
+    gain.gain.setValueAtTime(0.0001, t); gain.gain.exponentialRampToValueAtTime(0.28, t + 0.01); gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    osc.connect(gain).connect(ctx.destination); osc.start(t); osc.stop(t + 0.14);
+  } catch (error) {}
+}
+// 누가 어느 모서리에: me · bot · opp(1:1 상대) · 2:2 는 uid
+function emoSeat(who) {
+  const net = state.net;
+  if (who === 'me') return { mine: true, i: 0, name: profile.nickname || '나' };
+  if (who === 'bot') return { mine: false, i: 0, name: state.enemyName || 'BOT' };
+  if (net && net.team) {
+    const p = net.players.find(x => x.uid === who); if (!p) return null;
+    const mine = p.side === meSide();
+    return { mine, i: mine ? 1 : Math.max(0, net.players.filter(x => x.side !== meSide()).indexOf(p)), name: p.name };
+  }
+  return { mine: false, i: 0, name: net ? net.oppName : '상대' };
+}
+function emoShow(who, key) {
+  const d = emoDef(key), seat = d && emoSeat(who);
+  if (!seat || state.screen !== 'battle') return;
+  const stage = $('battleStage'); if (!stage) return;
+  let layer = $('emoLayer');
+  if (!layer) { layer = document.createElement('div'); layer.id = 'emoLayer'; stage.appendChild(layer); }
+  const id = 'emo-' + String(who).replace(/[^\w-]/g, '');
+  document.getElementById(id)?.remove();
+  const el = document.createElement('div');
+  el.id = id; el.className = `emo-card ${seat.mine ? 'mine' : 'opp'}${d.cover ? ' cover' : ''}`;
+  if (seat.i) el.style[seat.mine ? 'right' : 'left'] = `calc(12px + ${seat.i} * (min(118px, 22vw) + 10px))`;
+  el.innerHTML = `<div class="who"><i></i>${escapeHtml(seat.name)}</div><img src="${emoSrc(key)}" alt="${escapeHtml(d.name)}" draggable="false" onerror="this.parentNode.remove()">`;
+  layer.appendChild(el);
+  emoSound();
+  setTimeout(() => el.classList.add('out'), EMO_SHOW_MS - 280);
+  setTimeout(() => el.remove(), EMO_SHOW_MS);
+}
+function emoClear() { $('emoLayer')?.remove(); emoSheetClose(); }
+function emoCoolTick() { // 버튼 아래 붉은 띠가 줄어든다
+  const btn = $('btnEmo'); if (!btn) return;
+  const left = Math.max(0, emoUi.coolUntil - Date.now());
+  btn.style.setProperty('--emo-cd', (left / EMO_COOL_MS).toFixed(3));
+  const ft = document.querySelector('.emo-sheet .ft b'); if (ft) ft.textContent = left ? `${(left / 1000).toFixed(1)}초 뒤 사용 가능` : '';
+  emoUi.raf = left ? requestAnimationFrame(emoCoolTick) : 0;
+}
+const emoOwned = k => (profile.emos || []).includes(k);
+const emoEquipped = () => (profile.emoSlots || []).slice(0, EMO_SLOTS).map(k => k && emoOwned(k) && emoDef(k) ? k : null);
+function emoSend(key) {
+  if (!emoDef(key) || !emoOwned(key) || Date.now() < emoUi.coolUntil || state.screen !== 'battle') return false;
+  emoUi.coolUntil = Date.now() + EMO_COOL_MS;
+  emoShow('me', key);
+  cancelAnimationFrame(emoUi.raf); emoCoolTick();
+  if (state.net && !state.net.done) netSend({ t: 'emo', key });
+  else botMind.heard(key);
+  return true;
+}
+function emoSheetClose() { document.querySelector('.emo-sheet')?.remove(); }
+function emoSheetOpen() { // 전투 중에는 장착한 8칸만
+  if (document.querySelector('.emo-sheet')) { emoSheetClose(); return; }
+  const sheet = document.createElement('div');
+  sheet.className = 'emo-sheet';
+  const slots = emoEquipped();
+  sheet.innerHTML = `<div class="hd">EMOTE · ${slots.filter(Boolean).length}/${EMO_SLOTS}<button type="button" class="x" aria-label="닫기">✕</button></div>
+    <div class="grid slots">${slots.map((k, i) => k
+      ? `<button type="button" data-emo="${k}" data-name="${escapeHtml(emoDef(k).name)}" title="${escapeHtml(emoDef(k).name)}"><span>${i + 1}</span><img src="emo/thumb/${k}.png" alt="" draggable="false"></button>`
+      : `<button type="button" class="empty-slot" disabled><span>${i + 1}</span>＋</button>`).join('')}</div>
+    <div class="ft"><span class="nm">${slots.some(Boolean) ? `눌러서 보내기 · ${state.net ? '상대 화면에도 떠요' : '봇이 보고 반응해요'}` : '인벤토리에서 이모티콘을 장착하세요'}</span><b></b></div>`;
+  document.body.appendChild(sheet);
+  sheet.addEventListener('click', event => {
+    if (event.target.closest('.x')) { emoSheetClose(); return; }
+    const b = event.target.closest('[data-emo]');
+    if (b && emoSend(b.dataset.emo)) emoSheetClose();
+  });
+  sheet.addEventListener('pointerover', event => { const b = event.target.closest('[data-emo]'); if (b) sheet.querySelector('.nm').textContent = '› ' + b.dataset.name; });
+  emoCoolTick();
+}
+// ── 인벤토리: 장착 8칸 · 보유 목록 ── 칸을 고르고(선택 표시) 보유 이모티콘을 누르면 그 칸에, 안 고르면 빈 칸에 들어간다.
+function emoEquip(key) {
+  const slots = emoEquipped();
+  if (slots.includes(key)) { slots[slots.indexOf(key)] = null; } // 이미 있으면 그 칸에서 빼서 옮긴다
+  let i = emoUi.pick >= 0 ? emoUi.pick : slots.indexOf(null);
+  if (i < 0) return '빈 칸이 없어요. 바꿀 칸을 먼저 눌러 주세요.';
+  slots[i] = key; profile.emoSlots = slots; emoUi.pick = -1; saveProfile();
+  return '';
+}
+function renderEmoLocker(message = '') {
+  const body = $('inventoryBody'); if (!body) return;
+  body.querySelector('.emo-locker')?.remove();
+  const slots = emoEquipped(), owned = EMOTICONS.filter(e => emoOwned(e.k));
+  const box = document.createElement('div');
+  box.className = 'emo-locker';
+  box.innerHTML = `<b class="v4-h3">이모티콘 <small>장착 ${slots.filter(Boolean).length}/${EMO_SLOTS} · 보유 ${owned.length}/${EMOTICONS.length}</small></b>
+    ${message ? `<div class="v4-msg">${message}</div>` : ''}
+    <div class="emo-slots">${slots.map((k, i) => `<button type="button" class="${emoUi.pick === i ? 'on' : ''}" data-slot="${i}"><span>${i + 1}</span>${k ? `<img src="emo/thumb/${k}.png" alt="${escapeHtml(emoDef(k).name)}" draggable="false"><i data-unslot="${i}" title="빼기">✕</i>` : '＋'}</button>`).join('')}</div>
+    <small class="emo-hint">${emoUi.pick >= 0 ? `${emoUi.pick + 1}번 칸에 넣을 이모티콘을 고르세요` : '칸을 누른 뒤 아래 이모티콘을 고르면 그 칸에 장착 · 그냥 고르면 빈 칸에 들어가요'}</small>
+    <div class="emo-owned">${owned.map(e => `<button type="button" data-own="${e.k}" class="${slots.includes(e.k) ? 'equipped' : ''}"><img src="emo/thumb/${e.k}.png" alt="" loading="lazy" draggable="false"><em>${escapeHtml(e.name)}</em></button>`).join('')}</div>
+    <small class="emo-hint">더 많은 이모티콘은 <b>일일 상점</b>에서 매일 3개씩 · 개당 ◆${EMO_PRICE}</small>`;
+  body.appendChild(box);
+  box.addEventListener('click', event => {
+    const un = event.target.closest('[data-unslot]');
+    if (un) { const sl = emoEquipped(); sl[+un.dataset.unslot] = null; profile.emoSlots = sl; emoUi.pick = -1; saveProfile(); renderEmoLocker(); return; }
+    const sl = event.target.closest('[data-slot]');
+    if (sl) { emoUi.pick = emoUi.pick === +sl.dataset.slot ? -1 : +sl.dataset.slot; renderEmoLocker(); return; }
+    const own = event.target.closest('[data-own]');
+    if (own) renderEmoLocker(emoEquip(own.dataset.own));
+  });
+}
+// ── 일일 상점: 안 가진 이모티콘 3개 (리롤하면 같이 바뀐다) ──
+function emoRollOffers() {
+  const pool = EMOTICONS.map(e => e.k).filter(k => !emoOwned(k));
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return pool.slice(0, 3).map(k => ({ k, sold: false }));
+}
+function renderEmoShop() {
+  const box = $('shopEmoOffers'); if (!box) return;
+  const shop = profile.daily.shop;
+  if (!Array.isArray(shop.emoOffers) || shop.emoOffers.some(o => !emoDef(o.k))) { shop.emoOffers = emoRollOffers(); saveProfile(); }
+  const cards = shop.emoOffers.map(o => {
+    const d = emoDef(o.k), have = o.sold || emoOwned(o.k);
+    return `<div class="v4-offer-wrap"><div class="v4-offer emo-offer"><div class="pic"><img src="${emoSrc(o.k)}" alt="${escapeHtml(d.name)}" loading="lazy">${have ? '<div class="soldmark"><span>보유 중</span></div>' : ''}</div>
+      <div class="row"><i style="background:var(--v4-ink,#171717)"></i><b>${escapeHtml(d.name)}</b><small>${o.k.startsWith('gif') ? '움직이는 이모티콘' : '이모티콘'}</small></div>
+      ${have ? '<button type="button" class="v4-darkbtn" disabled>보유 중</button>' : `<button type="button" class="v4-darkbtn dia" data-emo-buy="${o.k}">◆ ${formatNumber(EMO_PRICE)}</button>`}</div></div>`;
+  });
+  box.innerHTML = cards.length ? `<div class="emo-shop-h"><span>EMOTE</span><b>오늘의 이모티콘</b><small>리롤하면 함께 바뀌어요 · 개당 ◆${EMO_PRICE} · 사면 빈 칸에 자동 장착</small></div><div class="v4-shopgrid emo-shopgrid">${cards.join('')}</div>`
+    : '<div class="emo-shop-h"><span>EMOTE</span><b>오늘의 이모티콘</b><small>모든 이모티콘을 모았어요!</small></div>';
+  box.querySelectorAll('[data-emo-buy]').forEach(b => b.addEventListener('click', () => emoBuy(b.dataset.emoBuy)));
+}
+async function emoBuy(key) {
+  const offer = (profile.daily.shop.emoOffers || []).find(o => o.k === key);
+  if (!offer || offer.sold || emoOwned(key)) return;
+  if (profile.diamonds < EMO_PRICE) { setShopMessage('다이아가 부족합니다.'); return; }
+  if (!(await v55Dialog({ icon: '😀', title: '이모티콘을 살까요?', html: `<b>${escapeHtml(emoDef(key).name)}</b> · ◆ ${formatNumber(EMO_PRICE)}<br><small>지금 다이아 ◆ ${formatNumber(profile.diamonds)}</small>`, ok: '구매', cancel: '취소' }))) return;
+  if (profile.diamonds < EMO_PRICE || emoOwned(key)) return;
+  profile.diamonds -= EMO_PRICE;
+  offer.sold = true;
+  profile.emos = [...(profile.emos || []), key];
+  const slots = emoEquipped(), free = slots.indexOf(null);
+  if (free >= 0) { slots[free] = key; profile.emoSlots = slots; }
+  recordDailyProgress('shopBuy', 1);
+  saveProfile();
+  setShopMessage(`이모티콘 '${emoDef(key).name}' 구매 완료${free >= 0 ? ` · ${free + 1}번 칸에 장착했어요` : ' · 장착 칸이 꽉 차서 인벤토리에서 바꿔 끼울 수 있어요'}`);
+  renderShop();
+}
+$('btnEmo').addEventListener('click', event => { event.stopPropagation(); emoSheetOpen(); });
+document.addEventListener('pointerdown', event => { if (!event.target.closest('.emo-sheet, #btnEmo')) emoSheetClose(); });
+
+/* ── 봇의 속마음 ──
+   봇은 판마다 성격이 하나 정해진다: 매너(manner) · 도발(cocky) · 소심(timid).
+   전투에서 일어난 일을 '감정'으로 읽고(이기는 중 · 뒤집힘 · 무너짐 · 전멸 · 마지막 라이프 …),
+   성격이 그 감정을 어떤 얼굴로 드러낼지 고른다 — 같은 역전승도 매너 봇은 박수, 도발 봇은 역따봉을 띄운다.
+   말수: 한 번 쓰면 6초는 쉬고, 라운드마다 3번까지만. 중요한 일일수록(weight) 쓸 확률이 높다.
+   같은 그림을 연달아 쓰지 않게 최근 4개는 피한다. */
+const BOT_TEMPER = {
+  manner: { talk: 0.75, read: { greet:['hi'], ahead:['chill','joy'], behind:['think','confused'], won:['joy'], wonBig:['joy','chill'], flip:['joy','brag'], lost:['hurt'], crushed:['despair'], choke:['confused'], lastLife:['despair','think'], duel:['threat','think'], starDown:['hurt'], starKill:['joy'], reply:['hi','joy'] } },
+  cocky:  { talk: 1.0,  read: { greet:['threat','brag','mock'], ahead:['mock','brag'], behind:['threat'], won:['brag','mock'], wonBig:['mock'], flip:['brag','mock'], lost:['hurt','threat'], crushed:['confused','hurt'], choke:['confused','hurt'], lastLife:['threat'], duel:['threat','brag'], starDown:['hurt'], starKill:['mock','threat'], reply:['mock','threat'] } },
+  timid:  { talk: 0.6,  read: { greet:['hi','think'], ahead:['joy'], behind:['confused','despair'], won:['joy'], wonBig:['joy'], flip:['confused','joy'], lost:['despair','hurt'], crushed:['despair'], choke:['confused','despair'], lastLife:['despair'], duel:['think','confused'], starDown:['despair','hurt'], starKill:['joy','confused'], reply:['hi','confused'] } },
+};
+const botMind = {
+  temper: 'manner', quietUntil: 0, roundTalk: 0, recent: [], fight: null,
+  on() { return state.screen === 'battle' && !state.net && !state.tutMatch && !['preview', 'coop', 'friendly'].includes(state.mode); },
+  // feeling: BOT_TEMPER.read 의 키 · weight: 0~1 (얼마나 큰일인가)
+  feel(feeling, weight, delay = 900) {
+    if (!this.on()) return;
+    const now = Date.now(), t = BOT_TEMPER[this.temper];
+    if (now < this.quietUntil || this.roundTalk >= 3 || Math.random() > weight * t.talk) return;
+    const moods = t.read[feeling]; if (!moods) return;
+    const pool = EMOTICONS.filter(e => e.mood.some(m => moods.includes(m)) && !this.recent.includes(e.k));
+    if (!pool.length) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)].k;
+    this.quietUntil = now + 6000; this.roundTalk++;
+    this.recent = [pick, ...this.recent].slice(0, 4);
+    setTimeout(() => { if (this.on()) emoShow('bot', pick); }, 300 + Math.random() * delay);
+  },
+  odds() { return this.fight ? this.fight.last : 0.5; },
+  matchStart() {
+    const temps = Object.keys(BOT_TEMPER);
+    this.temper = temps[Math.floor(Math.random() * temps.length)];
+    this.recent = []; this.quietUntil = 0;
+  },
+  roundStart() {
+    if (!this.on()) return;
+    this.roundTalk = 0;
+    if (state.round === 1) { this.matchStart(); this.feel('greet', 0.75, 2400); return; }
+    if (state.enemyLives === 1 && state.allyLives === 1) this.feel('duel', 0.8, 1800);
+    else if (state.enemyLives === 1) this.feel('lastLife', 0.7, 1800);
+  },
+  combatStart() { this.fight = { start: { ally: emoAlive('ally'), enemy: emoAlive('enemy') }, low: 1, high: 0, last: 0.5, read: false, swing: false }; },
+  oddsTick(allyOdds) { // 봇 = 적 진영
+    const f = this.fight; if (!f || !this.on() || state.phase !== 'combat') return;
+    const b = f.last = 1 - allyOdds;
+    if (state.combatTime < 2.5) return;
+    f.low = Math.min(f.low, b); f.high = Math.max(f.high, b);
+    if (!f.read) { f.read = true; if (b >= 0.72) this.feel('ahead', 0.45); else if (b <= 0.28) this.feel('behind', 0.45); }
+    if (f.swing) return;
+    if (b <= 0.12 && f.high >= 0.55) { f.swing = true; this.feel('choke', 0.9, 500); }
+    else if (b >= 0.88 && f.low <= 0.4) { f.swing = true; this.feel('flip', 0.9, 500); }
+  },
+  unitDown(u) {
+    if (!this.on() || state.phase !== 'combat' || u.isClone || u.ownerUid) return;
+    const rar = CHAR_DB[u.charId]?.rarity;
+    if (rar === 'legend' || rar === 'hidden' || (u.level || 1) >= 5) this.feel(u.side === 'enemy' ? 'starDown' : 'starKill', 0.4, 600);
+  },
+  roundEnd(winnerSide) {
+    const f = this.fight; this.fight = null;
+    if (!f || !this.on() || winnerSide === 'draw') return;
+    const won = winnerSide === 'enemy', kept = side => f.start[side] ? emoAlive(side) / f.start[side] : 0;
+    this.quietUntil = Math.min(this.quietUntil, Date.now() + 500); this.roundTalk = Math.min(this.roundTalk, 2); // 결과 반응은 남겨 둔다
+    if (won && f.low <= 0.25) this.feel('flip', 1);
+    else if (!won && f.high >= 0.75) this.feel('choke', 1);
+    else if (won && kept('enemy') >= 0.6) this.feel('wonBig', 0.9);
+    else if (!won && kept('ally') >= 0.6) this.feel('crushed', 0.9);
+    else this.feel(won ? 'won' : 'lost', 0.6);
+  },
+  heard() { // 사람이 이모티콘을 보냈다
+    if (!this.on()) return;
+    this.quietUntil = Math.min(this.quietUntil, Date.now() + 800);
+    if (state.round <= 1 && state.phase !== 'combat') this.feel('greet', 0.75, 1600);
+    else this.feel(this.odds() >= 0.6 ? 'ahead' : this.odds() <= 0.4 ? 'behind' : 'reply', 0.45, 1600);
+  },
+};
+const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.skipCount && !u.ownerUid && u.side === side).length;
+
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.7.0': {
+    label: 'v5.7 이모티콘',
+    date: '2026.10.01',
+    sections: [
+      { title: '신규 기능', items: [
+        { emoji:'😀', name:'이모티콘', tag:'new', color:'#9b59d0', desc:'전투 화면 <b>EMOTE</b> 버튼으로 장착한 이모티콘을 보내요. 전장 모서리에 3초 동안 찍히고 <b>뽁</b> 소리가 나요. 재사용 대기 <b>5초</b>.' },
+        { emoji:'🎒', name:'장착 8칸', tag:'new', color:'#9b59d0', desc:'인벤토리에서 이모티콘을 <b>8칸</b>에 장착해요. 처음에는 <b>헬로우 · 따봉 · 망했네 · 물음표</b> 4개를 드려요.' },
+        { emoji:'🛒', name:'일일 상점 이모티콘', tag:'new', color:'#9b59d0', desc:'일일 상점 아래에 <b>오늘의 이모티콘 3개</b>가 떠요 (개당 <b>◆500</b>). 상점을 리롤하면 함께 바뀌어요. 사면 빈 칸에 자동 장착.' },
+        { emoji:'🌐', name:'온라인 대전', tag:'new', color:'#9b59d0', desc:'친선전 · 2:2 온라인에서 보낸 이모티콘이 <b>상대 화면에도</b> 떠요.' },
+        { emoji:'🤖', name:'봇 이모티콘', tag:'new', color:'#9b59d0', desc:'봇전에서 봇도 이모티콘을 써요. 판마다 <b>매너 · 도발 · 소심</b> 성격이 정해지고, 역전 · 전멸 · 마지막 라이프 · 예상 못 한 상황마다 성격대로 반응해요. 판 초반에 먼저 보내면 인사로 받아줘요.' }
+      ] }
+    ]
+  },
   '5.6.3': {
     label: 'v5.6.3 힐 지후 재작성 · 레이저 · 매트릭스 조정',
     date: '2026.10.01',
@@ -28717,6 +29055,7 @@ function netOnMessage(msg) {
     const bot = net.team && msg.as && msg.from === net.hostUid && net.players.some(p => p.bot && p.uid === msg.as);
     net.acts[msg.k + '-' + (bot ? msg.as : net.team ? msg.from : oppSide())] = msg.act; netTryResolve(); return;
   }
+  if (msg.t === 'emo') { if (typeof msg.key === 'string') emoShow(net.team ? msg.from : 'opp', msg.key); return; } // 5.7 이모티콘
   if (msg.t === 'end') { if (net.team && msg.from !== net.hostUid) return; net.ends[msg.r] = msg; netCheckEnd(msg.r); return; }
   if (net.team && (msg.t === 'surrender' || msg.t === 'bye')) { const p = net.players.find(x => x.uid === msg.from); netSideLost(net.sideOf[msg.from], p ? p.name : '', msg.t === 'surrender'); return; }
   if (msg.t === 'surrender') { netFinish(meSide(), '상대가 항복했어요'); return; }
@@ -30153,6 +30492,7 @@ function updateOddsBar() {
   const allyOdds = allyHealth <= 0 && enemyHealth <= 0 ? 0.5
     : enemyHealth <= 0 ? 1 : allyHealth <= 0 ? 0
     : allyPower + enemyPower > 0 ? allyPower / (allyPower + enemyPower) : 0.5;
+  botMind.oddsTick(allyOdds); // 5.7 봇 이모티콘
   const percent = Math.round(allyOdds * 100);
   const shown = netFlip() ? 100 - percent : percent; // 친선전 참가자는 내 쪽이 '아군'
   // 5.0 성능: 매 프레임 불리므로 바뀐 값만 쓴다
