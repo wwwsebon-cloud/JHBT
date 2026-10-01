@@ -7,7 +7,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="5.6.1"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="5.6.2"><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6901,7 +6901,7 @@ const CHARACTER_BALANCE = {
     bskAtkSpeed: 0.7
   },
   titanium: {
-    hp: 4700, atk: 800, atkSpeed: 4.2, range: 72, speed: 58.5,
+    hp: 3300, atk: 800, atkSpeed: 4.2, range: 72, speed: 58.5,
     isMelee: true,
     tiShieldPerHit: 180, tiShieldTime: 1, tiShieldMax: 1000
   },
@@ -6961,7 +6961,7 @@ const CHARACTER_BALANCE = {
   lantern: {
     hp: 2400, atk: 30, atkSpeed: 0.1, range: 315, speed: 58.5, // 5.5.1 공격력 +100% · 회복 +50% · 흡혈 50%
     noAttack: true, holdRange: true, lifesteal: 0.5,
-    lanternHeal: 45, lanternDim: 1.5, lanternDimValue: 2
+    lanternHeal: 31.5, lanternDim: 1.5, lanternDimValue: 2
   },
   rocket: {
     hp: 2000, atk: 650, atkSpeed: 6.5, range: 360, speed: 54,
@@ -8440,7 +8440,7 @@ const CHAR_DB = {
     id: 'medic', name: '힐 지후', emoji: '💉', role: 'support', roleLabel: '서포터',
     rarity: 'common', color: '#4ae0c4', portrait: PORTRAITS.medic,
     ...CHARACTER_BALANCE.medic,
-    skillDesc: '<b>1초마다</b> 자신 주변 반경 <b>4칸</b>에 회복 파동을 퍼뜨려 다친 아군(자신 포함)을 각 <b>400</b>씩 회복한다. 가장 다친 아군 쪽으로 다가간다. 다른 힐 지후의 파동도 받는다.',
+    skillDesc: '<b>1초마다</b> 자신 주변 반경 <b>4칸</b>에 회복 파동을 퍼뜨려 다친 아군(자신 제외)을 각 <b>400</b>씩 회복한다. 가장 다친 아군 쪽으로 다가간다. 다른 힐 지후의 파동도 받는다.',
     onHit() {}
   },
   awaken: {
@@ -8857,7 +8857,7 @@ const CHAR_DB = {
     id: 'lantern', name: '랜턴 지후', emoji: '🏮', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#f2a93b', portrait: PORTRAITS.lantern || jhPlaceholder('🏮', '#f2a93b'),
     ...CHARACTER_BALANCE.lantern,
-    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 30 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 45)을 하나씩 꽂는다. 체력이 가득 찬 아군에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
+    skillDesc: '사거리 <b>7칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 30 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 31.5)을 하나씩 꽂는다. 체력이 가득 찬 아군에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
   },
   rocket: {
     id: 'rocket', name: '로켓병 지후', emoji: '🚀', role: 'dealer', roleLabel: '딜러',
@@ -9363,7 +9363,7 @@ const RANK_S_ABILITIES = {
   fire: { name: '불길', desc: '사거리 <b>+0.5칸</b> · 화상 대상 공격력 <b>-15%</b>', apply(d) { d.range += 22.5; } },
   shield: { name: '방패 파열', desc: '쉴드가 깨질 때 반경 2칸에 <b>400</b> 피해' },
   ice: { name: '동상', desc: '빙결된 적이 받는 피해 <b>+20%</b>' },
-  medic: { name: '응급 처치', desc: '힐 쿨타임 <b>-0.5초</b> · 부채꼴 <b>+30°</b>', apply(d) { d.atkSpeed = Math.max(0.5, d.atkSpeed - 0.5); d.fanAngleDeg += 30; } },
+  medic: { name: '응급 처치', desc: '파동 회복량 <b>+100</b>', apply(d) { d.healAmount += 100; } },
   stop: { name: '얼음!', desc: '가까이에서 밀쳐낸 적 <b>1초 기절</b>' },
   meteor: { name: '연쇄 낙하', desc: '메테오가 맞으면 다음 메테오 피해 <b>+15%</b> (계속 곱해짐)' },
   mini: { name: '하나 더', desc: '미니 지후가 <b>1기 더</b> 나온다' },
@@ -9469,10 +9469,12 @@ const RANK_S_ABILITIES = {
   mercury: { name: '액체 금속', desc: '쉴드 <b>1,200 → 1,600</b>', apply(d) { d.hgShield = 1600; } },
   electric: { name: '과전류', desc: '기절 확률 <b>20% → 30%</b>', apply(d) { d.zapStunChance = 0.3; } },
   blessing: { name: '이중 축복', desc: '라운드마다 축복을 <b>2개</b> 얻는다', apply(d) { d.blessCount = 2; } },
-  tesla: { name: '고전압', desc: '전기장 피해 <b>100 → 150</b>', apply(d) { d.teslaFieldDamage = 150; } },
+  tesla: { name: '고전압', desc: '전기 회전속도 <b>+15%</b>', apply(d) { d.teslaPeriod /= 1.15; } },
+  typhoon: { name: '나비 효과', desc: '2단계 지속시간 <b>+1초</b>', apply(d) { d.stage2Time += 1; } },
+  beatmania: { name: '느슨', desc: '회피 판정 범위 <b>+0.1초</b> (화살표 앞뒤 0.15초 → 0.25초)', apply(d) { d.beatWindow += 0.1; } },
   soulstealer: { name: '영혼 포식', desc: '영혼 1개당 공격력 <b>+40</b>', apply(d) { d.soulAtk = 40; } },
   moai: { name: '큰 파동', desc: '파동 반경 <b>+0.5칸</b>', apply(d) { d.moaiRadius += 22.5; } },
-  biker: { name: '직진 본능', desc: '돌진 각도 <b>-30° ~ 30°</b>', apply(d) { d.bikeAngleSpread = 30; } },
+  biker: { name: '직진 본능', desc: '돌진 각도 <b>-30° ~ 30°</b> · 시동 시간 <b>절반</b>', apply(d) { d.bikeAngleSpread = 30; d.bikeChargeTime /= 2; } },
   hacker: { name: '정확한 입력', desc: '<b>없는 지후</b>를 타이핑하지 않는다 (대상이 사라지면 다른 적을 해킹)' },
   planet: { name: '질량 붕괴', desc: '위성 피해가 현재 HP 대신 <b>최대 HP</b> 비례' },
   dj: { name: '앵콜', desc: '버프 <b>+2%</b> · 넉백 확률 <b>+2%</b>', apply(d) { d.djBuff = (d.djBuff ?? 0.1) + 0.02; d.djKnockChance += 0.02; } },
@@ -19994,7 +19996,7 @@ function performHeal(caster, target) {
     const R = caster.def.healWaveCells * GRID;
     const w = fx38('fx-moai-wave fx-heal-wave', caster.x, caster.y, '<i></i>'); w.style.width = w.style.height = R * 2 + 'px'; scheduleTask(() => w.remove(), 600);
     state.units.forEach(a => {
-      if (!a.alive || a.isCastle || a.side !== caster.side || !sameRealm(a, caster) || a.hp >= a.maxHp) return;
+      if (a === caster || !a.alive || a.isCastle || a.side !== caster.side || !sameRealm(a, caster) || a.hp >= a.maxHp) return; // 5.6.2 자신은 회복하지 않는다
       if (Math.hypot(a.x - caster.x, a.y - caster.y) > R + unitRadius(a)) return;
       const healAmt = caster.def.healAmount * supportMult(caster) * healRecvMult(a);
       a.hp = Math.min(a.maxHp, a.hp + healAmt); updateUnitBars(a);
@@ -25293,6 +25295,25 @@ $('btnArenaAgain').addEventListener('click', () => { leaveBattle(); showScreen('
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '5.6.2': {
+    label: 'v5.6.2 S랭크 능력 추가 · 서포터 · 탱커 조정',
+    date: '2026.10.01',
+    sections: [
+      { title: '신규 S랭크 능력', items: [
+        { emoji:'🌀', name:'태풍 지후 · 나비 효과', tag:'new', color:'#9b59d0', portraitKey:'typhoon', desc:'2단계 지속시간 <b>+1초</b> (<b>2.5초 → 3.5초</b>).' },
+        { emoji:'🎵', name:'비트마니아 지후 · 느슨', tag:'new', color:'#9b59d0', portraitKey:'beatmania', desc:'회피 판정 범위 <b>+0.1초</b> (화살표 앞뒤 <b>0.15초 → 0.25초</b>).' }
+      ] },
+      { title: '조정 · S랭크 능력 변경', items: [
+        { emoji:'💉', name:'힐 지후', tag:'adjust', color:'#2f6fed', portraitKey:'medic', desc:'회복 파동이 더 이상 <b>자신을 회복하지 않아요</b>. S랭크 <b>응급 처치</b> 변경: 파동 회복량 <b>+100</b> (400 → 500).' },
+        { emoji:'⚡', name:'테슬라코일 지후 · 고전압', tag:'adjust', color:'#2f6fed', portraitKey:'tesla', desc:'S랭크 변경: 전기장 피해 100 → 150 대신 <b>전기 회전속도 +15%</b>.' },
+        { emoji:'🏎️', name:'폭주족 지후 · 직진 본능', tag:'adjust', color:'#2f6fed', portraitKey:'biker', desc:'S랭크에 추가: <b>시동 시간 절반</b> (3초 → 1.5초).' }
+      ] },
+      { title: '하향', items: [
+        { emoji:'🏮', name:'랜턴 지후', tag:'nerf', color:'#e5322d', portraitKey:'lantern', desc:'아군 회복 빔 <b>45 → 31.5</b> (0.1초마다 · -30%).' },
+        { emoji:'🔩', name:'티타늄 지후', tag:'nerf', color:'#e5322d', portraitKey:'titanium', desc:'체력 <b>4,700 → 3,300</b>.' }
+      ] }
+    ]
+  },
   '5.6.1': {
     label: 'v5.6.1 태풍 버그 수정 · 태풍 · 먹구름 조정',
     date: '2026.10.01',
