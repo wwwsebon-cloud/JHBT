@@ -1081,6 +1081,23 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .emo-shop-h small { font-size:11.5px; color:#777; }
 .emo-offer .pic img { object-fit:contain !important; }
 @media (max-width:700px) { .emo-slots { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
+/* 5.7.4 서버 점검 · 개발자 기기 */
+.v57-maint { position:fixed; inset:0; z-index:100000; display:grid; place-items:center; background:rgba(12,12,11,.94); color:#f2f2f0; padding:20px; }
+.v57-maint[hidden] { display:none; }
+.v57-maint .box { max-width:420px; text-align:center; display:flex; flex-direction:column; gap:10px; align-items:center; }
+.v57-maint .ic { font-size:54px; animation:bob 2.4s ease-in-out infinite; }
+.v57-maint b { font-size:26px; font-weight:900; letter-spacing:-.02em; }
+.v57-maint p { margin:0; font-size:15px; line-height:1.5; color:#d6d6d3; white-space:pre-wrap; }
+.v57-maint small { color:#8a8a86; font-size:12px; }
+.v57-maint .until { font:800 14px var(--v4-mono, monospace); color:#ffd166; padding:6px 12px; border:1px dashed #ffd16688; border-radius:999px; }
+.v57-maint .until[hidden] { display:none; }
+.v57-maint .wwe { margin-top:6px; padding:11px 18px; border-radius:12px; border:0; background:#e5322d; color:#fff; font:900 15px inherit; cursor:pointer; }
+.v57-devquick { position:fixed; left:10px; bottom:10px; z-index:100001; font:800 11px var(--v4-mono, monospace); letter-spacing:.08em; padding:6px 10px; border-radius:999px; border:1.5px solid #171717; background:#fff; color:#171717; cursor:pointer; opacity:.75; }
+.v57-devquick[hidden] { display:none; }
+.v57-devquick i { font-style:normal; color:#999; }
+.v57-devquick.on { background:#171717; color:#fff; opacity:1; } .v57-devquick.on i { color:#5eea8a; }
+.v57-devdev { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12.5px; padding:8px 10px; border-radius:10px; background:#f2f2f0; margin:6px 0; }
+.v57-devdev[hidden] { display:none; }
 .round-overlay.show { display: flex; }
 .round-result-box { text-align: center; padding: 32px 40px; }
 .round-result-box .result-title { font-size: 38px; margin-bottom: 8px; }
@@ -6308,7 +6325,8 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
   <div class="settings-section-label">개발자 모드</div>
   <div class="settings-option"><span class="settings-option-icon">⌘</span><span class="settings-option-copy"><b>개발자 모드 <span id="developerStatus">OFF</span></b><small>모든 지후 해금 · 재화 추가 · 투기장 사용</small></span><button type="button" class="btn-ghost" id="btnDeveloperToggle">켜기</button></div>
   <div id="developerControls" hidden>
-    <div id="developerAuth"><label class="field-label" for="developerPassword">개발자 비밀번호</label><input class="text-field" id="developerPassword" type="password" autocomplete="off" inputmode="numeric">
+    <div id="devDeviceRow" class="v57-devdev" hidden><span>📱 이 기기는 <b>개발자 기기</b>로 인증됨 · 원터치로 켜고 끄기</span><button type="button" class="btn-ghost" id="btnDevDeviceForget">인증 해제</button></div>
+    <div id="developerAuth"><label class="field-label" for="developerPassword">개발자 비밀번호 (한 번 인증하면 이 기기는 다음부터 원터치)</label><input class="text-field" id="developerPassword" type="password" autocomplete="off" inputmode="numeric">
     <button type="button" class="btn btn-primary" id="btnDeveloperUnlock">인증</button></div>
     <div id="developerRewards" hidden>
       <label class="field-label" for="developerAmount">추가할 재화 수량</label><input class="text-field" id="developerAmount" type="number" min="1" step="1" value="1000">
@@ -6323,10 +6341,20 @@ body.wwe-mode.wwe-ffa .battle-stage { margin-bottom:min(30vh,250px); }
       <button type="button" class="btn btn-primary" id="btnDevGift">우편 보내기</button>
       <div class="settlement-note" id="devGiftMsg" aria-live="polite"></div>
     </div>
+    <div id="devMaintBox" class="v55-devgift" hidden>
+      <b>🛠 서버 점검</b>
+      <small id="devMaintState">상태 확인 중…</small>
+      <input class="text-field" id="devMaintMsg" placeholder="점검 안내 문구 (예: 밸런스 패치 중)" maxlength="200">
+      <label class="field-label" for="devMaintUntil">점검 끝나는 시각 (선택 · 지나면 자동으로 열림)</label><input class="text-field" id="devMaintUntil" type="datetime-local">
+      <button type="button" class="btn btn-primary" id="btnDevMaint">점검 시작</button>
+      <div class="settlement-note" id="devMaintNote" aria-live="polite"></div>
+    </div>
     <div class="settlement-note" id="developerMessage" aria-live="polite"></div>
   </div>
-  <div class="settings-help">화면 설정은 브라우저에 저장됩니다. 개발자 모드는 새로고침 시 꺼집니다.</div>
+  <div class="settings-help">화면 설정은 브라우저에 저장됩니다. 개발자 모드는 새로고침 시 꺼집니다 (인증된 개발자 기기는 켜 둔 상태가 유지돼요).</div>
 </div></div>
+<div id="maintOverlay" class="v57-maint" hidden><div class="box"><div class="ic">🛠</div><b>서버 점검 중</b><p id="maintMsg">더 좋은 지후배틀을 위해 점검하고 있어요.</p><div class="until" id="maintUntil" hidden></div><button type="button" class="wwe" id="btnMaintWwe">🤼 기다리는 동안 WWE 하기</button><small>점검이 끝나면 자동으로 열려요 · 화면을 닫지 않아도 돼요</small></div></div>
+<button type="button" id="devQuick" class="v57-devquick" hidden>DEV <i>OFF</i></button>
 <div class="app-modal" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="modal-card v43-pay v47-notice">
   <div class="modal-head"><h2 id="noticeTitle">최근 알림</h2><button type="button" class="modal-close" data-close-modal="noticeModal">✕</button></div>
   <div class="v47-notice-list" id="noticeList"></div>
@@ -7828,6 +7856,15 @@ window.JIHOO_FIREBASE_CONFIG = {
     }), () => {});
   }
   // 5.5 운영 우편: admins/{uid} 문서가 있는 계정만 giftMail 을 쓸 수 있다. to = UID 또는 'all'
+  // 점검: config/maintenance = { on, msg, by, at } — 누구나 읽고, 운영자(admins)만 쓴다
+  function maintWatch(fn) {
+    if (!database) return () => {};
+    return sdk.onSnapshot(sdk.doc(database, 'config', 'maintenance'), snap => fn(snap.exists() ? snap.data() : null), () => {});
+  }
+  async function maintSet(on, msg, until = 0) {
+    me();
+    await sdk.setDoc(sdk.doc(database, 'config', 'maintenance'), { on: !!on, msg: String(msg || '').slice(0, 200), until: Math.max(0, Math.floor(Number(until) || 0)), by: auth.currentUser.uid, at: sdk.serverTimestamp() });
+  }
   async function isAdmin() {
     if (!database || !auth || !auth.currentUser) return false;
     try { return (await sdk.getDoc(sdk.doc(database, 'admins', auth.currentUser.uid))).exists(); } catch (error) { return false; }
@@ -7842,7 +7879,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { init, code, createAccount, isAdmin, giftSend, giftFetch, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, isAdmin, giftSend, giftFetch, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -7863,7 +7900,7 @@ if (PREVIEW_MODE) {
   window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved,
     leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
-    presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, isAdmin: () => Promise.resolve(false), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
+    presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
 
 const PORTRAITS = {
@@ -10230,11 +10267,81 @@ function recordDailyProgress(key, amount = 1) {
 function formatNumber(value) { return Math.floor(value || 0).toLocaleString('ko-KR'); }
 function isUnlocked(id) { return developerMode || profile.unlocked.includes(id); }
 function currentDeck() { return limitHiddenDeck((profile.decks[profile.activeDeck] || []).filter(id => isUnlocked(id))).slice(0, 5); }
+// 5.7.4 개발자 기기 인증: 비밀번호를 한 번 맞히면 이 기기를 기억해 두고, 다음부터는 원터치로 켜고 끈다 (켜 둔 상태도 새로고침 뒤 유지)
+const DEV_DEVICE_KEY = 'jihoo-dev-device', DEV_ON_KEY = 'jihoo-dev-on';
+function devDeviceTrusted() { try { return localStorage.getItem(DEV_DEVICE_KEY) === '1'; } catch (error) { return false; } }
+function devRemember(on) { try { if (on) localStorage.setItem(DEV_ON_KEY, '1'); else localStorage.removeItem(DEV_ON_KEY); } catch (error) {} }
+function setDeveloperMode(on) {
+  if (on) enableDeveloperMode(); else {
+    developerMode = false;
+    $('developerMessage').textContent = '개발자 모드가 꺼졌습니다.';
+    if (state.screen === 'arena') showScreen('lobby');
+    renderAccountUI();
+    if (state.screen === 'draft') renderDraftGrid();
+    renderDeveloperMode();
+  }
+  if (devDeviceTrusted()) devRemember(developerMode);
+  maintApply();
+}
+function enableDeveloperMode() {
+  developerMode = true;
+  $('developerMessage').textContent = '개발자 모드가 켜졌습니다.';
+  // 개발자 모드를 켜면 개발자 테두리를 영구 지급한다 (따로 알리지 않는다)
+  if (!frameOwned('dev')) { grantFrame('dev'); saveProfile(); }
+  // 개발자 모드를 켜면 개발자 지후를 영구 지급한다 (다시 꺼도 남는다)
+  if (!profile.unlocked.includes('developer')) {
+    profile.unlocked.push('developer');
+    saveProfile();
+    $('developerMessage').textContent = '개발자 모드가 켜졌습니다. 개발자 지후를 받았습니다!';
+  }
+  renderDeveloperMode();
+  renderAccountUI();
+  if (state.screen === 'draft') renderDraftGrid();
+}
+// 5.7.4 서버 점검: 점검 중이면 개발자 모드가 아닌 사람은 게임을 할 수 없다
+let maintState = null, maintTimer = null;
+const maintOn = () => !!(maintState && maintState.on) && !(maintState.until && Date.now() >= maintState.until); // 끝나는 시각이 지나면 저절로 열린다
+const maintInWwe = () => ['wwe', 'wweBracket'].includes(state.screen) || (state.mode === 'wwe' && state.screen === 'battle'); // 점검 중에도 WWE는 할 수 있다
+function maintUntilText(until) {
+  if (!until) return '';
+  const d = new Date(until), left = Math.max(0, until - Date.now()), m = Math.ceil(left / 60000);
+  const hm = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours() < 12 ? '오전' : '오후'} ${(d.getHours() % 12) || 12}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${hm}까지 · ${m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`} 남음`;
+}
+function maintApply() {
+  const on = maintOn(), block = on && !developerMode && !maintInWwe();
+  clearTimeout(maintTimer);
+  if (on) maintTimer = setTimeout(maintApply, 30000); // 남은 시간 · 자동 열림
+  if (on && maintState.until) { $('maintUntil').hidden = false; $('maintUntil').textContent = '⏰ ' + maintUntilText(maintState.until); } else $('maintUntil').hidden = true;
+  $('maintOverlay').hidden = !block;
+  if (block) $('maintMsg').textContent = maintState.msg || '더 좋은 지후배틀을 위해 점검하고 있어요.';
+  document.documentElement.classList.toggle('maint-block', block);
+  const st = $('devMaintState');
+  if (st) st.textContent = on ? `🔴 점검 중 — ${maintState.msg || '(안내 문구 없음)'}${maintState.until ? ` · ⏰ ${maintUntilText(maintState.until)}` : ' · 끝나는 시각 없음'}` : '🟢 정상 운영 중';
+  const btn = $('btnDevMaint'); if (btn) btn.textContent = on ? '점검 끝내기' : '점검 시작';
+  const q = $('devQuick');
+  if (q) { q.hidden = !devDeviceTrusted(); q.classList.toggle('on', developerMode); q.querySelector('i').textContent = developerMode ? 'ON' : 'OFF'; }
+}
+async function devToggleMaint() {
+  const note = $('devMaintNote');
+  if (!developerMode) return;
+  if (!(await window.JihooOnline.isAdmin())) { note.textContent = '운영자 권한이 없어요. Firestore admins/내UID 문서가 필요해요.'; return; }
+  const on = !maintOn();
+  const until = on && $('devMaintUntil').value ? new Date($('devMaintUntil').value).getTime() : 0;
+  if (on && until && until <= Date.now()) { note.textContent = '끝나는 시각이 이미 지났어요.'; return; }
+  try {
+    await window.JihooOnline.maintSet(on, $('devMaintMsg').value.trim() || (maintState && maintState.msg) || '', until);
+    note.textContent = on ? `점검을 시작했어요${until ? ` (${maintUntilText(until)})` : ''}. 개발자가 아닌 사람은 WWE 말고는 게임을 할 수 없어요.` : '점검을 끝냈어요.';
+  } catch (error) { note.textContent = '저장하지 못했어요: ' + (error.message || error) + ' (Firestore 규칙을 다시 게시했는지 확인)'; }
+}
 function renderDeveloperMode() {
   $('developerStatus').textContent = developerMode ? 'ON' : 'OFF';
   $('btnDeveloperToggle').textContent = developerMode ? '끄기' : '켜기';
   $('developerControls').hidden = false;
-  $('developerAuth').hidden = developerMode;
+  $('developerAuth').hidden = developerMode || devDeviceTrusted();
+  $('devDeviceRow').hidden = !devDeviceTrusted();
+  if ($('devMaintBox')) $('devMaintBox').hidden = !developerMode;
+  maintApply();
   $('developerRewards').hidden = !developerMode;
   if ($('developerArena')) $('developerArena').hidden = !developerMode;
   if ($('devGiftBox')) { // 5.5 운영 우편
@@ -10249,19 +10356,9 @@ async function unlockDeveloperMode() {
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), byte => byte.toString(16).padStart(2, '0')).join('');
   input.value = '';
   if (digest !== DEVELOPER_PASSWORD_SHA256) { $('developerMessage').textContent = '비밀번호가 올바르지 않습니다.'; return; }
-  developerMode = true;
-  $('developerMessage').textContent = '개발자 모드가 켜졌습니다.';
-  // 개발자 모드를 켜면 개발자 테두리를 영구 지급한다 (따로 알리지 않는다)
-  if (!frameOwned('dev')) { grantFrame('dev'); saveProfile(); }
-  // 개발자 모드를 켜면 개발자 지후를 영구 지급한다 (다시 꺼도 남는다)
-  if (!profile.unlocked.includes('developer')) {
-    profile.unlocked.push('developer');
-    saveProfile();
-    $('developerMessage').textContent = '개발자 모드가 켜졌습니다. 개발자 지후를 받았습니다!';
-  }
-  renderDeveloperMode();
-  renderAccountUI();
-  if (state.screen === 'draft') renderDraftGrid();
+  try { localStorage.setItem(DEV_DEVICE_KEY, '1'); } catch (error) {} // 이 기기를 개발자 기기로 기억
+  setDeveloperMode(true);
+  $('developerMessage').textContent += ' 이 기기는 이제 원터치로 켜고 끌 수 있어요.';
 }
 function addDeveloperCurrency(key) {
   if (!developerMode) return;
@@ -13068,6 +13165,7 @@ function v4OnScreen(name) {
 
 function showScreen(name) {
   if (name === 'lobby' && !profile.nickname) name = 'welcome';
+  setTimeout(() => { if (typeof maintApply === 'function') maintApply(); }, 0); // 5.7.4 WWE에서 나오면 점검 화면이 다시 덮는다
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.v4-noanim').forEach(el => el.classList.remove('v4-noanim'));
   $('screen-' + name).classList.add('active');
@@ -13589,7 +13687,7 @@ try {
   ['mode', 'level', 'auto', 'introFull'].forEach(k => { if (saved[k] != null) WWE[k] = saved[k]; });
 } catch (error) {}
 function wweSavePrefs() { try { localStorage.setItem('jihooBattle.wwe', JSON.stringify({ mode: WWE.mode, level: WWE.level, auto: WWE.auto, introFull: WWE.introFull })); } catch (error) {} }
-function wweUnlocked() { return developerMode || getLevelInfo(profile.totalXp).level >= WWE_MIN_LEVEL; }
+function wweUnlocked() { return developerMode || maintOn() || getLevelInfo(profile.totalXp).level >= WWE_MIN_LEVEL; } // 5.7.4 점검 중에는 레벨과 상관없이 WWE
 function wweIds() {
   const order = { hidden: 0, legend: 1, epic: 2, rare: 3, common: 4 };
   return playableIds().sort((a, b) => (order[CHAR_DB[a].rarity] - order[CHAR_DB[b].rarity]) || CHAR_DB[a].name.localeCompare(CHAR_DB[b].name, 'ko'));
@@ -30270,7 +30368,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if ($('profileModal').classList.contains('show')) renderProfileModal();
     }
   });
-  onlineInitPromise.then(() => { if (window.JihooOnline.enabled()) startNotices(); checkSeasonRewards(); checkGiftMail(); }).catch(() => {});
+  onlineInitPromise.then(() => { if (window.JihooOnline.enabled()) startNotices(); checkSeasonRewards(); checkGiftMail(); window.JihooOnline.maintWatch(m => { maintState = m; maintApply(); }); }).catch(() => {}); // 5.7.4 서버 점검 감시
   // 4.1.6 인트로: 지후 일러스트와 문구가 랜덤으로 돌다가 '로그인 중…' → '게임 시작하는 중…' 뒤 로비로 (약 4.5초)
   runIntroSequence(async () => {
     await Promise.race([onlineInitPromise, new Promise(resolve => setTimeout(resolve, 2500))]).catch(() => {});
@@ -30622,17 +30720,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   $('reduceMotionSetting').addEventListener('change', e => { profile.settings.reduceMotion = e.target.checked; saveProfile(); });
   $('btnDeveloperToggle').addEventListener('click', () => {
-    if (developerMode) {
-      developerMode = false;
-      $('developerMessage').textContent = '개발자 모드가 꺼졌습니다.';
-      if (state.screen === 'arena') showScreen('lobby');
-      renderAccountUI();
-      if (state.screen === 'draft') renderDraftGrid();
-    } else {
-      $('developerMessage').textContent = '비밀번호를 입력해 주세요.';
-    }
+    if (developerMode || devDeviceTrusted()) { setDeveloperMode(!developerMode); return; } // 인증된 기기는 원터치
+    $('developerMessage').textContent = '비밀번호를 입력해 주세요.';
     renderDeveloperMode();
   });
+  $('devQuick').addEventListener('click', () => { if (devDeviceTrusted()) setDeveloperMode(!developerMode); });
+  $('btnDevDeviceForget').addEventListener('click', () => {
+    try { localStorage.removeItem(DEV_DEVICE_KEY); localStorage.removeItem(DEV_ON_KEY); } catch (error) {}
+    setDeveloperMode(false);
+    $('developerMessage').textContent = '이 기기의 개발자 인증을 해제했어요. 다음에는 비밀번호가 필요해요.';
+  });
+  $('btnDevMaint').addEventListener('click', devToggleMaint);
+  $('btnMaintWwe').addEventListener('click', () => { openWwe(); maintApply(); });
+  if (devDeviceTrusted()) { try { if (localStorage.getItem(DEV_ON_KEY) === '1') enableDeveloperMode(); } catch (error) {} }
+  maintApply();
   $('btnDeveloperUnlock').addEventListener('click', unlockDeveloperMode);
   $('developerPassword').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); unlockDeveloperMode(); } });
   $('btnDeveloperGold').addEventListener('click', () => addDeveloperCurrency('gold'));

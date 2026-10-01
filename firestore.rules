@@ -152,6 +152,19 @@ service cloud.firestore {
 
     // 5.4 협동전 리더보드: 최고 웨이브 · 덱
     // 5.5 운영 우편: admins/{uid} 문서는 콘솔에서만 만든다. 운영자만 giftMail 을 쓸 수 있고, 받는 사람(또는 전체)만 읽는다.
+    // 5.7.4 서버 점검: 누구나 읽고(로그인 전에도), 운영자만 켜고 끈다
+    match /config/{docId} {
+      allow get: if docId == 'maintenance';
+      allow list: if false;
+      allow write: if docId == 'maintenance' && request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && request.resource.data.keys().hasOnly(['on', 'msg', 'until', 'by', 'at'])
+        && (!('until' in request.resource.data) || request.resource.data.until is int)
+        && request.resource.data.on is bool
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+    }
     match /admins/{userId} {
       allow get: if owner(userId);
       allow list, write: if false;
