@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>try { if (localStorage.getItem('jihooBattle.uiTheme') === 'classic') document.documentElement.classList.add('ui-classic'); } catch (e) {}</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="6.0.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="6.0.1"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6284,6 +6284,16 @@ html.ui-classic .v4-shard { position:relative; }
 html.ui-classic .m6-shardbar { display:block; height:4px; margin:4px 6px; border-radius:4px; background:#e3e3df; overflow:hidden; }
 html.ui-classic .m6-shardbar i { display:block; height:100%; background:#111; }
 html.ui-classic .m6-sticker { position:absolute; top:6px; right:6px; padding:2px 7px; border-radius:6px; background:#f2c94c; color:#111; font-size:10px; font-weight:900; }
+.v60-dislist { display:flex; flex-wrap:wrap; gap:6px; font-size:12px; }
+.v60-dislist .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border:2px solid #111; background:#fff; }
+.v60-dislist .chip button { border:0; background:#111; color:#fff; font-size:10px; padding:2px 6px; cursor:pointer; }
+.char-card.m6-off { filter:grayscale(1); opacity:.5; }
+.char-card.m6-off::after { content:'사용 불가'; position:absolute; right:6px; top:6px; padding:1px 6px; background:#e5322d; color:#fff; font-size:10px; font-weight:900; }
+.v60-dislist { display:flex; flex-wrap:wrap; gap:6px; font-size:12px; }
+.v60-dislist .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border:2px solid #111; background:#fff; color:#111; }
+.v60-dislist .chip button { border:0; background:#111; color:#fff; font-size:10px; padding:2px 6px; cursor:pointer; }
+.char-card.m6-off { filter:grayscale(1); opacity:.5; }
+.char-card.m6-off::after { content:'사용 불가'; position:absolute; right:6px; top:6px; padding:1px 6px; background:#e5322d; color:#fff; font-size:10px; font-weight:900; }
 /* M6-END */
 </style>
 </head>
@@ -7247,6 +7257,13 @@ html.ui-classic .m6-sticker { position:absolute; top:6px; right:6px; padding:2px
       <div class="settlement-note" id="devGiftMsg" aria-live="polite"></div>
       <button type="button" class="btn btn-secondary" id="btnDevGiftSent">📋 보낸 우편 · 받은 사람 보기</button>
       <div class="v60-giftsent" id="devGiftSent" hidden></div>
+    </div>
+    <div id="devDisBox" class="v55-devgift" hidden>
+      <b>🚧 지후 긴급 비활성화</b>
+      <small>켜 둔 지후는 모든 유저가 장착할 수 없고, 덱에 있으면 게임을 할 수 없어요 (개발자 모드는 예외)</small>
+      <div class="v55-devrow"><select class="text-field" id="devDisSel"></select><button type="button" class="btn btn-primary" id="btnDevDisAdd">비활성화</button></div>
+      <div class="v60-dislist" id="devDisList">불러오는 중…</div>
+      <div class="settlement-note" id="devDisNote" aria-live="polite"></div>
     </div>
     <div id="devAnnBox" class="v55-devgift" hidden>
       <b>📌 전체 공지</b>
@@ -8782,6 +8799,15 @@ window.JIHOO_FIREBASE_CONFIG = {
     me();
     await sdk.setDoc(sdk.doc(database, 'config', 'maintenance'), { on: !!on, msg: String(msg || '').slice(0, 200), until: Math.max(0, Math.floor(Number(until) || 0)), by: auth.currentUser.uid, at: sdk.serverTimestamp() });
   }
+  // 6.0.2 지후 긴급 비활성화: config/disabled = { ids:[지후 id…], by, at } — 누구나 읽고, 운영자만 쓴다
+  function disabledWatch(fn) {
+    if (!database) return () => {};
+    return sdk.onSnapshot(sdk.doc(database, 'config', 'disabled'), snap => fn(snap.exists() ? snap.data() : null), () => {});
+  }
+  async function disabledSet(ids) {
+    me();
+    await sdk.setDoc(sdk.doc(database, 'config', 'disabled'), { ids: ids.slice(0, 80).map(String), by: auth.currentUser.uid, at: sdk.serverTimestamp() });
+  }
   // 6.0 전체 공지: config/announce = { on, msg, by, at } — 누구나 읽고, 운영자만 쓴다. 공지 칸 맨 위에 고정된다
   function announceWatch(fn) {
     if (!database) return () => {};
@@ -8820,7 +8846,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -11281,6 +11307,15 @@ function enableDeveloperMode() {
 // 5.7.4 서버 점검: 점검 중이면 개발자 모드가 아닌 사람은 게임을 할 수 없다
 let maintState = null, maintTimer = null;
 const maintOn = () => !!(maintState && maintState.on) && !(maintState.until && Date.now() >= maintState.until); // 끝나는 시각이 지나면 저절로 열린다
+// 6.0.2 지후 긴급 비활성화: 운영자가 지정한 지후는 장착할 수 없고, 덱에 들어 있으면 아무 게임도 시작할 수 없다 (개발자 모드는 예외)
+let disabledIds = new Set();
+const charDisabled = id => disabledIds.has(id) && !developerMode;
+const deckDisabled = () => (profile.decks[profile.activeDeck] || []).filter(id => disabledIds.has(id));
+function disabledApply(data) {
+  disabledIds = new Set(Array.isArray(data && data.ids) ? data.ids.filter(id => CHAR_DB[id]) : []);
+  try { if ($('devDisList')) renderDevDisabled(); if (state.screen === 'draft') { renderDraftGrid(); renderDraftDeck(); } } catch (error) {}
+}
+function disabledNames(ids) { return ids.map(id => CHAR_DB[id] ? CHAR_DB[id].name : id).join(', '); }
 const maintInMatch = () => !!state.maintShield && ['battle', 'compdraft', 'loading'].includes(state.screen) && !state.matchSettled; // 점검 전에 시작한 판은 끝까지 할 수 있다
 function maintMarkMatch() { // 점검이 걸린 순간 하고 있던 판 → 져도 점수가 떨어지지 않는다
   if (state.maintShield || state.matchSettled || !['battle', 'compdraft', 'loading'].includes(state.screen)) return;
@@ -11331,6 +11366,7 @@ function renderDeveloperMode() {
   $('devDeviceRow').hidden = !devDeviceTrusted();
   if ($('devMaintBox')) $('devMaintBox').hidden = !developerMode;
   if ($('devAnnBox')) $('devAnnBox').hidden = !developerMode;
+  if ($('devDisBox')) { $('devDisBox').hidden = !developerMode; if (developerMode) renderDevDisabled(); }
   maintApply();
   $('developerRewards').hidden = !developerMode;
   if ($('developerArena')) $('developerArena').hidden = !developerMode;
@@ -15726,6 +15762,7 @@ function renderDraftGrid() {
       grid.appendChild(sec);
     }
     const card = buildCharCard(ch, { selectable: true });
+    if (charDisabled(ch.id)) card.classList.add('m6-off'); // 6.0.2 긴급 비활성화
     if (state.draftSelected.includes(ch.id)) card.classList.add('selected');
     if (!isUnlocked(ch.id)) card.classList.add(ch.rarity === 'hidden' ? 'hidden-locked' : 'locked');
     grid.appendChild(card);
@@ -15819,6 +15856,7 @@ function setDraftPendingEquip(id) {
 }
 function requestDraftEquip(id) {
   if (!isUnlocked(id) || state.draftSelected.includes(id)) return;
+  if (charDisabled(id)) { $('draftSaveStatus').textContent = `${CHAR_DB[id].name}은(는) 지금 사용할 수 없어서 장착할 수 없어요.`; v55Dialog({ icon: '🚧', title: '일시적으로 사용할 수 없어요', html: `<b>${escapeHtml(CHAR_DB[id].name)}</b>은(는) 문제를 고치는 동안 장착할 수 없어요.<br>곧 다시 열릴 거예요.`, ok: '확인' }); return; }
   $('cdpClose').click();
   if (state.draftSelected.length < 5) {
     if (hiddenBlocksEquip(id, -1)) { $('draftSaveStatus').textContent = '히든 지후는 덱에 1기만 편성할 수 있습니다.'; return; }
@@ -15848,8 +15886,9 @@ function draftEquipButton(c) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'btn btn-primary cdp-equip';
-  button.textContent = !owned ? '미보유' : equipped ? '장착됨' : '장착';
-  button.disabled = !owned || equipped;
+  const off = charDisabled(c.id); // 6.0.2 긴급 비활성화
+  button.textContent = !owned ? '미보유' : off ? '사용 불가' : equipped ? '장착됨' : '장착';
+  button.disabled = !owned || equipped || off;
   button.addEventListener('click', () => requestDraftEquip(c.id));
   return button;
 }
@@ -26949,6 +26988,13 @@ const EMOTICONS = [
 ];
 const EMO_SHOW_MS = 3000, EMO_COOL_MS = 5000, EMO_SLOTS = 8, EMO_PRICE = 500; // 상점 매물 ◆500
 const emoDef = k => EMOTICONS.find(e => e.k === k) || null;
+// 6.0.2 이미지 대체: 움직이는 gif 가 서버(도메인)에서 안 받아지면 작은 정적 썸네일 → 그것도 안 되면 이모지 글자로 보여 준다
+function emoImgFix(img) {
+  const m = /emo\/(?:thumb\/)?([a-z]+_\d+)\./.exec(img.getAttribute('src') || '');
+  if (m && !img.dataset.fb && /\.gif/.test(img.getAttribute('src'))) { img.dataset.fb = '1'; img.src = `emo/thumb/${m[1]}.png`; return; }
+  img.style.visibility = 'hidden';
+}
+document.addEventListener('error', e => { const t = e.target; if (t && t.tagName === 'IMG' && t.closest && t.closest('.emo-offer, .emo-card, .emo-owned, .emo-slots, .v52-popcard')) emoImgFix(t); }, true);
 const emoSrc = k => emoDef(k) ? `emo/${k}.${k.startsWith('gif') ? 'gif' : 'png'}` : '';
 const emoUi = { coolUntil: 0, raf: 0, audio: null, pick: -1 };
 function emoSound() { // 짧은 '뽁' — sfx/emote 파일이 있으면 그걸 쓰고, 없으면 바로 만든다
@@ -26986,7 +27032,7 @@ function emoShow(who, key) {
   const el = document.createElement('div');
   el.id = id; el.className = `emo-card ${seat.mine ? 'mine' : 'opp'}${d.cover ? ' cover' : ''}`;
   if (seat.i) el.style[seat.mine ? 'right' : 'left'] = `calc(12px + ${seat.i} * (min(118px, 22vw) + 10px))`;
-  el.innerHTML = `<div class="who"><i></i>${escapeHtml(seat.name)}</div><img src="${emoSrc(key)}" alt="${escapeHtml(d.name)}" draggable="false" onerror="this.parentNode.remove()">`;
+  el.innerHTML = `<div class="who"><i></i>${escapeHtml(seat.name)}</div><img src="${emoSrc(key)}" alt="${escapeHtml(d.name)}" draggable="false">`;
   layer.appendChild(el);
   emoSound();
   setTimeout(() => el.classList.add('out'), EMO_SHOW_MS - 280);
@@ -29868,6 +29914,16 @@ async function devSendGift() {
     if (to === 'all' || to === window.JihooOnline.myUid()) checkGiftMail();
   } catch (error) { msg.textContent = '보내기 실패: ' + (error.message || error); }
 }
+// 6.0.2 덱에 비활성화된 지후가 있으면 모든 게임 시작 버튼을 막는다 (캡처 단계라 기존 핸들러보다 먼저 걸린다)
+document.addEventListener('click', e => {
+  if (developerMode || !disabledIds.size) return;
+  const b = e.target.closest && e.target.closest('#btnStartGame, #btnStartDraftBattle, #btnStartComp, #btnStartCoop, #btnStartDuo, #btnStartRooms, #btnOpenWwe, #m6Start, #btnCompMatch');
+  if (!b) return;
+  const bad = deckDisabled();
+  if (!bad.length) return;
+  e.stopImmediatePropagation(); e.preventDefault();
+  v55Dialog({ icon: '🚧', title: '지금은 게임을 할 수 없어요', html: `덱에 <b>${escapeHtml(disabledNames(bad))}</b>이(가) 있어요.<br>문제를 고치는 동안 사용할 수 없는 지후예요.<br><b>덱 설정</b>에서 다른 지후로 바꾸면 게임을 할 수 있어요.`, ok: '확인' });
+}, true);
 // 6.0 개발자: 보낸 운영 우편과 받은 사람(받기를 누른 사람) 목록
 async function devShowGiftSent() {
   const box = $('devGiftSent');
@@ -29896,6 +29952,19 @@ function annOn() { return !!(annState && annState.on && annState.msg); }
 function renderDevAnn() {
   const st = $('devAnnState');
   if (st) st.textContent = annOn() ? `📌 게시 중 — ${annState.msg}` : '게시 중인 공지 없음';
+}
+function renderDevDisabled() {
+  const sel = $('devDisSel'), list = $('devDisList');
+  if (!sel || !list) return;
+  if (!sel.options.length) sel.innerHTML = Object.values(CHAR_DB).filter(c => !c.devOnly).sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  list.innerHTML = disabledIds.size ? [...disabledIds].map(id => `<span class="chip"><b>${escapeHtml(CHAR_DB[id].name)}</b><button type="button" data-dis-off="${id}">✕ 열기</button></span>`).join('') : '비활성화된 지후 없음';
+}
+async function devSetDisabled(ids) {
+  const note = $('devDisNote');
+  if (!developerMode) return;
+  if (!window.JihooOnline.connected() || !(await window.JihooOnline.isAdmin())) { note.textContent = '운영자 권한이 없어요. Firestore admins/내UID 문서가 필요해요.'; return; }
+  try { await window.JihooOnline.disabledSet(ids); note.textContent = ids.length ? `지금 ${ids.length}기가 비활성화돼 있어요.` : '모두 다시 열었어요.'; }
+  catch (error) { note.textContent = '저장하지 못했어요: ' + (error.message || error) + ' (Firestore 규칙을 다시 게시했는지 확인)'; }
 }
 async function devSetAnn(on) {
   const note = $('devAnnNote');
@@ -31855,7 +31924,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if ($('profileModal').classList.contains('show')) renderProfileModal();
     }
   });
-  onlineInitPromise.then(() => { if (window.JihooOnline.enabled()) startNotices(); checkSeasonRewards(); checkGiftMail(); window.JihooOnline.maintWatch(m => { maintState = m; maintApply(); }); window.JihooOnline.announceWatch(a => { annState = a; renderDevAnn(); m6RenderNews(); }); }).catch(() => {}); // 5.7.4 서버 점검 감시
+  onlineInitPromise.then(() => { if (window.JihooOnline.enabled()) startNotices(); checkSeasonRewards(); checkGiftMail(); window.JihooOnline.maintWatch(m => { maintState = m; maintApply(); }); window.JihooOnline.announceWatch(a => { annState = a; renderDevAnn(); m6RenderNews(); }); window.JihooOnline.disabledWatch(d => { disabledApply(d); }); }).catch(() => {}); // 5.7.4 서버 점검 감시
   // 4.1.6 인트로: 지후 일러스트와 문구가 랜덤으로 돌다가 '로그인 중…' → '게임 시작하는 중…' 뒤 로비로 (약 4.5초)
   runIntroSequence(async () => {
     await Promise.race([onlineInitPromise, new Promise(resolve => setTimeout(resolve, 2500))]).catch(() => {});
@@ -32234,6 +32303,8 @@ document.addEventListener('DOMContentLoaded', () => {
   { const sel = $('uiThemeSetting'); // 6.0 화면 테마: 만화 ↔ 클래식(옛날 UI). 로비 구조가 달라서 새로고침으로 적용
     if (sel) { sel.value = UI_CLASSIC ? 'classic' : 'comic';
       sel.addEventListener('change', () => { try { localStorage.setItem('jihooBattle.uiTheme', sel.value); } catch (error) {} saveProfile(); location.reload(); }); } }
+  $('btnDevDisAdd').addEventListener('click', () => { const id = $('devDisSel').value; if (id) devSetDisabled([...new Set([...disabledIds, id])]); });
+  $('devDisList').addEventListener('click', e => { const b = e.target.closest('[data-dis-off]'); if (b) devSetDisabled([...disabledIds].filter(x => x !== b.dataset.disOff)); });
   $('btnDevAnn').addEventListener('click', () => devSetAnn(true));
   $('btnDevAnnOff').addEventListener('click', () => devSetAnn(false));
   $('codeInput').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== e.target.value) e.target.value = v; });
