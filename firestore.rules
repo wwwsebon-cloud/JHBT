@@ -155,8 +155,16 @@ service cloud.firestore {
     // 5.7.4 서버 점검: 누구나 읽고(로그인 전에도), 운영자만 켜고 끈다
     // 6.0 전체 공지: config/announce = { on, msg, by, at } 도 같은 방식 (누구나 읽고 운영자만 쓴다)
     match /config/{docId} {
-      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled';
+      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired';
       allow list: if false;
+      // 6.0.3 즉시 만료: config/expired = { codes: [코드…], mails: [우편 id…], by, at }
+      allow write: if docId == 'expired' && request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && request.resource.data.keys().hasOnly(['codes', 'mails', 'by', 'at'])
+        && request.resource.data.codes is list && request.resource.data.codes.size() <= 100
+        && request.resource.data.mails is list && request.resource.data.mails.size() <= 200
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
       // 6.0.2 지후 긴급 비활성화: config/disabled = { ids: [지후 id…], by, at }
       allow write: if docId == 'disabled' && request.auth != null
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
