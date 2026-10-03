@@ -11038,7 +11038,7 @@ function normalizeProfile(raw) {
       noticePending: !!rawNewcomer.noticePending,
     },
     // 4.1.9 튜토리얼: 이 필드가 없던 기존 유저(닉네임 있음)는 이미 본 것으로 친다
-    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), gid: String(m.gid || '').slice(0, 40), exp: Math.max(0, Math.floor(Number(m.exp) || 0)), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'boxTicket', 'epicTicket', 'legendTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'epicChar', 'frame'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : {}) })) : [] })) : [],
+    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), gid: String(m.gid || '').slice(0, 40), exp: Math.max(0, Math.floor(Number(m.exp) || 0)), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'epicTicket', 'legendTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'epicChar', 'frame'].includes(r?.kind)).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : {}) })) : [] })) : [],
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
@@ -14242,6 +14242,7 @@ function showScreen(name) {
   if (name === 'battle') { if (state.layoutEw == null) state.layoutEw = window.innerWidth >= 800 && window.innerWidth > window.innerHeight; } // 5.5.1 경기 동안 방향 고정
   else if (name !== 'end') state.layoutEw = null;
   state.screen = name;
+  if (typeof presenceSyncPick === 'function') presenceSyncPick(); // 6.0.3 경쟁전 · 드래프트 픽 화면이면 친구에게 '픽 선택 중'으로 보인다
   v4OnScreen(name);
   if (['leaderboard', 'inventory', 'patch'].includes(name) && typeof mqVisit === 'function') mqVisit(name);
   if (pendingUpdateVersion) showUpdateOverlayIfSafe();
@@ -16343,7 +16344,7 @@ function compLossTp(tierIndex) {
 
 // 드래프트 진행 상태
 let comp = null;
-function compPool() { return playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden'); }
+function compPool() { return playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden' && !charDisabled(id)); } // 6.0.3 긴급 비활성화된 지후는 경쟁전 · 드래프트에서 밴 · 픽 목록에 나오지 않는다
 function compTaken() { return new Set([...(comp.globalBans || []), ...comp.bans.ally, ...comp.bans.enemy, ...comp.picks.ally, ...comp.picks.enemy]); }
 const otherSide = side => (side === 'ally' ? 'enemy' : 'ally');
 function compFirstPicker(phase) { // 홀수 페이즈는 선수, 짝수 페이즈는 후수가 먼저 고른다
@@ -29728,6 +29729,11 @@ function grantUpdateGift() { // 5.5 업데이트마다 운테기 1개
     profile.mail = (profile.mail || []).filter(m => m.claimed || m.title === mine || !/^v[\d.]+ 업데이트 선물 · [운임]테기$/.test(m.title || ''));
     if (profile.mail.length !== before) { saveProfile(); if (typeof renderMailDot === 'function') renderMailDot(); }
   }
+  { // 6.0.3 우편 보상 허용 목록에 임테기가 빠져 있던 동안 보상이 지워진 '못 받은' 임테기 우편 복구
+    let fixed = false;
+    (profile.mail || []).forEach(m => { if (!m.claimed && /업데이트 선물 · [운임]테기$/.test(m.title || '') && !(m.rewards || []).length) { m.rewards = [{ kind: 'luckTicket', amount: 1 }]; fixed = true; } });
+    if (fixed) { saveProfile(); if (typeof renderMailDot === 'function') renderMailDot(); }
+  }
   if (!profile.nickname || profile.luckGiftVer === ver) return;
   if ((profile.mail || []).some(m => m.title === `v${ver} 업데이트 선물 · 임테기`)) { profile.luckGiftVer = ver; return; }
   profile.luckGiftVer = ver;
@@ -30683,11 +30689,20 @@ function startSocial() {
     social.error = false; social.friends = list;
     syncDmWatch(); refreshPresence(); renderFriends(); renderSocialBadge();
   });
-  const ping = () => window.JihooOnline.presencePing(state.screen === 'battle' ? 'battle' : 'lobby');
+  const ping = () => window.JihooOnline.presencePing(presenceWhere());
   ping();
   clearInterval(social.pingTimer);
   social.pingTimer = setInterval(() => { ping(); refreshPresence(); }, 60000);
   if (typeof startInvites === 'function') startInvites();
+}
+// 6.0.3 접속 위치: 경쟁전 · 드래프트 픽 화면이면 'pick' (친선전 신청을 주고받을 수 없다)
+function presenceWhere() { return state.screen === 'compdraft' ? 'pick' : state.screen === 'battle' ? 'battle' : 'lobby'; }
+var presencePick = false; // var: showScreen 이 이 줄보다 먼저 불릴 수 있어서
+function presenceSyncPick() {
+  const on = state.screen === 'compdraft';
+  if (on === presencePick) return;
+  presencePick = on;
+  try { if (window.JihooOnline && window.JihooOnline.connected()) window.JihooOnline.presencePing(presenceWhere()); } catch (error) {}
 }
 function acceptedFriends() { return social.friends.filter(f => f.status === 'accepted'); }
 function syncDmWatch() {
@@ -30717,7 +30732,7 @@ async function refreshPresence() {
 function presenceOf(uid) {
   const p = social.presence[uid];
   if (!p || Date.now() - p.at > 150000) return { on: false, label: '오프라인' };
-  return { on: true, battle: p.where === 'battle', label: p.where === 'battle' ? '게임 중' : '접속 중' };
+  return { on: true, battle: p.where === 'battle', pick: p.where === 'pick', label: p.where === 'battle' ? '게임 중' : p.where === 'pick' ? '픽 선택 중' : '접속 중' };
 }
 function socialBadgeCount() {
   return social.friends.filter(f => f.incoming).length + acceptedFriends().filter(dmUnread).length + (typeof friendlyInvitesPending === 'function' ? friendlyInvitesPending() : 0);
@@ -30771,9 +30786,9 @@ function renderFriends() {
   friends.forEach(f => {
     const pr = presenceOf(f.uid), last = social.last[f.id], unread = dmUnread(f);
     const sub = `${pr.label}${last ? ' · ' + (unread ? '<span class="new">새 메시지</span> ' : '') + escapeHtml(censorText(String(last.text || '')).slice(0, 24)) : ''}`;
-    wrap.appendChild(friendRow(f, { dot: pr.battle ? 'battle' : pr.on ? 'on' : '', sub, buttons: [
+    wrap.appendChild(friendRow(f, { dot: pr.battle || pr.pick ? 'battle' : pr.on ? 'on' : '', sub, buttons: [
       ['💬', '', () => openDm(f), false, '1:1 채팅'],
-      ['⚔ 친선전', 'war', () => (typeof friendlyInvite === 'function' ? friendlyInvite(f) : null), !pr.on || pr.battle, pr.on ? (pr.battle ? '게임 중이에요' : '친선전 신청') : '접속 중일 때만 신청할 수 있어요'],
+      ['⚔ 친선전', 'war', () => (typeof friendlyInvite === 'function' ? friendlyInvite(f) : null), !pr.on || pr.battle || pr.pick, pr.on ? (pr.battle ? '게임 중이에요' : pr.pick ? '픽 선택 중이라 신청할 수 없어요' : '친선전 신청') : '접속 중일 때만 신청할 수 있어요'],
       ['✕', 'x', act(async () => { if (confirm(`${f.nickname}님을 친구에서 삭제할까요?`)) await window.JihooOnline.friendRemove(f.id); }), false, '친구 삭제'],
     ] }));
   });
@@ -31193,6 +31208,7 @@ function netCheckEnd(r) { // 참가자: 방장 결과와 다르면 방장 기준
 
 // ── 초대 ──
 const FRIENDLY = { invites: [], seen: new Set(), unsub: null, pending: null };
+const FRIENDLY_INVITE_SEC = 20; // 6.0.3 친선전 신청창은 20초 뒤 저절로 사라진다
 function friendlyInvitesPending() { return FRIENDLY.invites.length; }
 function startInvites() {
   if (FRIENDLY.unsub || !window.JihooOnline.connected()) return;
@@ -31219,19 +31235,32 @@ function friendlyModal(html) {
 }
 function showFriendlyInvite(m) {
   FRIENDLY.seen.add(m.id);
-  if (state.screen === 'battle' && state.phase !== 'idle') { // 게임 중이면 자동으로 거절
+  if ((state.screen === 'battle' && state.phase !== 'idle') || state.screen === 'compdraft') { // 게임 중 · 경쟁전/드래프트 픽 선택 중이면 자동으로 거절
     window.JihooOnline.matchUpdate(m.id, { status: 'declined' }).catch(() => {});
     return;
   }
-  const el = friendlyModal(`<div class="ic">⚔</div><h2>친선전 신청</h2><p><b>${escapeHtml(m.hostName)}</b>님이 친선전을 신청했어요.<br><small>라이프 3 · 기록과 보상은 없어요</small></p>
+  const el = friendlyModal(`<div class="ic">⚔</div><h2>친선전 신청</h2><p><b>${escapeHtml(m.hostName)}</b>님이 친선전을 신청했어요.<br><small>라이프 3 · 기록과 보상은 없어요</small><br><small class="fm-left"></small></p>
     <div class="acts"><button type="button" class="btn" data-a="no">거절</button><button type="button" class="btn btn-primary" data-a="yes">수락</button></div><p class="msg"></p>`);
-  el.querySelector('[data-a="no"]').onclick = () => { closeModal('friendlyModal'); window.JihooOnline.matchUpdate(m.id, { status: 'declined' }).catch(() => {}); };
+  el.dataset.inv = m.id;
+  let left = FRIENDLY_INVITE_SEC;
+  const showLeft = () => { const t = el.querySelector('.fm-left'); if (t && el.dataset.inv === m.id) t.textContent = `${left}초 뒤 사라져요`; };
+  const stopTick = () => clearInterval(tick);
+  const tick = setInterval(() => { // 20초 안에 답하지 않으면 창이 사라진다 (보낸 사람 쪽도 같은 시간에 취소된다)
+    if (el.dataset.inv !== m.id) { stopTick(); return; }
+    left--;
+    if (left <= 0) { stopTick(); el.dataset.inv = ''; closeModal('friendlyModal'); return; }
+    showLeft();
+  }, 1000);
+  showLeft();
+  el.querySelector('[data-a="no"]').onclick = () => { stopTick(); el.dataset.inv = ''; closeModal('friendlyModal'); window.JihooOnline.matchUpdate(m.id, { status: 'declined' }).catch(() => {}); };
   el.querySelector('[data-a="yes"]').onclick = async () => {
+    stopTick();
     const deck = currentDeck();
     if (deck.length !== 5) { el.querySelector('.msg').textContent = '덱에 지후 5기를 먼저 채워 주세요.'; return; }
     el.querySelectorAll('button').forEach(b => { b.disabled = true; });
     try {
       await window.JihooOnline.matchUpdate(m.id, { status: 'accepted', guestDeck: deck });
+      el.dataset.inv = '';
       closeModal('friendlyModal');
       closeChat();
       startFriendlyMatch({ id: m.id, role: 'guest', seed: m.seed, hostName: m.hostName, guestName: profile.nickname, hostDeck: m.hostDeck, guestDeck: deck, ew: m.ew });
@@ -31242,6 +31271,7 @@ async function friendlyInvite(f) {
   const deck = currentDeck();
   if (deck.length !== 5) { friendMsg('덱에 지후 5기를 먼저 채워 주세요.', 'err'); return; }
   if (FRIENDLY.pending) return;
+  if (state.screen === 'compdraft') { friendMsg('픽 선택 중에는 친선전을 신청할 수 없어요.', 'err'); return; } // 6.0.3
   let inv;
   try { inv = await window.JihooOnline.matchInvite(f.uid, f.nickname, deck, isEastWestLayout()); }
   catch (error) { friendMsg(error.message || '신청하지 못했어요.', 'err'); return; }
@@ -31250,11 +31280,11 @@ async function friendlyInvite(f) {
     FRIENDLY.pending.unwatch(); clearTimeout(FRIENDLY.pending.timer); FRIENDLY.pending = null;
     if (status) await window.JihooOnline.matchUpdate(inv.id, { status }).catch(() => {});
   };
-  const el = friendlyModal(`<div class="ic">⏳</div><h2>친선전 신청 중</h2><p><b>${escapeHtml(f.nickname)}</b>님의 수락을 기다리고 있어요…</p><div class="acts"><button type="button" class="btn" data-a="cancel">취소</button></div>`);
+  const el = friendlyModal(`<div class="ic">⏳</div><h2>친선전 신청 중</h2><p><b>${escapeHtml(f.nickname)}</b>님의 수락을 기다리고 있어요…<br><small>${FRIENDLY_INVITE_SEC}초 안에 답이 없으면 취소돼요</small></p><div class="acts"><button type="button" class="btn" data-a="cancel">취소</button></div>`);
   el.querySelector('[data-a="cancel"]').onclick = () => { closeModal('friendlyModal'); cancel('cancel'); };
   FRIENDLY.pending = {
     id: inv.id,
-    timer: setTimeout(() => { closeModal('friendlyModal'); cancel('cancel'); friendMsg(`${f.nickname}님이 응답하지 않았어요.`, 'err'); }, 60000),
+    timer: setTimeout(() => { closeModal('friendlyModal'); cancel('cancel'); friendMsg(`${f.nickname}님이 응답하지 않았어요.`, 'err'); }, (FRIENDLY_INVITE_SEC + 2) * 1000),
     unwatch: window.JihooOnline.matchWatch(inv.id, m => {
       if (!m || !FRIENDLY.pending || FRIENDLY.pending.id !== inv.id) return;
       if (m.status === 'declined') { closeModal('friendlyModal'); cancel(null); friendMsg(`${f.nickname}님이 친선전을 거절했어요.`, 'err'); }
