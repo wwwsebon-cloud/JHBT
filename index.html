@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>try { if (localStorage.getItem('jihooBattle.uiTheme') === 'classic') document.documentElement.classList.add('ui-classic'); } catch (e) {}</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="6.0.1"><meta name="jihoo-build" content="4"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="6.0.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7349,17 +7349,17 @@ html.ui-classic .m6-sticker { position:absolute; top:6px; right:6px; padding:2px
 // 지후별 기본 수치와 스킬 상수. 설명(CHAR_DB)·패치노트와 함께 맞춘다.
 const CHARACTER_BALANCE = {
   solemn: {
-    hp: 1700, blackHp: 2400, atk: 222, atkSpeed: 0.65, range: 225, speed: 90, // 5.5.1 [흑] 체력 2400 · [백] 1700 · 6.0 공격 0.8 → 0.65초 · 사거리 +1칸
+    hp: 1700, blackHp: 2400, atk: 222, atkSpeed: 0.75, range: 225, speed: 90, // 5.5.1 [흑] 체력 2400 · [백] 1700 · 6.0 공격 0.8 → 0.65초 · 사거리 +1칸
     blackHpFraction: 0.06, butterflyDps: 20, butterflyMax: 50, blackButterflyPerHit: 2, // 6.0 [흑] 공격당 나비 1 → 2
     whiteShield: 3000, whiteBurstRadius: 90, whiteBurstStacks: 10 // 6.0 [백] 쉴드 2500 → 3000 · 깨지면 나비 5 → 10중첩
   },
   blackflame: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
-    hp: 3900, atk: 150, atkSpeed: 1.4, range: 270, speed: 76.5, // 6.0 게이지 공격 1.7 → 1.4초
-    flameDashTaken: 0.5, // 6.0 패시브: 돌진 중 받는 피해 50% 감소
+    hp: 3900, atk: 150, atkSpeed: 1.75, range: 270, speed: 76.5, // 6.0 게이지 공격 1.7 → 1.4초
+    flameDashTaken: 0.15, // 6.0 패시브: 돌진 중 받는 피해 50% 감소
     flameGaugeMax: 4, // 6.0 변신까지 5 → 4회
-    flameDashSpeed: 585, flameDashDamage: 900, flameBounces: 2, flameBounceRange: 270,
-    flameGuardDuration: 4, flameGuardReduction: 0.4, flameEndStun: 0.5
+    flameDashSpeed: 585, flameDashDamage: 750, flameBounces: 2, flameBounceRange: 270,
+    flameGuardDuration: 4, flameGuardReduction: 0.2, flameEndStun: 0.5
   },
   growth: {
     hp: 1000, atk: 0, atkSpeed: 1, range: 180, speed: 22.5,
@@ -7371,11 +7371,11 @@ const CHARACTER_BALANCE = {
     hypnoInterval: 4.5, hypnoRadius: 67.5, hypnoDuration: 2.5, hypnoPull: 45
   },
   edgy: {
-    hp: 1600, atk: 220, atkSpeed: 0.4, range: 72, speed: 117, // 5.5 1000 → 1200
+    hp: 1500, atk: 220, atkSpeed: 0.4, range: 72, speed: 117, // 5.5 1000 → 1200
     isMelee: true,
     edgeSecondDelay: 0.15, edgeGaugeMax: 6, edgeLeapTime: 0.5,
     edgeLandRadius: 67.5, edgeLandDamage: 400, edgeSpeedBonus: 22.5, edgeSpeedTime: 3,
-    lifesteal: 0.35
+    lifesteal: 0.25
   },
   egg: {
     hp: 2000, atk: 0, atkSpeed: 1, range: 0, speed: 0,
@@ -7421,7 +7421,7 @@ const CHARACTER_BALANCE = {
   glutton: {
     hp: 3400, atk: 350, atkSpeed: 1.3, range: 72, speed: 81,
     isMelee: true,
-    feastDelay: 1, feastRadius: 67.5, feastAtkPerAlly: 400, feastHpPerAlly: 300,
+    feastDelay: 1, feastRadius: 67.5, feastAtkPerAlly: 400, feastHpPerAlly: 600,
     feastDuration: 7, feastCooldown: 3, feastSpeed: 121.5
   },
   dosa: {
@@ -7482,7 +7482,7 @@ const CHARACTER_BALANCE = {
     shieldDamageMultiplier: 0.7
   },
   assassin: {
-    hp: 1600, atk: 280, atkSpeed: 0.6, range: 72, speed: 160,
+    hp: 1600, atk: 350, atkSpeed: 0.6, range: 72, speed: 160,
     isMelee: true,
     teleportDelay: 2,
     assassinStealth: 0.6
@@ -7575,7 +7575,7 @@ const CHARACTER_BALANCE = {
   },
   mega: {
     hp: 2500, atk: 100, atkSpeed: 3, range: 270, speed: 90,
-    megaTime: 8, megaAtk: 1 // 5.5 리워크: 라운드 시작 8초간 모든 아군 공격력 +100%
+    megaTime: 4, megaAtk: 0.5 // 5.5 리워크: 라운드 시작 8초간 모든 아군 공격력 +100%
   },
   rank: {
     hp: 3500, atk: 100, atkSpeed: 1.5, range: 72, speed: 100,
@@ -7647,7 +7647,7 @@ const CHARACTER_BALANCE = {
     skipHpMult: true,
     boltEveryHits: 5,
     boltDelay: 1,
-    boltDamage: 1850,
+    boltDamage: 1700,
     boltStun: 2,
     boltChainDelay: 0.5
   },
@@ -7780,7 +7780,7 @@ const CHARACTER_BALANCE = {
   genesis: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 99, atk: 299, atkSpeed: 1, range: 270, speed: 81,
-    genesisRadius: 247.5, genesisShield: 9999, genesisDecay: 999, genesisTransfer: 0.9, // 4.7.2 리워크: 범위 내 아군 피해 90%를 제네시스 쉴드가 대신 받는다 · 4.7.3 반지름 5.5칸
+    genesisRadius: 247.5, genesisShield: 9999, genesisDecay: 333, genesisTransfer: 0.9, // 4.7.2 리워크: 범위 내 아군 피해 90%를 제네시스 쉴드가 대신 받는다 · 4.7.3 반지름 5.5칸
     genesisAtkBuff: 0.15, // 범위 내 아군 공격력 +15%
     genesisAloneTaken: 1.5 // 4.7.3 [약화] 범위에 아군이 없으면 받는 피해 150% (무효화도 꺼진다)
   },
@@ -7796,7 +7796,7 @@ const CHARACTER_BALANCE = {
     frogPrinceChance: 0.35
   },
   prince: {
-    hp: 3600, atk: 600, atkSpeed: 0.8, range: 72, speed: 130.5,
+    hp: 4000, atk: 600, atkSpeed: 0.65, range: 72, speed: 130.5,
     isMelee: true, fanAngleDeg: 120,
     princeAtkPerHit: 100, princeExecute: 0.15
   },
@@ -7812,7 +7812,7 @@ const CHARACTER_BALANCE = {
     hp: 2500, atk: 40, atkSpeed: 0.6, range: 225, speed: 81,
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     sunAtkGain: 20, sunGainEvery: 2, sunSplashRadius: 56.25,
-    sunReviveDelay: 2, sunDropDamage: 1000, sunDropRadius: 90, sunReviveAtk: 200, sunDropStun: 2.5
+    sunReviveDelay: 2, sunDropDamage: 1000, sunDropRadius: 90, sunReviveAtk: 120, sunDropStun: 2.5
   },
   hollow: {
     hp: 2800, atk: 350, atkSpeed: 1, range: 90, speed: 67.5,
@@ -7853,7 +7853,7 @@ const CHARACTER_BALANCE = {
   },
   // 3.8 신규
   moon: {
-    hp: 4000, atk: 80, atkSpeed: 0.7, range: 202.5, speed: 81,
+    hp: 4000, atk: 80, atkSpeed: 1, range: 202.5, speed: 81,
     moonRadius: 270, moonAtk: 0.08, moonAspd: 0.16, moonGain: 0.01, moonMax: 1
   },
   duet: {
@@ -7891,19 +7891,19 @@ const CHARACTER_BALANCE = {
     isMelee: true, lifesteal: 0.75, zombieCap: 15
   },
   skul: {
-    hp: 1500, atk: 280, atkSpeed: 1, range: 72, speed: 90,
+    hp: 1200, atk: 280, atkSpeed: 1, range: 72, speed: 90,
     isMelee: true, skulDelay: 1.5, skulChance: 0.52
   },
   farmer: {
     hp: 2900, atk: 900, atkSpeed: 4.4, range: 72, speed: 13.5,
     isMelee: true,
-    farmEvery: 2.5, farmMax: 6, wheatTime: 5, breadHeal: 250, farmRegen: 200, farmSize: 54,
+    farmEvery: 3.5, farmMax: 4, wheatTime: 5, breadHeal: 250, farmRegen: 200, farmSize: 54,
     goldenChance: 0.08, goldenHeal: 750 // S 황금빵
   },
   jaws: {
     hp: 2100, atk: 600, atkSpeed: 1.3, range: 72, speed: 90, // 6.0 체력 1900 → 2100
     isMelee: true, lifesteal: 0.4, // 6.0 입힌 피해 비례 회복 30% → 40%
-    diveSpeed: 202.5, diveMax: 8, surfaceRadius: 90, surfaceDamage: 400, surfaceHeal: 400 // 6.0 잠수 종료 시 반경 2칸 적 400 피해 (다시 추가)
+    diveSpeed: 202.5, diveMax: 8, surfaceRadius: 90, surfaceDamage: 150, surfaceHeal: 400 // 6.0 잠수 종료 시 반경 2칸 적 400 피해 (다시 추가)
   },
   rock: {
     hp: 4500, atk: 400, atkSpeed: 8, range: 315, speed: 58.5,
@@ -7948,7 +7948,7 @@ const CHARACTER_BALANCE = {
   contractor: {
     hp: 1800, atk: 0, atkSpeed: 1, range: 270, speed: 45,
     noAttack: true, holdRange: true,
-    contractEvery: 5, contractType: 1.5
+    contractEvery: 4, contractType: 1.5
   },
   slot: {
     hp: 7777, atk: 0, atkSpeed: 1, range: 0, speed: 0,
@@ -7985,8 +7985,8 @@ const CHARACTER_BALANCE = {
   typhoon: {
     typhoonLvRadius: 0.08,
     typhoonLvTime: 0.5,
-    hp: 2400, atk: 20, atkSpeed: 0.2, range: 405, speed: 90, // 5.5 HP 1600 · 사거리 9칸
-    typhoonSpeed: 108, typhoonTick: 0.4, typhoonDamage: 100, // 200 → 100
+    hp: 1900, atk: 20, atkSpeed: 0.2, range: 405, speed: 90, // 5.5 HP 1600 · 사거리 9칸
+    typhoonSpeed: 108, typhoonTick: 0.4, typhoonDamage: 70, // 200 → 100
     typhoonTime: 5, typhoonHoming: 3.2, typhoonInsideSlow: 0.6, typhoonRamp: 20, // 4.7.0
     stage1Time: 4, stage2Time: 2.5, stage2Crit: 0.1 // 4.7.2 폼 변화: 1단계 4초 ↔ 2단계 2.5초 (크리티컬 10%)
   },
@@ -8031,7 +8031,7 @@ const CHARACTER_BALANCE = {
     bugEvery: 6.5, ctrlTime: 6, ctrlHp: 0.25, ctrlSpeed: 2, ctrlDr: 0.6
   },
   flower: {
-    hp: 2000, atk: 0, atkSpeed: 1, range: 45, speed: 72,
+    hp: 2600, atk: 0, atkSpeed: 1, range: 45, speed: 72,
     noAttack: true,
     eatDelay: 0.5, eatHold: 2, eatCd: 3, spitHit: 400, spitSelf: 700, spitSpeed: 18
   },
@@ -8049,7 +8049,7 @@ const CHARACTER_BALANCE = {
     hp: 2500, atk: 80, atkSpeed: 0.8, range: 180, speed: 67.5, // 5.3 일반 공격 추가: 80 · 0.8초 · 사거리 4칸
     holdRange: true,
     noteMin: 0.15, noteMax: 0.55, noteDamage: 286, // 6.0 간격 0.15초 감소 · 피해 +30%
-    noteSpeed: 16, beatWindow: 0.15, beatTeleport: 1.5, beatRadius: 0.5, beatDamage: 300
+    noteSpeed: 16, beatWindow: 0.08, beatTeleport: 1.5, beatRadius: 0.5, beatDamage: 300
   },
   gun: {
     hp: 2200, atk: 300, atkSpeed: 1.8, range: 202.5, speed: 81,
@@ -8062,7 +8062,7 @@ const CHARACTER_BALANCE = {
   blackhole: { // 5.5 신규
     hp: 2400, atk: 0, atkSpeed: 1, range: 225, speed: 67.5,
     noAttack: true, holdRange: true,
-    bhEvery: 5, bhRadiusCells: 10, bhDamage: 400, bhPull: 0.2 // 5.5.1 180 → 400
+    bhEvery: 5, bhRadiusCells: 10, bhDamage: 500, bhPull: 0.2 // 5.5.1 180 → 400
   },
   ufc: { // 5.5 신규
     hp: 2000, atk: 111, atkSpeed: 1, range: 225, speed: 99,
@@ -8080,8 +8080,8 @@ const CHARACTER_BALANCE = {
     laserEvery: 9, laserBigTime: 2, laserBigTick: 0.25, laserBigDamage: 120 // 5.5.1 100 → 150 · 6.0 150 → 120
   },
   quickfreeze: { // 5.5 신규
-    hp: 2000, atk: 600, atkSpeed: 2.2, range: 270, speed: 67.5, // 5.5.1
-    frostStacks: 2, frostFreeze: 2, frostBonus: 0.15 // 5.5.1 2중첩 빙결 · 빙결마다 받는 피해 +15% 영구 (중첩)
+    hp: 2000, atk: 500, atkSpeed: 2.2, range: 270, speed: 67.5, // 5.5.1
+    frostStacks: 1, frostFreeze: 0.5, frostBonus: 0.15 // 5.5.1 2중첩 빙결 · 빙결마다 받는 피해 +15% 영구 (중첩)
   },
   water: { // 5.5 신규
     hp: 2300, atk: 140, atkSpeed: 1.2, range: 180, speed: 67.5,
@@ -8102,7 +8102,7 @@ const CHARACTER_BALANCE = {
   blessing: { // 5.5 신규
     hp: 1000, atk: 60, atkSpeed: 1, range: 315, speed: 13.5,
     isMelee: true, isRanged: false, fanAngleDeg: 100, fanRadius: 315,
-    blessAt: 1.5, blessCount: 1
+    blessAt: 1.5, blessCount: 2
   },
   tesla: { // 5.5 신규
     hp: 2600, atk: 0, atkSpeed: 1, range: 72, speed: 72,
@@ -8123,7 +8123,7 @@ const CHARACTER_BALANCE = {
   nuke: {
     hp: 600, atk: 150, atkSpeed: 2, range: 72, speed: 67.5,
     isMelee: true,
-    nukeLaunch: 1, nukeFlight: 38
+    nukeLaunch: 1, nukeFlight: 28
   },
 };
 
@@ -10636,10 +10636,10 @@ const RANK_S_ABILITIES = {
   water: { name: '해일', desc: '파도 넉백 <b>5칸 → 7칸</b>', apply(d) { d.waveKnockCells = 7; } },
   mercury: { name: '액체 금속', desc: '쉴드 <b>1,200 → 1,600</b>', apply(d) { d.hgShield = 1600; } },
   electric: { name: '과전류', desc: '기절 확률 <b>20% → 30%</b>', apply(d) { d.zapStunChance = 0.3; } },
-  blessing: { name: '이중 축복', desc: '라운드마다 축복을 <b>2개</b> 얻는다', apply(d) { d.blessCount = 2; } },
+  blessing: { name: '삼중 축복', desc: '랭크업 시 라운드마다 축복을 <b>3개</b> 얻는다', apply(d) { d.blessCount = 3; } },
   tesla: { name: '고전압', desc: '전기 회전속도 <b>+15%</b>', apply(d) { d.teslaPeriod /= 1.15; } },
   typhoon: { name: '나비 효과', desc: '2단계 지속시간 <b>+1초</b>', apply(d) { d.stage2Time += 1; } },
-  beatmania: { name: '느슨', desc: '회피 판정 범위 <b>+0.1초</b> (화살표 앞뒤 0.15초 → 0.25초)', apply(d) { d.beatWindow += 0.1; } },
+  beatmania: { name: '느슨', desc: '회피 판정 범위 <b>+0.4초</b>', apply(d) { d.beatWindow += 0.4; } },
   soulstealer: { name: '영혼 포식', desc: '영혼 1개당 공격력 <b>+40</b>', apply(d) { d.soulAtk = 40; } },
   moai: { name: '큰 파동', desc: '파동 반경 <b>+0.5칸</b>', apply(d) { d.moaiRadius += 22.5; } },
   biker: { name: '직진 본능', desc: '돌진 각도 <b>-30° ~ 30°</b> · 시동 시간 <b>절반</b>', apply(d) { d.bikeAngleSpread = 30; d.bikeChargeTime /= 2; } },
@@ -17464,6 +17464,7 @@ function startRoundInner() {
     const back = spawnUnit(p.side, p.x, p.y, p.charId, { saved: true, quiet: true, form: p.form, level: p.level || 1, placementId: p.id });
     if (back && p.tile != null) { if (p.foeTile) back.foeTile = p.tile; else back.tile = p.tile; }
     if (back && p.grown) back._grown = true;
+    if (back && p.enh) enhanceSet(back, p.enh, true);
     if (back && back.def.onRestore) back.def.onRestore(back, p); // 4.7.0 강화 수치 · 핵날린 지후
     if (back && p.mate) coopMarkMate(back); // 5.1 협동전 · 5.4 2:2 대전: AI 파트너 표시
   });
@@ -18185,7 +18186,7 @@ function spawnUnit(side, x, y, charId, opts) {
     baseBoltDamage: charId === 'lightning' ? def.boltDamage : null,
     shield: def.shield || 0, maxShield: def.shield || 0, baseShield: def.shield || 0,
     alive: true, level: 1, rank: unitRank,
-    atkCooldown: Math.random() * 0.3,
+    atkCooldown: charId === 'sniper' ? def.atkSpeed : Math.random() * 0.3,
     comboStack: 0,
     awakenTimer: baseDef.awakenTime || 0, awakened: false, invincible: 0, berserked: false, form, buffs: {}, hmgInterval: def.atkSpeed,
     taegukBase: def.taegukForms ? (form === 'harmony' ? (Math.random() < 0.5 ? 'blue' : 'red') : form) : null,
@@ -23739,7 +23740,7 @@ function flowerSize(u, big) {
 function flowerEat(u, e) {
   const realm = enterRealm(e, [e], 999, null);
   u._eat = { e, t: u.def.eatHold, realm };
-  (u._eatenSet || (u._eatenSet = new Set())).add(e.uid);
+  
   flowerSize(u, true);
   u.el.classList.add('n47-chomp');
   if (PORTRAITS.flower_eat) battleAPI.setImage(u, PORTRAITS.flower_eat);
@@ -23980,8 +23981,7 @@ function tickNew47(u, dt) {
         break;
       }
       if (u._realm) break;
-      const eaten = u._eatenSet || new Set();
-      const e = foesOnField(u.side).find(x => !eaten.has(x.uid) && Math.hypot(x.x - u.x, x.y - u.y) <= unitRadius(x) + unitRadius(u) + (d.range || 0) + 10); // 5.3: 공격 안 하는 유닛은 사거리만큼 떨어져 멈추므로 그 거리까지 닿은 것으로 본다
+      const e = foesOnField(u.side).find(x => Math.hypot(x.x - u.x, x.y - u.y) <= unitRadius(x) + unitRadius(u) + (d.range || 0) + 10); // 5.3: 공격 안 하는 유닛은 사거리만큼 떨어져 멈추므로 그 거리까지 닿은 것으로 본다
       if (e) { u._eatPending = { e, t: d.eatDelay }; spawnDamageNumber(e, '🌸 잡혔다!', { crit: true }); }
       break;
     }
@@ -24495,8 +24495,11 @@ function tickMoon(u) {
   state.units.forEach(a => {
     if (!a.alive || a.isCastle || a.side !== u.side || !sameRealm(a, u)) return;
     if (Math.hypot(a.x - u.x, a.y - u.y) > R + unitRadius(a)) return;
-    battleAPI.setBuff(a, 'moon-atk:' + u.uid, 'atk', atk, 0.25);
-    battleAPI.setBuff(a, 'moon-aspd:' + u.uid, 'aspd', aspd, 0.25);
+    const moons = state.units.filter(m => m.alive && m.charId === 'moon' && m.side === u.side && sameRealm(a, m) && Math.hypot(a.x-m.x,a.y-m.y) <= m.def.moonRadius + unitRadius(a));
+    const bestAtk = Math.max(atk, ...moons.map(m => Math.min(m.def.moonMax,m.def.moonAtk+(m._moonStack||0)*m.def.moonGain)));
+    const bestAspd = Math.max(aspd, ...moons.map(m => Math.min(m.def.moonMax,m.def.moonAspd+(m._moonStack||0)*m.def.moonGain)));
+    battleAPI.setBuff(a, 'moon-atk', 'atk', bestAtk, 0.25);
+    battleAPI.setBuff(a, 'moon-aspd', 'aspd', bestAspd, 0.25);
   });
 }
 
@@ -26186,6 +26189,13 @@ function blessState() {
   return state.n55bless;
 }
 function blessOf(side) { return blessState()[side] || {}; }
+function renderBlessingHud(side = 'ally') {
+  let hud = document.getElementById('blessingHud');
+  if (!hud) { hud = document.createElement('div'); hud.id = 'blessingHud'; hud.style.cssText = 'position:fixed;z-index:1000;top:12px;right:12px;max-width:min(260px,45vw);padding:8px 10px;border:2px solid #d7a934;border-radius:10px;background:rgba(20,20,28,.9);color:#fff;font:700 12px/1.45 system-ui;pointer-events:none;display:none'; document.body.appendChild(hud); }
+  const counts = blessOf(side), active = BLESSINGS.filter(([key]) => (counts[key] || 0) > 0);
+  hud.style.display = active.length ? 'block' : 'none';
+  hud.innerHTML = '<b>🙏 현재 축복</b><br>' + active.map(([key,label]) => `${label} ×${counts[key]}`).join('<br>');
+}
 function blessGrant(u) {
   const [k, label] = BLESSINGS[Math.floor(Math.random() * BLESSINGS.length)];
   const b = blessState()[u.side];
@@ -26193,6 +26203,7 @@ function blessGrant(u) {
   v41Callout(u, '축복 · ' + label);
   spawnDamageNumber(u, '🙏 ' + label, { heal: true });
   const fx = fx38('fx-n55-bless', u.x, u.y, '<i></i>'); scheduleTask(() => fx.remove(), 900);
+  renderBlessingHud(u.side);
 }
 // 전체 틱: UFC 링 · 스피커 · 파도 · 굵은 레이저 · 축복 · 테슬라
 function tickNew55(dt) {
@@ -27288,6 +27299,9 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '6.0.2': { label: 'v6.0.2 밸런스 패치', date: '2026.10.03', sections: [{ title: '밸런스', items: [
+    {emoji:'☠️',name:'스껄 지후',tag:'nerf',portraitKey:'skul',desc:'체력 1,500 → 1,200.'},{emoji:'📢',name:'확성기 지후',tag:'nerf',portraitKey:'mega',desc:'효과 8 → 4초, 공격력 증가 100% → 50%.'},{emoji:'🎯',name:'스나이퍼 지후',tag:'adjust',portraitKey:'sniper',desc:'첫 공격은 라운드 시작 후 공격 간격만큼 기다립니다.'},{emoji:'🤴',name:'왕자 지후',tag:'buff',portraitKey:'prince',desc:'체력 3,600 → 4,000, 공격 간격 0.8 → 0.65초.'},{emoji:'🌺',name:'꽃 지후',tag:'buff',portraitKey:'flower',desc:'체력 2,000 → 2,600. 이전에 먹은 적도 다시 먹습니다.'},{emoji:'🌾',name:'농부 지후',tag:'nerf',portraitKey:'farmer',desc:'최대 밭 6 → 4개, 밭 생성 간격 2.5 → 3.5초.'},{emoji:'⚡',name:'번개 지후',tag:'nerf',portraitKey:'lightning',desc:'낙뢰 피해 1,850 → 1,700.'},{emoji:'🗡️',name:'에드게이 지후',tag:'nerf',portraitKey:'edgy',desc:'흡혈 35% → 25%, 체력 1,600 → 1,500.'},{emoji:'🗡️',name:'암살 지후',tag:'buff',portraitKey:'assassin',desc:'공격력 280 → 350.'},{emoji:'⚔️',name:'강화 지후',tag:'adjust',portraitKey:'enhance',desc:'강화 레벨이 라운드가 끝나도 유지됩니다.'},{emoji:'🌙',name:'달 지후',tag:'adjust',portraitKey:'moon',desc:'달 지후 버프 비중첩, 공격 간격 0.7 → 1초.'},{emoji:'🕳️',name:'블랙홀 지후',tag:'buff',portraitKey:'blackhole',desc:'피해량 400 → 500.'},{emoji:'📜',name:'청부업자 지후',tag:'buff',portraitKey:'contractor',desc:'청부 쿨타임 5 → 4초.'},{emoji:'🙏',name:'축복 지후',tag:'buff',portraitKey:'blessing',desc:'축복 표시 추가, 라운드 시작 1 → 2개, 랭크업 2 → 3개.'},{emoji:'🧊',name:'쾌속냉각 지후',tag:'adjust',portraitKey:'quickfreeze',desc:'공격력 600 → 500, 빙결 2.2 → 0.5초, 1회 공격으로 빙결.'},{emoji:'☀️',name:'태양 지후',tag:'nerf',portraitKey:'sun',desc:'부활 후 공격력 증가 200 → 120.'},{emoji:'☢️',name:'핵미사일 지후',tag:'buff',portraitKey:'nuke',desc:'핵 도달 시간 38 → 28초.'},{emoji:'🦋',name:'솔렘라멘트 지후',tag:'nerf',desc:'공격 간격 0.65 → 0.75초.'},{emoji:'✧',name:'제네시스 지후',tag:'buff',portraitKey:'genesis',desc:'쉴드 감소량 초당 999 → 333.'},{emoji:'🐉',name:'흑염룡 지후',tag:'nerf',desc:'공격 간격 1.4 → 1.75초, 피해 감소 50% → 15% 및 40% → 20%, 돌진 피해 900 → 750.'},{emoji:'🌀',name:'태풍 지후',tag:'nerf',portraitKey:'typhoon',desc:'체력 2,400 → 1,900, 태풍 피해 100 → 70.'},{emoji:'🦷',name:'포식 지후',tag:'buff',portraitKey:'glutton',desc:'포식당 최대 체력·체력 증가 300 → 600.'},{emoji:'🦈',name:'죠스 지후',tag:'nerf',portraitKey:'jaws',desc:'떠오를 때 적 피해 400 → 150.'},{emoji:'🎵',name:'비트마니아 지후',tag:'nerf',portraitKey:'beatmania',desc:'회피 범위 ±0.15 → ±0.08초, 랭크업 추가 범위 +1 → +0.4초.'}
+  ]}] },
   '6.0.1': {
     label: 'v6.0.1 화면 테마 선택 · NO U 반사 강화 · 비트마니아 조정',
     date: '2026.10.02',
