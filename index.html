@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>try { if (localStorage.getItem('jihooBattle.uiTheme') === 'classic') document.documentElement.classList.add('ui-classic'); } catch (e) {}</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="6.0.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="6.1.0"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -1955,6 +1955,9 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .v55-rooms { width:min(640px, calc(100vw - 24px)); max-height:calc(100vh - 32px); overflow:auto; }
 .v55-rtop { display:flex; gap:8px; margin-bottom:8px; } .v55-rtop input { flex:1; min-width:0; }
 .v55-rnote { font-size:12px; line-height:1.55; opacity:.75; margin:6px 0 10px; }
+.v55-rinv { margin:8px 0 10px; } .v55-rinv small { display:block; font-size:11px; opacity:.7; margin-bottom:5px; } .v55-rinv > div { display:flex; flex-wrap:wrap; gap:6px; } .v55-rinv .btn { padding:5px 10px; font-size:11px; } .v55-rinv em { font-size:11px; opacity:.6; font-style:normal; }
+.v50-fopt { display:flex; align-items:center; gap:6px; font-size:11px; color:#666; margin:0 4px 6px; cursor:pointer; }
+#screen-battle.spectating #poolSheet, #screen-battle.spectating #btnTogglePool { display:none !important; } /* 6.1 관전: 배치 카드 없음 */
 .v55-rlist { display:flex; flex-direction:column; gap:6px; }
 .v55-rrow { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid rgba(127,127,127,.35); border-radius:12px; }
 .v55-rrow > div { flex:1; min-width:0; display:flex; flex-direction:column; } .v55-rrow b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .v55-rrow small { opacity:.65; font-size:11px; }
@@ -2959,11 +2962,11 @@ html[data-theme="light"] .v4-drawer .menu-list button.v49-lb:hover { padding-lef
 .v50-fmsg { margin:0; min-height:1em; font-size:11px; color:#8e8e8e; }
 .v50-fmsg.err { color:#e5322d; } .v50-fmsg.ok { color:#2f9e44; }
 .v50-flist h4 { margin:10px 0 4px; font:800 10px var(--v4-mono); letter-spacing:.18em; color:#9a9a97; }
-.v50-fr { display:flex; align-items:center; gap:8px; padding:8px 4px; border-bottom:1px solid #f3f3f3; }
+.v50-fr { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 4px; border-bottom:1px solid #f3f3f3; }
 .v50-fr .av { position:relative; width:34px; height:34px; flex:none; border-radius:50%; background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf); color:#fff; display:grid; place-items:center; font:900 13px inherit; }
 .v50-fr .av i { position:absolute; right:-1px; bottom:-1px; width:11px; height:11px; border-radius:50%; background:#bbb; border:2px solid #fff; }
 .v50-fr .av i.on { background:#2f9e44; } .v50-fr .av i.battle { background:#f59f00; }
-.v50-fr .nm { flex:1; min-width:0; display:flex; flex-direction:column; }
+.v50-fr .nm { flex:1 1 90px; min-width:0; display:flex; flex-direction:column; }
 .v50-fr .nm b { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .v50-fr .nm small { font-size:10px; color:#8e8e8e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .v50-fr .nm small .new { color:#e5322d; font-weight:900; }
@@ -6794,6 +6797,7 @@ html.ui-classic .m6-sticker { position:absolute; top:6px; right:6px; padding:2px
         <div class="v50-friends" id="friendsPanel" hidden>
           <form class="v50-fadd" id="friendAddForm" autocomplete="off"><input type="text" id="friendAddInput" maxlength="12" placeholder="닉네임으로 친구 찾기" aria-label="친구 닉네임"><button type="submit">요청</button></form>
           <p class="v50-fmsg" id="friendMsg"></p>
+          <label class="v50-fopt"><input type="checkbox" id="allowSpectate" checked> 친구가 내 친선전 · 2:2 온라인을 관전할 수 있게 하기</label>
           <div class="v50-flist" id="friendsList"></div>
         </div>
         <div class="v49-dm-list" id="chatList"><div class="v47-chat-empty">불러오는 중…</div></div>
@@ -8671,15 +8675,18 @@ window.JIHOO_FIREBASE_CONFIG = {
   function me() { if (!database || !auth || !auth.currentUser) throw new Error('온라인 계정이 있어야 해요.'); return auth.currentUser.uid; }
   const pairIdOf = (a, b) => (a < b ? a + '_' + b : b + '_' + a);
   // 접속 상태: 켜져 있는 동안 1분마다 시각을 남긴다 (친구가 2분 30초 안에 남겼으면 접속 중)
-  async function presencePing(where = 'lobby') {
+  // 6.1 sp: 관전할 수 있는 판이면 'm:매치ID' / 'r:방ID:방장UID' (친구만 읽을 수 있다)
+  async function presencePing(where = 'lobby', sp = '') {
     if (!database || !auth || !auth.currentUser) return;
-    await sdk.setDoc(sdk.doc(database, 'presence', auth.currentUser.uid), { nickname: nick(), where: String(where).slice(0, 12), at: sdk.serverTimestamp() }).catch(() => {});
+    const data = { nickname: nick(), where: String(where).slice(0, 12), at: sdk.serverTimestamp() };
+    if (sp) data.sp = String(sp).slice(0, 80);
+    await sdk.setDoc(sdk.doc(database, 'presence', auth.currentUser.uid), data).catch(() => {});
   }
   async function presenceGet(uids) {
     const out = {};
     if (!database || !auth || !auth.currentUser) return out;
     await Promise.all([...new Set(uids)].map(async id => {
-      try { const snap = await sdk.getDoc(sdk.doc(database, 'presence', id)); if (snap.exists()) { const d = snap.data(); out[id] = { where: d.where || '', at: d.at && d.at.toMillis ? d.at.toMillis() : 0 }; } } catch (error) {}
+      try { const snap = await sdk.getDoc(sdk.doc(database, 'presence', id)); if (snap.exists()) { const d = snap.data(); out[id] = { where: d.where || '', sp: d.sp || '', at: d.at && d.at.toMillis ? d.at.toMillis() : 0 }; } } catch (error) {}
     }));
     return out;
   }
@@ -8793,6 +8800,21 @@ window.JIHOO_FIREBASE_CONFIG = {
   async function roomUpdate(id, data) { me(); await sdk.updateDoc(sdk.doc(database, 'rooms', id), { ...data, at: sdk.serverTimestamp() }); }
   async function roomDelete(id) { me(); await sdk.deleteDoc(sdk.doc(database, 'rooms', id)); }
   async function roomKick(id, uid) { me(); await sdk.updateDoc(sdk.doc(database, 'rooms', id), { [`players.${uid}`]: sdk.deleteField(), at: sdk.serverTimestamp() }); }
+  // 6.1 관전: 친구가 하는 판의 문서를 읽는다 (규칙: 선수의 친구만)
+  async function matchGet(id) { me(); const snap = await sdk.getDoc(sdk.doc(database, 'matches', id)); return snap.exists() ? { id: snap.id, ...snap.data() } : null; }
+  async function roomGet(id) { me(); const snap = await sdk.getDoc(sdk.doc(database, 'rooms', id)); return snap.exists() ? { id: snap.id, ...snap.data() } : null; }
+  // 6.1 2:2 방 초대: roomInvites/{id} = { from, to, fromName, roomId, title, status: open|accepted|declined|cancel, at }
+  async function roomInviteSend(toUid, roomId, title) {
+    const uid = me();
+    const ref = await sdk.addDoc(sdk.collection(database, 'roomInvites'), { from: uid, to: String(toUid), fromName: nick(), roomId: String(roomId), title: String(title || '').slice(0, 24), status: 'open', at: sdk.serverTimestamp() });
+    return ref.id;
+  }
+  async function roomInviteUpdate(id, status) { me(); await sdk.updateDoc(sdk.doc(database, 'roomInvites', id), { status, at: sdk.serverTimestamp() }); }
+  function roomInvitesSubscribe(onChange) {
+    if (!database || !auth || !auth.currentUser) return () => {};
+    const q = sdk.query(sdk.collection(database, 'roomInvites'), sdk.where('to', '==', auth.currentUser.uid), sdk.where('status', '==', 'open'));
+    return sdk.onSnapshot(q, snap => onChange(snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : 0 }))), () => onChange([]));
+  }
   function matchMessages(id, onMsg, coll = 'matches') {
     if (!database) return () => {};
     const seen = new Set();
@@ -8872,7 +8894,7 @@ window.JIHOO_FIREBASE_CONFIG = {
   }
   window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
-    roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick,
+    roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
     connected: () => !!(auth && auth.currentUser), enabled: () => !!auth && !backupWriteBlocked };
 })();
@@ -8891,7 +8913,7 @@ if (PREVIEW_MODE) {
   window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved,
     leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
-    presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
+    presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, matchGet: () => Promise.reject(new Error('오프라인')), roomGet: () => Promise.reject(new Error('오프라인')), roomInviteSend: () => Promise.reject(new Error('오프라인')), roomInviteUpdate: resolved, roomInvitesSubscribe: () => () => {}, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
 
 const PORTRAITS = {
@@ -10894,6 +10916,7 @@ function freshProfile() {
     newcomer: { unlocked: false, daysClaimed: 0, lastClaimDay: '', noticePending: false },
     tutorial: { done: false, giftPending: false, giftUsed: false, stage: '', giftIds: [], mailed: false },
     friendlyRecord: { w: 0, l: 0 },
+    allowSpectate: true, // 6.1 친구가 내 친선전 · 2:2 온라인을 관전할 수 있게 한다
     coopBest: 0,
     coopMilestones: [],
     giftSeen: [], seenPatch: '', luckGiftVer: '',
@@ -11042,6 +11065,7 @@ function normalizeProfile(raw) {
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
+    allowSpectate: raw.allowSpectate !== false, // 6.1 관전 허용
     coopBest: Math.max(0, Math.floor(Number(raw.coopBest) || 0)), // 5.1 협동전 최고 웨이브
     coopMilestones: Array.isArray(raw.coopMilestones) ? raw.coopMilestones.filter(n => Number.isInteger(n) && n > 0 && n <= 1000).slice(0, 40) : [], // 5.4 받은 웨이브 보상
     boostArmed: !!raw.boostArmed, // 5.2 부스트 티켓: 다음 판에 쓰기
@@ -13465,10 +13489,11 @@ function settleMatch(won, draw, surrendered = false) {
   profile.activeMatch = null;
   const maintShield = !!state.maintShield && !won && !draw; // 5.7.6 서버 점검 중에 하던 판은 져도 점수가 떨어지지 않는다
   if (state.mode === 'friendly') { // 5.0 친선전: 친선전 전적만 남긴다
+    const spectated = !!(state.net && state.net.spec); // 6.1 관전한 판은 전적에 넣지 않는다
     const rec = profile.friendlyRecord = profile.friendlyRecord || { w: 0, l: 0 };
-    if (!draw) { if (won) rec.w++; else rec.l++; }
+    if (!draw && !spectated) { if (won) rec.w++; else rec.l++; }
     saveProfile();
-    state.lastSettlement = { practice: true, friendly: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
+    state.lastSettlement = { practice: true, friendly: true, spectated, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
     return state.lastSettlement;
   }
   if (state.mode === 'coop' && state.coop) { // 5.1 협동전: 버틴 웨이브만큼 보상 (포기해도 받는다)
@@ -20485,6 +20510,7 @@ function beginCombatPhaseInner() {
   state.speedMultiplier = speedPref2 && speedToggleAllowed() ? FAST_SPEED : 1; // 5.5 1.5배속 버튼 (켜 두면 다음 전투도 1.5배속)
   state.speedManual = false;
   $('battleArena').classList.toggle('fast-forward', state.speedMultiplier > 1);
+  if (state.net && state.net.spec && state.net.ends[state.round]) { state.speedMultiplier = 6; state.speedManual = true; $('battleArena').classList.add('fast-forward'); } // 6.1 관전: 이미 끝난 라운드는 빠르게 감아 따라잡는다
   renderSpeedBtn();
   state.combatRAF = requestAnimationFrame(combatTick);
 }
@@ -26668,7 +26694,7 @@ function finishMatch(winnerSide, surrendered = false) {
   cancelRuntimeTasks();
   state.phase = 'idle';
   showScreen('end');
-  if (!draw) sfx(won ? 'match_win' : 'match_lose'); // 5.7.6 효과음
+  if (!draw && !(state.net && state.net.spec)) sfx(won ? 'match_win' : 'match_lose'); // 5.7.6 효과음
   const settlement = settleMatch(won, draw, surrendered);
   if (DISCORD_MATCH_MODES.includes(state.mode) && !settlement.tutorialReplay) {
     try { discordNotify(discordMatchPayload(won, draw, surrendered, settlement)); } catch (error) {}
@@ -26695,6 +26721,12 @@ function finishMatch(winnerSide, surrendered = false) {
       : (won ? '라이프를 먼저 0으로 만들었습니다' : '라이프가 먼저 0이 되었습니다');
   }
   if (state.maintShield && !won && !draw && state.mode !== 'friendly' && state.mode !== 'coop') $('endSub').textContent += ' · 🛠 서버 점검 중이라 점수가 떨어지지 않았어요';
+  if (state.net && state.net.spec && state.mode === 'friendly') { // 6.1 관전: 이긴 쪽 이름으로
+    const nm = state.net.sideNames || {};
+    $('endTitle').textContent = draw ? '무승부!' : `${nm[won ? 'ally' : 'enemy'] || (won ? '왼쪽' : '오른쪽')} 승리`;
+    $('endTitle').className = 'end-title title-font' + (draw ? '' : ' win');
+    $('endSub').textContent = `👁 관전 · ${nm.ally || ''} vs ${nm.enemy || ''}`;
+  }
   const again = $('btnArenaAgain');
   if (again) again.style.display = state.mode === 'arena' ? 'inline-flex' : 'none';
   const card = $('settlementCard');
@@ -26724,6 +26756,9 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="v4-lvline"><div class="t"><span>Lv.${settlement.before.level}${lv ? ` → Lv.${settlement.after.level}` : ''}</span><span>EXP ${formatNumber(settlement.after.current)} / ${formatNumber(settlement.after.required)}</span></div><div class="bar"><div style="width:${xpRatio}%"></div></div></div>
       ${(settlement.milestones || []).length ? `<div class="settlement-row"><span>🎁 웨이브 보상 (처음 한 번)</span><b class="gain">${settlement.milestones.join('<br>')}</b></div>` : ''}
       <div class="settlement-note">버틴 웨이브마다 EXP 6 · 골드 50, 10웨이브마다 다이아 20. 그만둬도 버틴 만큼 받아요. 5웨이브 이상이면 일일 플레이에 들어가요.</div>`;
+  } else if (settlement.friendly && settlement.spectated) {
+    const nm = (state.net && state.net.sideNames) || {};
+    card.innerHTML = `<div class="settlement-row"><span>👁 관전</span><b>${escapeHtml(nm.ally || '')} vs ${escapeHtml(nm.enemy || '')}</b></div><div class="settlement-note">관전한 판은 전적 · 경험치 · 재화에 들어가지 않아요.</div>`;
   } else if (settlement.friendly) {
     const rec = profile.friendlyRecord || { w: 0, l: 0 };
     card.innerHTML = `<div class="settlement-row"><span>🤝 친선전</span><b>vs ${escapeHtml(state.enemyName || '친구')}</b></div><div class="settlement-row"><span>친선전 전적</span><b>${rec.w}승 ${rec.l}패</b></div><div class="settlement-note">친선전은 경험치 · 재화 · 랭크 전적에 들어가지 않아요.</div>`;
@@ -27300,6 +27335,17 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '6.1.0': {
+    label: 'v6.1.0 친구 관전 · 2:2 방 바로 초대',
+    date: '2026.10.03',
+    sections: [
+      { title: '신규', items: [
+        { emoji:'👁', name:'친구 관전', tag:'new', color:'#9b59d0', desc:'<b>채팅 → 친구 탭</b>에서 친구가 <b>게임 중</b>이면 <b>👁 관전</b> 버튼이 켜져요. 친구의 <b>친선전 · 2:2 온라인</b>을 실시간으로 볼 수 있고, 중간에 들어가면 이미 지나간 라운드는 <b>빠르게 감아서</b> 따라잡아요. 관전은 전적 · 경험치 · 재화에 들어가지 않고, 관전하는 동안 아무것도 보내지 않아요.' },
+        { emoji:'🔒', name:'관전 허용 스위치', tag:'new', color:'#9b59d0', desc:'친구 탭의 <b>관전 허용</b>을 끄면 내 판은 아무도 볼 수 없어요. 관전은 <b>친구만</b> 할 수 있고, 2:2 온라인은 <b>방장과도 친구</b>여야 해요.' },
+        { emoji:'🌐', name:'2:2 방으로 바로 초대', tag:'new', color:'#3797f0', desc:'친구 목록의 <b>🌐 2:2</b>를 누르면 내 방이 없을 땐 <b>방을 만들어 들어가고</b>, 그 방으로 친구를 초대해요. 방 안에서도 <b>접속 중인 친구</b>를 눌러 바로 초대할 수 있어요. 초대를 받으면 <b>들어가기</b>로 바로 방에 입장해요 (45초 안에).' }
+      ] }
+    ]
+  },
   '6.0.2': { label: 'v6.0.2 밸런스 패치', date: '2026.10.03', sections: [{ title: '밸런스', items: [
     {emoji:'☠️',name:'스껄 지후',tag:'nerf',portraitKey:'skul',desc:'체력 1,500 → 1,200.'},{emoji:'📢',name:'확성기 지후',tag:'nerf',portraitKey:'mega',desc:'효과 8 → 4초, 공격력 증가 100% → 50%.'},{emoji:'🎯',name:'스나이퍼 지후',tag:'adjust',portraitKey:'sniper',desc:'첫 공격은 라운드 시작 후 공격 간격만큼 기다립니다.'},{emoji:'🤴',name:'왕자 지후',tag:'buff',portraitKey:'prince',desc:'체력 3,600 → 4,000, 공격 간격 0.8 → 0.65초.'},{emoji:'🌺',name:'꽃 지후',tag:'buff',portraitKey:'flower',desc:'체력 2,000 → 2,600. 이전에 먹은 적도 다시 먹습니다.'},{emoji:'🌾',name:'농부 지후',tag:'nerf',portraitKey:'farmer',desc:'최대 밭 6 → 4개, 밭 생성 간격 2.5 → 3.5초.'},{emoji:'⚡',name:'번개 지후',tag:'nerf',portraitKey:'lightning',desc:'낙뢰 피해 1,850 → 1,700.'},{emoji:'🗡️',name:'에드게이 지후',tag:'nerf',portraitKey:'edgy',desc:'흡혈 35% → 25%, 체력 1,600 → 1,500.'},{emoji:'🗡️',name:'암살 지후',tag:'buff',portraitKey:'assassin',desc:'공격력 280 → 350.'},{emoji:'⚔️',name:'강화 지후',tag:'adjust',portraitKey:'enhance',desc:'강화 레벨이 라운드가 끝나도 유지됩니다.'},{emoji:'🌙',name:'달 지후',tag:'adjust',portraitKey:'moon',desc:'달 지후 버프 비중첩, 공격 간격 0.7 → 1초.'},{emoji:'🕳️',name:'블랙홀 지후',tag:'buff',portraitKey:'blackhole',desc:'피해량 400 → 500.'},{emoji:'📜',name:'청부업자 지후',tag:'buff',portraitKey:'contractor',desc:'청부 쿨타임 5 → 4초.'},{emoji:'🙏',name:'축복 지후',tag:'buff',portraitKey:'blessing',desc:'축복 표시 추가, 라운드 시작 1 → 2개, 랭크업 2 → 3개.'},{emoji:'🧊',name:'쾌속냉각 지후',tag:'adjust',portraitKey:'quickfreeze',desc:'공격력 600 → 500, 빙결 2.2 → 0.5초, 1회 공격으로 빙결.'},{emoji:'☀️',name:'태양 지후',tag:'nerf',portraitKey:'sun',desc:'부활 후 공격력 증가 200 → 120.'},{emoji:'☢️',name:'핵미사일 지후',tag:'buff',portraitKey:'nuke',desc:'핵 도달 시간 38 → 28초.'},{emoji:'🦋',name:'솔렘라멘트 지후',tag:'nerf',desc:'공격 간격 0.65 → 0.75초.'},{emoji:'✧',name:'제네시스 지후',tag:'buff',portraitKey:'genesis',desc:'쉴드 감소량 초당 999 → 333.'},{emoji:'🐉',name:'흑염룡 지후',tag:'nerf',desc:'공격 간격 1.4 → 1.75초, 피해 감소 50% → 15% 및 40% → 20%, 돌진 피해 900 → 750.'},{emoji:'🌀',name:'태풍 지후',tag:'nerf',portraitKey:'typhoon',desc:'체력 2,400 → 1,900, 태풍 피해 100 → 70.'},{emoji:'🦷',name:'포식 지후',tag:'buff',portraitKey:'glutton',desc:'포식당 최대 체력·체력 증가 300 → 600.'},{emoji:'🦈',name:'죠스 지후',tag:'nerf',portraitKey:'jaws',desc:'떠오를 때 적 피해 400 → 150.'},{emoji:'🎵',name:'비트마니아 지후',tag:'nerf',portraitKey:'beatmania',desc:'회피 범위 ±0.15 → ±0.08초, 랭크업 추가 범위 +1 → +0.04초.'}
   ]}] },
@@ -30689,20 +30735,27 @@ function startSocial() {
     social.error = false; social.friends = list;
     syncDmWatch(); refreshPresence(); renderFriends(); renderSocialBadge();
   });
-  const ping = () => window.JihooOnline.presencePing(presenceWhere());
+  const ping = () => window.JihooOnline.presencePing(presenceWhere(), presenceSp());
   ping();
   clearInterval(social.pingTimer);
   social.pingTimer = setInterval(() => { ping(); refreshPresence(); }, 60000);
   if (typeof startInvites === 'function') startInvites();
+  if (typeof startRoomInvites === 'function') startRoomInvites(); // 6.1 2:2 방 초대
 }
 // 6.0.3 접속 위치: 경쟁전 · 드래프트 픽 화면이면 'pick' (친선전 신청을 주고받을 수 없다)
 function presenceWhere() { return state.screen === 'compdraft' ? 'pick' : state.screen === 'battle' ? 'battle' : 'lobby'; }
+// 6.1 관전 표지: 친선전은 'm:매치ID', 2:2 온라인은 'r:방ID:방장UID'. 관전 중이거나 관전을 끄면 비운다.
+function presenceSp() {
+  const net = state.net;
+  if (state.screen !== 'battle' || !net || net.spec || net.done || profile.allowSpectate === false) return '';
+  return net.team ? `r:${net.id}:${net.hostUid || ''}` : `m:${net.id}`;
+}
 var presencePick = false; // var: showScreen 이 이 줄보다 먼저 불릴 수 있어서
 function presenceSyncPick() {
   const on = state.screen === 'compdraft';
   if (on === presencePick) return;
   presencePick = on;
-  try { if (window.JihooOnline && window.JihooOnline.connected()) window.JihooOnline.presencePing(presenceWhere()); } catch (error) {}
+  try { if (window.JihooOnline && window.JihooOnline.connected()) window.JihooOnline.presencePing(presenceWhere(), presenceSp()); } catch (error) {}
 }
 function acceptedFriends() { return social.friends.filter(f => f.status === 'accepted'); }
 function syncDmWatch() {
@@ -30732,7 +30785,7 @@ async function refreshPresence() {
 function presenceOf(uid) {
   const p = social.presence[uid];
   if (!p || Date.now() - p.at > 150000) return { on: false, label: '오프라인' };
-  return { on: true, battle: p.where === 'battle', pick: p.where === 'pick', label: p.where === 'battle' ? '게임 중' : p.where === 'pick' ? '픽 선택 중' : '접속 중' };
+  return { on: true, sp: p.sp || '', battle: p.where === 'battle', pick: p.where === 'pick', label: p.where === 'battle' ? '게임 중' : p.where === 'pick' ? '픽 선택 중' : '접속 중' };
 }
 function socialBadgeCount() {
   return social.friends.filter(f => f.incoming).length + acceptedFriends().filter(dmUnread).length + (typeof friendlyInvitesPending === 'function' ? friendlyInvitesPending() : 0);
@@ -30765,6 +30818,11 @@ function friendMsg(text, kind = '') { const el = $('friendMsg'); if (el) { el.te
 function renderFriends() {
   const box = $('friendsList');
   if (!box) return;
+  const allow = $('allowSpectate'); // 6.1 관전 허용 스위치
+  if (allow) {
+    allow.checked = profile.allowSpectate !== false;
+    if (!allow.dataset.bound) { allow.dataset.bound = '1'; allow.addEventListener('change', () => { profile.allowSpectate = allow.checked; saveProfile(); try { window.JihooOnline.presencePing(presenceWhere(), presenceSp()); } catch (error) {} }); }
+  }
   renderSocialBadge();
   if (social.view === 'friends' && window.JihooOnline.connected()) $('chatStatus').textContent = `${profile.nickname} · 친구 ${acceptedFriends().length}명`;
   if (!window.JihooOnline.connected()) { box.innerHTML = '<div class="v50-empty">온라인 계정이 있어야 친구를 추가할 수 있어요.<br>프로필에서 계정을 만들어 보세요.</div>'; return; }
@@ -30789,6 +30847,8 @@ function renderFriends() {
     wrap.appendChild(friendRow(f, { dot: pr.battle || pr.pick ? 'battle' : pr.on ? 'on' : '', sub, buttons: [
       ['💬', '', () => openDm(f), false, '1:1 채팅'],
       ['⚔ 친선전', 'war', () => (typeof friendlyInvite === 'function' ? friendlyInvite(f) : null), !pr.on || pr.battle || pr.pick, pr.on ? (pr.battle ? '게임 중이에요' : pr.pick ? '픽 선택 중이라 신청할 수 없어요' : '친선전 신청') : '접속 중일 때만 신청할 수 있어요'],
+      ['👁 관전', '', () => spectateFriend(f), !spectateInfo(f).ok, spectateInfo(f).why],
+      ['🌐 2:2', '', () => roomInviteFriend(f), !pr.on || pr.battle || pr.pick, pr.on ? (pr.battle ? '게임 중이에요' : pr.pick ? '픽 선택 중이라 초대할 수 없어요' : '2:2 온라인 방으로 초대') : '접속 중일 때만 초대할 수 있어요'],
       ['✕', 'x', act(async () => { if (confirm(`${f.nickname}님을 친구에서 삭제할까요?`)) await window.JihooOnline.friendRemove(f.id); }), false, '친구 삭제'],
     ] }));
   });
@@ -30902,7 +30962,9 @@ $('chatForm')?.addEventListener('submit', async event => {
 // 참가자 화면은 전장을 180° 돌려서 자기 진영이 아래(오른쪽)에 오게 보여 준다.
 // 배치: 매 배치마다 두 사람이 동시에 고르고(15초), 둘 다 도착하면 방장 → 참가자 순서로 같은 시드로 적용한다.
 // 라운드가 끝나면 방장이 결과(라이프 · 해시)를 보내고, 참가자 결과와 다르면 방장 기준으로 맞춘다.
-const NET_ACT_TIME = 15, NET_GONE_MS = 50000, NET_HB_MS = 12000;
+const NET_ACT_TIME = 15, NET_GONE_MS = 50000, NET_HB_MS = 12000, NET_SPEC_IDLE_MS = 90000;
+// 6.1 관전: 관전자는 세 번째 화면으로 같은 시드 · 같은 배치 메시지를 받아 똑같은 전투를 돌린다 (아무것도 보내지 않는다).
+// 중간에 들어오면 지금까지의 메시지를 처음부터 받아서, 이미 끝난 라운드는 빠르게 감아 따라잡는다.
 function meSide() { return state.mode === 'friendly' && state.net ? state.net.side : 'ally'; }
 function oppSide() { return meSide() === 'ally' ? 'enemy' : 'ally'; }
 function netFlip() { return state.mode === 'friendly' && state.net && state.net.side === 'enemy'; }
@@ -30925,7 +30987,7 @@ function netTransport(id, coll = 'matches') {
 }
 function netMyUid() { return window.__JH_NET_TEST ? window.__JH_NET_TEST.uid : window.JihooOnline.myUid(); }
 function netSend(body) {
-  const net = state.net; if (!net || !net.tx) return;
+  const net = state.net; if (!net || !net.tx || net.spec) return; // 6.1 관전자는 보내지 않는다
   net.tx.send(body).catch(error => netLog('send fail', error && error.message));
 }
 
@@ -30934,6 +30996,7 @@ function netSend(body) {
 function netMe() { const net = state.net; return net && net.team ? netMyUid() : meSide(); }
 function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName, hostDeck, guestDeck, ew }
   leaveBattle();
+  const spec = !!cfg.spec; // 6.1 관전
   const host = cfg.role === 'host';
   const team = !!cfg.team;
   state.mode = 'friendly';
@@ -30941,9 +31004,9 @@ function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName
   state.maxUnitsBonus = { ally: 0, enemy: 0 };
   state.poolSize = 3;
   state.net = {
-    id: cfg.id, role: cfg.role, side: team ? cfg.side : host ? 'ally' : 'enemy', seed: cfg.seed, ew: !!cfg.ew,
-    oppName: host ? cfg.guestName : cfg.hostName, acts: {}, ends: {}, myEnds: {}, lastSeen: Date.now(), done: false, fight: 0,
-    team, players: team ? cfg.players : null, sideOf: {}, seen: {}, hostUid: cfg.hostUid || null,
+    id: cfg.id, role: cfg.role, side: spec ? 'ally' : team ? cfg.side : host ? 'ally' : 'enemy', seed: cfg.seed, ew: !!cfg.ew,
+    oppName: spec ? cfg.guestName : host ? cfg.guestName : cfg.hostName, acts: {}, ends: {}, myEnds: {}, lastSeen: Date.now(), done: false, fight: 0,
+    team, players: team ? cfg.players : null, sideOf: {}, seen: {}, hostUid: cfg.hostUid || null, spec, sideNames: {},
   };
   LOCK.on = true; LOCK.queue = [];
   state.matchStartedAt = Date.now();
@@ -30951,8 +31014,9 @@ function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName
   state.reaperGrudges = {}; state.zombieCarry = null; state.duetSeekUsed = {};
   state.duo = null;
   if (team) {
-    const meUid = netMyUid(), my = cfg.side;
+    const meUid = spec ? (cfg.players.find(p => p.side === 'ally') || {}).uid : netMyUid(), my = cfg.side; // 6.1 관전자는 A팀 첫 사람 눈으로
     cfg.players.forEach(p => { state.net.sideOf[p.uid] = p.side; state.net.seen[p.uid] = Date.now(); });
+    ['ally', 'enemy'].forEach(sd => { state.net.sideNames[sd] = cfg.players.filter(p => p.side === sd).map(p => p.name).join(' & '); });
     const mate = cfg.players.find(p => p.side === my && p.uid !== meUid), opps = cfg.players.filter(p => p.side !== my);
     state.net.oppName = opps.map(p => p.name).join(' & ');
     state.net.mateName = mate ? mate.name : '';
@@ -30960,16 +31024,19 @@ function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName
     state.enemyDeckIds = opps.flatMap(p => p.deck.slice(0, 5));
     state.duo = { online: true, partner: { name: mate?.name || '', deck: (mate?.deck || []).slice(0, 5) }, enemies: opps.map(p => ({ name: p.name, deck: p.deck.slice(0, 5) })) };
   } else {
-  state.myDeckIds = (host ? cfg.hostDeck : cfg.guestDeck).slice(0, 5);
-  state.enemyDeckIds = (host ? cfg.guestDeck : cfg.hostDeck).slice(0, 5);
+  state.myDeckIds = (host || spec ? cfg.hostDeck : cfg.guestDeck).slice(0, 5);
+  state.enemyDeckIds = (host || spec ? cfg.guestDeck : cfg.hostDeck).slice(0, 5);
+  if (spec) { state.net.sideOf[cfg.hostUid] = 'ally'; state.net.sideOf[cfg.guestUid] = 'enemy'; state.net.seen[cfg.hostUid] = state.net.seen[cfg.guestUid] = Date.now(); }
+  state.net.sideNames = { ally: cfg.hostName, enemy: cfg.guestName };
   }
   state.enemyName = state.net.oppName;
   state.enemyLevel = 1; state.botSkill = 0;
   state.matchSettled = false; state.lastSettlement = null; state.tutMatch = null;
   $('screen-battle').classList.toggle('pov-flip', netFlip());
+  $('screen-battle').classList.toggle('spectating', spec); // 6.1 관전: 배치 카드 · 풀 숨김
   resetBattlePresentation();
   const badge = $('roundBadge');
-  if (badge) badge.innerHTML = `${team ? '🌐 2:2 친선전' : '🤝 친선전'} · ROUND <span id="roundNum">1</span>`;
+  if (badge) badge.innerHTML = `${spec ? '👁 관전 · ' : ''}${team ? '🌐 2:2 친선전' : '🤝 친선전'} · ROUND <span id="roundNum">1</span>`;
   updateLifeUI();
   showScreen('battle');
   applyMapLayout();
@@ -30979,13 +31046,17 @@ function startFriendlyMatch(cfg) { // cfg: { id, role, seed, hostName, guestName
   netSend({ t: 'hello' });
   net.hb = setInterval(() => {
     if (!state.net || state.net !== net || net.done) return;
+    if (net.spec) { // 6.1 관전: 새 메시지를 기다리는 중인데 오래 안 오면 끝낸다 (전투를 돌리는 동안은 기다린다)
+      if (state.phase === 'deploy-wait' && Date.now() - net.lastSeen > NET_SPEC_IDLE_MS) netSpecEnd('두 선수의 연결이 끊겨서 관전을 마쳤어요.');
+      return;
+    }
     netSend({ t: 'hb' });
     if (net.team) { // 5.5 2:2: 한 명이라도 끊기면 그 팀이 진다
       const gone = net.players.find(p => !p.bot && p.uid !== netMyUid() && Date.now() - (net.seen[p.uid] || 0) > NET_GONE_MS);
       if (gone) netSideLost(gone.side, gone.name);
     } else if (Date.now() - net.lastSeen > NET_GONE_MS) netOpponentGone();
   }, NET_HB_MS);
-  if (!window.__JH_NET_TEST) window.JihooOnline.presencePing('battle');
+  if (!window.__JH_NET_TEST) window.JihooOnline.presencePing('battle', presenceSp());
   showMatchupPreview(startRound);
 }
 function netCleanup() {
@@ -30995,7 +31066,7 @@ function netCleanup() {
   clearInterval(net.hb); clearTimeout(net.waitTimer);
   try { net.unlisten && net.unlisten(); } catch (error) {}
   LOCK.on = false; LOCK.queue = [];
-  $('screen-battle').classList.remove('pov-flip');
+  $('screen-battle').classList.remove('pov-flip', 'spectating');
   state.net = null;
   if (!window.__JH_NET_TEST) window.JihooOnline.presencePing('lobby');
 }
@@ -31006,12 +31077,20 @@ function netOnMessage(msg) {
   if (!net || net.done || !msg || msg.from === netMyUid()) return;
   net.lastSeen = Date.now();
   if (net.team) { if (!net.sideOf[msg.from]) return; net.seen[msg.from] = Date.now(); }
+  else if (net.spec && !net.sideOf[msg.from]) return; // 6.1 1:1 관전: 두 선수 메시지만
   netLog('recv', msg.t, msg.k || '');
   if (msg.t === 'act') {
     const bot = net.team && msg.as && msg.from === net.hostUid && net.players.some(p => p.bot && p.uid === msg.as);
-    net.acts[msg.k + '-' + (bot ? msg.as : net.team ? msg.from : oppSide())] = msg.act; netTryResolve(); return;
+    net.acts[msg.k + '-' + (bot ? msg.as : net.team ? msg.from : net.spec ? net.sideOf[msg.from] : oppSide())] = msg.act; netTryResolve(); return;
   }
-  if (msg.t === 'emo') { if (typeof msg.key === 'string') emoShow(net.team ? msg.from : 'opp', msg.key); return; } // 5.7 이모티콘
+  if (net.spec && (msg.t === 'surrender' || msg.t === 'bye')) { // 6.1 관전: 누가 항복 · 나가면 그쪽이 진 것
+    const side = net.sideOf[msg.from], who = net.team ? (net.players.find(x => x.uid === msg.from) || {}).name : net.sideNames[side];
+    netFinish(side === 'ally' ? 'enemy' : 'ally', `${who || '선수'}님이 ${msg.t === 'surrender' ? '항복했어요' : '나가서 게임이 끝났어요'}`, msg.t === 'surrender');
+    return;
+  }
+  if (msg.t === 'emo') {
+    if (net.spec) return; // 6.1 관전자 화면에는 이모티콘을 띄우지 않는다
+    if (typeof msg.key === 'string') emoShow(net.team ? msg.from : 'opp', msg.key); return; } // 5.7 이모티콘
   if (msg.t === 'end') { if (net.team && msg.from !== net.hostUid) return; net.ends[msg.r] = msg; netCheckEnd(msg.r); return; }
   if (net.team && (msg.t === 'surrender' || msg.t === 'bye')) { const p = net.players.find(x => x.uid === msg.from); netSideLost(net.sideOf[msg.from], p ? p.name : '', msg.t === 'surrender'); return; }
   if (msg.t === 'surrender') { netFinish(meSide(), '상대가 항복했어요'); return; }
@@ -31022,6 +31101,12 @@ function netSideLost(side, name, surrendered) {
   if (!side) return;
   const mine = side === meSide();
   netFinish(side === 'ally' ? 'enemy' : 'ally', mine ? `팀원 ${name}님이 ${surrendered ? '항복' : '나가서'} 패배했어요` : `상대 팀 ${name}님이 ${surrendered ? '항복' : '나가서'} 승리했어요`);
+}
+function netSpecEnd(text) { // 6.1 관전을 그만둔다 (로비로)
+  const net = state.net;
+  if (!net || !net.spec || net.done) return;
+  leaveBattle(); showScreen('lobby');
+  if (text && typeof v55Dialog === 'function') v55Dialog({ icon: '👁', title: '관전이 끝났어요', html: escapeHtml(text) });
 }
 function netOpponentGone() {
   const net = state.net;
@@ -31056,6 +31141,7 @@ function netBotAct(p) {
 function netDeployStart(stuck) { // nextDeployCycle 에서: 풀을 보여준 뒤
   const net = state.net;
   net.cur = netDeployKey();
+  if (net.spec) { netWaiting(); netTryResolve(); return; } // 6.1 관전: 고르지 않고 선수들의 배치가 다 올 때까지 본다
   if (net.team && net.role === 'host') net.players.filter(p => p.bot).forEach(p => {
     const k = net.cur + '-' + p.uid;
     if (net.acts[k]) return;
@@ -31124,9 +31210,10 @@ function netWaiting() {
   $('screen-battle').dataset.phase = 'deploy-resolve';
   v42RefreshGrid();
   const waitNames = net.team ? net.players.filter(p => !net.acts[netDeployKey() + '-' + p.uid]).map(p => p.name).join(', ') : net.oppName;
-  $('bottomStatusLine').innerHTML = `⏳ <b>${escapeHtml(waitNames || net.oppName)}</b>님이 고르는 중…`;
+  $('bottomStatusLine').innerHTML = net.spec ? `👁 <b>관전 중</b> · ${escapeHtml(waitNames || net.oppName)}님이 고르는 중…` : `⏳ <b>${escapeHtml(waitNames || net.oppName)}</b>님이 고르는 중…`;
   $('phaseTimer').textContent = '…';
   clearTimeout(net.waitTimer);
+  if (net.spec) return;
   net.waitTimer = setTimeout(() => { if (state.net === net && state.phase === 'deploy-wait') $('bottomStatusLine').innerHTML = `⏳ <b>${escapeHtml(net.oppName)}</b>님의 응답이 늦어요… (연결이 끊기면 자동으로 승리 처리)`; }, (NET_ACT_TIME + 8) * 1000);
 }
 function netTryResolve() {
@@ -31151,7 +31238,7 @@ function netTryResolve() {
 }
 function netApplyAct(side, act, who) {
   if (!act || act.kind === 'skip' || !CHAR_DB[act.charId]) return;
-  if (who && side === meSide() && who !== netMyUid()) { // 5.5 2:2: 팀원 지후 표시
+  if (who && side === meSide() && who !== netMyUid() && !(state.net && state.net.spec)) { // 5.5 2:2: 팀원 지후 표시 (관전자는 표시 없음)
     const before = new Set(state.units);
     netApplyAct(side, act, null);
     state.units.forEach(u => { if (!before.has(u) && u.side === side) { coopMarkMate(u); const pl = state.placements.find(p => p.id === u.placementId); if (pl) pl.mate = true; } });
@@ -31298,9 +31385,130 @@ async function friendlyInvite(f) {
   };
 }
 
+// ================= 6.1 친구 관전 =================
+// 친구 목록의 👁 관전: 친구가 하는 친선전 · 2:2 온라인 판을 세 번째 화면으로 본다 (아무것도 보내지 않는다 · 전적에 안 들어간다).
+// 친구의 접속 정보(presence.sp)에 판 번호가 있을 때만 눌린다. 친구가 '관전 허용'을 끄면 번호가 안 나온다.
+const SPECTATE = { busy: false };
+function spectateInfo(f) {
+  const pr = presenceOf(f.uid);
+  if (!pr.on || !pr.battle) return { ok: false, why: '게임 중일 때만 관전할 수 있어요' };
+  const parts = String(pr.sp || '').split(':');
+  if (parts[0] === 'm' && parts[1]) return { ok: true, kind: 'm', id: parts[1], why: '친선전 관전하기' };
+  if (parts[0] === 'r' && parts[1]) {
+    const host = parts[2] || '';
+    if (host === f.uid || acceptedFriends().some(x => x.uid === host)) return { ok: true, kind: 'r', id: parts[1], why: '2:2 온라인 관전하기' };
+    return { ok: false, why: '방장과도 친구여야 2:2 판을 관전할 수 있어요' };
+  }
+  return { ok: false, why: '관전을 허용하지 않았거나 관전할 수 없는 판이에요' };
+}
+async function spectateFriend(f) {
+  if (SPECTATE.busy) return;
+  const info = spectateInfo(f);
+  if (!info.ok) { friendMsg(info.why, 'err'); return; }
+  SPECTATE.busy = true;
+  try {
+    let cfg;
+    if (info.kind === 'm') {
+      const m = await window.JihooOnline.matchGet(info.id);
+      if (!m || m.status !== 'playing') throw new Error('이미 끝났거나 아직 시작하지 않은 판이에요.');
+      cfg = { id: m.id, role: 'spec', spec: true, seed: m.seed, hostName: m.hostName, guestName: m.guestName, hostDeck: m.hostDeck || [], guestDeck: m.guestDeck || [], ew: !!m.ew, hostUid: m.host, guestUid: m.guest };
+    } else {
+      const r = await window.JihooOnline.roomGet(info.id);
+      if (!r || r.status !== 'playing') throw new Error('이미 끝났거나 아직 시작하지 않은 판이에요.');
+      const players = roomPlayers(r).map(p => ({ uid: p.uid, name: p.name, side: p.team === 'A' ? 'ally' : 'enemy', deck: p.deck, bot: p.bot }));
+      if (players.length !== 4) throw new Error('이미 끝난 판이에요.');
+      cfg = { id: r.id, role: 'spec', spec: true, seed: r.seed, ew: !!r.ew, team: true, players, side: 'ally', hostName: r.hostName, guestName: '', hostUid: r.host };
+    }
+    closeChat();
+    startFriendlyMatch(cfg);
+  } catch (error) {
+    friendMsg(error && error.code === 'permission-denied' ? '관전할 수 없어요. 친구인지, 규칙(firestore.rules)이 최신인지 확인하세요.' : (error.message || '관전하지 못했어요.'), 'err');
+  } finally { SPECTATE.busy = false; }
+}
+
+// ================= 6.1 2:2 방 초대 =================
+// 친구 목록의 🌐 2:2: 내 방이 없으면 방을 만들어 들어가고, 그 방으로 친구를 초대한다. 방 안에서도 접속 중인 친구를 바로 초대할 수 있다.
+const ROOM_INVITE_SEC = 45;
+const ROOMINV = { unsub: null, seen: new Set() };
+function startRoomInvites() {
+  if (ROOMINV.unsub || !window.JihooOnline.connected()) return;
+  ROOMINV.unsub = window.JihooOnline.roomInvitesSubscribe(list => {
+    const fresh = (list || []).filter(m => m.status === 'open' && (!m.at || Date.now() - m.at < (ROOM_INVITE_SEC + 30) * 1000));
+    const next = fresh.find(m => !ROOMINV.seen.has(m.id));
+    if (next) showRoomInvite(next);
+  });
+}
+function showRoomInvite(m) {
+  ROOMINV.seen.add(m.id);
+  const busy = (state.screen === 'battle' && state.phase !== 'idle') || state.screen === 'compdraft' || !!ROOMS.roomId; // 게임 중 · 픽 중 · 이미 방에 있으면 자동 거절
+  if (busy) { window.JihooOnline.roomInviteUpdate(m.id, 'declined').catch(() => {}); return; }
+  const el = friendlyModal(`<div class="ic">🌐</div><h2>2:2 온라인 초대</h2><p><b></b>님이 2:2 방 <b class="rt"></b>(으)로 초대했어요.<br><small>라이프 4 · 기록과 보상은 없어요</small><br><small class="fm-left"></small></p>
+    <div class="acts"><button type="button" class="btn" data-a="no">거절</button><button type="button" class="btn btn-primary" data-a="yes">들어가기</button></div><p class="msg"></p>`);
+  el.querySelector('p b').textContent = m.fromName || '친구';
+  el.querySelector('.rt').textContent = m.title || '방';
+  el.dataset.rinv = m.id;
+  let left = ROOM_INVITE_SEC;
+  const tick = setInterval(() => {
+    if (el.dataset.rinv !== m.id) { clearInterval(tick); return; }
+    left--;
+    if (left <= 0) { clearInterval(tick); el.dataset.rinv = ''; closeModal('friendlyModal'); return; }
+    const t = el.querySelector('.fm-left'); if (t) t.textContent = `${left}초 뒤 사라져요`;
+  }, 1000);
+  el.querySelector('[data-a="no"]').onclick = () => { clearInterval(tick); el.dataset.rinv = ''; closeModal('friendlyModal'); window.JihooOnline.roomInviteUpdate(m.id, 'declined').catch(() => {}); };
+  el.querySelector('[data-a="yes"]').onclick = async () => {
+    clearInterval(tick);
+    const deck = currentDeck();
+    if (deck.length !== 5) { el.querySelector('.msg').textContent = '덱에 지후 5기를 먼저 채워 주세요.'; return; }
+    el.querySelectorAll('button').forEach(b => { b.disabled = true; });
+    try {
+      await window.JihooOnline.roomJoin(m.roomId, deck);
+      window.JihooOnline.roomInviteUpdate(m.id, 'accepted').catch(() => {});
+      el.dataset.rinv = ''; closeModal('friendlyModal');
+      openRoomLobby(); enterRoom(m.roomId);
+    } catch (error) { el.querySelector('.msg').textContent = error.message || '들어가지 못했어요 (방이 닫혔거나 꽉 찼을 수 있어요).'; el.querySelectorAll('button').forEach(b => { b.disabled = false; }); }
+  };
+}
+async function roomInviteFriend(f) {
+  if (!window.JihooOnline.connected()) return;
+  const deck = currentDeck();
+  if (deck.length !== 5) { friendMsg('덱에 지후 5기를 먼저 채워 주세요.', 'err'); return; }
+  if (state.screen === 'compdraft') { friendMsg('픽 선택 중에는 초대할 수 없어요.', 'err'); return; }
+  try {
+    let id = ROOMS.roomId, title = ROOMS.room ? ROOMS.room.title : '';
+    if (id && ROOMS.room && (ROOMS.room.status !== 'open' || Object.keys(ROOMS.room.players || {}).length >= 4)) throw new Error('방이 꽉 찼어요.');
+    if (!id) { // 방이 없으면 만들어서 들어간다
+      id = await window.JihooOnline.roomCreate('', deck, isEastWestLayout());
+      title = profile.nickname + '의 방';
+      openRoomLobby(); enterRoom(id);
+    }
+    await window.JihooOnline.roomInviteSend(f.uid, id, title);
+    if (ROOMS.invited) ROOMS.invited.add(f.uid);
+    friendMsg(`${f.nickname}님을 2:2 방에 초대했어요. 방에서 기다려 주세요.`);
+    roomMsg(`${f.nickname}님에게 초대를 보냈어요.`);
+  } catch (error) { friendMsg(error.message || '초대하지 못했어요.', 'err'); }
+}
+function roomInvitePanel(room) { // 방 안: 접속 중인 친구를 바로 초대
+  if (room.status !== 'open' || Object.keys(room.players || {}).length >= 4) return '';
+  const list = acceptedFriends().filter(f => { const pr = presenceOf(f.uid); return pr.on && !pr.battle && !pr.pick && !(room.players || {})[f.uid]; });
+  return `<div class="v55-rinv"><small>👥 친구를 이 방으로 초대</small><div>${list.length ? list.map(f => `<button type="button" class="btn" data-rinv="${f.uid}"></button>`).join('') : '<em>지금 접속 중인 친구가 없어요</em>'}</div></div>`;
+}
+function bindRoomInvitePanel(room) {
+  $('roomBody').querySelectorAll('[data-rinv]').forEach(b => {
+    const f = acceptedFriends().find(x => x.uid === b.dataset.rinv); if (!f) return;
+    const done = () => { b.disabled = true; b.textContent = '✓ ' + f.nickname + ' 초대함'; };
+    if (ROOMS.invited && ROOMS.invited.has(f.uid)) { done(); return; }
+    b.textContent = '+ ' + f.nickname;
+    b.onclick = async () => {
+      b.disabled = true;
+      try { await window.JihooOnline.roomInviteSend(f.uid, room.id, room.title); if (ROOMS.invited) ROOMS.invited.add(f.uid); done(); roomMsg(`${f.nickname}님에게 초대를 보냈어요.`); }
+      catch (error) { b.disabled = false; roomMsg(error.message || '초대하지 못했어요.', 'err'); }
+    };
+  });
+}
+
 // ================= 5.5 2:2 온라인 로비 =================
 // 방을 만들고 친구 · 다른 플레이어 3명이 들어오면 방장이 팀(A · B)을 맞추고 시작한다. 라이프 4 · 기록과 보상 없음.
-const ROOMS = { unsubList: null, unsubRoom: null, roomId: null, room: null, msg: '' };
+const ROOMS = { unsubList: null, unsubRoom: null, roomId: null, room: null, msg: '', invited: new Set() };
 const ROOM_STALE_MS = 15 * 60 * 1000;
 function roomModal() {
   let el = $('roomModal');
@@ -31354,7 +31562,8 @@ async function joinRoom(id) {
 }
 function enterRoom(id) {
   if (ROOMS.unsubList) { ROOMS.unsubList(); ROOMS.unsubList = null; }
-  ROOMS.roomId = id; ROOMS.room = null; roomMsg('');
+  ROOMS.roomId = id; ROOMS.room = null; roomMsg(''); ROOMS.invited = new Set();
+  try { refreshPresence().then(() => { if (ROOMS.roomId === id && ROOMS.room) renderRoom(); }); } catch (error) {} // 6.1 방 안 친구 초대 목록
   ROOMS.unsubRoom = window.JihooOnline.roomWatch(id, room => {
     if (ROOMS.roomId !== id) return;
     const me = window.JihooOnline.myUid();
@@ -31398,8 +31607,10 @@ function renderRoom() {
   const a = ps.filter(p => p.team === 'A').length, b = ps.filter(p => p.team === 'B').length, ready = a === 2 && b === 2;
   $('roomBody').innerHTML = `<div class="v55-rteams">${col('A')}<div class="v55-rvs">VS</div>${col('B')}</div>
     <p class="v55-rnote">${host ? (ready ? '팀이 다 찼어요. 시작하세요!' : '두 팀을 <b>2명씩</b> 맞추면 시작할 수 있어요. 팀은 방장이 바꿀 수 있고, 빈 자리는 <b>🤖 봇</b>으로 채울 수 있어요.') : '방장이 팀을 맞추고 시작할 때까지 기다려 주세요…'}</p>
+    ${roomInvitePanel(room)}
     <div class="modal-actions"><button type="button" class="btn btn-secondary" id="btnRoomLeave">${host ? '방 닫기' : '나가기'}</button><button type="button" class="btn" id="btnRoomDeck">내 덱 다시 보내기</button>${host ? `<button type="button" class="btn btn-primary" id="btnRoomStart" ${ready ? '' : 'disabled'}>게임 시작 ▶</button>` : ''}</div>`;
   $('roomBody').querySelectorAll('.v55-rslot[data-uid]').forEach(el => { el.querySelector('.nm b').textContent = ps.find(p => p.uid === el.dataset.uid).name; });
+  bindRoomInvitePanel(room);
   $('btnRoomLeave').onclick = () => leaveRoom(false);
   $('btnRoomDeck').onclick = async () => { const deck = currentDeck(); if (deck.length !== 5) { roomMsg('덱에 지후 5기를 먼저 채워 주세요.', 'err'); return; } try { await window.JihooOnline.roomJoin(room.id, deck); roomMsg('덱을 다시 보냈어요.'); } catch (e) { roomMsg(e.message, 'err'); } };
   $('roomBody').querySelectorAll('[data-move]').forEach(bt => bt.onclick = () => {
@@ -31434,6 +31645,7 @@ function startRoomMatch(room) {
   if (ROOMS.unsubRoom) { ROOMS.unsubRoom(); ROOMS.unsubRoom = null; }
   ROOMS.roomId = null; ROOMS.room = null;
   closeModal('roomModal');
+  try { closeChat(); } catch (error) {} // 6.1 채팅 화면에서 초대받아 들어왔을 수 있다
   const players = ps.map(p => ({ uid: p.uid, name: p.name, side: p.team === 'A' ? 'ally' : 'enemy', deck: p.deck, bot: p.bot }));
   const mine = players.find(p => p.uid === me);
   if (!mine) return;
@@ -32159,6 +32371,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (ex) ex.addEventListener('click', ev => {
     ev.stopPropagation();
     if (state.screen === 'battle' && state.mode === 'wwe') { const t = WWE.t; wweCleanupBattle(); if (t && !t.champion) { showScreen('wweBracket'); renderWweBracket(); } else { WWE.t = null; showScreen('wwe'); renderWweLobby(); } return; }
+    if (state.net && state.net.spec) { netSpecEnd(''); return; } // 6.1 관전 나가기 (항복 아님)
     if (state.screen === 'battle' && !state.matchSettled) {
       const coop = state.mode === 'coop'; // 5.1 협동전: 항복 대신 그만두기 (버틴 만큼 보상)
       $('surrenderModal').querySelector('h2').textContent = coop ? '협동전을 그만할까요?' : '항복하시겠습니까?';

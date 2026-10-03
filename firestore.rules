@@ -246,7 +246,8 @@ service cloud.firestore {
     match /presence/{userId} {
       allow get: if request.auth != null;
       allow create, update: if owner(userId)
-        && request.resource.data.keys().hasOnly(['nickname', 'where', 'at'])
+        && request.resource.data.keys().hasOnly(['nickname', 'where', 'at', 'sp'])
+        && (!('sp' in request.resource.data) || (request.resource.data.sp is string && request.resource.data.sp.size() <= 80))
         && request.resource.data.nickname is string && request.resource.data.nickname.size() <= 12
         && request.resource.data.where is string && request.resource.data.where.size() <= 12
         && request.resource.data.at == request.time;
@@ -256,6 +257,10 @@ service cloud.firestore {
     function friendOk(pairId) {
       let f = get(/databases/$(database)/documents/friendships/$(pairId));
       return f.data.status == 'accepted' && request.auth.uid in f.data.members;
+    }
+    // 6.1 로그인한 내가 other 와 친구인가 (문서 ID 는 '작은UID_큰UID')
+    function friendsWith(other) {
+      return friendOk(request.auth.uid < other ? request.auth.uid + '_' + other : other + '_' + request.auth.uid);
     }
     match /friendships/{pairId} {
       allow get: if request.auth != null && (resource == null || request.auth.uid in resource.data.members);
@@ -294,8 +299,14 @@ service cloud.firestore {
       let m = get(/databases/$(database)/documents/matches/$(id));
       return request.auth.uid == m.data.host || request.auth.uid == m.data.guest;
     }
+    // 6.1 관전: 진행 중인 판은 두 선수의 친구도 읽을 수 있다 (선수가 관전 허용을 끄면 클라이언트가 판 번호를 알리지 않는다)
+    function matchSpectator(id) {
+      let m = get(/databases/$(database)/documents/matches/$(id));
+      return m.data.status in ['playing', 'done'] && (friendsWith(m.data.host) || friendsWith(m.data.guest));
+    }
     match /matches/{id} {
-      allow get: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest);
+      allow get: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest
+        || (resource.data.status in ['playing', 'done'] && (friendsWith(resource.data.host) || friendsWith(resource.data.guest))));
       allow list: if request.auth != null && request.auth.uid == resource.data.guest;
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['host', 'guest', 'hostName', 'guestName', 'hostDeck', 'guestDeck', 'status', 'seed', 'ew', 'at'])
@@ -343,8 +354,34 @@ service cloud.firestore {
                 && (resource.data.status == 'open' || !(request.auth.uid in request.resource.data.players))));
       allow delete: if request.auth != null && request.auth.uid == resource.data.host;
     }
+    // 6.1 관전: 진행 중인 2:2 판은 방장의 친구도 읽을 수 있다
+    function roomSpectator(id) {
+      let r = get(/databases/$(database)/documents/rooms/$(id));
+      return r.data.status in ['playing', 'done'] && friendsWith(r.data.host);
+    }
+    // 6.1 2:2 방 초대: 친구에게만 보내고, 받은 사람만 수락 · 거절한다
+    match /roomInvites/{id} {
+      allow get: if request.auth != null && (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to);
+      allow list: if request.auth != null && (request.auth.uid == resource.data.to || request.auth.uid == resource.data.from);
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['from', 'to', 'fromName', 'roomId', 'title', 'status', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+        && friendsWith(request.resource.data.to)
+        && request.resource.data.fromName is string && request.resource.data.fromName.size() <= 12
+        && request.resource.data.roomId is string && request.resource.data.roomId.size() <= 40
+        && request.resource.data.title is string && request.resource.data.title.size() <= 24
+        && request.resource.data.status == 'open'
+        && request.resource.data.at == request.time;
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'at'])
+        && ((request.auth.uid == resource.data.to && request.resource.data.status in ['accepted', 'declined'])
+            || (request.auth.uid == resource.data.from && request.resource.data.status == 'cancel'))
+        && request.resource.data.at == request.time;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.from;
+    }
     match /rooms/{id}/msgs/{msgId} {
-      allow read: if request.auth != null && roomMember(id);
+      allow read: if request.auth != null && (roomMember(id) || roomSpectator(id));
       allow create: if request.auth != null && roomMember(id)
         && request.resource.data.keys().hasOnly(['from', 'body', 'at'])
         && request.resource.data.from == request.auth.uid
@@ -352,7 +389,7 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
     }
     match /matches/{id}/msgs/{msgId} {
-      allow read: if request.auth != null && matchMember(id);
+      allow read: if request.auth != null && (matchMember(id) || matchSpectator(id));
       allow create: if request.auth != null && matchMember(id)
         && request.resource.data.keys().hasOnly(['from', 'body', 'at'])
         && request.resource.data.from == request.auth.uid
