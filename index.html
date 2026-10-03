@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>try { if (localStorage.getItem('jihooBattle.uiTheme') === 'classic') document.documentElement.classList.add('ui-classic'); } catch (e) {}</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="6.2.0"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="6.2.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8141,15 +8141,15 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 3700, atk: 0, atkSpeed: 1, range: 72, speed: 67.5,
     noAttack: true, holdRange: true,
-    taxiSpeed: 7, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 9999 // 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
+    taxiSpeed: 2.4, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 9999, taxiDropRest: 2, taxiFoeCall: 1, taxiLoadRest: 2 // 6.2.1: 운행 속도 7 → 2.4 · 승객 하차 후 휴식 2초 · 적 콜 후 출발 대기 1초 · 적 탑승 후 휴식 2초 / 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
   },
   shanghai: { // 6.2 신규
     hp: 1972, atk: 200, atkSpeed: 1, range: 900, speed: 99 // 공격력은 기획서에 비어 있어 임시값 200
   },
   rccar: { // 6.2 신규
-    hp: 2300, atk: 0, atkSpeed: 1, range: 360, speed: 67.5, // 체력은 기획서에 없어 임시값
-    noAttack: true, holdRange: true,
-    rcStart: 10, rcEvery: 10, rcWarn: 1, rcLaneCells: 2, rcCarFraction: 0.75 // 첫 소환 · 소환 간격 · 예고 시간 · 돌진 폭(칸) · 자동차 현재 체력 비례 피해
+    hp: 2300, atk: 0, atkSpeed: 1, range: 360, speed: 0, // 체력은 기획서에 없어 임시값 · 6.2.1 이동속도 0
+    noAttack: true, immobile: true, holdRange: true, // 6.2.1 immobile: 제자리 고정 (이동속도 0이 기본 이동 속도로 되돌려지지 않게)
+    rcStart: 10, rcEvery: 8, rcWarn: 1, rcLaneCells: 2, rcCarFraction: 0.75 // 첫 소환 · 소환 간격 · 예고 시간 · 돌진 폭(칸) · 자동차 현재 체력 비례 피해
   },
   ravage: { // 6.2 신규
     hp: 3250, atk: 300, atkSpeed: 0.7, range: 72, speed: 90, // 이동속도는 기획서에 없어 임시값
@@ -8160,7 +8160,8 @@ const CHARACTER_BALANCE = {
   stone: { // 6.2 신규
     hp: 6000, atk: 0, atkSpeed: 1, range: 72, speed: 45,
     noAttack: true,
-    stoneSpeed: 6, stoneHitFraction: 0.1
+    stoneSpeed: 6, stoneHitFraction: 0.1,
+    radiusMul: 2 // 6.2.1 유닛 반지름 2배 (판정 · 크기)
   },
   purify: { // 6.2 신규
     hp: 1800, atk: 0, atkSpeed: 1, range: 315, speed: 67.5, // 체력은 기획서에 없어 임시값
@@ -10104,7 +10105,7 @@ const CHAR_DB = {
     id: 'taxi', name: '택시 지후', emoji: '🚕', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'hidden', color: '#f5b800', portrait: PORTRAITS.taxi || jhPlaceholder('🚕', '#f5b800'),
     ...CHARACTER_BALANCE.taxi,
-    skillDesc: '공격하지 않는다. 라운드 시작 직후 <b>무작위 아군</b>이 승객이 되어 점프하며 택시를 부른다. 택시는 기본 <b>속도 7</b>로 달리며, 콜을 받고 <b>0.5초 뒤</b> 출발해 승객을 태운다. 택시 지후가 쓰러지지 않는 한 <b>승객은 무적</b>이고, 승객을 태운 택시기사는 <b>쉴드 9999</b>를 얻는다. 택시는 승객을 태우고 <b>적진 맨 끝 무작위 위치</b>까지 가서 내려 준다. 승객이 내리면 <b>0.5초 뒤</b> 가장 가까운 적이 택시를 부르고, 그 적을 태운 <b>0.5초 뒤</b> 출발해 <b>속도 50</b>으로 가장 먼 맵 외벽을 향해 돌진, 그 적과 함께 <b>소멸</b>한다.'
+    skillDesc: '공격하지 않는다. 라운드 시작 직후 <b>무작위 아군</b>이 승객이 되어 점프하며 택시를 부른다. 택시는 기본 <b>속도 2.4</b>로 달리며, 콜을 받고 <b>0.5초 뒤</b> 출발해 승객을 태운다. 택시 지후가 쓰러지지 않는 한 <b>승객은 무적</b>이고, 승객을 태운 택시기사는 <b>쉴드 9999</b>를 얻는다. 택시는 승객을 태우고 <b>적진 맨 끝 무작위 위치</b>까지 가서 내려 준다. 승객을 내려 주고 <b>2초</b> 쉰 뒤 가장 가까운 적이 택시를 부르고, <b>1초 뒤</b> 출발해 그 적을 태운다. 적을 태우고 <b>2초</b> 쉰 뒤 적과 함께 <b>속도 50</b>으로 가장 먼 맵 외벽을 향해 돌진, 그 적과 함께 <b>소멸</b>한다.'
   },
   shanghai: {
     id: 'shanghai', name: '상하이 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -10117,7 +10118,7 @@ const CHAR_DB = {
     id: 'rccar', name: 'RC카 지후', emoji: '🎮', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#ff4d6d', portrait: PORTRAITS.rccar,
     ...CHARACTER_BALANCE.rccar,
-    skillDesc: '공격하지 않는다. 게임 시작 <b>10초 뒤</b>부터 <b>10초마다</b> <b>[장난감 기차]</b> 또는 <b>[장난감 자동차]</b>를 소환한다. 장난감은 무작위 벽면에서 나와 맞은편 벽면으로 <b>속도 50</b>으로 돌진한다. 기차는 아군 · 적군 상관없이 부딪히면 <b>즉사</b>, 자동차는 아군 · 적군 상관없이 <b>현재 체력의 75%</b> 피해를 준다. 소환 <b>1초 전</b> 돌진 경로를 붉게 미리 보여 주며, 그동안 RC카 지후는 <b>무적</b>이다. (기차는 신칸센 지후, 자동차는 폭주족 지후 초상화)'
+    skillDesc: '공격하지 않는다. 게임 시작 <b>10초 뒤</b>부터 <b>8초마다</b> <b>[장난감 기차]</b> 또는 <b>[장난감 자동차]</b>를 소환한다. 장난감은 무작위 벽면에서 나와 맞은편 벽면으로 <b>속도 50</b>으로 돌진한다. 기차는 아군 · 적군 상관없이 부딪히면 <b>즉사</b>, 자동차는 아군 · 적군 상관없이 <b>현재 체력의 75%</b> 피해를 준다. RC카 지후는 <b>움직이지 않는다</b>. 소환 <b>1초 전</b> 돌진 경로를 붉게 미리 보여 주며, 그동안 RC카 지후는 <b>무적</b>이다. (기차는 신칸센 지후, 자동차는 폭주족 지후 초상화)'
   },
   ravage: {
     id: 'ravage', name: '래비지 지후', emoji: '🦌', role: 'dealer', roleLabel: '딜러',
@@ -10129,7 +10130,7 @@ const CHAR_DB = {
     id: 'stone', name: '돌 지후', emoji: '🪨', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#8a5a24', portrait: PORTRAITS.stone,
     ...CHARACTER_BALANCE.stone,
-    skillDesc: '공격하지 않는다. 모든 유닛을 <b>관통</b>하며, 라운드 시작과 함께 <b>속도 6</b>으로 적진 끝까지 일직선으로 굴러간다. 부딪힌 적은 돌 지후 <b>현재 체력의 10%</b> 피해를 입는다. 끝에 닿으면 그 자리에 선다.'
+    skillDesc: '공격하지 않는다. 모든 유닛을 <b>관통</b>하며, 라운드 시작과 함께 <b>속도 6</b>으로 적진 끝까지 일직선으로 굴러간다. 부딪힌 적은 돌 지후 <b>현재 체력의 10%</b> 피해를 입는다. 몸집이 <b>2배</b>로 크고, 상대 진영 끝에 닿으면 <b>소멸</b>한다.'
   },
   purify: {
     id: 'purify', name: '정화 지후', emoji: '🔔', role: 'support', roleLabel: '서포터',
@@ -18278,6 +18279,7 @@ function spawnUnit(side, x, y, charId, opts) {
   if (state.mode === 'wwe') wweDecorateEl(el, side); // 4.6.3 WWE 개인전 팀 색
   if (def.small) el.classList.add('unit-small');
   if (def.big) el.classList.add('unit-big');
+  if (def.radiusMul > 1) el.style.scale = String(def.radiusMul); // 6.2.1 돌 지후: 반지름 ×2 만큼 화면에서도 크게
   el.style.left = x + 'px'; el.style.top = y + 'px';
   el.innerHTML = `
     <span class="unit-icon">${portraitHtml(def)}</span>
@@ -21325,7 +21327,7 @@ function unitRadius(u) {
   if (u && u.isCastle) return 66;
   const lv = (u && u.level) || 1;
   const base = (u && u.def && u.def.small) ? 16 : (u && u.def && u.def.big) ? 33 : 28;
-  return (base + Math.max(0, lv - 1) * 2) * WORLD_SCALE;
+  return (base + Math.max(0, lv - 1) * 2) * WORLD_SCALE * ((u && u.def && u.def.radiusMul) || 1); // 6.2.1 radiusMul: 돌 지후 ×2
 }
 // 원이 겹치지 않는 최소 중심 거리
 function bodySeparation(a, b) {
@@ -26391,11 +26393,11 @@ function stoneTick62(u, dt) {
     dealDamage(u, e, Math.max(1, u.hp * d.stoneHitFraction), { isSkill: true, skipAtkBuff: true }); // 돌 지후 현재 체력의 10%
   });
   const done = (s.endX != null && (s.dir.x < 0 ? u.x <= s.endX : u.x >= s.endX)) || (s.endY != null && (s.dir.y < 0 ? u.y <= s.endY : u.y >= s.endY));
-  if (done) {
-    if (s.endX != null) u.x = s.endX; else u.y = s.endY;
-    u._n62Ghost = false; u._n62Hold = true; // 끝에 닿으면 그 자리에 선다
+  if (done) { // 6.2.1 상대 진영 끝까지 가면 소멸한다
     u.el.classList.remove('n62-rolling');
     if (icon) icon.style.transform = '';
+    n62Banish(u, '🪨 소멸');
+    return;
   }
   u.xPrev = u.x; u.yPrev = u.y; u.vx = 0; u.vy = 0;
   physSyncDom(u, 1);
@@ -26456,8 +26458,10 @@ function taxiTick62(u, dt) {
   if (u._realm) return;
   const d = u.def, k = u._tx || (u._tx = { phase: 'init', t: 0 });
   const spd = d.taxiSpeed * GRID;
-  const rider = k.pass && k.pass.alive ? k.pass : (k.foe && k.foe.alive ? k.foe : null);
-  if (rider && rider._n62Ride === u) { rider.x = u.x; rider.y = u.y; rider.xPrev = u.x; rider.yPrev = u.y; physSyncDom(rider, 1); }
+  // 6.2.1 승객 · 적 모두 택시에 타고 있는 동안 택시 위치를 따라간다 (적을 태우고 돌진할 때 그 자리에 두고 가던 버그 수정)
+  [k.pass, k.foe].forEach(r => {
+    if (r && r.alive && r._n62Ride === u) { r.x = u.x; r.y = u.y; r.xPrev = u.x; r.yPrev = u.y; physSyncDom(r, 1); }
+  });
   switch (k.phase) {
     case 'init': { // 라운드 시작 직후: 무작위 아군이 승객이 되어 점프하며 택시를 부른다
       u._n62Hold = true;
@@ -26498,7 +26502,7 @@ function taxiTick62(u, dt) {
       const p = k.pass, dir = n62Dir(u);
       if (p && p.alive) { n62Release(p); p.x = clamp(u.x - dir.x * unitRadius(u) * 1.6, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD); p.y = clamp(u.y - dir.y * unitRadius(u) * 1.6, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD); p.xPrev = p.x; p.yPrev = p.y; physSyncDom(p, 1); spawnDamageNumber(p, '🚕 도착!', { heal: true }); }
       u._n62Ghost = false; u._n62Hold = true; u.el.classList.remove('n62-driving');
-      k.phase = 'dropped'; k.t = d.taxiCall; // 승객이 내리면 0.5초 뒤
+      k.phase = 'dropped'; k.t = d.taxiDropRest; // 6.2.1 승객을 내려 주고 2초 쉰 뒤
       break;
     }
     case 'dropped': {
@@ -26509,7 +26513,7 @@ function taxiTick62(u, dt) {
       foes.sort((a, b) => Math.hypot(a.x - u.x, a.y - u.y) - Math.hypot(b.x - u.x, b.y - u.y));
       k.foe = foes[0]; // 가장 가까운 적군이 택시를 부른다
       n62Call(k.foe, '🚕 택시!');
-      k.phase = 'dispatch'; k.t = d.taxiCall; k.next = 'toFoe';
+      k.phase = 'dispatch'; k.t = d.taxiFoeCall; k.next = 'toFoe'; // 6.2.1 적이 택시를 부르고 1초 쉰 뒤 출발
       break;
     }
     case 'toFoe': {
@@ -26518,7 +26522,7 @@ function taxiTick62(u, dt) {
       const e = k.foe;
       e._n62Hold = false; e._n62Ghost = true; e._n62Ride = u;
       e.el.classList.add('n62-riding'); e.el.classList.remove('n62-call');
-      k.phase = 'load'; k.t = d.taxiCall; // 적을 태우고 0.5초 뒤 출발
+      k.phase = 'load'; k.t = d.taxiLoadRest; // 6.2.1 적을 태우고 2초 쉰 뒤 돌진
       break;
     }
     case 'load': {
@@ -27820,6 +27824,18 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '6.2.1': {
+    label: 'v6.2.1 밸런스 패치',
+    date: '2026.10.04',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🪨', name:'돌 지후', tag:'adjust', color:'#8a5a24', portraitKey:'stone', desc:'유닛 반지름 <b>2배</b> 증가. 상대 진영 끝까지 가면 <b>소멸</b>해요.' },
+        { emoji:'🚕', name:'택시 지후', tag:'adjust', color:'#f5b800', portraitKey:'taxi', desc:'이동속도 <b>2.4</b>로 감소. 승객을 내려 주고 <b>2초</b> 쉰 뒤 적이 택시를 부르고, <b>1초</b> 뒤 출발해 적을 태우고, <b>2초</b> 쉰 다음 돌진해요.' },
+        { emoji:'🚕', name:'택시 지후', tag:'fix', color:'#f5b800', portraitKey:'taxi', desc:'적을 태우고 돌진할 때 적이 그 자리에 남던 문제를 고쳤어요. 이제 적을 <b>같이 태우고</b> 갑니다.' },
+        { emoji:'🎮', name:'RC카 지후', tag:'adjust', color:'#ff4d6d', portraitKey:'rccar', desc:'이동속도 <b>0</b> (제자리 고정). 소환 쿨타임 <b>10 → 8초</b>.' }
+      ] }
+    ]
+  },
   '6.2.0': {
     label: 'v6.2.0 신규 지후 6종',
     date: '2026.10.04',
