@@ -1978,6 +1978,8 @@ html[data-theme="light"] #app .v4-cd .cd-ban .cd-card.selected { border-color:#e
 .v55-rtop { display:flex; gap:8px; margin-bottom:8px; } .v55-rtop input { flex:1; min-width:0; }
 .v55-rnote { font-size:12px; line-height:1.55; opacity:.75; margin:6px 0 10px; }
 .v55-rinv { margin:8px 0 10px; } .v55-rinv small { display:block; font-size:11px; opacity:.7; margin-bottom:5px; } .v55-rinv > div { display:flex; flex-wrap:wrap; gap:6px; } .v55-rinv .btn { padding:5px 10px; font-size:11px; } .v55-rinv em { font-size:11px; opacity:.6; font-style:normal; }
+.v60-tierbar { height:10px; border-radius:99px; background:#e6e6e6; overflow:hidden; margin:8px 0; } .v60-tierbar i { display:block; height:100%; width:0; background:#3797f0; transition:width .3s; }
+.v60-tiertbl { font-size:12px; line-height:1.5; margin:8px 0; } .v60-tiertbl .tr { display:flex; gap:8px; padding:5px 0; border-bottom:1px solid rgba(0,0,0,.08); } .v60-tiertbl .tr > b { flex:none; width:44px; } .v60-tiertbl .tr > span { flex:1; } .v60-tiertbl em { font-style:normal; font-size:10px; opacity:.6; }
 .v50-fopt { display:flex; align-items:center; gap:6px; font-size:11px; color:#666; margin:0 4px 6px; cursor:pointer; }
 #screen-battle.spectating #poolSheet, #screen-battle.spectating #btnTogglePool { display:none !important; } /* 6.1 관전: 배치 카드 없음 */
 .v55-rlist { display:flex; flex-direction:column; gap:6px; }
@@ -7306,6 +7308,15 @@ html.ui-classic .m6-sticker { position:absolute; top:6px; right:6px; padding:2px
       <div class="v60-dislist" id="devDisList">불러오는 중…</div>
       <div class="settlement-note" id="devDisNote" aria-live="polite"></div>
     </div>
+    <div id="devTierBox" class="v55-devgift" hidden>
+      <b>📊 티어리스트 측정 (5:5 · 약 5분)</b>
+      <small>버튼을 누르고 화면을 켜 둔 채 기다리면 돼요. 무작위 10기를 5:5로 붙여 승률로 1~6티어를 만들어요. 결과는 쌓이니까 여러 번 돌릴수록 정확해져요 (A랭크 기준 · 내 지후 랭크 · 기록에는 영향 없음)</small>
+      <div class="v55-devrow"><button type="button" class="btn btn-primary" id="btnTierStart">▶ 측정 시작 (5분)</button><button type="button" class="btn btn-secondary" id="btnTierStop" hidden>■ 중지</button></div>
+      <div class="v60-tierbar" id="devTierBar" hidden><i id="devTierFill"></i></div>
+      <div class="settlement-note" id="devTierNote" aria-live="polite"></div>
+      <div id="devTierResult"></div>
+      <div class="v55-devrow"><button type="button" class="btn btn-secondary" id="btnTierCopy" hidden>📋 결과 복사</button><button type="button" class="btn btn-secondary" id="btnTierClear" hidden>🗑 누적 지우기</button></div>
+    </div>
     <div id="devAnnBox" class="v55-devgift" hidden>
       <b>📌 전체 공지</b>
       <small id="devAnnState">상태 확인 중…</small>
@@ -11514,6 +11525,7 @@ function renderDeveloperMode() {
   $('devDeviceRow').hidden = !devDeviceTrusted();
   if ($('devMaintBox')) $('devMaintBox').hidden = !developerMode;
   if ($('devAnnBox')) $('devAnnBox').hidden = !developerMode;
+  if ($('devTierBox')) { $('devTierBox').hidden = !developerMode; if (developerMode) tierSimRender(); }
   if ($('devDisBox')) { $('devDisBox').hidden = !developerMode; if (developerMode) renderDevDisabled(); }
   if ($('devCodeBox')) { $('devCodeBox').hidden = !developerMode; if (developerMode) renderDevCodes(); }
   maintApply();
@@ -30514,6 +30526,139 @@ async function checkGiftMail() {
   } catch (error) {} finally { giftChecking = false; }
 }
 setInterval(() => { if (document.visibilityState === 'visible') checkGiftMail(); }, 5 * 60 * 1000);
+// ================= 6.1 개발자 도구: 티어리스트 측정 (5:5 · 시간 상자) =================
+// tools/tierlist 의 시뮬을 게임 안으로 옮긴 것: 화면 그리기 · 소리 · 저장을 끄고 전투만 최대 속도로 돌린다.
+// 계산 시간 5분이 찰 때까지 무작위 10기를 5:5로 붙이고(모든 지후가 거의 같은 횟수 나오게), 끝나면 원래대로 되돌린다.
+// 결과는 localStorage 에 쌓인다 (이 기기 · 개발자만).
+const TIERSIM_KEY = 'jihooBattle.tierSim.v1', TIERSIM_BUDGET_MS = 5 * 60 * 1000;
+const TIERSIM = { running: false, stop: false, res: null };
+function tierSimLoad() { try { const d = JSON.parse(localStorage.getItem(TIERSIM_KEY) || 'null'); if (d && d.st && d.games) return d; } catch (error) {} return { games: 0, st: {}, runs: 0 }; }
+function tierSimSave(d) { try { localStorage.setItem(TIERSIM_KEY, JSON.stringify(d)); } catch (error) {} }
+function tierSimFight(allyIds, enemyIds) { // tools/tierlist/harness.js 의 __fight 와 같다
+  cancelRuntimeTasks();
+  TIERSIM.res = null;
+  state.layoutEw = true; // 기기 방향과 상관없이 시뮬 도구와 같은 전장(가로)으로
+  Object.assign(state, { mode: 'ranked', round: 1, placements: [], matchStats: [], reaperGrudges: {}, castles: null, allyLives: 3, enemyLives: 3, maxUnits: 10, maxUnitsBonus: { ally: 0, enemy: 0 }, botSkill: 1, poolSize: 3, deployRounds: 0, pendingPick: false });
+  state.myDeckIds = allyIds.slice(); state.enemyDeckIds = enemyIds.slice();
+  state.allyBench = []; state.enemyBench = [];
+  state.units = []; clearArenaUnits();
+  state.oddsSamples = []; state.lastDeathPoint = null; state.smokeZones = []; (state.dustZones || []).forEach(z => z.el && z.el.remove()); state.dustZones = []; state.fireTrails = []; state.pendingExplosions = []; state.pendingMeteors = [];
+  state.deadThisRound = { ally: [], enemy: [] };
+  resetNew38State();
+  applyMapLayout();
+  state.phase = 'deploy';
+  for (const [side, ids] of [['ally', allyIds], ['enemy', enemyIds]]) {
+    for (const id of ids) { const tile = v42PickTile(side, id, v42RoleRow(id)); if (tile != null) v42Spawn(side, tile, id); }
+  }
+  beginCombatPhase();
+  let ts = state.combatStartTs, guard = 0;
+  while (state.phase === 'combat' && guard++ < 4000) { ts += 100; combatTick(ts); }
+  const res = TIERSIM.res || { w: 'draw', t: state.combatTime, stuck: true };
+  const rows = state.units.filter(u => !u.isCastle && !u.ownerUid && !u.isClone && !u.skipCount).map(u => ({ id: u.charId, side: u.side, dealt: Math.round(u.dmgDealt || 0) }));
+  cancelRuntimeTasks();
+  return { w: res.w, rows };
+}
+function tierSimAdd(d, a, e, r) { // tools/tierlist/agg.js 와 같은 계산
+  if (!r || r.w === 'err') return;
+  const sc = side => r.w === side ? 1 : r.w === 'draw' ? 0.5 : 0;
+  const tot = { ally: 0, enemy: 0 }; (r.rows || []).forEach(x => { tot[x.side] += x.dealt; });
+  for (const [side, ids] of [['ally', a], ['enemy', e]]) ids.forEach(id => { const o = d.st[id] || (d.st[id] = { w: 0, n: 0, sh: 0 }); o.n++; o.w += sc(side); });
+  (r.rows || []).forEach(x => { const o = d.st[x.id]; if (o) o.sh += tot[x.side] ? x.dealt / tot[x.side] : 0; });
+  d.games++;
+}
+function tierSimTable(d) { // 승률 순위 비율로 1~6티어 (5% · 15% · 21% · 20% · 23% · 나머지)
+  const out = Object.entries(d.st).filter(([, o]) => o.n > 0).map(([id, o]) => ({ id, r5: o.w / o.n, n5: o.n, sh5: o.sh / o.n * 5 })).sort((x, y) => y.r5 - x.r5);
+  const cuts = [0.05, 0.20, 0.41, 0.61, 0.84, 1];
+  out.forEach((x, i) => { const q = (i + 0.5) / out.length; x.tier = String(cuts.findIndex(c => q <= c) + 1); });
+  return out;
+}
+function tierSimRender() {
+  const box = $('devTierResult'); if (!box) return;
+  const d = tierSimLoad(), has = d.games > 0;
+  $('btnTierCopy').hidden = !has; $('btnTierClear').hidden = !has || TIERSIM.running;
+  if (!has) { box.innerHTML = ''; return; }
+  const out = tierSimTable(d), avgN = out.reduce((t, x) => t + x.n5, 0) / out.length, err = Math.round(Math.sqrt(0.25 / avgN) * 1000) / 10;
+  const hist = typeof TIER_HISTORY === 'object' ? TIER_HISTORY[Object.keys(TIER_HISTORY)[0]] : null, old = {};
+  if (hist && hist.tiers) Object.entries(hist.tiers).forEach(([t, ids]) => ids.forEach(id => { old[id] = Number(t) || 0; }));
+  const rows = ['1', '2', '3', '4', '5', '6'].map(t => `<div class="tr"><b>${t}티어</b><span>${out.filter(x => x.tier === t).map(x => { const o = old[x.id], diff = o ? Number(t) - o : 0; return `${escapeHtml(CHAR_DB[x.id] ? CHAR_DB[x.id].name : x.id)}<em>${Math.round(x.r5 * 100)}%${Math.abs(diff) >= 2 ? (diff < 0 ? ' ▲' : ' ▼') : ''}</em>`; }).join(' · ')}</span></div>`).join('');
+  box.innerHTML = `<div class="settlement-note">누적 <b>${d.games.toLocaleString()}판</b> (${d.runs}회) · 지후당 평균 ${Math.round(avgN)}판 · 승률 오차 약 ±${err}%p<br><small>▲▼는 직전 티어표보다 2티어 이상 차이날 때만 표시해요. 경계 근처의 한 칸 차이는 오차 범위예요.</small></div><div class="v60-tiertbl">${rows}</div>`;
+}
+function tierSimSetUi(running) {
+  $('btnTierStart').disabled = running; $('btnTierStop').hidden = !running; $('devTierBar').hidden = !running;
+  $('btnTierClear').hidden = running || !tierSimLoad().games;
+}
+async function tierSimRun() {
+  const note = $('devTierNote');
+  if (!developerMode || TIERSIM.running) return;
+  if (state.screen === 'battle' || state.net) { note.textContent = '게임 중에는 측정할 수 없어요. 로비에서 눌러 주세요.'; return; }
+  TIERSIM.running = true; TIERSIM.stop = false;
+  tierSimSetUi(true);
+  // ── 끄기: 그리기 · 소리 · 저장 · 프레임 예약 (끝나면 전부 되돌린다) ──
+  const noop = () => {};
+  const saved = {
+    raf: window.requestAnimationFrame, caf: window.cancelAnimationFrame,
+    physSyncDom, updateUnitBars, drawMinimap, spawnDamageNumber, v41HudTick, v41Kill, v41Callout, beginFinalMoment, endRoundCombat, sfx, sfxPlay, sfxChar,
+    ranks: profile.ranks, locked: profileWritesLocked, queueSave: window.JihooOnline.queueSave, saveNow: window.JihooOnline.saveNow, presencePing: window.JihooOnline.presencePing,
+    mode: state.mode, layoutEw: state.layoutEw,
+  };
+  let wake = null;
+  const restore = () => {
+    window.requestAnimationFrame = saved.raf; window.cancelAnimationFrame = saved.caf;
+    physSyncDom = saved.physSyncDom; updateUnitBars = saved.updateUnitBars; drawMinimap = saved.drawMinimap; spawnDamageNumber = saved.spawnDamageNumber;
+    v41HudTick = saved.v41HudTick; v41Kill = saved.v41Kill; v41Callout = saved.v41Callout; beginFinalMoment = saved.beginFinalMoment; endRoundCombat = saved.endRoundCombat;
+    sfx = saved.sfx; sfxPlay = saved.sfxPlay; sfxChar = saved.sfxChar;
+    profile.ranks = saved.ranks; profileWritesLocked = saved.locked;
+    window.JihooOnline.queueSave = saved.queueSave; window.JihooOnline.saveNow = saved.saveNow;
+    cancelRuntimeTasks(); state.units = []; try { clearArenaUnits(); } catch (error) {}
+    state.phase = 'idle'; state.mode = saved.mode; state.layoutEw = saved.layoutEw; state.pendingPick = false;
+    try { applyMapLayout(); } catch (error) {}
+    if (wake) { try { wake.release(); } catch (error) {} }
+  };
+  try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (error) {} // 화면이 꺼지지 않게
+  window.requestAnimationFrame = () => 0; window.cancelAnimationFrame = noop;
+  physSyncDom = noop; updateUnitBars = noop; drawMinimap = noop; spawnDamageNumber = noop; v41HudTick = noop; v41Kill = noop; v41Callout = noop;
+  beginFinalMoment = w => { state.phase = 'roundEnd'; TIERSIM.res = { w, t: state.combatTime }; };
+  endRoundCombat = (w, timed) => { state.phase = 'roundEnd'; TIERSIM.res = { w, t: state.combatTime, timed: !!timed }; };
+  sfx = noop; sfxPlay = () => false; sfxChar = noop;
+  profile.ranks = {}; profileWritesLocked = true; // 랭크 효과 없이(A랭크) · 시뮬 도중에는 내 기록을 저장하지 않는다
+  window.JihooOnline.queueSave = noop; window.JihooOnline.saveNow = () => Promise.resolve();
+  const d = tierSimLoad(); d.runs++;
+  const ids = playableIds();
+  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  let bag = [];
+  const draw10 = () => { const out = [], skipped = []; while (out.length < 10) { if (!bag.length) bag = shuffle(ids.slice()); const id = bag.pop(); (out.includes(id) ? skipped : out).push(id); } bag.push(...skipped); return out; }; // 모든 지후가 거의 같은 횟수
+  let used = 0, done = 0, errs = 0;
+  const t0 = performance.now();
+  try {
+    while (used < TIERSIM_BUDGET_MS && !TIERSIM.stop) {
+      const t = draw10(), a = t.slice(0, 5), e = t.slice(5), f0 = performance.now();
+      try { tierSimAdd(d, a, e, tierSimFight(a, e)); done++; } catch (error) { errs++; if (errs > 20) throw error; }
+      used += performance.now() - f0;
+      if (done % 5 === 0) {
+        $('devTierFill').style.width = Math.min(100, used / TIERSIM_BUDGET_MS * 100).toFixed(1) + '%';
+        const left = Math.max(0, Math.round((TIERSIM_BUDGET_MS - used) / 1000));
+        note.textContent = `측정 중… ${done}판 · 남은 시간 약 ${Math.floor(left / 60)}분 ${left % 60}초 · 화면을 켜 둔 채 기다려 주세요`;
+        if (done % 25 === 0) tierSimSave(d);
+        await new Promise(r => setTimeout(r, 0)); // 화면이 멈추지 않게 숨 돌리기
+      }
+    }
+    note.textContent = `${TIERSIM.stop ? '중지했어요' : '끝났어요'} · 이번에 ${done}판${errs ? ` (오류 ${errs}판 제외)` : ''}, ${Math.round((performance.now() - t0) / 1000)}초`;
+  } catch (error) {
+    note.textContent = '측정 중 오류가 나서 멈췄어요: ' + (error && error.message || error);
+  } finally {
+    tierSimSave(d);
+    restore();
+    TIERSIM.running = false;
+    tierSimSetUi(false);
+    tierSimRender();
+  }
+}
+function tierSimCopy() {
+  const d = tierSimLoad(); if (!d.games) return;
+  const out = tierSimTable(d);
+  const text = `티어 측정 (5:5 · A랭크 · 누적 ${d.games}판)\n` + ['1', '2', '3', '4', '5', '6'].map(t => `${t}티어: ` + out.filter(x => x.tier === t).map(x => `${CHAR_DB[x.id] ? CHAR_DB[x.id].name : x.id}(${x.id}) ${Math.round(x.r5 * 1000) / 10}%`).join(', ')).join('\n');
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => { $('devTierNote').textContent = '복사했어요. 그대로 붙여 넣으면 돼요.'; }).catch(() => { $('devTierNote').textContent = '복사하지 못했어요. 결과를 길게 눌러 직접 복사해 주세요.'; });
+}
 // 개발자 모드: 운영 우편 보내기
 async function devSendGift() {
   const msg = $('devGiftMsg');
@@ -33144,6 +33289,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   $('btnDevDisAdd').addEventListener('click', () => { const id = $('devDisSel').value; if (id) devSetDisabled([...new Set([...disabledIds, id])]); });
   $('devDisList').addEventListener('click', e => { const b = e.target.closest('[data-dis-off]'); if (b) devSetDisabled([...disabledIds].filter(x => x !== b.dataset.disOff)); });
+  $('btnTierStart').addEventListener('click', () => tierSimRun());
+  $('btnTierStop').addEventListener('click', () => { TIERSIM.stop = true; });
+  $('btnTierCopy').addEventListener('click', tierSimCopy);
+  $('btnTierClear').addEventListener('click', () => { if (confirm('쌓인 티어 측정 결과를 모두 지울까요?')) { try { localStorage.removeItem(TIERSIM_KEY); } catch (error) {} tierSimRender(); $('devTierNote').textContent = '지웠어요.'; } });
   $('btnDevAnn').addEventListener('click', () => devSetAnn(true));
   $('btnDevAnnOff').addEventListener('click', () => devSetAnn(false));
   $('codeInput').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== e.target.value) e.target.value = v; });
