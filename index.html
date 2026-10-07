@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>try { if (localStorage.getItem('jihooBattle.uiTheme') === 'classic') document.documentElement.classList.add('ui-classic'); } catch (e) {}</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="6.2.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.0"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6329,6 +6329,24 @@ html.ui-classic .m6-sticker { position:absolute; top:6px; right:6px; padding:2px
 .v60-giftsent details button { margin:4px 0; }
 .v60-exp { display:block; color:#c8231e; font-weight:800; }
 /* M6-END */
+
+/* ═════════ 7.0 ═════════ */
+.bless-hud { position:fixed; z-index:40; left:12px; top:calc(env(safe-area-inset-top, 0px) + 64px); min-width:150px; max-width:min(220px, 46vw); padding:8px 10px 6px; border-radius:12px; background:rgba(255,255,255,.94); color:#111; box-shadow:0 0 0 2px #111, 0 6px 16px rgba(0,0,0,.18); font:700 12px/1.35 system-ui, sans-serif; pointer-events:none; }
+.bless-hud[hidden] { display:none; }
+.bless-hud .bh-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px; padding-bottom:4px; border-bottom:2px solid #d7a934; }
+.bless-hud .bh-head b { font-size:13px; font-weight:900; }
+.bless-hud .bh-head em { font-style:normal; font-size:10px; color:#8a6d16; }
+.bless-hud .bh-row { display:grid; grid-template-columns:18px 1fr auto auto; align-items:center; gap:4px; padding:2px 0; }
+.bless-hud .bh-row i { font-style:normal; text-align:center; }
+.bless-hud .bh-row span { color:#555; font-weight:700; white-space:nowrap; }
+.bless-hud .bh-row b { font-weight:900; color:#111; }
+.bless-hud .bh-row small { font-size:10px; color:#999; }
+@media (max-width:560px) { .bless-hud { top:calc(env(safe-area-inset-top, 0px) + 56px); left:8px; font-size:11px; min-width:0; } }
+.fx-feast-ring { transform:translate(-50%,-50%); z-index:2; pointer-events:none; }
+.fx-feast-ring i { position:absolute; inset:0; border-radius:50%; border:3px dashed #e5322d; background:rgba(229,50,45,.08); animation:feast-ring 1.2s linear infinite; }
+@keyframes feast-ring { to { transform:rotate(360deg); } }
+.unit.n62-away { opacity:0 !important; }
+.unit.n62-immune .unit-icon { box-shadow:0 0 0 3px rgba(123,232,255,.9), 0 0 12px rgba(123,232,255,.8); }
 </style>
 </head>
 <body>
@@ -7401,14 +7419,14 @@ const CHARACTER_BALANCE = {
   growth: {
     hp: 1000, atk: 0, atkSpeed: 1, range: 180, speed: 22.5,
     noAttack: true, holdRange: true,
-    growthDelay: 15
+    growthDelay: 1 // 7.0 리워크: 라운드 시작 1초 뒤 무작위 아군(자신 포함) 레벨 +1
   },
   hypno: {
     hp: 2300, atk: 100, atkSpeed: 1, range: 135, speed: 90,
     hypnoInterval: 4.5, hypnoRadius: 67.5, hypnoDuration: 2.5, hypnoPull: 45
   },
   edgy: {
-    hp: 1500, atk: 220, atkSpeed: 0.4, range: 72, speed: 117, // 5.5 1000 → 1200
+    hp: 1600, atk: 220, atkSpeed: 0.4, range: 72, speed: 117, // 7.0 1500 → 1600 // 5.5 1000 → 1200
     isMelee: true,
     edgeSecondDelay: 0.15, edgeGaugeMax: 6, edgeLeapTime: 0.5,
     edgeLandRadius: 67.5, edgeLandDamage: 400, edgeSpeedBonus: 22.5, edgeSpeedTime: 3,
@@ -7417,7 +7435,8 @@ const CHARACTER_BALANCE = {
   egg: {
     hp: 2000, atk: 0, atkSpeed: 1, range: 0, speed: 0,
     noAttack: true, immobile: true,
-    hatchChance: 0.08, hatchLevel: 3, eggShakeEvery: 2
+    hatchChance: 0.10, hatchLevel: 3, // 7.0 8% → 10%
+    eggShakeEvery: 2
   },
   sixseven: {
     hp: 670, atk: 67, atkSpeed: 0.67, range: 301.5, speed: 30.15,
@@ -7430,8 +7449,8 @@ const CHARACTER_BALANCE = {
   mushroom: {
     hp: 3000, atk: 360, atkSpeed: 1.5, range: 72, speed: 90,
     isMelee: true,
-    shroomInterval: 10, shroomHpGain: 0.25, shroomAtkGain: 80,
-    shroomPoisonChance: 0.35, shroomPoisonTick: 0.2, shroomPoisonTicks: 4, shroomPoisonEvery: 0.5
+    shroomInterval: 10, shroomHpGain: 0.35, shroomAtkGain: 80, // 7.0 최대 체력 +25% → +35%
+    shroomPoisonChance: 0.25, shroomPoisonTick: 0.12, shroomPoisonTicks: 5, shroomPoisonEvery: 0.5 // 7.0 독버섯 25% · 2초 동안 0.5초마다 12% (0 · 0.5 · 1 · 1.5 · 2초, 총 60%)
   },
   phantom: {
     hp: 2800, atk: 270, atkSpeed: 1, range: 360, speed: 108,
@@ -7447,7 +7466,7 @@ const CHARACTER_BALANCE = {
     rouletteChambers: 6, rouletteSelfTime: 1.5, rouletteTargetTime: 1.6, rouletteSelfDr: 0.99
   },
   dimension: {
-    hp: 3600, atk: 300, atkSpeed: 1.1, range: 99, speed: 103.5,
+    hp: 3300, atk: 300, atkSpeed: 0.75, range: 99, speed: 103.5, // 7.0 HP 3300 · 1.1 → 0.75초
     dimensionHitsBeforeRealm: 3, dimensionSecondShotDelay: 0.25,
     realmDuration: 3, realmSpeed: 324, realmAtk: 350, realmEnemySlow: 0.3, realmFearDuration: 1
   },
@@ -7458,7 +7477,8 @@ const CHARACTER_BALANCE = {
   glutton: {
     hp: 3400, atk: 350, atkSpeed: 1.3, range: 72, speed: 81,
     isMelee: true,
-    feastDelay: 1, feastRadius: 67.5, feastAtkPerAlly: 400, feastHpPerAlly: 600,
+    feastDelay: 1, feastRadius: 121.5, // 7.0 1.5 → 2.7칸 · 포식 전 빨간 점선 원
+    feastAtkPerAlly: 400, feastHpPerAlly: 600,
     feastDuration: 7, feastCooldown: 3, feastSpeed: 121.5
   },
   dosa: {
@@ -7474,7 +7494,7 @@ const CHARACTER_BALANCE = {
     skidDuration: 4, skidInterval: 0.5, skidDamage: 120
   },
   tentacle: {
-    hp: 2800, atk: 750, atkSpeed: 3.5, range: 315, speed: 90, // 6.0 촉수 길이(사거리) +2칸
+    hp: 2800, atk: 650, atkSpeed: 3.2, range: 247.5, speed: 90, // 7.0 사거리 -1.5칸 · 3.5 → 3.2초 · 750 → 650 // 6.0 촉수 길이(사거리) +2칸
     slowAmount: 0.5, slowDuration: 2.5, blindChance: 0.3, blindDuration: 3, blindMissChance: 0.5
   },
   engineer: {
@@ -7498,23 +7518,23 @@ const CHARACTER_BALANCE = {
     }
   },
   fire: {
-    hp: 2500, atk: 20, atkSpeed: 0.1, range: 180, speed: 110,
+    hp: 3000, atk: 20, atkSpeed: 0.1, range: 180, speed: 110, // 7.0 2500 → 3000
     burnDps: 120,
     burnDuration: 5
   },
   ice: {
-    hp: 2000, atk: 100, atkSpeed: 1.5, range: 180, speed: 100,
+    hp: 3200, atk: 100, atkSpeed: 1.5, range: 180, speed: 100, // 7.0 2000 → 3200
     freezeChance: 0.5,
     freezeDuration: 2.5
   },
   lonely: {
     hp: 6500, atk: 180, atkSpeed: 1.0, range: 72, speed: 90,
     isMelee: true,
-    loneRadius: 80,
-    loneBonusHpFraction: 0.08, loneBonusPerLevel: 0.04
+    loneRadius: 67.5, // 7.0 약 1.8칸 → 1.5칸
+    loneBonusHpFraction: 0.12, // 7.0 8% → 12% loneBonusPerLevel: 0.04
   },
   shield: {
-    hp: 1250, shield: 2500, atk: 250, atkSpeed: 3, range: 72, speed: 80,
+    hp: 1250, shield: 4000, atk: 250, atkSpeed: 3, range: 72, speed: 80, // 7.0 쉴드 2500 → 4000
     isMelee: true,
     shieldDamageMultiplier: 0.7
   },
@@ -7533,7 +7553,7 @@ const CHARACTER_BALANCE = {
   },
   medic: {
     healWaveCells: 4,
-    hp: 1750, atk: 0, atkSpeed: 1, range: 135, speed: 100,
+    hp: 3500, atk: 0, atkSpeed: 1, range: 135, speed: 100, // 7.0 1750 → 3500
     isHealer: true,
     healAmount: 300
   },
@@ -7547,18 +7567,19 @@ const CHARACTER_BALANCE = {
   berserk: {
     hp: 2300, atk: 200, atkSpeed: 1.2, range: 72, speed: 100, // 5.5
     isMelee: true,
-    berserk: true, berserkAtk: 800, berserkAtkSpeed: 0.6, berserkTime: 1.5 // 6.0 광폭화 공격력 750 → 800 · 0.7 → 0.6초 · 광폭화 중 범위 공격 삭제 (대상 하나)
+    berserk: true, berserkAtk: 650, // 7.0 800 → 650
+    berserkAtkSpeed: 0.6, berserkTime: 1.5 // 6.0 광폭화 공격력 750 → 800 · 0.7 → 0.6초 · 광폭화 중 범위 공격 삭제 (대상 하나)
   },
   poison: {
-    hp: 1875, atk: 300, atkSpeed: 2.5, range: 180, speed: 100,
+    hp: 3000, atk: 300, atkSpeed: 2.5, range: 180, speed: 100, // 7.0 1875 → 3000
     poisonDps: 125,
     poisonDuration: 5,
     fanAngleDeg: 68.75493541569878,
     fanRadius: 180
   },
   charge: {
-    hp: 3800, atk: 150, atkSpeed: 1.1, range: 72, speed: 100,
-    chargeAtk: 900,
+    hp: 4800, atk: 200, atkSpeed: 1.1, range: 72, speed: 100, // 7.0 HP 3800 → 4800 · 평타 150 → 200
+    chargeAtk: 1000, // 7.0 900 → 1000
     chargeMul: 2.5,
     chargeSpeed: 450,
     isMelee: true,
@@ -7567,7 +7588,7 @@ const CHARACTER_BALANCE = {
     chargeWindup: 2 // 4.6: 돌격 전 예고 0.75 → 2초
   },
   stop: {
-    hp: 6250, atk: 350, atkSpeed: 4, range: 135, speed: 90,
+    hp: 7750, atk: 350, atkSpeed: 4, range: 135, speed: 90, // 7.0 6250 → 7750
     isMelee: true
   },
   mutant: {
@@ -7602,8 +7623,8 @@ const CHARACTER_BALANCE = {
     hp: 3000, atk: 240, atkSpeed: 1, range: 270, speed: 90,
     pulseInterval: 5,
     pulseRadiusPx: 225,
-    allyAspdBonus: 0.10,
-    enemyAspdPenalty: -0.10,
+    allyAspdBonus: 0.12, // 7.0 10% → 12%
+    enemyAspdPenalty: -0.12,
     buffDuration: 5
   },
   hmg: {
@@ -7611,7 +7632,7 @@ const CHARACTER_BALANCE = {
     fireRateGrowth: 0.10
   },
   mega: {
-    hp: 2500, atk: 100, atkSpeed: 3, range: 270, speed: 90,
+    hp: 2500, atk: 250, atkSpeed: 3, range: 270, speed: 90, // 7.0 공격력 100 → 250
     megaTime: 4, megaAtk: 0.5 // 5.5 리워크: 라운드 시작 8초간 모든 아군 공격력 +100%
   },
   rank: {
@@ -7643,12 +7664,12 @@ const CHARACTER_BALANCE = {
     small: true
   },
   metal: {
-    hp: 25, atk: 400, atkSpeed: 1.5, range: 72, speed: 70,
+    hp: 40, atk: 400, atkSpeed: 1.5, range: 72, speed: 70, // 7.0 25 → 40 · 회복 불가
     isMelee: true,
     skipHpMult: true
   },
   necro: {
-    hp: 1800, atk: 270, atkSpeed: 1.5, range: 135, speed: 90,
+    hp: 2200, atk: 270, atkSpeed: 1.5, range: 135, speed: 90, // 7.0 1800 → 2200
     skipHpMult: true,
     summonCooldown: 12
   },
@@ -7667,7 +7688,7 @@ const CHARACTER_BALANCE = {
     isBall: true
   },
   mine: {
-    hp: 1800, atk: 0, atkSpeed: 0, range: 450, speed: 45,
+    hp: 2800, atk: 0, atkSpeed: 0, range: 450, speed: 45, // 7.0 1800 → 2800
     skipHpMult: true,
     plantInterval: 3, minesPerPlant: 3, // 6.0 설치 간격 5 → 3초
     mineDamageBase: 500, mineCurrentHpFraction: 0.5,
@@ -7694,7 +7715,7 @@ const CHARACTER_BALANCE = {
     isMelee: true
   },
   god: {
-    hp: 3000, atk: 300, atkSpeed: 1.2, range: 270, speed: 90,
+    hp: 3000, atk: 450, atkSpeed: 1.2, range: 270, speed: 90, // 7.0 300 → 450
     skipHpMult: true,
     piercing: true,
     pierceHalfWidth: 26,
@@ -7708,7 +7729,7 @@ const CHARACTER_BALANCE = {
     evadeDamage: 500
   },
   arcane: {
-    hp: 2400, atk: 400, atkSpeed: 1, range: 45, speed: 130,
+    hp: 2700, atk: 500, atkSpeed: 1, range: 45, speed: 130, // 7.0 HP 2400 → 2700 · 400 → 500
     skipHpMult: true,
     isMelee: true,
     healOnHitFraction: 0.4
@@ -7720,7 +7741,7 @@ const CHARACTER_BALANCE = {
     allyShield: 1500 // 6.0 1000 → 1500
   },
   portal: {
-    hp: 1600, atk: 250, atkSpeed: 1, range: 135, speed: 105,
+    hp: 2600, atk: 250, atkSpeed: 1, range: 135, speed: 105, // 7.0 1600 → 2600
     skipHpMult: true,
     portalDelay: 3,
     portalRadiusPx: 180,
@@ -7731,7 +7752,7 @@ const CHARACTER_BALANCE = {
     hp: 6974, atk: 0, atkSpeed: 7, range: 0, speed: 70,
     skipHpMult: true,
     noAttack: true,
-    reflectDuration: 2.5, reflectCooldown: 4
+    reflectDuration: 2.5, reflectCooldown: 6.9 // 7.0 충전 4 → 6.9초
   },
   tyrant: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
@@ -7759,13 +7780,13 @@ const CHARACTER_BALANCE = {
     windupDuration: 4, grudgeDuration: 10
   },
   smoke: {
-    hp: 2400, atk: 200, atkSpeed: 0.9, range: 225, attackRange: 135, speed: 90,
+    hp: 2400, atk: 340, atkSpeed: 0.75, range: 225, attackRange: 135, speed: 90, // 7.0 200 → 340 · 0.9 → 0.75초
     isMelee: true, fanAngleDeg: 100, fanRadius: 135,
     smokeChance: 0.10, smokeRadius: 135, smokeDuration: 2
   },
   battery: {
     hp: 2600, atk: 0, atkSpeed: 4, range: 90, speed: 90,
-    isCooldownSupport: true, chargeAuraRadius: 180, chargeAuraRate: 0.10, chargeMaxCd: 15 // 5.5 10% · 15초 이상 스킬 제외
+    isCooldownSupport: true, chargeAuraRadius: 180, chargeAuraRate: 0.08, chargeMaxCd: 15 // 7.0 리워크: 남은 쿨타임을 초당 8%p 채운다 // 5.5 10% · 15초 이상 스킬 제외
   },
   impeachment: {
     hp: 4800, atk: 120, atkSpeed: 1.2, range: 135, speed: 90,
@@ -7773,7 +7794,8 @@ const CHARACTER_BALANCE = {
   },
   bomb: {
     hp: 1300, atk: 0, atkSpeed: 0, range: 45, speed: 162,
-    noAttack: true, explosionRadius: 81, explosionDelay: 0.8, explosionDamage: 2000
+    noAttack: true, explosionRadius: 99, explosionDelay: 0.8, // 7.0 1.8 → 2.2칸
+    explosionDamage: 2000
   },
   dragon: {
     hp: 3300, atk: 250, atkSpeed: 0.8, range: 135, speed: 90,
@@ -7783,13 +7805,14 @@ const CHARACTER_BALANCE = {
     landingDr: 0.20, landingDrDuration: 5
   },
   meteor: {
-    hp: 1800, atk: 900, atkSpeed: 5, range: 270, speed: 90,
+    hp: 2500, atk: 1200, atkSpeed: 5, range: 270, speed: 90, // 7.0 HP 1800 → 2500 · 메테오 900 → 1200
     meteorDelay: 3, meteorRadiusMultiplier: 2, meteorBurnDuration: 5,
     meteorBurnDps: 100, meteorKnockback: 120
   },
   blizzard: {
-    hp: 2200, atk: 290, atkSpeed: 1, range: 180, speed: 90,
-    blizzardCooldown: 12, blizzardFirst: 5, blizzardFreeze: 3.5, blizzardSlowDuration: 3,
+    hp: 2200, atk: 180, atkSpeed: 1, range: 180, speed: 90, // 7.0 290 → 180
+    blizzardCooldown: 12, blizzardFirst: 5, blizzardFreeze: 2.7, // 7.0 빙결 3.5 → 2.7초
+    blizzardSlowDuration: 3,
     blizzardAtkPenalty: 0.25, blizzardSpeedPenalty: 0.50
   },
   beam: {
@@ -7797,12 +7820,13 @@ const CHARACTER_BALANCE = {
     beamWarmup: 2.5, beamInterval: 0.2, beamRampInterval: 1, beamRampDamage: 20
   },
   mutation: {
-    hp: 1000, atk: 100, atkSpeed: 2, range: 135, speed: 67.5,
-    mutationDelay: 5
+    hp: 2000, atk: 250, atkSpeed: 2, range: 135, speed: 67.5, // 7.0 HP 1000 → 2000 · 100 → 250
+    mutationDelay: 1 // 7.0 5 → 1초
   },
   mimic: {
     hp: 1000, atk: 100, atkSpeed: 1, range: 45, speed: 45,
-    mimicDelay: 3, mimicDuration: 20, mimicMultiplier: 2, // 6.0 변신 시 원본 비례 150% → 200%
+    mimicDelay: 3, mimicDuration: 20, mimicMultiplier: 1.25, // 7.0 200% → 125%
+    // 6.0 변신 시 원본 비례 150% → 200%
     isMelee: true
   },
   planet: {
@@ -7853,7 +7877,8 @@ const CHARACTER_BALANCE = {
   },
   hollow: {
     hp: 2800, atk: 350, atkSpeed: 1, range: 90, speed: 67.5,
-    hollowOpenDelay: 3, hollowOpenTime: 2.75, hollowZoneScale: 4.4, // 공허지역 반지름 = 유닛 반지름 × 4.4 (3.7.3: 기존 2배의 2.2배)
+    hollowOpenDelay: 0.5, hollowOpenTime: 2.75, // 7.0 라운드 시작 0.5초 뒤 열림
+    hollowZoneScale: 4.4, // 공허지역 반지름 = 유닛 반지름 × 4.4 (3.7.3: 기존 2배의 2.2배)
     hollowRealmMove: 3, hollowRealmSpeed: 180, hollowStrike: 1400, hollowStunDelay: 1, hollowStun: 2,
     hollowRealmAtk: 1000, hollowRealmSplash: 90,
     hollowStrikeScatter: 7
@@ -7886,7 +7911,8 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 2800, atk: 1200, atkSpeed: 9, range: 72, speed: 0,
     isMelee: true, immobile: true,
-    hitCooldown: 5, hitStealth: 1, hitReturn: 0.6, hitDamage: 1200, hitKillRefund: 4 // 4.6 리워크: 혼자 남으면 자객 모드
+    hitCooldown: 5, hitStealth: 1, hitReturn: 0.6, hitDamage: 1500, // 7.0 1200 → 1500
+    hitKillRefund: 4 // 4.6 리워크: 혼자 남으면 자객 모드
   },
   // 3.8 신규
   moon: {
@@ -7940,10 +7966,11 @@ const CHARACTER_BALANCE = {
   jaws: {
     hp: 2100, atk: 600, atkSpeed: 1.3, range: 72, speed: 90, // 6.0 체력 1900 → 2100
     isMelee: true, lifesteal: 0.4, // 6.0 입힌 피해 비례 회복 30% → 40%
-    diveSpeed: 202.5, diveMax: 8, surfaceRadius: 90, surfaceDamage: 150, surfaceHeal: 400 // 6.0 잠수 종료 시 반경 2칸 적 400 피해 (다시 추가)
+    diveSpeed: 225, diveMax: 8, // 7.0 잠수 속도 4.5 → 5칸
+    surfaceRadius: 90, surfaceDamage: 150, surfaceHeal: 400 // 6.0 잠수 종료 시 반경 2칸 적 400 피해 (다시 추가)
   },
   rock: {
-    hp: 4500, atk: 400, atkSpeed: 8, range: 315, speed: 58.5,
+    hp: 5000, atk: 400, atkSpeed: 8, range: 315, speed: 58.5, // 7.0 4500 → 5000
     rockDps: 280, rockTick: 1, rockDuration: 6, rockSlow: 0.6, rockScale: 2
   },
   ruins: {
@@ -7954,17 +7981,19 @@ const CHARACTER_BALANCE = {
     ruinsAtkMin: 0.02, ruinsHealMin: 2
   },
   vampire: {
-    hp: 1800, atk: 150, atkSpeed: 1.3, range: 247.5, speed: 81, // 6.0 1.6 → 1.3초
-    lifesteal: 0.35, vampFraction: 0.3 // 6.0 현재 체력의 25% → 30% · 회복 50% → 35%
+    hp: 2600, atk: 150, atkSpeed: 1.3, range: 247.5, speed: 81, // 7.0 1800 → 2600 // 6.0 1.6 → 1.3초
+    lifesteal: 0.35, vampFraction: 0.35 // 7.0 대상 현재 체력 30% → 35%
+    // 6.0 현재 체력의 25% → 30% · 회복 50% → 35%
   },
   unicorn: {
-    hp: 1900, atk: 200, atkSpeed: 1, range: 72, speed: 99,
+    hp: 2200, atk: 200, atkSpeed: 1, range: 72, speed: 99, // 7.0 1900 → 2200
     isMelee: true,
-    uniEvery: 3.2, uniDistance: 315, uniSpeed: 675, uniDamage: 700, uniGuard: 0.25 // 6.0 돌진 간격 4 → 3.2초 · 돌진할 때마다 늘어나던 간격 삭제
+    uniEvery: 3.2, uniDistance: 315, uniSpeed: 675, uniDamage: 900, // 7.0 700 → 900
+    uniGuard: 0.25 // 6.0 돌진 간격 4 → 3.2초 · 돌진할 때마다 늘어나던 간격 삭제
   },
   matrix: {
     hp: 5000, atk: 500, atkSpeed: 5, range: 225, speed: 67.5,
-    matrixDelay: 1, matrixSize: 180, holoHp: 500, holoDmg: 0.6
+    matrixDelay: 1, matrixSize: 180, holoHp: 1, holoDmg: 0.6, holoLife: 10 // 7.0 홀로그램 HP 1 · 10초 뒤 사라짐
   },
   supply: {
     hp: 1800, atk: 0, atkSpeed: 1, range: 180, speed: 67.5,
@@ -7976,7 +8005,8 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 2600, atk: 0, atkSpeed: 1, range: 0, speed: 0,
     noAttack: true, immobile: true,
-    maestroTime: 12, maestroHeal: 2000, maestroFrame: 0.5, maestroBow: 1.2
+    maestroTime: 14, maestroHeal: 2400, maestroLevelUp: 1, // 7.0 14초 · 2,400 · 살아 있는 아군 영구 레벨 +1
+    maestroFrame: 0.5, maestroBow: 1.2
   },
   bsod: {
     hp: 2404, atk: 404, atkSpeed: 1, range: 45, speed: 4.5,
@@ -8001,7 +8031,8 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 5.0 출격제한: 한 진영 전장에 1기만
     hp: 2000, atk: 0, atkSpeed: 1, range: 126, speed: 99,
     trainShots: 0, trainShotGap: 0.1, // 5.5 일반 공격 삭제
-    trainFirst: 2, trainDashSpeed: 720, trainHit: 1200, // 5.5.1 900 → 1200
+    trainFirst: 2, trainDashSpeed: 720, trainHit: 1400, // 7.0 1200 → 1400
+    // 5.5.1 900 → 1200
     trainSplash: 0, // 5.4 주변 피해 삭제
     trainSplashRadius: 45, trainDr: 0.35,
     trainRelocate: 1, trainRedash: 1, trainSignalGap: 225,
@@ -8043,12 +8074,12 @@ const CHARACTER_BALANCE = {
     arrowSpeed: 360, goldenArrowChance: 0.2, goldenArrowDamage: 640
   },
   mortar: {
-    hp: 2000, atk: 600, atkSpeed: 5, range: 472.5, speed: 0,
+    hp: 2000, atk: 800, atkSpeed: 5, range: 472.5, speed: 0, // 7.0 600 → 800
     immobile: true,
     mortarRadius: 54, mortarFlight: 0.9
   },
   meatshield: {
-    hp: 8500, atk: 100, atkSpeed: 2.5, range: 72, speed: 45,
+    hp: 9000, atk: 100, atkSpeed: 2.5, range: 72, speed: 45, // 7.0 8500 → 9000
     isMelee: true, big: true // 4.6.1: 몸집이 조금 크다
   },
   powermeter: {
@@ -8065,7 +8096,8 @@ const CHARACTER_BALANCE = {
   },
   parasite: {
     hp: 2500, atk: 10, atkSpeed: 0.5, range: 112.5, speed: 58.5,
-    bugEvery: 6.5, ctrlTime: 6, ctrlHp: 0.25, ctrlSpeed: 2, ctrlDr: 0.6
+    bugEvery: 5, // 7.0 6.5 → 5초
+    ctrlTime: 6, ctrlHp: 0.25, ctrlSpeed: 2, ctrlDr: 0.6
   },
   flower: {
     hp: 2600, atk: 0, atkSpeed: 1, range: 45, speed: 72,
@@ -8073,33 +8105,36 @@ const CHARACTER_BALANCE = {
     eatDelay: 0.5, eatHold: 2, eatCd: 3, spitHit: 400, spitSelf: 700, spitSpeed: 18
   },
   lantern: {
-    hp: 2400, atk: 19, atkSpeed: 0.1, range: 270, speed: 58.5, // 5.7.2 공격력 30 → 19 · 사거리 7 → 6칸
+    hp: 2400, atk: 15, atkSpeed: 0.1, range: 270, speed: 58.5, // 7.0 공격력 -20% (19 → 15) // 5.7.2 공격력 30 → 19 · 사거리 7 → 6칸
     noAttack: true, holdRange: true, lifesteal: 0.5,
-    lanternHeal: 31.5, lanternDim: 1.5, lanternDimValue: 2
+    lanternHeal: 17.3, // 7.0 힐 -45% (31.5 → 17.3)
+    lanternDim: 1.5, lanternDimValue: 2
   },
   rocket: {
-    hp: 2000, atk: 850, atkSpeed: 7.5, range: 360, speed: 54, // 6.0 650 → 850 · 6.5 → 7.5초
+    hp: 2000, atk: 1000, atkSpeed: 7, range: 360, speed: 54, // 7.0 850 → 1000 · 7.5 → 7초 // 6.0 650 → 850 · 6.5 → 7.5초
     rocketRadius: 1, rocketFlight: 0.8, rocketFireTime: 3, rocketFireDps: 150
   },
   beatmania: {
     deployLimit: 1, // 5.0 출격제한: 한 진영 전장에 1기만
     hp: 2500, atk: 80, atkSpeed: 0.8, range: 180, speed: 67.5, // 5.3 일반 공격 추가: 80 · 0.8초 · 사거리 4칸
     holdRange: true,
-    noteMin: 0.15, noteMax: 0.55, noteDamage: 286, // 6.0 간격 0.15초 감소 · 피해 +30%
+    noteMin: 0.15, noteMax: 0.55, noteDamage: 180, beatLock: 0.2, // 7.0 음표 286 → 180 · 회피가 끝나면 0.2초 동안 다시 회피 못 함
+    // 6.0 간격 0.15초 감소 · 피해 +30%
     noteSpeed: 16, beatWindow: 0.08, beatTeleport: 1.5, beatRadius: 0.5, beatDamage: 300
   },
   gun: {
-    hp: 2200, atk: 300, atkSpeed: 1.8, range: 202.5, speed: 81,
-    shotMax: 2000, shotMin: 200
+    hp: 3000, atk: 350, atkSpeed: 1.8, range: 202.5, speed: 81, // 7.0 HP 3000 · 300 → 350
+    shotMax: 3000, shotMin: 500 // 7.0 샷건 500 ~ 3000
   },
   bug: {
-    hp: 2000, atk: 0, atkSpeed: 1, range: 45, speed: 157.5,
+    hp: 3000, atk: 0, atkSpeed: 1, range: 45, speed: 171, // 7.0 버러지후 HP 2000 → 3000 · 이동속도 3.5 → 3.8칸
     noAttack: true
   },
   blackhole: { // 5.5 신규
     hp: 2400, atk: 0, atkSpeed: 1, range: 225, speed: 67.5,
     noAttack: true, holdRange: true,
-    bhEvery: 5, bhRadiusCells: 10, bhDamage: 500, bhPull: 0.2 // 5.5.1 180 → 400
+    bhEvery: 5, bhRadiusCells: 10, bhDamage: 350, // 7.0 500 → 350
+    bhPull: 0.2 // 5.5.1 180 → 400
   },
   ufc: { // 5.5 신규
     hp: 2000, atk: 111, atkSpeed: 1, range: 225, speed: 99,
@@ -8122,7 +8157,7 @@ const CHARACTER_BALANCE = {
   },
   water: { // 5.5 신규
     hp: 2300, atk: 140, atkSpeed: 1.2, range: 180, speed: 67.5,
-    waveEvery: 5, waveKnockCells: 5, waveMissing: 0.3, waveSpeedCells: 14
+    waveEvery: 5, waveKnockCells: 5, waveMissing: 0.3, waveFlat: 250, waveSpeedCells: 14 // 7.0 잃은 체력 30% + 250
   },
   mercury: {
     hgShieldMax: 2400, // 5.5 신규
@@ -8131,13 +8166,13 @@ const CHARACTER_BALANCE = {
     hgEvery: 5, hgShield: 1200, hgPoisonDps: 100, hgPoisonTime: 5
   },
   electric: { // 5.5 신규
-    hp: 1500, atk: 180, atkSpeed: 0.8, range: 72, speed: 162,
+    hp: 1800, atk: 180, atkSpeed: 0.8, range: 72, speed: 162, // 7.0 1500 → 1800
     isMelee: true, small: true,
     zapCountWeights: [35, 27, 19, 12, 7], // 5.5.1 소환 1~5마리 (많을수록 드묾)
     zapChain: [0.8, 0.6], zapRadiusCells: 3, zapStunChance: 0.2, zapStun: 0.5
   },
   blessing: { // 5.5 신규
-    hp: 1000, atk: 60, atkSpeed: 1, range: 315, speed: 13.5,
+    hp: 1000, atk: 150, atkSpeed: 1, range: 315, speed: 13.5, // 7.0 공격력 → 150
     isMelee: true, isRanged: false, fanAngleDeg: 100, fanRadius: 315,
     blessAt: 1.5, blessCount: 2
   },
@@ -8152,18 +8187,19 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 3700, atk: 0, atkSpeed: 1, range: 72, speed: 67.5,
     noAttack: true, holdRange: true,
-    taxiSpeed: 2.4, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 9999, taxiDropRest: 2, taxiFoeCall: 1, taxiLoadRest: 2 // 6.2.1: 운행 속도 7 → 2.4 · 승객 하차 후 휴식 2초 · 적 콜 후 출발 대기 1초 · 적 탑승 후 휴식 2초 / 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
+    taxiSpeed: 2.4, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 9999, taxiDropRest: 2, taxiFoeCall: 1, taxiLoadRest: 2, taxiAway: 2 /* 7.0 적을 버린 뒤 2초 쉬고 돌아온다 */ // 6.2.1: 운행 속도 7 → 2.4 · 승객 하차 후 휴식 2초 · 적 콜 후 출발 대기 1초 · 적 탑승 후 휴식 2초 / 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
   },
   shanghai: { // 6.2 신규
-    hp: 1972, atk: 200, atkSpeed: 1, range: 900, speed: 99 // 공격력은 기획서에 비어 있어 임시값 200
+    hp: 1972, atk: 500, atkSpeed: 10, range: 900, speed: 99 // 7.0 첫 발은 [고자] 저격, 그 뒤 일반 공격 500 · 10초 // 공격력은 기획서에 비어 있어 임시값 200
   },
   rccar: { // 6.2 신규
     hp: 2300, atk: 0, atkSpeed: 1, range: 360, speed: 0, // 체력은 기획서에 없어 임시값 · 6.2.1 이동속도 0
     noAttack: true, immobile: true, holdRange: true, // 6.2.1 immobile: 제자리 고정 (이동속도 0이 기본 이동 속도로 되돌려지지 않게)
-    rcStart: 10, rcEvery: 8, rcWarn: 1, rcLaneCells: 2, rcCarFraction: 0.75 // 첫 소환 · 소환 간격 · 예고 시간 · 돌진 폭(칸) · 자동차 현재 체력 비례 피해
+    rcStart: 10, rcEvery: 5, // 7.0 8 → 5초
+    rcWarn: 1, rcLaneCells: 2, rcCarFraction: 0.75 // 첫 소환 · 소환 간격 · 예고 시간 · 돌진 폭(칸) · 자동차 현재 체력 비례 피해
   },
   ravage: { // 6.2 신규
-    hp: 3250, atk: 300, atkSpeed: 0.7, range: 72, speed: 90, // 이동속도는 기획서에 없어 임시값
+    hp: 5250, atk: 350, atkSpeed: 0.7, range: 72, speed: 90, // 7.0 HP 3250 → 5250 · 300 → 350 // 이동속도는 기획서에 없어 임시값
     isMelee: true,
     rvTime: 4, rvCritDmg: 0.4, rvCrit: 0.02,
     ravageDamage: 550, ravageBoxCells: 4, ravageStep: 100
@@ -8171,22 +8207,24 @@ const CHARACTER_BALANCE = {
   stone: { // 6.2 신규
     hp: 6000, atk: 0, atkSpeed: 1, range: 72, speed: 45,
     noAttack: true,
-    stoneSpeed: 6, stoneHitFraction: 0.1,
+    stoneSpeed: 6, stoneHitFraction: 0, stoneHit: 1500, // 7.0 현재 체력 10% → 1500 고정
+   
     radiusMul: 2 // 6.2.1 유닛 반지름 2배 (판정 · 크기)
   },
   purify: { // 6.2 신규
     hp: 1800, atk: 0, atkSpeed: 1, range: 315, speed: 67.5, // 체력은 기획서에 없어 임시값
     noAttack: true, holdRange: true,
-    bellEvery: 4, bellRadiusCells: 7, bellDamage: 100, bellHeal: 0.15
+    bellEvery: 4, bellRadiusCells: 7, bellDamage: 100, bellHeal: 0.15, bellImmune: 2.5 // 7.0 종 뒤 2.5초 디버프 면역
   },
   soulstealer: { // 5.3 신규
-    hp: 1900, atk: 200, atkSpeed: 1, range: 270, speed: 54,
-    soulDelay: 2, soulAtk: 30, soulHeal: 200 // 5.5.2 영혼당 공격력 50 → 30 · 영혼 얻을 때 HP 200 회복
+    hp: 1900, atk: 200, atkSpeed: 1.6, range: 270, speed: 54, // 7.0 공격 간격 1 → 1.6초
+    soulDelay: 2, soulAtk: 0, soulHeal: 0, soulAtkPct: 0.12, soulHpPct: 0.10, soulHealPct: 0.10 // 7.0 리워크: 영혼당 공격력 +12% · 최대 체력 +10% · 최대 체력 10% 회복 // 5.5.2 영혼당 공격력 50 → 30 · 영혼 얻을 때 HP 200 회복
   },
   moai: { // 5.3 신규
     hp: 3333, atk: 0, atkSpeed: 1, range: 67.5, speed: 0,
     noAttack: true, immobile: true, holdRange: true,
-    moaiEvery: 3, moaiRadius: 90, moaiStun: 2.5, foeDeploy: true // 6.0 moaiStun = 빙결 시간 (기절 대신 빙결)
+    moaiEvery: 3, moaiRadius: 108, // 7.0 2 → 2.4칸
+    moaiStun: 2.5, foeDeploy: true // 6.0 moaiStun = 빙결 시간 (기절 대신 빙결)
   },
   nuke: {
     hp: 600, atk: 150, atkSpeed: 2, range: 72, speed: 67.5,
@@ -9231,7 +9269,7 @@ const CHAR_DB = {
     id: 'growth', name: '성장 지후', emoji: '🔄', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#8a1fb0', portrait: PORTRAITS.growth,
     ...CHARACTER_BALANCE.growth,
-    skillDesc: '매 라운드 시작 직후 <b>성장</b>을 시도한다. 성장 시간 <b>15초</b>가 다 차면 덱의 무작위 지후(성장 지후일 수도 있다)로 <b>변이</b>하고 레벨이 <b>1</b> 오른다. 변이한 모습과 레벨은 다음 라운드에도 유지된다. 남은 성장 시간은 살아 있든 죽었든 다음 라운드로 이어진다.'
+    skillDesc: '공격하지 않는다. 라운드 시작 <b>1초</b> 뒤 자신을 포함한 <b>무작위 아군</b> 하나의 레벨을 <b>영구히 1</b> 올린다 (최대 레벨이면 다른 아군).'
   },
   hypno: {
     id: 'hypno', name: '최면 지후', emoji: '🌀', role: 'controller', roleLabel: '컨트롤러',
@@ -9250,7 +9288,7 @@ const CHAR_DB = {
     id: 'egg', name: '알 지후', emoji: '🥚', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#0f9d7a', portrait: PORTRAITS.egg,
     ...CHARACTER_BALANCE.egg,
-    skillDesc: '움직이지 않는다. <b>2초마다</b> 흔들리며 <b>8%</b> 확률로 부화해 게임의 모든 지후 중 무작위 지후(히든 제외, <b>알과 같은 레벨</b>)가 된다. 부화한 지후는 <b>영구히 남고</b> 그 진영의 배치 한도가 <b>1</b> 늘어난다.'
+    skillDesc: '움직이지 않는다. <b>2초마다</b> 흔들리며 <b>10%</b> 확률로 부화해 게임의 모든 지후 중 무작위 지후(히든 제외, <b>알과 같은 레벨</b>)가 된다. 부화한 지후는 <b>영구히 남고</b> 그 진영의 배치 한도가 <b>1</b> 늘어난다.'
   },
   sixseven: {
     id: 'sixseven', name: '67 지후', emoji: '🔢', role: 'dealer', roleLabel: '딜러',
@@ -9268,7 +9306,7 @@ const CHAR_DB = {
     id: 'mushroom', name: '버섯 지후', emoji: '🍄', role: 'tank', roleLabel: '탱커',
     rarity: 'epic', color: '#9b1fe8', portrait: PORTRAITS.mushroom,
     ...CHARACTER_BALANCE.mushroom,
-    skillDesc: '<b>10초마다</b> 버섯을 먹는다. 최대 체력이 <b>25%</b> 늘고 체력을 <b>즉시 가득</b> 채우며, 공격력이 <b>80</b> 오른다. 단 <b>35%</b> 확률로 독버섯을 먹어 2초 동안 0.5초마다 최대 체력의 <b>20%</b>씩, 모두 <b>80%</b> 피해를 입는다 (공격력은 줄지 않는다).'
+    skillDesc: '<b>10초마다</b> 버섯을 먹는다. 최대 체력이 <b>35%</b> 늘고 체력을 <b>즉시 가득</b> 채우며, 공격력이 <b>80</b> 오른다. 단 <b>25%</b> 확률로 독버섯을 먹어 2초 동안 0.5초마다 최대 체력의 <b>12%</b>씩, 모두 <b>60%</b> 피해를 입는다 (공격력은 줄지 않는다).'
   },
   phantom: {
     id: 'phantom', name: '괴도 지후', emoji: '🎩', role: 'support', roleLabel: '서포터',
@@ -9294,7 +9332,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#7b3fe0', portrait: PORTRAITS.dimension, portraitRealm: PORTRAITS.dimension_realm,
     ...CHARACTER_BALANCE.dimension,
     customAttack(caster, target) { dimensionAttack(caster, target); },
-    skillDesc: '0.25초 간격 <b>2연발</b>(300×2)이 공격 1회. 3회 공격 뒤 4번째 공격 대신 대상과 함께 <b>3초간 아공간</b>으로 간다. 아공간은 필드와 서로 영향을 주지 않는다. 아공간에서 이동속도 <b>7.2칸</b>, 350×2로 강해지고 대상에게 1초 <b>공포</b>(자신에게서 도망침, 공격은 함)를 걸며, 대상은 이동·공격속도가 30% 느려진다.'
+    skillDesc: '0.25초 간격 <b>2연발</b>(300×2)이 공격 1회 (공격 간격 <b>0.75초</b>). 3회 공격 뒤 4번째 공격 대신 대상과 함께 <b>3초간 아공간</b>으로 간다. 아공간은 필드와 서로 영향을 주지 않는다. 아공간에서 이동속도 <b>7.2칸</b>, 350×2로 강해지고 대상에게 1초 <b>공포</b>(자신에게서 도망침, 공격은 함)를 걸며, 대상은 이동·공격속도가 30% 느려진다.'
   },
   syringe: {
     id: 'syringe', name: '주사 지후', emoji: '💉', role: 'support', roleLabel: '서포터',
@@ -9307,7 +9345,7 @@ const CHAR_DB = {
     id: 'glutton', name: '포식 지후', emoji: '🦷', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#c0262d', portrait: PORTRAITS.glutton, portraitFed: PORTRAITS.glutton_fed,
     ...CHARACTER_BALANCE.glutton,
-    skillDesc: '전투 시작 1초 뒤 반경 1.5칸의 아군을 모두 <b>포식</b>해 즉사시킨다 (다음 라운드에는 정상 복귀). 삼킨 아군 1기마다 7초간 ATK <b>+400</b>, 최대 HP·HP <b>+600</b>, 이동속도 1.8 → 2.7칸. 끝나면 3초 뒤 다시 포식한다.'
+    skillDesc: '전투 시작 1초 뒤 반경 <b>2.7칸</b>의 아군을 모두 <b>포식</b>해 (포식 직전 범위를 <b>빨간 점선 원</b>으로 보여 준다) 즉사시킨다 (다음 라운드에는 정상 복귀). 삼킨 아군 1기마다 7초간 ATK <b>+400</b>, 최대 HP·HP <b>+600</b>, 이동속도 1.8 → 2.7칸. 끝나면 3초 뒤 다시 포식한다.'
   },
   dosa: {
     id: 'dosa', name: '도사 지후', emoji: '🪭', role: 'assassin', roleLabel: '어쌔신',
@@ -9329,7 +9367,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#4fd6ea', portrait: PORTRAITS.tentacle, portraitAttack: PORTRAITS.tentacle_attack,
     ...CHARACTER_BALANCE.tentacle,
     customAttack(caster, target) { tentacleStrike(caster, target); },
-    skillDesc: '대상 방향 <b>7칸</b> 길이, <b>몸 지름 1.5배</b> 폭의 직선에 촉수를 내리쳐 범위 안 모든 적에게 <b>750</b> 피해와 2.5초 둔화(이동속도 -50%). <b>30%</b> 확률로 먹물을 뿌려 3초간 <b>눈가림</b>(명중률 -50%).'
+    skillDesc: '대상 방향 <b>5.5칸</b> 길이, <b>몸 지름 1.5배</b> 폭의 직선에 촉수를 내리쳐 범위 안 모든 적에게 <b>650</b> 피해와 2.5초 둔화(이동속도 -50%). <b>30%</b> 확률로 먹물을 뿌려 3초간 <b>눈가림</b>(명중률 -50%).'
   },
   engineer: {
     id: 'engineer', name: '엔지니어 지후', emoji: '🔧', role: 'controller', roleLabel: '컨트롤러',
@@ -9385,7 +9423,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#4b2d7f', portrait: PORTRAITS.hollow,
     ...CHARACTER_BALANCE.hollow,
     customAttack(caster, target) { hollowAttack(caster, target); },
-    skillDesc: '라운드 시작 <b>3초</b> 뒤 자신 주변(반지름 = 유닛의 4.4배)에 <b>공허지역</b>을 연다. <b>2.75초</b> 뒤 닫히며 공허 지후와 지역에 닿은 아군이 <b>아공간</b>으로 들어간다. 아공간에서 공허 지후는 가장 가까운 적에게 다가가고, 3초 뒤 그 적 자리에서 <b>0~7칸</b> 벗어난 곳에 공허지역이 다시 열려 닿은 적에게 <b>1,400</b> 피해를 주고 1초 뒤 <b>2초 기절</b>시킨다. 적이 기절하는 <b>즉시</b> 아공간의 아군이 모두 그 자리로 나오고 공허가 닫힌다 (라운드당 1번). 아공간 안에서는 ATK <b>1,000</b>, 반경 2칸 광역 공격.'
+    skillDesc: '라운드 시작 <b>0.5초</b> 뒤 자신 주변(반지름 = 유닛의 4.4배)에 <b>공허지역</b>을 연다. <b>2.75초</b> 뒤 닫히며 공허 지후와 지역에 닿은 아군이 <b>아공간</b>으로 들어간다. 아공간에서 공허 지후는 가장 가까운 적에게 다가가고, 3초 뒤 그 적 자리에서 <b>0~7칸</b> 벗어난 곳에 공허지역이 다시 열려 닿은 적에게 <b>1,400</b> 피해를 주고 1초 뒤 <b>2초 기절</b>시킨다. 적이 기절하는 <b>즉시</b> 아공간의 아군이 모두 그 자리로 나오고 공허가 닫힌다 (라운드당 1번). 아공간 안에서는 ATK <b>1,000</b>, 반경 2칸 광역 공격.'
   },
   star: {
     id: 'star', name: '별 지후', emoji: '⭐', role: 'dealer', roleLabel: '딜러',
@@ -9495,19 +9533,19 @@ const CHAR_DB = {
     rarity: 'epic', color: '#c01c28', portrait: PORTRAITS.vampire,
     ...CHARACTER_BALANCE.vampire,
     modifyDamage(caster, target, dmg) { return target.isCastle ? dmg : dmg + Math.max(0, target.hp) * caster.def.vampFraction; },
-    skillDesc: 'ATK 150 + 대상 <b>현재 체력의 30%</b>. 입힌 피해의 <b>35%</b>를 회복한다. 공격 간격 <b>1.3초</b> · 사거리 5.5칸.'
+    skillDesc: 'ATK 150 + 대상 <b>현재 체력의 35%</b>. 입힌 피해의 <b>35%</b>를 회복한다. 공격 간격 <b>1.3초</b> · 사거리 5.5칸.'
   },
   unicorn: {
     id: 'unicorn', name: '유니콘 지후', emoji: '🦄', role: 'dealer', roleLabel: '딜러',
     rarity: 'epic', color: '#c77dff', portrait: PORTRAITS.unicorn,
     ...CHARACTER_BALANCE.unicorn,
-    skillDesc: '<b>3.2초마다</b> <b>가장 먼 적</b> 쪽으로 모든 적을 관통하며 <b>7칸</b> 돌진한다 (초당 15칸). 부딪힌 적마다 <b>700</b> 피해. 돌진이 끝나면 다음 돌진까지 받는 피해 <b>25%</b> 감소.'
+    skillDesc: '<b>3.2초마다</b> <b>가장 먼 적</b> 쪽으로 모든 적을 관통하며 <b>7칸</b> 돌진한다 (초당 15칸). 부딪힌 적마다 <b>900</b> 피해. 돌진이 끝나면 다음 돌진까지 받는 피해 <b>25%</b> 감소.'
   },
   matrix: {
     id: 'matrix', name: '매트릭스 지후', emoji: '💾', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#1fbf5f', portrait: PORTRAITS.matrix,
     ...CHARACTER_BALANCE.matrix,
-    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번, 홀로그램 HP는 <b>500</b> 고정 · 홀로그램의 모든 피해는 원본의 <b>60%</b>, <b>출격제한 1기</b> 지후는 복사하지 않는다). ATK 500 · 5초 · 사거리 5칸.'
+    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번, 홀로그램 HP는 <b>1</b> 고정 · <b>10초</b> 뒤 사라짐 · 홀로그램의 모든 피해는 원본의 <b>60%</b>, <b>출격제한 1기</b> 지후는 복사하지 않는다). ATK 500 · 5초 · 사거리 5칸.'
   },
   supply: {
     id: 'supply', name: '보급병 지후', emoji: '📦', role: 'support', roleLabel: '서포터',
@@ -9519,14 +9557,14 @@ const CHAR_DB = {
     id: 'maestro', name: '마에스트로 지후', emoji: '🎻', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#b07a1a', portrait: PORTRAITS.maestro, portraitPlay2: PORTRAITS.maestro_play2, portraitBow: PORTRAITS.maestro_bow,
     ...CHARACTER_BALANCE.maestro,
-    skillDesc: '제자리에서 <b>12초</b> 동안 연주한다. 연주가 끝나면 인사를 하고, 모든 아군의 HP를 <b>2,000</b> 회복시키며 걸린 <b>디버프를 모두 제거</b>한다. 체력이 가득 차 넘치는 회복량은 <b>쉴드</b>가 된다. 인사한 뒤 이번 라운드에서 퇴장한다 (다음 라운드에 다시 나온다). 출격 제한 1.'
+    skillDesc: '제자리에서 <b>14초</b> 동안 연주한다. 연주가 끝나면 인사를 하고, 살아 있는 모든 아군의 <b>레벨을 영구히 1</b> 올리고, HP를 <b>2,400</b> 회복시키며 걸린 <b>디버프를 모두 제거</b>한다. 체력이 가득 차 넘치는 회복량은 <b>쉴드</b>가 된다. 인사한 뒤 이번 라운드에서 퇴장한다 (다음 라운드에 다시 나온다). 출격 제한 1.'
   },
   bsod: {
     id: 'bsod', name: '블루스크린 지후', emoji: '🖥️', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#0a4fd8', portrait: PORTRAITS.bsod,
     ...CHARACTER_BALANCE.bsod,
     customAttack(caster) { bsodPulse(caster); },
-    skillDesc: 'HP <b>2,404</b> · 자기 주변 반경 1칸에 ATK <b>404</b> (1초). 처음으로 자신을 공격한 지후의 공격을 무효화하고 그 지후를 우리 편 블루스크린 지후로 변이시킨다. 변이한 지후는 HP 404(레벨 무관)이고 변이 능력은 없으며, 라운드가 끝나면 사라지고 원래 진영에서도 영영 사라진다.'
+    skillDesc: 'HP <b>2,404</b> · 자기 주변 반경 1칸에 ATK <b>404</b> (1초). 처음으로 자신을 공격한 지후의 공격을 무효화하고 그 지후를 우리 편 블루스크린 지후로 변이시킨다. 변이한 지후는 HP 404(레벨 무관)이고 변이 능력은 없다. 변이한 지후는 <b>라운드가 끝나도 우리 편으로 남고</b> (그 진영 배치 한도 +1) 원래 진영에서는 영영 사라진다.'
   },
   contractor: {
     id: 'contractor', name: '청부업자 지후', emoji: '📜', role: 'controller', roleLabel: '컨트롤러',
@@ -9571,7 +9609,7 @@ const CHAR_DB = {
     id: 'hitman', name: '자객 지후', emoji: '🥷', role: 'assassin', roleLabel: '어쌔신',
     rarity: 'legend', color: '#1a1a1a', portrait: PORTRAITS.hitman, portraitKill: PORTRAITS.hitman_kill,
     ...CHARACTER_BALANCE.hitman,
-    skillDesc: '평소에는 움직이지 않는다 (근접 ATK <b>1,200</b>). 아군에 자객 지후만 남으면 <b>자객 모드</b>가 된다. 자객 모드: 즉시 <b>1초</b>간 은신한 뒤 체력이 가장 높은 적에게 순간이동해 <b>1,200</b> 피해를 주고 <b>0.6초</b> 뒤 제자리로 돌아온다. 쿨타임 <b>5초</b>, 이 피해로 처치하면 쿨타임 <b>-4초</b>. 출격제한 1기.'
+    skillDesc: '평소에는 움직이지 않는다 (근접 ATK <b>1,200</b>). 아군에 자객 지후만 남으면 <b>자객 모드</b>가 된다. 자객 모드: 즉시 <b>1초</b>간 은신한 뒤 체력이 가장 높은 적에게 순간이동해 <b>1,500</b> 피해를 주고 <b>0.6초</b> 뒤 제자리로 돌아온다. 쿨타임 <b>5초</b>, 이 피해로 처치하면 쿨타임 <b>-4초</b>. 출격제한 1기.'
   },
   sun: {
     id: 'sun', name: '태양 지후', emoji: '☀️', role: 'dealer', roleLabel: '딜러',
@@ -9625,7 +9663,7 @@ const CHAR_DB = {
     id: 'lonely', name: '고독한 지후', emoji: '⚔️', role: 'tank', roleLabel: '탱커',
     rarity: 'epic', color: '#c98a4b', portrait: PORTRAITS.lonely,
     ...CHARACTER_BALANCE.lonely,
-    skillDesc: '근접 검사. 주위 <b>반경 약 1.8칸 내 아군이 없으면</b> 대상 현재 체력의 <b>8%</b> 추가 피해 (레벨이 오를 때마다 <b>+4%</b>).',
+    skillDesc: '근접 검사. 주위 <b>반경 1.5칸 내 아군이 없으면</b> 대상 현재 체력의 <b>12%</b> 추가 피해 (레벨이 오를 때마다 <b>+4%</b>).',
     modifyDamage(caster, target, baseDmg, battle) {
       const nearby = battle.countNearbyAllies(caster, caster.def.loneRadius);
       return nearby === 0 ? baseDmg + target.hp * (caster.def.loneBonusHpFraction + ((caster.level || 1) - 1) * (caster.def.loneBonusPerLevel || 0)) : baseDmg;
@@ -9635,7 +9673,7 @@ const CHAR_DB = {
     id: 'shield', name: '쉴드 지후', emoji: '🛡️', role: 'tank', roleLabel: '탱커',
     rarity: 'common', color: '#3d7fb0', portrait: PORTRAITS.shield, portraitBroken: PORTRAITS.shield_broken,
     ...CHARACTER_BALANCE.shield,
-    skillDesc: '쉴드가 유지되는 동안 받는 피해 <b>30% 감소</b>. ATK <b>250</b> / 공속 <b>3초</b>',
+    skillDesc: '쉴드 <b>4,000</b>. 쉴드가 유지되는 동안 받는 피해 <b>30% 감소</b>. ATK <b>250</b> / 공속 <b>3초</b>',
   },
   assassin: {
     id: 'assassin', name: '암살 지후', emoji: '🗡️', role: 'assassin', roleLabel: '어쌔신',
@@ -9679,7 +9717,7 @@ const CHAR_DB = {
     id: 'berserk', name: '광폭화 지후', emoji: '😡', role: 'dealer', roleLabel: '딜러',
     rarity: 'epic', color: '#7a4de8', portrait: PORTRAITS.berserk, portraitBerserk: PORTRAITS.berserk_form,
     ...CHARACTER_BALANCE.berserk,
-    skillDesc: 'ATK 200. <b>사망 시 광폭화</b> — <b>1.5초</b>간 무적, 공격력 <b>800</b>, 공격 간격 <b>0.6초</b> · 광폭화 중에는 범위 없이 <b>대상 하나</b>만 공격. 종료 시 사망'
+    skillDesc: 'ATK 200. <b>사망 시 광폭화</b> — <b>1.5초</b>간 무적, 공격력 <b>650</b>, 공격 간격 <b>0.6초</b> · 광폭화 중에는 범위 없이 <b>대상 하나</b>만 공격. 종료 시 사망'
   },
   poison: {
     id: 'poison', name: '독 지후', emoji: '☠️', role: 'dealer', roleLabel: '딜러',
@@ -9693,7 +9731,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#d94b4b', portrait: PORTRAITS.charge, portraitActive: PORTRAITS.charge_active,
     ...CHARACTER_BALANCE.charge,
     customTick(u, target, dist, dt) { return battleAPI.chargeTick(u, target, dt); },
-    skillDesc: '돌격 전 <b>2초</b> 예고 → 돌진 <b>900</b> (평타 150). 돌격 중 받는 피해 <b>25%</b> 감소. 빗나가면 재시도·주변 밀침'
+    skillDesc: '돌격 전 <b>2초</b> 예고 → 돌진 <b>1,000</b> (평타 200). 돌격 중 받는 피해 <b>25%</b> 감소. 빗나가면 재시도·주변 밀침'
   },
   stop: {
     id: 'stop', name: '멈춰 지후', emoji: '✋', role: 'controller', roleLabel: '컨트롤러',
@@ -9738,7 +9776,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#8a8f98', portrait: PORTRAITS.clock,
     ...CHARACTER_BALANCE.clock,
     auraPulse(u) { battleAPI.pulse(u, u.def.pulseRadiusPx, (e, ally) => battleAPI.setBuff(e, u.uid + ':aspd:' + e.uid, 'aspd', ally ? u.def.allyAspdBonus : u.def.enemyAspdPenalty, u.def.buffDuration)); },
-    skillDesc: '<b>5초마다</b> 반경 5칸 아군 공속 <b>+10%</b>, 적 공속 <b>-10%</b> (다른 시계 지후와 중첩)'
+    skillDesc: '<b>5초마다</b> 반경 5칸 아군 공속 <b>+12%</b>, 적 공속 <b>-12%</b> (다른 시계 지후와 중첩)'
   },
   hmg: {
     id: 'hmg', name: '헤비머신건 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -9752,7 +9790,7 @@ const CHAR_DB = {
     id: 'mega', name: '확성기 지후', emoji: '📢', role: 'support', roleLabel: '서포터',
     rarity: 'rare', color: '#e04848', portrait: PORTRAITS.mega,
     ...CHARACTER_BALANCE.mega,
-    skillDesc: '라운드가 시작되면 <b>4초</b> 동안 <b>모든 아군</b> 공격력 <b>+50%</b> (확성기 지후 여러 기는 중첩되지 않는다)'
+    skillDesc: 'ATK <b>250</b>. 라운드가 시작되면 <b>4초</b> 동안 <b>모든 아군</b> 공격력 <b>+50%</b> (확성기 지후 여러 기는 중첩되지 않는다)'
   },
   rank: {
     id: 'rank', name: '계급 지후', emoji: '🎖️', role: 'dealer', roleLabel: '딜러',
@@ -9791,7 +9829,7 @@ const CHAR_DB = {
     id: 'metal', name: '메탈 지후', emoji: '🪖', role: 'tank', roleLabel: '탱커',
     rarity: 'legend', color: '#8a93a3', portrait: PORTRAITS.metal,
     ...CHARACTER_BALANCE.metal,
-    skillDesc: '받는 피해가 무조건 <b>2</b>. HP <b>25</b> / ATK <b>400</b> / 공격 간격 <b>1.5초</b>'
+    skillDesc: '받는 피해가 무조건 <b>2</b>. <b>회복을 받지 못한다</b>. HP <b>40</b> / ATK <b>400</b> / 공격 간격 <b>1.5초</b>'
   },
   necro: {
     id: 'necro', name: '네크로맨서 지후', emoji: '☠️', role: 'support', roleLabel: '서포터',
@@ -9849,7 +9887,7 @@ const CHAR_DB = {
     id: 'god', name: '갓지후', emoji: '✨', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#2087ff', portrait: PORTRAITS.god, portraitTrue: PORTRAITS.god_true,
     ...CHARACTER_BALANCE.god,
-    skillDesc: '전방을 <b>관통 공격</b>. <b>7레벨</b>에 HP 9999 트루폼으로 각성. 적 인식 12칸, 무한 사거리 레이저 발사 1초 전부터 종료까지 정지'
+    skillDesc: 'ATK <b>450</b>. 전방을 <b>관통 공격</b>. <b>7레벨</b>에 HP 9999 트루폼으로 각성. 적 인식 12칸, 무한 사거리 레이저 발사 1초 전부터 종료까지 정지'
   },
   instinct: {
     id: 'instinct', name: '본능 지후', emoji: '💨', role: 'assassin', roleLabel: '어쌔신',
@@ -9867,7 +9905,7 @@ const CHAR_DB = {
       caster._arcaneHits = (caster._arcaneHits || 0) + 1;
       if (caster._arcaneHits >= 4) { caster._arcaneHits = 0; battleAPI.arcaneBlink(caster); }
     },
-    skillDesc: '공격이 적중할 때마다 입힌 피해의 <b>40%</b>만큼 체력 회복. <b>4회 타격</b>마다 가장 가까운 적의 뒤로 순간이동'
+    skillDesc: 'HP <b>2,700</b> · ATK <b>500</b>. 공격이 적중할 때마다 입힌 피해의 <b>40%</b>만큼 체력 회복. <b>4회 타격</b>마다 가장 가까운 적의 뒤로 순간이동'
   },
   satellite: {
     id: 'satellite', name: '인공위성 지후', emoji: '🛰️', role: 'support', roleLabel: '서포터',
@@ -9886,7 +9924,7 @@ const CHAR_DB = {
     id: 'no_u', name: 'NO U 지후', emoji: '🃏', role: 'tank', roleLabel: '탱커',
     rarity: 'legend', color: '#ffd400', portrait: PORTRAITS.no_u, portraitReflect: PORTRAITS.no_u_reflect,
     ...CHARACTER_BALANCE.no_u,
-    skillDesc: '<b>4초 충전 후 2.5초간</b> 자신에게 들어오는 공격 · 스킬 피해(비트마니아 화살표 포함)를 <b>100% 반사</b>하고, 기절 · 빙결 · 화상 · 독 · 나비 · 눈가림 · 잠금 · 디버프 같은 <b>상태이상도 공격한 적에게 되돌려 준다</b>. 반사된 피해는 회피할 수 없다. 반사 중에는 충전이 멈춥니다.'
+    skillDesc: '<b>6.9초 충전 후 2.5초간</b> 자신에게 들어오는 공격 · 스킬 피해(비트마니아 화살표 포함)를 <b>100% 반사</b>하고, 기절 · 빙결 · 화상 · 독 · 나비 · 눈가림 · 잠금 · 디버프 같은 <b>상태이상도 공격한 적에게 되돌려 준다</b>. 반사된 피해는 회피할 수 없다. 반사 중에는 충전이 멈춥니다.'
   },
   tyrant: {
     id: 'tyrant', name: '폭군 지후', emoji: '👑', role: 'tank', roleLabel: '탱커',
@@ -9905,7 +9943,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#e02328', portrait: PORTRAITS.hong,
     ...CHARACTER_BALANCE.hong,
     customAttack(caster, target) { kickHongBall(caster, target); },
-    skillDesc: '<b>6초</b>마다 공을 찬다. 공 피해 <b>ATK(780)</b>, 인접한 적에게 <b>1~7번</b> 무작위로 튕긴 뒤 반경 2칸에 <b>400</b> 폭발 피해'
+    skillDesc: '<b>6초</b>마다 공을 찬다. 공 피해 <b>ATK(780)</b>, 인접한 적에게 <b>1~5번</b> 무작위로 튕긴 뒤 반경 2칸에 <b>400</b> 폭발 피해'
   },
   levelup: {
     id: 'levelup', name: '레벨업 지후', emoji: '⬆️', role: 'dealer', roleLabel: '딜러',
@@ -9931,7 +9969,7 @@ const CHAR_DB = {
     id: 'battery', name: '충전지후', emoji: '🔋', role: 'support', roleLabel: '서포터',
     rarity: 'rare', color: '#65eb06', portrait: PORTRAITS.battery,
     ...CHARACTER_BALANCE.battery,
-    skillDesc: '반경 <b>4칸</b> 안의 아군 스킬 쿨타임이 <b>10%</b> 빨리 찬다 (쿨타임 <b>15초 이상</b>인 스킬에는 적용되지 않는다). 충전 지후 여러 기의 효과는 <b>중첩</b>된다'
+    skillDesc: '반경 <b>4칸</b> 안 아군의 남은 스킬 쿨타임을 <b>초당 8%p</b>씩 채운다 (쿨타임 <b>15초 이상</b>인 스킬에는 적용되지 않는다). 충전 지후 여러 기의 효과는 <b>중첩</b>된다'
   },
   impeachment: {
     id: 'impeachment', name: '탄핵지후', emoji: '⚖️', role: 'tank', roleLabel: '탱커',
@@ -9944,7 +9982,7 @@ const CHAR_DB = {
     id: 'bomb', name: '폭탄 지후', emoji: '💣', role: 'dealer', roleLabel: '딜러',
     rarity: 'epic', color: '#f25843', portrait: PORTRAITS.bomb,
     ...CHARACTER_BALANCE.bomb,
-    skillDesc: '사망 <b>0.8초 후</b> 반경 1.8칸 적에게 광역 <b>2000</b> 피해 (합체 레벨마다 1.5배)'
+    skillDesc: '사망 <b>0.8초 후</b> 반경 2.2칸 적에게 광역 <b>2000</b> 피해 (합체 레벨마다 1.5배)'
   },
   dragon: {
     id: 'dragon', name: '드래곤지후', emoji: '🐉', role: 'dealer', roleLabel: '딜러',
@@ -9958,13 +9996,13 @@ const CHAR_DB = {
     rarity: 'rare', color: '#f88910', portrait: PORTRAITS.meteor,
     ...CHARACTER_BALANCE.meteor,
     customAttack(caster, target) { summonMeteor(caster, target); },
-    skillDesc: '가까운 적 위치에 3초 뒤 낙하하는 메테오 소환 (재사용 5초). 유닛 반경 2배 범위에 <b>900</b> 피해·넉백·5초 화상 (<b>초당 100</b>)'
+    skillDesc: '가까운 적 위치에 3초 뒤 낙하하는 메테오 소환 (재사용 5초). 유닛 반경 2배 범위에 <b>1,200</b> 피해·넉백·5초 화상 (<b>초당 100</b>)'
   },
   blizzard: {
     id: 'blizzard', name: '블리자드 지후', emoji: '🌨️', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#27b4f0', portrait: PORTRAITS.blizzard,
     ...CHARACTER_BALANCE.blizzard,
-    skillDesc: '전투 시작 <b>5초</b> 뒤부터 <b>12초마다</b> 모든 적을 <b>3.5초 빙결</b>. 빙결 직후 <b>3초</b> 동안 공격력 25%·이동속도 50% 감소'
+    skillDesc: '전투 시작 <b>5초</b> 뒤부터 <b>12초마다</b> 모든 적을 <b>2.7초 빙결</b>. 빙결 직후 <b>3초</b> 동안 공격력 25%·이동속도 50% 감소'
   },
   beam: {
     id: 'beam', name: '빔 지후', emoji: '🔦', role: 'dealer', roleLabel: '딜러',
@@ -9977,13 +10015,13 @@ const CHAR_DB = {
     id: 'mutation', name: '돌연변이 지후', emoji: '🧬', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#68b56c', portrait: PORTRAITS.mutation,
     ...CHARACTER_BALANCE.mutation,
-    skillDesc: '라운드 시작 5초 후 무작위 적 1기를 실패작 변이 지후로 바꾼다.'
+    skillDesc: 'HP 2,000 · ATK 250. 라운드 시작 <b>1초</b> 후 무작위 적 1기를 실패작 변이 지후로 바꾼다.'
   },
   mimic: {
     id: 'mimic', name: '미믹 지후', emoji: '🌈', role: 'dealer', roleLabel: '딜러',
     rarity: 'hidden', color: '#8d879e', portrait: PORTRAITS.mimic,
     ...CHARACTER_BALANCE.mimic,
-    skillDesc: '전투 시작 3초 후 양측 덱에서 무작위 지후로 20초간 변신. 변신 중 모든 기본 능력치가 <b>200%</b>이며 즉시 완전 회복한다. 종료 후 HP 1000으로 복귀.'
+    skillDesc: '전투 시작 3초 후 양측 덱에서 무작위 지후로 20초간 변신. 변신 중 모든 기본 능력치가 <b>125%</b>이며 즉시 완전 회복한다. 종료 후 HP 1000으로 복귀.'
   },
   planet: {
     id: 'planet', name: '행성 지후', emoji: '🪐', role: 'dealer', roleLabel: '딜러',
@@ -10028,7 +10066,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#2f7fe0', portrait: PORTRAITS.train,
     ...CHARACTER_BALANCE.train,
     customAttack(caster, target) { trainAttack(caster, target); },
-    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. 일반 공격은 하지 않는다. 라운드 시작 때 필드 <b>무작위 위치</b>에 신호기 <b>4개</b>를 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 <b>4개를 모두</b> 한 번씩 거쳐 초당 <b>16칸</b>으로 돌진한다 (순서는 무작위). 돌진이 끝나면 다음 돌진까지 <b>4.5초</b>, 돌진 중 직접 부딪힌 적 1기당 <b>-0.5초</b> (최소 0.1초). 돌진 중 받는 피해 <b>35%</b> 감소 · 유닛 관통, 직접 부딪힌 적 <b>1,200</b>. 돌진이 끝나고 1초 뒤 신호기가 다시 세워지고, 1초 뒤 다시 돌진한다.'
+    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. 일반 공격은 하지 않는다. 라운드 시작 때 필드 <b>무작위 위치</b>에 신호기 <b>4개</b>를 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 <b>4개를 모두</b> 한 번씩 거쳐 초당 <b>16칸</b>으로 돌진한다 (순서는 무작위). 돌진이 끝나면 다음 돌진까지 <b>4.5초</b>, 돌진 중 직접 부딪힌 적 1기당 <b>-0.5초</b> (최소 0.1초). 돌진 중 받는 피해 <b>35%</b> 감소 · 유닛 관통, 직접 부딪힌 적 <b>1,400</b>. 돌진이 끝나고 1초 뒤 신호기가 다시 세워지고, 1초 뒤 다시 돌진한다.'
   },
   berserker: {
     id: 'berserker', name: '버서커 지후', emoji: '🪓', role: 'dealer', roleLabel: '딜러',
@@ -10070,7 +10108,7 @@ const CHAR_DB = {
     id: 'parasite', name: '기생충 지후', emoji: '🪱', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#7f9a2e', portrait: PORTRAITS.parasite || jhPlaceholder('🪱', '#7f9a2e'),
     ...CHARACTER_BALANCE.parasite,
-    skillDesc: 'ATK 10 · 공격 간격 <b>0.5초</b> · 사거리 <b>2.5칸</b>. <b>6.5초마다</b> 몸에서 <b>버러지후</b>(HP <b>2,000</b> · 이동속도 3.5칸, 기생충 레벨만큼 강해짐)를 내보낸다. 버러지후는 가장 가까운 적을 쫓아가, 닿으면 그 적에게 붙어 <b>[조종]</b>: 그 적은 제 편을 공격하고 이동속도 +2칸. 체력이 <b>25%</b> 아래가 되거나 <b>6초</b>가 지나면 풀린다. 조종 중에는 기생충 지후가 받는 피해 <b>60%</b> 감소 · 버러지후 쿨타임이 줄지 않는다.'
+    skillDesc: 'ATK 10 · 공격 간격 <b>0.5초</b> · 사거리 <b>2.5칸</b>. <b>5초마다</b> 몸에서 <b>버러지후</b>(HP <b>3,000</b> · 이동속도 3.8칸, 기생충 레벨만큼 강해짐)를 내보낸다. 버러지후는 가장 가까운 적을 쫓아가, 닿으면 그 적에게 붙어 <b>[조종]</b>: 그 적은 제 편을 공격하고 이동속도 +2칸. 체력이 <b>25%</b> 아래가 되거나 <b>6초</b>가 지나면 풀린다. 조종 중에는 기생충 지후가 받는 피해 <b>60%</b> 감소 · 버러지후 쿨타임이 줄지 않는다.'
   },
   flower: {
     id: 'flower', name: '꽃 지후', emoji: '🌺', role: 'dealer', roleLabel: '딜러',
@@ -10082,20 +10120,20 @@ const CHAR_DB = {
     id: 'lantern', name: '랜턴 지후', emoji: '🏮', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#f2a93b', portrait: PORTRAITS.lantern || jhPlaceholder('🏮', '#f2a93b'),
     ...CHARACTER_BALANCE.lantern,
-    skillDesc: '사거리 <b>6칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 19 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 31.5)을 하나씩 꽂는다. 체력이 가득 찬 아군과 <b>다른 랜턴 지후</b>에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
+    skillDesc: '사거리 <b>6칸</b>. 가장 가까운 적에게 <b>공격 빔</b>(0.1초마다 15 · 입힌 피해의 50% 흡혈), <b>체력이 가장 낮은 아군</b>에게 <b>회복 빔</b>(0.1초마다 17.3)을 하나씩 꽂는다. 체력이 가득 찬 아군과 <b>다른 랜턴 지후</b>에게는 회복 빔을 쏘지 않는다. 대상이 사거리 밖으로 벗어나면 빔이 <b>1.5초</b> 동안 흐려져 피해 · 회복이 <b>2</b>로 줄고 그 뒤 끊긴다. 흐려진 동안 다시 가까워지면 원래대로 돌아온다.'
   },
   rocket: {
     id: 'rocket', name: '로켓병 지후', emoji: '🚀', role: 'dealer', roleLabel: '딜러',
     rarity: 'epic', color: '#d9480f', portrait: PORTRAITS.rocket || jhPlaceholder('🚀', '#d9480f'),
     ...CHARACTER_BALANCE.rocket,
     customAttack(caster, target) { rocketShot(caster, target); },
-    skillDesc: 'ATK <b>850</b> · 공격 간격 <b>7.5초</b> · 사거리 <b>8칸</b>. 박격포처럼 대상 자리에 로켓을 쏘아 반경 <b>1칸</b> 광역 피해를 주고, 그 자리에 <b>3초</b> 동안 불길을 남긴다 (초당 <b>150</b>).'
+    skillDesc: 'ATK <b>1,000</b> · 공격 간격 <b>7초</b> · 사거리 <b>8칸</b>. 박격포처럼 대상 자리에 로켓을 쏘아 반경 <b>1칸</b> 광역 피해를 주고, 그 자리에 <b>3초</b> 동안 불길을 남긴다 (초당 <b>150</b>).'
   },
   beatmania: {
     id: 'beatmania', name: '비트마니아 지후', emoji: '🎵', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#b14bff', portrait: PORTRAITS.beatmania || jhPlaceholder('🎵', '#b14bff'),
     ...CHARACTER_BALANCE.beatmania,
-    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. 일반 공격: <b>80</b> · 0.8초 · 사거리 4칸. 필드를 <b>4줄</b>로 나눠 <b>0.15~0.55초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 아군 진영에서 적진 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>286</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.08초 전부터 0.08초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 <b>0.5칸</b> 적에게 <b>300</b> 피해. 테두리 색은 마지막 화살표 색으로 바뀐다.'
+    skillDesc: '전장에 <b>1기</b>만 둘 수 있다. 일반 공격: <b>80</b> · 0.8초 · 사거리 4칸. 필드를 <b>4줄</b>로 나눠 <b>0.15~0.55초</b>마다 무작위 줄에 무작위 방향(↑↓←→) <b>화살표</b>를 아군 진영에서 적진 쪽으로 흘려보낸다. 화살표는 빠르게 날아가 처음 닿은 적에게 <b>180</b> 피해를 주고 사라진다 (아군은 통과). 화살표가 적에게 닿기 <b>0.08초 전부터 0.08초 뒤까지</b> 모든 피해를 <b>[회피]</b>하고, 그 화살표 방향으로 <b>1.5칸</b> 순간이동하며 주변 <b>0.5칸</b> 적에게 <b>300</b> 피해. 회피가 끝나면 <b>0.2초</b> 동안은 다시 회피하지 못한다. 테두리 색은 마지막 화살표 색으로 바뀐다.'
   },
   gun: {
     id: 'gun', name: '총 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -10103,7 +10141,7 @@ const CHAR_DB = {
     ...CHARACTER_BALANCE.gun,
     onLevelChange(u, announce) { gunApply(u, announce); },
     customAttack(caster, target) { gunAttack(caster, target); },
-    skillDesc: '<b>레벨이 올라도 HP는 그대로</b>, 대신 무기가 바뀐다. Lv.1 <b>권총</b> (ATK 300 · 1.8초 · 사거리 4.5칸) · Lv.2 <b>쌍권총</b> (0.9초) · Lv.3 <b>샷건</b> (1.65초 · 30° 부채꼴, 가까울수록 최대 2,000 ~ 최소 200) · Lv.4 <b>라이플</b> (ATK 120 · 0.25초 · 사거리 5.5칸) · Lv.5 이상 <b>스나이퍼</b> (맞은 적 <b>즉사</b> · 6초 · 사거리 8칸).'
+    skillDesc: '<b>레벨이 올라도 HP는 그대로</b>, 대신 무기가 바뀐다. Lv.1 <b>권총</b> (ATK 350 · 1.8초 · 사거리 4.5칸) · Lv.2 <b>쌍권총</b> (0.9초) · Lv.3 <b>샷건</b> (1.65초 · 30° 부채꼴, 가까울수록 최대 3,000 ~ 최소 500) · Lv.4 <b>라이플</b> (ATK 120 · 0.25초 · 사거리 5.5칸) · Lv.5 이상 <b>스나이퍼</b> (맞은 적 <b>즉사</b> · 6초 · 사거리 8칸).'
   },
   bug: {
     id: 'bug', name: '버러지후', emoji: '🐛', role: 'controller', roleLabel: '컨트롤러',
@@ -10116,20 +10154,20 @@ const CHAR_DB = {
     id: 'taxi', name: '택시 지후', emoji: '🚕', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'hidden', color: '#f5b800', portrait: PORTRAITS.taxi || jhPlaceholder('🚕', '#f5b800'),
     ...CHARACTER_BALANCE.taxi,
-    skillDesc: '공격하지 않는다. 라운드 시작 직후 <b>무작위 아군</b>이 승객이 되어 점프하며 택시를 부른다. 택시는 기본 <b>속도 2.4</b>로 달리며, 콜을 받고 <b>0.5초 뒤</b> 출발해 승객을 태운다. 택시 지후가 쓰러지지 않는 한 <b>승객은 무적</b>이고, 승객을 태운 택시기사는 <b>쉴드 9999</b>를 얻는다. 택시는 승객을 태우고 <b>적진 맨 끝 무작위 위치</b>까지 가서 내려 준다. 승객을 내려 주고 <b>2초</b> 쉰 뒤 가장 가까운 적이 택시를 부르고, <b>1초 뒤</b> 출발해 그 적을 태운다. 적을 태우고 <b>2초</b> 쉰 뒤 적과 함께 <b>속도 50</b>으로 가장 먼 맵 외벽을 향해 돌진, 그 적과 함께 <b>소멸</b>한다.'
+    skillDesc: '공격하지 않는다. 라운드 시작 직후 <b>무작위 아군</b>이 승객이 되어 점프하며 택시를 부른다. 택시는 기본 <b>속도 2.4</b>로 달리며, 콜을 받고 <b>0.5초 뒤</b> 출발해 승객을 태운다. 택시 지후가 쓰러지지 않는 한 <b>승객은 무적</b>이고, 승객을 태운 택시기사는 <b>쉴드 9999</b>를 얻는다. 택시는 승객을 태우고 <b>적진 맨 끝 무작위 위치</b>까지 가서 내려 준다. 승객을 내려 주고 <b>2초</b> 쉰 뒤 가장 가까운 적이 택시를 부르고, <b>1초 뒤</b> 출발해 그 적을 태운다. 적을 태우고 <b>2초</b> 쉰 뒤 적과 함께 <b>속도 50</b>으로 가장 먼 맵 외벽 밖으로 돌진해 <b>그 적만 소멸</b>시킨다. 택시는 <b>2초</b> 뒤 그 먼 곳에서 돌아와 다시 아군을 태우고 같은 운행을 반복한다.'
   },
   shanghai: {
     id: 'shanghai', name: '상하이 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#2b2b2b', portrait: PORTRAITS.shanghai,
     ...CHARACTER_BALANCE.shanghai,
-    customAttack(caster, target) { shanghaiShot62(caster); },
-    skillDesc: '사거리 <b>20칸</b>. 라운드 시작 후 <b>단 한 번</b>만 공격할 수 있다. 무작위 적에게 총을 쏘며, 총알이 영 좋지 않은 곳을 스친 대상은 <b>[고자]</b>가 된다. <b>[고자]</b>: 회복하거나 회복 스킬을 받기 전까지 <b>최대 체력이 1</b>이 된다. 라운드가 끝나도 이어지고, 회복을 한 번이라도 받으면 체력이 원래대로 돌아오며 <b>풀회복</b>한다.'
+    customAttack(caster, target) { if (!caster._shDone) shanghaiShot62(caster); else launchProjectileAttack(caster, target, caster.def.atk); }, // 7.0 일반 공격도 한다
+    skillDesc: '사거리 <b>20칸</b>. 라운드의 <b>첫 공격</b>은 무작위 적을 쏘는 <b>[고자] 저격</b>이고, 그 뒤로는 <b>10초</b>마다 일반 공격(<b>500</b>)을 한다. 저격은 총알이 영 좋지 않은 곳을 스친 대상은 <b>[고자]</b>가 된다. <b>[고자]</b>: 회복하거나 회복 스킬을 받기 전까지 <b>최대 체력이 1</b>이 된다. 라운드가 끝나도 이어지고, 회복을 한 번이라도 받으면 체력이 원래대로 돌아오며 <b>풀회복</b>한다.'
   },
   rccar: {
     id: 'rccar', name: 'RC카 지후', emoji: '🎮', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#ff4d6d', portrait: PORTRAITS.rccar,
     ...CHARACTER_BALANCE.rccar,
-    skillDesc: '공격하지 않는다. 게임 시작 <b>10초 뒤</b>부터 <b>8초마다</b> <b>[장난감 기차]</b> 또는 <b>[장난감 자동차]</b>를 소환한다. 장난감은 무작위 벽면에서 나와 맞은편 벽면으로 <b>속도 50</b>으로 돌진한다. 기차는 아군 · 적군 상관없이 부딪히면 <b>즉사</b>, 자동차는 아군 · 적군 상관없이 <b>현재 체력의 75%</b> 피해를 준다. RC카 지후는 <b>움직이지 않는다</b>. 소환 <b>1초 전</b> 돌진 경로를 붉게 미리 보여 주며, 그동안 RC카 지후는 <b>무적</b>이다. (기차는 신칸센 지후, 자동차는 폭주족 지후 초상화)'
+    skillDesc: '공격하지 않는다. 게임 시작 <b>10초 뒤</b>부터 <b>5초마다</b> <b>[장난감 기차]</b> 또는 <b>[장난감 자동차]</b>를 소환한다. 장난감은 무작위 벽면에서 나와 맞은편 벽면으로 <b>속도 50</b>으로 돌진한다. 기차는 아군 · 적군 상관없이 부딪히면 <b>즉사</b>, 자동차는 아군 · 적군 상관없이 <b>현재 체력의 75%</b> 피해를 준다. RC카 지후는 <b>움직이지 않는다</b>. 소환 <b>1초 전</b> 돌진 경로를 붉게 미리 보여 주며, 그동안 RC카 지후는 <b>무적</b>이다. (기차는 신칸센 지후, 자동차는 폭주족 지후 초상화)'
   },
   ravage: {
     id: 'ravage', name: '래비지 지후', emoji: '🦌', role: 'dealer', roleLabel: '딜러',
@@ -10142,19 +10180,19 @@ const CHAR_DB = {
     id: 'stone', name: '돌 지후', emoji: '🪨', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#8a5a24', portrait: PORTRAITS.stone,
     ...CHARACTER_BALANCE.stone,
-    skillDesc: '공격하지 않는다. 모든 유닛을 <b>관통</b>하며, 라운드 시작과 함께 <b>속도 6</b>으로 적진 끝까지 일직선으로 굴러간다. 부딪힌 적은 돌 지후 <b>현재 체력의 10%</b> 피해를 입는다. 몸집이 <b>2배</b>로 크고, 상대 진영 끝에 닿으면 <b>소멸</b>한다.'
+    skillDesc: '공격하지 않는다. 모든 유닛을 <b>관통</b>하며, 라운드 시작과 함께 <b>속도 6</b>으로 적진 끝까지 일직선으로 굴러간다. 부딪힌 적은 <b>1,500</b> 피해를 입는다. 전투가 시작되면 몸집이 <b>2배</b>로 커지고 (배치할 때는 한 칸만 차지), 상대 진영 끝에 닿으면 <b>소멸</b>한다.'
   },
   purify: {
     id: 'purify', name: '정화 지후', emoji: '🔔', role: 'support', roleLabel: '서포터',
     rarity: 'rare', color: '#4fe0f0', portrait: PORTRAITS.purify,
     ...CHARACTER_BALANCE.purify,
-    skillDesc: '<b>4초마다</b> 종을 울린다. 종소리는 반경 <b>7칸</b>: 범위 안의 적은 <b>100</b> 피해를 입고, 아군은 <b>최대 체력의 15%</b>를 회복하며 <b>모든 디버프</b>가 제거된다.'
+    skillDesc: '<b>4초마다</b> 종을 울린다. 종소리는 반경 <b>7칸</b>: 범위 안의 적은 <b>100</b> 피해를 입고, 아군은 <b>최대 체력의 15%</b>를 회복하며 <b>모든 디버프</b>가 제거되고, <b>2.5초</b> 동안 <b>디버프 면역</b>이 된다.'
   },
   blackhole: {
     id: 'blackhole', name: '블랙홀 지후', emoji: '🕳️', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#2b1d4f', portrait: PORTRAITS.blackhole || jhPlaceholder('🕳️', '#2b1d4f'),
     ...CHARACTER_BALANCE.blackhole,
-    skillDesc: '공격하지 않는다. <b>5초마다 [중력장]</b>: 반경 <b>10칸</b> 안의 적에게 <b>500</b> 피해를 주고, 자신과의 거리의 <b>20%</b>만큼 끌어당긴다.'
+    skillDesc: '공격하지 않는다. <b>5초마다 [중력장]</b>: 반경 <b>10칸</b> 안의 적에게 <b>350</b> 피해를 주고, 자신과의 거리의 <b>20%</b>만큼 끌어당긴다.'
   },
   ufc: {
     id: 'ufc', name: 'UFC 지후', emoji: '🥊', role: 'support', roleLabel: '서포터',
@@ -10186,7 +10224,7 @@ const CHAR_DB = {
     id: 'water', name: '물 지후', emoji: '🌊', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#2f8fff', portrait: PORTRAITS.water || jhPlaceholder('🌊', '#2f8fff'),
     ...CHARACTER_BALANCE.water,
-    skillDesc: '<b>5초마다</b> 적진 끝까지 일직선으로 나아가는 <b>파도</b>(폭 = 몸 지름)를 부른다. 파도에 맞은 적은 <b>5칸 넉백</b>되고 <b>잃은 체력의 30%</b> 피해를 입는다.'
+    skillDesc: '<b>5초마다</b> 적진 끝까지 일직선으로 나아가는 <b>파도</b>(폭 = 몸 지름)를 부른다. 파도에 맞은 적은 <b>5칸 넉백</b>되고 <b>잃은 체력의 30% + 250</b> 피해를 입는다.'
   },
   mercury: {
     id: 'mercury', name: '수은 지후', emoji: '🪩', role: 'tank', roleLabel: '탱커',
@@ -10200,13 +10238,13 @@ const CHAR_DB = {
     rarity: 'rare', color: '#ffd21f', portrait: PORTRAITS.electric || jhPlaceholder('⚡', '#ffd21f'),
     ...CHARACTER_BALANCE.electric,
     onAttack(caster, target) { electricZap(caster, target); },
-    skillDesc: 'HP 1,500 · ATK 180 · 근접 · 공격 간격 0.8초 · 이동속도 3.6칸. 공격하면 가까운 적 <b>2명</b>에게 전기가 튄다 (<b>80%</b> · <b>60%</b>). 공격할 때 <b>20%</b> 확률로 <b>0.5초 기절</b>. 몸집이 작다. 놓을 때 <b>1~5마리</b>가 무작위로 나온다 (많을수록 드묾 · 1마리 35% · 2마리 27% · 3마리 19% · 4마리 12% · 5마리 7%, 추가분은 유닛 수에 안 셈).'
+    skillDesc: 'HP 1,800 · ATK 180 · 근접 · 공격 간격 0.8초 · 이동속도 3.6칸. 공격하면 가까운 적 <b>2명</b>에게 전기가 튄다 (<b>80%</b> · <b>60%</b>). 공격할 때 <b>20%</b> 확률로 <b>0.5초 기절</b>. 몸집이 작다. 놓을 때 <b>1~5마리</b>가 무작위로 나온다 (많을수록 드묾 · 1마리 35% · 2마리 27% · 3마리 19% · 4마리 12% · 5마리 7%, 추가분은 유닛 수에 안 셈).'
   },
   blessing: {
     id: 'blessing', name: '축복 지후', emoji: '🙏', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#ffcf5a', portrait: PORTRAITS.blessing || jhPlaceholder('🙏', '#ffcf5a'),
     ...CHARACTER_BALANCE.blessing,
-    skillDesc: 'HP 1,000 · ATK 60 · 부채꼴 100° · 사거리 7칸 · 이동속도 0.3칸. 라운드 시작 <b>1.5초</b> 뒤 <b>축복</b> <b>2개</b>를 얻는다. 축복은 라운드가 끝나거나 축복 지후가 쓰러져도 <b>경기 끝까지</b> 남고 <b>중복</b>된다: 아군 공격력 +5% · 치명타 +2% · 초당 회복 10 · 받는 피해 -5% · 공격속도 +5% · 이동속도 +0.2칸 (0.5칸 이하 아군 제외) · 라운드 시작 쉴드 100.'
+    skillDesc: 'HP 1,000 · ATK 150 · 부채꼴 100° · 사거리 7칸 · 이동속도 0.3칸. 라운드 시작 <b>1.5초</b> 뒤 <b>축복</b> <b>2개</b>를 얻는다. 축복은 라운드가 끝나거나 축복 지후가 쓰러져도 <b>경기 끝까지</b> 남고 <b>중복</b>된다: 아군 공격력 +5% · 치명타 +2% · 초당 회복 10 · 받는 피해 -5% · 공격속도 +5% · 이동속도 +0.2칸 (0.5칸 이하 아군 제외) · 라운드 시작 쉴드 100.'
   },
   tesla: {
     id: 'tesla', name: '테슬라코일 지후', emoji: '🌀', role: 'dealer', roleLabel: '딜러',
@@ -10218,13 +10256,13 @@ const CHAR_DB = {
     id: 'soulstealer', name: '소울스틸러 지후', emoji: '👻', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#3fd0c9', portrait: PORTRAITS.soulstealer || jhPlaceholder('👻', '#3fd0c9'),
     ...CHARACTER_BALANCE.soulstealer,
-    skillDesc: '사거리 6칸 · ATK <b>200</b> · 공격 간격 1초. 아군 · 적 가리지 않고 <b>누군가 쓰러지면 영혼</b>이 생기고, <b>2초</b> 뒤 소울스틸러 지후가 흡수한다. 영혼 1개당 공격력 <b>+30</b> (이번 라운드 동안), 영혼을 얻을 때마다 HP <b>200</b> 회복. 양쪽에 소울스틸러가 있으면 각자 영혼을 하나씩 얻는다.'
+    skillDesc: '사거리 6칸 · ATK <b>200</b> · 공격 간격 <b>1.6초</b>. 아군 · 적 가리지 않고 <b>누군가 쓰러지면 영혼</b>이 생기고, <b>2초</b> 뒤 소울스틸러 지후가 흡수한다. 영혼 1개당 최대 체력 <b>+10%</b> · 공격력 <b>+12%</b> (이번 라운드 동안), 영혼을 얻을 때마다 늘어난 최대 체력의 <b>10%</b> 회복. 양쪽에 소울스틸러가 있으면 각자 영혼을 하나씩 얻는다.'
   },
   moai: {
     id: 'moai', name: '🗿 지후', emoji: '🗿', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#8a7f78', portrait: PORTRAITS.moai || jhPlaceholder('🗿', '#8a7f78'),
     ...CHARACTER_BALANCE.moai,
-    skillDesc: '공격하지 않고 움직이지 않는다. <b>3초마다</b> 반경 <b>2칸</b>에 중심부터 커지는 원형 파동을 일으켜 맞은 적을 <b>2.5초 빙결</b>시킨다. 패시브: 이 지후는 <b>적 진영에도 놓을 수 있다</b>.'
+    skillDesc: '공격하지 않고 움직이지 않는다. <b>3초마다</b> 반경 <b>2.4칸</b>에 중심부터 커지는 원형 파동을 일으켜 맞은 적을 <b>2.5초 빙결</b>시킨다. 패시브: 이 지후는 <b>적 진영에도 놓을 수 있다</b>.'
   },
   nuke: {
     id: 'nuke', name: '핵미사일 지후', emoji: '☢️', role: 'support', roleLabel: '서포터',
@@ -10245,20 +10283,20 @@ const CHAR_DB = {
     rarity: 'rare', color: '#1e7a2e', portrait: PORTRAITS.archer,
     ...CHARACTER_BALANCE.archer,
     customAttack(caster, target) { archerShot(caster, target); },
-    skillDesc: '사거리 <b>10칸</b>. 화살이 일직선으로 날아가 처음 닿은 적에게 <b>320</b>. <b>20%</b> 확률로 <b>황금 화살</b>: <b>640</b> 피해로 모든 적을 관통하며 끝까지 날아간다. 아처가 쓰러져도 날아가던 화살은 맞힌다.'
+    skillDesc: '사거리 <b>10칸</b>. 화살이 일직선으로 날아가 처음 닿은 적에게 <b>320</b>. <b>20%</b> 확률로 <b>황금 화살 2연발</b>: 한 발마다 <b>640</b> 피해로 모든 적을 관통하며 끝까지 날아간다. 아처가 쓰러져도 날아가던 화살은 맞힌다.'
   },
   mortar: {
     id: 'mortar', name: '박격포 지후', emoji: '💣', role: 'dealer', roleLabel: '딜러',
     rarity: 'rare', color: '#2e8b3a', portrait: PORTRAITS.mortar,
     ...CHARACTER_BALANCE.mortar,
     customAttack(caster, target) { mortarShot(caster, target); },
-    skillDesc: '움직이지 않는다. 사거리 <b>10.5칸</b>. <b>5초마다</b> 적에게 박격포를 쏘아 떨어진 자리 반경 <b>1.2칸</b>에 <b>600</b> 광역 피해.'
+    skillDesc: '움직이지 않는다. 사거리 <b>10.5칸</b>. <b>5초마다</b> 적에게 박격포를 쏘아 떨어진 자리 반경 <b>1.2칸</b>에 <b>800</b> 광역 피해.'
   },
   meatshield: {
     id: 'meatshield', name: '고기방패 지후', emoji: '🥩', role: 'tank', roleLabel: '탱커',
     rarity: 'rare', color: '#555555', portrait: PORTRAITS.meatshield,
     ...CHARACTER_BALANCE.meatshield,
-    skillDesc: 'HP <b>8,500</b>. 몸집이 조금 크다. 공격(ATK 100 · 2.5초)은 형편없지만 탱킹 역할에는 충실하다.'
+    skillDesc: 'HP <b>9,000</b>. 몸집이 조금 크다. 공격(ATK 100 · 2.5초)은 형편없지만 탱킹 역할에는 충실하다.'
   },
 };
 
@@ -10676,7 +10714,7 @@ const RANK_S_ABILITIES = {
   slime: { name: '산성 분열', desc: '분해될 때 반경 2칸에 <b>100</b> 피해' },
   slot: { name: '빠른 손', desc: '슬롯을 돌리는 간격 <b>-0.5초</b>', apply(d) { d.slotEvery = Math.max(0.3, d.slotEvery - 0.5); } },
   smoke: { name: '짙은 연막', desc: '연막 반지름 <b>+1칸</b>', apply(d) { d.smokeRadius += 45; } },
-  battery: { name: '고속 충전', desc: '쿨타임 가속 <b>+2.5%</b> (10% → 12.5%)', apply(d) { d.chargeAuraRate += 0.025; } },
+  battery: { name: '고속 충전', desc: '초당 <b>8%p → 10%p</b> 채운다', apply(d) { d.chargeAuraRate += 0.02; } },
   hmg: { name: '과열 연사', desc: '최대 연사 간격 <b>0.05초</b>까지', apply(d) { d.hmgMinInterval = 0.05; } },
   mega: { name: '연장 방송', desc: '공격력 버프 지속 <b>+3초</b> (4초 → 7초)', apply(d) { d.megaTime += 3; } },
   frog: { name: '끈질긴 개구리', desc: '변신 실패 시 <b>35%</b> 확률로 소멸하지 않고 레벨업' },
@@ -10714,7 +10752,7 @@ const RANK_S_ABILITIES = {
   combo: { name: '연타 달인', desc: '공격력 증가량 <b>+5%</b>', apply(d) { d.comboBonusPerHit += 0.05; } },
   portal: { name: '안전한 이동', desc: '이동한 아군 <b>4초 무적</b>' },
   bomb: { name: '즉발 신관', desc: '사망 <b>즉시</b> 터진다', apply(d) { d.explosionDelay = 0; } },
-  hong: { name: '정확한 슈팅', desc: '공이 <b>4~7번</b> 튕긴다' },
+  hong: { name: '정확한 슈팅', desc: '공이 <b>3~5번</b> 튕긴다' },
   dust: { name: '짙은 황사', desc: '황사 지속 <b>+1초</b> · 황사 안의 적 공격력 <b>-20%</b>', apply(d) { d.dustDuration += 1; } },
   vampire: { name: '피의 갈증', desc: '기본 공격력 <b>+50</b>', pre(d) { d.atk += 50; } },
   // ── 4.3 ──
@@ -10723,13 +10761,13 @@ const RANK_S_ABILITIES = {
   god: { name: '신의 가호', desc: '합체할 때 <b>15%</b> 확률로 레벨 <b>+2</b>' },
   developer: { name: '관리자 권한', desc: '부채꼴 반지름 <b>50칸</b> · 공격력 <b>9999</b>', apply(d) { d.fanRadius = 50 * 45; d.atk = 9999; } },
   rank: { name: '승급 심사', desc: '급을 바꾸는 동안 <b>무적</b>' },
-  hollow: { name: '빠른 귀환', desc: '포탈이 <b>1초</b> 만에 닫히고 · 공허가 열리기까지 <b>-1.5초</b>', apply(d) { d.hollowOpenTime = 1; d.hollowOpenDelay = Math.max(0, d.hollowOpenDelay - 1.5); } },
+  hollow: { name: '빠른 귀환', desc: '포탈이 <b>1초</b> 만에 닫힌다', apply(d) { d.hollowOpenTime = 1; } }, // 7.0 열리기까지 감소 삭제
   phantom: { name: '예고된 등장', desc: '라운드 시작 후 <b>6초</b> 은신 (혼자 남으면 풀림)' },
   gumiho: { name: '구미호의 본성', desc: '체력 <b>40%</b> 아래에서 공격력 <b>+100%</b>' },
   moon: { name: '보름달', desc: '공격 간격 <b>0.35초</b>', apply(d) { d.atkSpeed = 0.35; } },
   gambler: { name: '초심자의 행운', desc: '레벨을 <b>두 번</b> 굴려 높은 쪽' },
   dosa: { name: '축지법', desc: '라운드 시작 <b>즉시</b> 아공간에 들어가고, 아공간에서는 <b>가까운 적</b>에게 다가간다' },
-  mutation: { name: '급속 변이', desc: '라운드 시작 <b>1초</b> 뒤 변이', apply(d) { d.mutationDelay = 1; } },
+  mutation: { name: '급속 변이', desc: '라운드 시작 <b>0.5초</b> 뒤 변이', apply(d) { d.mutationDelay = 0.5; } },
   dragon: { name: '꺼지지 않는 불', desc: '불길 <b>+2초</b> 지속', apply(d) { d.fireTrailDuration += 2; } },
   roulette: { name: '포커페이스', desc: '대상을 조준하는 동안 받는 피해 <b>-95%</b>' },
   demonblade: { name: '마검 숙련', desc: '마검 모드 <b>+1초</b> · 끝난 뒤 기절 <b>-1초</b>', apply(d) { d.bladeDuration += 1; d.bladeStun = Math.max(0, d.bladeStun - 1); } },
@@ -10744,7 +10782,7 @@ const RANK_S_ABILITIES = {
   bat: { name: '풀스윙 연타', desc: '공격 간격 <b>1.5초</b>', apply(d) { d.atkSpeed = 1.5; } },
   reaper: { name: '끝나지 않는 원한', desc: '원한으로 대상이 죽으면 다른 무작위 적에게 <b>원한을 다시</b> 건다 (사신이 죽으면 취소)' },
   bomber: { name: '선제 폭격', desc: '라운드 시작 <b>5초</b> 뒤 첫 폭격', apply(d) { d.bombFirst = 5; } },
-  growth: { name: '못다 핀 성장', desc: '성장 전에 죽으면 <b>다음 라운드</b> 레벨 <b>+1</b>' },
+  growth: { name: '폭풍 성장', desc: '<b>15%</b> 확률로 레벨이 <b>2</b> 오른다' },
   guardian: { name: '수호 충격', desc: '수호자 쉴드가 깨지면 범위 안의 적 <b>1.5초 기절</b>' },
   clock: { name: '시간 지배', desc: '효과가 <b>필드 전체</b>에 적용', apply(d) { d.pulseRadiusPx = 2400; } },
   arcane: { name: '마력 흡수', desc: '체력 회복량 <b>+5%</b>', apply(d) { d.healOnHitFraction += 0.05; } },
@@ -10774,7 +10812,7 @@ const RANK_S_ABILITIES = {
   tesla: { name: '고전압', desc: '전기 회전속도 <b>+15%</b>', apply(d) { d.teslaPeriod /= 1.15; } },
   typhoon: { name: '나비 효과', desc: '2단계 지속시간 <b>+1초</b>', apply(d) { d.stage2Time += 1; } },
   beatmania: { name: '느슨', desc: '회피 판정 범위 <b>+0.04초</b>', apply(d) { d.beatWindow += 0.04; } },
-  soulstealer: { name: '영혼 포식', desc: '영혼 1개당 공격력 <b>+40</b>', apply(d) { d.soulAtk = 40; } },
+  soulstealer: { name: '영혼 포식', desc: '영혼 1개당 공격력 증가 <b>12% → 15%</b>', apply(d) { d.soulAtkPct = 0.15; } },
   moai: { name: '큰 파동', desc: '파동 반경 <b>+0.5칸</b>', apply(d) { d.moaiRadius += 22.5; } },
   biker: { name: '직진 본능', desc: '돌진 각도 <b>-30° ~ 30°</b> · 시동 시간 <b>절반</b>', apply(d) { d.bikeAngleSpread = 30; d.bikeChargeTime /= 2; } },
   hacker: { name: '정확한 입력', desc: '<b>없는 지후</b>를 타이핑하지 않는다 (대상이 사라지면 다른 적을 해킹)' },
@@ -10789,6 +10827,7 @@ function rankS(u, id) { return !!(u && u.rank >= 1 && u.charId === id); }
 // 4.2.1 받는 회복 배율: 주사 S에 맞으면 0 · 독 S 중독이면 0.4
 function healRecvMult(u) {
   if (!u) return 1;
+  if (u.charId === 'metal') return 0; // 7.0 메탈은 회복 불가
   if (u._noHeal > 0) return 0;
   const p = u.statuses && u.statuses.poison;
   if (p && rankS(p.src, 'poison')) return 0.4;
@@ -14380,7 +14419,7 @@ function showScreen(name) {
   if (name === 'battle') { if (state.layoutEw == null) state.layoutEw = window.innerWidth >= 800 && window.innerWidth > window.innerHeight; } // 5.5.1 경기 동안 방향 고정
   else if (name !== 'end') state.layoutEw = null;
   state.screen = name;
-  { const bh = document.getElementById('blessingHud'); if (bh && name !== 'battle') bh.style.display = 'none'; } // 6.2.2 축복 표시는 전투 화면에서만
+  { const bh = document.getElementById('blessingHud'); if (bh && name !== 'battle') bh.hidden = true; } // 6.2.2 축복 표시는 전투 화면에서만
   if (typeof presenceSyncPick === 'function') presenceSyncPick(); // 6.0.3 경쟁전 · 드래프트 픽 화면이면 친구에게 '픽 선택 중'으로 보인다
   v4OnScreen(name);
   if (['leaderboard', 'inventory', 'patch'].includes(name) && typeof mqVisit === 'function') mqVisit(name);
@@ -18150,7 +18189,7 @@ function levelUpUnitCore(u) {
   u.maxHp = u.charId === 'planet' ? baseHp : Math.round(baseHp * factor);
   u.hp = u.maxHp; // full heal on level up
   u.def.atk = u.charId === 'planet' ? baseAtk : Math.round(baseAtk * factor);
-  if (u._souls) u.def.atk += u._souls * (u.def.soulAtk || 0); // 5.3 소울스틸러 영혼은 레벨이 바뀌어도 남는다
+  if (u._souls) { const sb = soulBase(u); u.def.atk += Math.round(sb.atk * (u.def.soulAtkPct || 0)) * u._souls; u.maxHp += Math.round(sb.hp * (u.def.soulHpPct || 0)) * u._souls; u.hp = u.maxHp; } // 5.3 영혼은 레벨이 바뀌어도 남는다 (7.0 % 기준)
   if (u._ravageAtk) u.def.atk += u._ravageAtk; // 6.2 래비지 영구 공격력
   if (u.charId === 'bomb') u.def.explosionDamage = Math.round(u.baseExplosionDamage * effMult(u)); // 6.0 스킬 피해 +10%
   if (u.baseBoltDamage != null) u.def.boltDamage = Math.round(u.baseBoltDamage * effMult(u));
@@ -18293,7 +18332,6 @@ function spawnUnit(side, x, y, charId, opts) {
   if (state.mode === 'wwe') wweDecorateEl(el, side); // 4.6.3 WWE 개인전 팀 색
   if (def.small) el.classList.add('unit-small');
   if (def.big) el.classList.add('unit-big');
-  if (def.radiusMul > 1) el.style.scale = String(def.radiusMul); // 6.2.1 돌 지후: 반지름 ×2 만큼 화면에서도 크게
   el.style.left = x + 'px'; el.style.top = y + 'px';
   el.innerHTML = `
     <span class="unit-icon">${portraitHtml(def)}</span>
@@ -19222,7 +19260,7 @@ function kickHongBall(caster, target) {
   ball.style.top = caster.y + 'px';
   worldEl().appendChild(ball);
   const hitIds = new Set();
-  const bounces = rankS(caster, 'hong') ? 4 + Math.floor(Math.random() * 4) : 1 + Math.floor(Math.random() * 7); // 3.8.3: 1~7번 · 홍명보 S: 4~7번
+  const bounces = rankS(caster, 'hong') ? 3 + Math.floor(Math.random() * 3) : 1 + Math.floor(Math.random() * 5); // 7.0: 1~5번 · 홍명보 S: 3~5번
   let hits = 0, last = null;
   const bounce = (next) => {
     if (!next.alive || !isHostile(caster, next)) { ball.remove(); return; }
@@ -20038,19 +20076,21 @@ function aiSteerAndAttack(u, dt) {
     const ally = allies[0];
     // 4.4.2 리워크: 반경 4칸 안의 아군 쿨타임이 4% 빨리 흐른다 (1초에 0.04초 더). 충전 지후가 여러 기면 더해진다.
     const R = u.def.chargeAuraRadius * WORLD_SCALE;
-    const k = u.def.chargeAuraRate * dt; // 이번 틱에 더 흐르는 시간(초)
-    const okCd = (a, key, v) => { const pk = a._cdPeak || (a._cdPeak = {}); if (v > (pk[key] || 0)) pk[key] = v; return pk[key] < (u.def.chargeMaxCd || Infinity); }; // 5.5
+    // 7.0 리워크: 남은 쿨타임을 초당 8%p 채운다 = 그 쿨타임 전체 길이의 8%를 1초마다 줄인다 (쿨타임 15초 이상은 제외)
+    const rate = u.def.chargeAuraRate * dt, maxCd = u.def.chargeMaxCd || Infinity;
+    const cut = (full, left) => full > 0 && full < maxCd ? Math.max(0, left - full * rate) : left; // full: 전체 길이 · left: 남은 시간
+    const okCd = (a, key, v) => { const pk = a._cdPeak || (a._cdPeak = {}); if (v > (pk[key] || 0)) pk[key] = v; return pk[key]; }; // 5.5 지금까지 본 가장 긴 값 = 전체 길이
     allies.forEach(a => {
       if (Math.hypot(a.x - u.x, a.y - u.y) > R + unitRadius(a)) return;
-      skillCooldownFields(a).forEach(key => { if (okCd(a, key, a[key])) a[key] = Math.max(0, a[key] - k); });
-      if (a._hit && a._hit.phase === 'cd') a._hit.t = Math.max(0, a._hit.t - k); // 자객
-      if (a._blade && !a._blade.on) a._blade.t = Math.max(0, a._blade.t - k); // 마검
-      if (a._func && a._func.phase === 'cd') a._func.t = Math.max(0, a._func.t - k);
-      if (a._bomb && a._bomb.phase === 'wait') a._bomb.t = Math.max(0, a._bomb.t - k);
-      if (a._mae && a._mae.phase === 'play') a._mae.t += k;
-      if (a.charId === 'beam' && a._beamWarmup != null && a._beamWarmup < a.def.beamWarmup) a._beamWarmup = Math.min(a.def.beamWarmup, a._beamWarmup + k);
-      if (a._bike && a._bike.phase === 'windup') a._bike.windup = Math.max(0, a._bike.windup - k);
-      if ((a.charId === 'stop' || a.charId === 'satellite' || a.charId === 'rock') && a.atkCooldown > 0) a.atkCooldown = Math.max(0, a.atkCooldown - k);
+      skillCooldownFields(a).forEach(key => { a[key] = cut(okCd(a, key, a[key]), a[key]); });
+      if (a._hit && a._hit.phase === 'cd') a._hit.t = cut(a.def.hitCooldown, a._hit.t); // 자객
+      if (a._blade && !a._blade.on) a._blade.t = cut(a.def.bladeCooldown, a._blade.t); // 마검
+      if (a._func && a._func.phase === 'cd') a._func.t = cut(a.def.funcEvery, a._func.t);
+      if (a._bomb && a._bomb.phase === 'wait') a._bomb.t = cut(a.def.bombEvery, a._bomb.t);
+      if (a._mae && a._mae.phase === 'play' && a.def.maestroTime < maxCd) a._mae.t += a.def.maestroTime * rate;
+      if (a.charId === 'beam' && a._beamWarmup != null && a._beamWarmup < a.def.beamWarmup) a._beamWarmup = Math.min(a.def.beamWarmup, a._beamWarmup + a.def.beamWarmup * rate);
+      if (a._bike && a._bike.phase === 'windup') a._bike.windup = cut(a.def.bikeChargeTime, a._bike.windup);
+      if ((a.charId === 'stop' || a.charId === 'satellite' || a.charId === 'rock') && a.atkCooldown > 0) a.atkCooldown = cut(a.def.atkSpeed, a.atkCooldown);
     });
     u._chargeFx = (u._chargeFx || 0) - dt;
     if (u._chargeFx <= 0) { u._chargeFx = 1; blastEffect(u.x, u.y, R, u.def.color); }
@@ -20514,10 +20554,7 @@ function readyRoundSkills(u) {
     if (rankS(u, 'phantom')) { u.stealth = Math.max(u.stealth || 0, 6); u._phantomS = true; u.el.classList.add('stealthed'); } // 괴도 S
   }
   if (u.charId === 'hacker') { u._hackCd = 0; u._hackTyping = null; }
-  if (u.charId === 'growth') {
-    u._growthPlacement = state.placements.find(p => p.id === u.placementId) || null;
-    u._growth = u._growthPlacement?.growthLeft ?? u.def.growthDelay;
-  }
+  if (u.charId === 'growth') { u._growthPlacement = null; u._growth = u.def.growthDelay; } // 7.0 리워크: 1초 뒤 한 번
   if (u.charId === 'hypno') u._hypnoCd = 0;
   if (u.charId === 'edgy') { u._edgeGauge = 0; u._edgeSecond = null; u._leap = null; renderEdgeGauge(u); }
   if (u.charId === 'egg') u._eggCd = u.def.eggShakeEvery || 1;
@@ -20591,6 +20628,7 @@ function beginCombatPhase() { // 5.0 친선전: 전투 시작도 시드 난수�
   return simRun(beginCombatPhaseInner);
 }
 function beginCombatPhaseInner() {
+  if (typeof renderBlessingHud === 'function') renderBlessingHud('ally'); // 7.0 축복은 경기 내내 보인다 (새 경기면 비어서 숨는다)
   state.phase = 'combat';
   if (state.mode !== 'preview' && state.screen === 'battle') sfx('battle_start'); // 5.7.6 효과음
   botMind.combatStart(); // 5.7 봇 이모티콘
@@ -21342,7 +21380,7 @@ function unitRadius(u) {
   if (u && u.isCastle) return 66;
   const lv = (u && u.level) || 1;
   const base = (u && u.def && u.def.small) ? 16 : (u && u.def && u.def.big) ? 33 : 28;
-  return (base + Math.max(0, lv - 1) * 2) * WORLD_SCALE * ((u && u.def && u.def.radiusMul) || 1); // 6.2.1 radiusMul: 돌 지후 ×2
+  return (base + Math.max(0, lv - 1) * 2) * WORLD_SCALE * (u && u._bigNow ? u.def.radiusMul || 1 : 1); // 7.0 돌 지후: 전투 중에만 ×2 (배치할 때는 한 칸)
 }
 // 원이 겹치지 않는 최소 중심 거리
 function bodySeparation(a, b) {
@@ -21676,11 +21714,9 @@ function performHeal(caster) { // 5.6.3 힐 지후: 자신 주변 반경 healWav
   const R = caster.def.healWaveCells * GRID;
   const w = fx38('fx-moai-wave fx-heal-wave', caster.x, caster.y, '<i></i>'); w.style.width = w.style.height = R * 2 + 'px'; scheduleTask(() => w.remove(), 600);
   state.units.forEach(a => {
-    if (a === caster || !a.alive || a.isCastle || a.side !== caster.side || !sameRealm(a, caster) || a.hp >= a.maxHp) return;
+    if (a === caster || !a.alive || a.isCastle || a.side !== caster.side || !sameRealm(a, caster) || (a.hp >= a.maxHp && !a._goja)) return;
     if (Math.hypot(a.x - caster.x, a.y - caster.y) > R + unitRadius(a)) return;
-    const healAmt = caster.def.healAmount * supportMult(caster) * healRecvMult(a);
-    a.hp = Math.min(a.maxHp, a.hp + healAmt); updateUnitBars(a);
-    spawnDamageNumber(a, Math.round(healAmt), { heal: true });
+    healUnit(a, caster.def.healAmount * supportMult(caster)); // 7.0 healUnit 으로: [고자] 해제 · 메탈 회복 불가 (숫자도 여기서)
   });
 }
 
@@ -22476,6 +22512,13 @@ function tickHealOverTime(u, dt) {
 function tickFeast(u, dt) {
   const feast = u._feast;
   feast.t -= dt;
+  // 7.0 포식 직전(포식까지 1초 이내) 범위를 빨간 점선 원으로 보여 준다
+  const warn = u.alive && (feast.phase === 'wait' || (feast.phase === 'cooldown' && feast.t <= 1));
+  if (warn) {
+    if (!u._feastRing) u._feastRing = fx38('fx-feast-ring', u.x, u.y, '<i></i>');
+    u._feastRing.style.width = u._feastRing.style.height = (u.def.feastRadius + unitRadius(u)) * 2 + 'px';
+    u._feastRing.style.left = u.x + 'px'; u._feastRing.style.top = u.y + 'px';
+  } else if (u._feastRing) { u._feastRing.remove(); u._feastRing = null; }
   if (feast.t > 0) return;
   if (feast.phase === 'wait') {
     const prey = state.units.filter(other => other !== u && other.alive && !other.isCastle && other.side === u.side
@@ -23651,8 +23694,8 @@ function rayToWall(x, y, cs, sn) {
   const ty = sn > 0 ? (MAP_H - y) / sn : sn < 0 ? -y / sn : Infinity;
   return Math.max(0, Math.min(tx, ty));
 }
-function archerShot(caster, target) {
-  const golden = Math.random() < caster.def.goldenArrowChance;
+function archerShot(caster, target, second) {
+  const golden = second || Math.random() < caster.def.goldenArrowChance;
   const angle = Math.atan2(target.y - caster.y, target.x - caster.x);
   const cs = Math.cos(angle), sn = Math.sin(angle);
   const el = document.createElement('div');
@@ -23672,7 +23715,14 @@ function archerShot(caster, target) {
       return 'stop';
     }
   });
-  if (golden) spawnDamageNumber(caster, '✨ 황금 화살', { heal: true });
+  if (golden && !second) {
+    spawnDamageNumber(caster, '✨ 황금 화살', { heal: true });
+    scheduleTask(() => { // 7.0 황금 화살 2연발
+      if (!caster.alive || state.phase !== 'combat') return;
+      const t = target.alive && isHostile(caster, target) ? target : foesOnField(caster.side).filter(e => sameRealm(caster, e)).sort((a, b) => Math.hypot(a.x - caster.x, a.y - caster.y) - Math.hypot(b.x - caster.x, b.y - caster.y))[0];
+      if (t) archerShot(caster, t, true);
+    }, 180);
+  }
 }
 
 // ── 박격포: 대상 자리로 포탄을 쏘아 반경 1.2칸 광역 ──
@@ -24233,7 +24283,8 @@ function tickNew47(u, dt) {
     }
     case 'beatmania': {
       if (!u._beatInit) { u._beatInit = true; const keys = Object.keys(BEAT_DIRS); beatBorder(u, BEAT_DIRS[keys[Math.floor(Math.random() * 4)]].color); }
-      if (u._beatDodge > 0) { u._beatDodge = Math.max(0, u._beatDodge - dt); u.el.classList.toggle('n47-dodge', u._beatDodge > 0); }
+      if (u._beatLock > 0) u._beatLock = Math.max(0, u._beatLock - dt);
+      if (u._beatDodge > 0) { u._beatDodge = Math.max(0, u._beatDodge - dt); u.el.classList.toggle('n47-dodge', u._beatDodge > 0); if (u._beatDodge <= 0) u._beatLock = d.beatLock || 0; }
       u._noteT = (u._noteT ?? d.noteMin) - dt;
       if (u._noteT <= 0 && !u._realm) { spawnNote(u); u._noteT = d.noteMin + Math.random() * (d.noteMax - d.noteMin); }
       break;
@@ -24325,7 +24376,7 @@ function tickNew47Global(dt) {
       if (gap > -n.size && gap < firstGap) { firstGap = gap; first = e; }
     });
     // 닿기 0.15초 전부터 닿은 뒤 0.15초까지 비트마니아는 모든 피해 회피
-    if (first && !n.warned && firstGap <= speed * owner.def.beatWindow && owner.alive) {
+    if (first && !n.warned && firstGap <= speed * owner.def.beatWindow && owner.alive && !(owner._beatLock > 0)) { // 7.0 회피 직후 0.2초는 회피 불가
       n.warned = true;
       owner._beatDodge = Math.max(owner._beatDodge || 0, owner.def.beatWindow * 2);
     }
@@ -24567,6 +24618,7 @@ function dropUnitFx(u) {
   if (u._tx) taxiDrop62(u); // 6.2 탄 사람 내려 주기 (변이로 다른 지후가 돼도)
   if (u._rc && u._rc.warn) { u._rc.warn.el.remove(); u._rc.warn = null; } // 6.2 RC카 예고선
   if (u._st) { u._n62Ghost = false; u.el.classList.remove('n62-rolling'); }
+  if (u._feastRing) { u._feastRing.remove(); u._feastRing = null; } // 7.0 포식 예고 원
 }
 function auraEl(u, radius, cls) {
   if (!u._aura38) u._aura38 = fx38('fx-aura38 ' + cls, u.x, u.y);
@@ -25216,6 +25268,7 @@ function tickMatrixZones() {
         { saved: true, quiet: true, asExtra: true, skipCount: true, level: e.level || 1, form: e.form, ownerUid: z.caster.uid });
       if (!holo) return;
       holo._holo = true;
+      holo.expire = z.caster.def.holoLife || 10; // 7.0 10초 뒤 사라진다
       holo._holoBase = holo.baseMaxHp = holo.maxHp = holo.hp = z.caster.def.holoHp; // 5.6.3 레벨업 · 변신으로 체력을 다시 계산해도 원본 체력으로 돌아가지 않게
       holo.el.classList.add('hologram');
       readyRoundSkills(holo);
@@ -25306,6 +25359,11 @@ function tickMaestro(u, dt) {
     spawnDamageNumber(u, '🎻 브라보!', { heal: true });
     fx38Flash('fx-soft-ring big', u.x, u.y, Math.max(MAP_W, MAP_H), 1200);
     const heal = Math.round(u.def.maestroHeal * supportMult(u));
+    state.units.slice().forEach(a => { // 7.0 살아 있는 아군 레벨 +1 (배치 기록에 남아 영구)
+      if (!a.alive || a.isCastle || a.side !== u.side || a === u || !(u.def.maestroLevelUp > 0) || (a.level || 1) >= MAX_UNIT_LEVEL) return;
+      setUnitLevel(a, Math.min(MAX_UNIT_LEVEL, (a.level || 1) + u.def.maestroLevelUp));
+      spawnDamageNumber(a, '🎻 레벨 +1', { heal: true });
+    });
     state.units.forEach(a => {
       if (!a.alive || a.isCastle || a.side !== u.side || a === u) return;
       cleanseUnit(a);
@@ -25354,8 +25412,11 @@ function bsodConvert(u) {
   u.el.remove();
   if (u.ringEl) u.ringEl.remove();
   if (rangeRing && rangeRing.unit === u) hideRangeRing();
-  const next = spawnUnit(side, x, y, 'bsod', { saved: true, quiet: true, asExtra: true, skipCount: true, level, ownerUid: src.uid });
+  const next = spawnUnit(side, x, y, 'bsod', { quiet: true, level }); // 7.0 배치 기록을 새로 만든다 → 라운드가 끝나도 남는다
   if (!next) return;
+  { const pl = state.placements.find(q => q.id === next.placementId); if (pl) { const home = zonePoint(side); Object.assign(pl, { x: home.x, y: home.y, level }); }
+    if (!state.maxUnitsBonus) state.maxUnitsBonus = { ally: 0, enemy: 0 };
+    state.maxUnitsBonus[side] = (state.maxUnitsBonus[side] || 0) + 1; } // 그 진영 배치 한도 +1 (알 부화와 같다)
   next._bsodUsed = true; // 변이된 블루스크린은 다시 변이시키지 않는다
   if (rankS(u._bsodSrcS, 'bsod')) { next.invincible = Math.max(next.invincible || 0, 1.5); next.el.classList.add('invincible'); } // 블루스크린 S
   next.maxHp = next.hp = CHARACTER_BALANCE.bsod.hp; // 레벨과 상관없이 HP 404
@@ -25559,12 +25620,9 @@ function tickNewJihooSkills(u, dt) {
   if (u.charId === 'hacker') tickHacker(u, dt);
   if (u._growth != null) {
     u._growth -= dt;
-    if (u._growthPlacement) u._growthPlacement.growthLeft = Math.max(0, u._growth); // 죽어도 여기까지 흐른 시간은 남는다
     if (u._growth <= 0) {
       u._growth = null;
-      if (u._growthPlacement) delete u._growthPlacement.growthLeft;
-      growJihoo(u);
-      return;
+      growthBoost(u); // 7.0
     }
   }
   if (u.charId === 'hypno') {
@@ -25599,7 +25657,7 @@ function tickMushroom(u, dt) {
     u._shroomCd = u.def.shroomInterval;
     if (Math.random() < u.def.shroomPoisonChance) {
       // 0.5초마다 최대 체력의 20%씩 4번 (2초)
-      u._shroomPoison = { per: u.maxHp * u.def.shroomPoisonTick, ticks: u.def.shroomPoisonTicks, acc: 0 };
+      u._shroomPoison = { per: u.maxHp * u.def.shroomPoisonTick, ticks: u.def.shroomPoisonTicks, acc: u.def.shroomPoisonEvery || 1 }; // 7.0 먹자마자 첫 피해
       spawnDamageNumber(u, '독버섯!', { crit: true });
     } else {
       // 최대 체력이 늘고 체력을 즉시 가득 채운다. 공격력도 오른다 (독버섯은 공격력을 깎지 않는다).
@@ -25676,6 +25734,17 @@ function transformUnit(u, newId, level, keepPlacement) {
   if (next.def.onRoundStart) next.def.onRoundStart(next, battleAPI);
   spawnBurst(next.el, next.def.color);
   return next;
+}
+// 7.0 성장: 자신을 포함한 무작위 아군 하나의 레벨을 영구히 +1 (성장 S: 15% 로 +2). 최대 레벨인 아군은 고르지 않는다.
+function growthBoost(u) {
+  const pool = placedUnits(u.side).filter(a => (a.level || 1) < MAX_UNIT_LEVEL);
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  if (!pick) return;
+  const up = rankS(u, 'growth') && Math.random() < 0.15 ? 2 : 1;
+  setUnitLevel(pick, Math.min(MAX_UNIT_LEVEL, (pick.level || 1) + up));
+  spawnBurst(pick.el, u.def.color);
+  spawnDamageNumber(pick, `🌱 레벨 +${up}`, { heal: true, crit: up > 1 });
+  v41Callout(u, v41SkillName(u));
 }
 function growJihoo(u) {
   const deck = (u.side === 'ally' ? state.myDeckIds : state.enemyDeckIds) || [];
@@ -26221,10 +26290,6 @@ function killUnit(u) {
     lu._growthKills = (lu._growthKills || 0) + 1;
     if (lu._growthKills >= LEVELUP_KILLS_PER_FORM) { lu._growthKills = 0; growLevelUpUnit(lu); }
   }
-  if (!u.alive && rankS(u, 'growth') && u._growth != null && !u._devoured) { // 성장 S: 성장 전에 죽으면 다음 라운드 레벨 +1
-    const pl = state.placements.find(p => p.id === u.placementId);
-    if (pl) pl.level = Math.min(MAX_UNIT_LEVEL, (pl.level || u.level || 1) + 1);
-  }
   if (!u.alive) guardianRetarget(u);
   if (!u.alive && u.charId === 'bomb' && !u._devoured) {
     state.pendingExplosions.push({ caster: u, x: u.x, y: u.y, radius: u.def.explosionRadius, damage: u.def.explosionDamage, remaining: u.def.explosionDelay });
@@ -26320,8 +26385,6 @@ function shanghaiShot62(u) {
   v41Callout(u, v41SkillName(u));
   const hit = dealDamage(u, t, u.def.atk, {});
   if (hit && t.alive) gojaApply62(t);
-  u.def.noAttack = true; u.def.holdRange = true; // 총알이 떨어졌다 → 멀리서 지켜본다
-  u.el.classList.add('n62-spent');
 }
 function gojaApply62(e) {
   if (!e || !e.alive || e.isCastle || e._goja) return;
@@ -26409,6 +26472,8 @@ function purifyBell62(u) {
     if (Math.hypot(e.x - u.x, e.y - u.y) > R + unitRadius(e)) return;
     if (e.side === u.side) {
       cleanseUnit(e);
+      e._immuneUntil = Math.max(e._immuneUntil || 0, (state.combatTime || 0) + (d.bellImmune || 2.5)); // 7.0 디버프 면역
+      e.el.classList.add('n62-immune');
       healUnit(e, e.maxHp * d.bellHeal); // [고자]는 회복으로 풀린다
     } else dealDamage(u, e, d.bellDamage, { isSkill: true });
   });
@@ -26428,6 +26493,7 @@ function stoneTick62(u, dt) {
   if (!u._st) {
     u._st = { dir: n62Dir(u.side), hit: new Set(), rot: 0 };
     u._n62Ghost = true;
+    if (d.radiusMul > 1) { u._bigNow = true; u.el.style.scale = String(d.radiusMul); } // 7.0 굴러가기 시작할 때 커진다
     u.el.classList.add('n62-rolling');
   }
   const s = u._st;
@@ -26439,7 +26505,7 @@ function stoneTick62(u, dt) {
   foesOnField(u.side).forEach(e => {
     if (s.hit.has(e.uid) || e._n62Ghost || Math.hypot(e.x - u.x, e.y - u.y) > r + unitRadius(e)) return;
     s.hit.add(e.uid);
-    dealDamage(u, e, Math.max(1, u.hp * d.stoneHitFraction), { isSkill: true, skipAtkBuff: true }); // 돌 지후 현재 체력의 10%
+    dealDamage(u, e, d.stoneHit ? Math.round(d.stoneHit * skillLevelFactor(u)) : Math.max(1, u.hp * d.stoneHitFraction), { isSkill: true, skipAtkBuff: true }); // 7.0 1,500 고정
   });
   const pad = PHYS.WALL_PAD;
   const end = s.dir.x < 0 ? u.x <= pad : s.dir.x > 0 ? u.x >= MAP_W - pad : s.dir.y < 0 ? u.y <= pad : u.y >= MAP_H - pad;
@@ -26488,7 +26554,8 @@ function tickToys62(dt) {
       t.x += t.dx * s; t.y += t.dy * s;
       state.units.slice().forEach(e => {
         if (!e.alive || e.isCastle || e === t.owner || e._realm || e._n62Ghost || t.hit.has(e.uid)) return;
-        if (Math.hypot(e.x - t.x, e.y - t.y) > t.lane * 0.42 + unitRadius(e)) return;
+        const ex = e.x - t.x, ey = e.y - t.y, along = Math.abs(ex * t.dx + ey * t.dy), across = Math.abs(ex * t.dy - ey * t.dx); // 7.0 차선 사각형 판정
+        if (along > t.lane * 0.5 + unitRadius(e) || across > t.lane * 0.5 + unitRadius(e) * 0.5) return;
         t.hit.add(e.uid);
         if (e.invincible > 0 || (e._taxiGuard && e._taxiGuard.alive)) return;
         if (t.kind === 'train') n62Instakill(t.owner, e, '🚆 즉사'); // 아군 · 적군 상관없이
@@ -26533,7 +26600,7 @@ function taxiDrive62(u, tx, ty, speed, dt) { // 충돌 없이 목표로. 남은 
 }
 function taxiCallable62(e) { return e.alive && !e.isCastle && !e._realm && !e._n62Ghost && !e._n62Hold && !e._flight && !e._leap; }
 function taxiTick62(u, dt) {
-  if (u._realm) return;
+  if (u._realm && !(u._tx && u._realm === u._tx.away)) return; // 7.0 맵 밖에서 쉬는 동안은 자기 아공간
   const d = u.def, k = u._tx || (u._tx = { phase: 'call', t: 0 });
   const spd = d.taxiSpeed * GRID;
   const park = () => { u._n62Ghost = false; u._n62Hold = true; u.el.classList.remove('n62-driving'); };
@@ -26612,8 +26679,22 @@ function taxiTick62(u, dt) {
       if (left > 4) break;
       const foe = k.foe; k.foe = null;
       if (foe && foe.alive) { taxiAlight62(foe, u.x, u.y); foe._lastKiller = u; recordEnemyDefeat(u, foe); n62Banish(foe, '🚕 소멸'); }
-      k.phase = 'done';
-      n62Banish(u, '🚕 소멸');
+      // 7.0 택시는 남는다: 맵 밖에서 2초 쉬고 (맞지 않는다) 그 먼 곳에서 돌아와 다시 아군을 태운다
+      u.el.classList.remove('n62-launch', 'n62-driving');
+      k.away = enterRealm(u, [u], 99999, null);
+      u.el.classList.add('n62-away');
+      k.phase = 'away'; k.t = d.taxiAway || 2;
+      break;
+    }
+    case 'away': {
+      k.t -= dt; if (k.t > 0) break;
+      const back = n62Inside(k.exit.x, k.exit.y);
+      n62Place(u, back.x, back.y);
+      state.realms = (state.realms || []).filter(z => z !== k.away);
+      if (u._realm === k.away) exitRealm(k.away);
+      k.away = null;
+      u.el.classList.remove('n62-away');
+      k.pass = null; k.phase = 'call';
       break;
     }
     default: break; // idle · done
@@ -26635,6 +26716,10 @@ function tickNew62Unit(u, dt) {
     if (!t.alive || t.charId !== 'taxi' || !t._tx || t._tx.phase === 'done' || t._tx.phase === 'idle' || (t._tx.pass !== u && t._tx.foe !== u)) taxiAlight62(u, t.alive ? t.x : u.x, t.alive ? t.y : u.y);
   }
   if (u._rvUntil && (state.combatTime || 0) >= u._rvUntil) { u._rvUntil = 0; u.el.classList.remove('n62-rampage'); }
+  if (u._immuneUntil) { // 7.0 정화: 면역 동안 걸리는 디버프를 바로 지운다
+    if ((state.combatTime || 0) < u._immuneUntil) cleanseUnit(u);
+    else { u._immuneUntil = 0; u.el.classList.remove('n62-immune'); }
+  }
   switch (u.charId) {
     case 'taxi': taxiTick62(u, dt); break;
     case 'stone': stoneTick62(u, dt); break;
@@ -26747,12 +26832,23 @@ function blessState() {
   return state.n55bless;
 }
 function blessOf(side) { return blessState()[side] || {}; }
+// 7.0 축복 효과 창 리뉴얼: 내 축복만 · 전투 화면에서만 · 쌓인 양을 실제 수치로 (공격력 +10% 처럼)
+const BLESS_VIEW = {
+  atk: ['⚔', '공격력', n => `+${n * 5}%`], crit: ['🎯', '치명타', n => `+${n * 2}%`], regen: ['💚', '초당 회복', n => `+${n * 10}`],
+  dr: ['🛡', '받는 피해', n => `-${n * 5}%`], aspd: ['⚡', '공격속도', n => `+${n * 5}%`], move: ['👟', '이동속도', n => `+${(n * 0.2).toFixed(1)}칸`],
+  shield: ['🔰', '시작 쉴드', n => `+${n * 100}`]
+};
 function renderBlessingHud(side = 'ally') {
   let hud = document.getElementById('blessingHud');
-  if (!hud) { hud = document.createElement('div'); hud.id = 'blessingHud'; hud.style.cssText = 'position:fixed;z-index:1000;top:12px;right:12px;max-width:min(260px,45vw);padding:8px 10px;border:2px solid #d7a934;border-radius:10px;background:rgba(20,20,28,.9);color:#fff;font:700 12px/1.45 system-ui;pointer-events:none;display:none'; document.body.appendChild(hud); }
+  if (!hud) { hud = document.createElement('div'); hud.id = 'blessingHud'; hud.className = 'bless-hud'; document.body.appendChild(hud); }
   const counts = blessOf(side), active = BLESSINGS.filter(([key]) => (counts[key] || 0) > 0);
-  hud.style.display = active.length && state.screen === 'battle' ? 'block' : 'none'; // 6.2.2 전투 화면에서만
-  hud.innerHTML = '<b>🙏 현재 축복</b><br>' + active.map(([key,label]) => `${label} ×${counts[key]}`).join('<br>');
+  const total = active.reduce((t, [key]) => t + counts[key], 0);
+  hud.hidden = !(active.length && state.screen === 'battle');
+  if (hud.hidden) return;
+  hud.innerHTML = `<div class="bh-head"><b>🙏 축복</b><em>${total}개</em></div><div class="bh-list">` + active.map(([key]) => {
+    const [ic, name, val] = BLESS_VIEW[key] || ['✦', key, n => '×' + n];
+    return `<div class="bh-row"><i>${ic}</i><span>${name}</span><b>${val(counts[key])}</b>${counts[key] > 1 ? `<small>×${counts[key]}</small>` : ''}</div>`;
+  }).join('') + '</div>';
 }
 function blessGrant(u) {
   const [k, label] = BLESSINGS[Math.floor(Math.random() * BLESSINGS.length)];
@@ -26796,7 +26892,7 @@ function tickNew55(dt) {
       const along = dx * w.dir.x + dy * w.dir.y, across = Math.abs(dx * w.dir.y - dy * w.dir.x);
       if (along > unitRadius(e) || along < -step - unitRadius(e) || across > w.width / 2 + unitRadius(e)) return;
       w.hit.add(e);
-      const dmg = Math.max(0, e.maxHp - e.hp) * w.owner.def.waveMissing;
+      const dmg = Math.max(0, e.maxHp - e.hp) * w.owner.def.waveMissing + (w.owner.def.waveFlat || 0); // 7.0 + 250
       if (dmg > 0) dealDamage(w.owner, e, dmg, { isSkill: true, fromDeath: !w.owner.alive, skipAtkBuff: true });
       if (e.alive && !e.def.immobile) battleAPI.knockbackDistance(e, { x: e.x - w.dir.x, y: e.y - w.dir.y }, w.owner.def.waveKnockCells); // 5.5.1 미끄러지듯 밀려난다
     });
@@ -26940,6 +27036,10 @@ function tickUfcRings(dt) {
 }
 
 // 5.3 소울스틸러: 누가 쓰러지면 영혼 → 2초 뒤 살아 있는 소울스틸러마다 하나씩 흡수 (공격력 +50)
+function soulBase(st) { // 영혼을 빼고 레벨만 반영한 기준 체력 · 공격력
+  const f = Math.pow(LEVEL_MULT, (st.level || 1) - 1);
+  return { hp: Math.round((st.baseMaxHp || st.maxHp) * f), atk: Math.round((st.baseAtk || st.def.atk) * f) };
+}
 function soulOnDeath(u) {
   if (u.isCastle || u._devoured) return;
   const stealers = state.units.filter(x => x.alive && x.charId === 'soulstealer' && x !== u);
@@ -26950,9 +27050,12 @@ function soulOnDeath(u) {
     stealers.forEach(st => {
       if (!st.alive) return;
       st._souls = (st._souls || 0) + 1;
-      st.def.atk += st.def.soulAtk;
-      spawnDamageNumber(st, '👻 +' + st.def.soulAtk, { heal: true });
-      if (st.def.soulHeal) healUnit(st, st.def.soulHeal); // 5.5.2 영혼을 얻으면 HP 회복
+      const base = soulBase(st); // 7.0 리워크: 레벨 기준 능력치의 % 만큼 오른다
+      const atkUp = Math.round(base.atk * (st.def.soulAtkPct || 0)), hpUp = Math.round(base.hp * (st.def.soulHpPct || 0));
+      st.def.atk += atkUp; st.maxHp += hpUp; st.hp += hpUp;
+      spawnDamageNumber(st, `👻 ATK +${atkUp} · HP +${hpUp}`, { heal: true });
+      healUnit(st, st.maxHp * (st.def.soulHealPct || 0)); // 늘어난 최대 체력의 10%
+      updateUnitBars(st);
     });
   }, CHARACTER_BALANCE.soulstealer.soulDelay * 1000);
 }
@@ -27866,6 +27969,81 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.0': {
+    label: 'v7.0 대규모 밸런스 · 리워크',
+    date: '2026.10.07',
+    sections: [
+      { title: '리워크', items: [
+        { emoji:'🏹', name:'아처 지후', tag:'adjust', color:'#1e7a2e', portraitKey:'archer', desc:'황금 화살을 <b>2연발</b>로 쏩니다.' },
+        { emoji:'🔔', name:'정화 지후', tag:'buff', color:'#4fe0f0', portraitKey:'purify', desc:'종을 울린 뒤 <b>2.5초</b> 동안 범위 안 아군은 <b>디버프 면역</b>.' },
+        { emoji:'🔋', name:'충전 지후', tag:'adjust', color:'#65eb06', portraitKey:'battery', desc:'범위 안 아군의 남은 쿨타임을 <b>초당 8%p</b>씩 채웁니다 (쿨타임 길이에 비례).' },
+        { emoji:'🪨', name:'돌 지후', tag:'adjust', color:'#8a5a24', portraitKey:'stone', desc:'배치할 때는 <b>한 칸</b>만 차지하고 전투가 시작되면 커집니다. 부딪힌 적 피해 <b>현재 체력 10% → 1,500</b>.' },
+        { emoji:'🎻', name:'마에스트로 지후', tag:'buff', color:'#b07a1a', portraitKey:'maestro', desc:'연주 <b>12 → 14초</b>. 끝나면 살아 있는 아군의 레벨이 <b>영구히 1</b> 오르고, 회복 <b>2,000 → 2,400</b>.' },
+        { emoji:'👻', name:'소울스틸러 지후', tag:'adjust', color:'#5b3fa0', portraitKey:'soulstealer', desc:'영혼 하나당 최대 체력 <b>+10%</b> · 공격력 <b>+12%</b>, 늘어난 최대 체력의 <b>10%</b> 회복. 공격 간격 <b>1 → 1.6초</b>.' },
+        { emoji:'🚆', name:'신칸센 지후', tag:'buff', color:'#2f7fe0', portraitKey:'train', desc:'돌진 피해 <b>1,200 → 1,400</b>.' },
+        { emoji:'🧙', name:'아케인 지후', tag:'buff', color:'#7a3fd6', portraitKey:'arcane', desc:'HP <b>2,400 → 2,700</b> · 공격력 <b>400 → 500</b>.' },
+        { emoji:'🥷', name:'자객 지후', tag:'buff', color:'#1a1a1a', portraitKey:'hitman', desc:'자객 피해 <b>1,200 → 1,500</b>.' },
+        { emoji:'🌀', name:'차원 지후', tag:'adjust', color:'#5a3fd6', portraitKey:'dimension', desc:'공격 간격 <b>1.1 → 0.75초</b> · HP <b>3,600 → 3,300</b>.' },
+        { emoji:'🔫', name:'총 지후', tag:'buff', color:'#555555', portraitKey:'gun', desc:'HP <b>2,200 → 3,000</b> · 공격력 <b>300 → 350</b> · 샷건 <b>500 ~ 3,000</b>.' },
+        { emoji:'🦷', name:'포식 지후', tag:'buff', color:'#c0262d', portraitKey:'glutton', desc:'포식 반경 <b>1.5 → 2.7칸</b>. 포식 직전 범위를 <b>빨간 점선 원</b>으로 보여 줍니다.' },
+        { emoji:'🚕', name:'택시 지후', tag:'adjust', color:'#f5b800', portraitKey:'taxi', desc:'적을 싣고 돌진한 뒤 <b>소멸하지 않습니다</b>. 2초 뒤 그 먼 곳에서 돌아와 다시 아군을 태우고 운행을 반복합니다.' },
+        { emoji:'🔄', name:'성장 지후', tag:'adjust', color:'#8a1fb0', portraitKey:'growth', desc:'<b>리워크</b>: 라운드 시작 1초 뒤 자신을 포함한 무작위 아군 레벨 <b>영구 +1</b>. S: <b>15%</b> 확률로 <b>+2</b>.' }
+      ] },
+      { title: '밸런스 1', items: [
+        { emoji:'🎵', name:'비트마니아 지후', tag:'nerf', color:'#ff3fa0', portraitKey:'beatmania', desc:'회피가 끝나면 <b>0.2초</b> 동안 다시 회피하지 못합니다. 음표 피해 <b>286 → 180</b>.' },
+        { emoji:'🏮', name:'랜턴 지후', tag:'nerf', color:'#f2a33a', portraitKey:'lantern', desc:'공격력 <b>-20%</b> (19 → 15) · 회복량 <b>-45%</b> (31.5 → 17.3).' },
+        { emoji:'📦', name:'미믹 지후', tag:'nerf', color:'#8a5a24', portraitKey:'mimic', desc:'변신 능력치 <b>200% → 125%</b>.' },
+        { emoji:'🤖', name:'메탈 지후', tag:'adjust', color:'#888888', portraitKey:'metal', desc:'<b>회복을 받지 못합니다</b>. HP <b>25 → 40</b>.' },
+        { emoji:'☄️', name:'메테오 지후', tag:'buff', color:'#e0552d', portraitKey:'meteor', desc:'메테오 피해 <b>900 → 1,200</b> · HP <b>1,800 → 2,500</b>.' },
+        { emoji:'🖥️', name:'블루스크린 지후', tag:'buff', color:'#0a4fd8', portraitKey:'bsod', desc:'변이된 아군이 <b>라운드가 끝나도 사라지지 않습니다</b> (그 진영 배치 한도 +1).' },
+        { emoji:'💨', name:'연막 지후', tag:'buff', color:'#777777', portraitKey:'smoke', desc:'공격력 <b>200 → 340</b> · 공격 간격 <b>0.9 → 0.75초</b>.' },
+        { emoji:'💣', name:'박격포 지후', tag:'buff', color:'#2e8b3a', portraitKey:'mortar', desc:'공격력 <b>600 → 800</b>.' },
+        { emoji:'📢', name:'확성기 지후', tag:'buff', color:'#e0a800', portraitKey:'mega', desc:'공격력 <b>100 → 250</b>.' },
+        { emoji:'⚔️', name:'고독한 지후', tag:'adjust', color:'#c98a4b', portraitKey:'lonely', desc:'혼자 판정 반경 <b>1.8 → 1.5칸</b> · 추가 피해 <b>8% → 12%</b>.' },
+        { emoji:'😡', name:'광폭화 지후', tag:'nerf', color:'#d03030', portraitKey:'berserk', desc:'광폭화 공격력 <b>800 → 650</b>.' },
+        { emoji:'🪱', name:'기생충 지후', tag:'buff', color:'#7a9a2a', portraitKey:'parasite', desc:'버러지후 HP <b>2,000 → 3,000</b> · 이동속도 <b>3.5 → 3.8칸</b> · 소환 <b>6.5 → 5초</b>.' },
+        { emoji:'💥', name:'돌격 지후', tag:'buff', color:'#d94b4b', portraitKey:'charge', desc:'HP <b>3,800 → 4,800</b> · 돌격 <b>900 → 1,000</b> · 일반 공격 <b>150 → 200</b>.' },
+        { emoji:'🚀', name:'로켓병 지후', tag:'buff', color:'#555555', portraitKey:'rocket', desc:'공격력 <b>850 → 1,000</b> · 공격 간격 <b>7.5 → 7초</b>.' },
+        { emoji:'🌊', name:'물 지후', tag:'buff', color:'#2f8fe0', portraitKey:'water', desc:'파도 피해 <b>잃은 체력의 30% → 30% + 250</b> (넉백은 그대로).' },
+        { emoji:'🍄', name:'버섯 지후', tag:'adjust', color:'#9b1fe8', portraitKey:'mushroom', desc:'최대 체력 증가 <b>25% → 35%</b> · 독버섯 확률 <b>35% → 25%</b> · 독버섯은 2초 동안 0.5초마다 최대 체력 <b>12%</b>씩 총 <b>60%</b>.' },
+        { emoji:'🥚', name:'알 지후', tag:'buff', color:'#0f9d7a', portraitKey:'egg', desc:'부화 확률 <b>8% → 10%</b>.' },
+        { emoji:'🪨', name:'암석 지후', tag:'buff', color:'#9a6c40', portraitKey:'rock', desc:'HP <b>4,500 → 5,000</b>.' },
+        { emoji:'🗡️', name:'에드게이 지후', tag:'buff', color:'#111111', portraitKey:'edgy', desc:'HP <b>1,500 → 1,600</b>.' },
+        { emoji:'🦈', name:'죠스 지후', tag:'buff', color:'#2f7fc1', portraitKey:'jaws', desc:'잠수 속도 <b>4.5 → 5칸</b>.' },
+        { emoji:'⚽', name:'홍명보 지후', tag:'nerf', color:'#d33', portraitKey:'hong', desc:'공이 <b>1~5번</b> 튕깁니다. S: <b>3~5번</b>.' },
+        { emoji:'💾', name:'매트릭스 지후', tag:'nerf', color:'#1fbf5f', portraitKey:'matrix', desc:'홀로그램 HP <b>1</b> · <b>10초</b> 뒤 사라집니다.' },
+        { emoji:'🙏', name:'축복 지후', tag:'buff', color:'#d7a934', portraitKey:'blessing', desc:'공격력 <b>→ 150</b>. 축복 효과 창을 새로 만들었습니다 (실제 수치로 표시 · 경기가 끝나면 사라짐).' }
+      ] },
+      { title: '밸런스 2', items: [
+        { emoji:'🧪', name:'독 지후', tag:'buff', portraitKey:'poison', desc:'HP <b>1,875 → 3,000</b>.' },
+        { emoji:'🛡️', name:'쉴드 지후', tag:'buff', portraitKey:'shield', desc:'쉴드 <b>2,500 → 4,000</b>.' },
+        { emoji:'🧊', name:'얼음 지후', tag:'buff', portraitKey:'ice', desc:'HP <b>2,000 → 3,200</b>.' },
+        { emoji:'🔥', name:'화염 지후', tag:'buff', portraitKey:'fire', desc:'HP <b>2,500 → 3,000</b>.' },
+        { emoji:'💉', name:'힐 지후', tag:'buff', portraitKey:'medic', desc:'HP <b>1,750 → 3,500</b>. 회복이 [고자]를 풀고 메탈 지후는 회복하지 않습니다.' },
+        { emoji:'🥩', name:'고기방패 지후', tag:'buff', portraitKey:'meatshield', desc:'HP <b>8,500 → 9,000</b>.' },
+        { emoji:'✋', name:'멈춰 지후', tag:'buff', portraitKey:'stop', desc:'HP <b>6,250 → 7,750</b>.' },
+        { emoji:'⚡', name:'전기 지후', tag:'buff', portraitKey:'electric', desc:'HP <b>1,500 → 1,800</b>.' },
+        { emoji:'💀', name:'네크로맨서 지후', tag:'buff', portraitKey:'necro', desc:'HP <b>1,800 → 2,200</b>.' },
+        { emoji:'🦄', name:'유니콘 지후', tag:'buff', portraitKey:'unicorn', desc:'돌진 피해 <b>700 → 900</b> · HP <b>1,900 → 2,200</b>.' },
+        { emoji:'💣', name:'지뢰 지후', tag:'buff', portraitKey:'mine', desc:'HP <b>1,800 → 2,800</b>.' },
+        { emoji:'🦑', name:'촉수 지후', tag:'adjust', portraitKey:'tentacle', desc:'사거리 <b>-1.5칸</b> (7 → 5.5칸) · 공격 간격 <b>3.5 → 3.2초</b> · 피해 <b>750 → 650</b>.' },
+        { emoji:'🌀', name:'포탈 지후', tag:'buff', portraitKey:'portal', desc:'HP <b>1,600 → 2,600</b>.' },
+        { emoji:'💥', name:'폭탄 지후', tag:'buff', portraitKey:'bomb', desc:'폭발 반경 <b>1.8 → 2.2칸</b>.' },
+        { emoji:'🧛', name:'흡혈 지후', tag:'buff', portraitKey:'vampire', desc:'HP <b>1,800 → 2,600</b> · 대상 현재 체력 <b>30% → 35%</b>.' },
+        { emoji:'🗿', name:'🗿 지후', tag:'fix', portraitKey:'moai', desc:'<b>온라인</b>에서 적 진영 칸에 놓지 못하던 문제를 고쳤습니다. 반경 <b>2 → 2.4칸</b>.' },
+        { emoji:'✨', name:'갓지후', tag:'buff', portraitKey:'god', desc:'공격력 <b>300 → 450</b>.' },
+        { emoji:'🕳️', name:'공허 지후', tag:'buff', portraitKey:'hollow', desc:'라운드 시작 <b>0.5초</b> 뒤 포탈이 열립니다. S의 \'열리기까지 시간 감소\'는 삭제.' },
+        { emoji:'🧬', name:'돌연변이 지후', tag:'buff', portraitKey:'mutation', desc:'HP <b>1,000 → 2,000</b> · 공격력 <b>100 → 250</b> · 라운드 시작 <b>1초</b> 뒤 변이. S: <b>0.5초</b> 뒤.' },
+        { emoji:'🦌', name:'래비지 지후', tag:'buff', portraitKey:'ravage', desc:'HP <b>3,250 → 5,250</b> · 공격력 <b>300 → 350</b>.' },
+        { emoji:'🕳️', name:'블랙홀 지후', tag:'nerf', portraitKey:'blackhole', desc:'중력장 피해 <b>500 → 350</b>.' },
+        { emoji:'❄️', name:'블리자드 지후', tag:'nerf', portraitKey:'blizzard', desc:'공격력 <b>290 → 180</b> · 빙결 <b>3.5 → 2.7초</b>.' },
+        { emoji:'🔫', name:'상하이 지후', tag:'buff', portraitKey:'shanghai', desc:'첫 공격은 그대로 [고자] 저격, 그 뒤로 <b>일반 공격</b>도 합니다 (<b>500</b> · 10초).' },
+        { emoji:'🪞', name:'NO U 지후', tag:'nerf', portraitKey:'no_u', desc:'충전 시간 <b>4 → 6.9초</b>.' },
+        { emoji:'🎮', name:'RC카 지후', tag:'adjust', portraitKey:'rccar', desc:'소환 간격 <b>8 → 5초</b>. 히트박스를 <b>차선 모양</b>으로 깔끔하게 맞췄고, 장난감 자동차가 아군에게도 피해를 줍니다.' },
+        { emoji:'⏰', name:'시계 지후', tag:'buff', portraitKey:'clock', desc:'반경 5칸 아군 공속 <b>+12%</b>, 적 공속 <b>-12%</b>.' }
+      ] }
+    ]
+  },
   '6.2.2': {
     label: 'v6.2.2 신규 지후 안정화',
     date: '2026.10.07',
@@ -31878,7 +32056,18 @@ function netArenaClick(e) { // 친선전 배치: 내 진영 칸을 눌러 놓거
   const charId = state.pool[pendingPoolIdx];
   const { x, y } = worldPointFromEvent(e);
   const tile = v42TileAt(me, x, y);
-  if (tile == null) { $('bottomStatusLine').textContent = '내 진영 칸 안에만 배치할 수 있어요!'; return; }
+  if (tile == null && CHAR_DB[charId]?.foeDeploy) { // 7.0 🗿 지후: 온라인에서도 적 진영 칸에 놓는다
+    const ft = v42TileAt(otherSide(me), x, y);
+    if (ft != null) {
+      const fo = state.units.find(u => u.alive && u.side === me && u.foeTile === ft);
+      if (fo && fo.charId === charId && canMergeInto(fo)) { netSubmit({ kind: 'merge', charId, tile: ft, foe: true }); return; }
+      if (fo || v42TileBlocked(otherSide(me), ft, charId)) { $('bottomStatusLine').textContent = '그 칸에는 이미 지후가 있어요!'; return; }
+      if (countedAlive(me) >= maxUnitsFor(me) || !canPlaceNew(me, charId)) { $('bottomStatusLine').innerHTML = !canPlaceNew(me, charId) ? deployLimitText(charId) : '더 놓을 자리가 없어요. 같은 지후에 겹쳐 레벨업하세요.'; return; }
+      netSubmit({ kind: 'place', charId, tile: ft, foe: true });
+      return;
+    }
+  }
+  if (tile == null) { $('bottomStatusLine').textContent = CHAR_DB[charId]?.foeDeploy ? '내 진영이나 적 진영의 칸에 놓을 수 있어요!' : '내 진영 칸 안에만 배치할 수 있어요!'; return; }
   const owner = v42TileUnit(me, tile);
   if (owner) {
     if (owner.charId !== charId) { $('bottomStatusLine').innerHTML = `이미 <b>${owner.def.name}</b>이(가) 있는 칸이에요. 빈 칸이나 같은 지후 칸을 누르세요`; return; }
@@ -31950,7 +32139,7 @@ function netApplyAct(side, act, who) {
   }
   const charId = act.charId;
   if (act.kind === 'merge') {
-    let u = act.tile != null ? v42TileUnit(side, act.tile) : null;
+    let u = act.tile != null ? (act.foe ? state.units.find(x => x.alive && x.side === side && x.foeTile === act.tile) : v42TileUnit(side, act.tile)) : null; // 7.0 🗿 적 진영 칸
     if (!u || u.charId !== charId || !canMergeInto(u)) u = mergeTargetFor(side, charId);
     if (!u) return;
     levelUpUnit(u);
@@ -31964,7 +32153,8 @@ function netApplyAct(side, act, who) {
     return;
   }
   let tile = act.tile;
-  if (tile == null || v42TileBlocked(side, tile, charId)) tile = v42PickTile(side, charId, v42RoleRow(charId));
+  if (act.foe && tile != null && CHAR_DB[charId]?.foeDeploy && !v42TileBlocked(otherSide(side), tile, charId)) { v42SpawnFoe(side, tile, charId); return; } // 7.0 🗿 적 진영 칸
+  if (act.foe || tile == null || v42TileBlocked(side, tile, charId)) tile = v42PickTile(side, charId, v42RoleRow(charId));
   if (tile != null) v42Spawn(side, tile, charId);
 }
 
