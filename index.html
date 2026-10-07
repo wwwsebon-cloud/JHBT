@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>try { if (localStorage.getItem('jihooBattle.uiTheme') === 'classic') document.documentElement.classList.add('ui-classic'); } catch (e) {}</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="6.2.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="6.2.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -10135,6 +10135,7 @@ const CHAR_DB = {
     id: 'ravage', name: '래비지 지후', emoji: '🦌', role: 'dealer', roleLabel: '딜러',
     rarity: 'legend', color: '#2f4a3a', portrait: PORTRAITS.ravage,
     ...CHARACTER_BALANCE.ravage,
+    onRestore(u, p) { if (p.ravageAtk) { u._ravageAtk = p.ravageAtk; u.def.atk += p.ravageAtk; } }, // 6.2.2 [파괴] 영구 공격력은 다음 라운드에도
     skillDesc: '자신이 적을 처치할 때마다 모든 아군에게 <b>4초</b>간 <b>[유린]</b>을 주고 <b>[파괴]</b>를 쓴다. <b>[유린]</b>: 치명타 피해 <b>+40%</b> · 치명타 확률 <b>+2%</b>. <b>[파괴]</b>: 무작위 적 위치 <b>4×4칸</b>에 <b>550</b> 피해. 이 스킬로 적을 한 명이라도 처치하면 래비지 지후의 <b>영구 공격력이 100</b> 오르고, [파괴]를 피해 <b>+100</b>인 상태로 다시 쓴다.'
   },
   stone: {
@@ -14379,6 +14380,7 @@ function showScreen(name) {
   if (name === 'battle') { if (state.layoutEw == null) state.layoutEw = window.innerWidth >= 800 && window.innerWidth > window.innerHeight; } // 5.5.1 경기 동안 방향 고정
   else if (name !== 'end') state.layoutEw = null;
   state.screen = name;
+  { const bh = document.getElementById('blessingHud'); if (bh && name !== 'battle') bh.style.display = 'none'; } // 6.2.2 축복 표시는 전투 화면에서만
   if (typeof presenceSyncPick === 'function') presenceSyncPick(); // 6.0.3 경쟁전 · 드래프트 픽 화면이면 친구에게 '픽 선택 중'으로 보인다
   v4OnScreen(name);
   if (['leaderboard', 'inventory', 'patch'].includes(name) && typeof mqVisit === 'function') mqVisit(name);
@@ -21159,6 +21161,7 @@ function recordEnemyDefeat(attacker, target) {
 function applyDamageRaw(target, amount, opts) {
   if (!target.alive) return false;
   if (target.invincible > 0) return false;
+  if (target._taxiGuard && target._taxiGuard.alive) return false; // 6.2 택시 승객: 택시가 살아 있는 한 무적
   opts = opts || {};
   const source = opts.src || null;
   if (source && source.alive && isHostile(target, source)) target._lastFoe = source;
@@ -24561,6 +24564,9 @@ function dropUnitFx(u) {
   if (u._uniDash) { u._uniDash = null; u.el.classList.remove('unicorn-dash'); }
   if (u._trainDash) { endTrainTrail(u._trainDash, u); u._trainDash = null; u.el.classList.remove('train-dash'); }
   if (u._train && u._train.signals) { u._train.signals.forEach(sg => sg.el.remove()); u._train.signals = null; }
+  if (u._tx) taxiDrop62(u); // 6.2 탄 사람 내려 주기 (변이로 다른 지후가 돼도)
+  if (u._rc && u._rc.warn) { u._rc.warn.el.remove(); u._rc.warn = null; } // 6.2 RC카 예고선
+  if (u._st) { u._n62Ghost = false; u.el.classList.remove('n62-rolling'); }
 }
 function auraEl(u, radius, cls) {
   if (!u._aura38) u._aura38 = fx38('fx-aura38 ' + cls, u.x, u.y);
@@ -25859,6 +25865,7 @@ function checkTaegukHarmony(side) {
 function dealDamage(caster, target, amount, opts) {
   if (!target.alive) return false;
   if (target.invincible > 0) return false;
+  if (target._taxiGuard && target._taxiGuard.alive) return false; // 6.2 택시 승객: 택시가 살아 있는 한 무적
   opts = opts || {};
   if (state.coop && state.mode === 'coop' && caster && caster.side === 'enemy' && !opts.reflected) amount *= caster._coopDmg || coopExtraMult(Math.max(1, state.coop.wave)); // 5.1 협동전: 레벨 7을 넘는 적의 피해
   if (caster && caster._holo && !opts.reflected) amount *= CHAR_DB.matrix.holoDmg; // 5.6.3 홀로그램의 모든 피해는 원본의 60%
@@ -26246,8 +26253,13 @@ function triggerBerserk(u) {
 }
 
 // ═════════ 6.2 신규 지후 ═════════
-// 택시(히든) · 상하이 · RC카 · 래비지 · 돌 · 정화
-// 유닛 플래그: _n62Ghost = 충돌 · 일반 이동 없이 스킬이 직접 움직임 / _n62Hold = 제자리 (공격도 안 함)
+// 택시(히든) · 상하이 · RC카 · 래비지 · 돌 · 정화 — 6.2.2 전면 재작성
+// 규칙
+//  · 시간은 전부 유닛 타이머(dt)로 센다. setTimeout · scheduleTask 를 쓰지 않는다 (친선전 락스텝 · 재생 일치).
+//  · _n62Ghost: 충돌 · 벽 · 기본 이동/공격 없이 스킬이 직접 움직이는 유닛 (택시 운행 · 돌 굴러가기 · 탑승객).
+//  · _n62Hold : 제자리에 서서 아무것도 하지 않는 유닛 (택시를 부르는 중).
+//  · 탑승객은 혼자 들어간 아공간(enterRealm)에 넣는다 → 맞지도, 때리지도, 대상이 되지도 않는다.
+//  · 퇴장(banish)은 이번 라운드에서만 빠진다. 배치 기록은 남아 다음 라운드에 다시 나온다.
 function n62() {
   if (!state.n62) state.n62 = { toys: [], warns: [] };
   return state.n62;
@@ -26257,41 +26269,50 @@ function resetNew62State() {
   state.n62 = null;
   document.querySelectorAll('.n62-fx').forEach(el => el.remove());
 }
-// 일반 조종(이동 · 공격)을 막아야 하는 유닛인가 (aiSteerAndAttack 맨 위)
+// aiSteerAndAttack 맨 위: 스킬이 직접 움직이거나 붙잡혀 있는 유닛은 기본 AI 를 건너뛴다
 function steerNew62(u) {
   if (!u._n62Ghost && !u._n62Hold) return false;
   u.desVx = 0; u.desVy = 0; u.physLock = 0; u._engaged = false;
   clearTelegraph(u);
   return true;
 }
-function n62Banish(u, label) { // 이번 라운드에서 퇴장 (배치 기록은 남아 다음 라운드에 다시 나온다 · 사망 효과 없음)
+function n62Dir(side) { // 그 진영에서 적진 쪽 단위 벡터
+  const ew = isEastWestLayout();
+  return ew ? { x: side === 'ally' ? -1 : 1, y: 0 } : { x: 0, y: side === 'ally' ? -1 : 1 };
+}
+function n62Place(u, x, y) { // 충돌 없이 그 자리로 옮기고 화면도 맞춘다
+  u.x = x; u.y = y; u.xPrev = x; u.yPrev = y; u.vx = 0; u.vy = 0;
+  physSyncDom(u, 1);
+}
+function n62Inside(x, y) { return { x: clamp(x, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), y: clamp(y, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD) }; }
+// 이번 라운드에서 퇴장: 사망 효과(부활 · 분열 · 좀비 · 광폭화 · 수호) 없이 쓰러진다
+function n62Banish(u, label) {
   if (!u || !u.alive) return;
-  spawnDamageNumber(u, label, { crit: true });
+  if (label) spawnDamageNumber(u, label, { crit: true });
   u._devoured = true; u._guardBy = null; u.berserked = true;
-  u._n62Ghost = false; u._n62Ride = null; u.hp = 0;
+  u._n62Ghost = false; u._n62Hold = false;
+  u.hp = 0;
   updateUnitBars(u);
   killUnit(u);
 }
-function n62Instakill(owner, e) { // 즉사: 쉴드 · 피해 감소 · 광폭화를 무시
-  if (!e.alive || e.isCastle || e.invincible > 0) return false;
+// 즉사: 쉴드 · 피해 감소 · 광폭화 · 수호를 무시한다 (무적 · 아공간은 피한다)
+function n62Instakill(owner, e, label) {
+  if (!e.alive || e.isCastle || e.invincible > 0 || e._realm) return false;
+  const hostile = !!owner && owner.side !== e.side;
+  if (label) spawnDamageNumber(e, label, { crit: true });
   e.shield = 0; e._guardBy = null; e.berserked = true;
-  e._lastKiller = owner; e.hp = 0;
+  e._lastKiller = owner || null; e.hp = 0;
   updateUnitBars(e);
-  const hostile = isHostile(owner, e);
   killUnit(e);
   if (hostile && !e.alive) recordEnemyDefeat(owner, e);
   return true;
 }
-function n62Dir(u) { // 적진 쪽 (파도와 같은 방향)
-  const ew = isEastWestLayout();
-  return ew ? { x: u.side === 'ally' ? -1 : 1, y: 0 } : { x: 0, y: u.side === 'ally' ? -1 : 1 };
-}
 
-// ── 상하이: 한 번만 쏜다 · 맞은 적은 [고자] ──
-// [고자]: 회복을 받기 전까지 최대 체력 1. 라운드가 끝나도 이어진다 (배치 기록에 남긴다).
+// ── 상하이: 라운드에 한 번 무작위 적을 쏜다 · 맞은 적은 [고자] ──
+// [고자]: 회복을 받기 전까지 최대 체력 1. 배치 기록(goja)에 남아 다음 라운드에도 이어진다. 회복을 받으면 풀회복.
 function shanghaiShot62(u) {
   if (u._shDone) return;
-  const foes = foesOnField(u.side).filter(e => !e._n62Ghost);
+  const foes = foesOnField(u.side).filter(e => !e._n62Ghost && sameRealm(u, e));
   if (!foes.length) return;
   const t = foes[Math.floor(Math.random() * foes.length)];
   u._shDone = true;
@@ -26312,25 +26333,28 @@ function gojaApply62(e) {
   const pl = state.placements.find(p => p.id === e.placementId);
   if (pl) pl.goja = true;
 }
-function gojaRecover62(e) {
-  if (!e || !e._goja) return;
-  const full = e._goja.maxHp;
+function gojaClear62(e) {
   e._goja = null;
-  e.maxHp = full; e.hp = full; // 풀회복
   e.el.classList.remove('n62-goja');
-  spawnDamageNumber(e, '✨ 고자 해제', { heal: true });
-  updateUnitBars(e);
   const pl = state.placements.find(p => p.id === e.placementId);
   if (pl) delete pl.goja;
 }
+function gojaRecover62(e) { // healUnit 에서 부른다
+  if (!e || !e._goja) return;
+  const full = e._goja.maxHp;
+  gojaClear62(e);
+  e.maxHp = full; e.hp = full;
+  spawnDamageNumber(e, '✨ 고자 해제', { heal: true });
+  updateUnitBars(e);
+}
 
-// ── 래비지: 처치할 때마다 [유린] + [파괴] ──
-function ravageCritBonus(u) { return u && (u._rvUntil || 0) > (state.combatTime || 0); }
-function ravageOnKill62(caster, target) { // recordEnemyDefeat 에서 부른다 (모든 처치 경로 공통)
-  if (state._rvSmashing) return; // [파괴]로 잡은 적은 따로 세지 않는다 (재시전이 이미 이어 간다)
-  if (!caster || caster.charId !== 'ravage' || !caster.alive) return;
+// ── 래비지: 자신이 적을 처치하면 모든 아군 [유린] 4초 + [파괴] ──
+// [파괴]로 처치하면 영구 공격력 +100 (배치 기록에 남는다) 그리고 피해 +100 으로 0.35초 뒤 다시 [파괴].
+function ravageCritBonus(u) { return !!u && (u._rvUntil || 0) > (state.combatTime || 0); }
+function ravageOnKill62(caster, target) { // recordEnemyDefeat 에서 부른다
+  if (!caster || caster.charId !== 'ravage' || !caster.alive || caster._rvSmashing) return;
   if (!target || target.alive || target.side === caster.side) return;
-  const d = caster.def, until = (state.combatTime || 0) + d.rvTime;
+  const until = (state.combatTime || 0) + caster.def.rvTime;
   state.units.forEach(a => {
     if (!a.alive || a.isCastle || a.side !== caster.side) return;
     a._rvUntil = until;
@@ -26339,287 +26363,293 @@ function ravageOnKill62(caster, target) { // recordEnemyDefeat 에서 부른다 
   v41Callout(caster, '유린 · 파괴');
   ravageSmash62(caster, 0);
 }
-function ravageSmash62(owner, extra, depth) {
-  depth = depth || 0;
-  if (!owner.alive || state.phase !== 'combat' || depth > 40) return;
+function ravageSmash62(owner, extra) {
+  if (!owner.alive || state.phase !== 'combat') return;
   const d = owner.def;
-  const foes = foesOnField(owner.side);
+  const foes = foesOnField(owner.side).filter(e => sameRealm(owner, e));
   if (!foes.length) return;
   const c = foes[Math.floor(Math.random() * foes.length)];
   const half = d.ravageBoxCells * GRID / 2, dmg = d.ravageDamage + extra;
   const fx = fx38('n62-fx fx-n62-smash', c.x, c.y, '<i></i>');
   fx.style.width = fx.style.height = half * 2 + 'px';
-  scheduleTask(() => fx.remove(), 500);
+  (n62().warns).push({ el: fx, t: 0.5 });
   let kills = 0;
-  state._rvSmashing = true;
+  owner._rvSmashing = true; // [파괴]로 잡은 적은 [유린]을 다시 걸지 않는다 (재시전으로 이어 간다)
   try {
     foes.forEach(e => {
       if (!e.alive || Math.max(Math.abs(e.x - c.x), Math.abs(e.y - c.y)) > half + unitRadius(e)) return;
       dealDamage(owner, e, dmg, { isSkill: true });
       if (!e.alive) kills++;
     });
-  } finally { state._rvSmashing = false; }
-  if (!kills) return;
-  owner._ravageAtk = (owner._ravageAtk || 0) + d.ravageStep; // 영구 공격력 +100
+  } finally { owner._rvSmashing = false; }
+  if (!kills || !owner.alive) return;
+  owner._ravageAtk = (owner._ravageAtk || 0) + d.ravageStep;
   owner.def.atk += d.ravageStep;
+  const pl = state.placements.find(p => p.id === owner.placementId);
+  if (pl) pl.ravageAtk = owner._ravageAtk;
   spawnDamageNumber(owner, `⚔ ATK +${d.ravageStep}`, { heal: true });
-  scheduleTask(() => ravageSmash62(owner, extra + d.ravageStep, depth + 1), 350); // 파괴 피해 +100 으로 재시전
+  (owner._rvQueue || (owner._rvQueue = [])).push({ t: 0.35, extra: extra + d.ravageStep });
+}
+function ravageTick62(u, dt) {
+  if (!u._rvQueue || !u._rvQueue.length) return;
+  const due = [];
+  u._rvQueue = u._rvQueue.filter(q => { q.t -= dt; if (q.t > 0) return true; due.push(q); return false; });
+  due.forEach(q => ravageSmash62(u, q.extra));
 }
 
-// ── 정화: 4초마다 종 ──
+// ── 정화: 라운드 시작 즉시, 그 뒤 4초마다 종 ──
 function purifyBell62(u) {
   const d = u.def, R = d.bellRadiusCells * GRID;
   v41Callout(u, v41SkillName(u));
   const fx = fx38('n62-fx fx-n62-bell', u.x, u.y, '<i></i><i></i>');
   fx.style.width = fx.style.height = R * 2 + 'px';
-  scheduleTask(() => fx.remove(), 900);
-  state.units.forEach(e => {
-    if (!e.alive || e.isCastle || e._realm || e._flight) return;
-    const dist = Math.hypot(e.x - u.x, e.y - u.y);
-    if (dist > R + unitRadius(e)) return;
+  n62().warns.push({ el: fx, t: 0.9 });
+  state.units.slice().forEach(e => {
+    if (!e.alive || e.isCastle || !sameRealm(u, e) || e._flight) return;
+    if (Math.hypot(e.x - u.x, e.y - u.y) > R + unitRadius(e)) return;
     if (e.side === u.side) {
-      cleanseUnit(e); // 모든 디버프 제거 (고자는 회복으로 풀린다)
-      healUnit(e, e.maxHp * d.bellHeal);
+      cleanseUnit(e);
+      healUnit(e, e.maxHp * d.bellHeal); // [고자]는 회복으로 풀린다
     } else dealDamage(u, e, d.bellDamage, { isSkill: true });
   });
 }
+function purifyTick62(u, dt) {
+  if (u._realm) return;
+  u._puT = (u._puT ?? 0) - dt;
+  if (u._puT > 0) return;
+  u._puT += u.def.bellEvery;
+  purifyBell62(u);
+}
 
-// ── 돌: 라운드 시작과 함께 적진 끝까지 관통해 구른다 ──
+// ── 돌: 라운드 시작과 함께 적진 끝까지 모든 유닛을 관통해 구른다 · 끝에 닿으면 퇴장 ──
 function stoneTick62(u, dt) {
+  if (u._realm) return;
   const d = u.def;
   if (!u._st) {
-    const dir = n62Dir(u), { W, H } = arenaBounds(), pad = PHYS.WALL_PAD;
-    u._st = { dir, hit: new Set(), rot: 0, endX: dir.x ? (dir.x < 0 ? pad : W - pad) : null, endY: dir.y ? (dir.y < 0 ? pad : H - pad) : null };
+    u._st = { dir: n62Dir(u.side), hit: new Set(), rot: 0 };
     u._n62Ghost = true;
     u.el.classList.add('n62-rolling');
   }
   const s = u._st;
-  if (!u._n62Ghost) return;
   const step = d.stoneSpeed * GRID * dt;
-  u.x += s.dir.x * step; u.y += s.dir.y * step;
-  s.rot += step / Math.max(1, unitRadius(u)) * 57.3;
+  n62Place(u, u.x + s.dir.x * step, u.y + s.dir.y * step);
+  s.rot = (s.rot + step / Math.max(1, unitRadius(u)) * 57.3) % 360;
   const icon = u.el.querySelector('.unit-icon'); if (icon) icon.style.transform = `rotate(${s.rot.toFixed(0)}deg)`;
+  const r = unitRadius(u);
   foesOnField(u.side).forEach(e => {
-    if (s.hit.has(e.uid) || Math.hypot(e.x - u.x, e.y - u.y) > unitRadius(u) + unitRadius(e)) return;
+    if (s.hit.has(e.uid) || e._n62Ghost || Math.hypot(e.x - u.x, e.y - u.y) > r + unitRadius(e)) return;
     s.hit.add(e.uid);
     dealDamage(u, e, Math.max(1, u.hp * d.stoneHitFraction), { isSkill: true, skipAtkBuff: true }); // 돌 지후 현재 체력의 10%
   });
-  const done = (s.endX != null && (s.dir.x < 0 ? u.x <= s.endX : u.x >= s.endX)) || (s.endY != null && (s.dir.y < 0 ? u.y <= s.endY : u.y >= s.endY));
-  if (done) { // 6.2.1 상대 진영 끝까지 가면 소멸한다
-    u.el.classList.remove('n62-rolling');
-    if (icon) icon.style.transform = '';
-    n62Banish(u, '🪨 소멸');
-    return;
-  }
-  u.xPrev = u.x; u.yPrev = u.y; u.vx = 0; u.vy = 0;
-  physSyncDom(u, 1);
+  const pad = PHYS.WALL_PAD;
+  const end = s.dir.x < 0 ? u.x <= pad : s.dir.x > 0 ? u.x >= MAP_W - pad : s.dir.y < 0 ? u.y <= pad : u.y >= MAP_H - pad;
+  if (!end || !u.alive) return;
+  if (icon) icon.style.transform = '';
+  u.el.classList.remove('n62-rolling');
+  n62Banish(u, '🪨 소멸');
 }
 
-// ── RC카: 10초마다 장난감 기차 / 자동차 ──
+// ── RC카: 첫 소환 10초, 그 뒤 8초마다 장난감 기차(즉사) / 자동차(현재 체력 75%) · 1초 전 예고 동안 무적 ──
 function rcTick62(u, dt) {
   if (u._realm) return;
-  const d = u.def, t = state.combatTime || 0;
-  if (u._rcNext == null) u._rcNext = d.rcStart;
-  if (!u._rcWarn && t >= u._rcNext - d.rcWarn) { // 1초 전 경로 예고 · 그동안 무적
-    const { W, H } = arenaBounds(), lane = d.rcLaneCells * GRID, wall = Math.floor(Math.random() * 4);
-    const horiz = wall < 2, sign = wall % 2 ? -1 : 1; // 0: 왼쪽→오른쪽 · 1: 오른쪽→왼쪽 · 2: 위→아래 · 3: 아래→위
-    const along = horiz ? W : H, across = horiz ? H : W;
+  const d = u.def;
+  const k = u._rc || (u._rc = { t: d.rcStart, warn: null });
+  k.t -= dt;
+  if (!k.warn && k.t <= d.rcWarn) {
+    const lane = d.rcLaneCells * GRID, wall = Math.floor(Math.random() * 4);
+    const horiz = wall < 2, sign = wall % 2 ? -1 : 1; // 0: 왼→오 · 1: 오→왼 · 2: 위→아래 · 3: 아래→위
+    const across = horiz ? MAP_H : MAP_W;
     const pos = lane / 2 + Math.random() * Math.max(1, across - lane);
     const kind = Math.random() < 0.5 ? 'train' : 'car';
-    u._rcWarn = { horiz, sign, pos, lane, kind, along };
-    const el = fx38('n62-fx fx-n62-warn', horiz ? W / 2 : pos, horiz ? pos : H / 2, '<i></i>');
-    el.style.width = (horiz ? W : lane) + 'px'; el.style.height = (horiz ? lane : H) + 'px';
-    n62().warns.push({ el, t: d.rcWarn + 0.05 });
+    const el = fx38('n62-fx fx-n62-warn', horiz ? MAP_W / 2 : pos, horiz ? pos : MAP_H / 2, '<i></i>');
+    el.style.width = (horiz ? MAP_W : lane) + 'px'; el.style.height = (horiz ? lane : MAP_H) + 'px';
+    k.warn = { horiz, sign, pos, lane, kind, el };
     v41Callout(u, kind === 'train' ? '장난감 기차!' : '장난감 자동차!');
   }
-  if (u._rcWarn) {
-    u.invincible = Math.max(u.invincible || 0, Math.max(0.05, u._rcNext - t) + 0.05);
-    u.el.classList.add('invincible');
-    if (t >= u._rcNext) {
-      const w = u._rcWarn, { W, H } = arenaBounds();
-      const x = w.horiz ? (w.sign > 0 ? -w.lane : W + w.lane) : w.pos, y = w.horiz ? w.pos : (w.sign > 0 ? -w.lane : H + w.lane);
-      const el = fx38('n62-fx fx-n62-toy ' + w.kind, x, y, `<img src="${w.kind === 'train' ? PORTRAITS.train : PORTRAITS.biker}" alt="">`);
-      el.style.width = el.style.height = w.lane + 'px';
-      n62().toys.push({ owner: u, kind: w.kind, x, y, dx: w.horiz ? w.sign : 0, dy: w.horiz ? 0 : w.sign, lane: w.lane, hit: new Set(), el, fraction: d.rcCarFraction });
-      u._rcWarn = null; u._rcNext += d.rcEvery;
+  if (!k.warn) return;
+  u.invincible = Math.max(u.invincible || 0, Math.max(0, k.t) + 0.1); // 예고 동안 무적
+  u.el.classList.add('invincible');
+  if (k.t > 0) return;
+  const w = k.warn;
+  w.el.remove();
+  const x = w.horiz ? (w.sign > 0 ? -w.lane : MAP_W + w.lane) : w.pos, y = w.horiz ? w.pos : (w.sign > 0 ? -w.lane : MAP_H + w.lane);
+  const el = fx38('n62-fx fx-n62-toy ' + w.kind, x, y, `<img src="${w.kind === 'train' ? PORTRAITS.train : PORTRAITS.biker}" alt="">`);
+  el.style.width = el.style.height = w.lane + 'px';
+  n62().toys.push({ owner: u, side: u.side, kind: w.kind, x, y, dx: w.horiz ? w.sign : 0, dy: w.horiz ? 0 : w.sign, lane: w.lane, hit: new Set(), el,
+    speed: (d.rcToySpeed || 50) * GRID, fraction: d.rcCarFraction });
+  k.warn = null; k.t += d.rcEvery;
+}
+function tickToys62(dt) {
+  const n = n62();
+  n.toys = n.toys.filter(t => {
+    let left = t.speed * dt, alive = true;
+    while (left > 0 && alive) { // 한 스텝에 수십 칸을 가므로 잘게 나눠 놓치지 않는다
+      const s = Math.min(24, left); left -= s;
+      t.x += t.dx * s; t.y += t.dy * s;
+      state.units.slice().forEach(e => {
+        if (!e.alive || e.isCastle || e === t.owner || e._realm || e._n62Ghost || t.hit.has(e.uid)) return;
+        if (Math.hypot(e.x - t.x, e.y - t.y) > t.lane * 0.42 + unitRadius(e)) return;
+        t.hit.add(e.uid);
+        if (e.invincible > 0 || (e._taxiGuard && e._taxiGuard.alive)) return;
+        if (t.kind === 'train') n62Instakill(t.owner, e, '🚆 즉사'); // 아군 · 적군 상관없이
+        else { // 아군 · 적군 상관없이 현재 체력의 75% (applyDamageRaw: 편 가르지 않는 피해)
+          applyDamageRaw(e, e.hp * t.fraction, { isSkill: true, src: t.owner, friendlyFire: true });
+          spawnBurst(e.el, '#f07a1a');
+        }
+      });
+      if (t.x < -t.lane * 2 || t.x > MAP_W + t.lane * 2 || t.y < -t.lane * 2 || t.y > MAP_H + t.lane * 2) alive = false;
     }
-  }
+    t.el.style.left = t.x + 'px'; t.el.style.top = t.y + 'px';
+    if (!alive) t.el.remove();
+    return alive;
+  });
 }
 
-// ── 택시 지후 ──
-function n62Drive(u, tx, ty, speed, dt) { // 충돌 없이 목표로 운행. 남은 거리를 돌려준다
+// ── 택시 (히든) ──
+// 승객 콜 → 0.5초 뒤 출발 → 승객 탑승(택시 쉴드 9999) → 적진 맨 끝 무작위 자리에 내려 줌 → 2초 휴식
+// → 가장 가까운 적이 콜 → 1초 뒤 출발 → 적 탑승 → 2초 휴식 → 속도 50 으로 가장 먼 외벽 밖까지 → 적과 함께 퇴장
+// 택시가 쓰러지지 않는 한 승객은 무적 (내린 뒤에도). 택시가 쓰러지면 탄 사람은 그 자리에 내리고, 부르던 적도 풀린다.
+function taxiBoard62(u, r) { // 탑승: 혼자 아공간 → 맞지도 · 때리지도 않는다
+  r._n62Hold = false; r._n62Ghost = true; r._taxiRide = u;
+  r._taxiRealm = enterRealm(r, [r], 99999, null);
+  r.el.classList.remove('n62-call'); r.el.classList.add('n62-riding');
+  n62Place(r, u.x, u.y);
+}
+function taxiAlight62(r, x, y) { // 내림 (택시가 쓰러졌을 때도)
+  if (!r) return;
+  r.el.classList.remove('n62-call', 'n62-riding');
+  r._n62Hold = false; r._taxiBy = null;
+  if (r._taxiRide) {
+    r._n62Ghost = false; r._taxiRide = null;
+    if (r._taxiRealm) { state.realms = (state.realms || []).filter(z => z !== r._taxiRealm); if (r._realm === r._taxiRealm) exitRealm(r._taxiRealm); r._taxiRealm = null; }
+    if (r.alive) { const p = n62Inside(x, y); n62Place(r, p.x, p.y); }
+  }
+}
+function taxiDrive62(u, tx, ty, speed, dt) { // 충돌 없이 목표로. 남은 거리를 돌려준다
   const dx = tx - u.x, dy = ty - u.y, dist = Math.hypot(dx, dy);
   const step = Math.min(dist, speed * dt);
-  if (dist > 0.001) { u.x += dx / dist * step; u.y += dy / dist * step; }
-  u.xPrev = u.x; u.yPrev = u.y; u.vx = 0; u.vy = 0;
-  physSyncDom(u, 1);
+  if (dist > 0.001) n62Place(u, u.x + dx / dist * step, u.y + dy / dist * step);
   return dist - step;
 }
-function n62Release(rider) {
-  if (!rider) return;
-  rider._n62Ghost = false; rider._n62Hold = false; rider._n62Ride = null;
-  if (rider._n62Inv) { rider._n62Inv = false; rider.invincible = 0; rider.el.classList.remove('invincible'); }
-  rider.el.classList.remove('n62-riding', 'n62-call');
-}
-function n62Call(e, label) { // 승객 · 적이 택시를 부른다: 제자리에서 점프
-  e._n62Hold = true;
-  e.el.classList.add('n62-call');
-  spawnDamageNumber(e, label, { crit: true });
-}
+function taxiCallable62(e) { return e.alive && !e.isCastle && !e._realm && !e._n62Ghost && !e._n62Hold && !e._flight && !e._leap; }
 function taxiTick62(u, dt) {
   if (u._realm) return;
-  const d = u.def, k = u._tx || (u._tx = { phase: 'init', t: 0 });
+  const d = u.def, k = u._tx || (u._tx = { phase: 'call', t: 0 });
   const spd = d.taxiSpeed * GRID;
-  // 6.2.1 승객 · 적 모두 택시에 타고 있는 동안 택시 위치를 따라간다 (적을 태우고 돌진할 때 그 자리에 두고 가던 버그 수정)
-  [k.pass, k.foe].forEach(r => {
-    if (r && r.alive && r._n62Ride === u) { r.x = u.x; r.y = u.y; r.xPrev = u.x; r.yPrev = u.y; physSyncDom(r, 1); }
-  });
+  const park = () => { u._n62Ghost = false; u._n62Hold = true; u.el.classList.remove('n62-driving'); };
+  const drive = () => { u._n62Hold = false; u._n62Ghost = true; u.el.classList.add('n62-driving'); };
   switch (k.phase) {
-    case 'init': { // 라운드 시작 직후: 무작위 아군이 승객이 되어 점프하며 택시를 부른다
-      u._n62Hold = true;
-      const pool = placedUnits(u.side).filter(a => a !== u && !a._realm && !a._n62Ghost && !a._n62Hold);
+    case 'call': { // 무작위 아군이 승객이 되어 점프하며 택시를 부른다
+      park();
+      const pool = placedUnits(u.side).filter(a => a !== u && taxiCallable62(a));
       if (!pool.length) { k.phase = 'idle'; break; }
       k.pass = pool[Math.floor(Math.random() * pool.length)];
-      n62Call(k.pass, '🚕 택시!');
+      k.pass._n62Hold = true; k.pass._taxiBy = u; k.pass.el.classList.add('n62-call');
+      spawnDamageNumber(k.pass, '🚕 택시!', { crit: true });
       v41Callout(u, v41SkillName(u));
-      k.phase = 'dispatch'; k.t = d.taxiCall; k.next = 'toPass';
-      break;
-    }
-    case 'dispatch': { // 콜을 받고 0.5초 뒤 출발
-      k.t -= dt;
-      if (k.t > 0) break;
-      u._n62Hold = false; u._n62Ghost = true; u.el.classList.add('n62-driving');
-      k.phase = k.next;
+      k.phase = 'toPass'; k.t = d.taxiCall;
       break;
     }
     case 'toPass': {
-      if (!k.pass.alive) { u._n62Ghost = false; u._n62Hold = true; k.phase = 'init'; break; }
-      if (n62Drive(u, k.pass.x, k.pass.y, spd, dt) > unitRadius(u) + unitRadius(k.pass)) break;
-      // 탑승: 택시가 살아 있는 동안 승객은 무적
-      const p = k.pass;
-      p._n62Hold = false; p._n62Ghost = true; p._n62Ride = u; p._n62Inv = true;
-      p.invincible = 99999; p.el.classList.add('invincible', 'n62-riding'); p.el.classList.remove('n62-call');
-      u.shield = d.taxiShield; u.maxShield = Math.max(u.maxShield || 0, u.shield); u.el.classList.add('has-shield'); // 9999 쉴드
+      if (!k.pass.alive) { k.pass = null; k.phase = 'call'; break; }
+      k.t -= dt; if (k.t > 0) break; // 콜을 받고 0.5초 뒤 출발
+      drive();
+      if (taxiDrive62(u, k.pass.x, k.pass.y, spd, dt) > unitRadius(u) + unitRadius(k.pass)) break;
+      taxiBoard62(u, k.pass);
+      k.pass._taxiGuard = u; // 택시가 살아 있는 한 무적
+      u.shield = d.taxiShield; u.maxShield = Math.max(u.maxShield || 0, u.shield); u.el.classList.add('has-shield');
       updateUnitBars(u);
-      const { W, H } = arenaBounds(), pad = PHYS.WALL_PAD * 2, dir = n62Dir(u);
-      k.dest = {
-        x: dir.x ? (dir.x < 0 ? pad : W - pad) : pad + Math.random() * (W - pad * 2),
-        y: dir.y ? (dir.y < 0 ? pad : H - pad) : pad + Math.random() * (H - pad * 2)
-      }; // 적진의 맨 끝 무작위 위치
+      const dir = n62Dir(u.side), pad = PHYS.WALL_PAD * 2;
+      k.dest = { x: dir.x ? (dir.x < 0 ? pad : MAP_W - pad) : pad + Math.random() * (MAP_W - pad * 2),
+                 y: dir.y ? (dir.y < 0 ? pad : MAP_H - pad) : pad + Math.random() * (MAP_H - pad * 2) }; // 적진 맨 끝 무작위 자리
       k.phase = 'carry';
       break;
     }
     case 'carry': {
-      if (n62Drive(u, k.dest.x, k.dest.y, spd, dt) > 4) break;
-      const p = k.pass, dir = n62Dir(u);
-      if (p && p.alive) { n62Release(p); p.x = clamp(u.x - dir.x * unitRadius(u) * 1.6, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD); p.y = clamp(u.y - dir.y * unitRadius(u) * 1.6, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD); p.xPrev = p.x; p.yPrev = p.y; physSyncDom(p, 1); spawnDamageNumber(p, '🚕 도착!', { heal: true }); }
-      u._n62Ghost = false; u._n62Hold = true; u.el.classList.remove('n62-driving');
-      k.phase = 'dropped'; k.t = d.taxiDropRest; // 6.2.1 승객을 내려 주고 2초 쉰 뒤
+      if (k.pass.alive) n62Place(k.pass, u.x, u.y);
+      if (taxiDrive62(u, k.dest.x, k.dest.y, spd, dt) > 4) break;
+      const dir = n62Dir(u.side), back = unitRadius(u) * 1.6;
+      if (k.pass.alive) { taxiAlight62(k.pass, u.x - dir.x * back, u.y - dir.y * back); spawnDamageNumber(k.pass, '🚕 도착!', { heal: true }); }
+      park();
+      k.phase = 'rest'; k.t = d.taxiDropRest;
       break;
     }
-    case 'dropped': {
-      k.t -= dt;
-      if (k.t > 0) break;
-      const foes = foesOnField(u.side).filter(e => !e._n62Ghost && !e._n62Hold);
-      if (!foes.length) { k.phase = 'idle'; break; }
+    case 'rest': { // 내려 주고 2초 쉰 뒤 가장 가까운 적이 택시를 부른다
+      k.t -= dt; if (k.t > 0) break;
+      const foes = foesOnField(u.side).filter(taxiCallable62);
+      if (!foes.length) { k.t = 0.5; break; }
       foes.sort((a, b) => Math.hypot(a.x - u.x, a.y - u.y) - Math.hypot(b.x - u.x, b.y - u.y));
-      k.foe = foes[0]; // 가장 가까운 적군이 택시를 부른다
-      n62Call(k.foe, '🚕 택시!');
-      k.phase = 'dispatch'; k.t = d.taxiFoeCall; k.next = 'toFoe'; // 6.2.1 적이 택시를 부르고 1초 쉰 뒤 출발
+      k.foe = foes[0];
+      k.foe._n62Hold = true; k.foe._taxiBy = u; k.foe.el.classList.add('n62-call');
+      spawnDamageNumber(k.foe, '🚕 택시!', { crit: true });
+      k.phase = 'toFoe'; k.t = d.taxiFoeCall;
       break;
     }
     case 'toFoe': {
-      if (!k.foe.alive) { u._n62Ghost = false; u._n62Hold = true; k.phase = 'dropped'; k.t = 0; break; }
-      if (n62Drive(u, k.foe.x, k.foe.y, spd, dt) > unitRadius(u) + unitRadius(k.foe)) break;
-      const e = k.foe;
-      e._n62Hold = false; e._n62Ghost = true; e._n62Ride = u;
-      e.el.classList.add('n62-riding'); e.el.classList.remove('n62-call');
-      k.phase = 'load'; k.t = d.taxiLoadRest; // 6.2.1 적을 태우고 2초 쉰 뒤 돌진
+      if (!k.foe.alive) { k.foe = null; park(); k.phase = 'rest'; k.t = 0; break; }
+      k.t -= dt; if (k.t > 0) break; // 콜 1초 뒤 출발
+      drive();
+      if (taxiDrive62(u, k.foe.x, k.foe.y, spd, dt) > unitRadius(u) + unitRadius(k.foe)) break;
+      taxiBoard62(u, k.foe);
+      park();
+      k.phase = 'load'; k.t = d.taxiLoadRest;
       break;
     }
-    case 'load': {
-      k.t -= dt;
-      if (k.t > 0) break;
-      const { W, H } = arenaBounds(), pad = PHYS.WALL_PAD;
-      const walls = [{ d: u.x, x: -200, y: u.y }, { d: W - u.x, x: W + 200, y: u.y }, { d: u.y, x: u.x, y: -200 }, { d: H - u.y, x: u.x, y: H + 200 }];
-      walls.sort((a, b) => b.d - a.d); // 가장 먼 맵 외벽
-      k.exit = walls[0]; k.phase = 'launch';
-      u.el.classList.add('n62-launch');
+    case 'load': { // 적을 태우고 2초 쉰 뒤 가장 먼 외벽 밖으로 돌진
+      if (!k.foe.alive) { k.foe = null; k.phase = 'rest'; k.t = 0; break; }
+      k.t -= dt; if (k.t > 0) break;
+      const walls = [{ d: u.x, x: -240, y: u.y }, { d: MAP_W - u.x, x: MAP_W + 240, y: u.y }, { d: u.y, x: u.x, y: -240 }, { d: MAP_H - u.y, x: u.x, y: MAP_H + 240 }];
+      walls.sort((a, b) => b.d - a.d);
+      k.exit = walls[0];
+      drive(); u.el.classList.add('n62-launch');
       v41Callout(u, '🚕 질주!');
+      k.phase = 'launch';
       break;
     }
     case 'launch': {
-      const left = n62Drive(u, k.exit.x, k.exit.y, d.taxiLaunchSpeed * GRID, dt);
+      const left = taxiDrive62(u, k.exit.x, k.exit.y, d.taxiLaunchSpeed * GRID, dt);
+      if (k.foe && k.foe.alive) n62Place(k.foe, u.x, u.y);
       if (left > 4) break;
-      // 맵 밖으로 나가 적과 함께 소멸
-      if (k.foe && k.foe.alive) { recordEnemyDefeat(u, k.foe); n62Banish(k.foe, '🚕 소멸'); }
-      n62Banish(u, '🚕 소멸');
+      const foe = k.foe; k.foe = null;
+      if (foe && foe.alive) { taxiAlight62(foe, u.x, u.y); foe._lastKiller = u; recordEnemyDefeat(u, foe); n62Banish(foe, '🚕 소멸'); }
       k.phase = 'done';
+      n62Banish(u, '🚕 소멸');
       break;
     }
     default: break; // idle · done
   }
 }
-// 택시가 쓰러지면 태우고 있던 승객 · 적을 내려 준다 (무적 해제)
-function taxiRelease62(dt) {
-  state.units.forEach(u => {
-    if (u.charId !== 'taxi' || u.alive || !u._tx || u._tx.released) return;
-    u._tx.released = true;
-    n62Release(u._tx.pass); n62Release(u._tx.foe);
-  });
+// 택시가 쓰러지거나 퇴장할 때 (dropUnitFx 에서): 탄 사람은 그 자리에 내리고, 부르던 사람은 풀린다
+function taxiDrop62(u) {
+  const k = u._tx; if (!k) return;
+  [k.pass, k.foe].forEach(r => { if (r) taxiAlight62(r, u.x, u.y); });
+  u._n62Ghost = false; u._n62Hold = false;
+  k.phase = 'done';
 }
 
 // 유닛별 틱 (tickNewJihooSkills 에서)
 function tickNew62Unit(u, dt) {
-  if (u._goja && u.maxHp > 1) { // 합체 레벨업 등으로 최대 체력이 돌아왔다
-    u._goja = null; u.el.classList.remove('n62-goja');
-    const pl = state.placements.find(p => p.id === u.placementId); if (pl) delete pl.goja;
+  if (u._goja && u.maxHp > 1) gojaClear62(u); // 합체 레벨업 등으로 최대 체력이 돌아왔다
+  if (u._taxiBy) { // 안전장치: 부른 택시가 사라졌거나(사망 · 변이 · 퇴장) 운행을 끝냈으면 스스로 내린다
+    const t = u._taxiBy;
+    if (!t.alive || t.charId !== 'taxi' || !t._tx || t._tx.phase === 'done' || t._tx.phase === 'idle' || (t._tx.pass !== u && t._tx.foe !== u)) taxiAlight62(u, t.alive ? t.x : u.x, t.alive ? t.y : u.y);
   }
   if (u._rvUntil && (state.combatTime || 0) >= u._rvUntil) { u._rvUntil = 0; u.el.classList.remove('n62-rampage'); }
   switch (u.charId) {
     case 'taxi': taxiTick62(u, dt); break;
     case 'stone': stoneTick62(u, dt); break;
     case 'rccar': rcTick62(u, dt); break;
-    case 'purify': {
-      if (u._realm) break;
-      u._puT = (u._puT ?? u.def.bellEvery) - dt;
-      if (u._puT > 0) break;
-      u._puT += u.def.bellEvery;
-      purifyBell62(u);
-      break;
-    }
+    case 'purify': purifyTick62(u, dt); break;
+    case 'ravage': ravageTick62(u, dt); break;
     default: break;
   }
 }
-// 전체 틱: 장난감 · 예고선
+// 전체 틱: 장난감 · 잠깐 띄우는 이펙트
 function tickNew62(dt) {
-  if (state.phase !== 'combat') return;
-  taxiRelease62(dt);
-  if (!state.n62) return;
-  const n = n62(), { W, H } = arenaBounds();
+  if (state.phase !== 'combat' || !state.n62) return;
+  const n = state.n62;
   n.warns = n.warns.filter(w => { w.t -= dt; if (w.t > 0) return true; w.el.remove(); return false; });
-  n.toys = n.toys.filter(t => {
-    const total = 50 * GRID * dt; // 50칸/초
-    let left = total, alive = true;
-    while (left > 0 && alive) {
-      const s = Math.min(24, left); left -= s;
-      t.x += t.dx * s; t.y += t.dy * s;
-      state.units.forEach(e => {
-        if (!e.alive || e.isCastle || e === t.owner || e._realm || e._n62Ghost || t.hit.has(e.uid)) return;
-        if (Math.hypot(e.x - t.x, e.y - t.y) > t.lane * 0.42 + unitRadius(e)) return;
-        t.hit.add(e.uid);
-        if (t.kind === 'train') { n62Instakill(t.owner, e); spawnDamageNumber(e, '🚆 즉사', { crit: true }); } // 아군 적군 상관없이 즉사
-        else {
-          dealDamage(t.owner, e, e.hp * t.fraction, { isSkill: true, skipAtkBuff: true, src: t.owner }); // 현재 체력의 75%
-          spawnBurst(e.el, '#f07a1a');
-        }
-      });
-      if (t.x < -t.lane * 2 || t.x > W + t.lane * 2 || t.y < -t.lane * 2 || t.y > H + t.lane * 2) alive = false;
-    }
-    t.el.style.left = t.x + 'px'; t.el.style.top = t.y + 'px';
-    if (!alive) t.el.remove();
-    return alive;
-  });
+  if (n.toys.length) tickToys62(dt);
 }
 
 // ═════════ 5.5 신규 지후 ═════════
@@ -26721,7 +26751,7 @@ function renderBlessingHud(side = 'ally') {
   let hud = document.getElementById('blessingHud');
   if (!hud) { hud = document.createElement('div'); hud.id = 'blessingHud'; hud.style.cssText = 'position:fixed;z-index:1000;top:12px;right:12px;max-width:min(260px,45vw);padding:8px 10px;border:2px solid #d7a934;border-radius:10px;background:rgba(20,20,28,.9);color:#fff;font:700 12px/1.45 system-ui;pointer-events:none;display:none'; document.body.appendChild(hud); }
   const counts = blessOf(side), active = BLESSINGS.filter(([key]) => (counts[key] || 0) > 0);
-  hud.style.display = active.length ? 'block' : 'none';
+  hud.style.display = active.length && state.screen === 'battle' ? 'block' : 'none'; // 6.2.2 전투 화면에서만
   hud.innerHTML = '<b>🙏 현재 축복</b><br>' + active.map(([key,label]) => `${label} ×${counts[key]}`).join('<br>');
 }
 function blessGrant(u) {
@@ -26731,7 +26761,7 @@ function blessGrant(u) {
   v41Callout(u, '축복 · ' + label);
   spawnDamageNumber(u, '🙏 ' + label, { heal: true });
   const fx = fx38('fx-n55-bless', u.x, u.y, '<i></i>'); scheduleTask(() => fx.remove(), 900);
-  renderBlessingHud(u.side);
+  if (u.side === 'ally') renderBlessingHud('ally'); // 6.2.2 내 축복만 (적 축복이 내 것처럼 뜨던 문제)
 }
 // 전체 틱: UFC 링 · 스피커 · 파도 · 굵은 레이저 · 축복 · 테슬라
 function tickNew55(dt) {
@@ -27836,6 +27866,20 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '6.2.2': {
+    label: 'v6.2.2 신규 지후 안정화',
+    date: '2026.10.07',
+    sections: [
+      { title: '수정', items: [
+        { emoji:'🛠️', name:'6.2 신규 지후 6종', tag:'fix', color:'#111111', desc:'택시 · 상하이 · RC카 · 래비지 · 돌 · 정화 지후의 동작을 <b>처음부터 다시 만들었습니다</b>. 수치와 기획은 그대로이고, 멈추거나 꼬이던 상황을 고쳤습니다.' },
+        { emoji:'🚕', name:'택시 지후', tag:'fix', color:'#f5b800', portraitKey:'taxi', desc:'탄 지후는 <b>맞지도 · 공격하지도 않고</b> 택시와 함께 움직입니다. 택시가 쓰러지거나 변이되면 탄 지후 · 부르던 지후가 <b>그 자리에서 풀립니다</b> (계속 점프하며 멈춰 있던 문제). 내려 준 승객은 택시가 살아 있는 동안 무적입니다.' },
+        { emoji:'🎮', name:'RC카 지후', tag:'fix', color:'#ff4d6d', portraitKey:'rccar', desc:'장난감 자동차가 설명대로 <b>아군에게도</b> 현재 체력 75% 피해를 줍니다 (적에게만 들어가던 문제). RC카가 예고 중에 쓰러지면 예고선이 남던 문제를 고쳤습니다.' },
+        { emoji:'🦌', name:'래비지 지후', tag:'fix', color:'#2f4a3a', portraitKey:'ravage', desc:'[파괴]로 오른 공격력이 설명대로 <b>다음 라운드에도</b> 유지됩니다.' },
+        { emoji:'🔔', name:'정화 지후', tag:'adjust', color:'#4fe0f0', portraitKey:'purify', desc:'라운드 시작 <b>즉시</b> 첫 종을 울립니다 (쿨타임 스킬은 시작하자마자 쓰는 규칙).' },
+        { emoji:'🙏', name:'축복 표시', tag:'fix', color:'#d7a934', desc:'적이 받은 축복이 내 축복처럼 뜨던 문제, 경기가 끝난 뒤에도 로비에 남던 문제를 고쳤습니다.' }
+      ] }
+    ]
+  },
   '6.2.1': {
     label: 'v6.2.1 밸런스 패치',
     date: '2026.10.04',
