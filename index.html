@@ -5752,12 +5752,12 @@ body.auc-mode .unit.wwe-team .unit-icon { box-shadow:0 0 0 3px var(--team), 0 0 
 body.auc-picking .battle-world .unit:not(.ally-unit) { cursor:crosshair; }
 body.auc-picking .battle-world .unit:not(.ally-unit) .unit-icon { box-shadow:0 0 0 3px #e5322d, 0 0 16px rgba(229,50,45,.8) !important; animation:auc-pickpulse .8s ease-in-out infinite alternate; }
 @keyframes auc-pickpulse { to { filter:brightness(1.15); } }
-.fx-n38.auc-fx { transform:translate(-50%,-50%); z-index:30; pointer-events:none; display:flex; flex-direction:column; align-items:center; }
-.fx-n38.auc-fx.skull i { font-style:normal; font-size:64px; line-height:1; animation:auc-skull 1.8s ease-out forwards; filter:drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
-.fx-n38.auc-fx.skull em { order:-1; font-style:normal; margin-bottom:2px; padding:2px 8px; border-radius:999px; background:rgba(17,17,17,.85); color:#fff; font:800 13px system-ui; white-space:nowrap; animation:auc-skulltag 1.8s ease-out forwards; }
+.auc-fx { position:absolute; transform:translate(-50%,-50%); z-index:30; pointer-events:none; display:flex; flex-direction:column; align-items:center; }
+.auc-fx.skull i { font-style:normal; font-size:64px; line-height:1; animation:auc-skull 1.8s ease-out forwards; filter:drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
+.auc-fx.skull em { order:-1; font-style:normal; margin-bottom:2px; padding:2px 8px; border-radius:999px; background:rgba(17,17,17,.85); color:#fff; font:800 13px system-ui; white-space:nowrap; animation:auc-skulltag 1.8s ease-out forwards; }
 @keyframes auc-skull { 0% { transform:scale(.3); opacity:0; } 15% { transform:scale(1.25); opacity:1; } 30% { transform:scale(1); } 80% { opacity:1; } 100% { transform:translateY(-20px) scale(.9); opacity:0; } }
 @keyframes auc-skulltag { 0%, 10% { opacity:0; transform:translateY(6px); } 25%, 80% { opacity:1; transform:none; } 100% { opacity:0; transform:translateY(-14px); } }
-.fx-n38.auc-fx.summon i { font-style:normal; font-size:40px; animation:auc-skull .9s ease-out forwards; }
+.auc-fx.summon i { font-style:normal; font-size:40px; animation:auc-skull .9s ease-out forwards; }
 @media (max-width:560px) { .auc-prepbar .pb-row { grid-template-columns:1fr 1fr 1fr; } .auc-prepbar .pb-gold { grid-column:1 / -1; flex-direction:row; align-items:baseline; gap:8px; } }
 </style>
 </head>
@@ -26106,7 +26106,10 @@ function aucPrepStart() {
 }
 // 전장에서 그 플레이어의 k번째 지후 (이펙트 위치)
 function aucUnitAt(side, idx) { return state.units.find(u => u.alive && u._aucSide === side && u._aucIdx === idx) || null; }
-function aucFxAt(x, y, html, cls, ms) { const el = fx38('auc-fx ' + (cls || ''), x, y, html); aucLater(ms || 1600, () => el.remove()); return el; }
+function aucFxAt(x, y, html, cls, ms) { // 전장을 다시 그려도(aucSpawnField) 지워지지 않게 fx-n38 이 아닌 따로 붙인다
+  const el = document.createElement('div'); el.className = 'auc-fx ' + (cls || ''); el.style.left = x + 'px'; el.style.top = y + 'px'; el.innerHTML = html;
+  worldEl().appendChild(el); setTimeout(() => el.remove(), ms || 1600); return el;
+}
 // 성공하면 true. 사람 · 봇 · (나중에) 온라인 방장이 같은 함수를 쓴다. 설명 글 없이 이펙트로만 보여 준다.
 function aucDoRemove(actor, targetSide) { // 대상 플레이어의 지후 중 무작위 1기 (고를 수 없다)
   const ph = AUC.ph, t = aucP(targetSide), cost = aucCost(actor, 'remove');
