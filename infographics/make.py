@@ -142,7 +142,7 @@ body {{ background:#e9e8e4; font-family:'Pretendard Variable','Pretendard','Appl
   </header>
   {f'<div class="hl">{hi_html}</div>' if hi_html else ''}
   {groups_html}
-  <footer class="foot"><b>게임 안 패치노트에서 자세한 내용을 볼 수 있어요</b><span>wwwsebon-cloud.github.io/JHBT</span></footer>
+  <footer class="foot"><b>게임 안 패치노트에서 자세한 내용을 볼 수 있어요</b><span>jihoobattle.kr</span></footer>
 </div>
 </body></html>
 '''
