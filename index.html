@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.1.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6565,6 +6565,16 @@ html.ui-v7 #app#app #screen-inventory .v4-empty { padding:16px; border:1px solid
 .mc .shardtag, .gacha-reveal .shardtag { position:absolute; left:50%; top:66%; transform:translate(-50%,-50%) rotate(-8deg); padding:3px 9px; background:#111; color:#fff; font:800 12px 'Pretendard Variable', sans-serif; white-space:nowrap; box-shadow:0 0 0 2px #fff; z-index:3; }
 .v42-stamp.shard { background:#111 !important; color:#fff !important; }
 #menuModal .v71-rl { position:relative; } #menuModal .v71-rl .reddot { display:none; position:absolute; right:14px; top:12px; width:8px; height:8px; border-radius:50%; background:#e5322d; } #menuModal .v71-rl.has-reward .reddot { display:block; }
+/* 7.1.1 지후 모집 중 (10회 뽑기 예측 연출) */
+.gacha-recruit { position:fixed; inset:0; z-index:390; display:none; place-items:center; background:radial-gradient(circle at 50% 50%, #1e1e1e, #050505 75%); color:#fff; }
+.gacha-recruit.show { display:grid; animation:lb-fadein .3s ease-out; }
+.gacha-recruit .gr-floats { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.gacha-recruit .gr-float { position:absolute; width:120px; height:120px; border-radius:50%; overflow:hidden; background:#fff; opacity:.55; box-shadow:0 0 30px rgba(255,255,255,.25); will-change:transform; }
+.gacha-recruit .gr-float img { width:100%; height:100%; object-fit:contain; }
+.gacha-recruit .gr-box { position:relative; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.gacha-recruit .gr-box b { font:800 26px 'Pretendard Variable', sans-serif; letter-spacing:.04em; }
+.gacha-recruit .gr-box b i { font-style:normal; animation:blinkDot 1.2s infinite; } .gacha-recruit .gr-box b i:nth-child(2) { animation-delay:.2s; } .gacha-recruit .gr-box b i:nth-child(3) { animation-delay:.4s; }
+.gacha-recruit .gr-bar { width:220px; height:3px; background:#333; overflow:hidden; } .gacha-recruit .gr-bar i { display:block; height:100%; background:#e5322d; transform-origin:left; animation:growX 3s linear forwards; }
 </style>
 </head>
 <body>
@@ -8283,7 +8293,7 @@ const CHARACTER_BALANCE = {
   },
   matrix: {
     hp: 5000, atk: 500, atkSpeed: 5, range: 225, speed: 67.5,
-    matrixDelay: 1, matrixSize: 180, holoHp: 1, holoDmg: 0.6, holoLife: 10 // 7.0 홀로그램 HP 1 · 10초 뒤 사라짐
+    matrixDelay: 1, matrixSize: 180, holoHp: 1, holoDmg: 0.6, holoLife: 10, matrixMax: 10 // 7.0 홀로그램 HP 1 · 10초 뒤 사라짐 · 7.1.1 라운드당 최대 10기
   },
   supply: {
     hp: 1800, atk: 0, atkSpeed: 1, range: 180, speed: 67.5,
@@ -8497,9 +8507,9 @@ const CHARACTER_BALANCE = {
   stone: { // 6.2 신규
     hp: 6000, atk: 0, atkSpeed: 1, range: 72, speed: 45,
     noAttack: true,
-    stoneSpeed: 6, stoneHitFraction: 0, stoneHit: 1500, // 7.0 현재 체력 10% → 1500 고정
+    stoneSpeed: 6, stoneHitFraction: 0, stoneHit: 1000, // 7.1.1 1500 → 1000 · 7.0 현재 체력 10% → 고정
    
-    radiusMul: 2 // 6.2.1 유닛 반지름 2배 (판정 · 크기)
+    radiusMul: 1.5 // 7.1.1 2배 → 1.5배 (판정 · 크기)
   },
   purify: { // 6.2 신규
     hp: 1800, atk: 0, atkSpeed: 1, range: 315, speed: 67.5, // 체력은 기획서에 없어 임시값
@@ -9835,7 +9845,7 @@ const CHAR_DB = {
     id: 'matrix', name: '매트릭스 지후', emoji: '💾', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#1fbf5f', portrait: PORTRAITS.matrix,
     ...CHARACTER_BALANCE.matrix,
-    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번, 홀로그램 HP는 <b>1</b> 고정 · <b>10초</b> 뒤 사라짐 · 홀로그램의 모든 피해는 원본의 <b>60%</b>, <b>출격제한 1기</b> 지후는 복사하지 않는다). ATK 500 · 5초 · 사거리 5칸.'
+    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번 · 라운드당 <b>최대 10기</b>, 홀로그램 HP는 <b>1</b> 고정 · <b>10초</b> 뒤 사라짐 · 홀로그램의 모든 피해는 원본의 <b>60%</b>, <b>출격제한 1기</b> 지후는 복사하지 않는다). ATK 500 · 5초 · 사거리 5칸.'
   },
   supply: {
     id: 'supply', name: '보급병 지후', emoji: '📦', role: 'support', roleLabel: '서포터',
@@ -10470,7 +10480,7 @@ const CHAR_DB = {
     id: 'stone', name: '돌 지후', emoji: '🪨', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#8a5a24', portrait: PORTRAITS.stone,
     ...CHARACTER_BALANCE.stone,
-    skillDesc: '공격하지 않는다. 모든 유닛을 <b>관통</b>하며, 라운드 시작과 함께 <b>속도 6</b>으로 적진 끝까지 일직선으로 굴러간다. 부딪힌 적은 <b>1,500</b> 피해를 입는다. 전투가 시작되면 몸집이 <b>2배</b>로 커지고 (배치할 때는 한 칸만 차지), 상대 진영 끝에 닿으면 <b>소멸</b>한다.'
+    skillDesc: '공격하지 않는다. 모든 유닛을 <b>관통</b>하며, 라운드 시작과 함께 <b>속도 6</b>으로 적진 끝까지 일직선으로 굴러간다. 부딪힌 적은 <b>1,000</b> 피해를 입는다. 전투가 시작되면 몸집이 <b>1.5배</b>로 커지고 (배치할 때는 한 칸만 차지), 상대 진영 끝에 닿으면 <b>소멸</b>한다.'
   },
   purify: {
     id: 'purify', name: '정화 지후', emoji: '🔔', role: 'support', roleLabel: '서포터',
@@ -13546,6 +13556,37 @@ const GACHA_BOX_PULLS = 10; // 지후 상자 = 10회 뽑기
 function gachaWeighted(list) { let r = Math.random() * list.reduce((s, x) => s + x[1], 0); for (const [k, w] of list) { r -= w; if (r < 0) return k; } return list[list.length - 1][0]; }
 // 신화 지후가 아직 없으면 전설로 (신화 지후가 들어오면 자동으로 신화가 나온다)
 function rarityPool(r) { let pool = playableIds().filter(id => CHAR_DB[id].rarity === r); if (!pool.length && r === 'mythic') pool = playableIds().filter(id => CHAR_DB[id].rarity === 'legend'); return pool; }
+// 7.1.1 지후 모집 중: 10회 뽑기 결과가 나오기 전 3초 동안 배경에 지후가 떠다닌다. 확률과는 상관없는 '예측' 연출 (결과를 보고 고른다)
+//   화염 혼자 = 전설 이상 10% · 화염 + 쉴드 = 30% · 화염 + 쉴드 + 얼음 = 없음 · 화염 + 번개 + 별 = 100%
+const GACHA_OMENS = { a: ['fire'], b: ['fire', 'shield'], c: ['fire', 'shield', 'ice'], d: ['fire', 'lightning', 'star'] };
+function gachaOmenFor(results) {
+  const hi = results.some(r => !r.shard && ['legend', 'mythic', 'hidden'].includes(CHAR_DB[r.id]?.rarity));
+  return gachaWeighted(hi ? [['a', 4], ['b', 9], ['d', 11]] : [['a', 36], ['b', 21], ['c', 19]]); // 위 비율이 맞도록 고른 가중치 (10회 중 전설 이상 ≈ 24%)
+}
+let gachaRecruitBusy = false;
+function gachaRecruitLoading(results, done) {
+  if (gachaRecruitBusy) return;
+  gachaRecruitBusy = true;
+  gachaRevealResults = results; // 기다리는 동안 다시 뽑지 못하게
+  let el = $('gachaRecruit');
+  if (!el) { el = document.createElement('div'); el.id = 'gachaRecruit'; el.className = 'gacha-recruit'; document.body.appendChild(el); }
+  const ids = GACHA_OMENS[gachaOmenFor(results)].filter(id => CHAR_DB[id]);
+  el.innerHTML = `<div class="gr-floats">${ids.map(id => `<span class="gr-float">${portraitHtml(CHAR_DB[id])}</span>`).join('')}</div>
+    <div class="gr-box"><b>지후 모집 중<i>.</i><i>.</i><i>.</i></b><span class="gr-bar"><i></i></span></div>`;
+  el.classList.add('show');
+  const W = innerWidth, H = innerHeight;
+  el.querySelectorAll('.gr-float').forEach((f, k) => { // 천천히 화면을 떠다닌다 (지후마다 다른 길)
+    const pts = Array.from({ length: 4 }, () => [(0.1 + Math.random() * 0.8) * W - 60, (0.12 + Math.random() * 0.7) * H - 60]);
+    f.style.left = '0px'; f.style.top = '0px';
+    if (f.animate) f.animate(pts.map(([x, y], i) => ({ transform: `translate(${x}px, ${y}px) rotate(${(i % 2 ? 1 : -1) * (8 + k * 4)}deg)` })), { duration: 3200, easing: 'ease-in-out', fill: 'forwards' });
+  });
+  setTimeout(() => {
+    el.classList.remove('show');
+    gachaRecruitBusy = false;
+    gachaRevealResults = [];
+    done();
+  }, 3000);
+}
 function gachaOddsHtml() { // 7.1 첫 줄은 확률 막대가 읽는다
   return '1회: 조각 76.3% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2% · 신화 0.6% · 히든 0.1%<br>'
     + '조각(꽝)은 무작위 지후 조각 1개: 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1%<br>'
@@ -14217,7 +14258,7 @@ function performGacha(box, cost, useTicket = false) {
   renderAccountUI();
   renderGachaPity();
   gachaAgainCost = box ? -1 : cost;
-  if (box) { showGachaMulti(results); return; }
+  if (box) { gachaRecruitLoading(results, () => showGachaMulti(results)); return; } // 7.1.1 지후 모집 중 (예측 연출)
   gachaRevealResults = results;
   showGachaReveal(0);
 }
@@ -14590,7 +14631,7 @@ async function useInventoryAction(action, confirmed = false) {
     renderAccountUI();
     v4RenderQuiet($('inventoryBody'), () => renderInventory(`지후 상자 개봉! ${box.length}회 뽑기`));
     gachaAgainCost = -1;
-    showGachaMulti(box);
+    gachaRecruitLoading(box, () => showGachaMulti(box)); // 7.1.1
     return;
   } else if (action === 'legendPick' || action === 'epicPick') { // 4.4.1 선택 전설 지후 모집권 · 5.2 선택 영웅
     if (!profile.inventory[action]) return;
@@ -26043,6 +26084,7 @@ function tickMatrixZones() {
     state.units.slice().forEach(e => {
       if (!e.alive || e.isCastle || e.side !== z.side || e === z.caster || e._realm || e._flight || e._holo || e.isClone || e.expire != null || z.cloned.has(e.uid)) return;
       if (CHAR_DB[e.charId]?.deployLimit === 1) return; // 5.3 출격제한 1기 지후는 복사 불가
+      if (z.cloned.size >= (z.caster.def.matrixMax || 10)) return; // 7.1.1 라운드당 최대 10기
       const r = unitRadius(e);
       const cx = clamp(e.x, z.x - z.half, z.x + z.half), cy = clamp(e.y, z.y - z.half, z.y + z.half);
       if (Math.hypot(e.x - cx, e.y - cy) > r) return;
@@ -30157,6 +30199,19 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.1.1': {
+    label: 'v7.1.1 돌 · 매트릭스 조정 · 지후 모집 연출',
+    date: '2026.10.09',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🪨', name:'돌 지후', tag:'nerf', color:'#8a5a24', portraitKey:'stone', desc:'부딪힌 적 피해 <b>1,500 → 1,000</b> · 전투 중 몸집 <b>2배 → 1.5배</b>.' },
+        { emoji:'💾', name:'매트릭스 지후', tag:'nerf', color:'#1f8f3a', portraitKey:'matrix', desc:'라운드마다 홀로그램은 <b>최대 10기</b>까지만 복제해요.' },
+      ] },
+      { title: '연출', items: [
+        { emoji:'🎴', name:'지후 모집 중', tag:'new', color:'#111111', desc:'지후 상자(10회 뽑기)를 열면 <b>지후 모집 중…</b> 화면이 잠깐 떠요. 배경을 잘 보세요.' },
+      ] },
+    ],
+  },
   '7.1': {
     label: 'v7.1 경매 모드 리뉴얼 · 가챠 확률제 · 한계돌파',
     date: '2026.10.09',
