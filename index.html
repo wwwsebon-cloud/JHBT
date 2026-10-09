@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.3.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2973,6 +2973,10 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 .v42r-list .rank-badge img { width:100%; height:100%; object-fit:contain; }
 /* 4.2.3 공지 · 쿠폰 */
 .v423-h { margin:4px 0 2px; font:800 11px var(--v4-mono); letter-spacing:.18em; color:#888; }
+.v731-ann { margin:0 0 12px; padding:14px 16px; border:2px solid currentColor; border-radius:12px; text-align:left; }
+.v731-ann small { display:block; font:800 11px var(--v4-mono); letter-spacing:.12em; opacity:.6; }
+.v731-ann b { display:block; margin:4px 0 6px; font-size:15px; }
+.v731-ann p { margin:0; font-size:13px; line-height:1.6; opacity:.85; }
 .v423-coupon { display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:center; padding:12px; border:1px dashed #c9c9c6; border-radius:12px; background:#fff; color:#171717; animation:popIn .35s backwards; }
 .v423-coupon code { font:900 16px var(--v4-mono); letter-spacing:.12em; }
 .v423-coupon small { grid-column:1; font-size:12px; color:#666; }
@@ -6065,6 +6069,38 @@ html.ui-v7 #app#app .v7-notes .v441-mq :is(button, .st.ready, .ready) { color:va
   html.ui-v7 #app#app .v7-cur { bottom:132px; }
 }
 
+/* 7.3.1 모바일 로비: 절대 위치 대신 위에서 아래로 흐르는 격자 (모드가 8개라 목록이 속보 · 퀘스트 띠와 겹치던 문제) */
+@media (max-width:700px) {
+  html.ui-v7 #app#app .v7-lobby { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:auto auto auto 1fr auto; column-gap:10px; row-gap:12px; align-content:start; padding:56px 20px max(16px, env(safe-area-inset-bottom)); box-sizing:border-box; overflow-x:hidden; overflow-y:auto; }
+  html.ui-v7 #app#app .v7-lobby > :is(.v7-prof, .v7-nav, .v7-modes, .v7-notes, .v7-cur, .v7-go) { position:static; left:auto; right:auto; top:auto; bottom:auto; width:auto; transform:none; }
+  html.ui-v7 #app#app .v7-prof { grid-column:1 / -1; grid-row:1; justify-self:start; max-width:calc(100% - 96px); }
+  html.ui-v7 #app#app .v7-nav { grid-column:1; grid-row:2; align-self:start; }
+  html.ui-v7 #app#app .v7-modes { grid-column:2; grid-row:2; align-self:start; gap:4px; }
+  html.ui-v7 #app#app .v7-navbtn { height:42px; }
+  html.ui-v7 #app#app .v7-modes .m6-mode { height:38px; }
+  html.ui-v7 #app#app .v7-modes .m6-mode:hover { transform:none; }
+  html.ui-v7 #app#app .v7-notes { grid-column:1 / -1; grid-row:3; z-index:auto; }
+  html.ui-v7 #app#app .v7-notes .v441-mq { width:auto; }
+  html.ui-v7 #app#app .v7-notes .v441-mq .tt { overflow:hidden; }
+  html.ui-v7 #app#app .v7-notes .v441-mq .tt b { flex:1 1 auto; }
+  html.ui-v7 #app#app .v7-notes .v441-mq .st:not(.ready) { display:none; }
+  html.ui-v7 #app#app .v7-cur { grid-column:1 / -1; grid-row:4; align-self:end; gap:2px; }
+  html.ui-v7 #app#app .v7-cur .d { font-size:15px; }
+  html.ui-v7 #app#app .v7-cur .t { font-size:44px; overflow:hidden; text-overflow:ellipsis; }
+  html.ui-v7 #app#app .v7-go { grid-column:1 / -1; grid-row:5; }
+  html.ui-v7 #app#app #m6Start.v7-start { height:58px; }
+}
+@media (max-width:700px) and (max-height:700px) {
+  html.ui-v7 #app#app .v7-cur .d { display:none; }
+  html.ui-v7 #app#app .v7-lobby { row-gap:8px; }
+  html.ui-v7 #app#app .v7-navbtn { height:36px; }
+  html.ui-v7 #app#app .v7-modes .m6-mode { height:32px; }
+  html.ui-v7 #app#app .v7-modes { gap:3px; }
+  html.ui-v7 #app#app .v7-nav { gap:4px; }
+  html.ui-v7 #app#app #m6Start.v7-start { height:50px; }
+  html.ui-v7 #app#app .v7-cur .t { font-size:34px; }
+}
+
 /* ── 공통 페이지 머리 (덱 · 상점 · 퀘스트 · 인벤토리) ── */
 html.ui-v7 #app#app :is(#screen-draft, #screen-shop, #screen-quests, #screen-inventory) .v4-band { background:transparent; color:#111; overflow:visible; }
 html.ui-v7 #app#app :is(#screen-draft, #screen-shop, #screen-quests, #screen-inventory) .v4-band-inner { width:100%; box-sizing:border-box; max-width:1280px; margin:0 auto; padding:32px 40px 0; }
@@ -6136,6 +6172,8 @@ html.ui-v7 #app#app #screen-draft .char-card :is(.rarity-tag, .role-tag, .char-c
 html.ui-v7 #app#app #screen-draft .char-card .char-portrait-zone { position:relative; width:56px; height:56px; flex:none; margin:0; padding:0; background:none; border:0; }
 html.ui-v7 #app#app #screen-draft .char-card .char-portrait { width:100%; height:100%; display:grid; place-items:center; margin:0; border:1px solid #111 !important; border-radius:0; background:#fff; box-shadow:none; font-size:26px; color:#111; overflow:hidden; }
 html.ui-v7 #app#app #screen-draft .char-card .char-portrait img { width:100%; height:100%; object-fit:contain; }
+html.ui-v7 #app#app #screen-draft .char-card .char-portrait-zone { overflow:visible; border-radius:0; aspect-ratio:auto; } /* 7.3.1 초상화 잘림: 옛 테마의 inset:6px 가 남아 오른쪽 · 아래가 잘리고 랭크 배지가 반만 보였다 */
+html.ui-v7 #app#app #screen-draft .char-card .char-portrait { position:absolute; inset:0; }
 html.ui-v7 #app#app #screen-draft .char-card .rank-badge { position:absolute; left:-6px; bottom:-6px; width:20px; height:20px; top:auto; right:auto; }
 html.ui-v7 #app#app #screen-draft .char-card .char-info-zone { display:flex; flex-direction:column; gap:3px; min-width:0; padding:0; background:none; border:0; }
 html.ui-v7 #app#app #screen-draft .char-card .char-name { font:700 14px var(--v7-kr); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:inherit; margin:0; }
@@ -6145,7 +6183,7 @@ html.ui-v7 #app#app #screen-draft .char-card .char-mini-stats span + span::befor
 html.ui-v7 #app#app #screen-draft .char-card.selected { background:#111 !important; color:#fff; border:2px solid #111 !important; padding:9px; } /* 클래식 .char-card 가 배경 · 테두리를 !important 로 고정한다 */
 html.ui-v7 #app#app #screen-draft .char-card.selected::after { content:'출전'; position:absolute; inset:-10px 8px auto auto; width:auto; height:auto; display:block; padding:2px 7px; border:0; border-radius:0; background:var(--v7-red); color:#fff; font:700 11px var(--v7-kr); transform:none; box-shadow:none; opacity:1; }
 html.ui-v7 #app#app #screen-draft .char-card:is(.locked, .hidden-locked, .disabled) { opacity:.45; filter:none; }
-html.ui-v7 #app#app #screen-draft .char-card:is(.locked, .hidden-locked, .disabled)::after { content:'미보유'; position:absolute; inset:auto 8px 8px auto; width:auto; height:auto; display:block; padding:1px 5px; border:1px solid #888; border-radius:0; background:#fff; color:#666; font:600 10px var(--v7-kr); transform:none; box-shadow:none; backdrop-filter:none; opacity:1; }
+html.ui-v7 #app#app #screen-draft .char-card:is(.locked, .hidden-locked, .disabled)::after { content:'미보유'; position:absolute; inset:-9px 8px auto auto; width:auto; height:auto; display:block; padding:1px 5px; border:1px solid #888; border-radius:0; background:#fff; color:#666; font:600 10px var(--v7-kr); transform:none; box-shadow:none; backdrop-filter:none; opacity:1; }
 html.ui-v7 #app#app #screen-draft .char-card :is(.char-name, .char-portrait-zone, .char-portrait)::before, html.ui-v7 #app#app #screen-draft .char-card :is(.char-portrait-zone, .char-portrait)::after { display:none; }
 html.ui-v7 #app#app #screen-draft .char-card.m6-off { opacity:.45; }
 html.ui-v7 #app#app #screen-draft .char-card .v465-new { position:absolute; left:-4px; top:-10px; z-index:2; padding:1px 6px; background:var(--v7-red); color:#fff; font:700 10px var(--v7-exo); border-radius:0; transform:none; animation:none; box-shadow:none; }
@@ -11232,11 +11270,11 @@ const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', le
 const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각' };
 function glowCount(rarity) { return GLOW_KEYS[rarity] ? Math.max(0, Number(profile.inventory[GLOW_KEYS[rarity]]) || 0) : 0; }
 function convertGlowShards(id, amount, from) {
-  // 7.1.3 빛나는 전설조각은 아무 지후(히든 제외, 미보유 포함)의 조각으로 바꿀 수 있다. 나머지 빛나는 조각은 같은 등급 보유 지후만.
-  const c = CHAR_DB[id]; const glowRarity = from === 'legend' ? 'legend' : c && c.rarity; const key = c && GLOW_KEYS[glowRarity];
+  // 7.3.1 빛나는 조각은 같은 등급 지후에만. 빛나는 전설조각은 아직 없는 전설 지후에도 쓸 수 있다(조각 해금)
+  const c = CHAR_DB[id]; const glowRarity = c && c.rarity; const key = c && GLOW_KEYS[glowRarity];
   amount = Math.floor(Number(amount) || 0);
-  const anyJihoo = glowRarity === 'legend' && c && c.rarity !== 'hidden' && !c.unobtainable;
-  if (!key || !(anyJihoo || (glowRarity === c.rarity && isUnlocked(id))) || amount <= 0 || amount > glowCount(glowRarity) || (isRankS(id) && lbLevel(id) >= LB_MAX)) return false;
+  const unownedLegend = glowRarity === 'legend' && !c.unobtainable;
+  if (!key || from && from !== glowRarity || !(unownedLegend || isUnlocked(id)) || amount <= 0 || amount > glowCount(glowRarity) || (isRankS(id) && lbLevel(id) >= LB_MAX)) return false;
   profile.inventory[key] -= amount;
   profile.shards[id] = (Number(profile.shards[id]) || 0) + amount;
   saveProfile();
@@ -11447,7 +11485,7 @@ function applyRankToDef(def, charId, rank) {
 }
 function rankEffectLines(id) { return lbPerks(id).map(([n, t]) => ['돌파 Lv' + n, t]); }
 // ═════════ 7.1 성장 개편: 랭크는 A · S 두 단계. S가 되면 한계돌파(Lv1 → Lv5)가 열린다 ═════════
-// S 승급: 그 지후 조각 (7.1.3 롤백 패치: 일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). 빛나는 조각은 같은 등급 아무 지후의 조각으로, 빛나는 전설조각은 아무 지후의 조각으로 바꿔 쓸 수 있다.
+// S 승급: 그 지후 조각 (7.1.3 롤백 패치: 일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). 빛나는 조각은 같은 등급 아무 지후의 조각으로, 빛나는 전설조각도 전설 지후에만(7.3.1) 바꿔 쓸 수 있다.
 // 한계돌파: 확률 강화 (실패해도 재료는 사라진다). Lv3 = S랭크 고유 능력 · Lv5 = 공격력 +5% (신규 스킬 전까지 임시)
 // 엔진에 넘기는 랭크 번호: 0 = 효과 없음 · 1 = S 능력 (돌파 Lv3~4) · 2 = S 능력 + 공격력 +5% (돌파 Lv5)
 const S_SHARD_COST = { common: 100, rare: 50, epic: 20, legend: 10, mythic: 5 }; // 7.1.3 롤백 패치: 1/10 (7.1 에서 조각·빛나는 조각 가치가 1/10 로 떨어진 것을 되돌림)
@@ -11520,7 +11558,7 @@ function growthPanel(c) {
   area.className = 'gr-panel';
   const have = shardCount(c.id), owned = isUnlocked(c.id);
   if (c.rarity === 'hidden') { area.innerHTML = '<div class="gr-head"><b>성장</b><small>히든 지후는 랭크 · 한계돌파가 없어요</small></div>'; return area; }
-  // 7.1.3 빛나는 조각 줄: 같은 등급 빛나는 조각(보유 지후) + 빛나는 전설조각(아무 지후). 가루 줄: 가루 10개 = 조각 1개
+  // 7.3.1 빛나는 조각 줄: 같은 등급 빛나는 조각만 (빛나는 전설조각은 미보유 전설 지후에도). 가루 줄: 가루 10개 = 조각 1개
   const glowRowFor = (rarity, max) => max > 0 ? `<div class="v422-glow gr-glow" data-max="${max}" data-from="${rarity}"><span>✦ ${GLOW_NAMES[rarity]} <b>${formatNumber(max)}</b></span><span class="gr-gctl"><button type="button" data-glow="-10">−10</button><button type="button" data-glow="-1">−1</button><b class="glowAmt">1</b><button type="button" data-glow="1">+1</button><button type="button" data-glow="10">+10</button></span><button type="button" class="btnGlowUse">조각으로 바꾸기</button></div>` : '';
   const dust = dustCount(c.id);
   const dustRow = dust > 0 ? `<div class="gr-dust"><span>✧ 가루 <b>${formatNumber(dust)}</b> <small>${DUST_PER_SHARD}개 = 조각 1개</small></span><button type="button" class="btnDustFuse" ${dust >= DUST_PER_SHARD ? '' : 'disabled'}>합성 · 조각 +${Math.floor(dust / DUST_PER_SHARD)}</button></div>` : '';
@@ -11537,14 +11575,14 @@ function growthPanel(c) {
     const pct = Math.min(100, have / UNLOCK_SHARDS * 100);
     area.innerHTML = `<div class="gr-head"><b>해금</b><span class="gr-sh">◇ 조각 <b>${formatNumber(have)}</b></span></div>
       <div class="gr-prog"><i style="width:${pct.toFixed(1)}%"></i><span>${formatNumber(have)} / ${UNLOCK_SHARDS}</span></div>
-      ${dustRow}${c.rarity !== 'hidden' && !c.unobtainable ? glowRowFor('legend', glowCount('legend')) : ''}
+      ${dustRow}${c.rarity === 'legend' && !c.unobtainable ? glowRowFor('legend', glowCount('legend')) : ''}
       <button type="button" class="gr-btn" id="btnShardUnlock" ${have >= UNLOCK_SHARDS ? '' : 'disabled'}>조각 ${UNLOCK_SHARDS}개로 해금</button>`;
     area.querySelector('#btnShardUnlock').onclick = () => unlockByShards(c.id);
     bindRows();
     return area;
   }
   const S = isRankS(c.id), lv = lbLevel(c.id), glow = glowCount(c.rarity);
-  const glowRow = !(S && lv >= LB_MAX) ? dustRow + glowRowFor(c.rarity, glow) + (c.rarity !== 'legend' ? glowRowFor('legend', glowCount('legend')) : '') : dustRow;
+  const glowRow = !(S && lv >= LB_MAX) ? dustRow + glowRowFor(c.rarity, glow) : dustRow;
   if (!S) {
     const need = S_SHARD_COST[c.rarity] || 0, pct = need ? Math.min(100, have / need * 100) : 0;
     area.innerHTML = `<div class="gr-head"><b>성장</b><span class="gr-rank"><em class="rk-a">A</em><i>→</i><em class="rk-s">S</em></span><span class="gr-sh">◇ 조각 <b>${formatNumber(have)}</b></span></div>
@@ -12059,7 +12097,7 @@ function normalizeProfile(raw) {
       shop: rawDaily.shop && typeof rawDaily.shop === 'object' ? rawDaily.shop : null,
       allCounted: !!rawDaily.allCounted,
     },
-    inventory: { legendPick: safeCount(rawInventory.legendPick), epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), mythicTicket: safeCount(rawInventory.mythicTicket), boxTicket: safeCount(rawInventory.boxTicket), boostTicket: safeCount(rawInventory.boostTicket), epicPick: safeCount(rawInventory.epicPick), hiddenTicket: safeCount(rawInventory.hiddenTicket), luckTicket: safeCount(rawInventory.luckTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend) },
+    inventory: { legendPick: safeCount(rawInventory.legendPick), epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), mythicTicket: safeCount(rawInventory.mythicTicket), mythicPick: safeCount(rawInventory.mythicPick), boxTicket: safeCount(rawInventory.boxTicket), boostTicket: safeCount(rawInventory.boostTicket), epicPick: safeCount(rawInventory.epicPick), hiddenTicket: safeCount(rawInventory.hiddenTicket), luckTicket: safeCount(rawInventory.luckTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend) },
     draftTickets: safeCount(raw.draftTickets),
     discordRewarded: !!raw.discordRewarded,
     accountNoPassword: !!raw.accountNoPassword,
@@ -14799,6 +14837,7 @@ function renderInventory(message = '') {
       <div class="v4-ticket v55-luck"><b>🎲 임테기 (임시 운빨 테스트기)</b><span class="cnt">×${profile.inventory.luckTicket || 0}</span><small>일반 · 희귀 · 영웅 · 전설 중 <b>각 25%</b> 확률로 지후 1기 · 업데이트마다 우편으로 1개 지급${!profile.inventory.luckTicket && unreadMailCount() ? ' · <b>우편함을 확인하세요!</b>' : ''}</small><button type="button" class="v4-darkbtn" data-reward-action="luckTicket" ${profile.inventory.luckTicket ? '' : 'disabled'}>운 테스트</button></div>
       <div class="v4-ticket"><b>랜덤 영웅 모집권</b><span class="cnt">×${profile.inventory.epicTicket}</span><small>영웅 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="epicTicket" ${profile.inventory.epicTicket ? '' : 'disabled'}>사용</button></div>
       ${profile.inventory.legendPick ? `<div class="v4-ticket"><b>선택 전설 지후 모집권</b><span class="cnt">×${profile.inventory.legendPick}</span><small>원하는 전설 지후 1기 모집 · 중복은 조각</small><button type="button" class="v4-darkbtn" data-reward-action="legendPick">고르기</button></div>` : ''}
+      ${profile.inventory.mythicPick ? `<div class="v4-ticket"><b>선택 신화 지후 모집권</b><span class="cnt">×${profile.inventory.mythicPick}</span><small>원하는 신화 지후 1기 모집 · 중복은 조각</small><button type="button" class="v4-darkbtn" data-reward-action="mythicPick">고르기</button></div>` : ''}
       ${profile.inventory.hiddenTicket ? `<div class="v4-ticket"><b>⚡ 히든 지후 확정권</b><span class="cnt">×${profile.inventory.hiddenTicket}</span><small>히든 지후 1기 모집 · 중복은 조각</small><button type="button" class="v4-darkbtn" data-reward-action="hiddenTicket">사용</button></div>` : ''}
       ${profile.inventory.mythicTicket ? `<div class="v4-ticket"><b>랜덤 신화 지후 확정권</b><span class="cnt">×${profile.inventory.mythicTicket}</span><small>신화 지후 1기 · 신화 지후가 나오기 전까지는 전설 지후</small><button type="button" class="v4-darkbtn" data-reward-action="mythicTicket">사용</button></div>` : ''}
       <div class="v4-ticket"><b>랜덤 전설 모집권</b><span class="cnt">×${profile.inventory.legendTicket}</span><small>전설 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="legendTicket" ${profile.inventory.legendTicket ? '' : 'disabled'}>사용</button></div>
@@ -14807,7 +14846,7 @@ function renderInventory(message = '') {
       <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
     <b class="v4-h3">빛나는 조각</b>
-    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '아무 지후(히든 제외)의 조각으로 바꿀 수 있어요' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
+    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '전설 지후의 조각으로 바꿀 수 있어요 (아직 없는 전설 지후도)' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}`);
   renderEmoLocker(); // 5.7
@@ -14915,11 +14954,11 @@ async function useInventoryAction(action, confirmed = false) {
     gachaAgainCost = -1;
     gachaRecruitLoading(box, () => showGachaMulti(box)); // 7.1.1
     return;
-  } else if (action === 'legendPick' || action === 'epicPick') { // 4.4.1 선택 전설 지후 모집권 · 5.2 선택 영웅
+  } else if (action === 'legendPick' || action === 'epicPick' || action === 'mythicPick') { // 4.4.1 선택 전설 지후 모집권 · 5.2 선택 영웅 · 7.3.1 선택 신화
     if (!profile.inventory[action]) return;
-    const rarity = action === 'epicPick' ? 'epic' : 'legend';
+    const rarity = action === 'epicPick' ? 'epic' : action === 'mythicPick' ? 'mythic' : 'legend';
     $('legendPickModal').dataset.kind = rarity;
-    $('legendPickModal').querySelector('h2').textContent = rarity === 'epic' ? '영웅 지후 고르기' : '전설 지후 고르기';
+    $('legendPickModal').querySelector('h2').textContent = `${RARITY_LABEL[rarity]} 지후 고르기`;
     const ids = playableIds().filter(id => CHAR_DB[id].rarity === rarity);
     $('legendPickGrid').innerHTML = ids.map(id => `<button type="button" class="v441-pick" data-pick="${id}"><span class="pic">${portraitHtml(CHAR_DB[id])}</span><b>${CHAR_DB[id].name}</b><small>${isUnlocked(id) ? '보유 · 조각' : 'NEW'}</small></button>`).join('');
     openModal('legendPickModal');
@@ -31062,6 +31101,22 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.3.1': {
+    label: 'v7.3.1 중복 조각 회수 · 7.1 보상 변경 · 모바일 로비 정리',
+    date: '2026.10.10',
+    sections: [
+      { title: '성장 재화', items: [
+        { emoji:'📢', name:'중복 조각 회수', tag:'system', color:'#111111', desc:'7.1 ~ 7.1.2 에 뽑기 중복으로 <b>10개씩</b> 잘못 지급된 조각을 중복 1회당 <b>9개</b> 회수해요 (1개는 그대로). 이미 쓴 조각은 남은 만큼만 회수하고, 회수 내역은 우편함에서 볼 수 있어요.' },
+        { emoji:'★', name:'7.1 업데이트 보상', tag:'buff', color:'#111111', desc:'랜덤 확정권 대신 <b>선택 전설 확정권 3장 · 선택 신화 확정권 1장 · 빛나는 전설조각 5개</b>. 이미 받은 분께는 <b>선택 전설 확정권 3장</b>을 더 보내드려요.' },
+        { emoji:'✨', name:'빛나는 전설조각', tag:'nerf', color:'#111111', desc:'다시 <b>전설 지후</b>에만 쓸 수 있어요 (아직 없는 전설 지후 포함).' },
+        { emoji:'🎟', name:'선택 신화 지후 모집권', tag:'new', color:'#ff3b5c', desc:'원하는 신화 지후 1기를 골라 모집해요. 인벤토리에서 사용.' },
+      ] },
+      { title: '수정', items: [
+        { emoji:'📱', name:'모바일 로비', tag:'fix', color:'#111111', desc:'모드 목록이 속보 · 퀘스트 띠와 겹치던 문제를 고치고, 작은 화면에서도 한 화면에 들어오게 정리했어요.' },
+        { emoji:'🖼', name:'덱 설정 초상화', tag:'fix', color:'#111111', desc:'지후 목록의 초상화가 잘리고 랭크 배지가 반만 보이던 문제 · 미보유 표시가 역할을 가리던 문제를 고쳤어요.' },
+      ] },
+    ],
+  },
   '7.3': {
     label: 'v7.3 신규 지후 10종 · 신화 락 지후 · 성장 재화 재조정',
     date: '2026.10.10',
@@ -33904,7 +33959,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { mythicTicket: ['★', '랜덤 신화 지후 확정권'], luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
+const MAIL_REWARD_KINDS = { mythicTicket: ['★', '랜덤 신화 지후 확정권'], mythicPick: ['★', '선택 신화 지후 모집권'], luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
 function mailRewardText(rewards) { return rewards.map(r => r.kind === 'shard' ? `◇ ${CHAR_DB[r.id]?.name || r.id} 조각 ${formatNumber(r.amount)}` : r.kind === 'frame' ? `◎ ${frameInfo(r.id)?.name || '테두리'} 테두리` : `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 function sendMail(mail) {
   profile.mail = (profile.mail || []).concat({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, icon: '✉', body: '', rewards: [], ...mail }).slice(-60);
@@ -33919,7 +33974,7 @@ const SEASON_REWARDS = [
 ];
 // 4.5 경쟁전 시즌 종료 보상: 새 시즌에 접속하면 지난 경쟁전 시즌 최종 순위(TP)를 읽어 한 번 우편으로 보낸다.
 // 5.5 운영 우편 받기: 나 · 전체에게 온 giftMail 중 아직 안 받은 것을 우편함에 넣는다
-const GIFT_KINDS = ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'boostTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'hiddenTicket', 'epicPick', 'legendPick', 'epicChar', 'legendChar', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend'];
+const GIFT_KINDS = ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'boostTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'hiddenTicket', 'epicPick', 'legendPick', 'mythicPick', 'epicChar', 'legendChar', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend'];
 // 6.0.3 만료: 우편마다 보낼 때 정한 만료 시각(exp) · 운영자가 즉시 만료시킨 우편 · 코드
 let expiredState = { codes: [], mails: [] };
 const mailExpired = m => !!m && !m.claimed && ((m.exp > 0 && Date.now() >= m.exp) || (m.gid && expiredState.mails.includes(m.gid)));
@@ -34289,9 +34344,33 @@ function runMailMigrations() {
     profile.mailFlags.push('rankShards42'); changed = true;
     sendMail({ icon: '✦', title: '랭크 업데이트 기념 보상', body: '랭크 효과와 S랭크 고유 능력이 추가된 기념으로 빛나는 조각을 보내드려요. 같은 등급 아무 지후의 랭크업에 쓸 수 있습니다.', rewards: [{ kind: 'glowCommon', amount: 15 }, { kind: 'glowRare', amount: 8 }, { kind: 'glowEpic', amount: 3 }, { kind: 'glowLegend', amount: 1 }] });
   }
-  if (!profile.mailFlags.includes('update71')) { // 7.1 가챠 · 한계돌파 업데이트 보상
-    profile.mailFlags.push('update71'); changed = true;
-    sendMail({ icon: '★', title: '7.1 업데이트 보상', body: '가챠 확률제 · 한계돌파 업데이트 기념 보상이에요. 랜덤 전설 확정권 3장 · 랜덤 신화 확정권 1장 · 빛나는 전설조각 5개.', rewards: [{ kind: 'legendTicket', amount: 3 }, { kind: 'mythicTicket', amount: 1 }, { kind: 'glowLegend', amount: 5 }] });
+  const UPDATE73_REWARDS = [{ kind: 'legendPick', amount: 3 }, { kind: 'mythicPick', amount: 1 }, { kind: 'glowLegend', amount: 5 }];
+  const UPDATE73_TEXT = '선택 전설 확정권 3장 · 선택 신화 확정권 1장 · 빛나는 전설조각 5개';
+  if (!profile.mailFlags.includes('update71')) { // 7.1 가챠 · 한계돌파 업데이트 보상 → 7.3.1 부터는 선택 확정권으로
+    profile.mailFlags.push('update71', 'update731'); changed = true;
+    sendMail({ icon: '★', title: '업데이트 보상', body: `가챠 확률제 · 한계돌파 업데이트 기념 보상이에요. ${UPDATE73_TEXT}.`, rewards: UPDATE73_REWARDS });
+  }
+  if (!profile.mailFlags.includes('update731')) { // 7.3.1 7.1 보상 교체: 안 받았으면 새 보상으로 바꾸고, 이미 받았으면 선택 전설 확정권 3장만 더
+    profile.mailFlags.push('update731'); changed = true;
+    const oldMail = (profile.mail || []).find(m => m.title === '7.1 업데이트 보상');
+    if (oldMail && !oldMail.claimed) {
+      profile.mail = profile.mail.filter(m => m !== oldMail);
+      sendMail({ icon: '★', title: '7.1 업데이트 보상 (변경)', body: `랜덤 확정권 보상을 원하는 지후를 고르는 선택 확정권으로 바꿨어요. ${UPDATE73_TEXT}.`, rewards: UPDATE73_REWARDS });
+    } else {
+      sendMail({ icon: '★', title: '7.1 업데이트 보상 추가', body: '7.1 업데이트 보상이 선택 확정권으로 바뀌었어요. 이미 보상을 받으셔서 선택 전설 확정권 3장을 추가로 보내드려요.', rewards: [{ kind: 'legendPick', amount: 3 }] });
+    }
+  }
+  if (!profile.mailFlags.includes('dupClaw731')) { // 7.3.1 7.1 ~ 7.1.2 에 중복 지후로 10개씩 받은 조각 회수 (1개만 남김, 써 버린 만큼은 0까지만)
+    profile.mailFlags.push('dupClaw731'); changed = true;
+    const owe = {};
+    (profile.gachaHistory || []).forEach(h => { if (h.duplicate && h.shards === 10) { owe[h.id] = (owe[h.id] || 0) + 9; h.shards = 1; } });
+    const lines = [];
+    Object.entries(owe).forEach(([id, n]) => {
+      const take = Math.min(n, shardCount(id));
+      profile.shards[id] = shardCount(id) - take;
+      if (CHAR_DB[id]) lines.push(`${CHAR_DB[id].name} ${take}`);
+    });
+    if (lines.length) sendMail({ icon: '📢', title: '중복 조각 회수 안내', body: `7.1 ~ 7.1.2 에 중복 지후 조각이 10개씩 잘못 지급되어, 1개만 남기고 회수했어요 (이미 쓴 조각은 남은 만큼만). 회수: ${lines.join(' · ')}`.slice(0, 300), rewards: [] });
   }
   if (!profile.mailFlags.includes('rankReset71')) { // 7.1 랭크 초기화: 지금까지 랭크업에 쓴 조각(빛나는 조각을 바꾼 것 포함) · 골드를 돌려준다
     profile.mailFlags.push('rankReset71'); changed = true;
@@ -34320,10 +34399,14 @@ const REDEEM_CODES = { // 공지의 '사용 가능 쿠폰'에 이 목록이 그�
     return { message: `${CHAR_DB[id].name} 획득!${duplicate ? ` · 중복 조각 +${DUPLICATE_SHARDS}` : ' · 새 지후 해금'}`, summon: { id, duplicate } };
   } }
 };
+const ANN_NOTES = [ // 7.3.1 공지 글: 공지 창 맨 위에 나온다. 지난 공지는 지운다.
+  { date: '2026.10.10', title: '중복 조각 회수 · 7.1 보상 변경 안내', body: '7.1 ~ 7.1.2 동안 뽑기에서 이미 가진 지후가 나오면 조각이 1개가 아닌 10개씩 잘못 지급되었습니다. 7.3.1 에서 뽑기 기록을 확인해 중복 1회당 9개를 회수했어요 (1개는 그대로). 이미 승급 · 한계돌파에 쓴 조각은 되돌리지 않고, 남은 조각만큼만 회수합니다. 회수된 개수는 우편함에서 확인할 수 있어요.\n\n7.1 업데이트 보상은 랜덤 확정권 대신 선택 전설 확정권 3장 · 선택 신화 확정권 1장 · 빛나는 전설조각 5개로 바뀝니다. 이미 받으신 분께는 선택 전설 확정권 3장을 추가로 보내드렸어요.\n\n빛나는 전설조각은 전설 지후에만 쓸 수 있도록 다시 바뀌었습니다. 불편을 드려 죄송합니다.' },
+];
 function renderAnn(message = '') {
   const used = profile.redeemedCodes || [];
   const codes = Object.entries(REDEEM_CODES).filter(([c]) => !codeExpired(c)); // 6.0.3 즉시 만료된 쿠폰은 숨긴다
   $('annBody').innerHTML = (message ? `<div class="settlement-note">${message}</div>` : '')
+    + ANN_NOTES.map(n => `<div class="v731-ann"><small>${n.date}</small><b>${escapeHtml(n.title)}</b><p>${escapeHtml(n.body).replace(/\n/g, '<br>')}</p></div>`).join('')
     + `<div class="v423-h">사용 가능 쿠폰 · ${codes.length}</div>`
     + codes.map(([code, e], i) => { const done = used.includes(code); return `<div class="v423-coupon${done ? ' used' : ''}" style="animation-delay:${(i * 0.05).toFixed(2)}s"><code>${code}</code><small>${e.label}${done ? ' · 사용 완료' : ''}</small><span class="acts"><button type="button" class="copy" data-copy="${code}">복사</button><button type="button" data-redeem="${code}" ${done ? 'disabled' : ''}>${done ? '받음' : '받기'}</button></span></div>`; }).join('')
     + '<div class="settlement-note">쿠폰은 계정마다 한 번씩 쓸 수 있어요. 메뉴 → 코드 입력에서도 입력할 수 있습니다.</div>';
@@ -36765,12 +36848,12 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnOpenLevelRewards').addEventListener('click', openLevelRewards);
   $('gachaMileage').addEventListener('click', e => { const b = e.target.closest('[data-mbuy]'); if (b) buyMileage(b.dataset.mbuy); });
   $('legendPickGrid').addEventListener('click', e => {
-    const kind = $('legendPickModal').dataset.kind === 'epic' ? 'epicPick' : 'legendPick'; // 5.2 선택 영웅 모집권도 같은 창
+    const pickRarity = $('legendPickModal').dataset.kind, kind = pickRarity === 'epic' ? 'epicPick' : pickRarity === 'mythic' ? 'mythicPick' : 'legendPick'; // 5.2 선택 영웅 · 7.3.1 선택 신화 모집권도 같은 창
     const b = e.target.closest('[data-pick]'); if (!b || !profile.inventory[kind]) return;
     const id = b.dataset.pick;
     profile.inventory[kind]--;
     const duplicate = grantCharacter(id);
-    postEvent('gacha', id, kind === 'epicPick' ? 'epic' : 'legend');
+    postEvent('gacha', id, CHAR_DB[id].rarity);
     saveProfile(); renderAccountUI(); closeModal('legendPickModal');
     if (state.screen === 'inventory') v4RenderQuiet($('inventoryBody'), () => renderInventory(`${CHAR_DB[id].name} 모집! ${duplicate ? `중복 조각 +${DUPLICATE_SHARDS}` : '새 지후 해금'}`));
     playSummonReveal([{ id, duplicate }]);
