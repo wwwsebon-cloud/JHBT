@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.1.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.1.1"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -5967,6 +5967,15 @@ html.ui-v7 #app#app #m6Start.v7-start.m6-shake { animation:v7Shake .4s; }
 html.ui-v7 #app#app .v7-notes { position:absolute; left:50%; top:36px; transform:translateX(-50%); width:min(380px, 34vw); display:flex; flex-direction:column; gap:6px; z-index:2; }
 html.ui-v7 #app#app .v7-notes .settlement-note, html.ui-v7 #app#app .v7-notes .v441-mq { margin:0; padding:8px 12px; border:2px solid #111; border-radius:0; background:#fff; color:#111; font:600 12px/1.45 var(--v7-kr); box-shadow:none; }
 html.ui-v7 #app#app .v7-notes .settlement-note[hidden], html.ui-v7 #app#app .v7-notes .v441-mq[hidden] { display:none; }
+html.ui-v7 #app#app .v7-ticker { display:flex; align-items:center; gap:8px; width:100%; min-height:36px; padding:6px 12px; border:2px solid #111; border-radius:0; background:#fff; color:#111; font:600 12px var(--v7-kr); text-align:left; cursor:pointer; overflow:hidden; }
+html.ui-v7 #app#app .v7-ticker .dot { flex:none; width:7px; height:7px; border-radius:50%; background:var(--v7-red); animation:blinkDot 1.4s infinite; }
+html.ui-v7 #app#app .v7-ticker .lab { flex:none; padding:1px 6px; background:#111; color:#fff; font:800 11px var(--v7-kr); }
+html.ui-v7 #app#app .v7-ticker .msg { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; animation:v7TickIn .45s var(--v7-ease); }
+html.ui-v7 #app#app .v7-ticker .msg b { font-weight:800; }
+html.ui-v7 #app#app .v7-ticker .more { flex:none; color:#999; }
+html.ui-v7 #app#app .v7-ticker.fx-legend { border-color:#e0a800; box-shadow:inset 0 0 0 1px #f2c94c; } html.ui-v7 #app#app .v7-ticker.fx-legend .lab { background:#e0a800; }
+html.ui-v7 #app#app .v7-ticker.fx-hidden { background:#111; color:#fff; } html.ui-v7 #app#app .v7-ticker.fx-hidden .lab { background:#fff; color:#111; }
+@keyframes v7TickIn { from { opacity:0; transform:translateY(8px); } }
 html.ui-v7 #app#app .v7-notes .v441-mq { display:flex; align-items:center; gap:10px; min-height:0; }
 html.ui-v7 #app#app .v7-notes .v441-mq .ch { flex:none; padding:2px 7px; border-radius:0; background:#111; color:#fff; font:700 10px var(--v7-exo); letter-spacing:.06em; }
 html.ui-v7 #app#app .v7-notes .v441-mq .tt { flex:1; min-width:0; display:flex; align-items:baseline; gap:8px; }
@@ -6798,13 +6807,13 @@ html.ui-v7 #app#app #screen-inventory .v4-empty { padding:16px; border:1px solid
         <button type="button" class="v7-start" id="m6Start"><span class="dot"></span>시작<span hidden><b id="m6StartLabel"></b><small id="m6StartDesc"></small></span></button>
       </div>
       <div class="v7-notes">
+        <button type="button" class="v7-ticker" id="noticeTicker" aria-label="최근 소식 · 누르면 전체 보기"><span class="dot"></span><span class="lab">속보</span><span class="msg" id="noticeTickerMsg">지후배틀에 오신 것을 환영합니다</span><span class="more">›</span></button>
         <div id="abandonNotice" class="settlement-note" hidden></div>
         <div id="devBoostNotice" class="settlement-note" hidden></div>
         <div id="attendanceNotice" class="settlement-note" hidden>신규 유저 출석부가 해금되었어요</div>
         <div class="v441-mq" id="mainQuestStrip" hidden></div>
       </div>
       <div hidden aria-hidden="true">
-        <button type="button" id="noticeTicker"><span id="noticeTickerMsg"></span></button>
         <span id="ownedMeta"></span><b id="m6ModeIdx">1</b><span id="m6Tier"></span>
         <div id="lobbyRosterPreview"></div>
         <button type="button" id="btnStartGame">게임 시작</button>
@@ -11204,7 +11213,7 @@ function rankUpCharacter(id) { // A → S
   profile.ranks[id] = 1;
   profile.lb = profile.lb || {}; profile.lb[id] = 1;
   st44Add('rankUps');
-  postEvent('rank', id, 1);
+  postEvent('rank', id, 'S');
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   renderDraftGrid();
@@ -35351,7 +35360,7 @@ function noticeParts(e) {
     case 'level': return { ic: '⬆️', html: `<b>${escapeHtml(name)}</b>님이 Lv.${escapeHtml(e.a)}에 도달했습니다` };
     case 'join': return { ic: '👋', html: `<b>${escapeHtml(name)}</b>님이 지후배틀에 가입했습니다` };
     case 'gacha': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🎴', html: `<b>${escapeHtml(name)}</b>님이 ${RARITY_LABEL[e.b] || ''} <b>${escapeHtml(c ? c.name : e.a)}</b>를 뽑았습니다` };
-    case 'rank': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🏅', html: `<b>${escapeHtml(name)}</b>님의 <b>${escapeHtml(c ? c.name : e.a)}</b>가 랭크 ${escapeHtml(e.b)}이 되었습니다` };
+    case 'rank': { const lb = /^LB(\d)$/.exec(String(e.b)); return { ic: c ? `<img src="${c.portrait}" alt="">` : '🏅', html: lb ? `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(c ? c.name : e.a)}</b> <b>한계돌파 Lv.${lb[1]}</b>에 성공했습니다` : `<b>${escapeHtml(name)}</b>님의 <b>${escapeHtml(c ? c.name : e.a)}</b>가 <b>${escapeHtml(e.b === 'S' || e.b === '1' ? 'S랭크' : '랭크 ' + e.b)}</b>로 승급했습니다` }; } // 7.1 한계돌파 성공
     case 'mastery': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🎖️', html: `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(c ? c.name : e.a)}</b> 마스터리 <b>${escapeHtml(e.b)}</b>를 달성했습니다` };
     case 'promo': return { ic: '🏆', html: `<b>${escapeHtml(name)}</b>님이 경쟁전 <b>${escapeHtml(e.a)}</b>로 승급했습니다` };
     default: return null;
@@ -35367,7 +35376,7 @@ function showNoticeAt(i) {
   msg.style.animation = 'none'; void msg.offsetWidth; msg.style.animation = '';
   msg.innerHTML = parts.html;
   const ev = notices.items[notices.idx], tk = $('noticeTicker'); // 5.4 전설 뽑기 = 노란 글로우 · 히든 뽑기 = 흰 번개
-  if (tk) { tk.classList.toggle('fx-legend', ev.type === 'gacha' && ev.b === 'legend'); tk.classList.toggle('fx-hidden', ev.type === 'gacha' && ev.b === 'hidden'); }
+  if (tk) { tk.classList.toggle('fx-legend', (ev.type === 'gacha' && ev.b === 'legend') || (ev.type === 'rank' && /^LB[45]$/.test(String(ev.b)))); tk.classList.toggle('fx-hidden', ev.type === 'gacha' && ev.b === 'hidden'); }
 }
 function startNotices() {
   startSocial(); // 5.0 친구 · 접속 상태 · 친선전 초대
