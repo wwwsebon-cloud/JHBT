@@ -146,7 +146,7 @@ service cloud.firestore {
 
     match /compLeaderboard/{userId} {
       allow get, list: if true;
-      allow delete: if owner(userId);
+      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
       allow create, update: if owner(userId) && validCompLeaderboard(request.resource.data);
     }
 
@@ -215,7 +215,7 @@ service cloud.firestore {
 
     match /coopLeaderboard/{userId} {
       allow get, list: if true;
-      allow delete: if owner(userId);
+      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
       allow create, update: if owner(userId)
         && request.resource.data.keys().hasAll(['nickname', 'wave', 'deck', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['nickname', 'wave', 'deck', 'updatedAt'])
@@ -227,7 +227,7 @@ service cloud.firestore {
 
     match /leaderboard/{userId} {
       allow get, list: if true;
-      allow delete: if owner(userId);
+      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
       allow create, update: if owner(userId) && validLeaderboard(request.resource.data);
     }
 
