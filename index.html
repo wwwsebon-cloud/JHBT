@@ -31161,7 +31161,7 @@ const PATCH_NOTES = {
         { emoji:'🚕', name:'택시 지후', tag:'adjust', color:'#f5b800', portraitKey:'taxi', desc:'히든 → <b>신화</b>. 이제 랭크업 · 한계돌파를 할 수 있어요.' },
       ] },
       { title: '보상 · 성장', items: [
-        { emoji:'◇', name:'조각 보상', tag:'system', color:'#111111', desc:'신화로 올라간 지후가 <b>S랭크</b>였다면 그 지후 조각 <b>5개</b>를 넣어 드려요 (전설 S 승급 10개 · 신화 S 승급 5개의 차이).' },
+        { emoji:'◇', name:'조각 보상', tag:'system', color:'#111111', desc:'신화로 올라간 지후를 가지고 있다면 랭크와 상관없이 그 지후 조각 <b>5개</b>를 넣어 드려요.' },
         { emoji:'↺', name:'그대로 유지', tag:'system', color:'#111111', desc:'이미 쓴 조각은 신화 기준으로 그대로 인정돼요. 랭크 · 한계돌파 · 모은 조각 · 가루는 하나도 줄지 않아요. S가 아니었다면 이제 신화 승급(조각 5개)이 더 가까워져요.' },
       ] },
     ],
@@ -34450,11 +34450,11 @@ function runMailMigrations() {
       sendMail({ icon: '★', title: '7.1 업데이트 보상 추가', body: '7.1 업데이트 보상이 선택 확정권으로 바뀌었어요. 이미 보상을 받으셔서 선택 전설 확정권 3장을 추가로 보내드려요.', rewards: [{ kind: 'legendPick', amount: 3 }] });
     }
   }
-  if (!profile.mailFlags.includes('mythic733')) { // 7.3.3 전설 → 신화 상향: S랭크였으면 조각 5개 (전설 S 10개 · 신화 S 5개 차이). 랭크 · 한계돌파는 그대로
+  if (!profile.mailFlags.includes('mythic733')) { // 7.3.3 전설 → 신화 상향: 가진 지후면 랭크와 상관없이 조각 5개. 랭크 · 한계돌파는 그대로
     profile.mailFlags.push('mythic733'); changed = true;
-    const up = ['ravage', 'ruins', 'soulstealer', 'tesla', 'beatmania'].filter(id => CHAR_DB[id] && isUnlocked(id) && isRankS(id));
+    const up = ['ravage', 'ruins', 'soulstealer', 'tesla', 'beatmania'].filter(id => CHAR_DB[id] && isUnlocked(id));
     up.forEach(id => { profile.shards[id] = shardCount(id) + 5; });
-    if (up.length) sendMail({ icon: '🔴', title: '신화 등급 상향 보상', body: `S랭크였던 지후가 신화로 올라가 조각 5개씩을 바로 넣어 드렸어요 (랭크 · 한계돌파 · 모은 조각은 그대로): ${up.map(id => CHAR_DB[id].name).join(' · ')}`, rewards: [] });
+    if (up.length) sendMail({ icon: '🔴', title: '신화 등급 상향 보상', body: `가지고 있는 지후가 신화로 올라가 조각 5개씩을 바로 넣어 드렸어요 (랭크 · 한계돌파 · 모은 조각은 그대로): ${up.map(id => CHAR_DB[id].name).join(' · ')}`, rewards: [] });
   }
   if (!profile.mailFlags.includes('compEnd732')) { // 7.3.2 경쟁전 시즌 조기 종료: 시즌이 끝난 것처럼 티어를 내리고 ◆1,000 (24시간)
     profile.mailFlags.push('compEnd732'); changed = true;
