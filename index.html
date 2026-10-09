@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.1.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.1.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -5876,6 +5876,9 @@ html.ui-v7 #app#app .v7-bg > * { position:absolute; will-change:transform; }
 html.ui-v7 #app#app .v7-ghost { font:800 calc(var(--fs) * var(--k)) / 1 var(--v7-exo); filter:blur(5px); white-space:nowrap; letter-spacing:-.02em; }
 html.ui-v7 #app#app .v7-mono { width:calc(var(--w) * var(--k)); height:calc(var(--h) * var(--k)); }
 html.ui-v7 #app#app .v7-pt { left:0; background:#1a1a1a; }
+html.ui-v7 #app#app .v7-jh-layer { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+html.ui-v7 #app#app .v7-jh { position:absolute; left:0; top:0; will-change:transform; }
+html.ui-v7 #app#app .v7-jh img { display:block; width:100%; height:100%; object-fit:contain; mix-blend-mode:multiply; will-change:transform; } /* 흰 바탕 그림이라 곱하기로 배경에 녹인다 (동그라미 테두리 없음) */
 @media (max-width:700px) { html.ui-v7 #app#app .v7-bg { --k:.62; } }
 
 /* ── 인트로 ── */
@@ -15277,10 +15280,31 @@ function v7StartBg(screen) {
   });
   return list;
 }
+// 로비 배경에 무작위 지후 1~3명이 테두리 없이 떠다닌다 (로비에 들어올 때마다 새로 고른다 · 나가면 지운다)
+function v7LobbyJihu(on) {
+  const screen = $('screen-lobby'), bg = screen && screen.querySelector(':scope > .v7-bg');
+  const old = screen && screen.querySelector(':scope > .v7-jh-layer');
+  if (old) { old.getAnimations({ subtree: true }).forEach(a => a.cancel()); old.remove(); }
+  if (!on || !bg) return;
+  const pool = playableIds().filter(id => CHAR_DB[id] && CHAR_DB[id].portrait && CHAR_DB[id].rarity !== 'hidden');
+  const ids = wweShuffle(pool).slice(0, 1 + Math.floor(Math.random() * 3));
+  const layer = document.createElement('div'); layer.className = 'v7-jh-layer';
+  layer.innerHTML = ids.map(id => `<span class="v7-jh"><img src="${CHAR_DB[id].portrait}" alt=""></span>`).join('');
+  bg.after(layer); // .v7-bg 밖에 둬야 곱하기 혼합이 화면 배경과 섞인다 (.v7-bg 는 쌓임 맥락)
+  const W = screen.clientWidth || innerWidth, H = screen.clientHeight || innerHeight, size = Math.min(170, Math.max(110, W * 0.13));
+  layer.querySelectorAll('.v7-jh').forEach((el, k) => {
+    el.style.width = el.style.height = size + 'px';
+    const pts = Array.from({ length: 5 }, () => [Math.random() * (W - size), Math.random() * (H - size)]);
+    el.animate(pts.map(([x, y], i) => ({ transform: `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) rotate(${((i % 2 ? 1 : -1) * (6 + Math.random() * 8)).toFixed(1)}deg)` })),
+      { duration: 26000 + Math.random() * 14000, direction: 'alternate', iterations: Infinity, easing: 'ease-in-out', delay: -Math.random() * 12000 });
+    el.querySelector('img').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-14px)' }], { duration: 1800 + k * 400, direction: 'alternate', iterations: Infinity, easing: 'ease-in-out' });
+  });
+}
 function v7OnScreen(name) {
   if (!v7On() || !V7_ANIMS) return;
   const screen = $('screen-' + name);
   V7_ANIMS.forEach((list, el) => { if (el !== screen) list.forEach(a => a.pause()); });
+  v7LobbyJihu(name === 'lobby' && !v7Reduced()); // 잠수함: 로비에 지후가 떠다닌다
   if (!screen || v7Reduced()) return;
   if (screen.querySelector(':scope > .v7-bg')) {
     if (!V7_ANIMS.has(screen)) V7_ANIMS.set(screen, v7StartBg(screen));
