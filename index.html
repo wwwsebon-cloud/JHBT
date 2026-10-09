@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.3.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.3.4"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -18088,12 +18088,21 @@ function seasonMonthStart(number) { // 시즌 번호 → 그 달 1일 0시 (KST)
   const m = 8 + (number - 1); // 시즌 1 = 2026년 9월
   return Date.UTC(2026 + Math.floor(m / 12), m % 12, 1) - KST;
 }
+// 7.3.3 시즌 2를 일찍 끝내고 시즌 3을 바로 시작했다. 이후로는 '그 달 번호 + 1' (2026.11 = 시즌 4). firestore.rules 의 다음 달 시즌 허용 범위 안이다.
+const SEASON3_START = Date.parse('2026-10-10T03:00:00+09:00');
+function seasonStartMs(number) {
+  if (number <= 1) return COMP_SEASON_START;
+  if (number === 2) return seasonMonthStart(2);
+  if (number === 3) return SEASON3_START;
+  return seasonMonthStart(number - 1);
+}
 function compSeason(now = Date.now()) {
   const d = new Date(now + KST);
-  const number = Math.max(1, (d.getUTCFullYear() - 2026) * 12 + d.getUTCMonth() - 8 + 1);
-  return { number, start: number === 1 ? COMP_SEASON_START : seasonMonthStart(number), end: seasonMonthStart(number + 1) };
+  const month = Math.max(1, (d.getUTCFullYear() - 2026) * 12 + d.getUTCMonth() - 8 + 1);
+  const number = month + (now >= SEASON3_START ? 1 : 0);
+  return { number, start: seasonStartMs(number), end: seasonStartMs(number + 1) };
 }
-function seasonLabel(number) { const d = new Date(seasonMonthStart(number) + KST); return `시즌 ${number} · ${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}`; }
+function seasonLabel(number) { const d = new Date(seasonStartMs(number) + KST); return `시즌 ${number} · ${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}`; }
 // 이번 시즌에 얻은 경험치 (진 판에서 잃은 만큼 빠지고 0 아래로는 내려가지 않는다)
 function seasonXpNow() {
   const n = compSeason().number;
@@ -18137,6 +18146,16 @@ function compApplySeasonReset() {
   const record = profile.competitive;
   if (!record.season) { record.season = current; return false; }
   if (record.season >= current) return false;
+  if (record.season === 2 && current === 3 && (profile.mailFlags || []).includes('compEnd732')) {
+    // 7.3.3 7.3.2 조기 종료 때 이미 티어를 내렸다: 두 번 내리지 않고, 순위 보상용 최종 기록은 내리기 전 TP 로 남긴다
+    const early = record.lastReset && record.lastReset.season === 2 ? record.lastReset : { from: record.tp, to: record.tp };
+    record.finalSnap = { season: 2, tp: early.from, wins: 0, losses: 0, deck: [] };
+    record.season = current;
+    record.lastReset = { season: current, from: early.from, to: early.to };
+    saveProfile();
+    window.JihooOnline.publish().catch(() => {});
+    return true;
+  }
   const from = record.tp;
   // 4.5: 끝난 시즌의 최종 기록을 남겨 두었다가 온라인에 올린다 (경쟁전 시즌 종료 보상 순위용)
   record.finalSnap = { season: record.season, tp: from, wins: record.wins || 0, losses: record.losses || 0, deck: (record.lastDeck || []).slice(0, 3) };
@@ -31145,6 +31164,16 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.3.4': {
+    label: 'v7.3.4 경쟁전 시즌 3 시작',
+    date: '2026.10.10',
+    sections: [
+      { title: '경쟁전', items: [
+        { emoji:'🏁', name:'시즌 3 시작', tag:'system', color:'#111111', desc:'시즌 2를 일찍 끝내고 <b>시즌 3</b>(5:5 드래프트)을 바로 시작해요. 7.3.2 에서 이미 티어가 내려간 분은 <b>다시 내려가지 않아요</b>. 시즌 2 순위 보상은 조기 종료 직전 TP 기준으로 계산돼요.' },
+        { emoji:'📅', name:'시즌 일정', tag:'system', color:'#111111', desc:'시즌 3은 10월 말까지, 이후로는 매월 1일에 새 시즌 (11월 = 시즌 4).' },
+      ] },
+    ],
+  },
   '7.3.3': {
     label: 'v7.3.3 신화 등급 조정',
     date: '2026.10.10',
@@ -34457,13 +34486,8 @@ function runMailMigrations() {
     if (up.length) sendMail({ icon: '🔴', title: '신화 등급 상향 보상', body: `가지고 있는 지후가 신화로 올라가 조각 5개씩을 바로 넣어 드렸어요 (랭크 · 한계돌파 · 모은 조각은 그대로): ${up.map(id => CHAR_DB[id].name).join(' · ')}`, rewards: [] });
   }
   if (!profile.mailFlags.includes('compEnd732')) { // 7.3.2 경쟁전 시즌 조기 종료: 시즌이 끝난 것처럼 티어를 내리고 ◆1,000 (24시간)
+    compApplySeasonReset(); // 7.3.3 시즌 3 이 시작돼 있으면 일반 시즌 종료 규칙으로 한 번만 내린다 (플래그를 세우기 전에)
     profile.mailFlags.push('compEnd732'); changed = true;
-    const rec = profile.competitive;
-    if (rec.tp > 0 || rec.wins || rec.losses) {
-      const from = rec.tp, to = compSeasonResetTp(from);
-      rec.tp = to; rec.lastReset = { season: compSeason().number, from, to, early: true };
-      rec.promo = compGroupIndex(to); rec.wins = 0; rec.losses = 0; rec.lastDeck = [];
-    }
     sendMail({ icon: '🏆', title: '경쟁전 시즌 조기 종료 보상', body: '경쟁전이 5:5 드래프트 방식으로 바뀌어 이번 시즌을 일찍 끝냈어요. 티어는 시즌 종료 규칙대로 내려갑니다.', rewards: [{ kind: 'diamonds', amount: 1000 }], exp: Date.now() + MAIL_DEFAULT_MS });
     window.JihooOnline.publish().catch(() => {});
   }
