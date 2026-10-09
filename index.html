@@ -2932,7 +2932,7 @@ body.reduce-motion .match-jihoo, body.reduce-motion .match-shadow { animation-du
 .v422-glow .gs { display:flex; align-items:center; gap:6px; }
 .v422-glow .gs button { width:26px; height:26px; border-radius:50%; border:1px solid #888; background:transparent; color:inherit; font:900 14px inherit; cursor:pointer; }
 .v422-glow .gs b { min-width:22px; text-align:center; font-weight:900; }
-.v422-glow #btnGlowUse { padding:7px 12px; border-color:#f2c94c; color:#f2c94c; }
+.v422-glow .btnGlowUse { padding:7px 12px; border-color:#f2c94c; color:#f2c94c; }
 .v4-ticket.glow b { color:#b8860b; }
 .fx-bread.golden { filter:drop-shadow(0 0 6px #f2c94c); }
 .v42r-list { list-style:none; margin:8px 0; padding:0; display:flex; flex-direction:column; gap:6px; }
@@ -6475,9 +6475,13 @@ html.ui-v7 #app#app #screen-inventory .v4-empty { padding:16px; border:1px solid
 .gr-cost b { font:800 15px var(--v7-exo, inherit); color:#111; } .gr-cost b.short { color:#e5322d; } .gr-cost b.p { color:#e5322d; }
 .gr-max { margin:0; padding:12px; text-align:center; font-weight:800; background:#111; color:#fff; }
 .gr-glow { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 10px; padding:8px 10px; border:1px dashed #b49b3a; background:#fffbea; font-size:12px; }
+.gr-dust { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; padding:8px 10px; border:1px dashed #9a9a97; background:#f6f6f3; font-size:12px; } /* 7.1.3 가루 */
+.gr-dust small { color:#777; margin-left:4px; }
+.gr-dust button { padding:4px 10px; border-radius:8px; border:1px solid #333; background:#111; color:#fff; font-weight:800; cursor:pointer; }
+.gr-dust button:disabled { opacity:.4; cursor:default; }
 .gr-glow .gr-gctl { display:inline-flex; align-items:center; gap:4px; }
 .gr-glow button { padding:4px 8px; border:1px solid #111; background:#fff; font:700 12px inherit; cursor:pointer; }
-.gr-glow #btnGlowUse { margin-left:auto; background:#111; color:#fff; }
+.gr-glow .btnGlowUse { margin-left:auto; background:#111; color:#fff; }
 .gr-glow b { font-family:var(--v7-exo, inherit); }
 /* 별 다섯 개: 3번째(고유 능력) · 5번째(최대)는 모양이 다르다 */
 .lb-stars { display:inline-flex; gap:5px; }
@@ -11050,15 +11054,27 @@ const TIER_ART = { bronze: ART.tier_bronze, silver: ART.tier_silver, gold: ART.t
 const RARITY_LABEL = { common: '일반', rare: '희귀', epic: '영웅', legend: '전설', mythic: '신화', hidden: '히든' }; // 7.1 신화 등급 (지후는 추가 예정)
 const RANK_NAMES = ['A', 'S']; // 7.1 랭크는 A · S 둘 (SR · SSR 삭제 · S부터 한계돌파)
 const RANK_SHARD_COSTS = { common:[10,20,30], rare:[5,10,16], epic:[2,6,12], legend:[1,2,3] }; // 4.2.4 하향
-const DUPLICATE_SHARDS = 10; // 7.1 중복 지후는 그 지후 조각 10개
+const DUPLICATE_SHARDS = 1; // 7.1.3 중복 지후(뽑기 · 선택권 · 확정권 · 상점)는 그 지후 조각 1개
+const DUST_PER_SHARD = 10; // 7.1.3 가루 10개 = 그 지후 조각 1개 (뽑기 꽝은 가루 1개)
+function dustCount(id) { return Math.max(0, Math.floor(Number(profile.dust && profile.dust[id]) || 0)); }
+function fuseDust(id) { // 가루를 10개씩 모두 그 지후 조각으로
+  const c = CHAR_DB[id], n = Math.floor(dustCount(id) / DUST_PER_SHARD);
+  if (!c || c.rarity === 'hidden' || n <= 0) return false;
+  profile.dust[id] = dustCount(id) - n * DUST_PER_SHARD;
+  profile.shards[id] = shardCount(id) + n;
+  saveProfile();
+  return n;
+}
 // 4.2.2 빛나는 조각: 같은 등급 아무 지후의 조각으로 쓸 수 있다 (랭크업할 때 원하는 만큼 그 지후 조각으로 바꾼다)
 const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', legend: 'glowLegend' };
 const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각' };
 function glowCount(rarity) { return GLOW_KEYS[rarity] ? Math.max(0, Number(profile.inventory[GLOW_KEYS[rarity]]) || 0) : 0; }
-function convertGlowShards(id, amount) {
-  const c = CHAR_DB[id]; const key = c && GLOW_KEYS[c.rarity];
+function convertGlowShards(id, amount, from) {
+  // 7.1.3 빛나는 전설조각은 아무 지후(히든 제외, 미보유 포함)의 조각으로 바꿀 수 있다. 나머지 빛나는 조각은 같은 등급 보유 지후만.
+  const c = CHAR_DB[id]; const glowRarity = from === 'legend' ? 'legend' : c && c.rarity; const key = c && GLOW_KEYS[glowRarity];
   amount = Math.floor(Number(amount) || 0);
-  if (!key || !isUnlocked(id) || amount <= 0 || amount > glowCount(c.rarity) || (isRankS(id) && lbLevel(id) >= LB_MAX)) return false;
+  const anyJihoo = glowRarity === 'legend' && c && c.rarity !== 'hidden' && !c.unobtainable;
+  if (!key || !(anyJihoo || (glowRarity === c.rarity && isUnlocked(id))) || amount <= 0 || amount > glowCount(glowRarity) || (isRankS(id) && lbLevel(id) >= LB_MAX)) return false;
   profile.inventory[key] -= amount;
   profile.shards[id] = (Number(profile.shards[id]) || 0) + amount;
   saveProfile();
@@ -11269,10 +11285,10 @@ function applyRankToDef(def, charId, rank) {
 }
 function rankEffectLines(id) { return lbPerks(id).map(([n, t]) => ['돌파 Lv' + n, t]); }
 // ═════════ 7.1 성장 개편: 랭크는 A · S 두 단계. S가 되면 한계돌파(Lv1 → Lv5)가 열린다 ═════════
-// S 승급: 그 지후 조각 (일반 1000 · 희귀 500 · 영웅 100 · 전설 30 · 신화 20). 빛나는 조각은 같은 등급 아무 지후의 조각으로 바꿔 쓸 수 있다.
+// S 승급: 그 지후 조각 (7.1.3 롤백 패치: 일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). 빛나는 조각은 같은 등급 아무 지후의 조각으로, 빛나는 전설조각은 아무 지후의 조각으로 바꿔 쓸 수 있다.
 // 한계돌파: 확률 강화 (실패해도 재료는 사라진다). Lv3 = S랭크 고유 능력 · Lv5 = 공격력 +5% (신규 스킬 전까지 임시)
 // 엔진에 넘기는 랭크 번호: 0 = 효과 없음 · 1 = S 능력 (돌파 Lv3~4) · 2 = S 능력 + 공격력 +5% (돌파 Lv5)
-const S_SHARD_COST = { common: 1000, rare: 500, epic: 100, legend: 30, mythic: 20 };
+const S_SHARD_COST = { common: 100, rare: 50, epic: 20, legend: 10, mythic: 5 }; // 7.1.3 롤백 패치: 1/10 (7.1 에서 조각·빛나는 조각 가치가 1/10 로 떨어진 것을 되돌림)
 const UNLOCK_SHARDS = 20; // 미보유 지후(히든 제외)는 그 지후 조각 20개로 해금
 const LB_MAX = 5;
 const LB_STEPS = [null, { shards: 1, gold: 3000, p: 0.35 }, { shards: 2, gold: 5000, p: 0.30 }, { shards: 5, gold: 7000, p: 0.20 }, { shards: 10, gold: 10000, p: 0.15 }]; // [현재 레벨] → 다음 레벨
@@ -11342,16 +11358,31 @@ function growthPanel(c) {
   area.className = 'gr-panel';
   const have = shardCount(c.id), owned = isUnlocked(c.id);
   if (c.rarity === 'hidden') { area.innerHTML = '<div class="gr-head"><b>성장</b><small>히든 지후는 랭크 · 한계돌파가 없어요</small></div>'; return area; }
+  // 7.1.3 빛나는 조각 줄: 같은 등급 빛나는 조각(보유 지후) + 빛나는 전설조각(아무 지후). 가루 줄: 가루 10개 = 조각 1개
+  const glowRowFor = (rarity, max) => max > 0 ? `<div class="v422-glow gr-glow" data-max="${max}" data-from="${rarity}"><span>✦ ${GLOW_NAMES[rarity]} <b>${formatNumber(max)}</b></span><span class="gr-gctl"><button type="button" data-glow="-10">−10</button><button type="button" data-glow="-1">−1</button><b class="glowAmt">1</b><button type="button" data-glow="1">+1</button><button type="button" data-glow="10">+10</button></span><button type="button" class="btnGlowUse">조각으로 바꾸기</button></div>` : '';
+  const dust = dustCount(c.id);
+  const dustRow = dust > 0 ? `<div class="gr-dust"><span>✧ 가루 <b>${formatNumber(dust)}</b> <small>${DUST_PER_SHARD}개 = 조각 1개</small></span><button type="button" class="btnDustFuse" ${dust >= DUST_PER_SHARD ? '' : 'disabled'}>합성 · 조각 +${Math.floor(dust / DUST_PER_SHARD)}</button></div>` : '';
+  const bindRows = () => {
+    area.querySelectorAll('.gr-glow').forEach(g => {
+      const max = Number(g.dataset.max), lab = g.querySelector('.glowAmt');
+      g.querySelectorAll('[data-glow]').forEach(b => { b.onclick = () => { lab.textContent = clamp(Number(lab.textContent) + Number(b.dataset.glow), 1, max); }; });
+      g.querySelector('.btnGlowUse').onclick = () => { if (convertGlowShards(c.id, Number(lab.textContent), g.dataset.from)) { renderDraftGrid(); showCharDetail(c); } };
+    });
+    const f = area.querySelector('.btnDustFuse');
+    if (f) f.onclick = () => { if (fuseDust(c.id)) { renderDraftGrid(); showCharDetail(c); } };
+  };
   if (!owned) {
     const pct = Math.min(100, have / UNLOCK_SHARDS * 100);
     area.innerHTML = `<div class="gr-head"><b>해금</b><span class="gr-sh">◇ 조각 <b>${formatNumber(have)}</b></span></div>
       <div class="gr-prog"><i style="width:${pct.toFixed(1)}%"></i><span>${formatNumber(have)} / ${UNLOCK_SHARDS}</span></div>
+      ${dustRow}${c.rarity !== 'hidden' && !c.unobtainable ? glowRowFor('legend', glowCount('legend')) : ''}
       <button type="button" class="gr-btn" id="btnShardUnlock" ${have >= UNLOCK_SHARDS ? '' : 'disabled'}>조각 ${UNLOCK_SHARDS}개로 해금</button>`;
     area.querySelector('#btnShardUnlock').onclick = () => unlockByShards(c.id);
+    bindRows();
     return area;
   }
   const S = isRankS(c.id), lv = lbLevel(c.id), glow = glowCount(c.rarity);
-  const glowRow = glow > 0 && !(S && lv >= LB_MAX) ? `<div class="v422-glow gr-glow" data-max="${glow}"><span>✦ ${GLOW_NAMES[c.rarity]} <b>${formatNumber(glow)}</b></span><span class="gr-gctl"><button type="button" data-glow="-10">−10</button><button type="button" data-glow="-1">−1</button><b id="glowAmt">1</b><button type="button" data-glow="1">+1</button><button type="button" data-glow="10">+10</button></span><button type="button" id="btnGlowUse">조각으로 바꾸기</button></div>` : '';
+  const glowRow = !(S && lv >= LB_MAX) ? dustRow + glowRowFor(c.rarity, glow) + (c.rarity !== 'legend' ? glowRowFor('legend', glowCount('legend')) : '') : dustRow;
   if (!S) {
     const need = S_SHARD_COST[c.rarity] || 0, pct = need ? Math.min(100, have / need * 100) : 0;
     area.innerHTML = `<div class="gr-head"><b>성장</b><span class="gr-rank"><em class="rk-a">A</em><i>→</i><em class="rk-s">S</em></span><span class="gr-sh">◇ 조각 <b>${formatNumber(have)}</b></span></div>
@@ -11369,12 +11400,7 @@ function growthPanel(c) {
         <button type="button" class="gr-btn lb" id="btnLimitBreak">한계돌파 · Lv${lv} → Lv${lv + 1}</button>` : '<p class="gr-max">최대 돌파 완료</p>'}`;
     const b = area.querySelector('#btnLimitBreak'); if (b) b.onclick = () => lbStage(c.id);
   }
-  const g = area.querySelector('.gr-glow');
-  if (g) {
-    const max = Number(g.dataset.max), lab = g.querySelector('#glowAmt');
-    g.querySelectorAll('[data-glow]').forEach(b => { b.onclick = () => { lab.textContent = clamp(Number(lab.textContent) + Number(b.dataset.glow), 1, max); }; });
-    g.querySelector('#btnGlowUse').onclick = () => { if (convertGlowShards(c.id, Number(lab.textContent))) { renderDraftGrid(); showCharDetail(c); } };
-  }
+  bindRows();
   return area;
 }
 
@@ -11723,6 +11749,7 @@ function freshProfile() {
     diamonds: 0,
     unlocked: STARTER_IDS.slice(),
     shards: {},
+    dust: {}, // 7.1.3 가루
     shardsVersion: 2,
     ranks: {}, lb: {}, roulette: { day: '' },
     masteryCounts: {},
@@ -11817,6 +11844,7 @@ function normalizeProfile(raw) {
     unlocked,
     // 3.6.2 조각 개편: 중복 1회가 10개 → 1개가 되면서, 그 전에 모은 조각은 한 번만 10분의 1로 줄인다 (올림)
     shards: raw.shards && typeof raw.shards === 'object' ? Object.fromEntries(Object.entries(raw.shards).filter(([id]) => validIds.has(id)).map(([id,count]) => [id, raw.shardsVersion === 2 ? safeCount(count) : Math.ceil(safeCount(count) / 10)])) : {},
+    dust: raw.dust && typeof raw.dust === 'object' ? Object.fromEntries(Object.entries(raw.dust).filter(([id]) => validIds.has(id)).map(([id, n]) => [id, safeCount(n)]).filter(([, n]) => n > 0)) : {}, // 7.1.3 가루
     shardsVersion: 2,
     ranks: raw.ranks && typeof raw.ranks === 'object' ? Object.fromEntries(Object.entries(raw.ranks).filter(([id]) => validIds.has(id)).map(([id,level]) => [id,Math.min(3,safeCount(level))])) : {},
     lb: raw.lb && typeof raw.lb === 'object' ? Object.fromEntries(Object.entries(raw.lb).filter(([id]) => validIds.has(id)).map(([id, v]) => [id, Math.min(5, Math.max(1, Math.floor(Number(v) || 1)))])) : {}, // 7.1 한계돌파
@@ -11828,7 +11856,7 @@ function normalizeProfile(raw) {
     mileageBuys: raw.mileageBuys && typeof raw.mileageBuys === 'object' ? Object.fromEntries(Object.entries(raw.mileageBuys).slice(-40).map(([k, v]) => [String(k).slice(0, 40), safeCount(v)])) : {},
     popup: raw.popup && typeof raw.popup === 'object' && typeof raw.popup.key === 'string' && raw.popup.free ? { key: raw.popup.key.slice(0, 20), free: { id: String(raw.popup.free.id || '').slice(0, 20), open: !!raw.popup.free.open, done: !!raw.popup.free.done },
       paid: Array.isArray(raw.popup.paid) ? raw.popup.paid.slice(0, 3).filter(x => x && typeof x === 'object').map(x => ({ id: String(x.id || '').slice(0, 20), open: !!x.open, done: !!x.done, ...(typeof x.emo === 'string' && /^(art|gif)_\d{2}$/.test(x.emo) ? { emo: x.emo } : {}) })) : null } : null, // 5.2 팝업스토어 · 5.7.2 유료 3칸
-    gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(item.shard ? { shard:true } : {}), ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
+    gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(item.shard ? { shard:true } : {}), ...(item.dust ? { dust:true } : {}), ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
     decks,
     archivedDecks,
     activeDeck,
@@ -13576,7 +13604,7 @@ function renderGachaHistory() {
   const history = profile.gachaHistory.slice().reverse();
   $('gachaHistory').innerHTML = history.length ? history.map(item => {
     const c = CHAR_DB[item.id];
-    return `<div class="gacha-history-row"><img src="${c.portrait}" alt=""><div><b>${c.name}</b><small>${item.mode === 'newpickup' ? '신규 픽업' : item.mode === 'pickup' ? '픽업' : '일반'} · ${RARITY_LABEL[c.rarity]} · ${item.shard ? '조각 +1 (꽝)' : item.duplicate ? `조각 +${item.shards ?? 10}` : '신규 획득'}</small></div><time>${new Date(item.at).toLocaleString('ko-KR')}</time></div>`;
+    return `<div class="gacha-history-row"><img src="${c.portrait}" alt=""><div><b>${c.name}</b><small>${item.mode === 'newpickup' ? '신규 픽업' : item.mode === 'pickup' ? '픽업' : '일반'} · ${RARITY_LABEL[c.rarity]} · ${item.dust ? '가루 +1 (꽝)' : item.shard ? '조각 +1 (꽝)' : item.duplicate ? `조각 +${item.shards ?? 10}` : '신규 획득'}</small></div><time>${new Date(item.at).toLocaleString('ko-KR')}</time></div>`;
   }).join('') : '<p class="settlement-note">뽑기 내역이 없습니다.</p>';
 }
 function renderGachaView0(view = gachaView) {
@@ -13678,8 +13706,8 @@ function gachaRecruitLoading(results, done) {
   }, 3000);
 }
 function gachaOddsHtml() { // 7.1 첫 줄은 확률 막대가 읽는다
-  return '1회: 조각 76.3% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2% · 신화 0.6% · 히든 0.1%<br>'
-    + '조각(꽝)은 무작위 지후 조각 1개: 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1%<br>'
+  return '1회: 가루 76.3% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2% · 신화 0.6% · 히든 0.1%<br>'
+    + `가루(꽝)는 무작위 지후 가루 1개 (가루 ${DUST_PER_SHARD}개 = 그 지후 조각 1개): 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1%<br>`
     + `중복 지후는 그 지후 조각 ${DUPLICATE_SHARDS}개 · 지후 상자는 ${GACHA_BOX_PULLS}회 뽑기<br>`
     + `천장: 전설 이상 지후 없이 ${GACHA_PITY}번째 뽑기는 전설 지후 확정<br>`
     + '신화 지후는 추가 예정이에요. 그 전까지 신화는 전설로 나와요.';
@@ -13714,9 +13742,10 @@ function rollGachaBox(mode = gachaView, fixedBonus = null) {
 // 뽑은 결과를 실제로 준다 (조각 · 새 지후 · 중복 조각) → [{ id, shard, duplicate }]
 function gachaGrant(raw, mode) {
   const out = raw.map(r => {
-    if (r.shard) {
-      profile.shards[r.id] = shardCount(r.id) + 1;
-      profile.gachaHistory.push({ id: r.id, mode, shard: true, duplicate: false, shards: 1, at: Date.now() });
+    if (r.shard) { // 7.1.3 꽝은 그 지후의 가루 1개 (가루 10개 = 조각 1개)
+      profile.dust = profile.dust || {};
+      profile.dust[r.id] = dustCount(r.id) + 1;
+      profile.gachaHistory.push({ id: r.id, mode, shard: true, dust: true, duplicate: false, shards: 0, at: Date.now() });
       return { id: r.id, shard: true, duplicate: false };
     }
     const duplicate = grantCharacter(r.id);
@@ -13757,7 +13786,7 @@ function showGachaMulti(results) {
   $('gachaMultiGrid').innerHTML = results.map((result, i) => {
     const c = CHAR_DB[result.id], hi = !result.shard && GACHA_RARITY_ORDER[c.rarity] >= 2;
     return `<div class="mc${hi ? ' hi' : ''}${result.shard ? ' shard' : ''}" style="--d:${(i * 0.14).toFixed(2)}s;--rc:${result.shard ? '#9a9a97' : rarityColorVar(c.rarity)}"><div class="spin"><div class="back"><div>JH</div></div>`
-      + `<div class="front"><div class="pic">${portraitHtml(c)}</div><div class="nm"><b>${c.name}</b><i></i></div>${result.shard ? '<span class="shardtag">◇ 조각 +1</span>' : result.duplicate ? '<span class="shardtag">조각 +' + DUPLICATE_SHARDS + '</span>' : '<span class="new">NEW</span>'}</div></div></div>`;
+      + `<div class="front"><div class="pic">${portraitHtml(c)}</div><div class="nm"><b>${c.name}</b><i></i></div>${result.shard ? '<span class="shardtag">✧ 가루 +1</span>' : result.duplicate ? '<span class="shardtag">조각 +' + DUPLICATE_SHARDS + '</span>' : '<span class="new">NEW</span>'}</div></div></div>`;
   }).join('');
   const rank = r => r.shard ? -1 : GACHA_RARITY_ORDER[CHAR_DB[r.id].rarity];
   const best = results.reduce((b, r) => rank(r) > rank(b) ? r : b, results[0]);
@@ -14211,15 +14240,15 @@ function revealGachaCard(index) {
   const character = CHAR_DB[result.id];
   const overlay = $('gachaReveal');
   const single = gachaRevealResults.length === 1;
-  $('gachaRevealRarity').textContent = result.shard ? `${RARITY_LABEL[character.rarity]} 조각` : RARITY_LABEL[character.rarity];
+  $('gachaRevealRarity').textContent = result.shard ? `${RARITY_LABEL[character.rarity]} 가루` : RARITY_LABEL[character.rarity];
   $('gachaRevealPortrait').src = character.portrait;
   $('gachaRevealPortrait').alt = character.name;
-  $('gachaRevealName').textContent = result.shard ? character.name + ' 조각' : character.name;
+  $('gachaRevealName').textContent = result.shard ? character.name + ' 가루' : character.name;
   $('gachaRevealCardName').textContent = character.name;
   $('gachaRevealRole').textContent = character.roleLabel;
   $('gachaRevealDesc').innerHTML = character.skillDesc;
   const stamp = $('gachaRevealStamp');
-  stamp.textContent = result.shard ? '◇ 조각 +1' : result.duplicate ? `이미 보유 · 조각 +${DUPLICATE_SHARDS}` : 'NEW!';
+  stamp.textContent = result.shard ? '✧ 가루 +1' : result.duplicate ? `이미 보유 · 조각 +${DUPLICATE_SHARDS}` : 'NEW!';
   stamp.className = 'v42-stamp ' + (result.shard ? 'dup shard' : result.duplicate ? 'dup' : 'new');
   overlay.classList.remove('opening', 'tap');
   if (!result.shard && (fxr === 'legend' || fxr === 'hidden')) { void overlay.offsetWidth; overlay.classList.add('fx-' + fxr); }
@@ -14343,7 +14372,7 @@ function performGacha(box, cost, useTicket = false) {
   saveProfile();
   $('gachaResult').innerHTML = results.map((result, index) => {
     const c = CHAR_DB[result.id];
-    return `<div class="gacha-card" style="border-color:${rarityColorVar(c.rarity)};animation-delay:${index * 35}ms"><img src="${c.portrait}" alt=""><div class="name">${c.name}</div><div class="result-tag">${result.shard ? '조각 +1' : result.duplicate ? `중복 · 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}</div></div>`;
+    return `<div class="gacha-card" style="border-color:${rarityColorVar(c.rarity)};animation-delay:${index * 35}ms"><img src="${c.portrait}" alt=""><div class="name">${c.name}</div><div class="result-tag">${result.shard ? '가루 +1' : result.duplicate ? `중복 · 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}</div></div>`;
   }).join('');
   renderAccountUI();
   renderGachaPity();
@@ -14616,7 +14645,7 @@ function renderInventory(message = '') {
       <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
     <b class="v4-h3">빛나는 조각</b>
-    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${RARITY_LABEL[r]} 지후 아무나의 조각으로 쓸 수 있어요 · 덱 설정에서 지후를 눌러 랭크업할 때 사용</small></div>`).join('')}</div>
+    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '아무 지후(히든 제외)의 조각으로 바꿀 수 있어요' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}`);
   renderEmoLocker(); // 5.7
@@ -15515,7 +15544,7 @@ function m6RenderOddsBars() {
   let bars = $('m6OddsBars');
   if (!bars) { bars = document.createElement('div'); bars.id = 'm6OddsBars'; bars.className = 'm6-bars'; odds.before(bars); }
   const first = (odds.innerHTML.split(/<br\s*\/?>/i)[0] || '').replace(/<[^>]+>/g, '');
-  const pairs = [...first.matchAll(/(히든|신화|전설|영웅|희귀|일반|조각)\s*([\d.]+)%/g)].map(m => [m[1], Number(m[2])]);
+  const pairs = [...first.matchAll(/(히든|신화|전설|영웅|희귀|일반|조각|가루)\s*([\d.]+)%/g)].map(m => [m[1], Number(m[2])]);
   const max = v7On() ? 100 : Math.max(1, ...pairs.map(p => p[1]));
   const sig = pairs.map(p => p.join(':')).join('|');
   if (bars.dataset.sig === sig) return;
@@ -29818,7 +29847,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
       ['🚫 출격 제한', '같은 지후가 많으면 서로 싸워서 <b>같은 지후는 한 진영에 3기까지</b>만 놓을 수 있습니다 (알 부화 · 성장으로 바뀐 지후는 세지 않음). 출격 제한이 있는 지후는 1기만 나올 수 있습니다. <b>태극 지후</b>는 제한이 없습니다.'],
       ['🔝 최대 레벨', '합체 레벨은 <b>Lv.7</b>이 최대이며 <b>MAX</b>로 표시됩니다. 놓을 자리도 합칠 지후도 없는 카드는 회색으로 보입니다.'],
       ['🔁 배치', '배치 기회마다 반드시 하나를 놓거나 합쳐야 합니다. 풀의 카드가 모두 회색이면 알아서 리롤하고, 3번 리롤해도 없으면 그 배치는 건너뜁니다.'],
-      ['⭐ 랭크 · 한계돌파', '덱 설정에서 지후 조각으로 <b>A → S</b> 승급 (일반 1000 · 희귀 500 · 영웅 100 · 전설 30 · 신화 20). S가 되면 <b>한계돌파 Lv1 → Lv5</b> (조각 · 골드 · 확률 35 / 30 / 20 / 15%, 실패해도 재료 소모). <b>Lv3</b>: 지후 고유 능력 · <b>Lv5</b>: 공격력 +5%. 일반전 · 경쟁전 · 드래프트전에서 적용되고, 히든 지후는 없습니다. 미보유 지후는 조각 20개로 해금.'],
+      ['⭐ 랭크 · 한계돌파', '덱 설정에서 지후 조각으로 <b>A → S</b> 승급 (일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). S가 되면 <b>한계돌파 Lv1 → Lv5</b> (조각 · 골드 · 확률 35 / 30 / 20 / 15%, 실패해도 재료 소모). <b>Lv3</b>: 지후 고유 능력 · <b>Lv5</b>: 공격력 +5%. 일반전 · 경쟁전 · 드래프트전에서 적용되고, 히든 지후는 없습니다. 미보유 지후는 조각 20개로 해금.'],
       ['📊 경기 통계', '경기가 끝나면 정산 화면의 통계 버튼으로 라운드별 기여도와 MVP를 볼 수 있습니다.']
     ].map(([title, text]) => `<div class="help-rule"><b>${title}</b><p>${text}</p></div>`).join('');
     return;
