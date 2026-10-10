@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.4.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.4.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -14195,7 +14195,7 @@ function renderGachaView0(view = gachaView) {
     document.querySelector('.gacha-layout')?.classList.add('no-spotlight');
     const left = Math.max(0, newPickup.endsAt - Date.now());
     $('gachaTitle').textContent = `${newPickup.version} 신규 지후 픽업`;
-    $('gachaOdds').innerHTML = gachaOddsHtml() + '<br>'
+    $('gachaOdds').innerHTML = gachaOddsHtml('newpickup') + '<br>'
       + `전설은 ${newPickup.version} 신규 지후만 등장합니다 (${newPickup.legendIds.map(id => CHAR_DB[id].name).join(', ')}). 히든은 등장하지 않습니다.<br>`
       + `종료까지 ${Math.floor(left / 3600000)}시간 ${Math.floor(left / 60000) % 60}분`;
     $('gachaDecor').innerHTML = newPickup.legendIds.slice(0, 6).map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
@@ -14218,14 +14218,16 @@ function renderGachaView0(view = gachaView) {
   $('gachaSpotlightPortrait').src = spotlight?.portrait || '';
   $('gachaSpotlightPortrait').alt = spotlight?.name || '';
   $('gachaTitle').textContent = pickup ? '오늘의 전설 픽업' : '지후 소환';
-  $('gachaOdds').innerHTML = gachaOddsHtml() + (pickup ? '<br>전설 등장 시 66.6% 확률로 오늘의 픽업 지후가 등장합니다.' : '');
+  $('gachaOdds').innerHTML = gachaOddsHtml(view) + (pickup ? '<br>전설 등장 시 66.6% 확률로 오늘의 픽업 지후가 등장합니다.' : '');
   const artIds = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden').slice(0,6);
   $('gachaDecor').innerHTML = artIds.map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
   if (pickup) startCombatPreview($('gachaPreview'), gachaSpotlightId);
   else stopCombatPreview($('gachaPreview'));
 }
 // 7.1 확률제: 1회마다 지후 조각 1개(꽝) 또는 지후. 중복 지후는 그 지후 조각 10개
-const GACHA_ODDS = [['shard', 76], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.4], ['hidden', 0.1]]; // 7.3.5 전설 이상 합 2.7 → 3% (잠수함: 신화 0.4 · 전설 2.5)
+const GACHA_ODDS = [['shard', 75.7], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.7], ['hidden', 0.1]]; // 잠수함: 신화 0.4 → 0.7% · 가루 76 → 75.7%
+const GACHA_ODDS_PICKUP = [['shard', 75.2], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.8], ['mythic', 1], ['hidden', 0]]; // 잠수함: 신규 지후 뽑기 전설 2.8 · 신화 1 · 히든 0%
+const gachaOddsFor = mode => mode === 'newpickup' ? GACHA_ODDS_PICKUP : GACHA_ODDS;
 const GACHA_SHARD_ODDS = [['common', 50], ['rare', 40], ['epic', 6], ['legend', 3], ['mythic', 1]];
 const GACHA_BOX_PULLS = 10; // 지후 상자 = 10회 뽑기
 function gachaWeighted(list) { let r = Math.random() * list.reduce((s, x) => s + x[1], 0); for (const [k, w] of list) { r -= w; if (r < 0) return k; } return list[list.length - 1][0]; }
@@ -14262,15 +14264,16 @@ function gachaRecruitLoading(results, done) {
     done();
   }, 3000);
 }
-function gachaOddsHtml() { // 7.1 첫 줄은 확률 막대가 읽는다
-  return '1회: 가루 76% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.4% · 히든 0.1% (전설 이상 3%)<br>'
+function gachaOddsHtml(mode = gachaView) { // 7.1 첫 줄은 확률 막대가 읽는다
+  const pk = gachaOddsFor(mode) === GACHA_ODDS_PICKUP;
+  return (pk ? '1회: 가루 75.2% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.8% · 신화 1% · 히든 0%<br>' : '1회: 가루 75.7% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.7% · 히든 0.1%<br>')
     + `가루(꽝)는 무작위 지후 가루 1개 (가루 ${DUST_PER_SHARD}개 = 그 지후 조각 1개): 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1%<br>`
     + `중복 지후는 그 지후 조각 ${DUPLICATE_SHARDS}개 · 지후 상자는 ${GACHA_BOX_PULLS}회 뽑기<br>`
     + `천장: 전설 이상 지후 없이 ${GACHA_PITY}번째 뽑기는 전설 지후 확정<br>`
     + `신화 지후: ${playableIds().filter(id => CHAR_DB[id].rarity === 'mythic').map(id => CHAR_DB[id].name).join(' · ')}.`;
 }
 function rollGachaCharacter(mode = gachaView) {
-  const k = gachaWeighted(GACHA_ODDS);
+  const k = gachaWeighted(gachaOddsFor(mode));
   if (k === 'shard') { const pool = rarityPool(gachaWeighted(GACHA_SHARD_ODDS)); return { id: pool[Math.floor(Math.random() * pool.length)] || STARTER_IDS[0], shard: true }; }
   return { id: pickGachaCharacter(k, mode), shard: false };
 }
