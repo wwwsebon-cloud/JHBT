@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.3.5"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.3.6"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7810,7 +7810,7 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
 const CHARACTER_BALANCE = {
   // ===== 7.0 신규 2차: 눈덩이 · 늑대 · 드림스케이프 · 락 · 리콜 · 마녀 (px 는 45px 격자 기준) =====
   snowball: {
-    hp: 1900, atk: 120, atkSpeed: 1, range: 180, speed: 81,
+    hp: 1900, atk: 240, atkSpeed: 1.5, range: 180, speed: 81, // 7.3.6 ATK 120 → 240 · 공격 간격 1 → 1.5초
     snowMaxStacks: 3, snowSlowPerStack: 0.2, snowFreeze: 1.8
   },
   wolf: {
@@ -8224,7 +8224,7 @@ const CHARACTER_BALANCE = {
     tyrantRageCurrentHpFraction: 0.44
   },
   telescope: {
-    hp: 2200, atk: 100, atkSpeed: 2, range: 180, speed: 90, telescopeBonusCells: 5
+    hp: 2200, atk: 100, atkSpeed: 2, range: 180, speed: 90, telescopeBonusCells: 3 // 7.3.6 5 → 3
   },
   hong: {
     hp: 2400, atk: 780, atkSpeed: 6, range: 225, speed: 100
@@ -8306,7 +8306,7 @@ const CHARACTER_BALANCE = {
     genesisAloneTaken: 1.5 // 4.7.3 [약화] 범위에 아군이 없으면 받는 피해 150% (무효화도 꺼진다)
   },
   dust: {
-    hp: 1800, atk: 80, atkSpeed: 0.5, range: 180, speed: 67.5,
+    hp: 1800, atk: 80, atkSpeed: 0.5, range: 315, speed: 67.5, // 7.3.6 사거리 4 → 7칸
     dustEveryHits: 15, dustDuration: 7, dustRadius: 270,
     dustEvadeChance: 0.25
   },
@@ -8646,7 +8646,7 @@ const CHARACTER_BALANCE = {
   },
   taxi: { // 6.2 신규
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
-    hp: 1500, atk: 0, atkSpeed: 1, range: 72, speed: 67.5, // 7.1 3700 → 1500
+    hp: 3000, atk: 0, atkSpeed: 1, range: 72, speed: 67.5, // 7.1 3700 → 1500 · 7.3.6 → 3000
     noAttack: true, holdRange: true,
     taxiSpeed: 2.4, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 1000, /* 7.1 9999 → 2500 · 7.3.5 → 1000 */ taxiDropRest: 2, taxiFoeCall: 1, taxiLoadRest: 2, taxiAway: 2 /* 7.0 적을 버린 뒤 2초 쉬고 돌아온다 */ // 6.2.1: 운행 속도 7 → 2.4 · 승객 하차 후 휴식 2초 · 적 콜 후 출발 대기 1초 · 적 탑승 후 휴식 2초 / 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
   },
@@ -9785,7 +9785,7 @@ const CHAR_DB = {
     rarity: 'rare', color: '#8fd3ff', portrait: PORTRAITS.snowball || jhPlaceholder('☃️', '#8fd3ff'),
     ...CHARACTER_BALANCE.snowball,
     onHit(caster, target) { snowballHit(caster, target); },
-    skillDesc: 'HP 1,900 · ATK 120 · 사거리 4칸 · 공격 간격 1초 · 이동속도 1.8칸. 맞힌 적에게 <b>눈덩이</b>를 1중첩 남긴다 (최대 3중첩). 중첩마다 이동속도 <b>20%</b> 감소 (최대 60%), 이 감소는 중첩이 사라져도 그 라운드 동안 남는다. <b>3중첩</b>인 적을 맞히면 <b>1.8초 빙결</b>시키고 중첩을 없앤다.'
+    skillDesc: 'HP 1,900 · ATK 240 · 사거리 4칸 · 공격 간격 1.5초 · 이동속도 1.8칸. 맞힌 적에게 <b>눈덩이</b>를 1중첩 남긴다 (최대 3중첩). 중첩마다 이동속도 <b>20%</b> 감소 (최대 60%), 이 감소는 중첩이 사라져도 그 라운드 동안 남는다. <b>3중첩</b>인 적을 맞히면 <b>1.8초 빙결</b>시키고 중첩을 없앤다. 한 번 얼린 적은 그 라운드에 <b>다시 얼지 않고 중첩도 쌓이지 않는다</b>.'
   },
   wolf: {
     id: 'wolf', name: '늑대 지후', emoji: '🐺', role: 'assassin', roleLabel: '어쌔신',
@@ -9824,7 +9824,8 @@ const CHAR_DB = {
     id: 'gt', name: 'GT 지후', emoji: '🏎️', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#e63946', portrait: PORTRAITS.gt || jhPlaceholder('🏎️', '#e63946'), portraitTurbo: PORTRAITS.gt_turbo || PORTRAITS.gt,
     ...CHARACTER_BALANCE.gt,
-    skillDesc: 'HP 2,000 · ATK 200 · 사거리 3칸 · 공격 간격 1초 · 이동속도 1.7칸. <b>출격제한 1</b>. 자신 <b>바로 앞 칸</b>에 배치된 아군이 있으면 라운드 시작 때 그 지후에게 <b>터보엔진</b>을 달아 준다. 터보엔진을 단 지후는 라운드 시작 <b>5초</b> 동안 이동속도가 <b>5칸</b> 늘어난다. 터보엔진을 달아 준 라운드에는 초상화가 바뀐다.'
+    onLevelChange(u) { if (state.phase === 'combat' && u.alive) gtInstallTurbo(u); }, // 7.3.6 리워크: 전투 중 합체 레벨업하면 터보엔진을 다시 단다
+    skillDesc: 'HP 2,000 · ATK 200 · 사거리 3칸 · 공격 간격 1초 · 이동속도 1.7칸. <b>출격제한 1</b>. 자신 <b>바로 앞 칸</b>에 배치된 아군이 있으면 라운드 시작 때 그 지후에게 <b>터보엔진</b>을 달아 준다. 터보엔진을 단 지후는 라운드 시작 <b>5초</b> 동안 이동속도가 <b>5칸</b> 늘어난다. 터보엔진을 달아 준 라운드에는 초상화가 바뀐다. 전투 중 <b>합체로 레벨업</b>하면 터보엔진을 <b>다시</b> 달아 준다.'
   },
   thorn: {
     id: 'thorn', name: '가시 지후', emoji: '🌵', role: 'dealer', roleLabel: '딜러',
@@ -10531,7 +10532,7 @@ const CHAR_DB = {
     id: 'telescope', name: '망원경 지후', emoji: '🔭', role: 'support', roleLabel: '서포터',
     rarity: 'epic', color: '#1743c9', portrait: PORTRAITS.telescope,
     ...CHARACTER_BALANCE.telescope,
-    skillDesc: '반경 3칸 안의 원거리 아군 사거리 <b>+5칸</b>. 근접 지후에는 적용되지 않는다'
+    skillDesc: '반경 3칸 안의 원거리 아군 사거리 <b>+3칸</b>. 근접 지후에는 적용되지 않는다'
   },
   hong: {
     id: 'hong', name: '홍명보 지후', emoji: '⚽', role: 'dealer', roleLabel: '딜러',
@@ -10694,7 +10695,7 @@ const CHAR_DB = {
     ...CHARACTER_BALANCE.enhance,
     noLevelUp: true,
     onMerge(u) { enhanceTry(u); },
-    onLevelChange(u) { enhanceSet(u, u.enh || 0, true); },
+    onLevelChange(u) { enhanceSet(u, u.enh ?? (n47Placement(u)?.enh || 0), true); }, // 7.3.6 소환 직후엔 저장된 강화 수치로 (0으로 덮어써 다음 라운드에 초기화되던 버그)
     onRestore(u, p) { if (p.enh) enhanceSet(u, p.enh, true); },
     customAttack(caster, target) { enhanceAttack(caster, target); },
     skillDesc: '근접 · ATK 10 · 공격 간격 1.1초. <b>레벨업할 수 없다.</b> 같은 지후를 합성하면 <b>검 강화</b>를 시도한다 (+0 시작). 강화 레벨은 <b>라운드가 끝나도 유지</b>된다. 성공 확률 +1 <b>90%</b> · +2 <b>75%</b> · +3 <b>60%</b> · +4 <b>45%</b> · +5 <b>30%</b>. 실패하면 <b>25%</b> 확률로 검이 파괴되어 <b>+0</b>으로 돌아간다. +1 ATK 400 · +2 ATK 600 · +3 ATK 650 · 공격 간격 0.85초 · +4 ATK 800 · +5 공격 간격 1.25초, 공격할 때마다 <b>검의 파동</b>(유닛 지름 2배 폭)을 정면으로 필드 끝까지 날려 모든 적을 관통하며 <b>1,000</b> 피해.'
@@ -11488,6 +11489,88 @@ function applyRankToDef(def, charId, rank) {
   if (typeof def.atk === 'number') def.atk = Math.round(def.atk * atkMult);
   if (ability && ability.apply) ability.apply(def);
 }
+// ═════════ 7.3.6 한계돌파 Lv2 · Lv4 보상 ═════════
+// 단계마다(Lv2 · Lv4) 체력 +100, 공격력 +10% (기본 공격력 기준 · 복리 아님). 아래 지후는 공격력 대신 다른 능력이 오른다.
+// hp: 단계당 체력 (기본 100, 0 = 체력도 오르지 않음) · atk: true 면 공격력 +10% 도 함께 · atkFlat: 공격력 고정 증가 · apply(d, n): n = 단계 수
+// d 의 거리 값은 45px 격자(1칸 = 45) 기준이다 (scaleCombatDef 전에 적용)
+const LB_STEP_HP = 100, LB_STEP_ATK = 0.1;
+const LB_STEP_EXCEPT = {
+  medic: { desc: '회복량 +50', apply(d, n) { d.healAmount += 50 * n; } },
+  slot: { desc: '슬롯머신 간격 -0.1초', apply(d, n) { d.slotEvery -= 0.1 * n; } },
+  smoke: { desc: '연막 발동 확률 +2% · 지속시간 +0.2초', apply(d, n) { d.smokeChance += 0.02 * n; d.smokeDuration += 0.2 * n; } },
+  purify: { desc: '디버프 면역시간 +0.3초', apply(d, n) { d.bellImmune += 0.3 * n; } },
+  battery: { desc: '충전량 +0.5%', apply(d, n) { d.chargeAuraRate += 0.005 * n; } },
+  lonely: { desc: '기본 체력 비례 피해 +1%', apply(d, n) { d.loneBonusHpFraction += 0.01 * n; } },
+  berserk: { desc: '광폭화 지속시간 +0.1초', apply(d, n) { d.berserkTime += 0.1 * n; } },
+  parasite: { desc: '버러지후 소환 쿨타임 -0.3초', apply(d, n) { d.bugEvery -= 0.3 * n; } },
+  flower: { desc: '꽃 뱉어짐 피해 +100', apply(d, n) { d.spitHit += 100 * n; } },
+  lantern: { desc: '', atkFlat: 2 },
+  maestro: { desc: '연주시간 -0.5초', apply(d, n) { d.maestroTime -= 0.5 * n; } },
+  telescope: { desc: '사거리 증가량 +0.5칸', apply(d, n) { d.telescopeBonusCells += 0.5 * n; } },
+  supply: { desc: '보급 투하 간격 -0.2초', apply(d, n) { d.supplyEvery -= 0.2 * n; } },
+  egg: { desc: '부화 확률 +1%', apply(d, n) { d.hatchChance += 0.01 * n; } },
+  syringe: { desc: '주사 독 피해 · 힐량 +10', apply(d, n) { d.syringePoisonDps += 10 * n; d.syringeHealPerSec += 10 * n; } },
+  mine: { desc: '지뢰 피해 +50', apply(d, n) { d.mineDamageBase += 50 * n; } },
+  bomb: { desc: '폭발 피해 +200', apply(d, n) { d.explosionDamage += 200 * n; } },
+  dust: { desc: '황사 지속시간 +1초 · 회피율 +1%', apply(d, n) { d.dustDuration += n; d.dustEvadeChance += 0.01 * n; } },
+  moai: { desc: '파동 반경 +0.1칸', apply(d, n) { d.moaiRadius += 4.5 * n; } },
+  sixseven: { hp: 0, desc: '아무런 능력치도 증가하지 않는다…' },
+  awaken: { desc: '각성 쿨타임 -0.2초', apply(d, n) { d.awakenTime -= 0.2 * n; } },
+  gumiho: { desc: '매혹 지속 +0.5초', apply(d, n) { d.charmDuration += 0.5 * n; } },
+  roulette: { desc: '총구 쏘는 시간 -0.05초', apply(d, n) { d.rouletteSelfTime -= 0.05 * n; d.rouletteTargetTime -= 0.05 * n; } },
+  metal: { hp: 2, atk: true, desc: '' },
+  revive: { desc: '부활 확률 +3%', apply(d, n) { d.reviveChance += 0.03 * n; } },
+  broker: { desc: '첫 순간이동 대기시간 -0.7초', apply(d, n) { d.brokerDelay -= 0.7 * n; } },
+  blackhole: { desc: '중력장 피해 +35', apply(d, n) { d.bhDamage += 35 * n; } },
+  bsod: { hp: 0, desc: '공격 간격 -0.1초', apply(d, n) { d.atkSpeed -= 0.1 * n; } },
+  reaper: { hp: 0, desc: '원한 대기시간 -0.5초', apply(d, n) { d.grudgeDuration -= 0.5 * n; } },
+  shanghai: { hp: 0, desc: '공격 간격 -1초', apply(d, n) { d.atkSpeed -= 1 * n; } },
+  bomber: { desc: '재폭격 대기시간 -0.2초', apply(d, n) { d.bombEvery -= 0.2 * n; } },
+  growth: { desc: '' },
+  train: { desc: '돌진 속도 +1칸', apply(d, n) { d.trainDashSpeed += 45 * n; } },
+  curse: { hp: 0, desc: '공격 간격 -0.04초', apply(d, n) { d.atkSpeed -= 0.04 * n; } },
+  func: { desc: '최소 · 최대 함수 공격력 +10%', apply(d, n) { d.funcMin += 50 * n; d.funcMax += 100 * n; } },
+  contractor: { desc: '청부 쿨타임 -0.3초', apply(d, n) { d.contractEvery -= 0.3 * n; } },
+  typhoon: { atk: true, desc: '태풍 유지시간 +0.3초 · 태풍 피해 +15 · 2단계 지속시간 +0.25초', apply(d, n) { d.typhoonTime += 0.3 * n; d.typhoonDamage += 15 * n; d.stage2Time += 0.25 * n; } },
+  biker: { desc: '체력 비례 피해 +10%', apply(d, n) { d.bikeHitMaxHpFraction += 0.1 * n; } },
+  hacker: { desc: '해킹 지속시간 +0.5초', apply(d, n) { d.hackDuration += 0.5 * n; } },
+  nuke: { desc: '핵 쿨타임 -0.5초', apply(d, n) { d.nukeFlight -= 0.5 * n; } },
+  planet: { desc: '행성 공전주기 -0.2초', apply(d, n) { d.orbitPeriod -= 0.2 * n; } },
+  rccar: { desc: '장난감 소환 간격 -0.2초', apply(d, n) { d.rcEvery -= 0.2 * n; } },
+  dreamscape: { desc: '1초마다 깎이는 최대 체력 +2% · 망각 때 돌아오는 최소 체력 -5%', apply(d, n) { d.dreamCutPerSec += 0.02 * n; d.forgetMin -= 0.05 * n; } },
+  taxi: { desc: '이동속도 +0.2', apply(d, n) { d.taxiSpeed += 0.2 * n; } },
+};
+// 단계 하나의 보상 문구 (덱 화면 · 한계돌파 목록)
+function lbStepText(id) {
+  const c = CHAR_DB[id], ex = LB_STEP_EXCEPT[id];
+  const hp = ex && ex.hp != null ? ex.hp : LB_STEP_HP;
+  const parts = [];
+  if (hp > 0) parts.push(`체력 <b>+${hp}</b>`);
+  if (ex && ex.atkFlat) parts.push(`공격력 <b>+${ex.atkFlat}</b>`);
+  else if ((!ex || ex.atk) && c && c.atk > 0) parts.push(`공격력 <b>+10%</b>`);
+  if (ex && ex.desc) parts.push(ex.desc.replace(/([+-][\d.]+(?:%|초|칸)?)/g, '<b>$1</b>'));
+  return parts.length ? parts.join(' · ') : '아무런 능력치도 증가하지 않는다…';
+}
+// 엔진에 넘기는 한계돌파 단계 수: 돌파 Lv2 = 1 · Lv4 = 2 (봇은 랭크 번호와 같게)
+function unitLbSteps(side, charId) {
+  if (side === 'enemy') return unitRankFor(side, charId);
+  if (side !== 'ally' || !RANK_EFFECT_MODES.includes(state.mode)) return 0;
+  const c = CHAR_DB[charId];
+  if (!c || c.rarity === 'hidden' || c.unobtainable || !isUnlocked(charId) || !isRankS(charId)) return 0;
+  const lb = lbLevel(charId);
+  return lb >= 4 ? 2 : lb >= 2 ? 1 : 0;
+}
+function applyLbStepsToDef(def, charId, n) {
+  if (!(n > 0)) return;
+  const ex = LB_STEP_EXCEPT[charId], base = CHAR_DB[charId] || def;
+  const hp = ex && ex.hp != null ? ex.hp : LB_STEP_HP;
+  if (typeof def.hp === 'number') def.hp += hp * n;
+  if (typeof def.atk === 'number') {
+    if (ex && ex.atkFlat) def.atk += ex.atkFlat * n;
+    else if (!ex || ex.atk) def.atk += Math.round((base.atk || 0) * LB_STEP_ATK * n); // 기본 공격력의 10% 씩 (복리 아님)
+  }
+  if (ex && ex.apply) ex.apply(def, n);
+}
 function rankEffectLines(id) { return lbPerks(id).map(([n, t]) => ['돌파 Lv' + n, t]); }
 // ═════════ 7.1 성장 개편: 랭크는 A · S 두 단계. S가 되면 한계돌파(Lv1 → Lv5)가 열린다 ═════════
 // S 승급: 그 지후 조각 (7.1.3 롤백 패치: 일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). 빛나는 조각은 같은 등급 아무 지후의 조각으로, 빛나는 전설조각도 전설 지후에만(7.3.1) 바꿔 쓸 수 있다.
@@ -11542,9 +11625,11 @@ function unlockByShards(id) {
   return true;
 }
 function lbPerks(id) {
-  const ability = RANK_S_ABILITIES[id];
+  const ability = RANK_S_ABILITIES[id], step = lbStepText(id);
   return [
+    [2, step],
     [3, ability ? `<b>${ability.name}</b> · ${ability.desc}` : '고유 능력 준비 중 · 임시로 <b>공격력 +5%</b>'],
+    [4, step],
     [5, '신규 스킬 준비 중 · 임시로 <b>공격력 +5%</b>'],
   ];
 }
@@ -11594,7 +11679,9 @@ function growthPanel(c) {
       <p class="gr-note">S랭크가 되면 <b>한계돌파</b>가 열려요 · 돌파 Lv3에 S랭크 고유 능력</p>
       <div class="gr-prog"><i style="width:${pct.toFixed(1)}%"></i><span>${formatNumber(have)} / ${formatNumber(need)}</span></div>
       ${glowRow}
-      <button type="button" class="gr-btn s" id="btnRankUp" ${have >= need ? '' : 'disabled'}>S랭크 승급 · 조각 ${formatNumber(need)}</button>`;
+      <button type="button" class="gr-btn s" id="btnRankUp" ${have >= need ? '' : 'disabled'}>S랭크 승급 · 조각 ${formatNumber(need)}</button>
+      <p class="gr-note">한계돌파 보상 미리보기</p>
+      <ul class="gr-perks">${lbPerks(c.id).map(([n, t]) => `<li><span>Lv${n}</span><p>${t}</p></li>`).join('')}</ul>`; // 7.3.6 S랭크 전에도 공개
     area.querySelector('#btnRankUp').onclick = () => rankUpCharacter(c.id);
   } else {
     const st = LB_STEPS[lv];
@@ -19540,6 +19627,7 @@ function spawnUnit(side, x, y, charId, opts) {
   }
   const unitRank = unitRankFor(side, charId);
   applyRankToDef(def, charId, unitRank); // 4.2: 내 지후의 랭크 효과 (레벨업 배율은 이 값을 기준으로 곱해진다)
+  applyLbStepsToDef(def, charId, unitLbSteps(side, charId)); // 7.3.6 한계돌파 Lv2 · Lv4
   // 데이터의 px 수치는 이전 45px 격자 기준이다. 유닛별 복사본만 변환해
   // 사거리·이동속도·스킬 범위가 확대된 격자와 같은 칸 수를 유지한다.
   scaleCombatDef(def);
@@ -19831,6 +19919,33 @@ function v42TileBlocked(side, tile, charId) {
 function v42RoleRow(charId) {
   const band = botRoleBand(charId), mid = (band[0] + band[1]) / 2;
   return mid >= 0.3 ? 0 : mid >= 0.2 ? 1 : 2;
+}
+// ── 7.3.6 배치 칸 기준 인접 판정 (거리 대신 배치 위치로) ──
+// '배치 시 인접한 아군에게 ~' 류의 지후는 이 함수만 쓴다. 줄(row) 0 = 맨 앞 (적 진영 쪽), 칸(col) 0~7 = 가로.
+// dirs: 'front' · 'back' · 'left' · 'right' (4방향) · 'frontLeft' · 'frontRight' · 'backLeft' · 'backRight' (대각선)
+const TILE_DIRS = { front: [-1, 0], back: [1, 0], left: [0, -1], right: [0, 1], frontLeft: [-1, -1], frontRight: [-1, 1], backLeft: [1, -1], backRight: [1, 1] };
+const TILE_DIRS4 = ['front', 'back', 'left', 'right'];
+function unitTile(u) { // 내 진영 칸 번호 (상대 진영에 놓인 지후 · 소환물은 없음). 칸 체계가 없는 모드는 서 있는 위치로 칸을 찾는다
+  if (!u || u.foeTile != null || u.ownerUid) return null;
+  if (u.tile != null) return u.tile;
+  const pl = state.placements.find(p => p.id === u.placementId);
+  if (pl && pl.tile != null && !pl.foeTile) return pl.tile;
+  return v42TileAt(u.side, u.x, u.y);
+}
+function tileNeighbor(tile, dir) {
+  const d = TILE_DIRS[dir]; if (tile == null || !d) return null;
+  const row = Math.floor(tile / V42_COLS) + d[0], col = tile % V42_COLS + d[1];
+  return row < 0 || row >= V42_ROWS || col < 0 || col >= V42_COLS ? null : row * V42_COLS + col;
+}
+function tileNeighborUnits(u, dirs = TILE_DIRS4) { // dirs 방향 칸에 배치된 같은 편 지후들 (방향 순서대로)
+  const tile = unitTile(u); if (tile == null) return [];
+  const out = [];
+  dirs.forEach(dir => {
+    const t = tileNeighbor(tile, dir); if (t == null) return;
+    const a = state.units.find(x => x !== u && x.alive && !x.isCastle && x.side === u.side && unitTile(x) === t);
+    if (a && !out.includes(a)) out.push(a);
+  });
+  return out;
 }
 // 가운데 칸부터 바깥으로
 const V42_CENTER_OUT = [3, 4, 2, 5, 1, 6, 0, 7];
@@ -25331,7 +25446,7 @@ function nukeBecomeLaunched(u) {
 }
 function launchNuke(u) {
   nukeBecomeLaunched(u);
-  (state.nukes || (state.nukes = [])).push({ side: u.side, left: CHARACTER_BALANCE.nuke.nukeFlight, by: u.def.name, owner: u });
+  (state.nukes || (state.nukes = [])).push({ side: u.side, left: u.def.nukeFlight ?? CHARACTER_BALANCE.nuke.nukeFlight, by: u.def.name, owner: u });
   const f = n47Forward(u.side);
   const trail = n47Fx('n47-nuke-launch', u.x, u.y, '🚀');
   trail.style.setProperty('--dx', f.x * 600 + 'px'); trail.style.setProperty('--dy', f.y * 600 + 'px');
@@ -25602,7 +25717,7 @@ function tickNew47Global(dt) {
       if (sp.hit.has(o.uid) || !o.alive || o.isCastle || o.side === sp.owner.side || o._realm || o._flight) return;
       if (Math.hypot(o.x - nx, o.y - ny) > unitRadius(o) + unitRadius(e)) return;
       sp.hit.add(o.uid);
-      dealDamage(sp.owner, o, Math.round(CHARACTER_BALANCE.flower.spitHit * sp.lv), { isSkill: true, skipAtkBuff: true, fromDeath: true });
+      dealDamage(sp.owner, o, Math.round((sp.owner?.def?.spitHit ?? CHARACTER_BALANCE.flower.spitHit) * sp.lv), { isSkill: true, skipAtkBuff: true, fromDeath: true });
     });
     physSnap(e, nx, ny);
     sp.left -= step;
@@ -26820,9 +26935,9 @@ function placedUnits(side) {
 // ===== 7.0 신규 2차: 눈덩이 · 늑대 · 드림스케이프 · 락 · 리콜 · 마녀 =====
 // 눈덩이: 중첩마다 이동속도 -20% (최대 -60%, 그 라운드 동안 유지). 3중첩에 맞으면 빙결 + 중첩 제거
 function snowballHit(c, t) {
-  if (!t.alive || t.isCastle) return;
+  if (!t.alive || t.isCastle || t._snowDone) return; // 7.3.6 한 번 얼린 적은 다시 얼지 않고 중첩도 쌓이지 않는다
   if ((t._snowStacks || 0) >= c.def.snowMaxStacks) {
-    t._snowStacks = 0;
+    t._snowStacks = 0; t._snowDone = true;
     battleAPI.applyFreeze(t, c.def.snowFreeze);
     spawnDamageNumber(t, '❄️ 꽁꽁', { crit: true });
     return;
@@ -27081,18 +27196,9 @@ function frontVector(u) {
   if (isEastWestLayout()) return { x: Math.sign(MAP_W / 2 - u.x) || (u.side === 'ally' ? -1 : 1), y: 0 };
   return { x: 0, y: Math.sign(MAP_H / 2 - u.y) || (u.side === 'ally' ? -1 : 1) };
 }
-// GT: 자신 바로 앞 칸(앞으로 0.4~1.6칸, 옆으로 0.6칸 이내)의 아군 중 1칸 지점에 가장 가까운 지후에게 터보엔진
+// GT: 자신 바로 앞 칸에 배치된 아군에게 터보엔진 (7.3.6 배치 칸 기준으로 재작성)
 function gtInstallTurbo(u) {
-  const f = frontVector(u);
-  let best = null, bestD = Infinity;
-  state.units.forEach(a => {
-    if (a === u || !a.alive || a.isCastle || a.side !== u.side) return;
-    const dx = a.x - u.x, dy = a.y - u.y;
-    const along = dx * f.x + dy * f.y, across = Math.abs(-dx * f.y + dy * f.x);
-    if (along < GRID * 0.4 || along > GRID * 1.6 || across > GRID * 0.6) return;
-    const d = Math.hypot(along - GRID, across);
-    if (d < bestD) { best = a; bestD = d; }
-  });
+  const best = tileNeighborUnits(u, ['front'])[0];
   if (!best) return;
   const bonus = best.def.speed > 0 ? u.def.turboCells * GRID / best.def.speed : 0; // +5칸/초를 이동속도 배율로
   if (bonus > 0) battleAPI.setBuff(best, 'gt-turbo', 'speed', bonus, u.def.turboDuration);
@@ -31165,6 +31271,27 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.3.6': {
+    label: 'v7.3.6 한계돌파 보상 추가 · 밸런스 · 버그 수정',
+    date: '2026.10.10',
+    sections: [
+      { title: '한계돌파', items: [
+        { emoji:'⭐', name:'돌파 Lv2 · Lv4 보상', tag:'new', color:'#111111', desc:'한계돌파 <b>Lv2</b>와 <b>Lv4</b>에 각각 <b>체력 +100</b> · <b>공격력 +10%</b>(기본 공격력 기준 · 복리 아님). 일부 지후는 공격력 대신 고유 능력이 올라요 (예: 힐 회복량 +50 · 슬롯머신 간격 -0.1초 · 블루스크린은 체력 대신 공격 간격 -0.1초). 지후마다 내용은 덱 설정 → 지후 상세 → 성장에서 볼 수 있어요.' },
+        { emoji:'👁', name:'보상 미리보기', tag:'new', color:'#111111', desc:'S랭크가 아니어도 한계돌파 Lv2 ~ Lv5 에서 오르는 능력치와 효과를 볼 수 있어요.' },
+      ] },
+      { title: '밸런스', items: [
+        { emoji:'🚕', name:'택시 지후', tag:'buff', color:'#f5b800', portraitKey:'taxi', desc:'체력 <b>1,500 → 3,000</b>.' },
+        { emoji:'☃️', name:'눈덩이 지후', tag:'adjust', color:'#8fd3ff', portraitKey:'snowball', desc:'ATK <b>120 → 240</b> · 공격 간격 <b>1초 → 1.5초</b>. 한 번 얼린 적은 그 라운드에 <b>다시 얼지 않고 중첩도 쌓이지 않아요</b>.' },
+        { emoji:'🔭', name:'망원경 지후', tag:'nerf', color:'#111111', portraitKey:'telescope', desc:'사거리 증가량 <b>5칸 → 3칸</b>.' },
+        { emoji:'🌫', name:'황사 지후', tag:'buff', color:'#111111', portraitKey:'dust', desc:'사거리 <b>4칸 → 7칸</b>.' },
+        { emoji:'🏎️', name:'GT 지후', tag:'buff', color:'#e63946', portraitKey:'gt', desc:'전투 중 <b>합체로 레벨업</b>하면 터보엔진을 <b>다시</b> 달아 줘요.' },
+      ] },
+      { title: '수정', items: [
+        { emoji:'⚔️', name:'강화 지후', tag:'fix', color:'#8e9bb0', portraitKey:'enhance_lv1', desc:'다음 라운드에 강화 레벨이 +0으로 초기화되던 버그를 고쳤어요.' },
+        { emoji:'🏎️', name:'GT 지후', tag:'fix', color:'#e63946', portraitKey:'gt', desc:'바로 앞 칸의 아군에게 터보엔진이 달리지 않던 버그를 고쳤어요. 이제 거리 대신 <b>배치 칸</b> 기준으로 앞 칸을 찾아요.' },
+      ] },
+    ],
+  },
   '7.3.5': {
     label: 'v7.3.5 택시 지후 조정 · 뽑기 확률 상향',
     date: '2026.10.10',
