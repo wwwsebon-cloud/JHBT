@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.4.5"><meta name="jihoo-build" content="5"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.4.6"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7936,8 +7936,9 @@ const CHARACTER_BALANCE = {
     turboCells: 5, turboDuration: 5
   },
   thorn: {
-    hp: 2550, atk: 270, atkSpeed: 1, range: 99, speed: 90,
-    thornTipCells: 0.5, fatalDuration: 0.6
+    hp: 2550, atk: 270, atkSpeed: 1, range: 72, speed: 90, // 7.4.6 근접 (적에게 붙어서 찌른다)
+    isMelee: true, thornLenCells: 4.84, thornWidth: 0.5, // 7.4.6 가시 길이 2.2칸 → 4.84칸 (×2.2) · 폭 몸 지름 → 절반
+    thornTipCells: 0.12, fatalDuration: 0.6 // 7.4.6 치명타는 가시 끝이 정확히 닿을 때만 (적의 앞쪽 가장자리가 끝 0.12칸 안)
   },
   fishing: {
     hp: 2490, atk: 380, atkSpeed: 0.75, range: 45, speed: 0,
@@ -10064,7 +10065,7 @@ const CHAR_DB = {
     rarity: 'rare', color: '#3f8f3a', portrait: PORTRAITS.thorn || jhPlaceholder('🌵', '#3f8f3a'),
     ...CHARACTER_BALANCE.thorn,
     customAttack(caster, target) { thornAttack(caster, target); },
-    skillDesc: 'HP 2,550 · ATK 270 · 사거리 2.2칸 · 공격 간격 1초 · 이동속도 2칸. 앞 <b>2.2칸</b> 직사각형을 <b>관통</b>해 찌른다. 끝 사거리(마지막 0.5칸)에 맞은 적은 <b>확정 치명타</b>를 입고 <b>0.6초</b>간 <b>[치명상]</b>을 얻는다. <b>[치명상]</b>: 받는 모든 피해가 확정 치명타가 된다.'
+    skillDesc: 'HP 2,550 · ATK 270 · <b>근접</b> · 공격 간격 1초 · 이동속도 2칸. 적에게 붙어서 앞 <b>4.84칸</b>의 가느다란 직사각형(폭 몸 지름의 절반)을 <b>관통</b>해 찌른다. 가시 <b>끝이 정확히 닿은</b> 적(끝 0.12칸)만 <b>확정 치명타</b>를 입고 <b>0.6초</b>간 <b>[치명상]</b>을 얻는다. <b>[치명상]</b>: 받는 모든 피해가 확정 치명타가 된다.'
   },
   fishing: {
     id: 'fishing', name: '낚시 지후', emoji: '🎣', role: 'controller', roleLabel: '컨트롤러',
@@ -17729,7 +17730,7 @@ const DETAIL_STAT_FIELDS = {
   hitCooldown:['자객 쿨타임','s'], hitStealth:['은신','s'], hitReturn:['복귀까지','s'], hitDamage:['자객 피해'], hitKillRefund:['처치 시 쿨타임 감소','s'],
   cactusSpikes:['가시 방향','개'], cactusSpikeLength:['가시 거리','칸'], cactusSpikeDamage:['가시 피해'], cactusMeleeTaken:['받는 근접 피해','%'], cactusReflect:['근접 반사','%'],
   turboCells:['터보엔진 이동속도 증가','칸'], turboDuration:['터보엔진 지속','s'],
-  thornTipCells:['끝 사거리 판정','칸'], fatalDuration:['치명상 지속','s'],
+  thornLenCells:['가시 길이','칸'], thornWidth:['가시 폭(몸 지름 배)'], thornTipCells:['치명타 판정(끝)','칸'], fatalDuration:['치명상 지속','s'],
   lureRadius:['찌 유인 반경','칸'], hookDelay:['낚인 뒤 당기기까지','s'], stewDuration:['생선조림 지속','s'],
   tendonFirst:['힘줄 끊기 첫 사용','s'], tendonCooldown:['힘줄 끊기 쿨타임','s'], tendonRadius:['힘줄 끊기 반경','칸'], tendonDmgRatio:['힘줄 끊기 피해 (공격력)','%'], debuffDuration:['절상·치명상·침묵 지속','s'],
   snowSlowPerStack:['중첩당 이동속도 감소','%'], snowFreeze:['3중첩 빙결','s'],
@@ -28104,7 +28105,7 @@ function gtInstallTurbo(u) {
 // 가시: 앞 사거리 길이 · 몸 지름 폭의 직사각형 관통 찌르기. 끝 0.5칸에 걸린 적은 확정 치명타 + [치명상]
 function thornAttack(c, target) {
   const ang = Math.atan2(target.y - c.y, target.x - c.x), cs = Math.cos(ang), sn = Math.sin(ang);
-  const length = c.def.range, half = unitRadius(c), tip = c.def.thornTipCells * GRID;
+  const length = (c.def.thornLenCells || 2.2) * GRID, half = unitRadius(c) * (c.def.thornWidth || 1), tip = c.def.thornTipCells * GRID;
   const fx = document.createElement('div');
   fx.className = 'fx-thorn';
   fx.style.left = c.x + 'px'; fx.style.top = c.y + 'px';
@@ -28117,7 +28118,8 @@ function thornAttack(c, target) {
     const dx = e.x - c.x, dy = e.y - c.y, r = unitRadius(e);
     const along = dx * cs + dy * sn, across = Math.abs(-dx * sn + dy * cs);
     if (along < -r || along > length + r || across > half + r) return;
-    const atTip = along + r >= length - tip;
+    const near = along - r; // 가시 쪽 적의 가장자리
+    const atTip = near >= length - tip && near <= length; // 7.4.6 끝이 겨우 닿을 때만 치명타
     const hit = dealDamage(c, e, c.def.atk, atTip ? { forceCrit: true } : {});
     if (hit && atTip && e.alive) applyFatalWound(e, c.def.fatalDuration);
     if (hit && c.def.onHit) c.def.onHit(c, e, battleAPI);
@@ -32179,6 +32181,15 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.4.6': {
+    label: 'v7.4.6 가시 지후 리워크',
+    date: '2026.10.10',
+    sections: [
+      { title: '리워크', items: [
+        { emoji:'🌵', name:'가시 지후', tag:'adjust', color:'#3f8f3a', portraitKey:'thorn', desc:'이제 <b>근접</b> 지후로 적에게 붙어서 찌른다. 가시 길이 <b>2.2 → 4.84칸</b> (×2.2) · 가시 폭 <b>절반</b>. 확정 치명타 · [치명상]은 가시 <b>끝이 정확히 닿은</b> 적에게만 (끝 0.5칸 → 0.12칸).' },
+      ] },
+    ],
+  },
   '7.4.5': {
     label: 'v7.4.5 밸런스 조정',
     date: '2026.10.10',
