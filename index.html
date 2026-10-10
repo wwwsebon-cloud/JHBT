@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.5.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.5.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -5422,7 +5422,12 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
 .unit.meta-form { box-shadow:0 0 0 3px #7d5bd6, 0 0 16px rgba(125,91,214,.85); }
 .unit.fine-dust { box-shadow:0 0 0 3px rgba(185,162,122,.9), 0 0 14px rgba(150,120,80,.7); }
 .unit.floating { filter:drop-shadow(0 12px 6px rgba(0,0,0,.35)); z-index:6; }
-.unit.escorted { box-shadow:0 0 0 3px #f6f2e4, 0 0 14px rgba(255,248,220,.9); }
+.unit.escorted { box-shadow:0 0 0 3px rgba(246,242,228,calc(.3 + .7 * var(--wk, 1))), 0 0 18px rgba(255,248,220,calc(.15 + .8 * var(--wk, 1))), inset 0 0 10px rgba(255,250,230,calc(.6 * var(--wk, 1))); }
+.unit.escort-hit .unit-icon img { filter:brightness(1.35) saturate(.7); }
+.unit.escort-strong { box-shadow:0 0 0 3px #e9c46a, 0 0 12px rgba(233,196,106,.8); }
+.fx-wk-tether { left:0; top:0; width:100px; height:4px; margin-top:-2px; transform-origin:0 50%; z-index:3; pointer-events:none; will-change:transform; background:linear-gradient(90deg, rgba(255,248,220,0), rgba(255,248,220,.9) 18%, rgba(255,255,255,.95) 50%, rgba(255,248,220,.9) 82%, rgba(255,248,220,0)); }
+.fx-wk-tether.broken { height:2px; margin-top:-1px; opacity:.35; background:repeating-linear-gradient(90deg, rgba(233,196,106,.9) 0 6px, transparent 6px 12px); }
+.fx-wk-break { transform:translate(-50%,-50%); border-radius:50%; border:4px solid #fff6d8; box-shadow:0 0 18px rgba(233,196,106,.9); animation:pulse-out .6s ease-out forwards; }
 .unit.mortis-dash { filter:drop-shadow(0 0 8px #5b2a86); }
 .unit.mortis-rest .unit-icon { filter:saturate(.6); }
 .fx-medusa { position:absolute; transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; z-index:4; background:conic-gradient(from calc(var(--a) + 40deg), rgba(63,143,90,.55) 0 100deg, transparent 100deg); animation:fxFade .7s ease-out forwards; }
@@ -8034,7 +8039,7 @@ const CHARACTER_BALANCE = {
   exorcist: { hp: 3600, atk: 260, atkSpeed: 3, range: 180, speed: 67.5, exoEvery: 9, exoRadiusCells: 2, exoHeal: 500, exoBoost: 0.6, exoTime: 5, exoHpLoss: 0.35, exoStun: 2 }, // 7.5 신규 · 강령 지속 5초* · 이동속도*
   mercenary: { deployLimit: 1, hp: 3900, atk: 100, atkSpeed: 7, range: 225, speed: 67.5, noAttack: true, holdRange: true, mcBase: 100, mcHpFrac: 0.65, mcEvery: 7, mcAim: 2 }, // 7.5 신규 · 이동속도*
   waterspout: { hp: 2600, atk: 70, atkSpeed: 3, range: 270, speed: 67.5, noAttack: true, holdRange: true, wsRadiusCells: 1.5, wsWarn: 0.5, wsTime: 2.5, wsTick: 0.5, wsHeal: 120, wsDmg: 70, wsFloat: 1.5 }, // 7.5 신규 · 체력* · 공격 간격 3초* · 이동속도*
-  inferno: { deployLimit: 1, hp: 3900, atk: 90, atkSpeed: 0.6, range: 72, speed: 99, isMelee: true, infRangeCells: 3.8, infFanDeg: 80, infBurnDr: 0.4, infCharge: 1.5, infBurnTime: 5, infTick: 0.2, infTickDmg: 90, infLag1: 2, infWarn: 1, infLineWidth: 2.5, infLacer: 0.3, infLacerTime: 7, infBurnDps: 100, infBurnTime2: 5, infBurnAmpTime: 10, infLag2: 5 }, // 7.5 신규 (히든) · 7.5.1 HP 2900 → 3900 · 근접 · 이동속도 0.8 → 2.2칸 · 소각 2.5칸 · 100° → 3.8칸 · 80° · 소각 중 받는 피해 -40% · 인페르노 뒤 행동불능 9 → 5초
+  inferno: { deployLimit: 1, hp: 4200, atk: 90, atkSpeed: 0.6, range: 72, speed: 99, isMelee: true, infRangeCells: 3.8, infFanDeg: 80, infBurnDr: 0.4, infCharge: 1.5, infBurnTime: 5, infTick: 0.2, infTickDmg: 135, infLag1: 2, infWarn: 1, infLineWidth: 3, infLacer: 0.55, infLacerTime: 10, infBurnDps: 120, infBurnTime2: 5, infBurnAmpTime: 10, infLag2: 5 }, // 7.5 신규 (히든) · 7.5.1 HP 2900 → 3900 · 근접 · 이동속도 0.8 → 2.2칸 · 소각 2.5칸 · 100° → 3.8칸 · 80° · 소각 중 받는 피해 -40% · 인페르노 뒤 행동불능 9 → 5초
   bully: { hp: 3800, atk: 180, atkSpeed: 1, range: 180, speed: 58.5, noAttack: true, holdRange: true, bullyRadiusCells: 4, bullyFastCells: 3, bullyStop: 2, standTime: 2, standCd: 5, standEvery: 0.5, standRadiusCells: 1.5, standDmg: 180, standBonus: 1.6 }, // 7.5 신규 · 체력 380 → 3,800 (오타로 보고)* · 이동속도*
   wine: { hp: 2900, atk: 180, atkSpeed: 1, range: 225, speed: 67.5, wineEvery: 4.5, wineHpCost: 0.07, wineAtk: 0.07, wineCrit: 0.07, wineCritDmg: 1.5, wineBuffTime: 3, toastHeal: 200, toastAtk: 0.1 }, // 7.4 이동속도*
   cult: { deployLimit: 1, hp: 2400, atk: 0, atkSpeed: 1, range: 270, speed: 58.5, noAttack: true, holdRange: true, cultDelay: 5, cultRadiusCells: 7, cultDamage: 200 }, // 7.4 사거리* · 이동속도*
@@ -8053,7 +8058,7 @@ const CHARACTER_BALANCE = {
   remote: { hp: 2200, atk: 0, atkSpeed: 1, range: 0, speed: 0, noAttack: true, immobile: true, droneDelay: 1, droneRespawn: 5 }, // 7.4.1 파괴 5초 뒤 재소환 // 체력*
   drone: { hp: 3400, atk: 150, atkSpeed: 2.3, range: 36, speed: 90, droneShots: 5, droneGap: 0.1, droneRadiusCells: 0.8 },
   radiation: { hp: 3200, atk: 300, atkSpeed: 2, range: 90, speed: 135, radDps: 80, radTime: 3, leakDelay: 0.5, leakRadiusCells: 2, leakTime: 6, leakTick: 0.5, leakDmg: 150 },
-  whiteknight: { deployLimit: 1, hp: 4000, atk: 260, atkSpeed: 1, range: 72, speed: 76.5, isMelee: true, lightShield: 2000, escortDr: 0.5 },
+  whiteknight: { deployLimit: 1, hp: 4000, atk: 260, atkSpeed: 1, range: 72, speed: 76.5, isMelee: true, lightShield: 4000, lightShare: 0.7, escortDr: 0.5 }, // 7.5.3 빛의 방패 2,000 → 4,000 · 대신 받는 피해 50 → 70%
   seal: { deployLimit: 1, hp: 2600, atk: 0, atkSpeed: 1, range: 225, speed: 58.5, noAttack: true, holdRange: true, sealDelay: 1, sealMaxLv: 5, sealFreeLv: 1 }, // 체력* · 사거리*
   bluelight: { hp: 2600, atk: 40, atkSpeed: 1, range: 270, speed: 67.5, noAttack: true, holdRange: true, blTime: 3.5, blEvery: 5, blTick: 0.2, blBounces: 3 }, // 체력* · 발사 간격 5초*
   // ===== 7.0 신규 2차: 눈덩이 · 늑대 · 드림스케이프 · 락 · 리콜 · 마녀 (px 는 45px 격자 기준) =====
@@ -10085,7 +10090,7 @@ const CHAR_DB = {
     rarity: 'hidden', color: '#d4380d', portrait: PORTRAITS.inferno || jhPlaceholder('🔥', '#d4380d'),
     ...CHARACTER_BALANCE.inferno,
     customAttack(caster, target) { infernoStart(caster, target); },
-    skillDesc: 'HP 3,900 · <b>근접</b> · 이동속도 2.2칸 · <b>출격제한 1</b>. 적에게 붙어 두 페이즈를 번갈아 쓴다. <b>[소각]</b>: 멈춰서 <b>1.5초</b> 차징 뒤 <b>5초</b> 동안 앞쪽 <b>80°</b> · 반경 <b>3.8칸</b>에 화염 (0.2초마다 <b>90</b>, 가까운 적 쪽으로 천천히 돈다). <b>[패시브]</b> [소각] 중(차징 포함) 받는 피해 <b>-40%</b>. 끝나면 <b>2초</b> 과열 (행동불능). 풀리자마자 자기 지름 <b>2.5배</b> 폭으로 아군 진영 끝부터 적진 끝까지 일직선을 경고하고 <b>1초</b> 뒤 <b>[인페르노]</b>: 닿은 적은 7초 <b>[절상] 30%</b> · 5초 화상 (초당 <b>100</b>) · 10초 동안 받는 화상 피해 <b>+100%</b>. 그 뒤 <b>5초</b> 탈진 (행동불능), 다시 반복.'
+    skillDesc: 'HP 4,200 · <b>근접</b> · 이동속도 2.2칸 · <b>출격제한 1</b>. 적에게 붙어 두 페이즈를 번갈아 쓴다. <b>[소각]</b>: 멈춰서 <b>1.5초</b> 차징 뒤 <b>5초</b> 동안 앞쪽 <b>80°</b> · 반경 <b>3.8칸</b>에 화염 (0.2초마다 <b>135</b>, 가까운 적 쪽으로 천천히 돈다). <b>[패시브]</b> [소각] 중(차징 포함) 받는 피해 <b>-40%</b>. 끝나면 <b>2초</b> 과열 (행동불능). 풀리자마자 자기 지름 <b>3배</b> 폭으로 아군 진영 끝부터 적진 끝까지 일직선을 경고하고 <b>1초</b> 뒤 <b>[인페르노]</b>: 닿은 적은 10초 <b>[절상] 55%</b> · 5초 화상 (초당 <b>120</b>) · 10초 동안 받는 화상 피해 <b>+100%</b>. 그 뒤 <b>5초</b> 탈진 (행동불능), 다시 반복.'
   },
   bully: {
     id: 'bully', name: '일진 지후', emoji: '😎', role: 'controller', roleLabel: '컨트롤러',
@@ -10203,7 +10208,7 @@ const CHAR_DB = {
     id: 'whiteknight', name: '백기사 지후', emoji: '🤍', role: 'tank', roleLabel: '탱커',
     rarity: 'mythic', color: '#d9d4c3', portrait: PORTRAITS.whiteknight || jhPlaceholder('🤍', '#d9d4c3'),
     ...CHARACTER_BALANCE.whiteknight,
-    skillDesc: 'HP 4,000 · ATK 260 · 공격 간격 1초 · 근접 · <b>출격제한 1</b>. <b>바로 앞 칸</b>에 배치된 아군을 라운드 내내 <b>호위</b>한다. 호위하면 백기사는 <b>[빛의 방패] 2,000</b>을 얻는다: 호위된 아군이 받는 피해를 빛의 방패가 <b>50%</b> 피해량으로 대신 받고, 아군은 아무 피해도 받지 않는다. 빛의 방패가 깨지면 호위된 아군은 <b>받는 피해 50% 감소</b>와 <b>상시 디버프 면역</b>을 얻는다. 백기사가 쓰러지면 모든 효과가 사라진다.'
+    skillDesc: 'HP 4,000 · ATK 260 · 공격 간격 1초 · 근접 · <b>출격제한 1</b>. <b>바로 앞 칸</b>에 배치된 아군을 라운드 내내 <b>호위</b>한다 (앞 칸이 비면 붙어 있는 칸 → 가장 가까운 아군). 호위하면 백기사는 <b>[빛의 방패] 4,000</b>을 얻는다 (게이지로 보인다): 호위된 아군이 받는 <b>모든 피해</b>를 빛의 방패가 대신 받아 그 <b>70%</b>만큼 닳고, 아군은 아무 피해도 받지 않는다. 빛의 방패가 깨지면 호위된 아군은 <b>받는 피해 50% 감소</b>와 <b>상시 디버프 면역</b>을 얻는다. 백기사가 쓰러지면 모든 효과가 사라진다.'
   },
   seal: {
     id: 'seal', name: '봉인 지후', emoji: '🔒', role: 'controller', roleLabel: '컨트롤러',
@@ -17442,7 +17447,7 @@ function wweEffects(u) {
 }
 function wweCdInfo(u) {
   const info = skillCdInfo(u);
-  if (info && info.max > 0) return { p: 1 - clamp(info.cur / info.max, 0, 1), label: '스킬', left: info.cur };
+  if (info && info.max > 0 && !info.label) return { p: 1 - clamp(info.cur / info.max, 0, 1), label: '스킬', left: info.cur }; // 7.5.3 방패 같은 수치 게이지는 시간이 아니라서 뺀다
   if (u.def.noAttack) return null;
   const iv = Math.max(0.1, attackInterval(u) || 1);
   const cd = Math.max(0, u.atkCooldown || 0);
@@ -20816,7 +20821,7 @@ function v41DockUpdate() {
     c.card.classList.toggle('dead', !u.alive);
     c.card.classList.toggle('low', u.alive && ratio <= 0.3);
     c.card.classList.toggle('ready', u.alive && ready);
-    const sub = !u.alive ? '전투 불능' : `Lv.${u.level || 1} · ` + (!info ? '기본 공격' : ready ? '스킬 준비' : info.unit ? `강화까지 ${Math.ceil(info.cur)}${info.unit}` : '스킬 ' + info.cur.toFixed(1) + 's');
+    const sub = !u.alive ? '전투 불능' : `Lv.${u.level || 1} · ` + (!info ? '기본 공격' : info.label ? `${info.label} ${Math.ceil(info.cur).toLocaleString('ko-KR')}` : ready ? '스킬 준비' : info.unit ? `강화까지 ${Math.ceil(info.cur)}${info.unit}` : '스킬 ' + info.cur.toFixed(1) + 's');
     if (c.sub.textContent !== sub) c.sub.textContent = sub;
   });
   const alive = state.units.filter(u => u.side === 'enemy' && u.alive && v41Tracked(u)).length;
@@ -23069,6 +23074,7 @@ function applyDamageRaw(target, amount, opts) {
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
   finalDmg = genesisIntercept(target, finalDmg); // 4.7.2 제네시스
   if (target._escortBy && finalDmg > 0) finalDmg = escortIntercept(target, finalDmg); // 7.4 백기사 [빛의 방패]
+  const wkAbs = target._wkAbsNow; target._wkAbsNow = false;
   const shownDmg = Math.max(0, finalDmg); // 4.4.2: 표시 숫자 = 실제 피해 (쉴드에 막힌 양 포함)
 
   if (target._whiteShield > 0 && finalDmg > 0) finalDmg = absorbWhiteShield(target, finalDmg);
@@ -23092,7 +23098,7 @@ function applyDamageRaw(target, amount, opts) {
     target._jawsSecond = true; startDive(target, true); // 죠스 S: 체력이 처음 25%가 되면 한 번 더 잠수
   }
 
-  spawnDamageNumber(target, Math.round(shownDmg), { dot: opts.isDot, poison: opts.isPoison, critHit });
+  if (!wkAbs) spawnDamageNumber(target, Math.round(shownDmg), { dot: opts.isDot, poison: opts.isPoison, critHit });
   updateUnitBars(target);
 
   if (target._stone && target.hp <= 0 && target.alive) { stoneBreak(target); return true; } // 7.4 석화: 돌이 깨질 뿐 쓰러지지 않는다
@@ -27679,7 +27685,7 @@ function readyRound74(u) {
   if (u.charId === 'mortis') { u._mo = null; u._moRest = 0; u._moDash = null; }
   if (u.charId === 'charge') { u._chargeStraightDone = false; u.charge = null; } // 7.4.7 라운드마다 첫 돌진은 일직선
   if (u.charId === 'remote') u._droneCd = u.def.droneDelay;
-  if (u.charId === 'whiteknight') { u._wkPending = true; u._escort = null; u._light = 0; }
+  if (u.charId === 'whiteknight') { whiteKnightRelease(u); u._wkPending = true; }
   if (u.charId === 'seal') u._sealCd = u.def.sealDelay;
   if (u.charId === 'bluelight') { u._blCd = 0.6; u._bl = null; }
   if (u.charId === 'cowboy') { u._cbCd = 0; u._cbDash = null; }
@@ -27711,7 +27717,7 @@ function tickNew74(u, dt) {
   if (u.charId === 'mortis') tickMortis(u, dt);
   if (u._moBats && u._moBats.length) tickBats(u, dt);
   if (u.charId === 'remote' && u._droneCd > 0) { u._droneCd -= dt; if (u._droneCd <= 0) spawnDrone(u); }
-  if (u._wkPending) { u._wkPending = false; whiteKnightEscort(u); }
+  if (u.charId === 'whiteknight') tickWhiteKnight(u, dt); // 7.5.3 재작성
   if (u.charId === 'seal' && u._sealCd > 0) { u._sealCd -= dt; if (u._sealCd <= 0) sealRandomFoe(u); }
   if (u.charId === 'bluelight') tickBlueLight(u, dt);
   if (u.charId === 'cowboy') tickCowboy(u, dt);
@@ -27973,26 +27979,76 @@ function tickNew74Global(dt) {
   });
 }
 
-// ── 백기사: 바로 앞 칸에 배치된 아군을 라운드 내내 호위. 빛의 방패(2,000)가 호위 대상이 받는 피해를 50% 로 대신 받는다 (대상은 피해 0)
-//    빛의 방패가 깨지면 호위 대상은 받는 피해 50% 감소 + 상시 디버프 면역. 백기사가 쓰러지면 모두 사라진다
+// ── 백기사 (7.5.3 재작성) ──
+// 라운드 시작: 바로 앞 칸 아군 → 없으면 붙어 있는 칸(앞 · 좌 · 우 · 뒤) → 그래도 없으면 가장 가까운 아군을 라운드 내내 호위 (소환물 · 분신 제외)
+// [빛의 방패] 4,000: 호위 대상이 받는 모든 피해(일반 공격 · 스킬 · 지속 피해)를 대신 받는다. 대상은 피해 0, 방패는 그 피해의 70% 만큼 닳는다
+// 방패가 깨지면 호위 대상은 받는 피해 50% 감소 + 상시 디버프 면역. 백기사가 쓰러지면 모두 사라진다
+function wkOkAlly(u, a) { return !!a && a !== u && a.alive && !a.isCastle && a.side === u.side && !a.ownerUid && !a.isClone && a.expire == null && !a.isVault && !(a._escortBy && a._escortBy !== u && a._escortBy.alive); }
+function whiteKnightPick(u) {
+  let a = tileNeighborUnits(u, ['front']).find(x => wkOkAlly(u, x)) || tileNeighborUnits(u, TILE_DIRS4).find(x => wkOkAlly(u, x)) || null;
+  if (!a) { let bd = Infinity; state.units.forEach(x => { if (!wkOkAlly(u, x)) return; const d = Math.hypot(x.x - u.x, x.y - u.y); if (d < bd) { bd = d; a = x; } }); }
+  return a;
+}
+function whiteKnightRelease(u) { // 호위 끝: 백기사가 쓰러졌거나 · 호위 대상이 쓰러졌거나 · 새 라운드
+  const a = u._escort; u._escort = null; u._light = 0; u._wkAbs = 0;
+  if (u._wkTether) { n75Rm(u._wkTether); u._wkTether = null; }
+  if (a) {
+    if (a._escortBy === u) { a._escortBy = null; a._escortStrong = false; }
+    if (a.el) { a.el.classList.remove('escorted', 'escort-strong', 'escort-hit'); a.el.style.removeProperty('--wk'); }
+  }
+}
 function whiteKnightEscort(u) {
-  const ally = tileNeighborUnits(u, ['front'])[0];
+  whiteKnightRelease(u);
+  const ally = whiteKnightPick(u);
   if (!ally) return;
-  u._escort = ally; u._light = u.def.lightShield;
+  u._escort = ally; u._light = u._lightMax = u.def.lightShield;
   ally._escortBy = u; ally._escortStrong = false;
-  if (ally.el) ally.el.classList.add('escorted');
+  if (ally.el) { ally.el.classList.add('escorted'); ally.el.style.setProperty('--wk', '1'); }
+  u._wkTether = fx38('fx-n75 fx-wk-tether', null, null, '');
+  u._wkTx = null;
   v41Callout(u, '🛡️ 호위');
   spawnDamageNumber(ally, '🤍 호위', { heal: true });
 }
-function escortIntercept(target, dmg) { // applyDamageRaw 에서: 호위 대상이 받는 피해
+function escortIntercept(target, dmg) { // dealDamage · applyDamageRaw 둘 다에서: 호위 대상이 받는 피해
   const k = target._escortBy;
-  if (!k || !k.alive || k._escort !== target) { target._escortBy = null; target._escortStrong = false; if (target.el) target.el.classList.remove('escorted'); return dmg; }
+  if (!k || !k.alive || k._escort !== target) { target._escortBy = null; target._escortStrong = false; if (target.el) target.el.classList.remove('escorted', 'escort-strong'); return dmg; }
   if (k._light > 0) {
-    k._light = Math.max(0, k._light - dmg * 0.5);
-    if (k._light <= 0) { target._escortStrong = true; spawnDamageNumber(k, '빛의 방패 파괴', { crit: true }); }
+    const cost = dmg * (k.def.lightShare ?? 0.7);
+    k._light = Math.max(0, k._light - cost);
+    k._wkAbs = (k._wkAbs || 0) + cost;
+    target._wkAbsNow = true; // 피해 숫자 대신 방패 숫자 (0.5초마다 모아서)
+    target._wkHitT = 0.18;
+    if (k._light <= 0) whiteKnightBreak(k, target);
     return 0;
   }
   return target._escortStrong ? dmg * (1 - (k.def.escortDr ?? 0.5)) : dmg;
+}
+function whiteKnightBreak(k, a) {
+  a._escortStrong = true;
+  if (a.el) { a.el.classList.add('escort-strong'); a.el.style.setProperty('--wk', '0'); }
+  cleanseUnit(a);
+  fx38Flash('fx-n75 fx-wk-break', a.x, a.y, unitRadius(a) * 3.2, 600);
+  spawnDamageNumber(k, '빛의 방패 파괴', { crit: true });
+  if (k._wkAbs > 0) { spawnDamageNumber(a, '🛡️ ' + Math.round(k._wkAbs)); k._wkAbs = 0; }
+}
+function tickWhiteKnight(u, dt) {
+  if (u._wkPending) { u._wkPending = false; whiteKnightEscort(u); }
+  const a = u._escort;
+  if (!a) return;
+  if (!a.alive || a._escortBy !== u) { whiteKnightRelease(u); return; }
+  // 호위 끈: 둘 다 1px 넘게 움직였을 때만 다시 그린다
+  const t = u._wkTether;
+  if (t && (!u._wkTx || Math.abs(u._wkTx[0] - u.x) + Math.abs(u._wkTx[1] - u.y) + Math.abs(u._wkTx[2] - a.x) + Math.abs(u._wkTx[3] - a.y) > 1)) {
+    u._wkTx = [u.x, u.y, a.x, a.y];
+    const dx = a.x - u.x, dy = a.y - u.y;
+    t.style.transform = `translate(${u.x.toFixed(1)}px,${u.y.toFixed(1)}px) rotate(${Math.atan2(dy, dx).toFixed(3)}rad) scaleX(${(Math.hypot(dx, dy) / 100).toFixed(3)})`;
+  }
+  if (t) t.classList.toggle('broken', !(u._light > 0));
+  // 방패 돔 진하기 = 남은 빛의 방패
+  if (a.el && u._light > 0) { const r = (u._light / (u._lightMax || 1)).toFixed(2); if (a._wkShown !== r) { a._wkShown = r; a.el.style.setProperty('--wk', r); } }
+  if (a._wkHitT > 0) { a._wkHitT = Math.max(0, a._wkHitT - dt); if (a.el && a.el.classList.contains('escort-hit') !== a._wkHitT > 0) a.el.classList.toggle('escort-hit', a._wkHitT > 0); }
+  u._wkNum = (u._wkNum || 0) - dt;
+  if (u._wkNum <= 0) { u._wkNum = 0.5; if (u._wkAbs > 0) { spawnDamageNumber(a, '🛡️ ' + Math.round(u._wkAbs)); u._wkAbs = 0; } }
 }
 
 // ── 봉인: 라운드 시작 1초 뒤 봉인되지 않은 무작위 적 하나를 [봉인] (그 판 내내 · 레벨을 1 올리면 풀림 · 레벨 6 이상은 면역)
@@ -28584,7 +28640,7 @@ function tickInferno(u, dt) {
   if (s.phase === 'charge') {
     if (Math.random() < dt * 5) infernoEmber(u.x + (Math.random() - 0.5) * unitRadius(u), u.y + (Math.random() - 0.5) * unitRadius(u), false);
     if (s.t > 0) return;
-    s.phase = 'burn'; s.t = d.infBurnTime; s.tick = 0; s.num = 0.5; s.dmg = new Map();
+    s.phase = 'burn'; s.t = d.infBurnTime; s.tick = 0;
     s.fan.classList.remove('charge'); s.fan.classList.add('on');
     infernoState(u, 'inf-burning');
     return;
@@ -28612,14 +28668,9 @@ function tickInferno(u, dt) {
         if (dist > R + unitRadius(e)) return;
         let da = Math.abs(Math.atan2(dy, dx) - s.ang); if (da > Math.PI) da = Math.PI * 2 - da;
         if (dist > unitRadius(e) + unitRadius(u) && da > half + Math.atan2(unitRadius(e), dist)) return;
-        if (dealDamage(u, e, d.infTickDmg, { isSkill: true, skipAtkBuff: true, noNum: true })) {
-          s.dmg.set(e, (s.dmg.get(e) || 0) + d.infTickDmg);
-          e._scorchT = 0.25;
-        }
+        if (dealDamage(u, e, d.infTickDmg, { isSkill: true, skipAtkBuff: true })) e._scorchT = 0.25; // 7.5.3 0.2초마다 한 번씩 그대로 들어간다 (숫자도 매번)
       });
     }
-    s.num -= dt;
-    if (s.num <= 0 || s.t <= 0) { s.num = 0.5; s.dmg.forEach((v, e) => { if (e.alive) spawnDamageNumber(e, Math.round(v), { dot: true }); }); s.dmg.clear(); }
     if (s.t > 0) return;
     s.fan.classList.add('out'); const f = s.fan; s.fan = null; scheduleTask(() => n75Rm(f), 320);
     s.phase = 'lag1'; s.t = d.infLag1; s.puff = 0;
@@ -28729,7 +28780,7 @@ function onDeath74(u) {
   if (u._keyboards) { u._keyboards.forEach(k => k.el.remove()); u._keyboards = null; }
   if (u.charId === 'radiation') radiationLeak(u);
   if (u._droneOf && u._droneOf.alive && u._droneOf.charId === 'remote') u._droneOf._droneCd = u._droneOf.def.droneRespawn || 5; // 7.4.1 드론이 파괴되면 5초 뒤 다시 소환
-  if (u._escort) { const a = u._escort; a._escortBy = null; a._escortStrong = false; if (a.el) a.el.classList.remove('escorted'); u._escort = null; }
+  if (u.charId === 'whiteknight') whiteKnightRelease(u); // 7.5.3
   if (u._metaOf) { const a = u._metaOf; u._metaOf = null; if (a._syncBy === u) { a._syncBy = null; if (a.alive) { setIncap(a, 'sync', false); spawnDamageNumber(a, '🔗 동기화 해제', { heal: true }); } } }
   if (u.charId === 'metamorph' && !u._metaDone && state.phase === 'combat') { u._metaDone = true; metamorphTransform(u); }
 }
@@ -29489,6 +29540,8 @@ function dealDamage(caster, target, amount, opts) {
     battleAPI.applyPoison(caster, target.def.hgPoisonDps, target.def.hgPoisonTime, target); // 5.5 수은: 쉴드 중 근접 공격자 중독
   finalDmg = genesisIntercept(target, finalDmg); // 4.7.2 제네시스
   if (target._witchDr) finalDmg *= 1 - CHARACTER_BALANCE.witch.secretDr; // 7.0 마녀 비장의 포션
+  if (target._escortBy && finalDmg > 0) finalDmg = escortIntercept(target, finalDmg); // 7.5.3 백기사 [빛의 방패]: 일반 공격 · 스킬 피해도 (전에는 지속 피해만 막아서 방패가 닳지 않았다)
+  const wkAbs = target._wkAbsNow; target._wkAbsNow = false;
   if (caster) caster._lastHitDamage = Math.max(0, finalDmg); // 쉴드에 막힌 양 포함, 실제로 들어간 피해
   const shownDmg = Math.max(0, finalDmg); // 4.4.2: 표시 숫자도 이 값
 
@@ -29524,7 +29577,7 @@ function dealDamage(caster, target, amount, opts) {
   if (isBigHit) target.el.classList.add('hit-flash-big');
   scheduleTask(() => { if (target.el) { target.el.classList.remove('hit-flash'); target.el.classList.remove('hit-flash-big'); } }, 220);
 
-  if (!opts.noNum) spawnDamageNumber(target, Math.round(shownDmg), { crit: opts.isSkill, dot: opts.isDot, critHit });
+  if (!opts.noNum && !wkAbs) spawnDamageNumber(target, Math.round(shownDmg), { crit: opts.isSkill, dot: opts.isDot, critHit });
   updateUnitBars(target);
 
   const killed = target.hp <= 0 && target.alive;
@@ -29583,6 +29636,7 @@ function skillCdInfo(u) {
   if (u.charId === 'scythe' && u._tendonBack) return { cur: Math.max(0, u._tendonBack.t), max: u.def.tendonStay || 1.25 }; // 7.4.7 원위치까지
   if (u.charId === 'scythe') return { cur: Math.max(0, u._scytheCd ?? u.def.tendonFirst), max: u.def.tendonCooldown };
   // 7.5 신규 지후
+  if (u.charId === 'whiteknight' && u._escort && u._light > 0) return { cur: u._light, max: u._lightMax || u.def.lightShield, label: '🛡️ 빛의 방패' }; // 7.5.3 남은 빛의 방패
   if (u.charId === 'rewind') return u._rw ? { cur: Math.max(0, u._rw.t), max: u.def.rwDelay } : { cur: Math.max(0, u._rwCd ?? u.def.rwEvery), max: u.def.rwEvery };
   if (u.charId === 'exorcist') return { cur: Math.max(0, u._exoCd ?? u.def.exoEvery), max: u.def.exoEvery };
   if (u.charId === 'mercenary' && u._mcArmed) return u._mcAim ? { cur: Math.max(0, u._mcAim.t), max: u.def.mcAim } : { cur: Math.max(0, u._mcCd || 0), max: u.def.mcEvery - u.def.mcAim };
@@ -32897,6 +32951,19 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.5.3': {
+    label: 'v7.5.3 인페르노 버프 · 백기사 재작성',
+    date: '2026.10.10',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'🔥', name:'인페르노 지후', tag:'buff', color:'#d4380d', portraitKey:'inferno', desc:'HP <b>3,900 → 4,200</b> · [소각] <b>0.2초마다 135</b> (90 → 135, 이제 한 번씩 그대로 들어가고 숫자도 매번 떠요) · [인페르노] 폭 <b>지름 2.5 → 3배</b> · [절상] <b>7초 30% → 10초 55%</b> · 화상 <b>초당 100 → 120</b>.' },
+        { emoji:'🤍', name:'백기사 지후', tag:'buff', color:'#d9d4c3', portraitKey:'whiteknight', desc:'[빛의 방패] <b>2,000 → 4,000</b> · 아군 대신 받는 피해 <b>50 → 70%</b>.' },
+      ] },
+      { title: '버그 수정', items: [
+        { emoji:'🛡️', name:'백기사 지후 재작성', tag:'fix', color:'#d9d4c3', portraitKey:'whiteknight', desc:'빛의 방패가 <b>지속 피해만</b> 막고 일반 공격 · 스킬 피해는 그냥 통과해서 방패가 닳지 않던 문제를 고쳤어요. 이제 모든 피해를 막아요. 앞 칸이 비어 있으면 붙어 있는 칸 → 가장 가까운 아군을 호위하고, 남은 빛의 방패는 게이지로 보여요. 호위 줄 · 방패 진하기 · 방패 숫자 연출을 넣었어요.' },
+      ] },
+    ],
+  },
   '7.5.2': {
     label: 'v7.5.2 인페르노 최적화 · 조정',
     date: '2026.10.10',
