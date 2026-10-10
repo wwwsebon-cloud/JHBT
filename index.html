@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.4.5"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.4.5"><meta name="jihoo-build" content="4"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8737,7 +8737,7 @@ const CHARACTER_BALANCE = {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
     hp: 3000, atk: 0, atkSpeed: 1, range: 72, speed: 67.5, // 7.1 3700 → 1500 · 7.3.6 → 3000
     noAttack: true, holdRange: true,
-    taxiSpeed: 2.4, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 2000, /* 7.1 9999 → 2500 · 7.3.5 → 1000 · 7.4.5 → 2000 */ taxiDropRest: 2, taxiFoeCall: 1, taxiLoadRest: 2, taxiAway: 2 /* 7.0 적을 버린 뒤 2초 쉬고 돌아온다 */ // 6.2.1: 운행 속도 7 → 2.4 · 승객 하차 후 휴식 2초 · 적 콜 후 출발 대기 1초 · 적 탑승 후 휴식 2초 / 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
+    taxiSpeed: 2.4, taxiLaunchSpeed: 50, taxiCall: 0.5, taxiShield: 2000, taxiReturnHeal: 1000, /* 7.1 9999 → 2500 · 7.3.5 → 1000 · 7.4.5 → 2000 */ taxiDropRest: 2, taxiFoeCall: 1, taxiLoadRest: 2, taxiAway: 2 /* 7.0 적을 버린 뒤 2초 쉬고 돌아온다 */ // 6.2.1: 운행 속도 7 → 2.4 · 승객 하차 후 휴식 2초 · 적 콜 후 출발 대기 1초 · 적 탑승 후 휴식 2초 / 운행 속도(칸/초) · 적을 태운 뒤 돌진 속도 · 콜 지연/탑승 대기(초) · 승객을 태운 뒤 얻는 쉴드
   },
   shanghai: { // 6.2 신규
     hp: 1972, atk: 500, atkSpeed: 10, range: 900, speed: 99 // 7.0 첫 발은 [고자] 저격, 그 뒤 일반 공격 500 · 10초 // 공격력은 기획서에 비어 있어 임시값 200
@@ -10982,7 +10982,7 @@ const CHAR_DB = {
     id: 'taxi', name: '택시 지후', emoji: '🚕', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'mythic', color: '#f5b800', portrait: PORTRAITS.taxi || jhPlaceholder('🚕', '#f5b800'),
     ...CHARACTER_BALANCE.taxi,
-    skillDesc: '공격하지 않는다. 라운드 시작 직후 <b>무작위 아군</b>이 승객이 되어 점프하며 택시를 부른다. 택시는 기본 <b>속도 2.4</b>로 달리며, 콜을 받고 <b>0.5초 뒤</b> 출발해 승객을 태운다. 타고 있는 동안 승객은 맞지 않고, 승객을 태운 택시기사는 <b>쉴드 2,000</b>을 얻는다. 택시기사는 (돌아올 때를 빼고) <b>회복을 받지 못하고</b>, 한 번 쓰러지면 부활해도 <b>다시 운행하지 않는다</b>. 택시는 승객을 태우고 <b>적진 맨 끝 무작위 위치</b>까지 가서 내려 준다. 승객을 내려 주고 <b>2초</b> 쉰 뒤 가장 가까운 적이 택시를 부르고, <b>1초 뒤</b> 출발해 그 적을 태운다. 적을 태우고 <b>2초</b> 쉰 뒤 적과 함께 <b>속도 50</b>으로 가장 먼 맵 외벽 밖으로 돌진해 <b>그 적만 소멸</b>시킨다. 택시는 <b>2초</b> 뒤 그 먼 곳에서 돌아오며, 이때 <b>가지고 있던 쉴드가 사라지고 체력을 전부 회복한다</b>. 그 뒤 다시 아군을 태우고 같은 운행을 반복한다.'
+    skillDesc: '공격하지 않는다. 라운드 시작 직후 <b>무작위 아군</b>이 승객이 되어 점프하며 택시를 부른다. 택시는 기본 <b>속도 2.4</b>로 달리며, 콜을 받고 <b>0.5초 뒤</b> 출발해 승객을 태운다. 타고 있는 동안 승객은 맞지 않고, 승객을 태운 택시기사는 <b>쉴드 2,000</b>을 얻는다. 택시기사는 (돌아올 때를 빼고) <b>회복을 받지 못하고</b>, 한 번 쓰러지면 부활해도 <b>다시 운행하지 않는다</b>. 택시는 승객을 태우고 <b>적진 맨 끝 무작위 위치</b>까지 가서 내려 준다. 승객을 내려 주고 <b>2초</b> 쉰 뒤 가장 가까운 적이 택시를 부르고, <b>1초 뒤</b> 출발해 그 적을 태운다. 적을 태우고 <b>2초</b> 쉰 뒤 적과 함께 <b>속도 50</b>으로 가장 먼 맵 외벽 밖으로 돌진해 <b>그 적만 소멸</b>시킨다. 택시는 <b>2초</b> 뒤 그 먼 곳에서 돌아오며, 이때 <b>가지고 있던 쉴드가 사라지고 체력을 1,000 회복한다</b>. 그 뒤 다시 아군을 태우고 같은 운행을 반복한다.'
   },
   shanghai: {
     id: 'shanghai', name: '상하이 지후', emoji: '🔫', role: 'dealer', roleLabel: '딜러',
@@ -30874,7 +30874,7 @@ function taxiTick62(u, dt) {
       if (u._realm === k.away) exitRealm(k.away);
       k.away = null;
       u.el.classList.remove('n62-away');
-      if (u.alive && !u._goja) u.hp = u.maxHp; // 7.4.5 먼 곳에서 돌아오면 체력을 전부 회복 (회복 불가와 상관없이)
+      if (u.alive && !u._goja) u.hp = Math.min(u.maxHp, u.hp + (d.taxiReturnHeal || 0)); // 7.4.5 먼 곳에서 돌아오면 체력 1,000 회복 (회복 불가와 상관없이)
       stripShields(u); u.maxShield = 0; updateUnitBars(u); // 7.3.5 질주 뒤 돌아오면 쉴드를 잃는다 (쉴드 막대도 치운다)
       k.pass = null; k.phase = 'call';
       break;
