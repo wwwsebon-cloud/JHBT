@@ -11583,12 +11583,17 @@ const LB_STEPS = [null, { shards: 1, gold: 3000, p: 0.35 }, { shards: 2, gold: 5
 function lbLevel(id) { return Math.min(LB_MAX, Math.max(1, Math.floor(Number(profile.lb && profile.lb[id]) || 1))); }
 function isRankS(id) { return rankIndex(id) >= 1; }
 function shardCount(id) { return Math.max(0, Math.floor(Number(profile.shards[id]) || 0)); }
+function spendShards(id, n) { // 7.3.6 안전장치: 필요한 만큼만 빼고 남은 조각은 그대로 둔다 (모자라면 아무것도 빼지 않는다)
+  const have = shardCount(id); n = Math.max(0, Math.floor(Number(n) || 0));
+  if (have < n) return false;
+  profile.shards[id] = have - n;
+  return true;
+}
 function rankUpCharacter(id) { // A → S
   const c = CHAR_DB[id];
   if (!c || !isUnlocked(id) || c.rarity === 'hidden' || isRankS(id)) return false;
   const need = S_SHARD_COST[c.rarity];
-  if (!need || shardCount(id) < need) return false;
-  profile.shards[id] = shardCount(id) - need;
+  if (!need || !spendShards(id, need)) return false;
   profile.ranks[id] = 1;
   profile.lb = profile.lb || {}; profile.lb[id] = 1;
   st44Add('rankUps');
@@ -11603,8 +11608,7 @@ function rankUpCharacter(id) { // A → S
 function limitBreakTry(id) {
   const c = CHAR_DB[id], lv = lbLevel(id), st = LB_STEPS[lv];
   if (!c || !isRankS(id) || c.rarity === 'hidden' || lv >= LB_MAX || !st) return null;
-  if (shardCount(id) < st.shards || profile.gold < st.gold) return null;
-  profile.shards[id] = shardCount(id) - st.shards;
+  if (shardCount(id) < st.shards || profile.gold < st.gold || !spendShards(id, st.shards)) return null;
   profile.gold -= st.gold;
   const success = Math.random() < st.p;
   profile.lbStats = profile.lbStats || { tries: 0, wins: 0 };
@@ -11616,8 +11620,7 @@ function limitBreakTry(id) {
 }
 function unlockByShards(id) {
   const c = CHAR_DB[id];
-  if (!c || c.rarity === 'hidden' || c.unobtainable || isUnlocked(id) || shardCount(id) < UNLOCK_SHARDS) return false;
-  profile.shards[id] = shardCount(id) - UNLOCK_SHARDS;
+  if (!c || c.rarity === 'hidden' || c.unobtainable || isUnlocked(id) || !spendShards(id, UNLOCK_SHARDS)) return false;
   grantCharacter(id);
   saveProfile();
   renderDraftGrid();
@@ -12086,6 +12089,8 @@ function freshProfile() {
 }
 
 function normalizeProfile(raw) {
+  // 7.3.6 안전장치: 7.1 이후 기록(버전 표시가 빠졌더라도)은 조각을 1/10 로 바꾸지 않는다
+  const shardsV2 = raw && (raw.shardsVersion === 2 || (Array.isArray(raw.mailFlags) && raw.mailFlags.some(f => /^(update71|rankReset71|update731|dupClaw731|compEnd732|mythic733)$/.test(String(f)))) || (raw.dust && typeof raw.dust === 'object'));
   const base = freshProfile();
   if (!raw || typeof raw !== 'object') return base;
   const validIds = new Set(ownableIds());
@@ -12135,7 +12140,7 @@ function normalizeProfile(raw) {
     diamonds: Math.max(0, Math.floor(Number(raw.diamonds) || 0)),
     unlocked,
     // 3.6.2 조각 개편: 중복 1회가 10개 → 1개가 되면서, 그 전에 모은 조각은 한 번만 10분의 1로 줄인다 (올림)
-    shards: raw.shards && typeof raw.shards === 'object' ? Object.fromEntries(Object.entries(raw.shards).filter(([id]) => validIds.has(id)).map(([id,count]) => [id, raw.shardsVersion === 2 ? safeCount(count) : Math.ceil(safeCount(count) / 10)])) : {},
+    shards: raw.shards && typeof raw.shards === 'object' ? Object.fromEntries(Object.entries(raw.shards).filter(([id]) => validIds.has(id)).map(([id,count]) => [id, shardsV2 ? safeCount(count) : Math.ceil(safeCount(count) / 10)])) : {},
     dust: raw.dust && typeof raw.dust === 'object' ? Object.fromEntries(Object.entries(raw.dust).filter(([id]) => validIds.has(id)).map(([id, n]) => [id, safeCount(n)]).filter(([, n]) => n > 0)) : {}, // 7.1.3 가루
     shardsVersion: 2,
     ranks: raw.ranks && typeof raw.ranks === 'object' ? Object.fromEntries(Object.entries(raw.ranks).filter(([id]) => validIds.has(id)).map(([id,level]) => [id,Math.min(3,safeCount(level))])) : {},
@@ -14617,7 +14622,7 @@ function markCharSeen(id) {
 }
 function grantCharacter(id) {
   const duplicate = profile.unlocked.includes(id);
-  if (duplicate) profile.shards[id] = Math.max(0, Number(profile.shards[id]) || 0) + DUPLICATE_SHARDS;
+  if (duplicate) profile.shards[id] = shardCount(id) + DUPLICATE_SHARDS; // 7.3.6 만렙(돌파 Lv5)이어도 조각은 항상 인벤토리에 쌓는다 (확정권 · 선택권 · 상점 · 뽑기 공통)
   else {
     profile.unlocked.push(id);
     profile.newChars = [...new Set([...(profile.newChars || []), id])];
