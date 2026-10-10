@@ -9957,7 +9957,7 @@ const CHAR_DB = {
     id: 'medusa', name: '메두사 지후', emoji: '🐍', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'mythic', color: '#3f8f5a', portrait: PORTRAITS.medusa || jhPlaceholder('🐍', '#3f8f5a'),
     ...CHARACTER_BALANCE.medusa,
-    skillDesc: 'HP 3,200 · ATK 400 · 공격 간격 2초 · 사거리 3칸. 적이 처음 <b>반경 2칸</b>에 들어오면 앞쪽 <b>100°</b> 부채꼴에 <b>[석화]</b>를 쓴다 (라운드당 한 번). 이후 일반 공격만 한다. <b>[석화]</b>: 체력과 상관없이 <b>돌 체력 3,000</b>이 되고 (쉴드는 잠시 사라진다), 돌 체력은 초당 100씩 깎인다. 돌이 깨지면 최대 체력의 <b>30%</b>를 잃고 돌아온다. 석화 동안은 행동불능이며 쿨타임도 차지 않는다. 메두사 편은 석화된 적을 공격하지 않고, 석화된 지후의 <b>같은 편</b>이 돌을 깨려고 공격한다.'
+    skillDesc: 'HP 3,200 · ATK 400 · 공격 간격 2초 · 사거리 3칸. 적이 처음 <b>반경 2칸</b>에 들어오면 앞쪽 <b>100°</b> 부채꼴에 <b>[석화]</b>를 쓴다 (라운드당 한 번). 이후 일반 공격만 한다. <b>[석화]</b>: 체력과 상관없이 <b>돌 체력 3,000</b>이 되고 (쉴드는 잠시 사라진다), 돌 체력은 초당 100씩 깎인다. 돌이 깨지면 최대 체력의 <b>30%</b>를 잃고 돌아온다. 석화 동안은 행동불능이며 쿨타임도 차지 않고, <b>회복도 받지 못한다</b>. 메두사 편은 석화된 적을 공격하지 않고, 석화된 지후의 <b>같은 편</b>이 돌을 깨려고 공격한다.'
   },
   metamorph: {
     id: 'metamorph', name: '메타모르포제 지후', emoji: '🦋', role: 'hybrid', roleLabel: '하이브리드',
@@ -11695,6 +11695,7 @@ function healRecvMult(u) {
   if (!u) return 1;
   if (u.charId === 'taxi' || u.charId === 'metal') return 0; // 7.1 택시 · 7.1.2 메탈은 회복 불가
   if (u._noHeal > 0) return 0;
+  if (u._incap && u._incap.stone) return 0; // 7.4.5 석화된 지후는 회복 불가
   const p = u.statuses && u.statuses.poison;
   if (p && rankS(p.src, 'poison')) return 0.4;
   return 1;
@@ -32183,10 +32184,11 @@ const PATCH_NOTES = {
         { emoji:'☠️', name:'약화 스껄 지후', tag:'nerf', color:'#7a7a7a', portraitKey:'skul', desc:'HP <b>800 → 500</b>.' },
         { emoji:'🔩', name:'티타늄 지후', tag:'nerf', color:'#3d4f5c', portraitKey:'titanium', desc:'피격 쉴드 지속시간 <b>1 → 0.65초</b>.' },
       ] },
-      ] },
       { title: '시스템', items: [
         { emoji:'●', name:'승리 골드', tag:'adjust', color:'#d4a017', desc:'게임 승리 골드 <b>1,000~2,000 → 500~800</b>.' },
+      ] },
       { title: '버그 수정', items: [
+        { emoji:'🪨', name:'석화', tag:'adjust', color:'#8a8a8a', portraitKey:'medusa', desc:'석화된 지후는 <b>회복을 받지 못해요</b>.' },
         { emoji:'🔒', name:'봉인 · 석화', tag:'fix', color:'#6d4c8f', portraitKey:'seal', desc:'봉인(석화)된 티타늄 지후의 쉴드가 사라지지 않고 계속 남던 문제를 고쳤어요.' },
       ] },
     ],
