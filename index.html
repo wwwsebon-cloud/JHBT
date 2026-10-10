@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.5.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.5.4"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -785,6 +785,10 @@ html, body {
 .fx-exo-wisp { background:linear-gradient(90deg, rgba(150,130,255,0), rgba(200,190,255,.95)); box-shadow:0 0 10px rgba(150,130,255,.9); animation:fade-out .45s ease-out forwards; }
 .fx-merc-tracer { height:3px; background:linear-gradient(90deg, rgba(255,240,200,0), #fff4c2 70%, #ff4a2a); box-shadow:0 0 8px rgba(255,80,40,.9); animation:fade-out .22s ease-out forwards; }
 
+/* 7.5.4 일진 */
+.fx-bully-zone { left:0; top:0; border-radius:50%; z-index:1; pointer-events:none; will-change:transform; border:2px dashed rgba(70,70,110,.35); background:radial-gradient(circle, rgba(120,140,220,0) 70%, rgba(120,140,220,.1)); }
+.fx-bully-ice { transform:translate(-50%,-50%); border-radius:50%; z-index:8; background:radial-gradient(circle, rgba(220,245,255,.85), rgba(140,210,255,.45) 55%, rgba(140,210,255,0) 70%); box-shadow:0 0 0 2px rgba(180,230,255,.9); animation:pulse-out .52s ease-out forwards; }
+.unit.bully-guard { box-shadow:0 0 0 3px rgba(150,110,230,.95), 0 0 14px rgba(150,110,230,.75) !important; }
 /* 7.5.1 인페르노 (히든) — 7.5.2 성능: 움직이는 것은 transform · opacity 뿐, 필터 · 그림자 · 블렌드는 처음 한 번만 그린다 */
 .inf-aura { position:absolute; inset:-14%; pointer-events:none; z-index:-1; }
 .inf-aura b { position:absolute; inset:0; border-radius:50%; will-change:transform; background:conic-gradient(from 0deg, rgba(255,90,20,.0), rgba(255,140,30,.6), rgba(255,60,10,.0) 30%, rgba(255,170,40,.55) 55%, rgba(255,60,10,0) 75%, rgba(255,120,30,.6)); -webkit-mask:radial-gradient(circle, transparent 56%, #000 63%, #000 69%, transparent 76%); mask:radial-gradient(circle, transparent 56%, #000 63%, #000 69%, transparent 76%); animation:inf-spin 2.4s linear infinite; }
@@ -8040,7 +8044,8 @@ const CHARACTER_BALANCE = {
   mercenary: { deployLimit: 1, hp: 3900, atk: 100, atkSpeed: 7, range: 225, speed: 67.5, noAttack: true, holdRange: true, mcBase: 100, mcHpFrac: 0.65, mcEvery: 7, mcAim: 2 }, // 7.5 신규 · 이동속도*
   waterspout: { hp: 2600, atk: 70, atkSpeed: 3, range: 270, speed: 67.5, noAttack: true, holdRange: true, wsRadiusCells: 1.5, wsWarn: 0.5, wsTime: 2.5, wsTick: 0.5, wsHeal: 120, wsDmg: 70, wsFloat: 1.5 }, // 7.5 신규 · 체력* · 공격 간격 3초* · 이동속도*
   inferno: { deployLimit: 1, hp: 4200, atk: 90, atkSpeed: 0.6, range: 72, speed: 99, isMelee: true, infRangeCells: 3.8, infFanDeg: 80, infBurnDr: 0.4, infCharge: 1.5, infBurnTime: 5, infTick: 0.2, infTickDmg: 135, infLag1: 2, infWarn: 1, infLineWidth: 3, infLacer: 0.55, infLacerTime: 10, infBurnDps: 120, infBurnTime2: 5, infBurnAmpTime: 10, infLag2: 5 }, // 7.5 신규 (히든) · 7.5.1 HP 2900 → 3900 · 근접 · 이동속도 0.8 → 2.2칸 · 소각 2.5칸 · 100° → 3.8칸 · 80° · 소각 중 받는 피해 -40% · 인페르노 뒤 행동불능 9 → 5초
-  bully: { hp: 3800, atk: 180, atkSpeed: 1, range: 180, speed: 58.5, noAttack: true, holdRange: true, bullyRadiusCells: 4, bullyFastCells: 3, bullyStop: 2, standTime: 2, standCd: 5, standEvery: 0.5, standRadiusCells: 1.5, standDmg: 180, standBonus: 1.6 }, // 7.5 신규 · 체력 380 → 3,800 (오타로 보고)* · 이동속도*
+  bully: { hp: 3800, atk: 180, atkSpeed: 1, range: 180, speed: 58.5, noAttack: true, holdRange: true, bullyRadiusCells: 4, bullyFreeze: 2, // 7.5.4 이동기 카운터: 돌진 · 대시도 영역 경계에서 붙잡는다
+    standTime: 2, standCd: 5, standEvery: 0.5, standRadiusCells: 1.5, standDmg: 180, standDr: 0.6 }, // 7.5 신규 · 체력 380 → 3,800 (오타로 보고)* · 이동속도* · 7.5.4 리워크: 처음 들어온 적 무조건 2초 빙결 · 스탠드 추가 피해 삭제 · 스탠드 동안 받는 피해 -60%
   wine: { hp: 2900, atk: 180, atkSpeed: 1, range: 225, speed: 67.5, wineEvery: 4.5, wineHpCost: 0.07, wineAtk: 0.07, wineCrit: 0.07, wineCritDmg: 1.5, wineBuffTime: 3, toastHeal: 200, toastAtk: 0.1 }, // 7.4 이동속도*
   cult: { deployLimit: 1, hp: 2400, atk: 0, atkSpeed: 1, range: 270, speed: 58.5, noAttack: true, holdRange: true, cultDelay: 5, cultRadiusCells: 7, cultDamage: 200 }, // 7.4 사거리* · 이동속도*
   cotton: { deployLimit: 1, hp: 3400, atk: 30, atkSpeed: 1, range: 225, speed: 67.5, cottonEvery: 12, cottonRadiusCells: 5, cottonShield: 0.4, cottonMax: 3 }, // 7.4 이동속도*
@@ -10096,7 +10101,7 @@ const CHAR_DB = {
     id: 'bully', name: '일진 지후', emoji: '😎', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'legend', color: '#2b2b3a', portrait: PORTRAITS.bully || jhPlaceholder('😎', '#2b2b3a'),
     ...CHARACTER_BALANCE.bully,
-    skillDesc: 'HP 3,800 · 공격하지 않는다. 반경 <b>4칸</b>에 이동속도 <b>3칸 이상</b>인 적이 들어오면 곧바로 <b>2초 정지</b>. 적이 반경에 들어오면 자기 앞에 똑같이 생긴 <b>스탠드</b>를 부른다 (<b>5초</b>에 한 번 · 2초 지속): 0.5초마다 근접 범위에 <b>180</b>, 정지시킨 적에게는 <b>+160%</b>.'
+    skillDesc: 'HP 3,800 · 공격하지 않는다. 반경 <b>4칸</b>이 일진의 <b>영역</b>이다. 적이 이번 라운드 <b>처음</b> 영역에 들어오면 <b>무조건 2초 [빙결]</b> (유닛마다 한 번, 두 번째부터는 상관없다). <b>돌진 · 대시</b>로 뛰어들어도 영역 경계에서 붙잡혀 그 자리에서 멈춘다 (이동기 카운터). 영역 안에 적이 있으면 자기 앞에 똑같이 생긴 <b>스탠드</b>를 부른다 (<b>5초</b>에 한 번 · 2초 지속): 0.5초마다 근접 범위에 <b>180</b>. <b>[패시브]</b> 스탠드가 있는 동안 받는 피해 <b>-60%</b>.'
   },
   wine: {
     id: 'wine', name: '와인 지후', emoji: '🍷', role: 'support', roleLabel: '서포터',
@@ -22055,6 +22060,7 @@ function aiSteerAndAttack(u, dt) {
 
 function physIntegrate(u, dt) {
   if (!u.alive) return;
+  if (u.statuses && u.statuses.freeze && ((u._bike && u._bike.phase === 'rush') || u._dragonDash || u._uniDash || u._trainDash || u.physLock)) { u.vx = 0; u.vy = 0; return; } // 7.5.4 빙결: 돌진 · 대시가 그 자리에서 멈췄다가 풀리면 이어 간다
   if (u._n62Ghost) { u.vx = 0; u.vy = 0; return; } // 6.2 택시 · 돌은 스킬이 직접 움직인다
   if (u._bike && u._bike.phase === 'rush') { bikerRushStep(u, dt); return; }
   if (u._dragonDash) { blackflameDashStep(u, dt); return; }
@@ -24633,6 +24639,7 @@ function drawBikerLane(u) {
 function tickBiker(u, dt) {
   const bike = u._bike;
   if (bike.phase !== 'windup') return;
+  if (u.statuses.freeze) return; // 7.5.4 빙결 중에는 시동이 멈춘다
   bike.windup -= dt;
   drawBikerLane(u);
   if (bike.windup > 0) return;
@@ -24653,6 +24660,7 @@ function tickBiker(u, dt) {
 }
 function bikerRushStep(u, dt) {
   const bike = u._bike;
+  if (u.statuses.freeze) { u.vx = 0; u.vy = 0; return; } // 7.5.4 빙결 중에는 돌진이 멈췄다가, 풀리면 이어서 달린다
   const { W, H } = arenaBounds();
   const r = unitRadius(u);
   const minX = PHYS.WALL_PAD, maxX = W - PHYS.WALL_PAD;
@@ -25195,6 +25203,7 @@ function takenMult46(target) {
   let m = 1;
   if (target._trainDash) m *= 1 - target.def.trainDr;
   if (target._bsk) m *= 1 - target.def.bskDr;
+  if (target.charId === 'bully' && target._bully && target._bully.stand) m *= 1 - (target.def.standDr || 0); // 7.5.4 일진: 스탠드가 있는 동안 받는 피해 -60%
   if (target.charId === 'inferno' && target._inf && (target._inf.phase === 'charge' || target._inf.phase === 'burn')) m *= 1 - (target.def.infBurnDr || 0); // 7.5.2 인페르노: [소각] 중 받는 피해 -40%
   if (target.charId === 'parasite' && parasiteControlling(target)) m *= 1 - target.def.ctrlDr; // 4.7.0 조종 중
   if (state.mode === 'auction' && (target._aucDr || target._aucTough)) m *= aucTakenMult(target); // 7.1 경매 아이템 (방패 · 맷집)
@@ -26340,6 +26349,7 @@ function awakenAttack(caster, target) {
   caster._awDash = { phase: 'go', target, ox: caster.x, oy: caster.y };
 }
 function tickAwakenDash(u, dt) {
+  if (u.statuses && u.statuses.freeze) return; // 7.5.4 빙결 중에는 돌진이 멈춘다
   const d = u._awDash;
   const speed = u.def.awakenDashSpeed * WORLD_SCALE;
   if (d.phase === 'go') {
@@ -27878,6 +27888,7 @@ function mortisBats(u) {
 }
 function tickMortis(u, dt) {
   if (u._moRest > 0) { u._moRest -= dt; if (u._moRest <= 0) { u._moRest = 0; u.el.classList.remove('mortis-rest'); } }
+  if (u.statuses && u.statuses.freeze) return; // 7.5.4 빙결 중에는 돌진 · 콤보가 멈춘다
   if (u._moDash) {
     const g = u._moDash, step = Math.min(g.left, u.def.mDashSpeed * GRID * dt);
     const nx = clamp(u.x + g.cs * step, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), ny = clamp(u.y + g.sn * step, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
@@ -28141,6 +28152,7 @@ function cowboyCounter(u, foe) {
 function tickCowboy(u, dt) {
   if (u._cbCd > 0) u._cbCd = Math.max(0, u._cbCd - dt);
   const g = u._cbDash; if (!g) return;
+  if (u.statuses && u.statuses.freeze) return; // 7.5.4 빙결 중에는 회피가 멈춘다
   const step = Math.min(g.left, 22 * GRID * dt);
   n62Place(u, clamp(u.x + g.cs * step, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), clamp(u.y + g.sn * step, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD));
   g.left -= step;
@@ -28344,7 +28356,7 @@ function n75Rm(el) { if (el && el.remove) el.remove(); }
 function n75Clear(u) { // 이 유닛이 띄운 연출을 모두 치운다
   if (u._rw) { n75Rm(u._rw.ov); (u._rw.ghosts || []).forEach(n75Rm); u._rw = null; }
   if (u._mcAim) { n75Rm(u._mcAim.el); u._mcAim = null; }
-  if (u._stand) { n75Rm(u._stand.el); u._stand = null; }
+  if (u._bully) bullyClear(u); // 7.5.4
   if (u._inf) { infernoDropFx(u._inf); u._inf = null; }
   u._infHold = false;
   if (u.el) u.el.classList.remove('inf-charging', 'inf-burning', 'inf-overheat', 'inf-roar', 'inf-spent');
@@ -28362,7 +28374,7 @@ function readyRound75(u) {
   if (u.charId === 'mercenary') { if (PORTRAITS.mercenary_idle) battleAPI.setImage(u, PORTRAITS.mercenary_idle); u._mcArmed = false; u._mcCd = 0; u._mcShot = new Set(); u._mcKiller = null; u._mcPick = true; u._mcClient = null; if (u.el) u.el.classList.remove('merc-armed'); }
   if (u.charId === 'waterspout') u._wsCd = 0.6;
   if (u.charId === 'inferno') { u._inf = { phase: 'idle', t: 0 }; infernoEnsureAura(u); }
-  if (u.charId === 'bully') { u._bullyIn = new Set(); u._standCd = 0; }
+  if (u.charId === 'bully') { bullyClear(u); bullyState(u); } // 7.5.4
 }
 
 // ── 시간역행: 8초마다 [역행] — 아군 상태 저장 → 4초 뒤 (자신 제외) 되돌리기 → 모든 아군 1.5초 행동불능 ──
@@ -28707,20 +28719,38 @@ function tickInferno(u, dt) {
   }
 }
 
-// ── 일진: 반경 4칸에 들어온 이동속도 3칸 이상 적은 2초 정지 · 적이 들어오면 스탠드 (5초에 한 번 · 2초 · 0.5초마다 근접 180, 정지시킨 적은 +160%) ──
-function tickBully(u, dt) {
-  const R = u.def.bullyRadiusCells * GRID, now = new Set(), was = u._bullyIn || (u._bullyIn = new Set());
-  if (u._standCd > 0) u._standCd = Math.max(0, u._standCd - dt);
-  n75Foes(u).forEach(e => {
-    if (Math.hypot(e.x - u.x, e.y - u.y) > R + unitRadius(e)) return;
-    now.add(e.uid);
-    if (was.has(e.uid)) return;
-    if ((e.def.speed || 0) / GRID >= u.def.bullyFastCells) { stunUnit(e, u.def.bullyStop); e._bullyStopT = u.def.bullyStop; e._bullyStopBy = u; spawnDamageNumber(e, '✋ 멈춰', { crit: true }); }
-    bullyStand(u, e);
-  });
-  u._bullyIn = now;
-  const st = u._stand;
-  if (!st) return;
+// ── 일진 (7.5.4 재작성) ──
+// [영역] 반경 4칸: 적 유닛이 이번 라운드 처음 들어오면 이동속도와 상관없이 무조건 2초 [빙결] (유닛마다 라운드에 한 번)
+// 적이 영역 안에 있으면 5초에 한 번 자기 앞에 스탠드를 부른다 (2초): 0.5초마다 근접 범위 180. 스탠드가 있는 동안 일진은 받는 피해 -60%
+function bullyState(u) { return u._bully || (u._bully = { seen: new Set(), standCd: 0, stand: null, zone: null, zx: null, zy: null }); }
+function bullyClear(u) { // 연출 정리 (라운드 시작 · 사망)
+  const b = u._bully; if (!b) return;
+  if (b.stand) n75Rm(b.stand.el);
+  n75Rm(b.zone);
+  u._bully = null;
+  if (u.el) u.el.classList.remove('bully-guard');
+}
+function bullyFreeze(u, e) { // 무조건: 쉴드 있는 탱커 예외 등 없이 바로 얼린다
+  const cur = (e.statuses.freeze && e.statuses.freeze.remaining) || 0;
+  e.statuses.freeze = { remaining: Math.max(cur, u.def.bullyFreeze), bullyUid: u.uid };
+  e.vx = 0; e.vy = 0; e.desVx = 0; e.desVy = 0;
+  if (typeof updateStatusIcons === 'function') updateStatusIcons(e);
+  fx38Flash('fx-n75 fx-bully-ice', e.x, e.y, unitRadius(e) * 2.6, 520);
+  spawnDamageNumber(e, '🧊 빙결', { crit: true });
+}
+function bullyStandSpawn(u, b, e) {
+  b.standCd = u.def.standCd;
+  const ang = Math.atan2(e.y - u.y, e.x - u.x), off = unitRadius(u) * 2.2;
+  const x = clamp(u.x + Math.cos(ang) * off, 0, MAP_W), y = clamp(u.y + Math.sin(ang) * off, 0, MAP_H);
+  const img = (u.el && u.el.querySelector('img') && u.el.querySelector('img').src) || u.def.portrait;
+  const el = fx38('fx-n75 fx-stand', x, y, `<img src="${img}" alt="">`);
+  el.style.width = el.style.height = unitRadius(u) * 2 + 'px';
+  b.stand = { t: u.def.standTime, tick: 0.5, x, y, el };
+  if (u.el) u.el.classList.add('bully-guard');
+  v41Callout(u, '👊 스탠드');
+}
+function bullyStandTick(u, b, dt) {
+  const st = b.stand;
   st.t -= dt; st.tick -= dt;
   if (st.tick <= 0) {
     st.tick += u.def.standEvery;
@@ -28728,22 +28758,50 @@ function tickBully(u, dt) {
     const SR = u.def.standRadiusCells * GRID;
     n75Foes(u).forEach(e => {
       if (Math.hypot(e.x - st.x, e.y - st.y) > SR + unitRadius(e)) return;
-      const stopped = e._bullyStopBy === u && e._bullyStopT > 0;
-      dealDamage(u, e, u.def.standDmg * (stopped ? 1 + u.def.standBonus : 1), { isSkill: true, skipAtkBuff: true });
+      dealDamage(u, e, u.def.standDmg, { isSkill: true, skipAtkBuff: true });
     });
   }
-  if (st.t <= 0) { n75Rm(st.el); u._stand = null; }
+  if (st.t <= 0) { n75Rm(st.el); b.stand = null; if (u.el) u.el.classList.remove('bully-guard'); }
 }
-function bullyStand(u, e) {
-  if (u._stand || u._standCd > 0) return; // 스탠드는 5초에 한 번 (2초 지속)
-  u._standCd = u.def.standCd;
-  const ang = Math.atan2(e.y - u.y, e.x - u.x), off = unitRadius(u) * 2.2;
-  const x = clamp(u.x + Math.cos(ang) * off, 0, MAP_W), y = clamp(u.y + Math.sin(ang) * off, 0, MAP_H);
-  const img = (u.el && u.el.querySelector('img') && u.el.querySelector('img').src) || u.def.portrait;
-  const el = fx38('fx-n75 fx-stand', x, y, `<img src="${img}" alt="">`);
-  el.style.width = el.style.height = unitRadius(u) * 2 + 'px';
-  u._stand = { t: u.def.standTime, tick: 0.5, x, y, el };
-  v41Callout(u, '👊 스탠드');
+function bullyDashing(e) { // 돌진 · 대시처럼 직접 움직이는 중인가
+  return !!((e._bike && e._bike.phase === 'rush') || e._dragonDash || e._uniDash || e._trainDash || e.physLock || e._moDash || e._awDash || e._cbDash
+    || (e.charId === 'stone' && e._st) || (e.charId === 'taxi' && e._tx && e._tx.phase !== 'idle' && e._tx.phase !== 'done'));
+}
+function bullyEntryT(px, py, x, y, cx, cy, rr) { // 선분 (px,py)→(x,y) 이 원에 처음 닿는 비율 t (0~1), 없으면 null
+  const dx = x - px, dy = y - py, fx = px - cx, fy = py - cy, a = dx * dx + dy * dy;
+  if (a < 1e-6) return null;
+  const b = 2 * (fx * dx + fy * dy), c = fx * fx + fy * fy - rr * rr, disc = b * b - 4 * a * c;
+  if (disc < 0) return null;
+  const t = (-b - Math.sqrt(disc)) / (2 * a);
+  return t >= 0 && t <= 1 ? t : null;
+}
+function tickBully(u, dt) {
+  const b = bullyState(u), d = u.def, R = d.bullyRadiusCells * GRID, now = state.combatTime || 0;
+  const last = b.last || (b.last = new Map());
+  // 영역 표시: 움직였을 때만 옮긴다
+  if (!b.zone) { b.zone = fx38('fx-n75 fx-bully-zone', null, null, ''); b.zone.style.width = b.zone.style.height = R * 2 + 'px'; }
+  if (b.zx !== u.x || b.zy !== u.y) { b.zx = u.x; b.zy = u.y; b.zone.style.transform = `translate(${(u.x - R).toFixed(1)}px,${(u.y - R).toFixed(1)}px)`; }
+  if (b.standCd > 0) b.standCd = Math.max(0, b.standCd - dt);
+  let firstFoe = null;
+  n75Foes(u).forEach(e => {
+    const rr = R + unitRadius(e), prev = last.get(e.uid);
+    last.set(e.uid, { x: e.x, y: e.y, t: now });
+    let inside = Math.hypot(e.x - u.x, e.y - u.y) <= rr, t = null;
+    // 지난 스텝에서 지금까지 지나온 길도 본다: 아주 빠른 돌진이 한 번에 영역을 뚫고 지나가도 놓치지 않는다
+    if (prev && now - prev.t < 0.2 && Math.hypot(prev.x - u.x, prev.y - u.y) > rr) { t = bullyEntryT(prev.x, prev.y, e.x, e.y, u.x, u.y, rr); if (t != null) inside = true; }
+    if (!inside) return;
+    if (!firstFoe) firstFoe = e;
+    if (b.seen.has(e.uid)) return; // 두 번째부터는 상관없다
+    b.seen.add(e.uid);
+    if (t != null && bullyDashing(e)) { // 돌진해 들어온 적은 영역 경계에서 붙잡는다
+      const nx = prev.x + (e.x - prev.x) * t, ny = prev.y + (e.y - prev.y) * t;
+      if (e._n62Ghost) n62Place(e, nx, ny); else physSnap(e, nx, ny);
+      last.set(e.uid, { x: e.x, y: e.y, t: now });
+    }
+    bullyFreeze(u, e);
+  });
+  if (firstFoe && !b.stand && b.standCd <= 0) bullyStandSpawn(u, b, firstFoe);
+  if (b.stand) bullyStandTick(u, b, dt);
 }
 
 function tick75(u, dt) {
@@ -28751,7 +28809,6 @@ function tick75(u, dt) {
   if (u._floatT > 0) { u._floatT -= dt; if (u._floatT <= 0) { u._floatT = 0; u._float = false; if (u.el) u.el.classList.remove('n75-float'); } }
   if (u._burnAmp > 0) { u._burnAmp = Math.max(0, u._burnAmp - dt); if (!u._burnAmp && u.el) u.el.classList.remove('inf-marked'); }
   if (u._scorchT > 0) { u._scorchT = Math.max(0, u._scorchT - dt); if (u.el && u.el.classList.contains('inf-scorch') !== u._scorchT > 0) u.el.classList.toggle('inf-scorch', u._scorchT > 0); }
-  if (u._bullyStopT > 0) u._bullyStopT = Math.max(0, u._bullyStopT - dt);
   if (u._exo) { u._exo.t -= dt; if (u._exo.t <= 0) exorcistEnd(u); }
   switch (u.charId) {
     case 'rewind':
@@ -29642,7 +29699,7 @@ function skillCdInfo(u) {
   if (u.charId === 'mercenary' && u._mcArmed) return u._mcAim ? { cur: Math.max(0, u._mcAim.t), max: u.def.mcAim } : { cur: Math.max(0, u._mcCd || 0), max: u.def.mcEvery - u.def.mcAim };
   if (u.charId === 'waterspout') return { cur: Math.max(0, u._wsCd ?? 0), max: u.def.atkSpeed };
   if (u.charId === 'inferno' && u._inf && u._inf.phase !== 'idle') { const s = u._inf, d = u.def, m = { charge: d.infCharge, burn: d.infBurnTime, lag1: d.infLag1, warn: d.infWarn, lag2: d.infLag2 }[s.phase]; return { cur: Math.max(0, s.t), max: m || 1 }; }
-  if (u.charId === 'bully') return u._stand ? { cur: Math.max(0, u._stand.t), max: u.def.standTime } : { cur: Math.max(0, u._standCd || 0), max: u.def.standCd };
+  if (u.charId === 'bully' && u._bully) return u._bully.stand ? { cur: Math.max(0, u._bully.stand.t), max: u.def.standTime } : { cur: Math.max(0, u._bully.standCd || 0), max: u.def.standCd };
   // 7.4.7 게이지 정상화: 시간 · 타격 수로 무언가를 발동하는 지후들
   const hitsLeft = (n, every) => ({ cur: every - Math.min(every, n || 0), max: every, unit: '회' });
   if (u.charId === 'cotton' && (u._cottonUses || 0) < u.def.cottonMax) return hitsLeft(u._cottonHits, u.def.cottonEvery);
@@ -31444,6 +31501,7 @@ function purifyTick62(u, dt) {
 // ── 돌: 라운드 시작과 함께 적진 끝까지 모든 유닛을 관통해 구른다 · 끝에 닿으면 퇴장 ──
 function stoneTick62(u, dt) {
   if (u._realm) return;
+  if (u.statuses.freeze) return; // 7.5.4 빙결 중에는 구르지 않는다
   const d = u.def;
   if (!u._st) {
     u._st = { dir: n62Dir(u.side), hit: new Set(), rot: 0 };
@@ -31557,6 +31615,7 @@ function taxiCallable62(e) { return e.alive && !e.isCastle && !e._realm && !e._n
 function taxiTick62(u, dt) {
   if (u._taxiDied) return; // 7.1 한 번 쓰러진 택시는 (부활해도) 다시 운행하지 않는다
   if (u._realm && !(u._tx && u._realm === u._tx.away)) return; // 7.0 맵 밖에서 쉬는 동안은 자기 아공간
+  if (u.statuses && u.statuses.freeze && !u._realm) return; // 7.5.4 빙결 중에는 운행이 멈춘다
   const d = u.def, k = u._tx || (u._tx = { phase: 'call', t: 0 });
   const spd = d.taxiSpeed * GRID;
   const park = () => { u._n62Ghost = false; u._n62Hold = true; u.el.classList.remove('n62-driving'); };
@@ -32951,6 +33010,18 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.5.4': {
+    label: 'v7.5.4 일진 리워크 · 이동기 카운터',
+    date: '2026.10.10',
+    sections: [
+      { title: '리워크', items: [
+        { emoji:'😎', name:'일진 지후', tag:'adjust', color:'#2b2b3a', portraitKey:'bully', desc:'<b>이동기 카운터</b>: 영역(반경 4칸)에 이번 라운드 <b>처음</b> 들어온 적은 이동속도와 상관없이 <b>무조건 2초 [빙결]</b> (두 번째부터는 상관없다). 돌진 · 대시로 뛰어들어도 영역 경계에서 붙잡혀 멈춘다. 스탠드 추가 피해(+160%)는 없어지고, 대신 <b>스탠드가 있는 동안 받는 피해 -60%</b>. 영역이 바닥에 보여요.' },
+      ] },
+      { title: '시스템', items: [
+        { emoji:'🧊', name:'빙결과 돌진', tag:'adjust', color:'#2f6fed', desc:'빙결되면 <b>돌진 · 대시도 그 자리에서 멈췄다가</b> 풀리면 이어 가요: 돌 · 폭주족 · 흑염룡 · 신칸센 · 돌격 · 유니콘 · 모티 · 각성 · 카우보이 · 택시.' },
+      ] },
+    ],
+  },
   '7.5.3': {
     label: 'v7.5.3 인페르노 버프 · 백기사 재작성',
     date: '2026.10.10',
