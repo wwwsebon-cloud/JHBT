@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.5"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.5.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -768,18 +768,120 @@ html, body {
 .fx-spout.on i { position:absolute; left:50%; bottom:50%; width:46%; height:180%; margin-left:-23%; border-radius:50% 50% 40% 40%; background:linear-gradient(0deg, rgba(140,210,255,.75), rgba(220,245,255,.15)); filter:blur(1px); animation:spout-swirl .5s linear infinite; transform-origin:50% 100%; }
 @keyframes spout-swirl { 0% { transform:skewX(8deg) scaleX(.9); } 50% { transform:skewX(-8deg) scaleX(1.05); } 100% { transform:skewX(8deg) scaleX(.9); } }
 .unit.n75-float .unit-icon { transform:translateY(-8px); filter:drop-shadow(0 10px 5px rgba(0,0,0,.3)); }
-.fx-inferno-fan { transform:translate(-50%,-50%); border-radius:50%; z-index:4; background:conic-gradient(from calc(var(--a) - 50deg), rgba(255,120,30,.55) 0 100deg, transparent 100deg); -webkit-mask:radial-gradient(circle, #000 69%, transparent 70%); mask:radial-gradient(circle, #000 69%, transparent 70%); }
-.fx-inferno-fan.charge { opacity:.45; animation:inv-pulse .3s ease-in-out infinite alternate; }
-.fx-inferno-fan.on { background:conic-gradient(from calc(var(--a) - 50deg), rgba(255,220,80,.85), rgba(255,90,20,.8) 50deg, rgba(255,220,80,.85) 100deg, transparent 100deg); animation:inferno-flicker .12s steps(2) infinite; }
-@keyframes inferno-flicker { 50% { filter:brightness(1.25); } }
-.fx-inferno-line { position:absolute; z-index:4; }
-.fx-inferno-line.warn { border:2px dashed rgba(255,60,30,.95); background:repeating-linear-gradient(45deg, rgba(255,60,30,.18) 0 10px, transparent 10px 20px); animation:inv-pulse .25s ease-in-out infinite alternate; }
-.fx-inferno-line.fire { background:linear-gradient(0deg, rgba(255,90,20,.15), rgba(255,200,60,.85), rgba(255,90,20,.15)); box-shadow:0 0 24px rgba(255,90,20,.8); animation:fade-out .7s ease-out forwards; }
 @keyframes fade-out { to { opacity:0; } }
 .fx-stand { transform:translate(-50%,-50%); border-radius:50%; overflow:hidden; opacity:.75; z-index:6; box-shadow:0 0 0 2px rgba(180,120,255,.9), 0 0 14px rgba(180,120,255,.8); filter:hue-rotate(250deg) saturate(1.5); }
 .fx-stand img { width:100%; height:100%; object-fit:cover; }
 .fx-stand.hit { animation:stand-punch .25s ease-out; }
 @keyframes stand-punch { 0% { transform:translate(-50%,-50%) scale(1); } 40% { transform:translate(-50%,-50%) scale(1.18); } 100% { transform:translate(-50%,-50%) scale(1); } }
+
+/* 7.5.1 공통 */
+.fx-rewind-overlay { position:absolute; }
+.fx-rewind-overlay.fixed { position:fixed; }
+.fx-rw-ghost { transform:translate(-50%,-50%); border-radius:50%; overflow:hidden; opacity:.38; z-index:3; box-shadow:0 0 0 2px rgba(79,163,199,.8), 0 0 12px rgba(79,163,199,.7); animation:rw-ghost 1s ease-in-out infinite alternate; }
+.fx-rw-ghost img { width:100%; height:100%; object-fit:cover; filter:grayscale(1) sepia(.4) hue-rotate(160deg) saturate(2); }
+@keyframes rw-ghost { from { opacity:.25; } to { opacity:.5; } }
+.fx-rw-pop { transform:translate(-50%,-50%); border-radius:50%; border:3px solid rgba(120,200,240,.95); box-shadow:0 0 14px rgba(79,163,199,.9); animation:pulse-out .5s ease-out forwards; }
+.fx-exo-wisp, .fx-merc-tracer { transform-origin:0 50%; height:6px; border-radius:6px; z-index:8; }
+.fx-exo-wisp { background:linear-gradient(90deg, rgba(150,130,255,0), rgba(200,190,255,.95)); box-shadow:0 0 10px rgba(150,130,255,.9); animation:fade-out .45s ease-out forwards; }
+.fx-merc-tracer { height:3px; background:linear-gradient(90deg, rgba(255,240,200,0), #fff4c2 70%, #ff4a2a); box-shadow:0 0 8px rgba(255,80,40,.9); animation:fade-out .22s ease-out forwards; }
+
+/* 7.5.1 인페르노 (히든) */
+.inf-aura { position:absolute; inset:-14%; pointer-events:none; z-index:-1; }
+.inf-aura b { position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0deg, rgba(255,90,20,.0), rgba(255,140,30,.55), rgba(255,60,10,.0) 30%, rgba(255,170,40,.5) 55%, rgba(255,60,10,0) 75%, rgba(255,120,30,.55)); -webkit-mask:radial-gradient(circle, transparent 58%, #000 62%, #000 70%, transparent 74%); mask:radial-gradient(circle, transparent 58%, #000 62%, #000 70%, transparent 74%); filter:blur(1.5px); animation:inf-spin 2.4s linear infinite; }
+.inf-aura i { position:absolute; left:50%; bottom:20%; width:5px; height:5px; border-radius:50%; background:radial-gradient(circle, #fff3b0, #ff7a1a 60%, transparent 70%); opacity:0; animation:inf-aura-ember 1.8s ease-out infinite; }
+.inf-aura i:nth-of-type(1) { left:22%; animation-delay:0s; } .inf-aura i:nth-of-type(2) { left:38%; animation-delay:.3s; } .inf-aura i:nth-of-type(3) { left:55%; animation-delay:.6s; }
+.inf-aura i:nth-of-type(4) { left:70%; animation-delay:.9s; } .inf-aura i:nth-of-type(5) { left:30%; animation-delay:1.2s; } .inf-aura i:nth-of-type(6) { left:64%; animation-delay:1.5s; }
+@keyframes inf-spin { to { transform:rotate(360deg); } }
+@keyframes inf-aura-ember { 0% { transform:translateY(0) scale(1); opacity:0; } 15% { opacity:1; } 100% { transform:translateY(-46px) scale(.3); opacity:0; } }
+.unit.inferno-unit { border-color:#ff5a1f !important; box-shadow:0 0 0 2px rgba(255,90,20,.35), 0 0 14px rgba(255,90,20,.55) !important; }
+.unit.inf-charging .unit-icon { animation:inf-jitter .07s linear infinite; filter:brightness(1.25) saturate(1.4) drop-shadow(0 0 6px #ff8a1c); }
+.unit.inf-charging .inf-aura b { animation-duration:.5s; filter:blur(1px) brightness(1.6); }
+.unit.inf-charging { box-shadow:0 0 0 3px rgba(255,140,30,.9), 0 0 26px rgba(255,90,20,.95) !important; }
+.unit.inf-burning .unit-icon { animation:inf-jitter .09s linear infinite; filter:brightness(1.35) saturate(1.5); }
+.unit.inf-burning .inf-aura b { animation-duration:.35s; filter:blur(1px) brightness(2); }
+.unit.inf-burning { box-shadow:0 0 0 3px #ffd23f, 0 0 34px rgba(255,120,20,1) !important; }
+.unit.inf-overheat .unit-icon { filter:brightness(.7) sepia(.6) saturate(1.8) hue-rotate(-15deg); animation:inf-pant .45s ease-in-out infinite; }
+.unit.inf-overheat .inf-aura b { opacity:.35; animation-duration:4s; }
+.unit.inf-roar .unit-icon { animation:inf-jitter .05s linear infinite; filter:brightness(1.6) saturate(2) drop-shadow(0 0 10px #ff3a0a); }
+.unit.inf-roar { box-shadow:0 0 0 4px #ff3a0a, 0 0 40px 8px rgba(255,40,0,.9) !important; }
+.unit.inf-spent .unit-icon { filter:grayscale(.85) brightness(.55) contrast(1.2); }
+.unit.inf-spent .inf-aura { opacity:.15; }
+@keyframes inf-jitter { 0% { transform:translate(0,0); } 25% { transform:translate(1.5px,-1px); } 50% { transform:translate(-1px,1.5px); } 75% { transform:translate(-1.5px,-.5px); } 100% { transform:translate(0,0); } }
+@keyframes inf-pant { 50% { transform:scale(.95,1.04); } }
+/* 소각 부채꼴: 요소 전체를 조준 방향으로 돌리고, 부채꼴은 늘 위쪽(0°) 기준 */
+.fx-inf-fan { transform:translate(-50%,-50%) rotate(var(--a)); border-radius:50%; z-index:4; pointer-events:none; }
+.fx-inf-fan > b { position:absolute; inset:0; border-radius:50%;
+  -webkit-mask:conic-gradient(from calc(-1 * var(--half)), #000 0 calc(var(--half) * 2), transparent 0); mask:conic-gradient(from calc(-1 * var(--half)), #000 0 calc(var(--half) * 2), transparent 0); }
+.fx-inf-fan > i { position:absolute; left:50%; top:50%; width:20%; height:34%; margin-left:-10%; transform-origin:50% 100%; opacity:0; border-radius:50% 50% 45% 45% / 70% 70% 30% 30%;
+  background:radial-gradient(ellipse at 50% 85%, #fffbe0 0%, #ffd23f 25%, #ff7a1a 55%, rgba(230,40,0,0) 72%); filter:blur(1.5px); mix-blend-mode:screen; }
+.fx-inf-fan > i:nth-of-type(1) { --r:-30deg; } .fx-inf-fan > i:nth-of-type(2) { --r:-15deg; } .fx-inf-fan > i:nth-of-type(3) { --r:0deg; } .fx-inf-fan > i:nth-of-type(4) { --r:15deg; } .fx-inf-fan > i:nth-of-type(5) { --r:30deg; }
+.fx-inf-fan > i { translate:0 -100%; rotate:var(--r); }
+.fx-inf-fan .glow, .fx-inf-fan .core, .fx-inf-fan .wave { opacity:0; }
+.fx-inf-fan .fill { background:radial-gradient(circle, rgba(255,90,20,.5), rgba(255,60,10,.28) 60%, rgba(255,60,10,0) 70.5%); transform:scale(0); animation:inf-fill var(--dur) linear forwards; }
+.fx-inf-fan .rim { background:radial-gradient(circle, transparent 66.5%, rgba(255,70,20,.95) 68%, rgba(255,70,20,.95) 70%, transparent 71%), radial-gradient(circle, rgba(255,60,10,.18), rgba(255,60,10,.08) 70%, transparent 71%); animation:inv-pulse .18s ease-in-out infinite alternate; }
+@keyframes inf-fill { to { transform:scale(1); } }
+.fx-inf-fan.on .fill, .fx-inf-fan.on .rim { display:none; }
+.fx-inf-fan.on .glow { opacity:1; inset:-5%; background:radial-gradient(circle, rgba(255,150,40,.7), rgba(255,70,10,.45) 50%, rgba(255,40,0,0) 72%); filter:blur(12px); }
+.fx-inf-fan.on .core { opacity:1; background:radial-gradient(circle, #fffef0 0%, #fff0a0 8%, #ffc93c 20%, #ff8a1c 38%, #f2550f 54%, rgba(200,30,0,.75) 64%, rgba(150,20,0,0) 70.5%); filter:blur(2px); animation:inf-flicker .1s steps(2) infinite, inf-breathe .5s ease-in-out infinite alternate; }
+.fx-inf-fan.on .wave { opacity:.9; background:repeating-radial-gradient(circle, rgba(255,240,170,0) 0 16px, rgba(255,230,140,.55) 16px 22px, rgba(255,140,40,0) 22px 38px); -webkit-mask:conic-gradient(from calc(-1 * var(--half)), #000 0 calc(var(--half) * 2), transparent 0), radial-gradient(circle, #000 60%, transparent 71%); mask:conic-gradient(from calc(-1 * var(--half)), #000 0 calc(var(--half) * 2), transparent 0); mix-blend-mode:screen; filter:blur(1px); animation:inf-wave .38s linear infinite; }
+.fx-inf-fan.on > i { opacity:1; animation:inf-tongue .22s ease-in-out infinite alternate; }
+.fx-inf-fan.on > i:nth-of-type(2n) { animation-duration:.17s; animation-direction:alternate-reverse; }
+.fx-inf-fan.on > i:nth-of-type(3) { height:40%; }
+.fx-inf-fan.on { filter:drop-shadow(0 0 8px rgba(255,110,20,.95)) drop-shadow(0 0 22px rgba(255,40,0,.55)); }
+.fx-inf-fan.out { animation:fade-out .32s ease-out forwards; }
+@keyframes inf-flicker { 50% { filter:blur(2px) brightness(1.2) saturate(1.2); } }
+@keyframes inf-breathe { from { transform:scale(.95); } to { transform:scale(1.02); } }
+@keyframes inf-wave { from { transform:scale(.82); opacity:.95; } to { transform:scale(1.05); opacity:.55; } }
+@keyframes inf-tongue { from { scale:.85 .8; } to { scale:1.1 1.15; } }
+/* 불티 · 증기 · 연기 */
+.fx-inf-ember { width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:50%; z-index:9; background:radial-gradient(circle, #fffbe0, #ffb020 45%, #ff4a10 70%, transparent 72%); box-shadow:0 0 6px #ff7a1a; animation:inf-ember .75s ease-out forwards; }
+.fx-inf-ember.big { width:11px; height:11px; margin:-5.5px 0 0 -5.5px; animation-duration:1.1s; }
+@keyframes inf-ember { 0% { transform:translate(0,0) scale(var(--s)); opacity:1; } 100% { transform:translate(var(--dx),-48px) scale(.15); opacity:0; } }
+.fx-inf-steam, .fx-inf-smoke { width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%; z-index:9; filter:blur(3px); animation:inf-puff 1.2s ease-out forwards; }
+.fx-inf-steam { background:radial-gradient(circle, rgba(255,255,255,.85), rgba(230,230,230,.4) 55%, transparent 70%); }
+.fx-inf-smoke { background:radial-gradient(circle, rgba(70,60,55,.75), rgba(60,50,45,.35) 55%, transparent 70%); }
+@keyframes inf-puff { 0% { transform:translate(0,0) scale(.5); opacity:.9; } 100% { transform:translate(var(--dx),-54px) scale(1.9); opacity:0; } }
+/* 인페르노 경고 · 불길 · 그을음 */
+.fx-inf-line { position:absolute; z-index:4; pointer-events:none; overflow:hidden; }
+.fx-inf-line.warn { border:2px solid rgba(255,50,20,.95); box-shadow:0 0 18px rgba(255,40,0,.8), inset 0 0 22px rgba(255,40,0,.5); background:repeating-linear-gradient(45deg, rgba(255,60,20,.28) 0 14px, rgba(30,0,0,.12) 14px 28px); background-size:40px 40px; animation:inf-hazard .4s linear infinite, inv-pulse .16s ease-in-out infinite alternate; }
+@keyframes inf-hazard { to { background-position:40px 0; } }
+.fx-inf-line.warn .fill { position:absolute; inset:0; background:linear-gradient(90deg, rgba(255,200,60,.0), rgba(255,120,20,.55)); animation:inf-warnfill var(--dur) linear forwards; }
+.fx-inf-line.warn.ns .fill { background:linear-gradient(180deg, rgba(255,200,60,.0), rgba(255,120,20,.55)); }
+.fx-inf-line.from-left .fill { transform-origin:left center; transform:scaleX(0); } .fx-inf-line.from-right .fill { transform-origin:right center; transform:scaleX(0); }
+.fx-inf-line.from-top .fill { transform-origin:center top; transform:scaleY(0); } .fx-inf-line.from-bottom .fill { transform-origin:center bottom; transform:scaleY(0); }
+@keyframes inf-warnfill { to { transform:scale(1); } }
+.fx-inf-line.warn em { position:absolute; font-style:normal; font-size:26px; filter:drop-shadow(0 0 4px #ff2a00); animation:inv-pulse .2s ease-in-out infinite alternate; }
+.fx-inf-line.warn.ew em { top:50%; transform:translateY(-50%); } .fx-inf-line.warn.ew em:nth-of-type(1) { left:15%; } .fx-inf-line.warn.ew em:nth-of-type(2) { left:50%; } .fx-inf-line.warn.ew em:nth-of-type(3) { left:85%; }
+.fx-inf-line.warn.ns em { left:50%; transform:translateX(-50%); } .fx-inf-line.warn.ns em:nth-of-type(1) { top:15%; } .fx-inf-line.warn.ns em:nth-of-type(2) { top:50%; } .fx-inf-line.warn.ns em:nth-of-type(3) { top:85%; }
+.fx-inf-line.fire { overflow:visible; z-index:6; animation:inf-pillar-out 1.7s ease-out forwards; }
+.fx-inf-line.fire > b { position:absolute; inset:0; }
+.fx-inf-line.fire .body { inset:-18% 0; border-radius:40%; background:linear-gradient(0deg, rgba(200,30,0,0), rgba(255,80,10,.9) 22%, #ffb020 45%, #ffe680 50%, #ffb020 55%, rgba(255,80,10,.9) 78%, rgba(200,30,0,0)); filter:blur(3px); box-shadow:0 0 40px 12px rgba(255,70,10,.75); }
+.fx-inf-line.fire.ns .body { inset:0 -18%; background:linear-gradient(90deg, rgba(200,30,0,0), rgba(255,80,10,.9) 22%, #ffb020 45%, #ffe680 50%, #ffb020 55%, rgba(255,80,10,.9) 78%, rgba(200,30,0,0)); }
+.fx-inf-line.fire .core { inset:36% 0; background:#fffbe6; filter:blur(4px); opacity:.8; animation:inf-flicker .09s steps(2) infinite; }
+.fx-inf-line.fire.ns .core { inset:0 32%; }
+.fx-inf-line.fire .licks { inset:-45% 0; background:repeating-linear-gradient(90deg, rgba(255,210,90,.0) 0 18px, rgba(255,170,40,.75) 18px 26px, rgba(255,210,90,0) 26px 44px); -webkit-mask:radial-gradient(ellipse at center, #000 30%, transparent 70%); mask:radial-gradient(ellipse at center, #000 30%, transparent 70%); filter:blur(2px); animation:inf-licks .25s linear infinite; mix-blend-mode:screen; }
+.fx-inf-line.fire.ns .licks { inset:0 -45%; background:repeating-linear-gradient(0deg, rgba(255,210,90,.0) 0 18px, rgba(255,170,40,.75) 18px 26px, rgba(255,210,90,0) 26px 44px); }
+@keyframes inf-licks { to { background-position:44px 0; } }
+.fx-inf-line.fire.from-left { transform-origin:left center; } .fx-inf-line.fire.from-right { transform-origin:right center; }
+.fx-inf-line.fire.from-top { transform-origin:center top; } .fx-inf-line.fire.from-bottom { transform-origin:center bottom; }
+.fx-inf-line.fire.ew { animation:inf-rush-x .22s cubic-bezier(.2,.8,.3,1) both, inf-pillar-out 1.7s ease-out forwards; }
+.fx-inf-line.fire.ns { animation:inf-rush-y .22s cubic-bezier(.2,.8,.3,1) both, inf-pillar-out 1.7s ease-out forwards; }
+@keyframes inf-rush-x { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@keyframes inf-rush-y { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+@keyframes inf-pillar-out { 0%, 30% { opacity:1; } 100% { opacity:0; } }
+.fx-inf-line.scorch { z-index:2; background:linear-gradient(0deg, rgba(20,10,5,0), rgba(30,15,8,.55) 25%, rgba(20,8,4,.7) 50%, rgba(30,15,8,.55) 75%, rgba(20,10,5,0)); animation:inf-scorch-fade 5.2s ease-in forwards; }
+.fx-inf-line.scorch.ns { background:linear-gradient(90deg, rgba(20,10,5,0), rgba(30,15,8,.55) 25%, rgba(20,8,4,.7) 50%, rgba(30,15,8,.55) 75%, rgba(20,10,5,0)); }
+.fx-inf-line.scorch b { position:absolute; inset:30% 0; background:repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,110,20,.75) 22px 24px, transparent 24px 41px, rgba(255,170,40,.6) 41px 42px); filter:blur(.5px); animation:inv-pulse .6s ease-in-out infinite alternate; }
+.fx-inf-line.scorch.ns b { inset:0 30%; }
+@keyframes inf-scorch-fade { 0% { opacity:1; } 70% { opacity:.8; } 100% { opacity:0; } }
+.fx-inf-flash { position:absolute; inset:0; z-index:40; pointer-events:none; background:radial-gradient(circle, rgba(255,250,220,.75), rgba(255,140,30,.45) 55%, rgba(255,60,0,.2)); animation:fade-out .45s ease-out forwards; }
+.fx-inf-flash.fixed, .fx-inf-vignette.fixed { position:fixed; }
+.fx-inf-vignette { position:absolute; inset:0; z-index:39; pointer-events:none; box-shadow:inset 0 0 120px 30px rgba(255,30,0,.55); animation:inv-pulse .2s ease-in-out infinite alternate; }
+#battleArena.inf-shake { animation:inf-shake .6s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes inf-shake { 10%, 90% { translate:-2px 1px; } 20%, 80% { translate:4px -2px; } 30%, 50%, 70% { translate:-7px 3px; } 40%, 60% { translate:7px -3px; } 100% { translate:0 0; } }
+.unit.inf-scorch .unit-icon { filter:brightness(1.4) sepia(.6) saturate(3) hue-rotate(-20deg); }
+.unit.inf-marked::before { content:''; position:absolute; inset:-8%; border-radius:50%; pointer-events:none; z-index:7; background:radial-gradient(circle at 50% 75%, rgba(255,120,20,.0) 45%, rgba(255,110,20,.55) 62%, rgba(255,60,10,0) 72%); animation:inf-marked .4s ease-in-out infinite alternate; }
+@keyframes inf-marked { from { opacity:.55; transform:scale(.97); } to { opacity:1; transform:scale(1.04); } }
 
 .fx-scythe-spin { position:absolute; transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; z-index:9;
   background:conic-gradient(from 0deg, transparent 0 55%, rgba(91,75,138,.0) 55%, rgba(170,150,230,.55) 80%, rgba(240,235,255,.95) 92%, transparent 93%);
@@ -7927,7 +8029,7 @@ const CHARACTER_BALANCE = {
   exorcist: { hp: 3600, atk: 260, atkSpeed: 3, range: 180, speed: 67.5, exoEvery: 9, exoRadiusCells: 2, exoHeal: 500, exoBoost: 0.6, exoTime: 5, exoHpLoss: 0.35, exoStun: 2 }, // 7.5 신규 · 강령 지속 5초* · 이동속도*
   mercenary: { deployLimit: 1, hp: 3900, atk: 100, atkSpeed: 7, range: 225, speed: 67.5, noAttack: true, holdRange: true, mcBase: 100, mcHpFrac: 0.65, mcEvery: 7, mcAim: 2 }, // 7.5 신규 · 이동속도*
   waterspout: { hp: 2600, atk: 70, atkSpeed: 3, range: 270, speed: 67.5, noAttack: true, holdRange: true, wsRadiusCells: 1.5, wsWarn: 0.5, wsTime: 2.5, wsTick: 0.5, wsHeal: 120, wsDmg: 70, wsFloat: 1.5 }, // 7.5 신규 · 체력* · 공격 간격 3초* · 이동속도*
-  inferno: { hp: 2900, atk: 90, atkSpeed: 1, range: 112.5, speed: 36, noAttack: true, holdRange: true, infRangeCells: 2.5, infFanDeg: 100, infCharge: 1.5, infBurnTime: 5, infTick: 0.2, infTickDmg: 90, infLag1: 2, infWarn: 1, infLineWidth: 2.5, infLacer: 0.3, infLacerTime: 7, infBurnDps: 100, infBurnTime2: 5, infBurnAmpTime: 10, infLag2: 9 }, // 7.5 신규 (히든)
+  inferno: { hp: 3900, atk: 90, atkSpeed: 0.6, range: 72, speed: 99, isMelee: true, infRangeCells: 3.5, infFanDeg: 80, infCharge: 1.5, infBurnTime: 5, infTick: 0.2, infTickDmg: 90, infLag1: 2, infWarn: 1, infLineWidth: 2.5, infLacer: 0.3, infLacerTime: 7, infBurnDps: 100, infBurnTime2: 5, infBurnAmpTime: 10, infLag2: 5 }, // 7.5 신규 (히든) · 7.5.1 HP 2900 → 3900 · 근접 · 이동속도 0.8 → 2.2칸 · 소각 2.5칸 · 100° → 3.5칸 · 80° · 인페르노 뒤 행동불능 9 → 5초
   bully: { hp: 3800, atk: 180, atkSpeed: 1, range: 180, speed: 58.5, noAttack: true, holdRange: true, bullyRadiusCells: 4, bullyFastCells: 3, bullyStop: 2, standTime: 2, standCd: 5, standEvery: 0.5, standRadiusCells: 1.5, standDmg: 180, standBonus: 1.6 }, // 7.5 신규 · 체력 380 → 3,800 (오타로 보고)* · 이동속도*
   wine: { hp: 2900, atk: 180, atkSpeed: 1, range: 225, speed: 67.5, wineEvery: 4.5, wineHpCost: 0.07, wineAtk: 0.07, wineCrit: 0.07, wineCritDmg: 1.5, wineBuffTime: 3, toastHeal: 200, toastAtk: 0.1 }, // 7.4 이동속도*
   cult: { deployLimit: 1, hp: 2400, atk: 0, atkSpeed: 1, range: 270, speed: 58.5, noAttack: true, holdRange: true, cultDelay: 5, cultRadiusCells: 7, cultDamage: 200 }, // 7.4 사거리* · 이동속도*
@@ -9977,7 +10079,8 @@ const CHAR_DB = {
     id: 'inferno', name: '인페르노 지후', emoji: '🔥', role: 'dealer', roleLabel: '딜러',
     rarity: 'hidden', color: '#d4380d', portrait: PORTRAITS.inferno || jhPlaceholder('🔥', '#d4380d'),
     ...CHARACTER_BALANCE.inferno,
-    skillDesc: 'HP 2,900 · 이동속도 0.8칸. 일반 공격 대신 두 페이즈를 번갈아 쓴다. <b>[소각]</b>: 멈춰서 <b>1.5초</b> 차징 뒤 <b>5초</b> 동안 앞쪽 <b>100°</b> · 반경 <b>2.5칸</b>에 화염 (0.2초마다 <b>90</b>). 끝나면 <b>2초</b> 행동불능. 풀리자마자 자기 지름 <b>2.5배</b> 폭으로 아군 진영 끝부터 적진 끝까지 일직선을 경고하고 <b>1초</b> 뒤 <b>[인페르노]</b>: 닿은 적은 7초 <b>[절상] 30%</b> · 5초 화상 (초당 <b>100</b>) · 10초 동안 받는 화상 피해 <b>+100%</b>. 그 뒤 <b>9초</b> 행동불능, 다시 반복.'
+    customAttack(caster, target) { infernoStart(caster, target); },
+    skillDesc: 'HP 3,900 · <b>근접</b> · 이동속도 2.2칸. 적에게 붙어 두 페이즈를 번갈아 쓴다. <b>[소각]</b>: 멈춰서 <b>1.5초</b> 차징 뒤 <b>5초</b> 동안 앞쪽 <b>80°</b> · 반경 <b>3.5칸</b>에 화염 (0.2초마다 <b>90</b>, 가까운 적 쪽으로 천천히 돈다). 끝나면 <b>2초</b> 과열 (행동불능). 풀리자마자 자기 지름 <b>2.5배</b> 폭으로 아군 진영 끝부터 적진 끝까지 일직선을 경고하고 <b>1초</b> 뒤 <b>[인페르노]</b>: 닿은 적은 7초 <b>[절상] 30%</b> · 5초 화상 (초당 <b>100</b>) · 10초 동안 받는 화상 피해 <b>+100%</b>. 그 뒤 <b>5초</b> 탈진 (행동불능), 다시 반복.'
   },
   bully: {
     id: 'bully', name: '일진 지후', emoji: '😎', role: 'controller', roleLabel: '컨트롤러',
@@ -19283,7 +19386,7 @@ function startRoundInner() {
       if (u.ringEl) u.ringEl.remove();
     });
     state.units = state.units.filter(u => u.alive);
-    document.querySelectorAll('.fx-pulse, .fx-dagger, .fx-projectile, .fx-syringe-shot, .fx-glitch-burst, .fx-burst, .fx-death-fx, .fx-slash, .fx-flame-stream, .fx-telegraph, .fx-charge-rect, .fx-lasso, .fx-mine, .fx-mine-blast, .fx-bolt, .fx-god-laser, .fx-hong-ball, .fx-smoke, .fx-dragon-fire, .fx-meteor, .fx-hollow-zone, .fx-beam').forEach(el => el.remove());
+    document.querySelectorAll('.fx-n75, .fx-pulse, .fx-dagger, .fx-projectile, .fx-syringe-shot, .fx-glitch-burst, .fx-burst, .fx-death-fx, .fx-slash, .fx-flame-stream, .fx-telegraph, .fx-charge-rect, .fx-lasso, .fx-mine, .fx-mine-blast, .fx-bolt, .fx-god-laser, .fx-hong-ball, .fx-smoke, .fx-dragon-fire, .fx-meteor, .fx-hollow-zone, .fx-beam').forEach(el => el.remove());
     state.mines = [];
   } else {
     state.units = [];
@@ -22977,7 +23080,8 @@ function applyDamageRaw(target, amount, opts) {
     if (source) source.dmgDealt = (source.dmgDealt || 0) + finalDmg;
   }
   afterHit46(target, opts);
-  { const by = caster || (opts && opts.src); if (by && by !== target && by.side !== target.side) target._lastBy = by; } // 7.5 용병: 의뢰인을 쓰러뜨린 적
+  { const by = opts && opts.src; // 7.5.1 applyDamageRaw 에는 caster 가 없다 (7.5 에서 화상·독 틱마다 오류 → 전투 멈춤)
+    if (by && by !== target && by.side !== target.side) target._lastBy = by; } // 7.5 용병: 의뢰인을 쓰러뜨린 적
   if (target.charId === 'tyrant') resolveTyrantRage(target);
   if (rankS(target, 'jaws') && !target._jawsSecond && target.alive && target.hp > 0 && target.hp <= target.maxHp * 0.25 && !target._dive && !target._realm) {
     target._jawsSecond = true; startDive(target, true); // 죠스 S: 체력이 처음 25%가 되면 한 번 더 잠수
@@ -28170,64 +28274,96 @@ function wineRound(u) {
   });
 }
 // ══ 7.5 신규 지후: 시간역행 · 엑소시스트 · 용병 · 용오름 · 인페르노 · 일진 ══
+// 7.5.1 안정화: 타이머는 모두 기본값을 갖고(라운드 준비를 못 거친 유닛도 안전), 라운드가 끝나면 남은 연출을 모두 치운다.
 function n75Foes(u) { return state.units.filter(e => e.alive && !e.isCastle && isHostile(u, e) && sameRealm(u, e) && !e._flight); }
 function n75Allies(u, withSelf) { return state.units.filter(a => a.alive && !a.isCastle && a.side === u.side && (withSelf || a !== u) && !a.isVault); }
-function n75Fwd(side) { return typhoonForward(side); }
-function readyRound75(u) {
-  if (u.charId === 'rewind') { u._rwCd = u.def.rwEvery; u._rw = null; }
-  if (u.charId === 'exorcist') u._exoCd = u.def.exoEvery;
-  if (u.charId === 'mercenary') { if (PORTRAITS.mercenary_idle) battleAPI.setImage(u, PORTRAITS.mercenary_idle); u._mcArmed = false; u._mcAim = null; u._mcCd = 0; u._mcShot = new Set(); u._mcKiller = null; u._mcPick = true; if (u.el) u.el.classList.remove('merc-armed'); }
-  if (u.charId === 'waterspout') u._wsCd = 0.6;
-  if (u.charId === 'inferno') { u._inf = { phase: 'idle', t: 0 }; u._infHold = false; }
-  if (u.charId === 'bully') { u._bullyIn = new Set(); u._stand = null; u._standCd = 0; }
+function n75Host() { return $('battleArena') || document.body; } // 화면 전체 연출은 전장 창 위에 (도감 미리보기에서도 전장 안에만)
+function n75Rm(el) { if (el && el.remove) el.remove(); }
+function n75Clear(u) { // 이 유닛이 띄운 연출을 모두 치운다
+  if (u._rw) { n75Rm(u._rw.ov); (u._rw.ghosts || []).forEach(n75Rm); u._rw = null; }
+  if (u._mcAim) { n75Rm(u._mcAim.el); u._mcAim = null; }
+  if (u._stand) { n75Rm(u._stand.el); u._stand = null; }
+  if (u._inf) { infernoDropFx(u._inf); u._inf = null; }
+  u._infHold = false;
+  if (u.el) u.el.classList.remove('inf-charging', 'inf-burning', 'inf-overheat', 'inf-roar', 'inf-spent');
 }
+function cleanup75() { // 라운드 끝 · 전장 정리
+  state.units.forEach(u => { n75Clear(u); if (u._exo) { u._exo = null; if (u.el) u.el.classList.remove('exo-possessed'); } });
+  state.spouts75 = [];
+  document.querySelectorAll('.fx-n75').forEach(n75Rm);
+  const host = $('battleArena'); if (host) host.classList.remove('inf-shake');
+}
+function readyRound75(u) {
+  n75Clear(u);
+  if (u.charId === 'rewind') { u._rwCd = u.def.rwEvery; if (PORTRAITS.rewind) battleAPI.setImage(u, PORTRAITS.rewind); }
+  if (u.charId === 'exorcist') u._exoCd = u.def.exoEvery;
+  if (u.charId === 'mercenary') { if (PORTRAITS.mercenary_idle) battleAPI.setImage(u, PORTRAITS.mercenary_idle); u._mcArmed = false; u._mcCd = 0; u._mcShot = new Set(); u._mcKiller = null; u._mcPick = true; u._mcClient = null; if (u.el) u.el.classList.remove('merc-armed'); }
+  if (u.charId === 'waterspout') u._wsCd = 0.6;
+  if (u.charId === 'inferno') { u._inf = { phase: 'idle', t: 0 }; infernoEnsureAura(u); }
+  if (u.charId === 'bully') { u._bullyIn = new Set(); u._standCd = 0; }
+}
+
 // ── 시간역행: 8초마다 [역행] — 아군 상태 저장 → 4초 뒤 (자신 제외) 되돌리기 → 모든 아군 1.5초 행동불능 ──
 const RW_COUNT_UP = /(Gauge|Hits|Count|Stacks?)$/;
 const RW_COUNT_DOWN = /(Cd|Cooldown|Timer|Cycle|Delay)$/;
 function rewindSnap(a) {
   const nums = {};
-  for (const k of Object.keys(a)) { const v = a[k]; if (typeof v === 'number' && (k === 'atkCooldown' || RW_COUNT_DOWN.test(k) || RW_COUNT_UP.test(k))) nums[k] = v; }
-  const st = {}; Object.keys(a.statuses || {}).forEach(k => { const s = a.statuses[k]; st[k] = s && typeof s === 'object' ? { ...s } : s; });
-  const buffs = {}; Object.keys(a.buffs || {}).forEach(k => { buffs[k] = { ...a.buffs[k] }; });
-  return { u: a, hp: a.hp, maxHp: a.maxHp, shield: a.shield || 0, maxShield: a.maxShield || 0, x: a.x, y: a.y, st, buffs, stun: a.stun || 0, fatal: a._fatal || 0, nums };
+  for (const k of Object.keys(a)) { const v = a[k]; if (typeof v === 'number' && Number.isFinite(v) && (k === 'atkCooldown' || RW_COUNT_DOWN.test(k) || RW_COUNT_UP.test(k))) nums[k] = v; }
+  const st = {}; Object.keys(a.statuses || {}).forEach(k => { const s = a.statuses[k]; if (s) st[k] = typeof s === 'object' ? { ...s } : s; });
+  const buffs = {}; Object.keys(a.buffs || {}).forEach(k => { if (a.buffs[k]) buffs[k] = { ...a.buffs[k] }; });
+  return { u: a, def: a.def, charId: a.charId, hp: a.hp, shield: a.shield || 0, maxShield: a.maxShield || 0, x: a.x, y: a.y, realm: a._realm || null, st, buffs, stun: a.stun || 0, fatal: a._fatal || 0, nums };
 }
 function rewindStart(u) {
   const snaps = n75Allies(u, true).map(rewindSnap);
+  const host = n75Host();
   const ov = document.createElement('div');
-  ov.className = 'fx-n75 fx-rewind-overlay ' + (u.side === 'ally' ? 'ally' : 'enemy');
+  ov.className = 'fx-n75 fx-rewind-overlay ' + (u.side === 'ally' ? 'ally' : 'enemy') + (host === document.body ? ' fixed' : '');
   ov.innerHTML = '<div class="rw-clock"><i class="rw-h"></i><i class="rw-m"></i></div><b class="rw-num">4.00</b>';
-  document.body.appendChild(ov);
-  u._rw = { t: u.def.rwDelay, snaps, ov, num: ov.querySelector('.rw-num') };
+  host.appendChild(ov);
+  // 저장한 자리에 희미한 잔상
+  const ghosts = snaps.filter(sn => sn.u !== u).map(sn => {
+    const img = sn.u.el && sn.u.el.querySelector('img');
+    const g = fx38('fx-n75 fx-rw-ghost', sn.x, sn.y, img ? `<img src="${img.src}" alt="">` : '');
+    g.style.width = g.style.height = unitRadius(sn.u) * 2 + 'px';
+    return g;
+  });
+  u._rw = { t: u.def.rwDelay, snaps, ov, ghosts, num: ov.querySelector('.rw-num') };
   if (PORTRAITS.rewind_skill) battleAPI.setImage(u, PORTRAITS.rewind_skill);
   v41Callout(u, '⏪ 역행');
 }
+function rewindRestore(s) {
+  const a = s.u;
+  if (!a.alive || a.def !== s.def || a.charId !== s.charId) return; // 그 사이 변신한 지후는 건드리지 않는다
+  // 최대 체력은 [절상] · [ㅤㅤㅤ] 같은 효과가 따로 관리하므로 체력만 되돌린다
+  a.hp = clamp(s.hp, 1, a.maxHp);
+  a.shield = s.shield; a.maxShield = s.maxShield;
+  if (a.el) a.el.classList.toggle('has-shield', a.shield > 0);
+  if (!a._realm && !s.realm && !a._flight && !a._leap) { physSnap(a, s.x, s.y); a.vx = 0; a.vy = 0; }
+  if (a.statuses) { Object.keys(a.statuses).forEach(k => { a.statuses[k] = null; }); Object.keys(s.st).forEach(k => { a.statuses[k] = typeof s.st[k] === 'object' ? { ...s.st[k] } : s.st[k]; }); }
+  if (a.buffs) { Object.keys(a.buffs).forEach(k => delete a.buffs[k]); Object.keys(s.buffs).forEach(k => { a.buffs[k] = { ...s.buffs[k] }; }); }
+  a.stun = s.stun; if (a.el) a.el.classList.toggle('stunned', a.stun > 0);
+  a._fatal = s.fatal; if (a.el) a.el.classList.toggle('fatal-wound', a._fatal > 0);
+  // 게이지는 되돌리지 않고, 저장 뒤 찬 만큼 한 번 더 채운다
+  for (const k in s.nums) {
+    const now = a[k]; if (typeof now !== 'number' || !Number.isFinite(now)) continue;
+    if (k === 'atkCooldown' || RW_COUNT_DOWN.test(k)) { const filled = s.nums[k] - now; if (filled > 0) a[k] = Math.max(0, now - filled); }
+    else { const filled = now - s.nums[k]; if (filled > 0) a[k] = now + filled; }
+  }
+  updateUnitBars(a);
+  if (typeof updateStatusIcons === 'function') updateStatusIcons(a);
+  fx38Flash('fx-n75 fx-rw-pop', a.x, a.y, unitRadius(a) * 2.6, 500);
+  spawnDamageNumber(a, '⏪', { heal: true });
+}
 function rewindApply(u) {
   const rw = u._rw; u._rw = null;
-  if (rw.ov) rw.ov.remove();
-  if (u.alive && PORTRAITS.rewind) battleAPI.setImage(u, PORTRAITS.rewind);
+  n75Rm(rw.ov); (rw.ghosts || []).forEach(n75Rm);
   if (!u.alive) return;
-  rw.snaps.forEach(s => {
-    const a = s.u;
-    if (a === u || !a.alive) return; // 자신은 되돌리지 않는다 · 그 사이 쓰러진 아군은 돌아오지 않는다
-    a.maxHp = s.maxHp; a.hp = Math.min(s.maxHp, Math.max(1, s.hp));
-    a.shield = s.shield; a.maxShield = s.maxShield;
-    if (a.el) a.el.classList.toggle('has-shield', a.shield > 0);
-    if (!a._realm && !a._flight && !a._leap) physSnap(a, s.x, s.y);
-    a.statuses = {}; Object.keys(s.st).forEach(k => { a.statuses[k] = s.st[k] && typeof s.st[k] === 'object' ? { ...s.st[k] } : s.st[k]; });
-    a.buffs = {}; Object.keys(s.buffs).forEach(k => { a.buffs[k] = { ...s.buffs[k] }; });
-    a.stun = s.stun; a._fatal = s.fatal;
-    // 게이지는 되돌리지 않고, 저장 뒤 찬 만큼 한 번 더 채운다
-    for (const k in s.nums) {
-      const now = a[k]; if (typeof now !== 'number' || !Number.isFinite(now)) continue;
-      if (k === 'atkCooldown' || RW_COUNT_DOWN.test(k)) { const filled = s.nums[k] - now; if (filled > 0) a[k] = Math.max(0, now - filled); }
-      else { const filled = now - s.nums[k]; if (filled > 0) a[k] = now + filled; }
-    }
-    updateUnitBars(a);
-    spawnDamageNumber(a, '⏪', { heal: true });
-  });
+  if (PORTRAITS.rewind) battleAPI.setImage(u, PORTRAITS.rewind);
+  rw.snaps.forEach(s => { if (s.u !== u) rewindRestore(s); }); // 그 사이 쓰러진 아군은 돌아오지 않는다
   n75Allies(u, true).forEach(a => stunUnit(a, u.def.rwStun)); // 부작용: 모든 아군 1.5초 행동불능
   fx38Flash('fx-n75 fx-rewind-burst', u.x, u.y, 0, 600);
 }
+
 // ── 엑소시스트: 9초마다 [강령술] — 반경 2칸 아군 500 회복 + 무작위 하나 [강령] ──
 function exorcistRitual(u) {
   const R = u.def.exoRadiusCells * GRID;
@@ -28243,6 +28379,7 @@ function exorcistRitual(u) {
   battleAPI.setBuff(t, 'exo-atk', 'atk', boost, u.def.exoTime);
   battleAPI.setBuff(t, 'exo-aspd', 'aspd', boost, u.def.exoTime);
   if (t.el) t.el.classList.add('exo-possessed');
+  n75Beam(u, t, 'fx-exo-wisp', 450);
   spawnDamageNumber(t, '👻 강령', { crit: true });
   v41Callout(u, '👻 강령술');
 }
@@ -28254,6 +28391,14 @@ function exorcistEnd(a) {
   stunUnit(a, CHARACTER_BALANCE.exorcist.exoStun);
   spawnDamageNumber(a, '강령 해제', { dot: true });
 }
+function n75Beam(a, b, cls, ms) { // a → b 를 잇는 짧은 선 연출
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const el = fx38('fx-n75 ' + cls, a.x, a.y, '');
+  el.style.width = Math.hypot(dx, dy) + 'px';
+  el.style.transform = `translateY(-50%) rotate(${Math.atan2(dy, dx).toFixed(3)}rad)`;
+  scheduleTask(() => n75Rm(el), ms);
+}
+
 // ── 용병: 라운드마다 무작위 아군 하나가 [의뢰인]. 의뢰인이 쓰러지면 저격총을 든다 ──
 function mercPickClient(u) {
   u._mcPick = false;
@@ -28275,7 +28420,8 @@ function mercTarget(m) {
   const foes = state.units.filter(e => e.alive && !e.isCastle && isHostile(m, e) && !e._realm && !e._flight);
   if (!foes.length) return null;
   if (m._mcKiller && m._mcKiller.alive && foes.includes(m._mcKiller)) return m._mcKiller;
-  const fresh = foes.filter(e => !m._mcShot.has(e.uid)), pool = fresh.length ? fresh : foes;
+  const shot = m._mcShot || (m._mcShot = new Set());
+  const fresh = foes.filter(e => !shot.has(e.uid)), pool = fresh.length ? fresh : foes;
   return pool.reduce((b, e) => Math.hypot(e.x - m.x, e.y - m.y) > Math.hypot(b.x - m.x, b.y - m.y) ? e : b);
 }
 function tickMerc(m, dt) {
@@ -28283,19 +28429,21 @@ function tickMerc(m, dt) {
   if (!m._mcArmed) return;
   const a = m._mcAim;
   if (a) {
-    if (!a.target.alive) { a.el.remove(); m._mcAim = null; m._mcCd = 0.3; return; }
+    if (!a.target.alive || a.target._realm || a.target._flight) { n75Rm(a.el); m._mcAim = null; m._mcCd = 0.3; return; }
     a.el.style.left = a.target.x + 'px'; a.el.style.top = a.target.y + 'px';
     a.t -= dt; if (a.t > 0) return;
-    a.el.remove(); m._mcAim = null; m._mcCd = m.def.mcEvery - m.def.mcAim;
-    m._mcShot.add(a.target.uid);
+    n75Rm(a.el); m._mcAim = null; m._mcCd = m.def.mcEvery - m.def.mcAim;
+    (m._mcShot || (m._mcShot = new Set())).add(a.target.uid);
+    n75Beam(m, a.target, 'fx-merc-tracer', 220);
     fx38Flash('fx-n75 fx-merc-shot', a.target.x, a.target.y, 0, 300);
     dealDamage(m, a.target, m.def.mcBase + a.target.hp * m.def.mcHpFrac, { isSkill: true, skipAtkBuff: true });
     return;
   }
-  m._mcCd -= dt; if (m._mcCd > 0) return;
+  m._mcCd = (m._mcCd ?? 0) - dt; if (m._mcCd > 0) return;
   const t = mercTarget(m); if (!t) { m._mcCd = 0.3; return; }
   m._mcAim = { t: m.def.mcAim, target: t, el: fx38('fx-n75 fx-merc-scope', t.x, t.y, '<i></i>') };
 }
+
 // ── 용오름: 일반 공격 대신 가장 가까운 유닛(아군 · 적 상관없이) 자리에 0.5초 뒤 반경 1.5칸 용오름 (2.5초) ──
 function waterspoutCast(u) {
   let best = null, bd = Infinity;
@@ -28308,9 +28456,10 @@ function waterspoutCast(u) {
 }
 function tickSpouts(dt) {
   if (!state.spouts75 || !state.spouts75.length) return;
+  const d = CHARACTER_BALANCE.waterspout;
   state.spouts75 = state.spouts75.filter(z => {
-    if (state.combatTime < z.born) { z.el.remove(); return false; }
-    const owner = z.owner, d = CHARACTER_BALANCE.waterspout;
+    if (state.combatTime < z.born) { n75Rm(z.el); return false; }
+    const owner = z.owner;
     const inside = () => state.units.filter(e => e.alive && !e.isCastle && (e._realm || null) === z.realm && Math.hypot(e.x - z.x, e.y - z.y) <= z.R + unitRadius(e));
     if (z.warn > 0) {
       z.warn -= dt; if (z.warn > 0) return true;
@@ -28325,89 +28474,191 @@ function tickSpouts(dt) {
         else dealDamage(owner && owner.alive ? owner : null, e, d.wsDmg, { isSkill: true, skipAtkBuff: true });
       });
     }
-    if (z.life <= 0) { z.el.remove(); return false; }
+    if (z.life <= 0) { n75Rm(z.el); return false; }
     return true;
   });
 }
-// ── 인페르노: [소각] 1.5초 차징 → 5초 화염 (100° · 2.5칸 · 0.2초마다 90) → 2초 행동불능 → 경고 1초 → [인페르노] 일직선 불길 → 9초 행동불능 → 반복 ──
-function infernoNearest(u) {
-  let best = null, bd = Infinity;
-  n75Foes(u).forEach(e => { const d = Math.hypot(e.x - u.x, e.y - u.y); if (d < bd) { bd = d; best = e; } });
-  return best ? { e: best, d: bd } : null;
+
+// ── 인페르노 (히든) ──
+// 근접으로 다가가 [소각]: 1.5초 차징 → 5초 앞쪽 80° · 3.5칸 화염 (0.2초마다 90) → 2초 과열(행동불능)
+// → 아군 진영 끝부터 적진 끝까지 일직선 경고 1초 → [인페르노]: [절상] 30% 7초 · 화상 5초 · 받는 화상 +100% 10초 → 5초 탈진 → 반복
+const INF_STATE_CLS = ['inf-charging', 'inf-burning', 'inf-overheat', 'inf-roar', 'inf-spent'];
+function infernoEnsureAura(u) {
+  if (!u.el) return;
+  u.el.classList.add('inferno-unit');
+  if (u.el.querySelector('.inf-aura')) return;
+  const a = document.createElement('div');
+  a.className = 'inf-aura';
+  a.innerHTML = '<b></b>' + '<i></i>'.repeat(6);
+  u.el.appendChild(a);
+}
+function infernoState(u, cls) { if (u.el) INF_STATE_CLS.forEach(c => u.el.classList.toggle(c, c === cls)); }
+function infernoDropFx(s) {
+  if (s.fan) { n75Rm(s.fan); s.fan = null; }
+  if (s.warnEl) { n75Rm(s.warnEl); s.warnEl = null; }
+  if (s.vig) { n75Rm(s.vig); s.vig = null; }
+}
+function infernoFanDeg(ang) { return (ang * 180 / Math.PI + 90).toFixed(2) + 'deg'; } // 화면 각도 → 위(0°) 기준 회전 각도
+function infernoStart(u, target) { // customAttack: 근접 거리에서 [소각] 시작
+  const s = u._inf || (u._inf = { phase: 'idle', t: 0 });
+  if (s.phase !== 'idle' || !target || !target.alive) return;
+  const d = u.def, R = d.infRangeCells * GRID;
+  infernoEnsureAura(u);
+  s.phase = 'charge'; s.t = d.infCharge; s.ang = Math.atan2(target.y - u.y, target.x - u.x);
+  u._infHold = true;
+  s.fan = fx38('fx-n75 fx-inf-fan charge', u.x, u.y, '<b class="glow"></b><b class="core"></b><b class="wave"></b><b class="fill"></b><b class="rim"></b><i></i><i></i><i></i><i></i><i></i>');
+  s.fan.style.width = s.fan.style.height = R * 2 + 'px';
+  s.fan.style.setProperty('--a', infernoFanDeg(s.ang));
+  s.fan.style.setProperty('--half', (d.infFanDeg / 2) + 'deg');
+  s.fan.style.setProperty('--dur', d.infCharge + 's');
+  infernoState(u, 'inf-charging');
+  v41Callout(u, '🔥 소각');
+}
+function infernoEmber(x, y, big) {
+  const el = fx38('fx-n75 fx-inf-ember' + (big ? ' big' : ''), x, y, '');
+  el.style.setProperty('--dx', ((Math.random() * 2 - 1) * (big ? 40 : 18)).toFixed(0) + 'px');
+  el.style.setProperty('--s', (0.6 + Math.random() * 0.9).toFixed(2));
+  scheduleTask(() => n75Rm(el), big ? 1100 : 750);
+}
+function infernoPuff(u, cls) {
+  const el = fx38('fx-n75 ' + cls, u.x + (Math.random() * 2 - 1) * unitRadius(u) * 0.6, u.y - unitRadius(u) * 0.6, '');
+  el.style.setProperty('--dx', ((Math.random() * 2 - 1) * 16).toFixed(0) + 'px');
+  scheduleTask(() => n75Rm(el), 1200);
 }
 function infernoLineRect(u) { // 아군 진영 끝 → 적진 끝, 폭 = 지름 × 2.5
-  const w = unitRadius(u) * 2 * u.def.infLineWidth, ew = isEastWestLayout();
-  return ew ? { ew, x0: 0, y0: u.y - w / 2, len: MAP_W, w, cy: u.y } : { ew, x0: u.x - w / 2, y0: 0, len: MAP_H, w, cx: u.x };
+  const w = unitRadius(u) * 2 * u.def.infLineWidth, ew = isEastWestLayout(), f = typhoonForward(u.side);
+  // 불길이 뻗어 나가기 시작하는 쪽 = 자기 진영 끝
+  const from = ew ? (Math.cos(f) > 0 ? 'left' : 'right') : (Math.sin(f) > 0 ? 'top' : 'bottom');
+  return ew ? { ew, x0: 0, y0: u.y - w / 2, len: MAP_W, w, cy: u.y, from } : { ew, x0: u.x - w / 2, y0: 0, len: MAP_H, w, cx: u.x, from };
 }
-function infernoLineFx(u, r, cls) {
-  const el = fx38('fx-n75 fx-inferno-line ' + cls, null, null, '');
+function infernoLineFx(r, cls, html) {
+  const el = fx38('fx-n75 fx-inf-line ' + cls + ' ' + (r.ew ? 'ew' : 'ns') + ' from-' + r.from, null, null, html || '');
   if (r.ew) { el.style.left = '0px'; el.style.top = r.y0 + 'px'; el.style.width = r.len + 'px'; el.style.height = r.w + 'px'; }
   else { el.style.left = r.x0 + 'px'; el.style.top = '0px'; el.style.width = r.w + 'px'; el.style.height = r.len + 'px'; }
   return el;
 }
+function infernoFire(u, s) {
+  const d = u.def, r = s.rect;
+  infernoDropFx(s);
+  const pillar = infernoLineFx(r, 'fire', '<b class="body"></b><b class="core"></b><b class="licks"></b>');
+  const scorch = infernoLineFx(r, 'scorch', '<b></b>');
+  scheduleTask(() => n75Rm(pillar), 1700);
+  scheduleTask(() => n75Rm(scorch), 5200);
+  const host = n75Host();
+  const flash = document.createElement('div'); flash.className = 'fx-n75 fx-inf-flash' + (host === document.body ? ' fixed' : ''); host.appendChild(flash);
+  scheduleTask(() => n75Rm(flash), 450);
+  if (host !== document.body) { host.classList.remove('inf-shake'); void host.offsetWidth; host.classList.add('inf-shake'); scheduleTask(() => host.classList.remove('inf-shake'), 650); }
+  for (let i = 0; i < 18; i++) {
+    const t = Math.random();
+    infernoEmber(r.ew ? t * r.len : r.cx + (Math.random() - 0.5) * r.w, r.ew ? r.cy + (Math.random() - 0.5) * r.w : t * r.len, true);
+  }
+  v41Callout(u, '🔥 인페르노');
+  state.units.slice().forEach(e => {
+    if (!e.alive || e.isCastle || !isHostile(u, e) || !sameRealm(u, e)) return;
+    const off = r.ew ? Math.abs(e.y - r.cy) : Math.abs(e.x - r.cx);
+    if (off > r.w / 2 + unitRadius(e)) return;
+    applyLaceration(e, d.infLacerTime, d.infLacer);
+    battleAPI.applyBurn(e, d.infBurnDps, d.infBurnTime2, u);
+    e._burnAmp = Math.max(e._burnAmp || 0, d.infBurnAmpTime);
+    if (e.el) e.el.classList.add('inf-marked');
+    e._scorchT = 0.6;
+    spawnDamageNumber(e, '🔥 인페르노', { crit: true });
+  });
+}
 function tickInferno(u, dt) {
   const s = u._inf || (u._inf = { phase: 'idle', t: 0 }), d = u.def;
-  if (s.phase === 'idle') {
-    u._infHold = false;
-    const n = infernoNearest(u);
-    if (!n || n.d > d.infRangeCells * GRID + unitRadius(n.e)) return;
-    s.phase = 'charge'; s.t = d.infCharge; s.ang = Math.atan2(n.e.y - u.y, n.e.x - u.x); u._infHold = true;
-    s.fan = fx38('fx-n75 fx-inferno-fan charge', u.x, u.y, ''); s.fan.style.width = s.fan.style.height = d.infRangeCells * GRID * 2 + 'px';
-    s.fan.style.setProperty('--a', (s.ang * 180 / Math.PI + 90) + 'deg');
-    v41Callout(u, '🔥 소각');
-    return;
-  }
+  if (s.phase === 'idle') { u._infHold = false; return; }
+  u._infHold = true;
   s.t -= dt;
   if (s.fan) { s.fan.style.left = u.x + 'px'; s.fan.style.top = u.y + 'px'; }
-  if (s.phase === 'charge') { if (s.t <= 0) { s.phase = 'burn'; s.t = d.infBurnTime; s.tick = 0; s.fan.classList.remove('charge'); s.fan.classList.add('on'); } return; }
+  const R = d.infRangeCells * GRID, half = d.infFanDeg * Math.PI / 360;
+  if (s.phase === 'charge') {
+    if (Math.random() < dt * 10) infernoEmber(u.x + (Math.random() - 0.5) * unitRadius(u), u.y + (Math.random() - 0.5) * unitRadius(u), false);
+    if (s.t > 0) return;
+    s.phase = 'burn'; s.t = d.infBurnTime; s.tick = 0; s.num = 0.5; s.dmg = new Map();
+    s.fan.classList.remove('charge'); s.fan.classList.add('on');
+    infernoState(u, 'inf-burning');
+    return;
+  }
   if (s.phase === 'burn') {
+    // 가장 가까운 적 쪽으로 천천히 고개를 돌린다 (초당 90°)
+    let best = null, bd = R * 1.3;
+    n75Foes(u).forEach(e => { const dd = Math.hypot(e.x - u.x, e.y - u.y); if (dd < bd) { bd = dd; best = e; } });
+    if (best) {
+      let diff = Math.atan2(best.y - u.y, best.x - u.x) - s.ang;
+      while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
+      const turn = Math.PI / 2 * dt; s.ang += clamp(diff, -turn, turn);
+      s.fan.style.setProperty('--a', infernoFanDeg(s.ang));
+    }
+    // 불티
+    if (Math.random() < dt * 16) {
+      const rr = R * Math.sqrt(Math.random()) * 0.92, aa = s.ang + (Math.random() * 2 - 1) * half;
+      infernoEmber(u.x + Math.cos(aa) * rr, u.y + Math.sin(aa) * rr, false);
+    }
     s.tick -= dt;
     if (s.tick <= 0) {
       s.tick += d.infTick;
-      const R = d.infRangeCells * GRID, half = d.infFanDeg * Math.PI / 360;
       n75Foes(u).forEach(e => {
         const dx = e.x - u.x, dy = e.y - u.y, dist = Math.hypot(dx, dy);
         if (dist > R + unitRadius(e)) return;
         let da = Math.abs(Math.atan2(dy, dx) - s.ang); if (da > Math.PI) da = Math.PI * 2 - da;
-        if (dist > unitRadius(e) && da > half) return;
-        dealDamage(u, e, d.infTickDmg, { isSkill: true, skipAtkBuff: true, noNum: true });
+        if (dist > unitRadius(e) + unitRadius(u) && da > half + Math.atan2(unitRadius(e), dist)) return;
+        if (dealDamage(u, e, d.infTickDmg, { isSkill: true, skipAtkBuff: true, noNum: true })) {
+          s.dmg.set(e, (s.dmg.get(e) || 0) + d.infTickDmg);
+          e._scorchT = 0.25;
+        }
       });
     }
-    if (s.t <= 0) { s.fan.remove(); s.fan = null; s.phase = 'lag1'; s.t = d.infLag1; u._holdT = d.infLag1; u.el.classList.add('noir-lag'); }
-    return;
-  }
-  if (s.phase === 'lag1') { if (s.t <= 0) { s.phase = 'warn'; s.t = d.infWarn; s.rect = infernoLineRect(u); s.warnEl = infernoLineFx(u, s.rect, 'warn'); } return; }
-  if (s.phase === 'warn') {
+    s.num -= dt;
+    if (s.num <= 0 || s.t <= 0) { s.num = 0.5; s.dmg.forEach((v, e) => { if (e.alive) spawnDamageNumber(e, Math.round(v), { dot: true }); }); s.dmg.clear(); }
     if (s.t > 0) return;
-    s.warnEl.remove(); s.warnEl = null;
-    const r = s.rect, fire = infernoLineFx(u, r, 'fire'); scheduleTask(() => fire.remove(), 700);
-    v41Callout(u, '🔥 인페르노');
-    state.units.slice().forEach(e => {
-      if (!e.alive || e.isCastle || !isHostile(u, e) || !sameRealm(u, e)) return;
-      const off = r.ew ? Math.abs(e.y - r.cy) : Math.abs(e.x - r.cx);
-      if (off > r.w / 2 + unitRadius(e)) return;
-      applyLaceration(e, d.infLacerTime, d.infLacer);
-      battleAPI.applyBurn(e, d.infBurnDps, d.infBurnTime2, u);
-      e._burnAmp = Math.max(e._burnAmp || 0, d.infBurnAmpTime);
-      spawnDamageNumber(e, '🔥 인페르노', { crit: true });
-    });
-    s.phase = 'lag2'; s.t = d.infLag2; u._holdT = d.infLag2; u.el.classList.add('noir-lag');
+    s.fan.classList.add('out'); const f = s.fan; s.fan = null; scheduleTask(() => n75Rm(f), 320);
+    s.phase = 'lag1'; s.t = d.infLag1; s.puff = 0;
+    infernoState(u, 'inf-overheat');
+    spawnDamageNumber(u, '💨 과열', { dot: true });
     return;
   }
-  if (s.phase === 'lag2' && s.t <= 0) s.phase = 'idle';
+  if (s.phase === 'lag1') {
+    s.puff -= dt; if (s.puff <= 0) { s.puff = 0.22; infernoPuff(u, 'fx-inf-steam'); }
+    if (s.t > 0) return;
+    s.phase = 'warn'; s.t = d.infWarn; s.rect = infernoLineRect(u);
+    s.warnEl = infernoLineFx(s.rect, 'warn', '<b class="fill"></b><em>⚠</em><em>⚠</em><em>⚠</em>');
+    s.warnEl.style.setProperty('--dur', d.infWarn + 's');
+    const host = n75Host();
+    s.vig = document.createElement('div'); s.vig.className = 'fx-n75 fx-inf-vignette' + (host === document.body ? ' fixed' : ''); host.appendChild(s.vig);
+    infernoState(u, 'inf-roar');
+    v41Callout(u, '⚠ 인페르노');
+    return;
+  }
+  if (s.phase === 'warn') {
+    if (Math.random() < dt * 20) infernoEmber(u.x + (Math.random() - 0.5) * unitRadius(u) * 2, u.y + (Math.random() - 0.5) * unitRadius(u) * 2, false);
+    if (s.t > 0) return;
+    infernoFire(u, s);
+    s.phase = 'lag2'; s.t = d.infLag2; s.puff = 0;
+    infernoState(u, 'inf-spent');
+    return;
+  }
+  if (s.phase === 'lag2') {
+    s.puff -= dt; if (s.puff <= 0) { s.puff = 0.5; infernoPuff(u, 'fx-inf-smoke'); }
+    if (s.t > 0) return;
+    s.phase = 'idle'; u._infHold = false;
+    infernoState(u, '');
+    u.atkCooldown = 0;
+  }
 }
-// ── 일진: 반경 4칸에 들어온 이동속도 3칸 이상 적은 2초 정지 · 적이 들어오면 스탠드 (2초 · 0.5초마다 근접 180, 정지시킨 적은 +160%) ──
+
+// ── 일진: 반경 4칸에 들어온 이동속도 3칸 이상 적은 2초 정지 · 적이 들어오면 스탠드 (5초에 한 번 · 2초 · 0.5초마다 근접 180, 정지시킨 적은 +160%) ──
 function tickBully(u, dt) {
-  const R = u.def.bullyRadiusCells * GRID, now = new Set();
+  const R = u.def.bullyRadiusCells * GRID, now = new Set(), was = u._bullyIn || (u._bullyIn = new Set());
+  if (u._standCd > 0) u._standCd = Math.max(0, u._standCd - dt);
   n75Foes(u).forEach(e => {
     if (Math.hypot(e.x - u.x, e.y - u.y) > R + unitRadius(e)) return;
     now.add(e.uid);
-    if (u._bullyIn.has(e.uid)) return;
+    if (was.has(e.uid)) return;
     if ((e.def.speed || 0) / GRID >= u.def.bullyFastCells) { stunUnit(e, u.def.bullyStop); e._bullyStopT = u.def.bullyStop; e._bullyStopBy = u; spawnDamageNumber(e, '✋ 멈춰', { crit: true }); }
     bullyStand(u, e);
   });
   u._bullyIn = now;
-  if (u._standCd > 0) u._standCd = Math.max(0, u._standCd - dt);
   const st = u._stand;
   if (!st) return;
   st.t -= dt; st.tick -= dt;
@@ -28421,41 +28672,42 @@ function tickBully(u, dt) {
       dealDamage(u, e, u.def.standDmg * (stopped ? 1 + u.def.standBonus : 1), { isSkill: true, skipAtkBuff: true });
     });
   }
-  if (st.t <= 0) { st.el.remove(); u._stand = null; }
+  if (st.t <= 0) { n75Rm(st.el); u._stand = null; }
 }
 function bullyStand(u, e) {
-  const ang = Math.atan2(e.y - u.y, e.x - u.x), off = unitRadius(u) * 2.2;
-  const x = clamp(u.x + Math.cos(ang) * off, 0, MAP_W), y = clamp(u.y + Math.sin(ang) * off, 0, MAP_H);
   if (u._stand || u._standCd > 0) return; // 스탠드는 5초에 한 번 (2초 지속)
   u._standCd = u.def.standCd;
+  const ang = Math.atan2(e.y - u.y, e.x - u.x), off = unitRadius(u) * 2.2;
+  const x = clamp(u.x + Math.cos(ang) * off, 0, MAP_W), y = clamp(u.y + Math.sin(ang) * off, 0, MAP_H);
   const img = (u.el && u.el.querySelector('img') && u.el.querySelector('img').src) || u.def.portrait;
   const el = fx38('fx-n75 fx-stand', x, y, `<img src="${img}" alt="">`);
   el.style.width = el.style.height = unitRadius(u) * 2 + 'px';
   u._stand = { t: u.def.standTime, tick: 0.5, x, y, el };
   v41Callout(u, '👊 스탠드');
 }
+
 function tick75(u, dt) {
   if (!u.alive) return;
   if (u._floatT > 0) { u._floatT -= dt; if (u._floatT <= 0) { u._floatT = 0; u._float = false; if (u.el) u.el.classList.remove('n75-float'); } }
-  if (u._burnAmp > 0) u._burnAmp = Math.max(0, u._burnAmp - dt);
+  if (u._burnAmp > 0) { u._burnAmp = Math.max(0, u._burnAmp - dt); if (!u._burnAmp && u.el) u.el.classList.remove('inf-marked'); }
+  if (u._scorchT > 0) { u._scorchT = Math.max(0, u._scorchT - dt); if (u.el && u.el.classList.contains('inf-scorch') !== u._scorchT > 0) u.el.classList.toggle('inf-scorch', u._scorchT > 0); }
   if (u._bullyStopT > 0) u._bullyStopT = Math.max(0, u._bullyStopT - dt);
   if (u._exo) { u._exo.t -= dt; if (u._exo.t <= 0) exorcistEnd(u); }
-  if (u.charId === 'rewind') {
-    if (u._rw) { u._rw.t -= dt; if (u._rw.num) u._rw.num.textContent = Math.max(0, u._rw.t).toFixed(2); if (u._rw.t <= 0) { rewindApply(u); u._rwCd = u.def.rwEvery; } }
-    else { u._rwCd -= dt; if (u._rwCd <= 0) rewindStart(u); } // [역행] 중에는 쿨타임이 줄지 않는다
+  switch (u.charId) {
+    case 'rewind':
+      if (u._rw) { u._rw.t -= dt; if (u._rw.num) u._rw.num.textContent = Math.max(0, u._rw.t).toFixed(2); if (u._rw.t <= 0) { rewindApply(u); u._rwCd = u.def.rwEvery; } }
+      else { u._rwCd = (u._rwCd ?? u.def.rwEvery) - dt; if (u._rwCd <= 0) rewindStart(u); } // [역행] 중에는 쿨타임이 줄지 않는다
+      break;
+    case 'exorcist': u._exoCd = (u._exoCd ?? u.def.exoEvery) - dt; if (u._exoCd <= 0) { u._exoCd = u.def.exoEvery; exorcistRitual(u); } break;
+    case 'mercenary': tickMerc(u, dt); break;
+    case 'waterspout': if (!(u.stun > 0)) { u._wsCd = (u._wsCd ?? 0.6) - dt; if (u._wsCd <= 0) u._wsCd = waterspoutCast(u) ? u.def.atkSpeed : 0.3; } break;
+    case 'inferno': tickInferno(u, dt); break;
+    case 'bully': tickBully(u, dt); break;
   }
-  if (u.charId === 'exorcist') { u._exoCd -= dt; if (u._exoCd <= 0) { u._exoCd = u.def.exoEvery; exorcistRitual(u); } }
-  if (u.charId === 'mercenary') tickMerc(u, dt);
-  if (u.charId === 'waterspout' && !(u.stun > 0)) { u._wsCd -= dt; if (u._wsCd <= 0) u._wsCd = waterspoutCast(u) ? u.def.atkSpeed : 0.3; }
-  if (u.charId === 'inferno') tickInferno(u, dt);
-  if (u.charId === 'bully') tickBully(u, dt);
 }
 function tick75Global(dt) { tickSpouts(dt); }
 function onDeath75(u) {
-  if (u._rw) { if (u._rw.ov) u._rw.ov.remove(); u._rw = null; }
-  if (u._mcAim) { u._mcAim.el.remove(); u._mcAim = null; }
-  if (u._stand) { u._stand.el.remove(); u._stand = null; }
-  if (u._inf) { if (u._inf.fan) u._inf.fan.remove(); if (u._inf.warnEl) u._inf.warnEl.remove(); u._inf = null; }
+  n75Clear(u);
   if (u._exo) { u._exo = null; if (u.el) u.el.classList.remove('exo-possessed'); }
   if (u._mcClientOf) { const m = u._mcClientOf; u._mcClientOf = null; if (m.alive) mercArm(m, u._lastBy); }
 }
@@ -31861,6 +32113,7 @@ function recordRoundStats(winnerSide, timedOut) {
   state.matchStats.push({ round: state.round, winner: winnerSide, timedOut, seconds: Math.round(state.combatTime || 0), rows: list });
 }
 function endRoundCombat(winnerSide, timedOut = false) {
+  cleanup75(); // 7.5.1 신규 지후 연출이 결과 화면에 남지 않게
   botMind.roundEnd(winnerSide); // 5.7 봇 이모티콘
   if (state.mode !== 'preview' && winnerSide !== 'draw' && state.screen === 'battle') sfx(winnerSide === meSide() ? 'round_win' : 'round_lose'); // 5.7.6 효과음
   if (state.mode === 'wwe') { wweRoundEnd(winnerSide, timedOut); return; } // 4.6.3 WWE는 따로 정산
@@ -32635,6 +32888,24 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.5.1': {
+    label: 'v7.5.1 안정화 · 인페르노 개편',
+    date: '2026.10.10',
+    sections: [
+      { title: '버그 수정', items: [
+        { emoji:'🛠️', name:'전투가 멈추던 문제', tag:'fix', color:'#e5322d', desc:'7.5 이후 <b>화상 · 독</b> 피해가 들어갈 때 오류가 나서 전투가 멈추거나 꼬이던 문제를 고쳤어요.' },
+        { emoji:'🧹', name:'신규 지후 연출 잔상', tag:'fix', color:'#7a7a7a', desc:'라운드가 끝날 때 시간역행 시계 · 스코프 · 스탠드 · 화염 연출이 화면에 남던 문제를 고쳤어요. 시간역행 화면 효과는 이제 전장 안에만 떠요.' },
+        { emoji:'⏪', name:'시간역행 지후', tag:'fix', color:'#4fa3c7', portraitKey:'rewind', desc:'되돌릴 때 최대 체력은 건드리지 않아요 ([절상] · [ㅤㅤㅤ]와 꼬이던 문제). 그 사이 변신한 지후는 되돌리지 않아요. 저장한 자리에 잔상이 보여요.' },
+      ] },
+      { title: '인페르노 개편', items: [
+        { emoji:'🔥', name:'인페르노 지후', tag:'buff', color:'#d4380d', portraitKey:'inferno', desc:'HP <b>2,900 → 3,900</b> · 이제 <b>근접</b> 지후 · 이동속도 <b>0.8 → 2.2칸</b> · [소각] <b>2.5칸 · 100° → 3.5칸 · 80°</b> (가까운 적 쪽으로 천천히 돈다) · [인페르노] 뒤 행동불능 <b>9 → 5초</b>.' },
+        { emoji:'✨', name:'인페르노 연출', tag:'system', color:'#ff5a1f', desc:'불꽃 오라 · 차징 · 화염 부채꼴 · 불티 · 과열 증기 · 경고선 · 화면 흔들림 · 맵을 가르는 불길 · 그을린 바닥 · 화상 표식까지 새로 그렸어요.' },
+      ] },
+      { title: '연출', items: [
+        { emoji:'🎯', name:'용병 · 엑소시스트', tag:'adjust', color:'#5d6b3a', desc:'용병 저격에 탄도, 엑소시스트 [강령]에 영혼 줄기 연출을 넣었어요.' },
+      ] },
+    ],
+  },
   '7.5': {
     label: 'v7.5 신규 지후 6종',
     date: '2026.10.10',
