@@ -15098,7 +15098,7 @@ function settleMatch(won, draw, surrendered = false) {
     if (!castleMode) {
       // 업적 보상이 생기면서 승리 다이아는 경험치 부스트 중에만 준다
       diamonds = profile.xpBoost.activeUntil > Date.now() ? 100 + Math.floor(Math.random() * 101) : 0;
-      gold = 1000 + Math.floor(Math.random() * 1001);
+      gold = 500 + Math.floor(Math.random() * 301); // 7.4.5 1,000~2,000 → 500~800
       profile.wins++;
       if (state.mode === 'ranked') recordRankedForm(true);
     }
@@ -31620,7 +31620,7 @@ function finishMatch(winnerSide, surrendered = false) {
       ${settlement.streakXp ? `<div class="settlement-row"><span>🔥 ${settlement.streak}연승 보너스</span><b class="gain">+${settlement.streakXp} EXP</b></div>` : ''}
       ${settlement.draftTicket ? `<div class="settlement-row"><span>티켓</span><b class="gain">+${settlement.draftTicket} 🎟️ (보유 ${profile.draftTickets || 0}/${TICKET_MAX})</b></div>` : ''}
       <div class="v4-lvline"><div class="t"><span>Lv.${settlement.before.level}${levelUp ? ` → Lv.${settlement.after.level}` : ''}</span><span>EXP ${formatNumber(settlement.after.current)} / ${formatNumber(settlement.after.required)}</span></div><div class="bar"><div style="width:${xpRatio}%"></div></div></div>
-      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? `드래프트전: 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외) · 승리 시 ◆${DRAFT_WIN_DIAMONDS} · EXP +100~150 · 패배 시 변동 없음${devBoostActive() ? ' · 🎉 개발자 부스트: 승리 시 ◆100~200' : ''}` : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50' + (devBoostActive() ? ' · 🎉 개발자 부스트 중: 승리하면 다이아 100~200 무조건' : '')}</div>`;
+      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? `드래프트전: 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외) · 승리 시 ◆${DRAFT_WIN_DIAMONDS} · EXP +100~150 · 패배 시 변동 없음${devBoostActive() ? ' · 🎉 개발자 부스트: 승리 시 ◆100~200' : ''}` : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +500~800 · 패배: EXP -30~50' + (devBoostActive() ? ' · 🎉 개발자 부스트 중: 승리하면 다이아 100~200 무조건' : '')}</div>`;
   }
   card.insertAdjacentHTML('afterbegin', '<div class="settlement-heading"><span>전투 보상</span><b id="settlementProgressLabel">정산 중 · 0%</b></div><div class="settlement-progress"><span id="settlementProgressFill"></span></div>');
   const steps = Array.from(card.children).filter(el => !el.classList.contains('settlement-heading') && !el.classList.contains('settlement-progress'));
@@ -32183,6 +32183,9 @@ const PATCH_NOTES = {
         { emoji:'☠️', name:'약화 스껄 지후', tag:'nerf', color:'#7a7a7a', portraitKey:'skul', desc:'HP <b>800 → 500</b>.' },
         { emoji:'🔩', name:'티타늄 지후', tag:'nerf', color:'#3d4f5c', portraitKey:'titanium', desc:'피격 쉴드 지속시간 <b>1 → 0.65초</b>.' },
       ] },
+      ] },
+      { title: '시스템', items: [
+        { emoji:'●', name:'승리 골드', tag:'adjust', color:'#d4a017', desc:'게임 승리 골드 <b>1,000~2,000 → 500~800</b>.' },
       { title: '버그 수정', items: [
         { emoji:'🔒', name:'봉인 · 석화', tag:'fix', color:'#6d4c8f', portraitKey:'seal', desc:'봉인(석화)된 티타늄 지후의 쉴드가 사라지지 않고 계속 남던 문제를 고쳤어요.' },
       ] },
