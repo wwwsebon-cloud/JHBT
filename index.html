@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.4.5"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.4.5"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7894,7 +7894,7 @@ const CHARACTER_BALANCE = {
   drone: { hp: 3400, atk: 150, atkSpeed: 2.3, range: 36, speed: 90, droneShots: 5, droneGap: 0.1, droneRadiusCells: 0.8 },
   radiation: { hp: 5200, atk: 300, atkSpeed: 2, range: 90, speed: 135, radDps: 80, radTime: 3, leakDelay: 0.5, leakRadiusCells: 2, leakTime: 6, leakTick: 0.5, leakDmg: 150 },
   whiteknight: { deployLimit: 1, hp: 4000, atk: 260, atkSpeed: 1, range: 72, speed: 76.5, isMelee: true, lightShield: 2000, escortDr: 0.5 },
-  seal: { deployLimit: 1, hp: 2600, atk: 0, atkSpeed: 1, range: 225, speed: 58.5, noAttack: true, holdRange: true, sealDelay: 1, sealMaxLv: 5, sealFreeLv: 2 }, // 체력* · 사거리*
+  seal: { deployLimit: 1, hp: 2600, atk: 0, atkSpeed: 1, range: 225, speed: 58.5, noAttack: true, holdRange: true, sealDelay: 1, sealMaxLv: 5, sealFreeLv: 1 }, // 체력* · 사거리*
   bluelight: { hp: 2600, atk: 40, atkSpeed: 1, range: 270, speed: 67.5, noAttack: true, holdRange: true, blTime: 3.5, blEvery: 5, blTick: 0.2, blBounces: 3 }, // 체력* · 발사 간격 5초*
   // ===== 7.0 신규 2차: 눈덩이 · 늑대 · 드림스케이프 · 락 · 리콜 · 마녀 (px 는 45px 격자 기준) =====
   snowball: {
@@ -10003,7 +10003,7 @@ const CHAR_DB = {
     id: 'seal', name: '봉인 지후', emoji: '🔒', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'mythic', color: '#6d4c8f', portrait: PORTRAITS.seal || jhPlaceholder('🔒', '#6d4c8f'),
     ...CHARACTER_BALANCE.seal,
-    skillDesc: '공격하지 않는다 · <b>출격제한 1</b>. 라운드 시작 1초 뒤 봉인되지 않은 무작위 적 하나를 <b>[봉인]</b>한다. <b>[봉인]</b>: 아무것도 할 수 없고, <b>그 판 내내</b> 유지된다. 디버프 면역을 무시하며 디버프 해제로 풀리지 않는다. 풀려면 그 지후의 레벨을 <b>2</b> 올려야 한다. 레벨 <b>6 이상</b>인 지후에게는 통하지 않는다.'
+    skillDesc: '공격하지 않는다 · <b>출격제한 1</b>. 라운드 시작 1초 뒤 봉인되지 않은 무작위 적 하나를 <b>[봉인]</b>한다. <b>[봉인]</b>: 아무것도 할 수 없고, <b>그 판 내내</b> 유지된다. 디버프 면역을 무시하며 디버프 해제로 풀리지 않는다. 풀려면 그 지후의 레벨을 <b>1</b> 올려야 한다. 레벨 <b>6 이상</b>인 지후에게는 통하지 않는다.'
   },
   bluelight: {
     id: 'bluelight', name: '블루라이트 지후', emoji: '💠', role: 'dealer', roleLabel: '딜러',
@@ -27444,7 +27444,7 @@ function incapTick(u, dt) {
   u.desVx = 0; u.desVy = 0; u.physLock = 0;
   if (u._incap.stone) tickStone(u, dt);
   if (u.charId === 'titanium') tickTitanium(u, dt); // 7.4.5 봉인·석화 중에도 티타늄 쉴드는 시간이 지나면 사라진다
-  if (u._incap && u._incap.seal && (u.level || 1) >= (u._sealLv || 1) + (CHARACTER_BALANCE.seal.sealFreeLv || 2)) unseal(u);
+  if (u._incap && u._incap.seal && (u.level || 1) >= (u._sealLv || 1) + (CHARACTER_BALANCE.seal.sealFreeLv || 1)) unseal(u);
   if (u._incap && u._incap.sync && !(u._syncBy && u._syncBy.alive)) { u._syncBy = null; setIncap(u, 'sync', false); spawnDamageNumber(u, '🔗 동기화 해제', { heal: true }); }
 }
 // 7.4 라운드 시작 준비 (readyRoundSkills 에서)
@@ -27469,8 +27469,8 @@ function readyRound74(u) {
   u._cultT = 0;
   if (u.charId === 'cult' || (pl74(u) && pl74(u).cult)) u._cultT = CHARACTER_BALANCE.cult.cultDelay; // 포교된 지후도 종을 울린다
   const pl = state.placements && u.placementId ? state.placements.find(p => p.id === u.placementId) : null;
-  if (pl && pl.sealLv) { // 봉인은 그 판 내내: 레벨을 2 올리기 전까지 다음 라운드에도 봉인된 채로 나온다
-    if ((u.level || 1) >= pl.sealLv + (CHARACTER_BALANCE.seal.sealFreeLv || 2)) delete pl.sealLv;
+  if (pl && pl.sealLv) { // 봉인은 그 판 내내: 레벨을 1 올리기 전까지 다음 라운드에도 봉인된 채로 나온다
+    if ((u.level || 1) >= pl.sealLv + (CHARACTER_BALANCE.seal.sealFreeLv || 1)) delete pl.sealLv;
     else { u._sealLv = pl.sealLv; setIncap(u, 'seal', true); }
   }
 }
@@ -27768,7 +27768,7 @@ function escortIntercept(target, dmg) { // applyDamageRaw 에서: 호위 대상�
   return target._escortStrong ? dmg * (1 - (k.def.escortDr ?? 0.5)) : dmg;
 }
 
-// ── 봉인: 라운드 시작 1초 뒤 봉인되지 않은 무작위 적 하나를 [봉인] (그 판 내내 · 레벨을 2 올리면 풀림 · 레벨 6 이상은 면역)
+// ── 봉인: 라운드 시작 1초 뒤 봉인되지 않은 무작위 적 하나를 [봉인] (그 판 내내 · 레벨을 1 올리면 풀림 · 레벨 6 이상은 면역)
 function sealRandomFoe(u) {
   const foes = state.units.filter(e => e.alive && !e.isCastle && isHostile(u, e) && !(e._incap && e._incap.seal) && (e.level || 1) <= u.def.sealMaxLv && !e.isClone && e.expire == null && !e.skipCount);
   if (!foes.length) return;
@@ -32179,7 +32179,7 @@ const PATCH_NOTES = {
     sections: [
       { title: '밸런스', items: [
         { emoji:'🦇', name:'모티 지후', tag:'adjust', color:'#5b2a86', portraitKey:'mortis', desc:'HP <b>4,000 → 3,600</b> · 박쥐 떼 폭 <b>2배</b> (몸 지름의 70% → 140%) · 콤보 뒤 대기 <b>3.5초</b>.' },
-        { emoji:'🔒', name:'봉인 지후', tag:'nerf', color:'#6d4c8f', portraitKey:'seal', desc:'출격제한 <b>2 → 1기</b>.' },
+        { emoji:'🔒', name:'봉인 지후', tag:'nerf', color:'#6d4c8f', portraitKey:'seal', desc:'출격제한 <b>2 → 1기</b> · 봉인을 풀려면 레벨을 <b>2 → 1</b> 올리면 돼요.' },
         { emoji:'👑', name:'스껄킹 지후', tag:'nerf', color:'#4a4a4a', portraitKey:'skulking', desc:'HP <b>4,000 → 2,400</b> · 약화 스껄 소환 간격 <b>6 → 9.5초</b> · 출격제한 <b>1기</b>.' },
         { emoji:'☠️', name:'약화 스껄 지후', tag:'nerf', color:'#7a7a7a', portraitKey:'skul', desc:'HP <b>800 → 500</b>.' },
         { emoji:'🔩', name:'티타늄 지후', tag:'nerf', color:'#3d4f5c', portraitKey:'titanium', desc:'피격 쉴드 지속시간 <b>1 → 0.65초</b>.' },
