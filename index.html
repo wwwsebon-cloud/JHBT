@@ -9862,7 +9862,7 @@ const CHAR_DB = {
     id: 'wine', name: '와인 지후', emoji: '🍷', role: 'support', roleLabel: '서포터',
     rarity: 'mythic', color: '#8e1b3a', portrait: PORTRAITS.wine || jhPlaceholder('🍷', '#8e1b3a'),
     ...CHARACTER_BALANCE.wine,
-    skillDesc: 'HP 2,900 · ATK 180 · 공격 간격 1초 · 사거리 5칸. 배치하면 <b>인접한 4방향</b>의 아군에게 <b>[와인]</b>을 준다. [와인]을 받은 지후는 <b>4.5초</b>마다 한 모금 마시며 최대 체력의 <b>12%</b>를 잃고, 공격력이 <b>영구히 7%</b> 오르며, 3초 동안 치명타 확률 <b>+4%</b> · 치명타 피해 <b>+150%</b>. 마시기 직전 와인을 든 지후가 <b>2명 이상</b>이면 <b>[건배]</b>: 와인 지후와 그들이 HP <b>200</b>을 회복한다. <b>[패시브]</b> 와인 지후는 건배할 때마다 공격력이 <b>10%</b> 오른다.'
+    skillDesc: 'HP 2,900 · ATK 180 · 공격 간격 1초 · 사거리 5칸. 배치하면 <b>인접한 4방향</b>의 아군에게 <b>[와인]</b>을 준다. [와인]을 받은 지후는 <b>4.5초</b>마다 한 모금 마시며 최대 체력의 <b>12%</b>를 잃고, 공격력이 <b>영구히 7%</b> (복리) 오르며, 3초 동안 치명타 확률 <b>+4%</b> · 치명타 피해 <b>+150%</b>. 마시기 직전 와인을 든 지후가 <b>2명 이상</b>이면 <b>[건배]</b>: 와인 지후와 그들이 HP <b>200</b>을 회복한다. <b>[패시브]</b> 와인 지후는 건배할 때마다 공격력이 <b>10%</b> (복리) 오른다.'
   },
   cult: {
     id: 'cult', name: '사이비 지후', emoji: '🔔', role: 'utility', roleLabel: '보조형',
@@ -27428,8 +27428,8 @@ function readyRound74(u) {
   if (u.charId === 'cotton') { u._cottonHits = 0; u._cottonUses = 0; }
   if (u.charId === 'wine') { u._winePending = true; u._wineCd = u.def.wineEvery; }
   { const p = pl74(u); // 와인 공격력 증가는 판 내내 (배치 기록에 남긴다)
-    if (p && p.wineSips) { u._wineSips = p.wineSips; battleAPI.setBuff(u, 'wine-atk', 'atk', CHARACTER_BALANCE.wine.wineAtk * p.wineSips, 9999); }
-    if (p && p.wineToasts && u.charId === 'wine') { u._toasts = p.wineToasts; battleAPI.setBuff(u, 'wine-toast', 'atk', CHARACTER_BALANCE.wine.toastAtk * p.wineToasts, 9999); } }
+    if (p && p.wineSips) { u._wineSips = p.wineSips; battleAPI.setBuff(u, 'wine-atk', 'atk', Math.pow(1 + CHARACTER_BALANCE.wine.wineAtk, p.wineSips) - 1, 9999); }
+    if (p && p.wineToasts && u.charId === 'wine') { u._toasts = p.wineToasts; battleAPI.setBuff(u, 'wine-toast', 'atk', Math.pow(1 + CHARACTER_BALANCE.wine.toastAtk, p.wineToasts) - 1, 9999); } }
   if (u.charId === 'skulking') { u._skFirst = true; u._skT = u.def.skEvery; }
   u._cultT = 0;
   if (u.charId === 'cult' || (pl74(u) && pl74(u).cult)) u._cultT = CHARACTER_BALANCE.cult.cultDelay; // 포교된 지후도 종을 울린다
@@ -27999,12 +27999,12 @@ function wineRound(u) {
     v41Callout(u, '🥂 건배!');
     [u, ...holders].forEach(a => healUnit(a, d.toastHeal));
     const pl = pl74(u); u._toasts = (u._toasts || 0) + 1; if (pl) pl.wineToasts = u._toasts;
-    battleAPI.setBuff(u, 'wine-toast', 'atk', d.toastAtk * u._toasts, 9999);
+    battleAPI.setBuff(u, 'wine-toast', 'atk', Math.pow(1 + d.toastAtk, u._toasts) - 1, 9999); // 복리
   }
   holders.forEach(h => {
     h.hp = Math.max(1, h.hp - h.maxHp * d.wineHpCost);
     const pl = pl74(h); h._wineSips = (h._wineSips || 0) + 1; if (pl) pl.wineSips = h._wineSips;
-    battleAPI.setBuff(h, 'wine-atk', 'atk', d.wineAtk * h._wineSips, 9999);
+    battleAPI.setBuff(h, 'wine-atk', 'atk', Math.pow(1 + d.wineAtk, h._wineSips) - 1, 9999); // 복리
     h._wineT = d.wineBuffTime; h._wineCrit = d.wineCrit; h._wineCritDmg = d.wineCritDmg;
     spawnDamageNumber(h, '🍷 꿀꺽', { dot: true });
     updateUnitBars(h);
@@ -32152,7 +32152,7 @@ const PATCH_NOTES = {
         { emoji:'🤍', name:'백기사 지후', tag:'new', color:'#d9d4c3', portraitKey:'whiteknight', desc:'신화 · 탱커 · 출격제한 1. 바로 앞 칸 아군을 호위: <b>[빛의 방패] 2,000</b>이 그 아군의 피해를 50% 로 대신 받는다. 방패가 깨지면 그 아군은 받는 피해 50% 감소 · 상시 디버프 면역.' },
         { emoji:'🔒', name:'봉인 지후', tag:'new', color:'#6d4c8f', portraitKey:'seal', desc:'신화 · 컨트롤러 · 출격제한 2. 1초 뒤 무작위 적을 <b>[봉인]</b>: 그 판 내내 행동불능 (레벨을 2 올리면 해제 · 레벨 6 이상 면역).' },
         { emoji:'💠', name:'블루라이트 지후', tag:'new', color:'#3fd8ff', portraitKey:'bluelight', desc:'신화 · 딜러. 무작위 적 방향으로 3.5초 레이저 · 벽에서 3번 반사. 닿은 선마다 0.2초마다 40 피해.' },
-        { emoji:'🍷', name:'와인 지후', tag:'new', color:'#8e1b3a', portraitKey:'wine', desc:'신화 · 서포터. 인접 4방향 아군에게 <b>[와인]</b>: 4.5초마다 최대 체력 12%를 마시고 공격력 <b>영구 +7%</b> · 3초 치명타 +4% · 치명타 피해 +150%. 2명 이상이면 먼저 <b>[건배]</b>로 200 회복 · 와인 지후 공격력 +10%.' },
+        { emoji:'🍷', name:'와인 지후', tag:'new', color:'#8e1b3a', portraitKey:'wine', desc:'신화 · 서포터. 인접 4방향 아군에게 <b>[와인]</b>: 4.5초마다 최대 체력 12%를 마시고 공격력 <b>영구 +7%</b> (복리) · 3초 치명타 +4% · 치명타 피해 +150%. 2명 이상이면 먼저 <b>[건배]</b>로 200 회복 · 와인 지후 공격력 +10% (복리).' },
         { emoji:'🔔', name:'사이비 지후', tag:'new', color:'#8a5a2b', portraitKey:'cult', desc:'전설 · 보조형 · 출격제한 1. 5초 뒤 <b>포교의 종</b> (반경 7칸 · 200) + 적 하나를 <b>[포교 대기]</b>. 그 적이 살아남고 우리가 그 라운드를 지면 <b>영구히 우리 편</b> (배치 한도 +1).' },
         { emoji:'☁️', name:'솜 지후', tag:'new', color:'#e8e4dc', portraitKey:'cotton', desc:'전설 · 서포터. 14번 공격마다 반경 5칸 아군에게 <b>최대 체력 40% 쉴드</b> (라운드당 3번).' },
         { emoji:'👑', name:'스껄킹 지후', tag:'new', color:'#4a4a4a', portraitKey:'skulking', desc:'신화 · 소환형 · 움직이지 않는다. 라운드 시작 때 <b>약화 스껄</b> 2마리, 이후 6초마다 1마리 (HP 800 · ATK 200 · 부활 53%).' },
