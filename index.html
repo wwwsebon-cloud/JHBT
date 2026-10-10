@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.4.7"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.5"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -741,6 +741,46 @@ html, body {
 .fx-bobber-ring { position:absolute; transform:translate(-50%,-50%); border-radius:50%; border:2px dashed rgba(42,127,184,.6); background:rgba(42,127,184,.08); pointer-events:none; z-index:2; }
 .fx-fishline { position:absolute; height:1.5px; background:rgba(30,30,30,.75); transform-origin:0 50%; pointer-events:none; z-index:8; }
 .unit.hooked { box-shadow: 0 0 0 3px rgba(42,127,184,.9), 0 0 14px rgba(42,127,184,.8); }
+/* 7.5 신규 지후 */
+.fx-rewind-overlay { position:fixed; inset:0; pointer-events:none; z-index:60; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; background:radial-gradient(circle, rgba(79,163,199,.10), rgba(20,40,60,.18)); animation:rw-fade .3s ease-out; }
+.fx-rewind-overlay.enemy { background:radial-gradient(circle, rgba(199,79,79,.10), rgba(60,20,20,.18)); }
+.fx-rewind-overlay .rw-clock { position:relative; width:min(46vmin,340px); height:min(46vmin,340px); border-radius:50%; border:3px solid rgba(40,120,170,.5); box-shadow:inset 0 0 30px rgba(40,120,170,.18), 0 0 18px rgba(255,255,255,.5); opacity:.6; }
+.fx-rewind-overlay .rw-clock::before { content:''; position:absolute; inset:8%; border-radius:50%; background:repeating-conic-gradient(rgba(40,120,170,.55) 0 1.2deg, transparent 1.2deg 30deg); -webkit-mask:radial-gradient(circle, transparent 86%, #000 87%); mask:radial-gradient(circle, transparent 86%, #000 87%); }
+.fx-rewind-overlay .rw-clock i { position:absolute; left:50%; bottom:50%; transform-origin:50% 100%; background:rgba(30,90,140,.75); border-radius:3px; box-shadow:0 0 4px rgba(255,255,255,.7); }
+.fx-rewind-overlay .rw-h { width:6px; height:26%; margin-left:-3px; animation:rw-back 4s linear forwards; }
+.fx-rewind-overlay .rw-m { width:3px; height:40%; margin-left:-1.5px; animation:rw-back 1s linear infinite; }
+.fx-rewind-overlay .rw-num { font:900 clamp(28px,7vmin,54px)/1 ui-monospace,monospace; color:rgba(25,95,140,.85); text-shadow:0 0 8px #fff, 0 0 14px rgba(255,255,255,.8); letter-spacing:1px; }
+@keyframes rw-back { from { transform:rotate(0deg); } to { transform:rotate(-360deg); } }
+@keyframes rw-fade { from { opacity:0; } to { opacity:1; } }
+.fx-rewind-burst { transform:translate(-50%,-50%); width:120px; height:120px; border-radius:50%; border:3px solid rgba(160,220,255,.9); animation:pulse-out .6s ease-out forwards; }
+.fx-exo-ring { transform:translate(-50%,-50%); border-radius:50%; border:2px solid rgba(160,140,255,.9); background:radial-gradient(circle, rgba(107,95,168,.25), transparent 70%); animation:pulse-out .7s ease-out forwards; }
+.unit.exo-possessed { box-shadow:0 0 0 3px rgba(150,130,255,.9), 0 0 18px rgba(150,130,255,.8); }
+.unit.exo-possessed .unit-icon img { filter:hue-rotate(220deg) saturate(1.4); }
+.unit.merc-client::after { content:'📜'; position:absolute; right:-6px; top:-8px; font-size:14px; pointer-events:none; }
+.unit.merc-armed { box-shadow:0 0 0 2px rgba(93,107,58,.95), 0 0 10px rgba(255,60,60,.6); }
+.fx-merc-scope { transform:translate(-50%,-50%); width:64px; height:64px; border-radius:50%; border:2px solid #ff2a2a; box-shadow:0 0 8px rgba(255,40,40,.8); z-index:9; animation:merc-aim 2s linear forwards; }
+.fx-merc-scope i { position:absolute; inset:0; background:linear-gradient(#ff2a2a,#ff2a2a) center/2px 100% no-repeat, linear-gradient(#ff2a2a,#ff2a2a) center/100% 2px no-repeat; }
+@keyframes merc-aim { from { transform:translate(-50%,-50%) scale(1.8); opacity:.4; } to { transform:translate(-50%,-50%) scale(.8); opacity:1; } }
+.fx-merc-shot { transform:translate(-50%,-50%); width:40px; height:40px; border-radius:50%; background:radial-gradient(circle, #fff, #ff3a3a 40%, transparent 70%); animation:pulse-out .3s ease-out forwards; }
+.fx-spout { transform:translate(-50%,-50%); border-radius:50%; z-index:3; }
+.fx-spout.warn { border:2px dashed rgba(63,143,191,.9); background:rgba(63,143,191,.12); }
+.fx-spout.on { border:2px solid rgba(140,210,255,.9); background:radial-gradient(circle, rgba(220,245,255,.55), rgba(63,143,191,.35) 55%, rgba(63,143,191,.1)); }
+.fx-spout.on i { position:absolute; left:50%; bottom:50%; width:46%; height:180%; margin-left:-23%; border-radius:50% 50% 40% 40%; background:linear-gradient(0deg, rgba(140,210,255,.75), rgba(220,245,255,.15)); filter:blur(1px); animation:spout-swirl .5s linear infinite; transform-origin:50% 100%; }
+@keyframes spout-swirl { 0% { transform:skewX(8deg) scaleX(.9); } 50% { transform:skewX(-8deg) scaleX(1.05); } 100% { transform:skewX(8deg) scaleX(.9); } }
+.unit.n75-float .unit-icon { transform:translateY(-8px); filter:drop-shadow(0 10px 5px rgba(0,0,0,.3)); }
+.fx-inferno-fan { transform:translate(-50%,-50%); border-radius:50%; z-index:4; background:conic-gradient(from calc(var(--a) - 50deg), rgba(255,120,30,.55) 0 100deg, transparent 100deg); -webkit-mask:radial-gradient(circle, #000 69%, transparent 70%); mask:radial-gradient(circle, #000 69%, transparent 70%); }
+.fx-inferno-fan.charge { opacity:.45; animation:inv-pulse .3s ease-in-out infinite alternate; }
+.fx-inferno-fan.on { background:conic-gradient(from calc(var(--a) - 50deg), rgba(255,220,80,.85), rgba(255,90,20,.8) 50deg, rgba(255,220,80,.85) 100deg, transparent 100deg); animation:inferno-flicker .12s steps(2) infinite; }
+@keyframes inferno-flicker { 50% { filter:brightness(1.25); } }
+.fx-inferno-line { position:absolute; z-index:4; }
+.fx-inferno-line.warn { border:2px dashed rgba(255,60,30,.95); background:repeating-linear-gradient(45deg, rgba(255,60,30,.18) 0 10px, transparent 10px 20px); animation:inv-pulse .25s ease-in-out infinite alternate; }
+.fx-inferno-line.fire { background:linear-gradient(0deg, rgba(255,90,20,.15), rgba(255,200,60,.85), rgba(255,90,20,.15)); box-shadow:0 0 24px rgba(255,90,20,.8); animation:fade-out .7s ease-out forwards; }
+@keyframes fade-out { to { opacity:0; } }
+.fx-stand { transform:translate(-50%,-50%); border-radius:50%; overflow:hidden; opacity:.75; z-index:6; box-shadow:0 0 0 2px rgba(180,120,255,.9), 0 0 14px rgba(180,120,255,.8); filter:hue-rotate(250deg) saturate(1.5); }
+.fx-stand img { width:100%; height:100%; object-fit:cover; }
+.fx-stand.hit { animation:stand-punch .25s ease-out; }
+@keyframes stand-punch { 0% { transform:translate(-50%,-50%) scale(1); } 40% { transform:translate(-50%,-50%) scale(1.18); } 100% { transform:translate(-50%,-50%) scale(1); } }
+
 .fx-scythe-spin { position:absolute; transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; z-index:9;
   background:conic-gradient(from 0deg, transparent 0 55%, rgba(91,75,138,.0) 55%, rgba(170,150,230,.55) 80%, rgba(240,235,255,.95) 92%, transparent 93%);
   -webkit-mask:radial-gradient(circle, transparent 38%, #000 40%, #000 70%, transparent 72%); mask:radial-gradient(circle, transparent 38%, #000 40%, #000 70%, transparent 72%);
@@ -7883,6 +7923,12 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
 <script>
 // 지후별 기본 수치와 스킬 상수. 설명(CHAR_DB)·패치노트와 함께 맞춘다.
 const CHARACTER_BALANCE = {
+  rewind: { deployLimit: 1, hp: 2400, atk: 180, atkSpeed: 1, range: 225, speed: 67.5, rwEvery: 8, rwDelay: 4, rwStun: 1.5 }, // 7.5 신규 · 이동속도* · 출격제한*
+  exorcist: { hp: 3600, atk: 260, atkSpeed: 3, range: 180, speed: 67.5, exoEvery: 9, exoRadiusCells: 2, exoHeal: 500, exoBoost: 0.6, exoTime: 5, exoHpLoss: 0.35, exoStun: 2 }, // 7.5 신규 · 강령 지속 5초* · 이동속도*
+  mercenary: { deployLimit: 1, hp: 3900, atk: 100, atkSpeed: 7, range: 225, speed: 67.5, noAttack: true, holdRange: true, mcBase: 100, mcHpFrac: 0.65, mcEvery: 7, mcAim: 2 }, // 7.5 신규 · 이동속도*
+  waterspout: { hp: 2600, atk: 70, atkSpeed: 3, range: 270, speed: 67.5, noAttack: true, holdRange: true, wsRadiusCells: 1.5, wsWarn: 0.5, wsTime: 2.5, wsTick: 0.5, wsHeal: 120, wsDmg: 70, wsFloat: 1.5 }, // 7.5 신규 · 체력* · 공격 간격 3초* · 이동속도*
+  inferno: { hp: 2900, atk: 90, atkSpeed: 1, range: 112.5, speed: 36, noAttack: true, holdRange: true, infRangeCells: 2.5, infFanDeg: 100, infCharge: 1.5, infBurnTime: 5, infTick: 0.2, infTickDmg: 90, infLag1: 2, infWarn: 1, infLineWidth: 2.5, infLacer: 0.3, infLacerTime: 7, infBurnDps: 100, infBurnTime2: 5, infBurnAmpTime: 10, infLag2: 9 }, // 7.5 신규 (히든)
+  bully: { hp: 3800, atk: 180, atkSpeed: 1, range: 180, speed: 58.5, noAttack: true, holdRange: true, bullyRadiusCells: 4, bullyFastCells: 3, bullyStop: 2, standTime: 2, standCd: 5, standEvery: 0.5, standRadiusCells: 1.5, standDmg: 180, standBonus: 1.6 }, // 7.5 신규 · 체력 380 → 3,800 (오타로 보고)* · 이동속도*
   wine: { hp: 2900, atk: 180, atkSpeed: 1, range: 225, speed: 67.5, wineEvery: 4.5, wineHpCost: 0.07, wineAtk: 0.07, wineCrit: 0.07, wineCritDmg: 1.5, wineBuffTime: 3, toastHeal: 200, toastAtk: 0.1 }, // 7.4 이동속도*
   cult: { deployLimit: 1, hp: 2400, atk: 0, atkSpeed: 1, range: 270, speed: 58.5, noAttack: true, holdRange: true, cultDelay: 5, cultRadiusCells: 7, cultDamage: 200 }, // 7.4 사거리* · 이동속도*
   cotton: { deployLimit: 1, hp: 3400, atk: 30, atkSpeed: 1, range: 225, speed: 67.5, cottonEvery: 12, cottonRadiusCells: 5, cottonShield: 0.4, cottonMax: 3 }, // 7.4 이동속도*
@@ -9895,6 +9941,42 @@ function jhPlaceholder(emoji, color) {
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 const CHAR_DB = {
+  rewind: {
+    id: 'rewind', name: '시간역행 지후', emoji: '⏪', role: 'support', roleLabel: '서포터',
+    rarity: 'mythic', color: '#4fa3c7', portrait: PORTRAITS.rewind || jhPlaceholder('⏪', '#4fa3c7'),
+    ...CHARACTER_BALANCE.rewind,
+    skillDesc: 'HP 2,400 · ATK 180 · 공격 간격 1초 · 사거리 5칸 · 출격제한 1. <b>8초마다</b> <b>[역행]</b>: 지금 아군들의 체력 · 쉴드 · 게이지 · 상태이상 · 버프 · 위치를 저장하고, 화면에 거꾸로 도는 시계와 <b>4.00</b>초 카운트다운이 뜬다. 4초 뒤 <b>자신을 뺀</b> 모든 아군을 저장한 상태로 <b>[되돌리기]</b>한다. 게이지는 되돌리지 않고 그 사이 찬 만큼 <b>한 번 더</b> 채워 준다. 부작용으로 모든 아군이 <b>1.5초</b> 행동불능. [역행] 중에는 자신의 쿨타임이 줄지 않는다. (그 사이 쓰러진 아군은 돌아오지 않는다)'
+  },
+  exorcist: {
+    id: 'exorcist', name: '엑소시스트 지후', emoji: '👻', role: 'support', roleLabel: '서포터',
+    rarity: 'legend', color: '#6b5fa8', portrait: PORTRAITS.exorcist || jhPlaceholder('👻', '#6b5fa8'),
+    ...CHARACTER_BALANCE.exorcist,
+    skillDesc: 'HP 3,600 · ATK 260 · 공격 간격 3초 · 사거리 4칸. <b>9초마다</b> <b>[강령술]</b>: 반경 <b>2칸</b> 아군을 모두 <b>500</b> 회복하고, 그 안의 무작위 아군 하나를 <b>[강령]</b>한다. <b>[강령]</b>: 체력을 모두 회복하고 <b>5초</b> 동안 공격력 · 공격속도 <b>+60%</b>. 끝나면 최대 체력의 <b>35%</b>를 잃고 <b>2초</b> 기절.'
+  },
+  mercenary: {
+    id: 'mercenary', name: '용병 지후', emoji: '🎯', role: 'dealer', roleLabel: '딜러',
+    rarity: 'epic', color: '#5d6b3a', portrait: PORTRAITS.mercenary || jhPlaceholder('🎯', '#5d6b3a'),
+    ...CHARACTER_BALANCE.mercenary,
+    skillDesc: 'HP 3,900 · 출격제한 1. 처음에는 공격하지 못한다. 라운드마다 자신을 뺀 무작위 아군 하나가 <b>[의뢰인]</b>이 된다. 의뢰인이 쓰러지면 <b>저격총</b>을 든다: <b>7초</b>마다 사거리 <b>무한</b> 저격, 피해 <b>100 + 대상 현재 체력의 65%</b>. 맞기 <b>2초</b> 전부터 대상에게 빨간 스코프가 뜬다. 대상: 의뢰인을 쓰러뜨린 적 → 아직 쏘지 않은 적 → 멀리 있는 적 순.'
+  },
+  waterspout: {
+    id: 'waterspout', name: '용오름 지후', emoji: '🌪️', role: 'hybrid', roleLabel: '하이브리드',
+    rarity: 'epic', color: '#3f8fbf', portrait: PORTRAITS.waterspout || jhPlaceholder('🌪️', '#3f8fbf'),
+    ...CHARACTER_BALANCE.waterspout,
+    skillDesc: 'HP 2,600 · 공격 간격 3초 · 사거리 무한. 일반 공격 대신 <b>가장 가까운 유닛</b>(아군 · 적 상관없이) 자리 바닥에 <b>0.5초</b> 뒤 반경 <b>1.5칸</b> <b>용오름</b>을 일으킨다 (2.5초 지속). 아군은 <b>1.5초 [부유]</b> + 0.5초마다 <b>120</b> 회복, 적은 0.5초마다 <b>70</b> 피해.'
+  },
+  inferno: {
+    id: 'inferno', name: '인페르노 지후', emoji: '🔥', role: 'dealer', roleLabel: '딜러',
+    rarity: 'hidden', color: '#d4380d', portrait: PORTRAITS.inferno || jhPlaceholder('🔥', '#d4380d'),
+    ...CHARACTER_BALANCE.inferno,
+    skillDesc: 'HP 2,900 · 이동속도 0.8칸. 일반 공격 대신 두 페이즈를 번갈아 쓴다. <b>[소각]</b>: 멈춰서 <b>1.5초</b> 차징 뒤 <b>5초</b> 동안 앞쪽 <b>100°</b> · 반경 <b>2.5칸</b>에 화염 (0.2초마다 <b>90</b>). 끝나면 <b>2초</b> 행동불능. 풀리자마자 자기 지름 <b>2.5배</b> 폭으로 아군 진영 끝부터 적진 끝까지 일직선을 경고하고 <b>1초</b> 뒤 <b>[인페르노]</b>: 닿은 적은 7초 <b>[절상] 30%</b> · 5초 화상 (초당 <b>100</b>) · 10초 동안 받는 화상 피해 <b>+100%</b>. 그 뒤 <b>9초</b> 행동불능, 다시 반복.'
+  },
+  bully: {
+    id: 'bully', name: '일진 지후', emoji: '😎', role: 'controller', roleLabel: '컨트롤러',
+    rarity: 'legend', color: '#2b2b3a', portrait: PORTRAITS.bully || jhPlaceholder('😎', '#2b2b3a'),
+    ...CHARACTER_BALANCE.bully,
+    skillDesc: 'HP 3,800 · 공격하지 않는다. 반경 <b>4칸</b>에 이동속도 <b>3칸 이상</b>인 적이 들어오면 곧바로 <b>2초 정지</b>. 적이 반경에 들어오면 자기 앞에 똑같이 생긴 <b>스탠드</b>를 부른다 (<b>5초</b>에 한 번 · 2초 지속): 0.5초마다 근접 범위에 <b>180</b>, 정지시킨 적에게는 <b>+160%</b>.'
+  },
   wine: {
     id: 'wine', name: '와인 지후', emoji: '🍷', role: 'support', roleLabel: '서포터',
     rarity: 'mythic', color: '#8e1b3a', portrait: PORTRAITS.wine || jhPlaceholder('🍷', '#8e1b3a'),
@@ -11569,6 +11651,7 @@ function masteryClass(count) { return ['none','novice','intermediate','expert','
 //   예) fire: { name: '불꽃 흔적', desc: '…', apply(def) { def.xxx = … } }
 //   apply(def) 는 유닛 전용 복사본을 받는다 (CHAR_DB 원본은 건드리지 않는다).
 const RANK_S_ABILITIES = {
+  exorcist: { name: '깊은 강령', desc: '[강령] 공격력 · 공격속도 증가 <b>+10%</b> (60 → 70%)' },
   medusa: { name: '단단한 돌', desc: '석화 돌 체력 <b>+500</b>', apply(d) { d.stoneHp += 500; } },
   remote: { name: '강화 장갑', desc: '드론 체력 <b>+400</b>', apply(d) { d.droneHpBonus = (d.droneHpBonus || 0) + 400; } },
   radiation: { name: '피폭', desc: '방사능 지역 안의 적 공격력 <b>-20%</b>', apply(d) { d.radWeak = true; } },
@@ -19291,7 +19374,7 @@ function emitCastleWave(castle) {
 
 function clearArenaUnits() {
   document.querySelectorAll('.fx-damage-num').forEach(el => el.remove()); // 7.0 이전 판 데미지 숫자 잔상
-  document.querySelectorAll('.unit, .fx-pulse, .fx-dagger, .fx-projectile, .fx-syringe-shot, .fx-glitch-burst, .fx-burst, .fx-death-fx, .lone-radius-ring, .unit-range-ring, .fx-slash, .fx-flame-stream, .fx-telegraph, .fx-charge-rect, .fx-lasso, .fx-mine, .fx-mine-blast, .fx-bolt, .fx-god-laser, .fx-hong-ball, .fx-smoke, .fx-dragon-fire, .fx-meteor, .fx-hollow-zone, .fx-beam, .fx-orbit-satellite, .fx-dust-zone, .fx-n74').forEach(el => el.remove()); if (state) { state.mines = []; state.radZones = []; }
+  document.querySelectorAll('.fx-n75, .unit, .fx-pulse, .fx-dagger, .fx-projectile, .fx-syringe-shot, .fx-glitch-burst, .fx-burst, .fx-death-fx, .lone-radius-ring, .unit-range-ring, .fx-slash, .fx-flame-stream, .fx-telegraph, .fx-charge-rect, .fx-lasso, .fx-mine, .fx-mine-blast, .fx-bolt, .fx-god-laser, .fx-hong-ball, .fx-smoke, .fx-dragon-fire, .fx-meteor, .fx-hollow-zone, .fx-beam, .fx-orbit-satellite, .fx-dust-zone, .fx-n74').forEach(el => el.remove()); if (state) { state.mines = []; state.radZones = []; }
 }
 
 function completeDeployAction(delay = 120) { // 4.6.7: 700ms → 120ms (배치 직후 바로 다음 선택)
@@ -21391,7 +21474,7 @@ function statusAndTimers(u, dt) {
     u._burnAcc = (u._burnAcc || 0) + dt;
     if (u._burnAcc >= 1) {
       u._burnAcc -= 1;
-      applyDamageRaw(u, burn.dps, { isDot: true, src: burn.src });
+      applyDamageRaw(u, burn.dps * (u._burnAmp > 0 ? 2 : 1), { isDot: true, src: burn.src }); // 7.5 인페르노: 받는 화상 +100%
       if (!u.alive) return;
       if (burn.grow) burn.dps += burn.grow; // 불타는 S: 틱마다 10씩 커진다
     }
@@ -21628,7 +21711,7 @@ function aiSteerAndAttack(u, dt) {
   if (u._flight || u._leap) return;
   if (u._tendon || u._tendonBack) { u.desVx = 0; u.desVy = 0; u.physLock = 0; clearTelegraph(u); return; } // 7.0 낫: [힘줄 끊기] 준비 · 7.4.7 벤 뒤 원위치 대기
   if (u._wolfLeap) { u.desVx = 0; u.desVy = 0; u.physLock = 0; clearTelegraph(u); return; } // 7.0 늑대: 하울링 후 순간이동 대기
-  if (u._holdT > 0 || u._cbDash) { u.desVx = 0; u.desVy = 0; u.physLock = 0; clearTelegraph(u); return; } // 7.4 느와르 엔드랙 · 카우보이 회피
+  if (u._holdT > 0 || u._cbDash || u._infHold) { u.desVx = 0; u.desVy = 0; u.physLock = 0; clearTelegraph(u); return; } // 7.4 느와르 엔드랙 · 카우보이 회피
   if (u._awakening != null) {
     u.desVx = 0; u.desVy = 0; u.physLock = 0;
     clearTelegraph(u);
@@ -22077,6 +22160,7 @@ function physicsStep(dt) {
   tickNew55(dt); // 5.5
   tickNew62(dt); // 6.2
   tickNew74Global(dt); // 7.4 방사능 지역
+  tick75Global(dt); // 7.5 용오름
   checkMines();
 
   for (let i = 0; i < units.length; i++) {
@@ -22885,6 +22969,7 @@ function applyDamageRaw(target, amount, opts) {
     if (source) source.dmgDealt = (source.dmgDealt || 0) + finalDmg;
   }
   afterHit46(target, opts);
+  { const by = caster || (opts && opts.src); if (by && by !== target && by.side !== target.side) target._lastBy = by; } // 7.5 용병: 의뢰인을 쓰러뜨린 적
   if (target.charId === 'tyrant') resolveTyrantRage(target);
   if (rankS(target, 'jaws') && !target._jawsSecond && target.alive && target.hp > 0 && target.hp <= target.maxHp * 0.25 && !target._dive && !target._realm) {
     target._jawsSecond = true; startDive(target, true); // 죠스 S: 체력이 처음 25%가 되면 한 번 더 잠수
@@ -27470,6 +27555,7 @@ function incapTick(u, dt) {
 // 7.4 라운드 시작 준비 (readyRoundSkills 에서)
 function pl74(u) { return state.placements && u.placementId ? state.placements.find(p => p.id === u.placementId) : null; }
 function readyRound74(u) {
+  readyRound75(u); // 7.5
   if (u.charId === 'finedust') u._fdPending = true;
   if (u.charId === 'medusa') u._medusaUsed = false;
   if (u.charId === 'mortis') { u._mo = null; u._moRest = 0; u._moDash = null; }
@@ -27518,6 +27604,7 @@ function tickNew74(u, dt) {
   if (u.charId === 'wine') { if (u._winePending) { u._winePending = false; wineStart(u); } u._wineCd -= dt; if (u._wineCd <= 0) { u._wineCd += u.def.wineEvery; wineRound(u); } }
   if (u._skFirst) { u._skFirst = false; skulkingSummon(u, u.def.skFirst); }
   if (u._nf || u._holdT > 0) tickNoir(u, dt);
+  tick75(u, dt); // 7.5
 }
 
 // ── 미세먼지: 무작위 적 하나에 [미세먼지] → 그 적이 일반 공격할 때마다 그 편 무작위 아군에게 [초미세먼지] 1중첩
@@ -28074,8 +28161,296 @@ function wineRound(u) {
     updateUnitBars(h);
   });
 }
+// ══ 7.5 신규 지후: 시간역행 · 엑소시스트 · 용병 · 용오름 · 인페르노 · 일진 ══
+function n75Foes(u) { return state.units.filter(e => e.alive && !e.isCastle && isHostile(u, e) && sameRealm(u, e) && !e._flight); }
+function n75Allies(u, withSelf) { return state.units.filter(a => a.alive && !a.isCastle && a.side === u.side && (withSelf || a !== u) && !a.isVault); }
+function n75Fwd(side) { return typhoonForward(side); }
+function readyRound75(u) {
+  if (u.charId === 'rewind') { u._rwCd = u.def.rwEvery; u._rw = null; }
+  if (u.charId === 'exorcist') u._exoCd = u.def.exoEvery;
+  if (u.charId === 'mercenary') { u._mcArmed = false; u._mcAim = null; u._mcCd = 0; u._mcShot = new Set(); u._mcKiller = null; u._mcPick = true; if (u.el) u.el.classList.remove('merc-armed'); }
+  if (u.charId === 'waterspout') u._wsCd = 0.6;
+  if (u.charId === 'inferno') { u._inf = { phase: 'idle', t: 0 }; u._infHold = false; }
+  if (u.charId === 'bully') { u._bullyIn = new Set(); u._stand = null; u._standCd = 0; }
+}
+// ── 시간역행: 8초마다 [역행] — 아군 상태 저장 → 4초 뒤 (자신 제외) 되돌리기 → 모든 아군 1.5초 행동불능 ──
+const RW_COUNT_UP = /(Gauge|Hits|Count|Stacks?)$/;
+const RW_COUNT_DOWN = /(Cd|Cooldown|Timer|Cycle|Delay)$/;
+function rewindSnap(a) {
+  const nums = {};
+  for (const k of Object.keys(a)) { const v = a[k]; if (typeof v === 'number' && (k === 'atkCooldown' || RW_COUNT_DOWN.test(k) || RW_COUNT_UP.test(k))) nums[k] = v; }
+  const st = {}; Object.keys(a.statuses || {}).forEach(k => { const s = a.statuses[k]; st[k] = s && typeof s === 'object' ? { ...s } : s; });
+  const buffs = {}; Object.keys(a.buffs || {}).forEach(k => { buffs[k] = { ...a.buffs[k] }; });
+  return { u: a, hp: a.hp, maxHp: a.maxHp, shield: a.shield || 0, maxShield: a.maxShield || 0, x: a.x, y: a.y, st, buffs, stun: a.stun || 0, fatal: a._fatal || 0, nums };
+}
+function rewindStart(u) {
+  const snaps = n75Allies(u, true).map(rewindSnap);
+  const ov = document.createElement('div');
+  ov.className = 'fx-n75 fx-rewind-overlay ' + (u.side === 'ally' ? 'ally' : 'enemy');
+  ov.innerHTML = '<div class="rw-clock"><i class="rw-h"></i><i class="rw-m"></i></div><b class="rw-num">4.00</b>';
+  document.body.appendChild(ov);
+  u._rw = { t: u.def.rwDelay, snaps, ov, num: ov.querySelector('.rw-num') };
+  v41Callout(u, '⏪ 역행');
+}
+function rewindApply(u) {
+  const rw = u._rw; u._rw = null;
+  if (rw.ov) rw.ov.remove();
+  if (!u.alive) return;
+  rw.snaps.forEach(s => {
+    const a = s.u;
+    if (a === u || !a.alive) return; // 자신은 되돌리지 않는다 · 그 사이 쓰러진 아군은 돌아오지 않는다
+    a.maxHp = s.maxHp; a.hp = Math.min(s.maxHp, Math.max(1, s.hp));
+    a.shield = s.shield; a.maxShield = s.maxShield;
+    if (a.el) a.el.classList.toggle('has-shield', a.shield > 0);
+    if (!a._realm && !a._flight && !a._leap) physSnap(a, s.x, s.y);
+    a.statuses = {}; Object.keys(s.st).forEach(k => { a.statuses[k] = s.st[k] && typeof s.st[k] === 'object' ? { ...s.st[k] } : s.st[k]; });
+    a.buffs = {}; Object.keys(s.buffs).forEach(k => { a.buffs[k] = { ...s.buffs[k] }; });
+    a.stun = s.stun; a._fatal = s.fatal;
+    // 게이지는 되돌리지 않고, 저장 뒤 찬 만큼 한 번 더 채운다
+    for (const k in s.nums) {
+      const now = a[k]; if (typeof now !== 'number' || !Number.isFinite(now)) continue;
+      if (k === 'atkCooldown' || RW_COUNT_DOWN.test(k)) { const filled = s.nums[k] - now; if (filled > 0) a[k] = Math.max(0, now - filled); }
+      else { const filled = now - s.nums[k]; if (filled > 0) a[k] = now + filled; }
+    }
+    updateUnitBars(a);
+    spawnDamageNumber(a, '⏪', { heal: true });
+  });
+  n75Allies(u, true).forEach(a => stunUnit(a, u.def.rwStun)); // 부작용: 모든 아군 1.5초 행동불능
+  fx38Flash('fx-n75 fx-rewind-burst', u.x, u.y, 0, 600);
+}
+// ── 엑소시스트: 9초마다 [강령술] — 반경 2칸 아군 500 회복 + 무작위 하나 [강령] ──
+function exorcistRitual(u) {
+  const R = u.def.exoRadiusCells * GRID;
+  const near = n75Allies(u, true).filter(a => Math.hypot(a.x - u.x, a.y - u.y) <= R + unitRadius(a));
+  fx38Flash('fx-n75 fx-exo-ring', u.x, u.y, R * 2, 700);
+  near.forEach(a => healUnit(a, u.def.exoHeal * supportMult(u)));
+  const pick = near.filter(a => a !== u && !a._exo);
+  if (!pick.length) return;
+  const t = pick[Math.floor(Math.random() * pick.length)];
+  const boost = u.def.exoBoost + (rankS(u, 'exorcist') ? 0.1 : 0);
+  t.hp = t.maxHp; updateUnitBars(t);
+  t._exo = { t: u.def.exoTime };
+  battleAPI.setBuff(t, 'exo-atk', 'atk', boost, u.def.exoTime);
+  battleAPI.setBuff(t, 'exo-aspd', 'aspd', boost, u.def.exoTime);
+  if (t.el) t.el.classList.add('exo-possessed');
+  spawnDamageNumber(t, '👻 강령', { crit: true });
+  v41Callout(u, '👻 강령술');
+}
+function exorcistEnd(a) {
+  a._exo = null;
+  if (a.el) a.el.classList.remove('exo-possessed');
+  if (!a.alive) return;
+  a.hp = Math.max(1, a.hp - a.maxHp * CHARACTER_BALANCE.exorcist.exoHpLoss); updateUnitBars(a);
+  stunUnit(a, CHARACTER_BALANCE.exorcist.exoStun);
+  spawnDamageNumber(a, '강령 해제', { dot: true });
+}
+// ── 용병: 라운드마다 무작위 아군 하나가 [의뢰인]. 의뢰인이 쓰러지면 저격총을 든다 ──
+function mercPickClient(u) {
+  u._mcPick = false;
+  const cands = n75Allies(u, false).filter(a => !a.isClone && a.expire == null && !a.ownerUid);
+  if (!cands.length) return;
+  const c = cands[Math.floor(Math.random() * cands.length)];
+  c._mcClientOf = u; u._mcClient = c;
+  if (c.el) c.el.classList.add('merc-client');
+  spawnDamageNumber(c, '📜 의뢰인', { heal: true });
+}
+function mercArm(m, killer) {
+  if (!m.alive || m._mcArmed) return;
+  m._mcArmed = true; m._mcKiller = killer || null; m._mcCd = 0.5;
+  if (m.el) m.el.classList.add('merc-armed');
+  v41Callout(m, '🎯 의뢰 수락');
+}
+function mercTarget(m) {
+  const foes = state.units.filter(e => e.alive && !e.isCastle && isHostile(m, e) && !e._realm && !e._flight);
+  if (!foes.length) return null;
+  if (m._mcKiller && m._mcKiller.alive && foes.includes(m._mcKiller)) return m._mcKiller;
+  const fresh = foes.filter(e => !m._mcShot.has(e.uid)), pool = fresh.length ? fresh : foes;
+  return pool.reduce((b, e) => Math.hypot(e.x - m.x, e.y - m.y) > Math.hypot(b.x - m.x, b.y - m.y) ? e : b);
+}
+function tickMerc(m, dt) {
+  if (m._mcPick) mercPickClient(m);
+  if (!m._mcArmed) return;
+  const a = m._mcAim;
+  if (a) {
+    if (!a.target.alive) { a.el.remove(); m._mcAim = null; m._mcCd = 0.3; return; }
+    a.el.style.left = a.target.x + 'px'; a.el.style.top = a.target.y + 'px';
+    a.t -= dt; if (a.t > 0) return;
+    a.el.remove(); m._mcAim = null; m._mcCd = m.def.mcEvery - m.def.mcAim;
+    m._mcShot.add(a.target.uid);
+    fx38Flash('fx-n75 fx-merc-shot', a.target.x, a.target.y, 0, 300);
+    dealDamage(m, a.target, m.def.mcBase + a.target.hp * m.def.mcHpFrac, { isSkill: true, skipAtkBuff: true });
+    return;
+  }
+  m._mcCd -= dt; if (m._mcCd > 0) return;
+  const t = mercTarget(m); if (!t) { m._mcCd = 0.3; return; }
+  m._mcAim = { t: m.def.mcAim, target: t, el: fx38('fx-n75 fx-merc-scope', t.x, t.y, '<i></i>') };
+}
+// ── 용오름: 일반 공격 대신 가장 가까운 유닛(아군 · 적 상관없이) 자리에 0.5초 뒤 반경 1.5칸 용오름 (2.5초) ──
+function waterspoutCast(u) {
+  let best = null, bd = Infinity;
+  state.units.forEach(e => { if (e === u || !e.alive || e.isCastle || !sameRealm(u, e) || e._flight) return; const d = Math.hypot(e.x - u.x, e.y - u.y); if (d < bd) { bd = d; best = e; } });
+  if (!best) return false;
+  const R = u.def.wsRadiusCells * GRID;
+  const el = fx38('fx-n75 fx-spout warn', best.x, best.y, '<i></i>'); el.style.width = el.style.height = R * 2 + 'px';
+  (state.spouts75 || (state.spouts75 = [])).push({ owner: u, side: u.side, realm: u._realm || null, x: best.x, y: best.y, R, warn: u.def.wsWarn, life: u.def.wsTime, tick: 0, el, born: state.combatTime });
+  return true;
+}
+function tickSpouts(dt) {
+  if (!state.spouts75 || !state.spouts75.length) return;
+  state.spouts75 = state.spouts75.filter(z => {
+    if (state.combatTime < z.born) { z.el.remove(); return false; }
+    const owner = z.owner, d = CHARACTER_BALANCE.waterspout;
+    const inside = () => state.units.filter(e => e.alive && !e.isCastle && (e._realm || null) === z.realm && Math.hypot(e.x - z.x, e.y - z.y) <= z.R + unitRadius(e));
+    if (z.warn > 0) {
+      z.warn -= dt; if (z.warn > 0) return true;
+      z.el.classList.remove('warn'); z.el.classList.add('on');
+      inside().forEach(e => { if (e.side === z.side && !(e._float && !e._floatT)) { e._float = true; e._floatT = d.wsFloat; if (e.el) e.el.classList.add('n75-float'); } });
+    }
+    z.life -= dt; z.tick -= dt;
+    if (z.tick <= 0) {
+      z.tick += d.wsTick;
+      inside().forEach(e => {
+        if (e.side === z.side) healUnit(e, d.wsHeal * (owner && owner.alive ? supportMult(owner) : 1));
+        else dealDamage(owner && owner.alive ? owner : null, e, d.wsDmg, { isSkill: true, skipAtkBuff: true });
+      });
+    }
+    if (z.life <= 0) { z.el.remove(); return false; }
+    return true;
+  });
+}
+// ── 인페르노: [소각] 1.5초 차징 → 5초 화염 (100° · 2.5칸 · 0.2초마다 90) → 2초 행동불능 → 경고 1초 → [인페르노] 일직선 불길 → 9초 행동불능 → 반복 ──
+function infernoNearest(u) {
+  let best = null, bd = Infinity;
+  n75Foes(u).forEach(e => { const d = Math.hypot(e.x - u.x, e.y - u.y); if (d < bd) { bd = d; best = e; } });
+  return best ? { e: best, d: bd } : null;
+}
+function infernoLineRect(u) { // 아군 진영 끝 → 적진 끝, 폭 = 지름 × 2.5
+  const w = unitRadius(u) * 2 * u.def.infLineWidth, ew = isEastWestLayout();
+  return ew ? { ew, x0: 0, y0: u.y - w / 2, len: MAP_W, w, cy: u.y } : { ew, x0: u.x - w / 2, y0: 0, len: MAP_H, w, cx: u.x };
+}
+function infernoLineFx(u, r, cls) {
+  const el = fx38('fx-n75 fx-inferno-line ' + cls, null, null, '');
+  if (r.ew) { el.style.left = '0px'; el.style.top = r.y0 + 'px'; el.style.width = r.len + 'px'; el.style.height = r.w + 'px'; }
+  else { el.style.left = r.x0 + 'px'; el.style.top = '0px'; el.style.width = r.w + 'px'; el.style.height = r.len + 'px'; }
+  return el;
+}
+function tickInferno(u, dt) {
+  const s = u._inf || (u._inf = { phase: 'idle', t: 0 }), d = u.def;
+  if (s.phase === 'idle') {
+    u._infHold = false;
+    const n = infernoNearest(u);
+    if (!n || n.d > d.infRangeCells * GRID + unitRadius(n.e)) return;
+    s.phase = 'charge'; s.t = d.infCharge; s.ang = Math.atan2(n.e.y - u.y, n.e.x - u.x); u._infHold = true;
+    s.fan = fx38('fx-n75 fx-inferno-fan charge', u.x, u.y, ''); s.fan.style.width = s.fan.style.height = d.infRangeCells * GRID * 2 + 'px';
+    s.fan.style.setProperty('--a', (s.ang * 180 / Math.PI + 90) + 'deg');
+    v41Callout(u, '🔥 소각');
+    return;
+  }
+  s.t -= dt;
+  if (s.fan) { s.fan.style.left = u.x + 'px'; s.fan.style.top = u.y + 'px'; }
+  if (s.phase === 'charge') { if (s.t <= 0) { s.phase = 'burn'; s.t = d.infBurnTime; s.tick = 0; s.fan.classList.remove('charge'); s.fan.classList.add('on'); } return; }
+  if (s.phase === 'burn') {
+    s.tick -= dt;
+    if (s.tick <= 0) {
+      s.tick += d.infTick;
+      const R = d.infRangeCells * GRID, half = d.infFanDeg * Math.PI / 360;
+      n75Foes(u).forEach(e => {
+        const dx = e.x - u.x, dy = e.y - u.y, dist = Math.hypot(dx, dy);
+        if (dist > R + unitRadius(e)) return;
+        let da = Math.abs(Math.atan2(dy, dx) - s.ang); if (da > Math.PI) da = Math.PI * 2 - da;
+        if (dist > unitRadius(e) && da > half) return;
+        dealDamage(u, e, d.infTickDmg, { isSkill: true, skipAtkBuff: true, noNum: true });
+      });
+    }
+    if (s.t <= 0) { s.fan.remove(); s.fan = null; s.phase = 'lag1'; s.t = d.infLag1; u._holdT = d.infLag1; u.el.classList.add('noir-lag'); }
+    return;
+  }
+  if (s.phase === 'lag1') { if (s.t <= 0) { s.phase = 'warn'; s.t = d.infWarn; s.rect = infernoLineRect(u); s.warnEl = infernoLineFx(u, s.rect, 'warn'); } return; }
+  if (s.phase === 'warn') {
+    if (s.t > 0) return;
+    s.warnEl.remove(); s.warnEl = null;
+    const r = s.rect, fire = infernoLineFx(u, r, 'fire'); scheduleTask(() => fire.remove(), 700);
+    v41Callout(u, '🔥 인페르노');
+    state.units.slice().forEach(e => {
+      if (!e.alive || e.isCastle || !isHostile(u, e) || !sameRealm(u, e)) return;
+      const off = r.ew ? Math.abs(e.y - r.cy) : Math.abs(e.x - r.cx);
+      if (off > r.w / 2 + unitRadius(e)) return;
+      applyLaceration(e, d.infLacerTime, d.infLacer);
+      battleAPI.applyBurn(e, d.infBurnDps, d.infBurnTime2, u);
+      e._burnAmp = Math.max(e._burnAmp || 0, d.infBurnAmpTime);
+      spawnDamageNumber(e, '🔥 인페르노', { crit: true });
+    });
+    s.phase = 'lag2'; s.t = d.infLag2; u._holdT = d.infLag2; u.el.classList.add('noir-lag');
+    return;
+  }
+  if (s.phase === 'lag2' && s.t <= 0) s.phase = 'idle';
+}
+// ── 일진: 반경 4칸에 들어온 이동속도 3칸 이상 적은 2초 정지 · 적이 들어오면 스탠드 (2초 · 0.5초마다 근접 180, 정지시킨 적은 +160%) ──
+function tickBully(u, dt) {
+  const R = u.def.bullyRadiusCells * GRID, now = new Set();
+  n75Foes(u).forEach(e => {
+    if (Math.hypot(e.x - u.x, e.y - u.y) > R + unitRadius(e)) return;
+    now.add(e.uid);
+    if (u._bullyIn.has(e.uid)) return;
+    if ((e.def.speed || 0) / GRID >= u.def.bullyFastCells) { stunUnit(e, u.def.bullyStop); e._bullyStopT = u.def.bullyStop; e._bullyStopBy = u; spawnDamageNumber(e, '✋ 멈춰', { crit: true }); }
+    bullyStand(u, e);
+  });
+  u._bullyIn = now;
+  if (u._standCd > 0) u._standCd = Math.max(0, u._standCd - dt);
+  const st = u._stand;
+  if (!st) return;
+  st.t -= dt; st.tick -= dt;
+  if (st.tick <= 0) {
+    st.tick += u.def.standEvery;
+    st.el.classList.remove('hit'); void st.el.offsetWidth; st.el.classList.add('hit');
+    const SR = u.def.standRadiusCells * GRID;
+    n75Foes(u).forEach(e => {
+      if (Math.hypot(e.x - st.x, e.y - st.y) > SR + unitRadius(e)) return;
+      const stopped = e._bullyStopBy === u && e._bullyStopT > 0;
+      dealDamage(u, e, u.def.standDmg * (stopped ? 1 + u.def.standBonus : 1), { isSkill: true, skipAtkBuff: true });
+    });
+  }
+  if (st.t <= 0) { st.el.remove(); u._stand = null; }
+}
+function bullyStand(u, e) {
+  const ang = Math.atan2(e.y - u.y, e.x - u.x), off = unitRadius(u) * 2.2;
+  const x = clamp(u.x + Math.cos(ang) * off, 0, MAP_W), y = clamp(u.y + Math.sin(ang) * off, 0, MAP_H);
+  if (u._stand || u._standCd > 0) return; // 스탠드는 5초에 한 번 (2초 지속)
+  u._standCd = u.def.standCd;
+  const img = (u.el && u.el.querySelector('img') && u.el.querySelector('img').src) || u.def.portrait;
+  const el = fx38('fx-n75 fx-stand', x, y, `<img src="${img}" alt="">`);
+  el.style.width = el.style.height = unitRadius(u) * 2 + 'px';
+  u._stand = { t: u.def.standTime, tick: 0.5, x, y, el };
+  v41Callout(u, '👊 스탠드');
+}
+function tick75(u, dt) {
+  if (!u.alive) return;
+  if (u._floatT > 0) { u._floatT -= dt; if (u._floatT <= 0) { u._floatT = 0; u._float = false; if (u.el) u.el.classList.remove('n75-float'); } }
+  if (u._burnAmp > 0) u._burnAmp = Math.max(0, u._burnAmp - dt);
+  if (u._bullyStopT > 0) u._bullyStopT = Math.max(0, u._bullyStopT - dt);
+  if (u._exo) { u._exo.t -= dt; if (u._exo.t <= 0) exorcistEnd(u); }
+  if (u.charId === 'rewind') {
+    if (u._rw) { u._rw.t -= dt; if (u._rw.num) u._rw.num.textContent = Math.max(0, u._rw.t).toFixed(2); if (u._rw.t <= 0) { rewindApply(u); u._rwCd = u.def.rwEvery; } }
+    else { u._rwCd -= dt; if (u._rwCd <= 0) rewindStart(u); } // [역행] 중에는 쿨타임이 줄지 않는다
+  }
+  if (u.charId === 'exorcist') { u._exoCd -= dt; if (u._exoCd <= 0) { u._exoCd = u.def.exoEvery; exorcistRitual(u); } }
+  if (u.charId === 'mercenary') tickMerc(u, dt);
+  if (u.charId === 'waterspout' && !(u.stun > 0)) { u._wsCd -= dt; if (u._wsCd <= 0) u._wsCd = waterspoutCast(u) ? u.def.atkSpeed : 0.3; }
+  if (u.charId === 'inferno') tickInferno(u, dt);
+  if (u.charId === 'bully') tickBully(u, dt);
+}
+function tick75Global(dt) { tickSpouts(dt); }
+function onDeath75(u) {
+  if (u._rw) { if (u._rw.ov) u._rw.ov.remove(); u._rw = null; }
+  if (u._mcAim) { u._mcAim.el.remove(); u._mcAim = null; }
+  if (u._stand) { u._stand.el.remove(); u._stand = null; }
+  if (u._inf) { if (u._inf.fan) u._inf.fan.remove(); if (u._inf.warnEl) u._inf.warnEl.remove(); u._inf = null; }
+  if (u._exo) { u._exo = null; if (u.el) u.el.classList.remove('exo-possessed'); }
+  if (u._mcClientOf) { const m = u._mcClientOf; u._mcClientOf = null; if (m.alive) mercArm(m, u._lastBy); }
+}
 // 7.4 사망 처리 (killUnit 에서)
 function onDeath74(u) {
+  onDeath75(u); // 7.5
   if (u._fineDust) { const fd = u._fineDust; u._fineDust = null; fineDustApply(fd.side, fd.owner); } // 대상이 쓰러지면 다른 적에게
   if (u._moBats) { u._moBats.forEach(b => b.el.remove()); u._moBats = null; }
   if (u._bl) { u._bl.els.forEach(el => el.remove()); u._bl = null; }
@@ -28866,6 +29241,7 @@ function dealDamage(caster, target, amount, opts) {
     updateUnitBars(caster);
   }
   afterHit46(target, opts);
+  { const by = caster || (opts && opts.src); if (by && by !== target && by.side !== target.side) target._lastBy = by; } // 7.5 용병: 의뢰인을 쓰러뜨린 적
   if (target.charId === 'tyrant') resolveTyrantRage(target);
   if (rankS(target, 'jaws') && !target._jawsSecond && target.alive && target.hp > 0 && target.hp <= target.maxHp * 0.25 && !target._dive && !target._realm) {
     target._jawsSecond = true; startDive(target, true); // 죠스 S: 체력이 처음 25%가 되면 한 번 더 잠수
@@ -28934,6 +29310,13 @@ function skillCdInfo(u) {
   if (u.charId === 'reaper') return null;
   if (u.charId === 'scythe' && u._tendonBack) return { cur: Math.max(0, u._tendonBack.t), max: u.def.tendonStay || 1.25 }; // 7.4.7 원위치까지
   if (u.charId === 'scythe') return { cur: Math.max(0, u._scytheCd ?? u.def.tendonFirst), max: u.def.tendonCooldown };
+  // 7.5 신규 지후
+  if (u.charId === 'rewind') return u._rw ? { cur: Math.max(0, u._rw.t), max: u.def.rwDelay } : { cur: Math.max(0, u._rwCd ?? u.def.rwEvery), max: u.def.rwEvery };
+  if (u.charId === 'exorcist') return { cur: Math.max(0, u._exoCd ?? u.def.exoEvery), max: u.def.exoEvery };
+  if (u.charId === 'mercenary' && u._mcArmed) return u._mcAim ? { cur: Math.max(0, u._mcAim.t), max: u.def.mcAim } : { cur: Math.max(0, u._mcCd || 0), max: u.def.mcEvery - u.def.mcAim };
+  if (u.charId === 'waterspout') return { cur: Math.max(0, u._wsCd ?? 0), max: u.def.atkSpeed };
+  if (u.charId === 'inferno' && u._inf && u._inf.phase !== 'idle') { const s = u._inf, d = u.def, m = { charge: d.infCharge, burn: d.infBurnTime, lag1: d.infLag1, warn: d.infWarn, lag2: d.infLag2 }[s.phase]; return { cur: Math.max(0, s.t), max: m || 1 }; }
+  if (u.charId === 'bully') return u._stand ? { cur: Math.max(0, u._stand.t), max: u.def.standTime } : { cur: Math.max(0, u._standCd || 0), max: u.def.standCd };
   // 7.4.7 게이지 정상화: 시간 · 타격 수로 무언가를 발동하는 지후들
   const hitsLeft = (n, every) => ({ cur: every - Math.min(every, n || 0), max: every, unit: '회' });
   if (u.charId === 'cotton' && (u._cottonUses || 0) < u.def.cottonMax) return hitsLeft(u._cottonHits, u.def.cottonEvery);
@@ -32241,6 +32624,21 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.5': {
+    label: 'v7.5 신규 지후 6종',
+    date: '2026.10.10',
+    releasedAt: '2026-10-10T21:33:00+09:00', // 신규 지후 픽업 48시간의 시작
+    sections: [
+      { title: '신규 지후', items: [
+        { emoji:'⏪', name:'시간역행 지후', tag:'new', color:'#4fa3c7', portraitKey:'rewind', desc:'신화 · 서포터. 8초마다 <b>[역행]</b>: 아군 상태를 저장하고 4초 뒤 (자신 제외) <b>되돌린다</b>. 게이지는 그 사이 찬 만큼 한 번 더. 되돌린 뒤 모든 아군 1.5초 행동불능.' },
+        { emoji:'👻', name:'엑소시스트 지후', tag:'new', color:'#6b5fa8', portraitKey:'exorcist', desc:'전설 · 서포터. 9초마다 <b>[강령술]</b>: 반경 2칸 아군 500 회복 + 무작위 하나 <b>[강령]</b> (풀회복 · 5초 공격력 · 공격속도 +60%, 끝나면 체력 35% 잃고 2초 기절).' },
+        { emoji:'🎯', name:'용병 지후', tag:'new', color:'#5d6b3a', portraitKey:'mercenary', desc:'영웅 · 딜러. 라운드마다 아군 하나가 <b>[의뢰인]</b>. 의뢰인이 쓰러지면 <b>저격총</b>: 7초마다 무한 사거리 100 + 현재 체력 65%.' },
+        { emoji:'🌪️', name:'용오름 지후', tag:'new', color:'#3f8fbf', portraitKey:'waterspout', desc:'영웅 · 하이브리드. 가장 가까운 유닛 자리에 <b>용오름</b>: 아군은 [부유] + 회복, 적은 피해.' },
+        { emoji:'🔥', name:'인페르노 지후', tag:'new', color:'#d4380d', portraitKey:'inferno', desc:'히든 · 딜러. <b>[소각]</b> 5초 화염 → <b>[인페르노]</b> 맵 끝까지 일직선 불길 ([절상] · 화상 · 받는 화상 +100%).' },
+        { emoji:'😎', name:'일진 지후', tag:'new', color:'#2b2b3a', portraitKey:'bully', desc:'전설 · 컨트롤러. 반경 4칸에 들어온 빠른 적(이동속도 3칸 이상)을 2초 정지 · 5초마다 <b>스탠드</b>를 불러 근접 공격.' },
+      ] },
+    ],
+  },
   '7.4.7': {
     label: 'v7.4.7 대규모 밸런스 · 리워크',
     date: '2026.10.10',
