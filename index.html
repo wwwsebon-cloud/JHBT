@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.5.4"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.5.7"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6051,6 +6051,73 @@ body.auc-picking .battle-world .unit:not(.auc-vault) { cursor:crosshair; }
 .auc-stage .cp.mine .cp-cup { box-shadow:0 6px 0 #e5322d; }
 .auc-stage .cp-cup:disabled { cursor:default; }
 .auc-stage .cp-r { font-size:12px; color:#999; } .auc-stage .cp-r.ok { color:#e5322d; }
+/* 7.5.7 러시안 룰렛: 원탁 · 가운데 리볼버 · 옆에 탄창 (움직임은 transform · opacity만) */
+.auc-stage .rrg-wrap { display:grid; grid-template-columns:minmax(0, 1fr) 168px; gap:12px; align-items:center; margin:6px 0; }
+.auc-stage .rrg-table { position:relative; width:100%; max-width:360px; aspect-ratio:1; margin:6px auto 26px; }
+.auc-stage .rrg-table.shake { animation:v7Shake .4s; }
+.auc-stage .rrg-felt { position:absolute; inset:22%; border-radius:50%; background:radial-gradient(circle at 50% 45%, #3a3a3a, #161616 70%); border:3px solid #111; box-shadow:inset 0 0 0 5px #fff, inset 0 0 0 7px #e5322d; }
+.auc-stage .rrg-gun { position:absolute; left:50%; top:50%; width:0; height:0; transform:rotate(var(--ga, 90deg)); transition:transform .45s cubic-bezier(.3,.9,.3,1.2); will-change:transform; }
+.auc-stage .rrg-gun i { position:absolute; left:-26px; top:-17px; width:80px; height:40px; display:block; }
+.auc-stage .rrg-gun svg { display:block; width:100%; height:100%; overflow:visible; }
+.auc-stage .rrg-gun.recoil i { animation:rrg-recoil .35s ease-out; }
+@keyframes rrg-recoil { 0% { transform:translateX(-14px) rotate(-16deg); } 100% { transform:none; } }
+.auc-stage .rrg-say { position:absolute; left:50%; top:62%; width:46%; transform:translateX(-50%); text-align:center; color:#fff; font:700 12px/1.35 var(--v7-kr, system-ui); pointer-events:none; }
+.auc-stage .rrg-say b { font-size:14px; } .auc-stage .rrg-say b.live { color:#ff5a52; font-size:17px; } .auc-stage .rrg-say b.blank { color:#d8d8d8; }
+.auc-stage .rrg-say small { font-size:10px; color:#bbb; }
+.auc-stage .rrg-seats { position:absolute; inset:0; }
+.auc-stage .rrg-seat { position:absolute; width:88px; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center; gap:2px; padding:0; border:0; background:none; color:#111; font-family:var(--v7-kr, system-ui); cursor:default; touch-action:manipulation; }
+.auc-stage .rrg-seat:disabled { opacity:1; }
+.auc-stage .rrg-av { position:relative; width:56px; height:56px; border-radius:50%; border:3px solid var(--pc); background:#fff; overflow:hidden; display:grid; place-items:center; font-weight:800; }
+.auc-stage .rrg-av img { width:100%; height:100%; object-fit:contain; }
+.auc-stage .rrg-seat b { max-width:100%; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .auc-stage .rrg-seat b em { font-style:normal; font-size:10px; color:#888; }
+.auc-stage .rrg-seat small { min-height:13px; font:800 10px var(--v7-kr, system-ui); color:#e5322d; }
+.auc-stage .rrg-seat::before { content:''; position:absolute; left:50%; top:-4px; width:64px; height:64px; margin-left:-32px; border-radius:50%; border:3px solid #e5322d; opacity:0; pointer-events:none; }
+.auc-stage .rrg-seat.turn::before { animation:rrg-turn 1s ease-in-out infinite; will-change:transform, opacity; }
+@keyframes rrg-turn { 0%, 100% { opacity:.25; transform:scale(1); } 50% { opacity:1; transform:scale(1.08); } }
+.auc-stage .rrg-seat.me .rrg-av { box-shadow:0 0 0 2px #fff, 0 0 0 4px #111; }
+.auc-stage .rrg-seat.dead { opacity:.45; } .auc-stage .rrg-seat.dead .rrg-av img { filter:grayscale(1); }
+.auc-stage .rrg-seat.dead .rrg-av::after { content:'✕'; position:absolute; inset:0; display:grid; place-items:center; color:#e5322d; font:800 40px/1 var(--v7-exo, sans-serif); }
+.auc-stage .rrg-seat.aimable { cursor:crosshair; }
+.auc-stage .rrg-seat.aimable .rrg-av::after { content:'⌖'; position:absolute; inset:0; display:grid; place-items:center; color:#e5322d; font-size:44px; opacity:0; transition:opacity .12s; }
+.auc-stage .rrg-seat.aimable:hover .rrg-av::after, .auc-stage .rrg-seat.aimable:focus-visible .rrg-av::after { opacity:.9; }
+.auc-stage .rrg-fx { position:absolute; width:0; height:0; pointer-events:none; z-index:2; }
+.auc-stage .rrg-fx i { position:absolute; left:-50px; top:-50px; width:100px; height:100px; border-radius:50%; background:radial-gradient(circle, #fff 0 18%, #ffcf3f 30%, #e5322d 52%, rgba(229,50,45,0) 70%); animation:rrg-burst .5s ease-out forwards; will-change:transform, opacity; }
+@keyframes rrg-burst { from { transform:scale(.2); opacity:1; } to { transform:scale(1.4); opacity:0; } }
+.auc-stage .rrg-fx b { position:absolute; left:-60px; top:-58px; width:120px; text-align:center; font:900 30px var(--v7-kr, system-ui); color:#e5322d; -webkit-text-stroke:1px #fff; animation:rrg-word 1.3s ease-out forwards; will-change:transform, opacity; }
+.auc-stage .rrg-fx.click b { font-size:20px; color:#555; -webkit-text-stroke:0; }
+@keyframes rrg-word { 0% { transform:scale(.4); opacity:0; } 15% { transform:scale(1.15); opacity:1; } 70% { transform:translateY(-8px); opacity:1; } 100% { transform:translateY(-16px); opacity:0; } }
+.auc-stage .rrg-mag { padding:10px; border:2px solid #111; background:#fff; text-align:center; }
+.auc-stage .rrg-mh { font:800 13px var(--v7-kr, system-ui); } .auc-stage .rrg-mh small { font-weight:700; font-size:10px; color:#888; }
+.auc-stage .rrg-cyl { position:relative; width:112px; height:112px; margin:8px auto; border-radius:50%; background:#ececea; border:3px solid #111; }
+.auc-stage .rrg-cyl > i { position:absolute; left:50%; top:50%; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; background:#111; }
+.auc-stage .rrg-ch { position:absolute; width:26px; height:26px; transform:translate(-50%, -50%); border-radius:50%; display:grid; place-items:center; font:800 12px var(--v7-exo, sans-serif); color:#999; background:#fff; border:2px dashed #aaa; }
+.auc-stage .rrg-ch.live { background:#e5322d; border:2px solid #111; }
+.auc-stage .rrg-ch.blank { background:#fff; border:2px solid #111; }
+.auc-stage .rrg-ch.live::after, .auc-stage .rrg-ch.blank::after { content:''; width:8px; height:8px; border-radius:50%; background:#111; opacity:.35; }
+.auc-stage .rrg-cnt { display:flex; justify-content:center; gap:10px; font-size:12px; }
+.auc-stage .rrg-cnt b { font:800 18px var(--v7-exo, sans-serif); } .auc-stage .rrg-cnt .live b { color:#e5322d; }
+.auc-stage .rrg-odds { margin-top:4px; font-size:11px; color:#555; } .auc-stage .rrg-odds b { color:#e5322d; font-size:13px; }
+.auc-stage .rrg-hist { display:flex; flex-wrap:wrap; justify-content:center; gap:3px; min-height:10px; margin-top:6px; }
+.auc-stage .rrg-hist i { width:10px; height:10px; border-radius:50%; border:1px solid #111; background:#fff; } .auc-stage .rrg-hist i.live { background:#e5322d; }
+.auc-stage .rrg-act { min-height:64px; }
+.auc-stage .rrg-act .mg-c { margin:6px 0; }
+.auc-stage .rrg-act .mg-big { min-width:0; height:48px; padding:0 16px; font-size:15px; }
+.auc-stage .rrg-act .mg-big.ghost { border-color:var(--pc, #111); }
+.auc-stage .rrg-act .rrg-self { background:#e5322d; }
+.auc-stage .rrg-turn { height:6px; background:#eee; overflow:hidden; }
+.auc-stage .rrg-turn i { display:block; height:100%; background:#e5322d; transform-origin:left center; will-change:transform; }
+.auc-stage .rrg-st { font:800 11px var(--v7-kr, system-ui); } .auc-stage .rrg-st.ok { color:#1f8f3a; } .auc-stage .rrg-st.out { color:#e5322d; }
+@media (max-width:760px) {
+  .auc-stage .rrg-wrap { grid-template-columns:1fr; gap:8px; }
+  .auc-stage.mg-rr .mg-body { display:none; } /* 자리에 생존 · 탈락이 이미 보인다 */
+  .auc-stage .rrg-say { top:57%; width:56%; font-size:11px; } .auc-stage .rrg-say b.live { font-size:15px; }
+  .auc-stage .rrg-table { max-width:300px; }
+  .auc-stage .rrg-seat { width:74px; } .auc-stage .rrg-av { width:46px; height:46px; } .auc-stage .rrg-seat::before { width:54px; height:54px; margin-left:-27px; }
+  .auc-stage .rrg-gun i { left:-21px; top:-14px; width:64px; height:32px; }
+  .auc-stage .rrg-mag { display:grid; grid-template-columns:auto 1fr; grid-template-areas:'c h' 'c n' 'c o' 'c s'; column-gap:10px; align-items:center; text-align:left; padding:8px; }
+  .auc-stage .rrg-mh { grid-area:h; } .auc-stage .rrg-cyl { grid-area:c; width:84px; height:84px; margin:0; } .auc-stage .rrg-ch { width:20px; height:20px; font-size:10px; }
+  .auc-stage .rrg-cnt { grid-area:n; justify-content:flex-start; } .auc-stage .rrg-odds { grid-area:o; } .auc-stage .rrg-hist { grid-area:s; justify-content:flex-start; }
+}
 /* 아래: 준비 시간 바 (내 골드 · 아이템) */
 .auc-bar { position:fixed; z-index:48; left:50%; bottom:calc(env(safe-area-inset-bottom, 0px) + 10px); transform:translateX(-50%); width:min(720px, calc(100vw - 20px)); display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:stretch; padding:10px; background:#fff; color:#111; border:2px solid #111; font-family:var(--v7-kr, system-ui); }
 .auc-bar[hidden] { display:none; }
@@ -29966,7 +30033,7 @@ const AUC_ITEMS = {
   shield:  { name: '개쩌는 방패', ico: '🛡️', w: 10, val: 12, tip: '무작위 아군 하나 받는 피해 -50% (다음 전투 동안)' },
   tough:   { name: '맷집', ico: '🪨', w: 10, val: 10, once: true, tip: '다음 전투 시작 5초 동안 아군 받는 피해 -35%' },
 };
-const AUC_MG = { bj: '블랙잭', portal: '포탈 지후', quiz: '초성 퀴즈', horse: '경마장', cups: '야바위' };
+const AUC_MG = { bj: '블랙잭', portal: '포탈 지후', quiz: '초성 퀴즈', horse: '경마장', cups: '야바위', roulette: '러시안 룰렛' }; // 7.5.7 러시안 룰렛
 var AUC = null; // var: showScreen 이 이 줄보다 먼저 불릴 수 있어서 (let 이면 TDZ)
 
 /* ---------- 작은 도구 ---------- */
@@ -30375,7 +30442,7 @@ function aucH_mgRoll() {
   const G = AUC.G;
   const opts = Object.keys(AUC_MG).filter(k => k !== 'portal' || G.round > 1); // 포탈은 첫 라운드에 안 나온다
   const pick = opts[Math.floor(aucRnd() * opts.length)];
-  aucGo('mgroll', { opts, pick }, AUC_CFG.rouletteMs, () => ({ bj: aucBjStart, portal: aucPortalStart, quiz: aucQuizStart, horse: aucHorseStart, cups: aucCupsStart })[pick]());
+  aucGo('mgroll', { opts, pick }, AUC_CFG.rouletteMs, () => ({ bj: aucBjStart, portal: aucPortalStart, quiz: aucQuizStart, horse: aucHorseStart, cups: aucCupsStart, roulette: aucRrStart })[pick]());
 }
 function aucH_mgEnd(ranks) {
   const G = AUC.G, mg = G.ph.mg, gain = {};
@@ -30389,7 +30456,7 @@ function aucRankBy(sides, better) { const out = {}; sides.forEach(s => { out[s] 
 function aucMgInput(p, a) {
   const mg = AUC.G.ph.mg;
   if (!mg || mg.ended || a.k !== mg.k) return;
-  ({ bj: aucBjInput, portal: aucPortalInput, quiz: aucQuizInput, horse: aucHorseInput, cups: aucCupsInput })[mg.k](p, a, mg);
+  ({ bj: aucBjInput, portal: aucPortalInput, quiz: aucQuizInput, horse: aucHorseInput, cups: aucCupsInput, roulette: aucRrInput })[mg.k](p, a, mg);
 }
 function aucMgAlive(mg) { return AUC && AUC.G && AUC.G.ph.mg === mg && !mg.ended; }
 
@@ -30610,6 +30677,168 @@ function aucCupsInput(p, a, mg) {
   if (mg.stage !== 'pick') return;
   const v = Number(a.v); if (!(v >= 0 && v < 4)) return;
   mg.picks[p.side] = v; aucPush(true);
+}
+
+
+// ── 러시안 룰렛 (7.5.7): 원탁에 앉아 차례대로 나 · 상대 중 하나를 쏜다 ──
+//    탄창 6발 · 실탄과 공포탄 개수만 공개 (순서는 방장만 안다). 나를 쐈는데 공포탄이면 한 번 더. 실탄에 맞으면 탈락.
+//    끝까지 살아남으면 1등 · 늦게 탈락할수록 높은 순위. 탄창이 비면 새 탄창을 넣는다.
+const AUC_RR = { turnSec: 12, shotMs: 1800, capSec: 180, chambers: 6 }; // 차례마다 12초 · 미니게임 전체 3분 (넘기면 살아남은 사람 모두 공동 1등)
+function aucRrLoad(mg) {
+  const n = AUC_RR.chambers, live = 1 + Math.floor(aucRnd() * 3);
+  const shells = Array.from({ length: n }, (_, i) => i < live);
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(aucRnd() * (i + 1)); [shells[i], shells[j]] = [shells[j], shells[i]]; }
+  AUC.sec.rr = shells; // 순서는 방장만 (방송하지 않는다)
+  mg.mag = { live, blank: n - live, total: n }; mg.spent = []; mg.loads = (mg.loads || 0) + 1;
+}
+function aucRrStart() {
+  const G = AUC.G, seats = G.ps.map(p => p.side);
+  const first = seats[Math.floor(aucRnd() * seats.length)];
+  aucGo('mg', { mg: { k: 'roulette', seats, alive: Object.fromEntries(seats.map(s => [s, true])), out: [], turn: first, stage: 'aim', shot: 0, tok: 0, last: null, mag: null, spent: [], loads: 0, turnMs: AUC_RR.turnSec * 1000 } }, AUC_RR.capSec * 1000, aucRrTimeUp);
+  const mg = G.ph.mg;
+  aucRrLoad(mg);
+  aucRrTurn(mg, first);
+}
+function aucRrNext(mg, from) { const s = mg.seats, i = s.indexOf(from); for (let k = 1; k <= s.length; k++) { const c = s[(i + k) % s.length]; if (mg.alive[c]) return c; } return null; }
+function aucRrTurn(mg, side) {
+  if (!aucMgAlive(mg) || mg.stage === 'done') return;
+  mg.turn = side; mg.stage = 'aim';
+  const tok = ++mg.tok;
+  aucPush(true);
+  const p = AUC.G.ps.find(x => x.side === side);
+  if (p && p.bot) aucLater(1200 + aucRnd() * 1600, () => { if (mg.tok === tok) aucRrInput(p, { k: 'roulette', v: aucRrBotPick(mg, p) }, mg); });
+  aucLater(mg.turnMs, () => { // 시간이 지나면 무작위 상대에게 쏜다
+    if (mg.tok !== tok || mg.stage !== 'aim' || !aucMgAlive(mg)) return;
+    const foes = mg.seats.filter(s => s !== side && mg.alive[s]);
+    aucRrFire(mg, side, foes.length ? foes[Math.floor(aucRnd() * foes.length)] : side, true);
+  });
+}
+// 봇: 남은 실탄 비율을 보고 판단 (공포탄이 많으면 나를 쏴서 한 번 더, 실탄이 많으면 상대를 쏜다)
+function aucRrBotPick(mg, p) {
+  const left = mg.mag.live + mg.mag.blank, pLive = left ? mg.mag.live / left : 0;
+  const foes = mg.seats.filter(s => s !== p.side && mg.alive[s]);
+  const foe = foes[Math.floor(aucRnd() * foes.length)];
+  if (!foe || pLive <= 0) return p.side;
+  if (pLive >= 1) return foe;
+  return aucRnd() < pLive + (aucRnd() - 0.5) * 0.3 ? foe : p.side;
+}
+function aucRrInput(p, a, mg) {
+  if (mg.stage !== 'aim' || mg.turn !== p.side || !mg.alive[p.side]) return;
+  const at = String(a.v || '');
+  if (!mg.seats.includes(at) || !mg.alive[at]) return;
+  aucRrFire(mg, p.side, at, false);
+}
+function aucRrFire(mg, by, at, auto) {
+  if (!aucMgAlive(mg) || mg.stage !== 'aim') return;
+  mg.tok++;
+  if (!AUC.sec.rr || !AUC.sec.rr.length) aucRrLoad(mg);
+  const live = !!AUC.sec.rr.shift();
+  if (live) mg.mag.live--; else mg.mag.blank--;
+  mg.spent.push(live ? 1 : 0);
+  mg.shot++; mg.last = { by, at, live, auto: !!auto, n: mg.shot };
+  mg.stage = 'shot';
+  if (live) { mg.alive[at] = false; mg.out.push(at); }
+  aucPush(true);
+  aucLater(AUC_RR.shotMs, () => {
+    if (!aucMgAlive(mg) || mg.stage === 'done') return;
+    if (mg.seats.filter(s => mg.alive[s]).length <= 1) { aucRrEnd(); return; }
+    if (!AUC.sec.rr.length) aucRrLoad(mg); // 탄창이 비면 새 탄창
+    aucRrTurn(mg, !live && at === by ? by : aucRrNext(mg, by)); // 나를 쐈는데 공포탄 → 한 번 더
+  });
+}
+function aucRrRanks(mg) { const score = s => mg.alive[s] ? 99 : mg.out.indexOf(s); return aucRankBy(mg.seats, (o, s) => score(o) > score(s)); }
+function aucRrEnd() {
+  const mg = AUC.G.ph.mg; if (!mg || mg.k !== 'roulette' || mg.ended || mg.stage === 'done') return;
+  mg.stage = 'done'; mg.tok++;
+  aucPush(true);
+  aucLater(1300, () => aucH_mgEnd(aucRrRanks(mg)));
+}
+function aucRrTimeUp() { aucRrEnd(); }
+
+// 화면: 원탁 (내 자리가 아래) · 가운데 리볼버 · 옆에 탄창
+function aucRrSeatOrder(mg) { const me = aucMe(), i = me ? mg.seats.indexOf(me.side) : 0; return mg.seats.map((_, k) => mg.seats[(Math.max(0, i) + k) % mg.seats.length]); }
+const AUC_RR_POS = [[50, 92], [8, 50], [50, 8], [92, 50]]; // 아래 · 왼쪽 · 위 · 오른쪽 (%)
+function aucRrStage(head) {
+  aucStage(`${head}<p class="mg-rule">차례가 오면 <b>나</b> 또는 <b>상대</b>를 쏴요 · 나를 쐈는데 <b>공포탄</b>이면 한 번 더 · <b>실탄</b>에 맞으면 탈락 · 끝까지 살아남으면 1등</p>
+    <div class="rrg-wrap"><div class="rrg-table"><div class="rrg-felt"></div><div class="rrg-gun"><i><svg viewBox="0 0 80 40" aria-hidden="true"><path d="M30 9h44a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H40v4h-6l-3 4h-6l-4 11a3 3 0 0 1-3 2H9a3 3 0 0 1-3-3.5L10 24 7 21V12a3 3 0 0 1 3-3z" fill="#ececec" stroke="#111" stroke-width="2" stroke-linejoin="round"/><rect x="20" y="5" width="18" height="16" rx="4" fill="#9c9c9c" stroke="#111" stroke-width="2"/><path d="M23 10h12M23 16h12" stroke="#111" stroke-width="1.5"/><path d="M7 21 10 24l-4 12.5a3 3 0 0 0 3 3.5h9a3 3 0 0 0 3-2l4-11" fill="#e5322d" stroke="#111" stroke-width="2" stroke-linejoin="round"/><path d="M28 22q1 8 9 7" fill="none" stroke="#111" stroke-width="2.5"/><rect x="70" y="5" width="4" height="4" fill="#111"/></svg></i></div><div class="rrg-say"></div><div class="rrg-seats"></div></div><div class="rrg-mag"></div></div>
+    <div class="rrg-act"></div><div class="mg-body"></div>`, 'mg mg-rr');
+  AUC.ui.rrShot = null; AUC.ui.rrTok = null;
+}
+function aucRrUpdate(mg) {
+  const me = aucMe(), G = AUC.G, order = aucRrSeatOrder(mg);
+  const table = document.querySelector('#aucStage .rrg-table'); if (!table) return;
+  const posOf = s => AUC_RR_POS[order.indexOf(s)] || [50, 50];
+  // 자리
+  const seats = table.querySelector('.rrg-seats');
+  const sig = JSON.stringify([order, mg.alive, mg.turn, mg.stage]);
+  if (seats.dataset.sig !== sig) {
+    seats.dataset.sig = sig;
+    seats.innerHTML = order.map(s => {
+      const p = aucP(s), [x, y] = posOf(s), lead = p.units && p.units[0] ? p.units[0][0] : null;
+      const canShoot = me && mg.stage === 'aim' && mg.turn === me.side && mg.alive[s];
+      return `<button type="button" class="rrg-seat${mg.alive[s] ? '' : ' dead'}${mg.turn === s && mg.stage !== 'done' ? ' turn' : ''}${aucIsMe(p) ? ' me' : ''}${canShoot ? ' aimable' : ''}" data-rr="${s}" style="left:${x}%;top:${y}%;--pc:${p.color}" ${canShoot ? '' : 'disabled'}>
+        <span class="rrg-av">${lead ? aucPic(lead) : '?'}</span><b>${escapeHtml(p.name)}${aucIsMe(p) ? ' <em>(나)</em>' : ''}</b><small>${mg.alive[s] ? (mg.turn === s && mg.stage !== 'done' ? '🎯 차례' : '') : '💀 탈락'}</small></button>`;
+    }).join('');
+    seats.querySelectorAll('[data-rr]').forEach(b => { b.onclick = () => aucAct({ k: 'roulette', v: b.dataset.rr }); });
+  }
+  // 리볼버: 차례인 사람 쪽을 겨누고 있다가, 쏘면 맞은 사람 쪽으로 돈다
+  const gun = table.querySelector('.rrg-gun'), aimAt = mg.stage === 'shot' && mg.last ? mg.last.at : mg.turn;
+  if (gun && aimAt) { const [x, y] = posOf(aimAt); const ang = Math.atan2(y - 50, x - 50) * 180 / Math.PI; gun.style.setProperty('--ga', ang.toFixed(1) + 'deg'); }
+  const say = table.querySelector('.rrg-say');
+  // 발사 연출 (한 번만)
+  if (mg.last && AUC.ui.rrShot !== mg.last.n) {
+    AUC.ui.rrShot = mg.last.n;
+    const [x, y] = posOf(mg.last.at);
+    const fx = document.createElement('div');
+    fx.className = 'rrg-fx ' + (mg.last.live ? 'bang' : 'click');
+    fx.style.left = x + '%'; fx.style.top = y + '%';
+    fx.innerHTML = mg.last.live ? '<i></i><b>탕!</b>' : '<b>찰칵</b>';
+    table.appendChild(fx); setTimeout(() => fx.remove(), 1400);
+    gun.classList.remove('recoil'); void gun.offsetWidth; gun.classList.add('recoil');
+    table.classList.toggle('shake', !!mg.last.live);
+    if (mg.last.live) { setTimeout(() => table.classList.remove('shake'), 500); }
+  }
+  if (say) {
+    const nm = s => escapeHtml(aucP(s).name);
+    say.innerHTML = mg.stage === 'done' ? '🏁 끝!'
+      : mg.stage === 'shot' && mg.last ? `${nm(mg.last.by)} → ${mg.last.by === mg.last.at ? '자기 자신' : nm(mg.last.at)}<br><b class="${mg.last.live ? 'live' : 'blank'}">${mg.last.live ? '💥 실탄!' : '찰칵… 공포탄'}</b>${!mg.last.live && mg.last.by === mg.last.at ? '<br><small>한 번 더!</small>' : ''}${mg.last.auto ? '<br><small>(시간 초과 · 아무나 쐈어요)</small>' : ''}`
+      : `<b>${nm(mg.turn)}</b>의 차례`;
+  }
+  // 탄창
+  const mag = document.querySelector('#aucStage .rrg-mag');
+  if (mag && mg.mag) {
+    const msig = JSON.stringify([mg.mag, mg.spent, mg.loads]);
+    if (mag.dataset.sig !== msig) {
+      mag.dataset.sig = msig;
+      const n = mg.mag.total, cells = Array.from({ length: n }, (_, i) => i < mg.spent.length ? (mg.spent[i] ? 'live' : 'blank') : 'q');
+      mag.innerHTML = `<div class="rrg-mh">탄창 <small>${mg.loads > 1 ? mg.loads + '번째 · 재장전' : '1번째'}</small></div>
+        <div class="rrg-cyl">${cells.map((c, i) => { const a = i / n * Math.PI * 2 - Math.PI / 2; return `<span class="rrg-ch ${c}" style="left:${(50 + Math.cos(a) * 34).toFixed(1)}%;top:${(50 + Math.sin(a) * 34).toFixed(1)}%">${c === 'q' ? '?' : ''}</span>`; }).join('')}<i></i></div>
+        <div class="rrg-cnt"><span class="live">실탄 <b>${mg.mag.live}</b></span><span class="blank">공포탄 <b>${mg.mag.blank}</b></span></div>
+        <div class="rrg-odds">다음 발이 실탄일 확률 <b>${(mg.mag.live + mg.mag.blank) ? Math.round(mg.mag.live / (mg.mag.live + mg.mag.blank) * 100) : 0}%</b></div>
+        <div class="rrg-hist">${mg.spent.map(v => `<i class="${v ? 'live' : 'blank'}"></i>`).join('')}</div>`;
+    }
+  }
+  // 내 차례 버튼
+  const act = document.querySelector('#aucStage .rrg-act');
+  if (act) {
+    const mine = me && mg.stage === 'aim' && mg.turn === me.side && mg.alive[me.side];
+    const asig = JSON.stringify([mine, mg.tok, mg.alive]);
+    if (act.dataset.sig !== asig) {
+      act.dataset.sig = asig;
+      act.innerHTML = mine ? `<div class="rrg-turn"><i></i></div><div class="mg-c"><button type="button" class="mg-big rrg-self" data-rr="${me.side}">나를 쏜다</button>${mg.seats.filter(s => s !== me.side && mg.alive[s]).map(s => `<button type="button" class="mg-big ghost" data-rr="${s}" style="--pc:${aucP(s).color}">→ ${escapeHtml(aucP(s).name)}</button>`).join('')}</div>`
+        : me && !mg.alive[me.side] ? '<p class="mg-note bad">💀 탈락했어요 · 구경해요</p>' : mg.stage !== 'aim' ? '<p class="mg-note">&nbsp;</p>' : `<p class="mg-note">${escapeHtml(aucP(mg.turn).name)}님이 고르는 중…</p><div class="rrg-turn"><i></i></div>`;
+      act.querySelectorAll('[data-rr]').forEach(b => { b.onclick = () => aucAct({ k: 'roulette', v: b.dataset.rr }); });
+    }
+  }
+  if (AUC.ui.rrTok !== mg.tok) { AUC.ui.rrTok = mg.tok; AUC.ui.rrTurnAt = Date.now(); }
+  aucRrFrame();
+  const body = document.querySelector('#aucStage .mg-body');
+  if (body) body.innerHTML = aucMgPlayers(p => `<span class="rrg-st ${mg.alive[p.side] ? 'ok' : 'out'}">${mg.alive[p.side] ? '생존' : '💀 ' + (mg.out.indexOf(p.side) + 1) + '번째 탈락'}</span>`);
+}
+function aucRrFrame() { // 차례 남은 시간 막대 (각자 화면 시계로)
+  const ph = AUC && AUC.G && AUC.G.ph, mg = ph && ph.mg; if (!mg || mg.k !== 'roulette') return;
+  const left = mg.stage === 'aim' ? Math.max(0, 1 - (Date.now() - (AUC.ui.rrTurnAt || Date.now())) / (mg.turnMs || 12000)) : 0;
+  document.querySelectorAll('#aucStage .rrg-turn i').forEach(i => { i.style.transform = `scaleX(${left.toFixed(3)})`; });
 }
 
 /* ---------- 봇 ---------- */
@@ -30950,12 +31179,14 @@ function aucStageMg(ph) {
       <div class="mg-c"><div class="cp-row">${[0, 1, 2, 3].map(i => `<div class="cp" data-c="${i}"><span class="cp-ball">${aucPic('fire')}</span><button type="button" class="cp-cup" data-cup="${i}"></button></div>`).join('')}</div></div><div class="mg-body"></div>`, 'mg mg-cups');
     document.querySelectorAll('#aucStage [data-cup]').forEach(b => { b.onclick = () => { const cp = b.closest('.cp'); aucAct({ k: 'cups', v: Number(cp.dataset.slot != null ? cp.dataset.slot : cp.dataset.c) }); }; });
   }
+  else if (k === 'roulette') aucRrStage(head);
   aucMgUpdate(ph);
 }
 function aucMgUpdate(ph) {
   const mg = ph.mg; if (!mg) return;
   const me = aucMe(), body = document.querySelector('#aucStage .mg-body'); if (!body) return;
   const k = mg.k;
+  if (k === 'roulette') { aucRrUpdate(mg); return; }
   if (k === 'bj') {
     const h = me && mg.hands[me.side];
     document.querySelectorAll('#aucStage [data-bj]').forEach(b => { b.disabled = !h || h.stop; });
@@ -31068,7 +31299,7 @@ function aucStageMgRes(ph) {
   }
   const ps = G.ps.slice().sort((a, b) => ph.ranks[a.side] - ph.ranks[b.side]);
   aucStage(`<div class="as-k">미니게임 결과</div><h3>${AUC_MG[mg.k]}${mg.k === 'quiz' && mg.ans ? '' : ''}</h3>
-    <div class="as-rank">${ps.map(p => `<div style="--pc:${p.color}"><b>${ph.ranks[p.side]}</b><span>${aucName(p)}</span><em>${mg.k === 'bj' ? formatNumber(mg.hands[p.side].sum) + (mg.hands[p.side].bust ? ' · BUST' : '') : mg.k === 'quiz' ? (mg.pts[p.side] || 0) + '점' : ''}</em><strong>+${ph.gain[p.side] || 0}</strong></div>`).join('')}</div>`, 'res');
+    <div class="as-rank">${ps.map(p => `<div style="--pc:${p.color}"><b>${ph.ranks[p.side]}</b><span>${aucName(p)}</span><em>${mg.k === 'bj' ? formatNumber(mg.hands[p.side].sum) + (mg.hands[p.side].bust ? ' · BUST' : '') : mg.k === 'quiz' ? (mg.pts[p.side] || 0) + '점' : mg.k === 'roulette' ? (mg.alive[p.side] ? '🏆 생존' : '💀 ' + (mg.out.indexOf(p.side) + 1) + '번째 탈락') : ''}</em><strong>+${ph.gain[p.side] || 0}</strong></div>`).join('')}</div>`, 'res');
 }
 // 게임 끝: 순위 · 다이아 (친선 다이아 하루 한도 안에서)
 function aucStageOver(ph) {
@@ -31089,6 +31320,7 @@ function aucTickUi() {
   if (ph.k === 'auction') aucAuctionUpdate(ph);
   if (ph.k === 'farm') aucBoardUpdate();
   if (ph.k === 'mg' && ph.mg && ph.mg.k === 'horse') aucHorseFrame();
+  if (ph.k === 'mg' && ph.mg && ph.mg.k === 'roulette') aucRrFrame();
   if (ph.k === 'farm' && state.phase === 'combat') {
     if (state.speedMultiplier !== AUC_CFG.farmSpeed) aucFarmSpeed();
     $('bottomStatusLine').innerHTML = '💰 <b>파밍</b> · 금고를 때린 만큼 골드';
@@ -31193,7 +31425,53 @@ function aucRoomDone() {
 function aucStartSolo() { aucBegin({ online: false, humans: [{ name: profile.nickname || '나' }] }); }
 
 /* ---------- 로비: 혼자(봇 3명) · 온라인 매칭 · 방 목록 ---------- */
-const AUCR = { unsubList: null, unsubRoom: null, id: null, room: null, autoAt: 0, timer: null, count: 0, list: null };
+const AUCR = { unsubList: null, unsubRoom: null, id: null, room: null, autoAt: 0, timer: null, count: 0, list: null, invited: new Set() };
+// 7.5.7 경매 방 친구 초대: 방 안에서 접속 중인 친구를 바로 초대 (초대하면 방장 자동 시작을 초대 시간만큼 미룬다)
+function aucInvitePanel(room) {
+  if (room.status !== 'open' || Object.keys(room.players || {}).length >= 4 || typeof acceptedFriends !== 'function') return '';
+  const list = acceptedFriends().filter(f => { const pr = presenceOf(f.uid); return pr.on && !pr.battle && !pr.pick && !(room.players || {})[f.uid]; });
+  return `<div class="v55-rinv al-inv"><small>👥 친구를 이 방으로 초대</small><div>${list.length ? list.map(f => `<button type="button" class="btn" data-ainv="${f.uid}"></button>`).join('') : '<em>지금 접속 중인 친구가 없어요</em>'}</div></div>`;
+}
+function aucBindInvitePanel(room) {
+  $('aucMBody').querySelectorAll('[data-ainv]').forEach(b => {
+    const f = acceptedFriends().find(x => x.uid === b.dataset.ainv); if (!f) return;
+    const done = () => { b.disabled = true; b.textContent = '✓ ' + f.nickname + ' 초대함'; };
+    if (AUCR.invited && AUCR.invited.has(f.uid)) { done(); return; }
+    b.textContent = '+ ' + f.nickname;
+    b.onclick = () => aucInviteSend(f, room, b, done);
+  });
+}
+async function aucInviteSend(f, room, b, done) {
+  if (b) b.disabled = true;
+  try {
+    await window.JihooOnline.roomInviteSend(f.uid, room.id, room.title);
+    (AUCR.invited || (AUCR.invited = new Set())).add(f.uid);
+    if (room.host === window.JihooOnline.myUid()) AUCR.autoAt = Math.max(AUCR.autoAt || 0, Date.now() + (ROOM_INVITE_SEC + 5) * 1000); // 초대한 친구가 들어올 시간을 준다
+    if (done) done();
+    aucMsg(`${f.nickname}님에게 초대를 보냈어요.`);
+  } catch (error) { if (b) b.disabled = false; aucMsg(error.message || '초대하지 못했어요.', 'err'); }
+}
+// 친구 목록의 🔨 경매: 경매 방이 없으면 만들어 들어가고, 그 방으로 초대한다
+async function aucInviteFriend(f) {
+  if (!window.JihooOnline.connected()) return;
+  if (AUC && AUC.G) { friendMsg('경매 모드 게임 중에는 초대할 수 없어요.', 'err'); return; }
+  if (ROOMS.roomId) { friendMsg('2:2 방에 있는 동안은 경매 방으로 초대할 수 없어요.', 'err'); return; }
+  try {
+    aucModal(); openModal('aucModal');
+    if (!AUCR.id) {
+      const id = await window.JihooOnline.roomCreate(AUC_ROOM_TAG + (profile.nickname || '경매'), [], false);
+      aucEnterRoom(id);
+    }
+    const wait = Date.now() + 4000;
+    while (!AUCR.room && Date.now() < wait) await new Promise(r => setTimeout(r, 120));
+    if (!AUCR.room) throw new Error('방에 들어가지 못했어요.');
+    if (AUCR.room.status !== 'open' || Object.keys(AUCR.room.players || {}).length >= 4) throw new Error('방이 꽉 찼어요.');
+    await aucInviteSend(f, AUCR.room, null, null);
+    friendMsg(`${f.nickname}님을 경매 방에 초대했어요.`);
+    aucRoomRender();
+  } catch (error) { friendMsg(error.message || '초대하지 못했어요.', 'err'); }
+}
+
 function aucModal() {
   let el = $('aucModal');
   if (!el) {
@@ -31252,7 +31530,8 @@ async function aucJoinRoom(id) {
 }
 function aucEnterRoom(id) {
   if (AUCR.unsubList) { AUCR.unsubList(); AUCR.unsubList = null; }
-  AUCR.id = id; AUCR.room = null; AUCR.count = 0; aucMsg('');
+  AUCR.id = id; AUCR.room = null; AUCR.count = 0; AUCR.autoAt = 0; aucMsg(''); AUCR.invited = new Set();
+  try { if (typeof refreshPresence === 'function') refreshPresence().then(() => { if (AUCR.id === id && AUCR.room) aucRoomRender(); }).catch(() => {}); } catch (error) {} // 7.5.7 초대할 친구 목록
   AUCR.unsubRoom = window.JihooOnline.roomWatch(id, room => {
     if (AUCR.id !== id) return;
     const me = window.JihooOnline.myUid();
@@ -31261,7 +31540,11 @@ function aucEnterRoom(id) {
     AUCR.room = room;
     if (room.status === 'playing') { aucRoomPlaying(room); return; }
     const n = Object.keys(room.players).length;
-    if (n !== AUCR.count) { AUCR.count = n; AUCR.autoAt = Date.now() + (n >= 4 ? 3 : AUC_ROOM_WAIT) * 1000; }
+    if (n !== AUCR.count) { // 초대한 친구가 아직 안 들어왔으면 초대 시간만큼은 기다린다
+      AUCR.count = n;
+      const pending = [...(AUCR.invited || [])].some(uid => !room.players[uid]);
+      AUCR.autoAt = n >= 4 ? Date.now() + 3000 : pending ? Math.max(Date.now() + AUC_ROOM_WAIT * 1000, AUCR.autoAt || 0) : Date.now() + AUC_ROOM_WAIT * 1000;
+    }
     aucRoomRender();
   });
   clearInterval(AUCR.timer);
@@ -31291,18 +31574,19 @@ function aucRoomRender() {
   const me = window.JihooOnline.myUid(), host = room.host === me, hs = aucRoomHumans(room);
   $('aucMHead').textContent = '🔨 ' + (room.title.slice(AUC_ROOM_TAG.length) || '경매 방');
   $('aucMBody').innerHTML = `<div class="al-slots">${[0, 1, 2, 3].map(i => { const h = hs[i]; return `<div class="al-slot${h ? '' : ' empty'}${h && h.uid === me ? ' me' : ''}" style="--pc:${AUC_COLORS[i]}"><i></i><b></b>${h && h.uid === room.host ? '<em>방장</em>' : ''}</div>`; }).join('')}</div>
-    <p class="v55-rnote al-wait"></p>
+    <p class="v55-rnote al-wait"></p>${aucInvitePanel(room)}
     <div class="modal-actions"><button type="button" class="btn btn-secondary" id="aucRLeave">${host ? '방 닫기' : '나가기'}</button>${host ? '<button type="button" class="btn btn-primary" id="aucRStart">지금 시작 ▶</button>' : ''}</div>`;
   $('aucMBody').querySelectorAll('.al-slot').forEach((el, i) => { el.querySelector('b').textContent = hs[i] ? hs[i].name : '빈 자리 · 봇'; });
   $('aucRLeave').onclick = () => aucLeaveRoom(false);
   if ($('aucRStart')) $('aucRStart').onclick = aucRoomStart;
+  aucBindInvitePanel(room);
   aucRoomTick();
 }
 function aucRoomTick() {
   const room = AUCR.room, w = document.querySelector('#aucMBody .al-wait');
   if (!room || room.status !== 'open') return;
   const host = room.host === window.JihooOnline.myUid(), left = Math.max(0, Math.ceil((AUCR.autoAt - Date.now()) / 1000));
-  if (w) w.textContent = host ? `${left}초 뒤 시작해요 · 빈 자리는 봇이 채워요` : '방장이 곧 시작해요 · 빈 자리는 봇이 채워요';
+  if (w) w.textContent = host ? `${left}초 뒤 시작해요 · 빈 자리는 봇이 채워요${[...(AUCR.invited || [])].some(uid => !(room.players || {})[uid]) ? ' · 초대한 친구를 기다리는 중' : ''}` : '방장이 곧 시작해요 · 빈 자리는 봇이 채워요';
   if (host && AUCR.autoAt && Date.now() >= AUCR.autoAt) aucRoomStart();
 }
 async function aucRoomStart() {
@@ -33010,6 +33294,18 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.5.7': {
+    label: 'v7.5.7 경매 모드 · 러시안 룰렛 · 친구 초대',
+    date: '2026.10.10',
+    sections: [
+      { title: '경매 모드', items: [
+        { emoji:'🎯', name:'미니게임: 러시안 룰렛', tag:'new', color:'#e5322d', desc:'원탁에 4명이 둘러앉아 차례대로 <b>나</b> 또는 <b>상대</b> 중 하나를 쏴요. 나를 쐈는데 <b>공포탄</b>이면 <b>한 번 더</b>, <b>실탄</b>에 맞으면 탈락. 끝까지 살아남으면 1등 · 늦게 탈락할수록 높은 순위 (골드 40 · 30 · 20 · 10).' },
+        { emoji:'🧮', name:'탄창 상황', tag:'new', color:'#111111', desc:'옆 탄창 판에 <b>실탄 · 공포탄 남은 개수</b>와 <b>다음 발이 실탄일 확률</b>, 지금까지 쏜 탄이 보여요 (순서는 아무도 몰라요). 6발 중 실탄 1~3발 · 다 쏘면 새 탄창.' },
+        { emoji:'⏱', name:'룰렛 시간', tag:'adjust', color:'#555555', desc:'차례마다 <b>12초</b> (넘기면 아무 상대에게 쏴요) · 미니게임 전체 <b>3분</b> (넘기면 살아남은 사람 모두 공동 1등).' },
+        { emoji:'👥', name:'방에서 바로 친구 초대', tag:'new', color:'#2f6fed', desc:'온라인 방을 만들면 접속 중인 친구 목록이 바로 떠요 · 눌러서 초대. 친구 목록의 <b>🔨 경매</b> 버튼으로도 방을 만들고 바로 초대할 수 있어요. 초대한 친구가 들어올 때까지 자동 시작을 <b>50초</b>까지 기다려 줘요.' },
+      ] },
+    ],
+  },
   '7.5.4': {
     label: 'v7.5.4 일진 리워크 · 이동기 카운터',
     date: '2026.10.10',
@@ -37285,6 +37581,7 @@ function renderFriends() {
       ['💬', '', () => openDm(f), false, '1:1 채팅'],
       ['⚔ 친선전', 'war', () => (typeof friendlyInvite === 'function' ? friendlyInvite(f) : null), !pr.on || pr.battle || pr.pick, pr.on ? (pr.battle ? '게임 중이에요' : pr.pick ? '픽 선택 중이라 신청할 수 없어요' : '친선전 신청') : '접속 중일 때만 신청할 수 있어요'],
       ['👁 관전', '', () => spectateFriend(f), !spectateInfo(f).ok, spectateInfo(f).why],
+      ['🔨 경매', '', () => aucInviteFriend(f), !pr.on || pr.battle || pr.pick, pr.on ? (pr.battle ? '게임 중이에요' : pr.pick ? '픽 선택 중이라 초대할 수 없어요' : '경매 모드 방으로 초대') : '접속 중일 때만 초대할 수 있어요'],
       ['🌐 2:2', '', () => roomInviteFriend(f), !pr.on || pr.battle || pr.pick, pr.on ? (pr.battle ? '게임 중이에요' : pr.pick ? '픽 선택 중이라 초대할 수 없어요' : '2:2 온라인 방으로 초대') : '접속 중일 때만 초대할 수 있어요'],
       ['✕', 'x', act(async () => { if (confirm(`${f.nickname}님을 친구에서 삭제할까요?`)) await window.JihooOnline.friendRemove(f.id); }), false, '친구 삭제'],
     ] }));
@@ -37985,6 +38282,7 @@ function startRoomInvites() {
 }
 function showRoomInvite(m) {
   ROOMINV.seen.add(m.id);
+  if (typeof aucIsRoom === 'function' && aucIsRoom({ title: m.title })) { showAucRoomInvite(m); return; } // 7.5.7 경매 방 초대
   const busy = (state.screen === 'battle' && state.phase !== 'idle') || state.screen === 'compdraft' || !!ROOMS.roomId; // 게임 중 · 픽 중 · 이미 방에 있으면 자동 거절
   if (busy) { window.JihooOnline.roomInviteUpdate(m.id, 'declined').catch(() => {}); return; }
   const el = friendlyModal(`<div class="ic">🌐</div><h2>2:2 온라인 초대</h2><p><b></b>님이 2:2 방 <b class="rt"></b>(으)로 초대했어요.<br><small>라이프 4 · 기록과 보상은 없어요</small><br><small class="fm-left"></small></p>
@@ -38049,6 +38347,35 @@ function bindRoomInvitePanel(room) {
       catch (error) { b.disabled = false; roomMsg(error.message || '초대하지 못했어요.', 'err'); }
     };
   });
+}
+
+// 7.5.7 경매 방 초대 받기: 덱 없이 바로 들어간다
+function showAucRoomInvite(m) {
+  const busy = (state.screen === 'battle' && state.phase !== 'idle') || state.screen === 'compdraft' || !!ROOMS.roomId || !!AUCR.id || !!(AUC && AUC.G);
+  if (busy) { window.JihooOnline.roomInviteUpdate(m.id, 'declined').catch(() => {}); return; }
+  const el = friendlyModal(`<div class="ic">🔨</div><h2>경매 모드 초대</h2><p><b></b>님이 경매 방(<b class="rt"></b>)으로 초대했어요.<br><small>4인 · 빈 자리는 봇 · 순위 다이아</small><br><small class="fm-left"></small></p>
+    <div class="acts"><button type="button" class="btn" data-a="no">거절</button><button type="button" class="btn btn-primary" data-a="yes">들어가기</button></div><p class="msg"></p>`);
+  el.querySelector('p b').textContent = m.fromName || '친구';
+  el.querySelector('.rt').textContent = String(m.title || '').slice(AUC_ROOM_TAG.length) || '경매 방';
+  el.dataset.rinv = m.id;
+  let left = ROOM_INVITE_SEC;
+  const tick = setInterval(() => {
+    if (el.dataset.rinv !== m.id) { clearInterval(tick); return; }
+    left--;
+    if (left <= 0) { clearInterval(tick); el.dataset.rinv = ''; closeModal('friendlyModal'); return; }
+    const t = el.querySelector('.fm-left'); if (t) t.textContent = `${left}초 뒤 사라져요`;
+  }, 1000);
+  el.querySelector('[data-a="no"]').onclick = () => { clearInterval(tick); el.dataset.rinv = ''; closeModal('friendlyModal'); window.JihooOnline.roomInviteUpdate(m.id, 'declined').catch(() => {}); };
+  el.querySelector('[data-a="yes"]').onclick = async () => {
+    clearInterval(tick);
+    el.querySelectorAll('button').forEach(b => { b.disabled = true; });
+    try {
+      await window.JihooOnline.roomJoin(m.roomId, []);
+      window.JihooOnline.roomInviteUpdate(m.id, 'accepted').catch(() => {});
+      el.dataset.rinv = ''; closeModal('friendlyModal');
+      aucModal(); openModal('aucModal'); aucEnterRoom(m.roomId);
+    } catch (error) { el.querySelector('.msg').textContent = error.message || '들어가지 못했어요 (방이 닫혔거나 꽉 찼을 수 있어요).'; el.querySelectorAll('button').forEach(b => { b.disabled = false; }); }
+  };
 }
 
 // ================= 5.5 2:2 온라인 로비 =================
