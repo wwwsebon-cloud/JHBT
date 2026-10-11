@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6850,6 +6850,98 @@ html.ui-v7 #app#app #screen-inventory .v4-empty { padding:16px; border:1px solid
 .gr-glow .btnGlowUse { margin-left:auto; background:#111; color:#fff; }
 .gr-glow b { font-family:var(--v7-exo, inherit); }
 /* 별 다섯 개: 3번째(고유 능력) · 5번째(최대)는 모양이 다르다 */
+/* ═══ 7.6.1 클래스 배지: 모양 · 색으로 묶음 (1~3 돌 · 4~6 동 · 7~9 은 · 10~12 금 · 13~15 수정 · 16~18 보라 · 19~20 진홍) ═══ */
+.clsb { position:relative; display:inline-grid; place-items:center; width:var(--s, 40px); height:var(--s, 40px); flex:none; vertical-align:middle; }
+.clsb > i { position:absolute; inset:0; background:var(--cb); clip-path:var(--cs); }
+.clsb > i::after { content:''; position:absolute; inset:15%; background:var(--ci, rgba(20,16,30,.42)); clip-path:var(--cs); }
+.clsb > b { position:relative; font:900 calc(var(--s, 40px) * .4)/1 var(--v7-exo, 'Exo 2', sans-serif); color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.6), 0 0 3px rgba(0,0,0,.35); letter-spacing:-.02em; }
+.clsb.g0 { --cb:linear-gradient(160deg, #e2e2e2, #8f8f8f 55%, #5c5c5c); --cs:circle(50% at 50% 50%); }
+.clsb.g1 { --cb:linear-gradient(160deg, #ffc896, #cf7438 55%, #8a3f17); --cs:polygon(50% 0, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%); }
+.clsb.g2 { --cb:linear-gradient(160deg, #ffffff, #c3ced8 50%, #7a8794); --cs:polygon(50% 0, 100% 14%, 93% 60%, 50% 100%, 7% 60%, 0 14%); --ci:rgba(40,52,70,.5); }
+.clsb.g3 { --cb:linear-gradient(160deg, #fff6b8, #f5b82e 50%, #c2730f); --cs:polygon(50% 0, 64% 11%, 100% 6%, 93% 56%, 50% 100%, 7% 56%, 0 6%, 36% 11%); --ci:rgba(110,55,0,.48); }
+.clsb.g4 { --cb:linear-gradient(160deg, #e4fdff, #4fd0ec 50%, #136f9e); --cs:polygon(50% 0, 80% 11%, 100% 40%, 86% 78%, 50% 100%, 14% 78%, 0 40%, 20% 11%); --ci:rgba(0,50,90,.45); }
+.clsb.g5 { --cb:linear-gradient(160deg, #f3e2ff, #a65ef2 50%, #5520b0); --cs:polygon(50% 0, 62% 17%, 85% 7%, 82% 32%, 100% 44%, 84% 60%, 90% 87%, 64% 80%, 50% 100%, 36% 80%, 10% 87%, 16% 60%, 0 44%, 18% 32%, 15% 7%, 38% 17%); }
+.clsb.g6 { --cb:linear-gradient(160deg, #ffd6cc, #ff4a4a 50%, #a10f1c); --cs:polygon(50% 0, 61% 29%, 96% 24%, 72% 50%, 96% 76%, 61% 71%, 50% 100%, 39% 71%, 4% 76%, 28% 50%, 4% 24%, 39% 29%); }
+.clsb.top { --cb:linear-gradient(160deg, #fff6b8, #ffbe1a 42%, #e5322d 100%); }
+.clsb.pop { animation:cls-pop .7s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes cls-pop { 0% { transform:scale(.2) rotate(-25deg); opacity:0; } 100% { transform:none; opacity:1; } }
+html.ui-v7 #app#app .v7-lv.as-class { width:auto; height:auto; border:0; outline:0; background:none; border-radius:0; }
+@media (max-width:700px) { html.ui-v7 #app#app .v7-lv.as-class .clsb { --s:48px !important; } }
+/* 프로필 클래스 표 */
+.v761-ct { margin:0 0 12px; border:2px solid #111; background:#fff; color:#111; overflow:hidden; }
+.v761-ct .ct-top { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; padding:10px 12px; }
+.v761-ct .ct-top > div:not(.ct-pager) { display:flex; flex-direction:column; align-items:center; } .v761-ct .ct-top small { font-size:11px; color:#666; } .v761-ct .ct-top b { font:800 22px var(--v7-exo, sans-serif); }
+.v761-ct .ct-pager { display:flex; align-items:center; gap:6px; padding:6px 10px; background:#111; color:#fff; font:700 13px var(--v7-kr, system-ui); }
+.v761-ct .ct-pager button { width:28px; height:28px; border:0; background:none; color:#fff; font:800 20px/1 sans-serif; cursor:pointer; } .v761-ct .ct-pager button:disabled { opacity:.25; cursor:default; }
+.v761-ct .ct-cells { display:grid; grid-template-columns:repeat(4, 1fr); padding:12px 6px 8px; background:linear-gradient(180deg, #1b1e2b, #262b45); color:#fff; }
+.v761-ct .ct-cell { display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; opacity:.62; }
+.v761-ct .ct-cell.on { opacity:1; } .v761-ct .ct-cell.here .clsb { filter:drop-shadow(0 0 6px rgba(255,214,90,.9)); }
+.v761-ct .ct-cell b { font:800 13px var(--v7-kr, system-ui); } .v761-ct .ct-cell small { font:700 13px var(--v7-exo, sans-serif); color:#cfd5ff; }
+.v761-ct .ct-rw { min-height:28px; padding:2px 4px; font:700 10px/1.3 var(--v7-kr, system-ui); color:#ffd36a; } .v761-ct .ct-rw.got { color:#7ee2a8; }
+.v761-ct .ct-bar { position:relative; height:16px; background:#11131c; border-top:2px solid #2b3150; }
+.v761-ct .ct-bar > i { position:absolute; left:0; top:0; bottom:0; width:100%; background:linear-gradient(90deg, #f59b3c, #ffcc4d); transform-origin:left center; }
+.v761-ct .ct-bar em { position:absolute; top:0; bottom:0; width:2px; background:#2b3150; margin-left:-1px; }
+.v761-ct .ct-mark { position:absolute; top:100%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; }
+.v761-ct .ct-mark::before { content:''; width:0; height:0; border:7px solid transparent; border-bottom-color:#4f8cff; margin-top:-12px; }
+.v761-ct .ct-mark b { font:800 12px var(--v7-exo, sans-serif); color:#2f6fed; }
+.v761-ct .ct-note { margin:22px 12px 10px; font-size:11px; line-height:1.5; color:#666; }
+/* 일반전 정산 (7.6.1) */
+.cs-ov { position:fixed; inset:0; z-index:90; display:grid; place-items:center; padding:16px; background:radial-gradient(ellipse at 50% 40%, #232846 0%, #0d0f18 70%); color:#fff; font-family:var(--v7-kr, system-ui); overflow:auto; }
+.cs-ov[hidden] { display:none; }
+.cs-page { width:min(560px, 100%); display:flex; flex-direction:column; gap:14px; }
+.cs-side { position:relative; padding:46px 0 0; opacity:0; animation:cs-in .5s cubic-bezier(.2,.8,.2,1) forwards; }
+.cs-side.ally { animation-delay:.15s; }
+@keyframes cs-in { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+.cs-word { position:absolute; left:6px; top:0; font:900 44px/1 var(--v7-exo, sans-serif); font-style:italic; letter-spacing:.02em; transform:skewX(-6deg); }
+.cs-side.win .cs-word { color:#ffd84a; text-shadow:0 3px 0 #d0661a, 0 0 18px rgba(255,180,40,.55); }
+.cs-side.lose .cs-word { color:#b98cff; text-shadow:0 3px 0 #4b2a86; }
+.cs-side.draw .cs-word { color:#cfd5ff; text-shadow:0 3px 0 #3b4270; }
+.cs-deck { display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; padding:12px; border:2px solid #4e5ca8; border-radius:10px; background:linear-gradient(180deg, #161a2e, #1d2342); }
+.cs-u { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; opacity:0; animation:cs-in .4s ease-out forwards; }
+.cs-u .pic { width:100%; aspect-ratio:1; border:3px solid var(--rc, #888); border-radius:10px; background:#fff; overflow:hidden; display:grid; place-items:center; }
+.cs-u .pic img { width:100%; height:100%; object-fit:contain; }
+.cs-u b { max-width:100%; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#e6e9ff; }
+.cs-u.mvp .pic { box-shadow:0 0 0 2px #ffd84a, 0 0 14px rgba(255,210,70,.6); }
+.cs-mvp { position:absolute; top:-12px; left:50%; transform:translateX(-50%); z-index:1; padding:1px 7px; border-radius:6px; background:linear-gradient(180deg, #ffe680, #f0a21c); color:#5a2a00; font:900 11px var(--v7-exo, sans-serif); box-shadow:0 2px 0 #9a5200; }
+.cs-bar { display:flex; align-items:center; gap:10px; margin-top:8px; padding:6px 12px; border-top:2px solid #3549a8; border-bottom:2px solid #3549a8; background:linear-gradient(90deg, rgba(53,73,168,.15), rgba(53,73,168,.45), rgba(53,73,168,.15)); }
+.cs-bar > b { flex:1; min-width:0; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cs-lives { color:#ff5a6a; font-size:13px; letter-spacing:1px; } .cs-lives i { font-style:normal; color:#4a4f6e; }
+.cs-cp { font:800 20px var(--v7-exo, sans-serif); color:#ffd84a; } .cs-cp small { font-size:11px; color:#cfd5ff; }
+.cs-vsmark { display:flex; align-items:center; gap:12px; margin:2px 0; }
+.cs-vsmark span { flex:1; height:2px; background:linear-gradient(90deg, transparent, #6aa0ff, transparent); }
+.cs-vsmark b { display:grid; place-items:center; width:58px; height:58px; transform:rotate(45deg); border-radius:10px; background:linear-gradient(135deg, #5fa0ff, #2f55d4); box-shadow:0 0 22px rgba(80,140,255,.7); font:900 22px var(--v7-exo, sans-serif); }
+.cs-vsmark b { color:transparent; position:relative; } .cs-vsmark b::after { content:'VS'; position:absolute; inset:0; display:grid; place-items:center; transform:rotate(-45deg); color:#fff; }
+.cs-btns { display:flex; justify-content:center; gap:10px; margin-top:6px; }
+.cs-ok { min-width:180px; height:54px; border:0; border-radius:12px; background:linear-gradient(180deg, #ffd56a, #f2a52b); color:#5a2e00; font:900 20px var(--v7-kr, system-ui); box-shadow:0 4px 0 #b86f12; cursor:pointer; touch-action:manipulation; }
+.cs-ok:active { transform:translateY(3px); box-shadow:0 1px 0 #b86f12; }
+.cs-ghost { height:54px; padding:0 18px; border:2px solid #4e5ca8; border-radius:12px; background:#161a2e; color:#cfd5ff; font:800 15px var(--v7-kr, system-ui); cursor:pointer; }
+.cs-title { display:flex; align-items:center; gap:14px; } .cs-title span { flex:1; height:2px; background:linear-gradient(90deg, transparent, #6aa0ff); } .cs-title span:last-child { background:linear-gradient(90deg, #6aa0ff, transparent); }
+.cs-title b { font:900 32px var(--v7-kr, system-ui); color:#fff; text-shadow:0 0 16px rgba(90,150,255,.9); }
+.cs-rows { display:flex; flex-direction:column; gap:8px; padding:14px; border-radius:12px; background:rgba(40,48,90,.55); }
+.cs-row { display:flex; align-items:center; gap:12px; opacity:0; animation:cs-in .4s ease-out forwards; }
+.cs-row .ic { width:44px; height:44px; flex:none; display:grid; place-items:center; border-radius:10px; background:#c8cee6; color:#222; font-size:22px; }
+.cs-row > div { display:flex; flex-direction:column; gap:2px; } .cs-row > div > b { font-size:15px; }
+.cs-row > div > span { display:flex; flex-wrap:wrap; gap:4px 18px; } .cs-row em { font:800 17px var(--v7-exo, sans-serif); font-style:normal; color:#ffd84a; }
+.cs-row em.up { color:#ffd84a; } .cs-row em.down { color:#ff7a7a; } .cs-row em.dim { color:#9aa3cc; font-size:13px; }
+.cs-total { display:flex; flex-direction:column; align-items:center; gap:4px; } .cs-total small { font:900 18px var(--v7-exo, sans-serif); color:#7fb0ff; letter-spacing:.06em; }
+.cs-total > div { display:flex; gap:26px; } .cs-total span { display:flex; flex-direction:column; align-items:center; font:900 28px var(--v7-exo, sans-serif); color:#ffcf4a; }
+.cs-total span i { font-style:normal; font-size:13px; color:#cfd5ff; } .cs-total span.down { color:#ff7a7a; }
+.cs-up { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:12px; background:linear-gradient(90deg, rgba(255,200,60,.22), rgba(255,200,60,.05)); border:1px solid rgba(255,210,90,.5); }
+.cs-up b { display:block; font-size:17px; color:#ffe08a; } .cs-up span { font-size:13px; color:#ffd; } .cs-up.down { background:rgba(255,90,110,.12); border-color:rgba(255,120,130,.4); } .cs-up.down b { color:#ffb3bb; }
+.cs-gauge { position:relative; padding:46px 16px 34px; }
+.cs-gnow { position:absolute; left:16px; top:4px; font:700 13px var(--v7-kr, system-ui); color:#cfd5ff; } .cs-gnow b { font:900 22px var(--v7-exo, sans-serif); color:#ffd84a; } .cs-gnow small { color:#9aa3cc; }
+.cs-gift { position:absolute; top:0; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; padding:4px 10px; border-radius:8px; background:#eef1ff; color:#222; font:800 12px var(--v7-kr, system-ui); white-space:nowrap; }
+.cs-gift small { font-size:10px; color:#666; } .cs-gift::after { content:''; position:absolute; top:100%; left:50%; margin-left:-6px; border:6px solid transparent; border-top-color:#eef1ff; } .cs-gift.edge::after { display:none; }
+.cs-gbar { position:relative; height:8px; border-radius:4px; background:#2a3157; }
+.cs-gfill { position:absolute; left:0; top:0; bottom:0; width:100%; border-radius:4px; background:linear-gradient(90deg, #8fd0ff, #d8f0ff); transform-origin:left center; transition:transform .9s cubic-bezier(.2,.8,.2,1); will-change:transform; }
+.cs-gm { position:absolute; top:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center; }
+.cs-gm small { position:absolute; top:28px; font:800 12px var(--v7-exo, sans-serif); color:#9fb6ff; }
+.cs-gpt { position:absolute; top:50%; width:16px; height:16px; margin:-8px 0 0 -8px; transform:rotate(45deg); border:3px solid #ffd84a; background:#1b2040; transition:left .9s cubic-bezier(.2,.8,.2,1); }
+.cs-lv { display:flex; align-items:center; flex-wrap:wrap; gap:4px 10px; justify-content:center; font:600 12px var(--v7-kr, system-ui); color:#9aa3cc; }
+.cs-lv b { color:#fff; } .cs-lv span { width:90px; height:4px; border-radius:2px; background:#2a3157; overflow:hidden; } .cs-lv span i { display:block; height:100%; background:#7fb0ff; }
+.cs-lv em { font-style:normal; color:#ffd84a; }
+@media (max-width:520px) { .cs-word { font-size:34px; } .cs-deck { gap:5px; padding:8px; } .cs-u b { font-size:10px; } .cs-bar > b { font-size:14px; } .cs-cp { font-size:17px; } .cs-total span { font-size:24px; } .v761-ct .ct-top b { font-size:18px; } }
+@media (prefers-reduced-motion: reduce) { .cs-side, .cs-u, .cs-row { animation:none; opacity:1; } .cs-gfill, .cs-gpt { transition:none; } }
 /* 7.6 조각 = 육각형 결정 · 가루 = 작은 삼각형 알갱이 (모양으로 바로 구분) */
 .ico-shard { position:relative; display:inline-block; width:.95em; height:1.08em; margin:0 .14em 0 0; vertical-align:-.2em; background:linear-gradient(155deg, #9ff3e4 0%, #2bb69c 45%, #0d6b5c 100%); clip-path:polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); flex:none; }
 .ico-shard::before { content:''; position:absolute; left:18%; top:14%; width:34%; height:36%; background:rgba(255,255,255,.7); clip-path:polygon(50% 0, 100% 30%, 60% 100%, 0 70%); }
@@ -12708,6 +12800,7 @@ function freshProfile() {
     useCount: {},
     playMs: 0,
     highestRewardedLevel: 1,
+    cp: 0, cpBest: 0, classRewarded: 1, // 7.6.1 클래스
     pendingLevelCelebration: null,
     activeMatch: null,
     competitive: { tp: 0, wins: 0, losses: 0, peak: 0, promo: -1, season: 0, lastReset: null, lastDeck: [] },
@@ -12815,6 +12908,7 @@ function normalizeProfile(raw) {
       ? Object.fromEntries(Object.entries(raw.useCount).filter(([id]) => validIds.has(id)).map(([id, count]) => [id, Math.min(99999, Math.max(0, Math.floor(Number(count) || 0)))])) : {},
     playMs: Math.min(315360000000, Math.max(0, Math.floor(Number(raw.playMs) || 0))),
     highestRewardedLevel: Math.max(1, Math.floor(Number(raw.highestRewardedLevel) || currentLevel)),
+    classAnnounced: safeCount(raw.classAnnounced), cp: safeCount(raw.cp), cpBest: Math.max(safeCount(raw.cpBest), safeCount(raw.cp)), classRewarded: Math.max(1, Math.min(20, Math.floor(Number(raw.classRewarded) || 1))), // 7.6.1 클래스 (모두 클래스 1 부터)
     pendingLevelCelebration: raw.pendingLevelCelebration && typeof raw.pendingLevelCelebration === 'object'
       ? { from: Math.max(1, Number(raw.pendingLevelCelebration.from) || 1), to: Math.max(1, Number(raw.pendingLevelCelebration.to) || 1), diamonds: Math.max(0, Number(raw.pendingLevelCelebration.diamonds) || 0) }
       : null,
@@ -13288,8 +13382,9 @@ function renderAccountUI() {
   const info = getLevelInfo(profile.totalXp);
   if (typeof renderMailDot === 'function' && window.__mailReady) renderMailDot();
   if ($('profileQuickName')) $('profileQuickName').textContent = profile.nickname;
-  if ($('profileQuickLevel')) $('profileQuickLevel').textContent = `Lv.${info.level}`;
-  if ($('profileQuickXp')) $('profileQuickXp').style.width = (info.required ? info.current / info.required * 100 : 100) + '%';
+  { const ci = classInfo(profile.cp); // 7.6.1 로비는 레벨 대신 클래스 (레벨은 프로필 · 리더보드에서만)
+    if ($('profileQuickLevel')) $('profileQuickLevel').textContent = `클래스 ${ci.cls}`;
+    if ($('profileQuickXp')) $('profileQuickXp').style.width = (ci.progress * 100).toFixed(1) + '%'; }
   document.querySelectorAll('.v4-version').forEach(el => { el.textContent = gameVersion(); });
   if ($('profileAvatar')) paintAvatar($('profileAvatar'), myLook(), profile.nickname, { size: 34, mini: true }); // 4.3 프로필 꾸미기
   v4CountTo($('goldAmount'), profile.gold);
@@ -13708,7 +13803,7 @@ function renderLookModal() {
 }
 // ===== 4.4 레벨 보상 (Lv.2 ~ 150) =====
 function levelReward(n) {
-  return { dia: n % 5 === 0 ? 1000 : 200, frame: n % 10 === 0 && n <= 100 ? 'v' + n / 10 : null }; // 4.5: 레벨 테두리 v1~v10
+  return { dia: n <= 50 ? 50 : 100, frame: n % 10 === 0 && n <= 100 ? 'v' + n / 10 : null }; // 7.6.1 Lv.50 까지 ◆50 · 그 뒤 ◆100 (4.5 레벨 테두리 v1~v10 은 그대로)
 }
 function levelRewardState(n, level) {
   if (n > level) return 'locked';
@@ -13880,6 +13975,41 @@ async function resetAccountData() {
   location.reload();
 }
 
+// 7.6.1 프로필 클래스 표: 4칸씩 넘겨 본다 (배지 · 필요 CP · 보상) · 아래 막대에 지금 CP
+let classTrackPage = -1;
+function classTrackHtml() {
+  const pages = Math.ceil(CLASS_MAX / 4), mine = classInfo(profile.cp);
+  if (classTrackPage < 0) classTrackPage = Math.floor((mine.cls - 1) / 4);
+  classTrackPage = Math.max(0, Math.min(pages - 1, classTrackPage));
+  const a = classTrackPage * 4 + 1, ids = [a, a + 1, a + 2, a + 3].filter(c => c <= CLASS_MAX);
+  const cells = ids.map(c => {
+    const r = CLASS_REWARDS[c], got = c <= (profile.classRewarded || 1), here = c === mine.cls;
+    return `<div class="ct-cell${here ? ' here' : ''}${c <= mine.cls ? ' on' : ''}">${classBadge(c, 46)}<b>클래스 ${c}</b><small>${formatNumber(CLASS_CP[c - 1])}</small>
+      <span class="ct-rw${got && r ? ' got' : ''}">${c === 1 ? '시작' : r ? `${got ? '✓ ' : ''}${r.label}` : '추가 예정'}</span></div>`;
+  }).join('');
+  const pos = classTrackPos(profile.cp, ids);
+  return `<div class="v761-ct">
+    <div class="ct-top"><div><small>현재 CP</small><b>${formatNumber(mine.cp)}</b></div>
+      <div class="ct-pager"><button type="button" data-ctp="-1" ${classTrackPage ? '' : 'disabled'} aria-label="이전">‹</button><span>클래스 ${a} ~ ${ids[ids.length - 1]}</span><button type="button" data-ctp="1" ${classTrackPage < pages - 1 ? '' : 'disabled'} aria-label="다음">›</button></div>
+      <div><small>최고 CP</small><b>${formatNumber(Math.max(profile.cpBest || 0, mine.cp))}</b></div></div>
+    <div class="ct-cells">${cells}</div>
+    <div class="ct-bar"><i style="transform:scaleX(${(pos / 100).toFixed(4)})"></i>${ids.map((c, k) => `<em style="left:${12.5 + 25 * k}%"></em>`).join('')}${pos > 0 && pos < 100 ? `<span class="ct-mark" style="left:${pos.toFixed(2)}%"><b>${formatNumber(mine.cp)}</b></span>` : ''}</div>
+    <p class="ct-note">클래스는 얼마나 강한지 · <b>일반전</b>에서만 CP 가 오르내려요 (클래스 1: 승리 +55 / 패배 -25 → 클래스 20: +20 / -40) · 상대 클래스가 높을수록 더 얻고 덜 잃어요 · 클래스 보상은 처음 오를 때 한 번</p>
+  </div>`;
+}
+// 막대 위치 (%): 칸 가운데가 그 클래스의 필요 CP
+function classTrackPos(cp, ids) {
+  const pts = ids.map((c, k) => [CLASS_CP[c - 1], 12.5 + 25 * k]);
+  const first = ids[0], last = ids[ids.length - 1];
+  const prevT = first > 1 ? CLASS_CP[first - 2] : -1, nextT = last < CLASS_MAX ? CLASS_CP[last] : CLASS_CP[CLASS_MAX - 1] + CLASS_TOP_SPAN;
+  const all = [[prevT, 0], ...pts, [nextT, 100]];
+  if (cp <= all[0][0]) return 0;
+  for (let i = 1; i < all.length; i++) if (cp <= all[i][0]) return all[i - 1][1] + (all[i][1] - all[i - 1][1]) * (cp - all[i - 1][0]) / Math.max(1, all[i][0] - all[i - 1][0]);
+  return 100;
+}
+function bindClassTrack(root) {
+  root.querySelectorAll('[data-ctp]').forEach(b => { b.onclick = () => { classTrackPage += Number(b.dataset.ctp); const box = root.querySelector('.v761-ct'); if (box) { box.outerHTML = classTrackHtml(); bindClassTrack(root); } }; });
+}
 function renderProfileModal() {
   const info = getLevelInfo(profile.totalXp);
   const online = window.JihooOnline.connected();
@@ -13904,8 +14034,9 @@ function renderProfileModal() {
   $('profileCardName').textContent = profile.nickname || '신입 지후';
   $('profileCardXp').style.width = (info.required ? info.current / info.required * 100 : 100) + '%';
   $('profileCardLevel').textContent = `Lv.${info.level} · ${formatNumber(info.current)} / ${formatNumber(info.required)}`;
-  $('profileDetails').innerHTML = `
+  $('profileDetails').innerHTML = `${classTrackHtml()}
     <div class="profile-stats"><div class="profile-stat"><b>${profile.wins}</b><span>승리</span></div><div class="profile-stat"><b>${profile.losses}</b><span>패배</span></div><div class="profile-stat"><b>${profile.unlocked.length}</b><span>보유 지후</span></div></div>`;
+  bindClassTrack($('profileDetails')); // 7.6.1
 }
 
 function deckNames(deck) {
@@ -14271,7 +14402,7 @@ function rollDeployPool(bench, deckIds, size, round, rng = Math.random) {
   return pool;
 }
 
-function buildEnemyDeck(level = getLevelInfo(profile.totalXp).level) {
+function buildEnemyDeck(level = classBotLevel()) {
   const all = playableIds().filter(id => CHAR_DB[id].rarity !== 'hidden');
   const skill = botLevelSkill(level);
   let deck;
@@ -14485,10 +14616,10 @@ function showMatchupPreview(next) {
   }
   const allyName = profile.nickname || '나', enemyName = state.enemyName || '상대';
   $('matchupAllyName').textContent = allyName;
-  $('matchupAllyLevel').textContent = `YOU · Lv.${getLevelInfo(profile.totalXp).level} · 라이프 ${state.allyLives}`;
+  $('matchupAllyLevel').textContent = `YOU · 클래스 ${myClass()} · 라이프 ${state.allyLives}`; // 7.6.1 레벨 대신 클래스
   if (duo) { $('matchupAllyName').textContent = `${allyName} & ${duo.partner.name}`; }
   $('matchupEnemyName').textContent = enemyName;
-  $('matchupEnemyLevel').textContent = `OPPONENT · Lv.${state.enemyLevel || 1}`;
+  $('matchupEnemyLevel').textContent = `OPPONENT · 클래스 ${Math.max(1, Math.min(CLASS_MAX, Math.floor(state.enemyClassF || botLevelClassF(state.enemyLevel || 1))))}`;
   paintAvatar($('matchupAllyAv'), myLook(), allyName, { size: 48, mini: true });
   { const title = lookTitleName(myLook()); if (title) $('matchupAllyLevel').textContent += ` · ${title}`; }
   $('matchupEnemyAv').textContent = [...enemyName][0] || '?';
@@ -15476,7 +15607,10 @@ function settleMatch(won, draw, surrendered = false) {
     const playDiamonds = surrendered ? 0 : PER_GAME_DIAMONDS;
     const devDiamonds = devBoostActive() && won && !draw && !surrendered ? 100 + Math.floor(Math.random() * 101) : 0;
     profile.diamonds += playDiamonds + devDiamonds;
-    state.lastSettlement = { competitive: true, surrendered, tp: after.tp - before.tp, before, after, promoGroups, promoDiamonds, playDiamonds, devDiamonds, enemyTp: enemyTier.tp, tierDiff, tpMult };
+    let lvXp = surrendered ? 0 : playXpRoll(won && !draw); // 7.6.1 경쟁전도 레벨 경험치 (지지 않는다)
+    if (lvXp > 0 && profile.xpBoost.activeUntil > Date.now()) lvXp *= 2;
+    const xpInfo = grantPlayXp(lvXp);
+    state.lastSettlement = { competitive: true, surrendered, tp: after.tp - before.tp, before, after, promoGroups, promoDiamonds, playDiamonds, devDiamonds, enemyTp: enemyTier.tp, tierDiff, tpMult, xpInfo };
     comp = null;
     saveProfile();
     window.JihooOnline.publish().catch(() => {});
@@ -15485,21 +15619,21 @@ function settleMatch(won, draw, surrendered = false) {
   const xpOnlyMode = state.mode === 'draftbattle';
   if (surrendered && state.mode !== 'ranked' && !xpOnlyMode) profile.losses++;
   if (state.mode !== 'ranked' && state.mode !== 'duo' && state.mode !== 'castle' && !xpOnlyMode) {
-    state.lastSettlement = { practice: true, surrendered, xp: 0, diamonds: 0, gold: 0, levelBonus: 0, before: getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
+    const g = state.mode === 'arena' && !surrendered ? grantPlayXp(playXpRoll(won && !draw, 0.4)) : null; // 7.6.1 투기장도 레벨 경험치 (조금)
+    state.lastSettlement = { practice: true, surrendered, xp: g ? g.xp : 0, diamonds: 0, gold: 0, levelBonus: 0, before: g ? g.before : getLevelInfo(profile.totalXp), after: getLevelInfo(profile.totalXp) };
     saveProfile();
     window.JihooOnline.publish().catch(() => {});
     return state.lastSettlement;
   }
   const before = getLevelInfo(profile.totalXp);
-  const levelDiff = Number.isFinite(state.enemyLevel) ? state.enemyLevel - before.level : 0;
-  let xp = 0, diamonds = 0, gold = 0, xpMult = 1;
+  const levelDiff = 0, xpMult = 1; // 7.6.1 레벨은 실력이 아니라서 상대 레벨 보정이 없다 (실력 보정은 클래스 CP 에서)
+  let xp = 0, diamonds = 0, gold = 0;
   // 드래프트전(과 예전 성뿌수기): 승리 시 경험치만 획득 (패배 페널티·재화·전적 없음)
   const castleMode = state.mode === 'castle' || xpOnlyMode;
   let draftTicket = 0;
   if (!draw && won && !surrendered && state.mode === 'ranked') draftTicket = grantTickets(1);
   if (!draw && won) {
-    xpMult = diffMult(levelDiff, LEVEL_DIFF_BONUS);
-    xp = Math.round((100 + Math.floor(Math.random() * 51)) * xpMult);
+    xp = playXpRoll(true);
     if (!castleMode) {
       // 업적 보상이 생기면서 승리 다이아는 경험치 부스트 중에만 준다
       diamonds = profile.xpBoost.activeUntil > Date.now() ? 100 + Math.floor(Math.random() * 101) : 0;
@@ -15507,12 +15641,11 @@ function settleMatch(won, draw, surrendered = false) {
       profile.wins++;
       if (state.mode === 'ranked') recordRankedForm(true);
     }
-  } else if (!draw && (!castleMode || surrendered)) {
-    xpMult = diffMult(-levelDiff, LEVEL_DIFF_BONUS);
-    xp = castleMode || maintShield ? 0 : -Math.round((30 + Math.floor(Math.random() * 21)) * xpMult);
+  } else if (!draw) {
+    xp = surrendered || maintShield ? 0 : playXpRoll(false); // 7.6.1 져도 경험치를 잃지 않는다 (조금 오른다) · 항복은 0
     if (!castleMode && !maintShield) { profile.losses++; if (state.mode === 'ranked') recordRankedForm(false); }
-  }
-  const ticketBoost = !!state.ticketBoost && !draw; // 5.2 부스트 티켓: 이기면 ×2, 지면 잃는 것도 ×2 (경험치 부스트와 중첩 안 됨)
+  } else xp = playXpRoll(false); // 무승부
+  const ticketBoost = !!state.ticketBoost && !draw; // 5.2 부스트 티켓: 경험치 ×2 (7.6.1 져도 잃지 않으니 그냥 ×2 · 경험치 부스트와 중첩 안 됨)
   if (ticketBoost) xp *= 2;
   else if (xp > 0 && profile.xpBoost.activeUntil > Date.now()) xp *= 2;
   let diaLabel = '부스트 보너스';
@@ -15526,19 +15659,23 @@ function settleMatch(won, draw, surrendered = false) {
   else if (surrendered) profile.winStreak = 0;
   if (!draw && won && xp > 0) { streakXp = Math.max(0, Math.min(profile.winStreak || 0, 10) - 2) * 10; xp += streakXp; }
   if (state.mode === 'duo') { if (xp > 0) xp = Math.round(xp * DUO_REWARD); gold = Math.round(gold * DUO_REWARD); diamonds = Math.round(diamonds * DUO_REWARD); } // 5.4 2:2 대전: 보상 1.2배
-  profile.totalXp = Math.max(0, profile.totalXp + xp);
+  grantPlayXp(xp); // 4.4: 레벨 보상은 프로필의 '레벨 보상'에서 직접 받는다
   profile.diamonds += diamonds;
   profile.gold += gold;
   const after = getLevelInfo(profile.totalXp);
   let levelBonus = 0;
-  addSeasonXp(xp);
-  if (after.level > profile.highestRewardedLevel) {
-    // 4.4: 레벨 보상은 프로필의 '레벨 보상'에서 직접 받는다
-    profile.highestRewardedLevel = after.level;
-    profile.pendingLevelCelebration = { from: before.level, to: after.level, diamonds: 0 };
-    postEvent('level', after.level);
+  // 7.6.1 클래스 CP: 일반전에서만. 클래스가 높을수록 얻는 CP 는 줄고(55 → 20) 잃는 CP 는 는다(25 → 40). 상대 클래스가 높으면 더 얻고 덜 잃는다
+  let cls = null;
+  if (state.mode === 'ranked' && !state.tutMatch) {
+    const myF = classFloat(profile.cp), enemyF = Number.isFinite(state.enemyClassF) ? state.enemyClassF : myF;
+    const cdiff = enemyF - myF, curCls = classOf(profile.cp);
+    let raw = 0, cpMult = 1;
+    if (!draw && won) { cpMult = diffMult(cdiff, CLASS_DIFF_BONUS); raw = Math.round(classWinCp(curCls) * cpMult); }
+    else if (!draw && !maintShield) { cpMult = diffMult(-cdiff, CLASS_DIFF_BONUS); raw = -Math.round(classLossCp(curCls) * cpMult); }
+    const r = applyClassCp(raw);
+    cls = { cp: r.after.cp - r.before.cp, raw, base: !draw && won ? classWinCp(curCls) : !draw && !maintShield ? -classLossCp(curCls) : 0, mult: cpMult, diff: cdiff, before: r.before, after: r.after, rewards: r.rewards, enemyCls: Math.max(1, Math.min(CLASS_MAX, Math.floor(enemyF))), enemyCp: Number.isFinite(state.enemyCp) ? state.enemyCp : classCpAt(enemyF) };
   }
-  state.lastSettlement = { practice: false, surrendered, xp, diamonds, diaLabel, ticketBoost, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, streak: profile.winStreak || 0, streakXp };
+  state.lastSettlement = { practice: false, surrendered, won: !draw && won, draw, xp, diamonds, diaLabel, ticketBoost, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, streak: profile.winStreak || 0, streakXp, cls };
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   return state.lastSettlement;
@@ -15565,11 +15702,11 @@ function settleAbandonedMatch() {
     window.JihooOnline.queueSave();
     return;
   }
+  const wasRanked = profile.activeMatch.mode === 'ranked';
   profile.activeMatch = null;
-  const xp = -(30 + Math.floor(Math.random() * 21));
   profile.losses++;
-  profile.totalXp = Math.max(0, profile.totalXp + xp);
-  abandonNotice = `진행 중이던 일반전을 나가서 패배로 처리되었습니다. (경험치 ${xp})`;
+  const r = wasRanked ? applyClassCp(-classLossCp(classOf(profile.cp))) : null; // 7.6.1 경험치는 잃지 않고, 일반전이면 클래스 CP 를 잃는다
+  abandonNotice = `진행 중이던 일반전을 나가서 패배로 처리되었습니다.${r ? ` (클래스 CP ${r.after.cp - r.before.cp || '±0'})` : ''}`;
   persistProfile();
   window.JihooOnline.queueSave();
 }
@@ -15639,7 +15776,7 @@ function renderInventory(message = '') {
       <div class="v4-ticket"><b>랜덤 전설 모집권</b><span class="cnt">×${profile.inventory.legendTicket}</span><small>전설 지후 1기 모집 · 중복은 조각 1개</small><button type="button" class="v4-darkbtn" data-reward-action="legendTicket" ${profile.inventory.legendTicket ? '' : 'disabled'}>사용</button></div>
       ${profile.inventory.epicPick ? `<div class="v4-ticket"><b>선택 영웅 지후 모집권</b><span class="cnt">×${profile.inventory.epicPick}</span><small>원하는 영웅 지후 1기 모집 · 중복은 조각</small><button type="button" class="v4-darkbtn" data-reward-action="epicPick">고르기</button></div>` : ''}
       <div class="v4-ticket v76-flash"><b>🔦 손전등</b><span class="cnt">×${flashCount()}</span><small>던전에 들어갈 때 1개 · 매일 자정에 <b>${FLASH_DAILY}개</b>로 채워져요 (더 많이 가지고 있어도 자정에 ${FLASH_DAILY}개로) · ${DUNGEON_OPEN ? '마일리지 상점에서 하루 3개까지' : '던전은 준비 중이에요'}</small></div>
-      <div class="v4-ticket"><b>🎫 부스트 티켓</b><span class="cnt">×${profile.inventory.boostTicket || 0}</span><small>로비 게임 시작 위 버튼으로 켜고 시작 · 승리 EXP ×2 / 패배 잃는 EXP ×2</small></div>
+      <div class="v4-ticket"><b>🎫 부스트 티켓</b><span class="cnt">×${profile.inventory.boostTicket || 0}</span><small>로비 게임 시작 위 버튼으로 켜고 시작 · 그 판의 EXP ×2 (이겨도 져도 · 레벨 경험치는 잃지 않아요)</small></div>
       <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
     <b class="v4-h3">빛나는 조각</b>
@@ -15697,7 +15834,7 @@ function renderBoostTicket() {
   b.disabled = !boostTicketUsable();
   b.classList.toggle('on', !!profile.boostArmed);
   b.textContent = profile.boostArmed ? `🎫 티켓 ON · ×2 (${n})` : `🎫 부스트 티켓 ${n}`;
-  b.title = profile.xpBoost.activeUntil > Date.now() ? '경험치 부스트 중에는 쓸 수 없어요 (중첩 안 됨)' : '다음 일반전 · 드래프트전: 이기면 경험치 ×2, 지면 잃는 경험치 ×2 (연승 보너스 제외)';
+  b.title = profile.xpBoost.activeUntil > Date.now() ? '경험치 부스트 중에는 쓸 수 없어요 (중첩 안 됨)' : '다음 일반전 · 드래프트전: 그 판의 경험치 ×2 (연승 보너스 제외 · 클래스 CP 는 그대로)';
 }
 // 게임 시작할 때 티켓을 쓴다 (일반전 · 드래프트전). 쓰면 한 판만.
 function consumeBoostTicket(mode) {
@@ -16461,7 +16598,7 @@ var v7LastMode = -1;
 function v7RenderLobby() {
   if (!v7On() || !$('v7ModeName') || !profile) return;
   const info = getLevelInfo(profile.totalXp), tier = compTierInfo(profile.competitive?.tp || 0);
-  $('v7Lv').textContent = info.level;
+  { const ci = classInfo(profile.cp), el = $('v7Lv'); el.classList.add('as-class'); el.innerHTML = classBadge(ci.cls, 60); el.title = `클래스 ${ci.cls} · ${formatNumber(ci.cp)} CP`; } // 7.6.1 레벨 자리에 클래스
   $('v7Tier').textContent = `${tier.name} · ${formatNumber(tier.tp)} TP`;
   const m = M6_MODES[m6Mode];
   $('v7ModeName').textContent = m.title;
@@ -17531,6 +17668,7 @@ function wweRecordDeaths(final) {
 
 /* ---------- 결과 · 우승 ---------- */
 function wweShowResult(res, opts = {}) {
+  if (res && !res._xp) { res._xp = true; grantPlayXp(20); saveProfile(); } // 7.6.1 WWE 도 한 판마다 레벨 경험치 조금
   const box = $('wweResult');
   const c = CHAR_DB[res.winnerId];
   const w = state.wwe;
@@ -18479,6 +18617,74 @@ function compWinTp(tierIndex = 0) {
 const COMP_TIER_DIFF_BONUS = 0.12;
 const LEVEL_DIFF_BONUS = 0.06;
 const diffMult = (diff, per) => clamp(1 + diff * per, 0.5, 1.6);
+// ═════════ 7.6.1 클래스: 얼마나 '강한지'. 일반전에서만 CP 가 오르내린다 (레벨은 얼마나 즐겼는지 · 지지 않는다) ═════════
+const CLASS_CP = [0, 300, 600, 1000, 1300, 1600, 2000, 2300, 2600, 3000, 3300, 3600, 4000, 4500, 5000, 5500, 6000, 7000, 8000, 9000]; // 클래스 1 ~ 20 에 필요한 누적 CP
+const CLASS_MAX = CLASS_CP.length;
+const CLASS_TOP_SPAN = 1000; // 클래스 20 이후 막대 한 칸
+const CLASS_DIFF_BONUS = 0.12; // 상대 클래스가 1 높을 때마다 얻는 CP +12% · 잃는 CP -12% (낮으면 반대)
+// 클래스 보상 (처음 오를 때 한 번). 11 ~ 20 은 추가 예정
+const CLASS_REWARDS = {
+  2: { icon: '★', label: '랜덤 영웅 지후권', give: () => { profile.inventory.epicTicket = (profile.inventory.epicTicket || 0) + 1; } },
+  3: { icon: '●', label: '골드 3,000', give: () => { profile.gold += 3000; } },
+  4: { icon: '◆', label: '다이아 500', give: () => { profile.diamonds += 500; } },
+  5: { icon: '★', label: '랜덤 전설 지후권', give: () => { profile.inventory.legendTicket = (profile.inventory.legendTicket || 0) + 1; } },
+  6: { icon: '✦', label: '빛나는 전설조각', give: () => { profile.inventory.glowLegend = (profile.inventory.glowLegend || 0) + 1; } },
+  7: { icon: '◆', label: '다이아 1,000', give: () => { profile.diamonds += 1000; } },
+  8: { icon: '●', label: '골드 5,000', give: () => { profile.gold += 5000; } },
+  9: { icon: '✦', label: '빛나는 영웅조각 ×20', give: () => { profile.inventory.glowEpic = (profile.inventory.glowEpic || 0) + 20; } },
+  10: { icon: '◆', label: '랜덤 신화 지후권', give: () => { profile.inventory.mythicTicket = (profile.inventory.mythicTicket || 0) + 1; } },
+};
+function classOf(cp) { cp = Math.max(0, Number(cp) || 0); let c = 1; for (let i = 1; i < CLASS_MAX; i++) if (cp >= CLASS_CP[i]) c = i + 1; return c; }
+function classInfo(cp) {
+  cp = Math.max(0, Math.floor(Number(cp) || 0));
+  const cls = classOf(cp), floor = CLASS_CP[cls - 1], next = cls < CLASS_MAX ? CLASS_CP[cls] : null;
+  const span = next != null ? next - floor : CLASS_TOP_SPAN;
+  return { cls, cp, floor, next, progress: next != null ? (cp - floor) / span : Math.min(1, (cp - floor) / span) };
+}
+function classFloat(cp) { const i = classInfo(cp); return i.cls + (i.next != null ? i.progress : (Math.max(0, cp - i.floor) / CLASS_TOP_SPAN)); }
+function classCpAt(f) { // 클래스(소수) → CP (봇 표시용)
+  f = Math.max(1, f); const c = Math.min(CLASS_MAX, Math.floor(f)), frac = f - c;
+  const floor = CLASS_CP[c - 1], span = c < CLASS_MAX ? CLASS_CP[c] - floor : CLASS_TOP_SPAN;
+  return Math.round(floor + frac * span);
+}
+function classWinCp(cls) { return Math.round(55 * Math.pow(20 / 55, (Math.min(CLASS_MAX, cls) - 1) / (CLASS_MAX - 1))); } // 클래스 1: +55 → 클래스 20: +20
+function classLossCp(cls) { return Math.round(25 * Math.pow(40 / 25, (Math.min(CLASS_MAX, cls) - 1) / (CLASS_MAX - 1))); } // 클래스 1: -25 → 클래스 20: -40
+// 봇 실력: 클래스 1 = 봇 Lv.1 → 클래스 20 = 봇 Lv.40 (예전 레벨 기준 최대 실력). 레벨은 더 이상 실력이 아니라서 상대는 클래스로 맞춘다
+function classBotLevel(cp = profile.cp) { return clamp(Math.round(1 + (classFloat(cp) - 1) * 39 / (CLASS_MAX - 1)), 1, 60); }
+function botLevelClassF(level) { return Math.max(1, 1 + ((Number(level) || 1) - 1) * (CLASS_MAX - 1) / 39); }
+function myClass() { return classOf(profile.cp); }
+// 클래스 배지 (1~3 돌 · 4~6 동 · 7~9 은 · 10~12 금 · 13~15 수정 · 16~18 보라 · 19~20 진홍)
+function classGroup(cls) { return Math.min(6, Math.floor((Math.max(1, cls) - 1) / 3)); }
+function classBadge(cls, size = 40, extra = '') { cls = Math.max(1, Math.min(CLASS_MAX, Math.floor(cls) || 1)); return `<span class="clsb g${classGroup(cls)}${cls === CLASS_MAX ? ' top' : ''} ${extra}" style="--s:${size}px" title="클래스 ${cls}"><i></i><b>${cls}</b></span>`; }
+// CP 반영 (일반전): 클래스 보상은 처음 오른 클래스만 한 번
+function applyClassCp(delta) {
+  const before = classInfo(profile.cp);
+  profile.cp = Math.max(0, Math.floor((Number(profile.cp) || 0) + delta));
+  profile.cpBest = Math.max(profile.cpBest || 0, profile.cp);
+  const after = classInfo(profile.cp), rewards = [];
+  for (let c = (profile.classRewarded || 1) + 1; c <= after.cls; c++) {
+    const r = CLASS_REWARDS[c];
+    if (r) { r.give(); rewards.push({ cls: c, icon: r.icon, label: r.label }); }
+    profile.classRewarded = c;
+  }
+  if (after.cls > before.cls && after.cls >= 5 && after.cls > (profile.classAnnounced || 1)) { profile.classAnnounced = after.cls; window.JihooOnline.eventPost('promo', '클래스 ' + after.cls).catch(() => {}); } // 공지 띠 (규칙에 있는 종류를 쓴다)
+  return { before, after, rewards };
+}
+// 레벨 경험치: 친선전을 뺀 모든 모드에서 오르고 지지 않는다
+function grantPlayXp(xp) {
+  xp = Math.max(0, Math.round(xp || 0));
+  const before = getLevelInfo(profile.totalXp);
+  profile.totalXp += xp;
+  addSeasonXp(xp);
+  const after = getLevelInfo(profile.totalXp);
+  if (after.level > profile.highestRewardedLevel) {
+    profile.highestRewardedLevel = after.level;
+    profile.pendingLevelCelebration = { from: before.level, to: after.level, diamonds: 0 };
+    postEvent('level', after.level);
+  }
+  return { xp, before, after };
+}
+function playXpRoll(won, scale = 1) { return Math.round((won ? 100 + Math.floor(Math.random() * 51) : 30 + Math.floor(Math.random() * 21)) * scale); }
 // 패배 TP: 아이언 0~5 에서 그랜드마스터 80~100 까지 지수함수꼴로 늘어난다.
 const COMP_LOSS_SCALE = 0.7; // 7.3.2 패배 시 잃는 TP 30% 감소
 function compLossTp(tierIndex) { return Math.round(compLossTpBase(tierIndex) * COMP_LOSS_SCALE); }
@@ -18756,7 +18962,7 @@ function mmrState() {
 function newbieProtected() { return (profile.rankedForm || []).length < 3 && (profile.wins || 0) + (profile.losses || 0) < 3; }
 function mmrEnemyLevel() {
   if (newbieProtected()) return 1;
-  const myLevel = getLevelInfo(profile.totalXp).level;
+  const myLevel = classBotLevel(); // 7.6.1 레벨이 아니라 클래스로 상대 실력을 맞춘다 (레벨은 이제 지지 않아서 계속 오르기만 한다)
   const { offset } = mmrState();
   return Math.max(1, Math.min(100, myLevel + offset + randomBetween(-BOT_LEVEL_SPREAD, BOT_LEVEL_SPREAD)));
 }
@@ -19068,8 +19274,8 @@ function startDraftMode(modeKey, match = null) {
   $('cdMode').textContent = `${cfg.label} · ${cfg.size}:${cfg.size}`;
   $('cdAllyName').textContent = profile.nickname || '나';
   $('cdEnemyName').textContent = comp.enemy.name;
-  $('cdAllyTier').innerHTML = cfg.tiered ? compTierBadge(me.tp) : `<span class="cd-level">Lv.${myLevel}</span>`;
-  $('cdEnemyTier').innerHTML = cfg.tiered ? compTierBadge(comp.enemy.tp) : `<span class="cd-level">Lv.${comp.enemy.level}</span>`;
+  $('cdAllyTier').innerHTML = cfg.tiered ? compTierBadge(me.tp) : `<span class="cd-level">${classBadge(myClass(), 22)} 클래스 ${myClass()}</span>`; // 7.6.1
+  $('cdEnemyTier').innerHTML = cfg.tiered ? compTierBadge(comp.enemy.tp) : `<span class="cd-level">${classBadge(Math.floor(botLevelClassF(comp.enemy.level)), 22)} 클래스 ${Math.min(CLASS_MAX, Math.floor(botLevelClassF(comp.enemy.level)))}</span>`;
   $('cdAllyOrder').textContent = comp.first === 'ally' ? '선수' : '후수';
   $('cdEnemyOrder').textContent = comp.first === 'enemy' ? '선수' : '후수';
   $('cdLog').textContent = `동전 던지기 결과 ${comp.first === 'ally' ? '내가 선수' : '상대가 선수'}입니다.`;
@@ -19467,7 +19673,7 @@ function startDraftMatch() {
   state.myDeckIds = comp.picks.ally.slice();
   state.enemyDeckIds = comp.picks.enemy.slice();
   state.enemyName = comp.enemy.name;
-  state.enemyLevel = comp.enemy.level;
+  state.enemyLevel = comp.enemy.level; state.enemyClassF = botLevelClassF(comp.enemy.level); state.enemyCp = classCpAt(state.enemyClassF); // 7.6.1
   state.enemyRanks = botRanksFor(state.enemyDeckIds, comp.enemy.level); // 5.5 봇 랭크업
   state.enemyTp = comp.enemy.tp;
   const brain = comp.opponent.brain || { smart: false, accuracy: 0 };
@@ -19555,6 +19761,7 @@ function startMatch(mode = 'ranked', opts = {}) {
     state.ticketBoost = !opts.tutorial && consumeBoostTicket(mode); // 5.2 부스트 티켓
     if (state.tutMatch) { state.enemyName = '쉴드 좋아하는 봇'; state.enemyLevel = 1; state.enemyDeckIds = TUT_ENEMY_DECK.slice(); state.botSkill = 0; }
     state.enemyRanks = botRanksFor(state.enemyDeckIds, state.enemyLevel); // 5.5 봇 랭크업
+    state.enemyClassF = botLevelClassF(state.enemyLevel); state.enemyCp = classCpAt(state.enemyClassF); // 7.6.1 상대 클래스 (봇 실력과 같은 눈금)
     state.matchSettled = false;
     state.lastSettlement = null;
     resetBattlePresentation();
@@ -31450,10 +31657,10 @@ function aucStageMgRes(ph) {
 // 게임 끝: 순위 · 다이아 (친선 다이아 하루 한도 안에서)
 function aucStageOver(ph) {
   const G = AUC.G, me = aucMe();
-  if (me && !AUC.awarded) { AUC.awarded = true; AUC.reward = aucAwardDia(me.rank || 4); }
+  if (me && !AUC.awarded) { AUC.awarded = true; AUC.reward = aucAwardDia(me.rank || 4); AUC.xp = grantPlayXp([150, 110, 80, 60][Math.max(0, Math.min(3, (me.rank || 4) - 1))]); saveProfile(); } // 7.6.1 경매 모드도 레벨 경험치
   const card = aucStage(`<div class="as-k">데스매치 결과${ph.timedOut ? ' · 시간 종료 판정' : ''}</div><h3>🏆 ${escapeHtml(aucP(ph.order[0]).name)} 1등</h3>
     <div class="as-rank">${ph.order.map((s, i) => { const p = aucP(s); return `<div style="--pc:${p.color}" class="${aucIsMe(p) ? 'me' : ''}"><b>${i + 1}</b><span>${aucName(p)}</span><em>지후 ${p.units.length} · 💰 ${p.gold}</em><strong>◆ ${AUC_CFG.dia[i]}</strong></div>`; }).join('')}</div>
-    ${AUC.reward ? `<p class="as-dia">${AUC.reward.got ? `◆ <b>${AUC.reward.got}</b> 다이아를 받았어요` : '오늘 받을 수 있는 다이아를 다 받았어요'} <small>(오늘 ${AUC.reward.today} / ${FRIEND_DIA_CAP})</small></p>` : ''}
+    ${AUC.reward ? `<p class="as-dia">${AUC.reward.got ? `◆ <b>${AUC.reward.got}</b> 다이아를 받았어요` : '오늘 받을 수 있는 다이아를 다 받았어요'} <small>(오늘 ${AUC.reward.today} / ${FRIEND_DIA_CAP})</small>${AUC.xp ? ` · EXP +${AUC.xp.xp}${AUC.xp.after.level > AUC.xp.before.level ? ` <b>Lv.${AUC.xp.after.level}!</b>` : ''}` : ''}</p>` : ''}
     <div class="as-ctl2">${AUC.online ? '' : '<button type="button" data-x="again">다시 하기</button>'}<button type="button" data-x="lobby">로비로</button></div>`, 'res over');
   const again = card.querySelector('[data-x="again"]'); if (again) again.onclick = () => aucStartSolo();
   card.querySelector('[data-x="lobby"]').onclick = () => { aucQuit(true); showScreen('lobby'); };
@@ -32793,6 +33000,89 @@ function endRoundCombat(winnerSide, timedOut = false) {
   }, 1800);
 }
 
+// ═════════ 7.6.1 일반전 정산: ① 양쪽 덱 (WIN · LOSE) → ② 결과 · 클래스 게이지 · 작게 레벨 ═════════
+function classSettleEl() {
+  let el = $('clsSettle');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'clsSettle'; el.className = 'cs-ov'; el.hidden = true;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function classSettleMvp() { // 내 쪽에서 피해를 가장 많이 준 지후
+  const sum = {};
+  (state.matchStats || []).forEach(r => (r.rows || []).forEach(x => { if (x.side === meSide()) sum[x.id] = (sum[x.id] || 0) + (x.dealt || 0); }));
+  return Object.keys(sum).sort((a, b) => sum[b] - sum[a])[0] || null;
+}
+function classSettleDeck(ids, mvp) {
+  return [...new Set(ids || [])].filter(id => CHAR_DB[id]).slice(0, 5).map((id, i) => {
+    const c = CHAR_DB[id];
+    return `<div class="cs-u${id === mvp ? ' mvp' : ''}" style="--rc:${rarityColorVar(c.rarity)};animation-delay:${(0.25 + i * 0.07).toFixed(2)}s">${id === mvp ? '<span class="cs-mvp">MVP</span>' : ''}<span class="pic">${portraitHtml(c)}</span><b>${escapeHtml(c.name.replace(/ ?지후$/, ''))}</b></div>`;
+  }).join('');
+}
+function classSettleShow(st) {
+  const el = classSettleEl(), cls = st.cls; if (!cls) return;
+  const won = !!st.won, draw = !!st.draw, mvp = classSettleMvp();
+  const myRes = draw ? 'draw' : won ? 'win' : 'lose', enRes = draw ? 'draw' : won ? 'lose' : 'win';
+  const word = r => r === 'win' ? 'WIN' : r === 'lose' ? 'LOSE' : 'DRAW';
+  const side = (who, res, name, clsN, cp, deck, lives) => `<div class="cs-side ${who} ${res}">
+      <div class="cs-word">${word(res)}</div>
+      <div class="cs-deck">${deck}</div>
+      <div class="cs-bar">${classBadge(clsN, 34)}<b>${escapeHtml(name)}</b><span class="cs-lives">${'♥'.repeat(Math.max(0, lives))}<i>${'♥'.repeat(Math.max(0, RANKED_LIVES - lives))}</i></span><span class="cs-cp">${formatNumber(cp)} <small>CP</small></span></div>
+    </div>`;
+  el.innerHTML = `<div class="cs-page cs-vs">
+      ${side('enemy', enRes, state.enemyName || '상대', cls.enemyCls, cls.enemyCp, classSettleDeck(state.enemyDeckIds), state.enemyLives)}
+      <div class="cs-vsmark"><span></span><b>VS</b><span></span></div>
+      ${side('ally', myRes, profile.nickname || '나', cls.before.cls, cls.before.cp, classSettleDeck(state.myDeckIds, mvp), state.allyLives)}
+      <div class="cs-btns"><button type="button" class="cs-ok" data-cs="next">확인</button></div>
+    </div>`;
+  el.hidden = false; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  el.querySelector('[data-cs="next"]').onclick = () => classSettleResult(st);
+}
+function classSettleResult(st) {
+  const el = classSettleEl(), cls = st.cls, won = !!st.won, draw = !!st.draw;
+  const sgn = n => n > 0 ? '+' + formatNumber(n) : n < 0 ? '−' + formatNumber(-n) : '±0';
+  const rows = [];
+  rows.push([draw ? '⚖' : won ? '⚔' : '🛡', draw ? '무승부' : won ? '승리' : st.surrendered ? '항복 · 패배' : '패배', [[`${sgn(cls.base)} CP`, cls.base > 0 ? 'up' : cls.base < 0 ? 'down' : ''], st.gold ? [`● +${formatNumber(st.gold)}`, ''] : null]]);
+  if (cls.raw !== cls.base) rows.push(['🎯', `상대 클래스 ${cls.enemyCls} (${cls.diff > 0 ? '+' : ''}${cls.diff.toFixed(1)})`, [[`${sgn(cls.raw - cls.base)} CP`, cls.raw - cls.base > 0 ? 'up' : 'down'], [`×${cls.mult.toFixed(2)}`, 'dim']]]);
+  if (cls.cp !== cls.raw) rows.push(['⛔', 'CP 는 0 아래로 내려가지 않아요', [[`${sgn(cls.cp - cls.raw)} CP`, 'up']]]);
+  if (st.streakXp) rows.push(['🔥', `${st.streak}연승`, [[`EXP +${st.streakXp}`, '']]]);
+  if (st.diamonds) rows.push(['◆', st.diaLabel || '부스트 보너스', [[`◆ +${formatNumber(st.diamonds)}`, '']]]);
+  if (st.draftTicket) rows.push(['🎟', '티켓', [[`+${st.draftTicket}장`, '']]]);
+  if (st.ticketBoost) rows.push(['🎫', '부스트 티켓', [['EXP ×2', '']]]);
+  const lo = Math.min(cls.before.cls, cls.after.cls), hi = Math.max(cls.before.cls, cls.after.cls);
+  const g0 = CLASS_CP[lo - 1], g1 = hi < CLASS_MAX ? CLASS_CP[hi] : CLASS_CP[CLASS_MAX - 1] + CLASS_TOP_SPAN;
+  const at = cp => Math.max(0, Math.min(100, (cp - g0) / Math.max(1, g1 - g0) * 100));
+  const marks = []; for (let c = lo; c <= Math.min(CLASS_MAX, hi + 1); c++) { const t = CLASS_CP[c - 1]; if (t >= g0 && t <= g1) marks.push([c, t]); }
+  const nextCls = cls.after.cls + 1, nextR = CLASS_REWARDS[nextCls] && nextCls > (profile.classRewarded || 1) ? CLASS_REWARDS[nextCls] : null;
+  const up = cls.after.cls > cls.before.cls, down = cls.after.cls < cls.before.cls;
+  const xi = { before: st.before, after: st.after, xp: st.xp };
+  const lvUp = xi.after.level > xi.before.level;
+  el.innerHTML = `<div class="cs-page cs-res">
+      <div class="cs-title"><span></span><b>결과</b><span></span></div>
+      <div class="cs-rows">${rows.map(([ic, label, vals], i) => `<div class="cs-row" style="animation-delay:${(0.15 + i * 0.12).toFixed(2)}s"><span class="ic">${ic}</span><div><b>${label}</b><span>${vals.filter(Boolean).map(([t, c]) => `<em class="${c}">${t}</em>`).join('')}</span></div></div>`).join('')}</div>
+      <div class="cs-total"><small>TOTAL</small><div><span class="${cls.cp > 0 ? 'up' : cls.cp < 0 ? 'down' : ''}"><i>CP</i>${sgn(cls.cp)}</span>${st.gold ? `<span><i>●</i>${formatNumber(st.gold)}</span>` : ''}${st.diamonds ? `<span><i>◆</i>${formatNumber(st.diamonds)}</span>` : ''}</div></div>
+      ${up ? `<div class="cs-up">${classBadge(cls.after.cls, 54, 'pop')}<div><b>클래스 업! 클래스 ${cls.after.cls}</b>${cls.rewards.length ? `<span>보상 ${cls.rewards.map(r => `${r.icon} ${r.label}`).join(' · ')} 지급</span>` : '<span>이 클래스 보상은 이미 받았어요</span>'}</div></div>` : down ? `<div class="cs-up down">${classBadge(cls.after.cls, 40)}<div><b>클래스 ${cls.after.cls} 로 내려갔어요</b><span>다시 올라가도 보상은 한 번만</span></div></div>` : ''}
+      <div class="cs-gauge">
+        <div class="cs-gnow">CP <b data-cscount="${cls.after.cp}">${formatNumber(cls.before.cp)}</b>${cls.after.next != null ? ` <small>· 클래스 ${cls.after.cls + 1} 까지 ${formatNumber(cls.after.next - cls.after.cp)}</small>` : ' <small>· 최고 클래스</small>'}</div>
+        ${nextR ? `<div class="cs-gift${at(CLASS_CP[nextCls - 1]) > 84 || at(CLASS_CP[nextCls - 1]) < 16 ? ' edge' : ''}" style="left:${Math.max(16, Math.min(84, at(CLASS_CP[nextCls - 1]))).toFixed(1)}%"><span>${nextR.icon} ${nextR.label}</span><small>클래스 ${nextCls} 보상</small></div>` : ''}
+        <div class="cs-gbar"><i class="cs-gfill" style="transform:scaleX(${(at(cls.before.cp) / 100).toFixed(4)})" data-to="${(at(cls.after.cp) / 100).toFixed(4)}"></i>${marks.map(([c, t]) => `<span class="cs-gm" style="left:${at(t).toFixed(1)}%">${classBadge(c, 24)}<small>${formatNumber(t)}</small></span>`).join('')}<span class="cs-gpt" style="left:${at(cls.before.cp).toFixed(2)}%" data-to="${at(cls.after.cp).toFixed(2)}"></span></div>
+      </div>
+      <div class="cs-lv">Lv.${xi.before.level}${lvUp ? ` → <b>Lv.${xi.after.level}</b>` : ''} · EXP +${formatNumber(xi.xp || 0)}<span><i style="width:${(xi.after.required ? xi.after.current / xi.after.required * 100 : 100).toFixed(1)}%"></i></span>${lvUp ? '<em>레벨 보상은 프로필에서</em>' : ''}</div>
+      <div class="cs-btns"><button type="button" class="cs-ghost" data-cs="stats">📊 통계</button><button type="button" class="cs-ok" data-cs="done">확인</button></div>
+    </div>`;
+  // 게이지: 잠깐 뒤에 이전 CP → 지금 CP 로 차오른다 (transform 만)
+  const quick = profile.settings.reduceMotion;
+  setTimeout(() => {
+    const fill = el.querySelector('.cs-gfill'), pt = el.querySelector('.cs-gpt'), num = el.querySelector('[data-cscount]');
+    if (fill) fill.style.transform = `scaleX(${fill.dataset.to})`;
+    if (pt) pt.style.left = pt.dataset.to + '%';
+    if (num) { const from = cls.before.cp, to = cls.after.cp, t0 = performance.now(), dur = quick ? 1 : 900; const step = now => { const u = Math.min(1, (now - t0) / dur); num.textContent = formatNumber(Math.round(from + (to - from) * (1 - Math.pow(1 - u, 3)))); if (u < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+    if (up) sfx('levelup');
+  }, quick ? 0 : 650);
+  el.querySelector('[data-cs="stats"]').onclick = () => $('btnMatchStats')?.click();
+  el.querySelector('[data-cs="done"]').onclick = () => { el.hidden = true; el.innerHTML = ''; $('btnRestart')?.click(); };
+}
 function finishMatch(winnerSide, surrendered = false) {
   const won = winnerSide ? winnerSide === meSide() : (meSide() === 'ally' ? state.enemyLives <= 0 : state.allyLives <= 0);
   const draw = winnerSide === 'draw' || (!winnerSide && state.enemyLives > 0 && state.allyLives > 0);
@@ -32842,6 +33132,7 @@ function finishMatch(winnerSide, surrendered = false) {
       <div class="settlement-row"><span>티어 점수</span><b class="${settlement.tp > 0 ? 'gain' : settlement.tp < 0 ? 'loss' : ''}">${settlement.tp > 0 ? '+' : settlement.tp < 0 ? '' : '±'}${settlement.tp} TP</b></div>
       ${settlement.tpMult && settlement.tp ? `<div class="settlement-row"><span>상대</span><b>${compTierBadge(settlement.enemyTp)} · ${settlement.tierDiff > 0 ? '+' : ''}${settlement.tierDiff}칸 · ×${settlement.tpMult.toFixed(2)}</b></div>` : ''}
       <div class="settlement-row"><span>티어</span><b>${compTierBadge(before.tp)} → ${compTierBadge(after.tp)}${moved}</b></div>
+      ${settlement.xpInfo && settlement.xpInfo.xp ? `<div class="settlement-row"><span>레벨 경험치</span><b class="gain">+${settlement.xpInfo.xp} EXP${settlement.xpInfo.after.level > settlement.xpInfo.before.level ? ` · Lv.${settlement.xpInfo.after.level}!` : ''}</b></div>` : ''}
       ${settlement.playDiamonds || settlement.devDiamonds ? `<div class="settlement-row"><span>${settlement.devDiamonds ? '한 판 보상 · 🎉 개발자 부스트' : '한 판 보상'}</span><b class="gain">+${formatNumber((settlement.playDiamonds || 0) + (settlement.devDiamonds || 0))} ◆</b></div>` : ''}
       ${settlement.promoDiamonds ? `<div class="settlement-row"><span>승급 보상</span><b class="gain">${settlement.promoGroups.map(group => COMP_GROUP_LABELS[group]).join(' · ')} 첫 승급 +${formatNumber(settlement.promoDiamonds)} ◆</b></div>` : ''}
       <div class="settlement-row"><span>현재</span><b>${formatNumber(after.tp)} TP${after.next ? ` · 다음 티어까지 ${formatNumber(after.next - after.tp)} TP` : ' · 최고 티어'}</b></div>
@@ -32882,13 +33173,13 @@ function finishMatch(winnerSide, surrendered = false) {
         <div><b>● ${formatNumber(settlement.gold || 0)}</b><span>골드</span></div>
         <div><b>◆ ${formatNumber((settlement.diamonds || 0) + (settlement.levelBonus || 0))}</b><span>${settlement.levelBonus ? '레벨업 보너스' : settlement.diaLabel || '부스트 보너스'}</span></div>
       </div>
-      ${settlement.xp && settlement.enemyLevel ? `<div class="settlement-row"><span>상대 레벨</span><b>Lv.${settlement.enemyLevel} (${settlement.levelDiff > 0 ? '+' : ''}${settlement.levelDiff}) · ×${settlement.xpMult.toFixed(2)}</b></div>` : ''}
+      ${settlement.cls ? `<div class="settlement-row"><span>클래스</span><b class="${settlement.cls.cp > 0 ? 'gain' : settlement.cls.cp < 0 ? 'loss' : ''}">${classBadge(settlement.cls.after.cls, 20)} 클래스 ${settlement.cls.after.cls} · ${settlement.cls.cp > 0 ? '+' : ''}${settlement.cls.cp} CP (${formatNumber(settlement.cls.after.cp)} CP)</b></div>` : ''}
       ${state.mode === 'duo' ? `<div class="settlement-row"><span>⚔ 2:2 대전 · 파트너 ${escapeHtml(state.duo?.partner?.name || 'AI')}</span><b class="gain">보상 ×${DUO_REWARD}</b></div>` : ''}
-      ${settlement.ticketBoost ? `<div class="settlement-row"><span>🎫 부스트 티켓</span><b class="${settlement.xp >= 0 ? 'gain' : 'loss'}">경험치 ×2${settlement.xp < 0 ? ' (잃는 것도)' : ''}</b></div>` : ''}
+      ${settlement.ticketBoost ? `<div class="settlement-row"><span>🎫 부스트 티켓</span><b class="gain">경험치 ×2</b></div>` : ''}
       ${settlement.streakXp ? `<div class="settlement-row"><span>🔥 ${settlement.streak}연승 보너스</span><b class="gain">+${settlement.streakXp} EXP</b></div>` : ''}
       ${settlement.draftTicket ? `<div class="settlement-row"><span>티켓</span><b class="gain">+${settlement.draftTicket} 🎟️ (보유 ${profile.draftTickets || 0}/${TICKET_MAX})</b></div>` : ''}
       <div class="v4-lvline"><div class="t"><span>Lv.${settlement.before.level}${levelUp ? ` → Lv.${settlement.after.level}` : ''}</span><span>EXP ${formatNumber(settlement.after.current)} / ${formatNumber(settlement.after.required)}</span></div><div class="bar"><div style="width:${xpRatio}%"></div></div></div>
-      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? `드래프트전: 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외) · 승리 시 ◆${DRAFT_WIN_DIAMONDS} · EXP +100~150 · 패배 시 변동 없음${devBoostActive() ? ' · 🎉 개발자 부스트: 승리 시 ◆100~200' : ''}` : state.mode === 'castle' ? '성뿌수기: 승리 시 EXP +100~150 · 패배 시 변동 없음' : '승리: EXP +100~150, 다이아 +100~200, 골드 +1,000~2,000 · 패배: EXP -30~50' + (devBoostActive() ? ' · 🎉 개발자 부스트 중: 승리하면 다이아 100~200 무조건' : '')}</div>`;
+      <div class="settlement-note">${surrendered ? '항복은 패배로 기록되며 출석부 해금과 일일 플레이 횟수에는 포함되지 않습니다.' : state.mode === 'draftbattle' ? `드래프트전: 한 판마다 ◆${PER_GAME_DIAMONDS} (항복 제외) · 승리 시 ◆${DRAFT_WIN_DIAMONDS} · 레벨 EXP 승리 +100~150 · 패배 +30~50${devBoostActive() ? ' · 🎉 개발자 부스트: 승리 시 ◆100~200' : ''}` : state.mode === 'castle' ? '성뿌수기: 레벨 EXP 승리 +100~150 · 패배 +30~50' : (state.mode === 'ranked' ? '레벨 EXP: 승리 +100~150 · 패배 +30~50 (잃지 않아요) · 골드 +1,000~2,000 · 클래스 CP 는 일반전에서만 오르내려요' : '레벨 EXP: 승리 +100~150 · 패배 +30~50 (잃지 않아요) · 골드 +1,000~2,000') + (devBoostActive() ? ' · 🎉 개발자 부스트 중: 승리하면 다이아 100~200 무조건' : '')}</div>`;
   }
   card.insertAdjacentHTML('afterbegin', '<div class="settlement-heading"><span>전투 보상</span><b id="settlementProgressLabel">정산 중 · 0%</b></div><div class="settlement-progress"><span id="settlementProgressFill"></span></div>');
   const steps = Array.from(card.children).filter(el => !el.classList.contains('settlement-heading') && !el.classList.contains('settlement-progress'));
@@ -32902,6 +33193,7 @@ function finishMatch(winnerSide, surrendered = false) {
     $('settlementProgressLabel').textContent = progress === 100 ? '정산 완료' : `정산 중 · ${progress}%`;
     if (progress === 100) $('screen-end').classList.add('settlement-complete');
   }, 250 + index * stepDelay));
+  if (settlement.cls && !state.tutMatch) classSettleShow(settlement); // 7.6.1 일반전 정산: 덱 → 결과 · 클래스 게이지
   tutAfterMatch(); // 4.7.4 튜토리얼: 보상 대본
   if (state.mode === 'friendly' && state.net) { // 5.0 친선전: 끝 (상대도 같은 결과를 따로 계산한다)
     if (state.net.role === 'host' && !window.__JH_NET_TEST) (state.net.team ? window.JihooOnline.roomUpdate(state.net.id, { status: 'done' }) : window.JihooOnline.matchUpdate(state.net.id, { status: 'done' })).catch(() => {});
@@ -32942,7 +33234,9 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
       ['🚫 출격 제한', '같은 지후가 많으면 서로 싸워서 <b>같은 지후는 한 진영에 3기까지</b>만 놓을 수 있습니다 (알 부화 · 성장으로 바뀐 지후는 세지 않음). 출격 제한이 있는 지후는 1기만 나올 수 있습니다. <b>태극 지후</b>는 제한이 없습니다.'],
       ['🔝 최대 레벨', '합체 레벨은 <b>Lv.7</b>이 최대이며 <b>MAX</b>로 표시됩니다. 놓을 자리도 합칠 지후도 없는 카드는 회색으로 보입니다.'],
       ['🔁 배치', '배치 기회마다 반드시 하나를 놓거나 합쳐야 합니다. 풀의 카드가 모두 회색이면 알아서 리롤하고, 3번 리롤해도 없으면 그 배치는 건너뜁니다.'],
-      ['⭐ 랭크 · 한계돌파', '덱 설정에서 지후 조각으로 <b>A → S</b> 승급 (일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). S가 되면 <b>한계돌파 Lv1 → Lv5</b> (조각 · 골드 · 확률 35 / 30 / 20 / 15%, 실패해도 재료 소모). <b>Lv3</b>: 지후 고유 능력 · <b>Lv5</b>: 공격력 +5%. 일반전 · 경쟁전 · 드래프트전에서 적용되고, 히든 지후는 없습니다. 미보유 지후는 조각 20개로 해금.'],
+      ['🎖️ 클래스 · 레벨', '<b>클래스</b>는 얼마나 강한지예요. 일반전에서만 CP 가 오르내리고 (클래스 1: 승리 +55 / 패배 -25 → 클래스 20: +20 / -40, 상대 클래스가 높을수록 더 얻고 덜 잃음), 일반전 봇 실력도 클래스에 맞춰요. 클래스 2 ~ 10 은 처음 오를 때 보상. <b>레벨</b>은 얼마나 즐겼는지 — 친선전을 뺀 모든 모드에서 오르고 지지 않아요. 레벨업 보상은 Lv.50 까지 ◆50, 그 뒤 ◆100.'],
+      ['⭐ 랭크 · 한계돌파', '덱 설정에서 지후 조각으로 <b>A → S</b> 승급 (일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). S가 되면 <b>한계돌파 Lv0 → Lv5</b> (전설 · 신화 70 / 50 / 35 / 25 / 10%, 그 외 75 / 55 / 40 / 30 / 15% · Lv0 → 1 은 골드만 · Lv4 → 5 는 조각 2개, 실패해도 재료 소모). <b>Lv2 · Lv4</b>: 능력치 · <b>Lv3</b>: S랭크 고유 능력 · <b>Lv5</b>: 공격력 +5%.'],
+
       ['📊 경기 통계', '경기가 끝나면 정산 화면의 통계 버튼으로 라운드별 기여도와 MVP를 볼 수 있습니다.']
     ].map(([title, text]) => `<div class="help-rule"><b>${title}</b><p>${text}</p></div>`).join('');
     return;
@@ -33440,6 +33734,25 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.6.1': {
+    label: 'v7.6.1 클래스 · 레벨 개편 · 정산 화면',
+    date: '2026.10.11',
+    sections: [
+      { title: '클래스 (신규)', items: [
+        { emoji:'🎖️', name:'클래스', tag:'new', color:'#f5b82e', desc:'클래스는 <b>얼마나 강한지</b>를 보여 줘요. 모두 <b>클래스 1</b>부터 시작하고, 로비에서 레벨이 있던 자리에 클래스가 보여요. 프로필에서 클래스 1 ~ 20 표와 필요 CP, 보상을 볼 수 있어요.' },
+        { emoji:'📈', name:'CP', tag:'new', color:'#2f6fed', desc:'CP는 <b>일반전에서만</b> 오르내려요. 클래스 1: 승리 <b>+55</b> · 패배 <b>-25</b> → 클래스가 오를수록 지수함수꼴로 바뀌어 클래스 20: 승리 <b>+20</b> · 패배 <b>-40</b>. 상대 클래스가 높을수록 더 얻고 덜 잃어요 (한 클래스 차이마다 12%).' },
+        { emoji:'🤖', name:'일반전 상대', tag:'adjust', color:'#111111', desc:'일반전 · 2:2 · 드래프트 봇의 실력은 이제 <b>레벨이 아니라 클래스</b>에 맞춰져요 (레벨은 지지 않고 오르기만 해서).' },
+        { emoji:'🎁', name:'클래스 보상', tag:'new', color:'#e5322d', desc:'처음 오를 때 한 번: 2 랜덤 영웅 지후권 · 3 골드 3,000 · 4 다이아 500 · 5 랜덤 전설 지후권 · 6 빛나는 전설조각 · 7 다이아 1,000 · 8 골드 5,000 · 9 빛나는 영웅조각 ×20 · 10 랜덤 신화 지후권 · 11 ~ 20 추가 예정.' },
+      ] },
+      { title: '레벨 개편', items: [
+        { emoji:'⏳', name:'레벨', tag:'adjust', color:'#7b5cff', desc:'레벨은 이제 <b>얼마나 즐겼는지</b>예요. 져도 경험치를 잃지 않고 조금 올라요. <b>친선전을 뺀 모든 모드</b>(경쟁전 · 투기장 · 경매 · WWE 포함)에서 올라요. 레벨은 리더보드와 내 프로필에서만 보여요.' },
+        { emoji:'◆', name:'레벨업 보상', tag:'nerf', color:'#111111', desc:'Lv.50 까지는 <b>다이아 50</b>, Lv.51 부터는 <b>다이아 100</b>으로 고정 (레벨 테두리는 그대로). 대신 클래스 보상이 생겼어요.' },
+      ] },
+      { title: '정산 화면', items: [
+        { emoji:'⚔️', name:'일반전 정산', tag:'new', color:'#2f55d4', desc:'경기가 끝나면 먼저 <b>양쪽 덱</b>(WIN · LOSE · MVP · 클래스 · CP)이 나오고, 확인을 누르면 <b>결과</b>(승패 CP · 상대 보정 · 연승 · 골드)와 <b>클래스 게이지</b>가 차올라요. 작게 레벨 경험치도 보여요.' },
+      ] },
+    ],
+  },
   '7.6': {
     label: 'v7.6 한계돌파 개편 · 가루 ⇄ 조각 · 마일리지 10배',
     date: '2026.10.11',
@@ -38723,7 +39036,7 @@ function renderRoom() {
   $('roomBody').querySelectorAll('[data-addbot]').forEach(bt => bt.onclick = () => {
     if (ps.length >= 4 || ps.filter(x => x.team === bt.dataset.addbot).length >= 2) return;
     const used = new Set(ps.map(x => x.name)), names = BOT_NICKNAMES.filter(n => !used.has(n));
-    const lv = getLevelInfo(profile.totalXp).level;
+    const lv = classBotLevel(); // 7.6.1
     const id = 'bot_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     window.JihooOnline.roomUpdate(room.id, { [`players.${id}`]: { n: String(names[Math.floor(Math.random() * names.length)] || '봇').slice(0, 16), t: bt.dataset.addbot, d: buildEnemyDeck(lv).filter(x => CHAR_DB[x].rarity !== 'hidden').concat(playableIds().filter(x => CHAR_DB[x].rarity !== 'hidden')).filter((x, i, a) => a.indexOf(x) === i).slice(0, 5), j: Date.now(), bot: true } }).catch(e => roomMsg(e.message, 'err'));
   });
@@ -38781,6 +39094,7 @@ function startDuo() {
     state.enemyDeckIds = e1.concat(e2);
     state.enemyName = `${names[1]} & ${names[2]}`;
     state.enemyLevel = level;
+    state.enemyClassF = botLevelClassF(level); state.enemyCp = classCpAt(state.enemyClassF); // 7.6.1
     state.enemyRanks = botRanksFor(state.enemyDeckIds, level); // 5.5 봇 랭크업
     state.botSkill = mmrBotSkill(level);
     state.ticketBoost = consumeBoostTicket('duo');
@@ -39098,7 +39412,7 @@ function noticeParts(e) {
     case 'gacha': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🎴', html: `<b>${escapeHtml(name)}</b>님이 ${RARITY_LABEL[e.b] || ''} <b>${escapeHtml(c ? c.name : e.a)}</b>를 뽑았습니다` };
     case 'rank': { const lb = /^LB(\d)$/.exec(String(e.b)); return { ic: c ? `<img src="${c.portrait}" alt="">` : '🏅', html: lb ? `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(c ? c.name : e.a)}</b> <b>한계돌파 Lv.${lb[1]}</b>에 성공했습니다` : `<b>${escapeHtml(name)}</b>님의 <b>${escapeHtml(c ? c.name : e.a)}</b>가 <b>${escapeHtml(e.b === 'S' || e.b === '1' ? 'S랭크' : '랭크 ' + e.b)}</b>로 승급했습니다` }; } // 7.1 한계돌파 성공
     case 'mastery': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🎖️', html: `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(c ? c.name : e.a)}</b> 마스터리 <b>${escapeHtml(e.b)}</b>를 달성했습니다` };
-    case 'promo': return { ic: '🏆', html: `<b>${escapeHtml(name)}</b>님이 경쟁전 <b>${escapeHtml(e.a)}</b>로 승급했습니다` };
+    case 'promo': return /^클래스 \d+$/.test(String(e.a)) ? { ic: '🎖️', html: `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(e.a)}</b>에 올랐습니다` } : { ic: '🏆', html: `<b>${escapeHtml(name)}</b>님이 경쟁전 <b>${escapeHtml(e.a)}</b>로 승급했습니다` }; // 7.6.1 클래스
     default: return null;
   }
 }
