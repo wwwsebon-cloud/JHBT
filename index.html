@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -11853,7 +11853,7 @@ function fxRarity(r) { return r === 'mythic' ? 'legend' : r; } // 7.3 신화는 
 const RANK_NAMES = ['A', 'S']; // 7.1 랭크는 A · S 둘 (SR · SSR 삭제 · S부터 한계돌파)
 const RANK_SHARD_COSTS = { common:[10,20,30], rare:[5,10,16], epic:[2,6,12], legend:[1,2,3] }; // 4.2.4 하향
 const DUPLICATE_SHARDS = 1; // 7.1.3 중복 지후(뽑기 · 선택권 · 확정권 · 상점)는 그 지후 조각 1개
-const DUST_PER_SHARD = 5; // 7.6 가루 5개 = 그 지후 조각 1개 (인벤토리에서 합성) · 조각 1개 = 가루 5개 (분해). 뽑기 꽝은 가루 1개
+const DUST_PER_SHARD = 5; // 7.6 가루 5개 = 그 지후 조각 1개 (인벤토리에서 합성) · 조각 1개 = 가루 5개 (분해). 뽑기 꽝은 가루 1~3개
 const DUST_SWAP_GOLD = 1000; // 7.6 합성 · 분해 한 번에 골드 1,000
 function dustCount(id) { return Math.max(0, Math.floor(Number(profile.dust && profile.dust[id]) || 0)); }
 // 7.6 모양으로 구분: 조각 = 육각형 결정 · 가루 = 작은 삼각형 알갱이
@@ -12801,7 +12801,7 @@ function normalizeProfile(raw) {
     mileageBuys: raw.mileageBuys && typeof raw.mileageBuys === 'object' ? Object.fromEntries(Object.entries(raw.mileageBuys).slice(-40).map(([k, v]) => [String(k).slice(0, 40), safeCount(v)])) : {},
     popup: raw.popup && typeof raw.popup === 'object' && typeof raw.popup.key === 'string' && raw.popup.free ? { key: raw.popup.key.slice(0, 20), free: { id: String(raw.popup.free.id || '').slice(0, 20), open: !!raw.popup.free.open, done: !!raw.popup.free.done },
       paid: Array.isArray(raw.popup.paid) ? raw.popup.paid.slice(0, 3).filter(x => x && typeof x === 'object').map(x => ({ id: String(x.id || '').slice(0, 20), open: !!x.open, done: !!x.done, ...(typeof x.emo === 'string' && /^(art|gif)_\d{2}$/.test(x.emo) ? { emo: x.emo } : {}) })) : null } : null, // 5.2 팝업스토어 · 5.7.2 유료 3칸
-    gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(item.shard ? { shard:true } : {}), ...(item.dust ? { dust:true } : {}), ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
+    gachaHistory: Array.isArray(raw.gachaHistory) ? raw.gachaHistory.filter(item => item && validIds.has(item.id) && ['normal','pickup','newpickup'].includes(item.mode)).slice(-200).map(item => ({ id:item.id, mode:item.mode, duplicate:!!item.duplicate, ...(item.shard ? { shard:true } : {}), ...(item.dust ? { dust:true, ...(Number.isInteger(item.dn) ? { dn:Math.min(3, Math.max(1, item.dn)) } : {}) } : {}), ...(Number.isInteger(item.shards) ? { shards:Math.max(0, item.shards) } : {}), at:Math.max(0,Number(item.at)||0) })) : [],
     decks,
     archivedDecks,
     activeDeck,
@@ -14585,7 +14585,7 @@ function renderGachaHistory() {
   const history = profile.gachaHistory.slice().reverse();
   $('gachaHistory').innerHTML = history.length ? history.map(item => {
     const c = CHAR_DB[item.id];
-    return `<div class="gacha-history-row"><img src="${c.portrait}" alt=""><div><b>${c.name}</b><small>${item.mode === 'newpickup' ? '신규 픽업' : item.mode === 'pickup' ? '픽업' : '일반'} · ${RARITY_LABEL[c.rarity]} · ${item.dust ? dustIco() + ' 가루 +1 (꽝)' : item.shard ? shardIco() + ' 조각 +1 (꽝)' : item.duplicate ? `${shardIco()} 조각 +${item.shards ?? 10}` : '신규 획득'}</small></div><time>${new Date(item.at).toLocaleString('ko-KR')}</time></div>`;
+    return `<div class="gacha-history-row"><img src="${c.portrait}" alt=""><div><b>${c.name}</b><small>${item.mode === 'newpickup' ? '신규 픽업' : item.mode === 'pickup' ? '픽업' : '일반'} · ${RARITY_LABEL[c.rarity]} · ${item.dust ? dustIco() + ` 가루 +${item.dn || 1} (꽝)` : item.shard ? shardIco() + ' 조각 +1 (꽝)' : item.duplicate ? `${shardIco()} 조각 +${item.shards ?? 10}` : '신규 획득'}</small></div><time>${new Date(item.at).toLocaleString('ko-KR')}</time></div>`;
   }).join('') : '<p class="settlement-note">뽑기 내역이 없습니다.</p>';
 }
 function renderGachaView0(view = gachaView) {
@@ -14656,6 +14656,7 @@ function renderGachaView0(view = gachaView) {
 const GACHA_ODDS = [['shard', 75.7], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.7], ['hidden', 0.1]]; // 잠수함: 신화 0.4 → 0.7% · 가루 76 → 75.7%
 const GACHA_ODDS_PICKUP = [['shard', 75.2], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.8], ['mythic', 1], ['hidden', 0]]; // 잠수함: 신규 지후 뽑기 전설 2.8 · 신화 1 · 히든 0%
 const gachaOddsFor = mode => mode === 'newpickup' ? GACHA_ODDS_PICKUP : GACHA_ODDS;
+const GACHA_DUST_AMOUNTS = [[1, 50], [2, 30], [3, 20]]; // 7.6 꽝 가루 개수: 1개 50% · 2개 30% · 3개 20%
 const GACHA_SHARD_ODDS = [['common', 50], ['rare', 40], ['epic', 6], ['legend', 3], ['mythic', 1]];
 const GACHA_BOX_PULLS = 10; // 지후 상자 = 10회 뽑기
 function gachaWeighted(list) { let r = Math.random() * list.reduce((s, x) => s + x[1], 0); for (const [k, w] of list) { r -= w; if (r < 0) return k; } return list[list.length - 1][0]; }
@@ -14695,14 +14696,14 @@ function gachaRecruitLoading(results, done) {
 function gachaOddsHtml(mode = gachaView) { // 7.1 첫 줄은 확률 막대가 읽는다
   const pk = gachaOddsFor(mode) === GACHA_ODDS_PICKUP;
   return (pk ? '1회: 가루 75.2% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.8% · 신화 1% · 히든 0%<br>' : '1회: 가루 75.7% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.7% · 히든 0.1%<br>')
-    + `${dustIco()} 가루(꽝)는 무작위 지후의 가루 1개: 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1% · 인벤토리에서 가루 ${DUST_PER_SHARD}개 + ● ${formatNumber(DUST_SWAP_GOLD)} = 그 지후 ${shardIco()} 조각 1개<br>`
+    + `${dustIco()} 가루(꽝)는 무작위 지후의 가루 <b>1~3개</b> (1개 50% · 2개 30% · 3개 20%) · 지후 등급: 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1% · 인벤토리에서 가루 ${DUST_PER_SHARD}개 + ● ${formatNumber(DUST_SWAP_GOLD)} = 그 지후 ${shardIco()} 조각 1개<br>`
     + `중복 지후는 그 지후 ${shardIco()} 조각 ${DUPLICATE_SHARDS}개 · 지후 상자는 ${GACHA_BOX_PULLS}회 뽑기<br>`
     + `천장: 전설 이상 지후 없이 ${GACHA_PITY}번째 뽑기는 전설 지후 확정 · 마일리지: 가루 ${MILEAGE_DUST}P · 일반 ${MILEAGE_POINTS.common}P · 희귀 ${MILEAGE_POINTS.rare}P · 영웅 ${MILEAGE_POINTS.epic}P · 전설 ${MILEAGE_POINTS.legend}P · 신화 ${MILEAGE_POINTS.mythic}P<br>`
     + `신화 지후: ${playableIds().filter(id => CHAR_DB[id].rarity === 'mythic').map(id => CHAR_DB[id].name).join(' · ')}.`;
 }
 function rollGachaCharacter(mode = gachaView) {
   const k = gachaWeighted(gachaOddsFor(mode));
-  if (k === 'shard') { const pool = rarityPool(gachaWeighted(GACHA_SHARD_ODDS)); return { id: pool[Math.floor(Math.random() * pool.length)] || STARTER_IDS[0], shard: true }; }
+  if (k === 'shard') { const pool = rarityPool(gachaWeighted(GACHA_SHARD_ODDS)); return { id: pool[Math.floor(Math.random() * pool.length)] || STARTER_IDS[0], shard: true, n: gachaWeighted(GACHA_DUST_AMOUNTS) }; }
   return { id: pickGachaCharacter(k, mode), shard: false };
 }
 function pickGachaCharacter(rarity, mode = gachaView) {
@@ -14730,11 +14731,12 @@ function rollGachaBox(mode = gachaView, fixedBonus = null) {
 // 뽑은 결과를 실제로 준다 (조각 · 새 지후 · 중복 조각) → [{ id, shard, duplicate }]
 function gachaGrant(raw, mode) {
   const out = raw.map(r => {
-    if (r.shard) { // 7.1.3 꽝은 그 지후의 가루 1개 (가루 10개 = 조각 1개)
+    if (r.shard) { // 7.6 꽝은 그 지후의 가루 1~3개 (1개 50% · 2개 30% · 3개 20%)
+      const n = Math.min(3, Math.max(1, Math.floor(Number(r.n) || 1)));
       profile.dust = profile.dust || {};
-      profile.dust[r.id] = dustCount(r.id) + 1;
-      profile.gachaHistory.push({ id: r.id, mode, shard: true, dust: true, duplicate: false, shards: 0, at: Date.now() });
-      return { id: r.id, shard: true, duplicate: false };
+      profile.dust[r.id] = dustCount(r.id) + n;
+      profile.gachaHistory.push({ id: r.id, mode, shard: true, dust: true, dn: n, duplicate: false, shards: 0, at: Date.now() });
+      return { id: r.id, shard: true, duplicate: false, n };
     }
     const duplicate = grantCharacter(r.id);
     profile.gachaHistory.push({ id: r.id, mode, duplicate, shards: duplicate ? DUPLICATE_SHARDS : 0, at: Date.now() });
@@ -14774,7 +14776,7 @@ function showGachaMulti(results) {
   $('gachaMultiGrid').innerHTML = results.map((result, i) => {
     const c = CHAR_DB[result.id], hi = !result.shard && GACHA_RARITY_ORDER[c.rarity] >= 2;
     return `<div class="mc${hi ? ' hi' : ''}${result.shard ? ' shard' : ''}" style="--d:${(i * 0.14).toFixed(2)}s;--rc:${result.shard ? '#9a9a97' : rarityColorVar(c.rarity)}"><div class="spin"><div class="back"><div>JH</div></div>`
-      + `<div class="front"><div class="pic">${portraitHtml(c)}</div><div class="nm"><b>${c.name}</b><i></i></div>${result.shard ? `<span class="shardtag dust">${dustIco()} 가루 +1</span>` : result.duplicate ? `<span class="shardtag">${shardIco()} 조각 +${DUPLICATE_SHARDS}</span>` : '<span class="new">NEW</span>'}</div></div></div>`;
+      + `<div class="front"><div class="pic">${portraitHtml(c)}</div><div class="nm"><b>${c.name}</b><i></i></div>${result.shard ? `<span class="shardtag dust">${dustIco()} 가루 +${result.n || 1}</span>` : result.duplicate ? `<span class="shardtag">${shardIco()} 조각 +${DUPLICATE_SHARDS}</span>` : '<span class="new">NEW</span>'}</div></div></div>`;
   }).join('');
   const rank = r => r.shard ? -1 : GACHA_RARITY_ORDER[CHAR_DB[r.id].rarity];
   const best = results.reduce((b, r) => rank(r) > rank(b) ? r : b, results[0]);
@@ -15236,7 +15238,7 @@ function revealGachaCard(index) {
   $('gachaRevealRole').textContent = character.roleLabel;
   $('gachaRevealDesc').innerHTML = character.skillDesc;
   const stamp = $('gachaRevealStamp');
-  stamp.innerHTML = result.shard ? `${dustIco()} 가루 +1` : result.duplicate ? `이미 보유 · ${shardIco()} 조각 +${DUPLICATE_SHARDS}` : 'NEW!'; // 7.6 조각 · 가루 모양
+  stamp.innerHTML = result.shard ? `${dustIco()} 가루 +${result.n || 1}` : result.duplicate ? `이미 보유 · ${shardIco()} 조각 +${DUPLICATE_SHARDS}` : 'NEW!'; // 7.6 조각 · 가루 모양
   stamp.className = 'v42-stamp ' + (result.shard ? 'dup shard' : result.duplicate ? 'dup' : 'new');
   overlay.classList.remove('opening', 'tap');
   if (!result.shard && (fxr === 'legend' || fxr === 'hidden')) { void overlay.offsetWidth; overlay.classList.add('fx-' + fxr); }
@@ -15365,7 +15367,7 @@ function performGacha(box, cost, useTicket = false) {
   saveProfile();
   $('gachaResult').innerHTML = results.map((result, index) => {
     const c = CHAR_DB[result.id];
-    return `<div class="gacha-card" style="border-color:${rarityColorVar(c.rarity)};animation-delay:${index * 35}ms"><img src="${c.portrait}" alt=""><div class="name">${c.name}</div><div class="result-tag">${result.shard ? `${dustIco()} 가루 +1` : result.duplicate ? `중복 · ${shardIco()} 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}</div></div>`;
+    return `<div class="gacha-card" style="border-color:${rarityColorVar(c.rarity)};animation-delay:${index * 35}ms"><img src="${c.portrait}" alt=""><div class="name">${c.name}</div><div class="result-tag">${result.shard ? `${dustIco()} 가루 +${result.n || 1}` : result.duplicate ? `중복 · ${shardIco()} 조각 +${DUPLICATE_SHARDS}` : 'NEW · 잠금 해제'}</div></div>`;
   }).join('');
   renderAccountUI();
   renderGachaPity();
@@ -15660,7 +15662,7 @@ function dustSwapHtml() {
       <span class="btns"><button type="button" data-reward-action="dsw:fuse:${id}" ${d >= DUST_PER_SHARD && !poor ? '' : 'disabled'} title="가루 ${DUST_PER_SHARD}개 + 골드 ${formatNumber(DUST_SWAP_GOLD)} → 조각 1개">합성 ${dustIco()}${DUST_PER_SHARD}→${shardIco()}1</button><button type="button" data-reward-action="dsw:split:${id}" ${n >= 1 && !poor ? '' : 'disabled'} title="조각 1개 + 골드 ${formatNumber(DUST_SWAP_GOLD)} → 가루 ${DUST_PER_SHARD}개">분해 ${shardIco()}1→${dustIco()}${DUST_PER_SHARD}</button></span></div>`;
   }).join('');
   return `<b class="v4-h3">가루 · 조각 변환 <small class="v76-dsw-note">${dustIco()} 가루 ${DUST_PER_SHARD}개 ⇄ ${shardIco()} 조각 1개 · 한 번에 ● ${formatNumber(DUST_SWAP_GOLD)}</small></b>
-    ${rows ? `<div class="v76-dsw">${rows}</div>` : '<div class="v4-empty">가루나 조각이 있는 지후가 없어요. 뽑기 꽝은 그 지후 가루 1개예요.</div>'}`;
+    ${rows ? `<div class="v76-dsw">${rows}</div>` : '<div class="v4-empty">가루나 조각이 있는 지후가 없어요. 뽑기 꽝은 그 지후 가루 1~3개예요.</div>'}`;
 }
 function activateXpBoost() {
   ensureDailyState();
@@ -16528,7 +16530,7 @@ function v7GachaSync() {
       d.innerHTML = `전설이 나오면 <b>100%</b> 신규 전설 지후 · 전설 <b>2.8%</b> · 신화 <b>1%</b> (일반 뽑기보다 높아요) · 히든은 나오지 않아요<br>`
         + `${NEW_PICKUP_HOURS}시간 한정 · 종료까지 <b>${Math.floor(left / 3600000)}시간 ${Math.floor(left / 60000) % 60}분</b> · 천장 ${GACHA_PITY}회 · 마일리지는 일반 뽑기와 같아요`
         + (others.length ? `<br><small>이번 업데이트의 다른 신규 지후 (확률 UP 없음): ${others.map(id => `${CHAR_DB[id].name}(${RARITY_LABEL[CHAR_DB[id].rarity]})`).join(' · ')}</small>` : '');
-    } else d.innerHTML = `전설 2.5% · 신화 0.7% · 히든 0.1% · 전설 이상 없이 ${GACHA_PITY}번째 뽑기는 전설 확정<br>꽝은 ${dustIco()} 가루 1개 (가루 ${DUST_PER_SHARD}개 = ${shardIco()} 조각 1개 · 인벤토리)`;
+    } else d.innerHTML = `전설 2.5% · 신화 0.7% · 히든 0.1% · 전설 이상 없이 ${GACHA_PITY}번째 뽑기는 전설 확정<br>꽝은 ${dustIco()} 가루 1~3개 (가루 ${DUST_PER_SHARD}개 = ${shardIco()} 조각 1개 · 인벤토리)`;
   }
   const c = CHAR_DB[gachaSpotlightId];
   if (c && $('v7SpotSub')) $('v7SpotSub').textContent = `${RARITY_LABEL[c.rarity] || ''} · ${c.roleLabel || ''}`;
@@ -33455,6 +33457,7 @@ const PATCH_NOTES = {
       { title: '가루 · 조각', items: [
         { emoji:'⬡', name:'모양 구분', tag:'adjust', color:'#2bb69c', desc:'<b>조각은 육각형</b> 결정, <b>가루는 작은 삼각형</b> 알갱이로 바뀌어 한눈에 구분돼요.' },
         { emoji:'⇄', name:'합성 · 분해', tag:'new', color:'#e0a73a', desc:'이제 가루 10개가 조각이 되지 않아요. 인벤토리의 <b>가루 · 조각 변환</b>에서 가루 <b>5개</b> → 조각 1개로 합성, 조각 1개 → 가루 5개로 분해 (한 번에 ● 1,000).' },
+        { emoji:'🎲', name:'꽝 가루 개수', tag:'buff', color:'#e0a73a', desc:'뽑기에서 가루가 나오면 이제 <b>1~3개</b>: 1개 50% · 2개 30% · 3개 20%.' },
       ] },
       { title: '마일리지', items: [
         { emoji:'🏷', name:'10배 개편', tag:'adjust', color:'#111111', desc:'상품 가격과 뽑기 적립이 모두 <b>10배</b> (일반 10P · 희귀 30P · 영웅 100P · 전설 300P · 신화 500P · 선택 전설 모집권 5,000P). 가지고 있던 마일리지도 10배로 바꿔 드려요. 대신 <b>가루(꽝)는 2P</b>.' },
