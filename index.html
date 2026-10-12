@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7601,7 +7601,7 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
     <div class="v4-band"><div class="v4-gridbg"></div><canvas class="v4-particles" data-n="30"></canvas>
       <div class="v4-band-inner">
         <div class="v4-bandtop"><button type="button" class="v4-back" id="btnLeaderboardBack">← 로비</button><h2>리더보드</h2>
-          <div class="v4-right"><select class="v44-season-select" id="lbSeasonSelect" aria-label="시즌"></select><div class="v4-seg lb-tabs" role="tablist"><button type="button" data-lb="level" class="on">레벨</button><button type="button" data-lb="comp">경쟁전</button></div></div></div>
+          <div class="v4-right"><select class="v44-season-select" id="lbSeasonSelect" aria-label="시즌"></select><div class="v4-seg lb-tabs" role="tablist"><button type="button" data-lb="level" class="on">레벨</button><button type="button" data-lb="class">클래스</button><button type="button" data-lb="comp">경쟁전</button></div></div></div>
         <div class="v44-season-bar" id="lbSeasonBar"></div>
         <div class="v4-podium" id="lbPodium"></div>
       </div>
@@ -9618,13 +9618,18 @@ window.JIHOO_FIREBASE_CONFIG = {
     nickCheck = claimNickname(profile.nickname, board).catch(() => 'error');
     if (await nickCheck === 'taken') {
       const uid = auth.currentUser.uid;
-      await Promise.all(['leaderboard', 'compLeaderboard', 'coopLeaderboard'].map(c => sdk.deleteDoc(sdk.doc(database, c, uid)).catch(() => {})));
+      await Promise.all(['leaderboard', 'compLeaderboard', 'coopLeaderboard', 'classLeaderboard'].map(c => sdk.deleteDoc(sdk.doc(database, c, uid)).catch(() => {})));
       return;
     }
     // 4.3 프로필 꾸미기: firestore.rules 를 새로 게시하기 전이면 look 없이 다시 쓴다
     await sdk.setDoc(sdk.doc(database, 'leaderboard', auth.currentUser.uid), { ...board, look })
       .catch(() => sdk.setDoc(sdk.doc(database, 'leaderboard', auth.currentUser.uid), board));
     // 4.4.3: 레벨 리더보드는 영구 (시즌 보드에 쓰지 않는다)
+    // 7.6.1 클래스 리더보드 (일반전 CP · 초기화 없음): CP 가 한 번이라도 생긴 사람만. firestore.rules 를 게시하기 전이면 조용히 건너뛴다
+    if ((profile.cp || 0) > 0 || (profile.cpBest || 0) > 0) {
+      const cap = v => Math.min(1000000, Math.max(0, Math.floor(Number(v) || 0)));
+      await sdk.setDoc(sdk.doc(database, 'classLeaderboard', auth.currentUser.uid), { nickname: profile.nickname, cp: cap(profile.cp), best: cap(Math.max(profile.cpBest || 0, profile.cp || 0)), deck: board.deck, updatedAt: sdk.serverTimestamp() }).catch(() => {});
+    }
     // 5.4 협동전 리더보드: 최고 웨이브가 있는 사람만
     if ((profile.coopBest || 0) > 0) {
       const coopDoc = { nickname: profile.nickname, wave: Math.min(99999, Math.floor(Number(profile.coopBest) || 0)), deck: board.deck, updatedAt: sdk.serverTimestamp() };
@@ -9667,6 +9672,11 @@ window.JIHOO_FIREBASE_CONFIG = {
     if (!database) throw new Error('Firebase 연결 전에는 리더보드를 볼 수 없습니다.');
     const results = await sdk.getDocs(sdk.query(sdk.collection(database, 'coopLeaderboard'), sdk.orderBy('wave', 'desc'), sdk.limit(30)));
     return dedupeByNickname(results.docs.map(entry => ({ id: entry.id, ...entry.data() }))); // 7.1.1
+  }
+  async function classLeaderboard() { // 7.6.1 클래스 (CP) 순위
+    if (!database) throw new Error('Firebase 연결 전에는 리더보드를 볼 수 없습니다.');
+    const results = await sdk.getDocs(sdk.query(sdk.collection(database, 'classLeaderboard'), sdk.orderBy('cp', 'desc'), sdk.limit(50)));
+    return dedupeByNickname(results.docs.map(entry => ({ id: entry.id, ...entry.data() })));
   }
   async function compLeaderboard() {
     if (!database) throw new Error('Firebase 연결 전에는 리더보드를 볼 수 없습니다.');
@@ -9712,7 +9722,7 @@ window.JIHOO_FIREBASE_CONFIG = {
   async function adminDedupeBoards() {
     if (!database || !auth || !auth.currentUser) throw new Error('온라인 계정에 먼저 로그인하세요.');
     let removed = 0, failed = 0;
-    for (const coll of ['leaderboard', 'compLeaderboard', 'coopLeaderboard']) {
+    for (const coll of ['leaderboard', 'compLeaderboard', 'coopLeaderboard', 'classLeaderboard']) {
       const all = (await sdk.getDocs(sdk.collection(database, coll))).docs.map(d => ({ ...d.data(), id: d.id, ref: d.ref }));
       const keep = new Set((await dedupeByNickname(all)).map(p => p.id));
       for (const p of all) { if (keep.has(p.id)) continue; try { await sdk.deleteDoc(p.ref); removed++; } catch (error) { failed++; } }
@@ -9988,7 +9998,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -10008,7 +10018,7 @@ if (PREVIEW_MODE) {
   const noop = () => {}, resolved = () => Promise.resolve(null);
   window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved, deckSamples: () => Promise.resolve([]),
-    leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
+    leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), classLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
     presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, matchGet: () => Promise.reject(new Error('오프라인')), roomGet: () => Promise.reject(new Error('오프라인')), roomInviteSend: () => Promise.reject(new Error('오프라인')), roomInviteUpdate: resolved, roomInvitesSubscribe: () => () => {}, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
 
@@ -14114,7 +14124,7 @@ function renderSeasonControls(tab = 'level') {
   sel.hidden = !comp;
   sel.innerHTML = Array.from({ length: cur.number }, (_, i) => cur.number - i).map(n => `<option value="${n}">경쟁전 ${seasonLabel(n)}${n === cur.number ? ' (현재)' : ''}</option>`).join('');
   sel.value = String(lbSeason);
-  $('lbSeasonBar').innerHTML = !comp ? '<b>레벨 리더보드</b> · 초기화되지 않는 영구 순위'
+  $('lbSeasonBar').innerHTML = tab === 'class' ? '<b>클래스 리더보드</b> · 일반전 CP 순위 · 초기화되지 않아요' : !comp ? '<b>레벨 리더보드</b> · 얼마나 즐겼는지 · 초기화되지 않는 영구 순위'
     : lbSeason === cur.number ? `<b>경쟁전 ${seasonLabel(cur.number)}</b> · 남은 기간 ${formatRemaining(cur.end - Date.now())} · 매월 1일 초기화 · 시즌 종료 1~50위 보상 (우편)`
     : `<b>경쟁전 ${seasonLabel(lbSeason)}</b> · 종료된 시즌 기록`;
 }
@@ -14129,6 +14139,7 @@ async function openLeaderboard(tab = 'level') {
   if (window.JihooOnline.connected()) await Promise.race([window.JihooOnline.publish().catch(() => {}), new Promise(resolve => setTimeout(resolve, 2500))]);
   if (state.screen !== 'leaderboard') return;
   if (tab === 'comp') return openCompLeaderboard();
+  if (tab === 'class') return openClassLeaderboard(); // 7.6.1
   try {
     const players = await window.JihooOnline.leaderboard(); // 4.4.3: 영구 레벨 리더보드
     if (state.screen !== 'leaderboard') return;
@@ -14192,17 +14203,17 @@ function v4Podium(players, kind) {
   order.forEach((index, slot) => {
     const player = players[index];
     if (!player) return;
-    const face = (kind !== 'comp' && player.look && CHAR_DB[player.look.a] ? player.look.a : null) || (kind === 'comp' ? (player.deck || [])[0] : player.favorite) || (player.deck || [])[0];
+    const face = (kind === 'level' && player.look && CHAR_DB[player.look.a] ? player.look.a : null) || (kind !== 'level' ? (player.deck || [])[0] : player.favorite) || (player.deck || [])[0];
     const pod = document.createElement('button');
     pod.type = 'button'; pod.className = 'pod';
     pod.dataset.uid = player.id || '';
     const delay = (0.15 + slot * 0.12).toFixed(2) + 's';
-    pod.innerHTML = `<span class="face" style="animation-delay:${delay}">${CHAR_DB[face] ? `<img src="${CHAR_DB[face].portrait}" alt="">` : ''}</span><b></b><span class="v44-podmeta"><span class="v44-podtier">${kind === 'comp' ? compTierBadge(Math.max(0, Number(player.tp) || 0), 'small') : ''}</span><small></small></span><div class="block" style="height:${heights[index]};animation-delay:${delay}"><b>${index + 1}</b></div>`;
+    pod.innerHTML = `<span class="face" style="animation-delay:${delay}">${CHAR_DB[face] ? `<img src="${CHAR_DB[face].portrait}" alt="">` : ''}</span><b></b><span class="v44-podmeta"><span class="v44-podtier">${kind === 'comp' ? compTierBadge(Math.max(0, Number(player.tp) || 0), 'small') : kind === 'class' ? classBadge(classOf(player.cp), 24) : ''}</span><small></small></span><div class="block" style="height:${heights[index]};animation-delay:${delay}"><b>${index + 1}</b></div>`;
     pod.querySelector('.face').insertAdjacentText('beforeend', CHAR_DB[face] ? '' : String(player.nickname || 'J')[0]);
     pod.querySelector(':scope > b').textContent = String(player.nickname || '플레이어');
-    if (kind !== 'comp' && player.look) paintAvatar(pod.querySelector('.face'), { ...normalizeLook(player.look), a: CHAR_DB[face] ? face : '' }, player.nickname, { size: 74, mini: false }); // 4.6.5 정식 테두리
-    pod.querySelector('small').textContent = kind === 'comp' ? `${formatNumber(Math.max(0, Number(player.tp) || 0))} TP` : player._seasonal ? `${formatNumber(Math.max(0, Number(player.xp) || 0))} XP` : `Lv.${Math.max(1, Number(player.level) || 1)}`;
-    if (kind !== 'comp') pod.addEventListener('click', () => showLeaderboardDetail(player));
+    if (kind === 'level' && player.look) paintAvatar(pod.querySelector('.face'), { ...normalizeLook(player.look), a: CHAR_DB[face] ? face : '' }, player.nickname, { size: 74, mini: false }); // 4.6.5 정식 테두리
+    pod.querySelector('small').textContent = kind === 'class' ? `${formatNumber(Math.max(0, Number(player.cp) || 0))} CP` : kind === 'comp' ? `${formatNumber(Math.max(0, Number(player.tp) || 0))} TP` : player._seasonal ? `${formatNumber(Math.max(0, Number(player.xp) || 0))} XP` : `Lv.${Math.max(1, Number(player.level) || 1)}`;
+    if (kind === 'level') pod.addEventListener('click', () => showLeaderboardDetail(player));
     podium.appendChild(pod);
   });
   const pin = $('lbMyPin'); if (!pin) return;
@@ -14212,7 +14223,7 @@ function v4Podium(players, kind) {
   entries.forEach((el, i) => el.classList.toggle('v4-me', i === mine));
   if (mine >= 0) {
     const player = players[mine];
-    pin.innerHTML = `<div class="v4-mypin"><b class="r">${mine + 1}</b><b></b><span style="font:800 12px var(--v4-mono)">${kind === 'comp' ? formatNumber(Math.max(0, Number(player.tp) || 0)) + ' TP' : player._seasonal ? formatNumber(Math.max(0, Number(player.xp) || 0)) + ' XP' : 'Lv.' + Math.max(1, Number(player.level) || 1)}</span></div>`;
+    pin.innerHTML = `<div class="v4-mypin"><b class="r">${mine + 1}</b><b></b><span style="font:800 12px var(--v4-mono)">${kind === 'class' ? formatNumber(Math.max(0, Number(player.cp) || 0)) + ' CP' : kind === 'comp' ? formatNumber(Math.max(0, Number(player.tp) || 0)) + ' TP' : player._seasonal ? formatNumber(Math.max(0, Number(player.xp) || 0)) + ' XP' : 'Lv.' + Math.max(1, Number(player.level) || 1)}</span></div>`;
     pin.querySelector('.v4-mypin > b:not(.r)').textContent = String(player.nickname);
   }
 }
@@ -14226,6 +14237,36 @@ function formatLastSeen(value) {
   return `${Math.floor(elapsed / 86400000)}일 전`;
 }
 
+// 7.6.1 클래스 리더보드: 일반전 CP 순
+async function openClassLeaderboard() {
+  const list = $('leaderboardList'), message = $('leaderboardMessage');
+  const stillShown = () => state.screen === 'leaderboard' && !!document.querySelector('[data-lb="class"].on');
+  list.replaceChildren();
+  message.textContent = '온라인 순위를 불러오는 중...';
+  try {
+    const players = await window.JihooOnline.classLeaderboard();
+    if (!stillShown()) return;
+    message.textContent = players.length ? '클래스 CP 기준 상위 50명 · 일반전에서만 오르내려요' : '아직 클래스 기록이 없습니다. 일반전에서 이기면 올라가요.';
+    players.forEach((player, index) => {
+      const cp = Math.max(0, Number(player.cp) || 0), best = Math.max(cp, Number(player.best) || 0), cls = classOf(cp);
+      const entry = document.createElement('div');
+      entry.className = 'leaderboard-entry comp-entry v761-clsentry';
+      const rank = document.createElement('span'); rank.className = 'leaderboard-rank'; rank.textContent = `${index + 1}위`;
+      const main = document.createElement('div'); main.className = 'leaderboard-main';
+      const name = document.createElement('b'); name.textContent = String(player.nickname || '플레이어');
+      const info = document.createElement('span'); info.className = 'leaderboard-record'; info.textContent = `최고 ${formatNumber(best)} CP · 클래스 ${classOf(best)}`;
+      main.append(name, info);
+      const tier = document.createElement('span'); tier.className = 'leaderboard-level comp-tier';
+      tier.innerHTML = `${classBadge(cls, 30)} <span class="v761-clsn">클래스 ${cls}</span> <small>${formatNumber(cp)} CP</small>`;
+      entry.append(rank, main, tier, leaderboardDeck(player.deck, player));
+      list.appendChild(entry);
+    });
+    v4Podium(players, 'class');
+  } catch (error) {
+    if (!stillShown()) return;
+    message.textContent = /permission|insufficient/i.test(error.message || '') ? '클래스 리더보드를 불러올 권한이 없습니다. firestore.rules 를 다시 게시해야 합니다.' : (error.message || '리더보드를 불러오지 못했습니다.');
+  }
+}
 // 경쟁전 리더보드: TP 순. 리더보드 화면과 경쟁전 로비가 같이 쓴다.
 function openCompLeaderboard() {
   return loadCompBoard($('leaderboardList'), $('leaderboardMessage'), () => state.screen === 'leaderboard' && !!document.querySelector('[data-lb="comp"].on'));
@@ -33746,6 +33787,7 @@ const PATCH_NOTES = {
         { emoji:'📈', name:'CP', tag:'new', color:'#2f6fed', desc:'CP는 <b>일반전에서만</b> 오르내려요. 클래스 1: 승리 <b>+55</b> · 패배 <b>-25</b> → 클래스가 오를수록 지수함수꼴로 바뀌어 클래스 20: 승리 <b>+20</b> · 패배 <b>-40</b>. 상대 클래스가 높을수록 더 얻고 덜 잃어요 (한 클래스 차이마다 12%). <b>연승 보너스</b>: 연승마다 +1 CP (2연승 +2 … 최대 +10).' },
         { emoji:'🤖', name:'일반전 상대', tag:'adjust', color:'#111111', desc:'일반전 · 2:2 · 드래프트 봇의 실력은 이제 <b>레벨이 아니라 클래스</b>에 맞춰져요 (레벨은 지지 않고 오르기만 해서).' },
         { emoji:'🎁', name:'클래스 보상', tag:'new', color:'#e5322d', desc:'처음 오를 때 한 번: 2 랜덤 영웅 지후권 · 3 골드 3,000 · 4 다이아 500 · 5 랜덤 전설 지후권 · 6 빛나는 전설조각 · 7 다이아 1,000 · 8 골드 5,000 · 9 빛나는 영웅조각 ×20 · 10 랜덤 신화 지후권 · 11 ~ 20 추가 예정.' },
+        { emoji:'🏆', name:'클래스 리더보드', tag:'new', color:'#2f6fed', desc:'리더보드에 <b>클래스</b> 탭이 생겼어요. 일반전 CP 순 상위 50명 · 최고 CP · 덱.' },
       ] },
       { title: '레벨 개편', items: [
         { emoji:'⏳', name:'레벨', tag:'adjust', color:'#7b5cff', desc:'레벨은 이제 <b>얼마나 즐겼는지</b>예요. 져도 경험치를 잃지 않고 조금 올라요. <b>친선전을 뺀 모든 모드</b>(경쟁전 · 투기장 · 경매 · WWE 포함)에서 올라요. 레벨은 리더보드와 내 프로필에서만 보여요.' },
