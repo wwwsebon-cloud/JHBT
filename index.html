@@ -13994,7 +13994,7 @@ function classTrackHtml() {
       <div><small>최고 CP</small><b>${formatNumber(Math.max(profile.cpBest || 0, mine.cp))}</b></div></div>
     <div class="ct-cells">${cells}</div>
     <div class="ct-bar"><i style="transform:scaleX(${(pos / 100).toFixed(4)})"></i>${ids.map((c, k) => `<em style="left:${12.5 + 25 * k}%"></em>`).join('')}${pos > 0 && pos < 100 ? `<span class="ct-mark" style="left:${pos.toFixed(2)}%"><b>${formatNumber(mine.cp)}</b></span>` : ''}</div>
-    <p class="ct-note">클래스는 얼마나 강한지 · <b>일반전</b>에서만 CP 가 오르내려요 (클래스 1: 승리 +55 / 패배 -25 → 클래스 20: +20 / -40) · 상대 클래스가 높을수록 더 얻고 덜 잃어요 · 클래스 보상은 처음 오를 때 한 번</p>
+    <p class="ct-note">클래스는 얼마나 강한지 · <b>일반전</b>에서만 CP 가 오르내려요 (클래스 1: 승리 +55 / 패배 -25 → 클래스 20: +20 / -40) · 상대 클래스가 높을수록 더 얻고 덜 잃어요 · 연승마다 +1 CP (최대 +10) · 클래스 보상은 처음 오를 때 한 번</p>
   </div>`;
 }
 // 막대 위치 (%): 칸 가운데가 그 클래스의 필요 CP
@@ -15672,8 +15672,9 @@ function settleMatch(won, draw, surrendered = false) {
     let raw = 0, cpMult = 1;
     if (!draw && won) { cpMult = diffMult(cdiff, CLASS_DIFF_BONUS); raw = Math.round(classWinCp(curCls) * cpMult); }
     else if (!draw && !maintShield) { cpMult = diffMult(-cdiff, CLASS_DIFF_BONUS); raw = -Math.round(classLossCp(curCls) * cpMult); }
-    const r = applyClassCp(raw);
-    cls = { cp: r.after.cp - r.before.cp, raw, base: !draw && won ? classWinCp(curCls) : !draw && !maintShield ? -classLossCp(curCls) : 0, mult: cpMult, diff: cdiff, before: r.before, after: r.after, rewards: r.rewards, enemyCls: Math.max(1, Math.min(CLASS_MAX, Math.floor(enemyF))), enemyCp: Number.isFinite(state.enemyCp) ? state.enemyCp : classCpAt(enemyF) };
+    const streakCp = !draw && won && (profile.winStreak || 0) >= 2 ? Math.min(CLASS_STREAK_MAX, profile.winStreak) : 0; // 연승 보너스 CP
+    const r = applyClassCp(raw + streakCp);
+    cls = { cp: r.after.cp - r.before.cp, raw: raw + streakCp, streakCp, base: !draw && won ? classWinCp(curCls) : !draw && !maintShield ? -classLossCp(curCls) : 0, mult: cpMult, diff: cdiff, before: r.before, after: r.after, rewards: r.rewards, enemyCls: Math.max(1, Math.min(CLASS_MAX, Math.floor(enemyF))), enemyCp: Number.isFinite(state.enemyCp) ? state.enemyCp : classCpAt(enemyF) };
   }
   state.lastSettlement = { practice: false, surrendered, won: !draw && won, draw, xp, diamonds, diaLabel, ticketBoost, gold, levelBonus, before, after, enemyLevel: state.enemyLevel, levelDiff, xpMult, draftTicket, streak: profile.winStreak || 0, streakXp, cls };
   saveProfile();
@@ -18621,6 +18622,7 @@ const diffMult = (diff, per) => clamp(1 + diff * per, 0.5, 1.6);
 const CLASS_CP = [0, 300, 600, 1000, 1300, 1600, 2000, 2300, 2600, 3000, 3300, 3600, 4000, 4500, 5000, 5500, 6000, 7000, 8000, 9000]; // 클래스 1 ~ 20 에 필요한 누적 CP
 const CLASS_MAX = CLASS_CP.length;
 const CLASS_TOP_SPAN = 1000; // 클래스 20 이후 막대 한 칸
+const CLASS_STREAK_MAX = 10; // 연승 보너스: 연승마다 +1 CP (2연승 +2 … 10연승부터 +10)
 const CLASS_DIFF_BONUS = 0.12; // 상대 클래스가 1 높을 때마다 얻는 CP +12% · 잃는 CP -12% (낮으면 반대)
 // 클래스 보상 (처음 오를 때 한 번). 11 ~ 20 은 추가 예정
 const CLASS_REWARDS = {
@@ -33044,9 +33046,10 @@ function classSettleResult(st) {
   const sgn = n => n > 0 ? '+' + formatNumber(n) : n < 0 ? '−' + formatNumber(-n) : '±0';
   const rows = [];
   rows.push([draw ? '⚖' : won ? '⚔' : '🛡', draw ? '무승부' : won ? '승리' : st.surrendered ? '항복 · 패배' : '패배', [[`${sgn(cls.base)} CP`, cls.base > 0 ? 'up' : cls.base < 0 ? 'down' : ''], st.gold ? [`● +${formatNumber(st.gold)}`, ''] : null]]);
-  if (cls.raw !== cls.base) rows.push(['🎯', `상대 클래스 ${cls.enemyCls} (${cls.diff > 0 ? '+' : ''}${cls.diff.toFixed(1)})`, [[`${sgn(cls.raw - cls.base)} CP`, cls.raw - cls.base > 0 ? 'up' : 'down'], [`×${cls.mult.toFixed(2)}`, 'dim']]]);
+  const diffCp = cls.raw - (cls.streakCp || 0) - cls.base;
+  if (diffCp) rows.push(['🎯', `상대 클래스 ${cls.enemyCls} (${cls.diff > 0 ? '+' : ''}${cls.diff.toFixed(1)})`, [[`${sgn(diffCp)} CP`, diffCp > 0 ? 'up' : 'down'], [`×${cls.mult.toFixed(2)}`, 'dim']]]);
+  if (cls.streakCp || st.streakXp) rows.push(['🔥', `${st.streak}연승`, [cls.streakCp ? [`+${cls.streakCp} CP`, 'up'] : null, st.streakXp ? [`EXP +${st.streakXp}`, ''] : null]]);
   if (cls.cp !== cls.raw) rows.push(['⛔', 'CP 는 0 아래로 내려가지 않아요', [[`${sgn(cls.cp - cls.raw)} CP`, 'up']]]);
-  if (st.streakXp) rows.push(['🔥', `${st.streak}연승`, [[`EXP +${st.streakXp}`, '']]]);
   if (st.diamonds) rows.push(['◆', st.diaLabel || '부스트 보너스', [[`◆ +${formatNumber(st.diamonds)}`, '']]]);
   if (st.draftTicket) rows.push(['🎟', '티켓', [[`+${st.draftTicket}장`, '']]]);
   if (st.ticketBoost) rows.push(['🎫', '부스트 티켓', [['EXP ×2', '']]]);
@@ -33234,7 +33237,7 @@ function renderHelp(tab = 'tier', version = Object.keys(TIER_HISTORY)[0]) {
       ['🚫 출격 제한', '같은 지후가 많으면 서로 싸워서 <b>같은 지후는 한 진영에 3기까지</b>만 놓을 수 있습니다 (알 부화 · 성장으로 바뀐 지후는 세지 않음). 출격 제한이 있는 지후는 1기만 나올 수 있습니다. <b>태극 지후</b>는 제한이 없습니다.'],
       ['🔝 최대 레벨', '합체 레벨은 <b>Lv.7</b>이 최대이며 <b>MAX</b>로 표시됩니다. 놓을 자리도 합칠 지후도 없는 카드는 회색으로 보입니다.'],
       ['🔁 배치', '배치 기회마다 반드시 하나를 놓거나 합쳐야 합니다. 풀의 카드가 모두 회색이면 알아서 리롤하고, 3번 리롤해도 없으면 그 배치는 건너뜁니다.'],
-      ['🎖️ 클래스 · 레벨', '<b>클래스</b>는 얼마나 강한지예요. 일반전에서만 CP 가 오르내리고 (클래스 1: 승리 +55 / 패배 -25 → 클래스 20: +20 / -40, 상대 클래스가 높을수록 더 얻고 덜 잃음), 일반전 봇 실력도 클래스에 맞춰요. 클래스 2 ~ 10 은 처음 오를 때 보상. <b>레벨</b>은 얼마나 즐겼는지 — 친선전을 뺀 모든 모드에서 오르고 지지 않아요. 레벨업 보상은 Lv.50 까지 ◆50, 그 뒤 ◆100.'],
+      ['🎖️ 클래스 · 레벨', '<b>클래스</b>는 얼마나 강한지예요. 일반전에서만 CP 가 오르내리고 (클래스 1: 승리 +55 / 패배 -25 → 클래스 20: +20 / -40, 상대 클래스가 높을수록 더 얻고 덜 잃음, 연승마다 +1 CP 최대 +10), 일반전 봇 실력도 클래스에 맞춰요. 클래스 2 ~ 10 은 처음 오를 때 보상. <b>레벨</b>은 얼마나 즐겼는지 — 친선전을 뺀 모든 모드에서 오르고 지지 않아요. 레벨업 보상은 Lv.50 까지 ◆50, 그 뒤 ◆100.'],
       ['⭐ 랭크 · 한계돌파', '덱 설정에서 지후 조각으로 <b>A → S</b> 승급 (일반 100 · 희귀 50 · 영웅 20 · 전설 10 · 신화 5). S가 되면 <b>한계돌파 Lv0 → Lv5</b> (전설 · 신화 70 / 50 / 35 / 25 / 10%, 그 외 75 / 55 / 40 / 30 / 15% · Lv0 → 1 은 골드만 · Lv4 → 5 는 조각 2개, 실패해도 재료 소모). <b>Lv2 · Lv4</b>: 능력치 · <b>Lv3</b>: S랭크 고유 능력 · <b>Lv5</b>: 공격력 +5%.'],
 
       ['📊 경기 통계', '경기가 끝나면 정산 화면의 통계 버튼으로 라운드별 기여도와 MVP를 볼 수 있습니다.']
@@ -33740,7 +33743,7 @@ const PATCH_NOTES = {
     sections: [
       { title: '클래스 (신규)', items: [
         { emoji:'🎖️', name:'클래스', tag:'new', color:'#f5b82e', desc:'클래스는 <b>얼마나 강한지</b>를 보여 줘요. 모두 <b>클래스 1</b>부터 시작하고, 로비에서 레벨이 있던 자리에 클래스가 보여요. 프로필에서 클래스 1 ~ 20 표와 필요 CP, 보상을 볼 수 있어요.' },
-        { emoji:'📈', name:'CP', tag:'new', color:'#2f6fed', desc:'CP는 <b>일반전에서만</b> 오르내려요. 클래스 1: 승리 <b>+55</b> · 패배 <b>-25</b> → 클래스가 오를수록 지수함수꼴로 바뀌어 클래스 20: 승리 <b>+20</b> · 패배 <b>-40</b>. 상대 클래스가 높을수록 더 얻고 덜 잃어요 (한 클래스 차이마다 12%).' },
+        { emoji:'📈', name:'CP', tag:'new', color:'#2f6fed', desc:'CP는 <b>일반전에서만</b> 오르내려요. 클래스 1: 승리 <b>+55</b> · 패배 <b>-25</b> → 클래스가 오를수록 지수함수꼴로 바뀌어 클래스 20: 승리 <b>+20</b> · 패배 <b>-40</b>. 상대 클래스가 높을수록 더 얻고 덜 잃어요 (한 클래스 차이마다 12%). <b>연승 보너스</b>: 연승마다 +1 CP (2연승 +2 … 최대 +10).' },
         { emoji:'🤖', name:'일반전 상대', tag:'adjust', color:'#111111', desc:'일반전 · 2:2 · 드래프트 봇의 실력은 이제 <b>레벨이 아니라 클래스</b>에 맞춰져요 (레벨은 지지 않고 오르기만 해서).' },
         { emoji:'🎁', name:'클래스 보상', tag:'new', color:'#e5322d', desc:'처음 오를 때 한 번: 2 랜덤 영웅 지후권 · 3 골드 3,000 · 4 다이아 500 · 5 랜덤 전설 지후권 · 6 빛나는 전설조각 · 7 다이아 1,000 · 8 골드 5,000 · 9 빛나는 영웅조각 ×20 · 10 랜덤 신화 지후권 · 11 ~ 20 추가 예정.' },
       ] },
