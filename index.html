@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.4"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.5"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6827,7 +6827,8 @@ html.ui-v7 #app#app #screen-inventory .v4-empty { padding:16px; border:1px solid
 }
 
 /* ═════════ 7.1 성장: 랭크 A · S + 한계돌파 ═════════ */
-:root { --rarity-mythic:#ff3d7f; }
+:root { --rarity-mythic:#ff3d7f; --rarity-limited:#14b8a6; }
+.rarity-limited { --rc:var(--rarity-limited); } /* 7.6.5 한정 */
 .gr-panel { margin-top:17px; padding:16px; background:#fff; border:2px solid #111; color:#111; font-family:var(--v7-kr, inherit); }
 .gr-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
 .gr-head > b { font:800 16px var(--v7-kr, inherit); }
@@ -10934,7 +10935,7 @@ const CHAR_DB = {
   },
   developer: {
     id: 'developer', name: '개발자 지후', emoji: '🛠️', role: 'dealer', roleLabel: '딜러',
-    rarity: 'legend', color: '#e02020', portrait: PORTRAITS.developer,
+    rarity: 'limited', color: '#e02020', portrait: PORTRAITS.developer, // 7.6.5 한정 등급
     ...CHARACTER_BALANCE.developer,
     // 뽑기·상점·봇·드래프트 등 무작위 목록에는 나오지 않는다. 개발자 모드를 켜면 영구 지급되고 덱·투기장에서 쓸 수 있다.
     unobtainable: true, devOnly: true,
@@ -10942,7 +10943,7 @@ const CHAR_DB = {
   },
   powermeter: {
     id: 'powermeter', name: '전투력측정기 지후', emoji: '📏', role: 'tank', roleLabel: '탱커',
-    rarity: 'common', color: '#555555', portrait: PORTRAITS.powermeter,
+    rarity: 'limited', color: '#555555', portrait: PORTRAITS.powermeter, // 7.6.5 한정 등급
     ...CHARACTER_BALANCE.powermeter,
     unobtainable: true, arenaOnly: true, // 투기장에서만 고를 수 있다
     skillDesc: '투기장 전용 연습 상대. 움직이지 않는다. <b>1초마다</b> 말풍선으로 지금 받는 <b>DPS</b>(지난 1초 피해)와 평균 DPS · 누적 피해를 알려준다.'
@@ -11183,7 +11184,7 @@ const CHAR_DB = {
     id: 'metal', name: '메탈 지후', emoji: '🪖', role: 'tank', roleLabel: '탱커',
     rarity: 'legend', color: '#8a93a3', portrait: PORTRAITS.metal,
     ...CHARACTER_BALANCE.metal,
-    skillDesc: '받는 피해가 무조건 <b>2</b>. <b>회복을 받지 못한다</b>. HP <b>40</b> / ATK <b>400</b> / 공격 간격 <b>1.5초</b>'
+    skillDesc: '받는 피해가 무조건 <b>2</b> (<b>치명타</b>를 맞으면 <b>최대 체력의 25%</b>). <b>회복을 받지 못한다</b>. HP <b>40</b> / ATK <b>400</b> / 공격 간격 <b>1.5초</b>'
   },
   necro: {
     id: 'necro', name: '네크로맨서 지후', emoji: '☠️', role: 'support', roleLabel: '서포터',
@@ -12034,8 +12035,8 @@ const RANK_ART = { A: ART.rank_a, S: ART.rank_s, SR: ART.rank_sr, SSR: ART.rank_
 const TIER_ART = { bronze: ART.tier_bronze, silver: ART.tier_silver, gold: ART.tier_gold, platinum: ART.tier_platinum, diamond: ART.tier_diamond,
   ace: ART.tier_ace, master: ART.tier_master, grandmaster: ART.tier_grandmaster, challenger: ART.tier_challenger }; // 아이언은 그림 없이 글자만
 
-const RARITY_LABEL = { common: '일반', rare: '희귀', epic: '영웅', legend: '전설', mythic: '신화', hidden: '히든' }; // 7.1 신화 등급 (지후는 추가 예정)
-function fxRarity(r) { return r === 'mythic' ? 'legend' : r; } // 7.3 신화는 전설 연출
+const RARITY_LABEL = { common: '일반', rare: '희귀', epic: '영웅', legend: '전설', mythic: '신화', hidden: '히든', limited: '한정' }; // 7.6.5 한정: 이벤트 · 특별한 경로로만 얻는 지후 // 7.1 신화 등급 (지후는 추가 예정)
+function fxRarity(r) { return r === 'mythic' || r === 'limited' ? 'legend' : r; } // 7.3 신화는 전설 연출
 const RANK_NAMES = ['A', 'S']; // 7.1 랭크는 A · S 둘 (SR · SSR 삭제 · S부터 한계돌파)
 const RANK_SHARD_COSTS = { common:[10,20,30], rare:[5,10,16], epic:[2,6,12], legend:[1,2,3] }; // 4.2.4 하향
 const DUPLICATE_SHARDS = 1; // 7.1.3 중복 지후(뽑기 · 선택권 · 확정권 · 상점)는 그 지후 조각 1개
@@ -12763,7 +12764,7 @@ function recordMasteryPlacement(id) {
 }
 
 function rarityColorVar(r) {
-  return { common: 'var(--rarity-common)', rare: 'var(--rarity-rare)', epic: 'var(--rarity-epic)', legend: 'var(--rarity-legend)', mythic: 'var(--rarity-mythic)', hidden: 'var(--rarity-hidden)' }[r];
+  return { common: 'var(--rarity-common)', rare: 'var(--rarity-rare)', epic: 'var(--rarity-epic)', legend: 'var(--rarity-legend)', mythic: 'var(--rarity-mythic)', limited: 'var(--rarity-limited)', hidden: 'var(--rarity-hidden)' }[r];
 }
 
 let abandonNotice = ''; // 도중에 나간 일반전을 패배 처리했을 때 로비에 띄우는 안내
@@ -15204,7 +15205,7 @@ function renderGachaPity() {
   if ($('gachaPityFill')) $('gachaPityFill').style.transform = `scaleX(${(n / GACHA_PITY).toFixed(3)})`;
   if ($('gachaPityLab')) $('gachaPityLab').textContent = v7On() ? `${n} / ${GACHA_PITY}` : `${n} / ${GACHA_PITY} · 전설 확정까지 ${GACHA_PITY - n}회`;
 }
-const GACHA_RARITY_ORDER = { common: 0, rare: 1, epic: 2, legend: 3, mythic: 4, hidden: 5 };
+const GACHA_RARITY_ORDER = { common: 0, rare: 1, epic: 2, legend: 3, mythic: 4, hidden: 5, limited: 6 };
 // 튜토리얼 선물 오픈권은 계단식 대신 정해진 보너스로 연다 (겉으로는 다른 오픈권과 같다)
 function tutorialGiftBonus() { return profile.tutorial?.giftPending && (profile.inventory.boxTicket || 0) > 0 ? ['epic', 'legend'] : null; }
 function consumeTutorialGift() { if (profile.tutorial?.giftPending) { profile.tutorial.giftPending = false; profile.tutorial.giftUsed = true; } }
@@ -15664,7 +15665,7 @@ function showGachaReveal(index) {
   $('btnGachaRevealSkip').textContent = single ? '닫기' : '모두 보기';
   $('btnGachaRevealNext').disabled = true;
   $('btnGachaRevealNext').textContent = index === total - 1 ? '확인' : '다음';
-  const delays = { common: 650, rare: 900, epic: 1200, legend: 1650, mythic: 2200, hidden: 3000 };
+  const delays = { common: 650, rare: 900, epic: 1200, legend: 1650, mythic: 2200, hidden: 3000, limited: 3000 };
   clearTimeout(gachaRevealTimer);
   // 4.1: 1회는 소환진이 차오른 뒤 카드를 눌러야 공개된다 (등급 색은 미리 새어 나온다)
   if (single) {
@@ -15758,7 +15759,7 @@ function playSummonReveal(results) {
 }
 
 // 5.2 뽑기 마일리지: 뽑은 지후 등급마다 적립 → 마일리지 상점
-const MILEAGE_POINTS = { common: 10, rare: 30, epic: 100, legend: 300, mythic: 500, hidden: 300 }; // 7.6 10배
+const MILEAGE_POINTS = { common: 10, rare: 30, epic: 100, legend: 300, mythic: 500, hidden: 300, limited: 0 }; // 7.6 10배
 const MILEAGE_DUST = 2; // 7.6 가루(꽝)는 2P
 function addMileage(results) { profile.mileage = (profile.mileage || 0) + results.reduce((sum, r) => sum + (r.shard ? MILEAGE_DUST : MILEAGE_POINTS[CHAR_DB[r.id]?.rarity] || 0), 0); }
 const MILEAGE_SHOP = [ // 7.4.2 개편 · 7.6 가격 10배 (적립도 10배) · 손전등
@@ -16566,7 +16567,7 @@ function startUpdateChecks() {
 
 /* ═════════ 4.0 UI 런타임: 불씨 파티클 · 광택 틸트 · 숫자 올라가기 · 로비 부채꼴 카드 ═════════ */
 const V4_PARTICLES = new Map();
-const V4_RARITY_EN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', mythic: 'MYTHIC', hidden: 'HIDDEN' };
+const V4_RARITY_EN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', mythic: 'MYTHIC', hidden: 'HIDDEN', limited: 'LIMITED' };
 function v4Reduced() {
   return !!(profile && profile.settings && profile.settings.reduceMotion) || matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -17391,7 +17392,7 @@ function renderArenaFilters() {
 function renderArenaPicker() {
   const grid = $('arenaPickGrid');
   if (!grid) return;
-  const rarityOrder = { common: 0, rare: 1, epic: 2, legend: 3, mythic: 4, hidden: 5 };
+  const rarityOrder = { common: 0, rare: 1, epic: 2, legend: 3, mythic: 4, hidden: 5, limited: 6 };
   const arenaOnly = Object.values(CHAR_DB).filter(c => c.arenaOnly || (c.devOnly && developerMode)); // 전투력측정기 · 개발자 지후(개발자 모드만)는 맨 앞
   let chars = arenaOnly.concat(playableChars().slice().sort((a, b) =>
     (rarityOrder[a.rarity] ?? 9) - (rarityOrder[b.rarity] ?? 9) || a.name.localeCompare(b.name)
@@ -17552,7 +17553,7 @@ try {
 function wweSavePrefs() { try { localStorage.setItem('jihooBattle.wwe', JSON.stringify({ mode: WWE.mode, level: WWE.level, auto: WWE.auto, introFull: WWE.introFull })); } catch (error) {} }
 function wweUnlocked() { return developerMode || maintOn() || getLevelInfo(profile.totalXp).level >= WWE_MIN_LEVEL; } // 5.7.4 점검 중에는 레벨과 상관없이 WWE
 function wweIds() {
-  const order = { hidden: 0, mythic: 1, legend: 2, epic: 3, rare: 4, common: 5 };
+  const order = { limited: -1, hidden: 0, mythic: 1, legend: 2, epic: 3, rare: 4, common: 5 };
   return playableIds().sort((a, b) => (order[CHAR_DB[a].rarity] - order[CHAR_DB[b].rarity]) || CHAR_DB[a].name.localeCompare(CHAR_DB[b].name, 'ko'));
 }
 function wweShort(id) { return (CHAR_DB[id]?.name || id).replace(/ ?지후$/, ''); }
@@ -18390,9 +18391,9 @@ document.querySelectorAll('#arenaSideToggle button').forEach(b => {
 
 function renderDraftGrid() {
   const grid = $('draftGrid'); grid.innerHTML = '';
-  let list = playableChars().concat(Object.values(CHAR_DB).filter(c => c.devOnly && isUnlocked(c.id)));
+  let list = playableChars().filter(c => c.rarity !== 'limited' || isUnlocked(c.id)).concat(Object.values(CHAR_DB).filter(c => c.devOnly && isUnlocked(c.id))); // 7.6.5 한정 지후는 가진 경우에만
   const sortMode = ($('draftSort') && $('draftSort').value) || 'default';
-  const rarityOrder = { common: 0, rare: 1, epic: 2, legend: 3, mythic: 4, hidden: 5 };
+  const rarityOrder = { common: 0, rare: 1, epic: 2, legend: 3, mythic: 4, hidden: 5, limited: 6 };
   const roleOrder = Object.fromEntries(ROLE_ORDER.map((r, i) => [r, i])); // 7.4
   if (sortMode === 'role') {
     list = list.slice().sort((a,b) => (roleOrder[a.role] ?? 9) - (roleOrder[b.role] ?? 9) || a.name.localeCompare(b.name));
@@ -19033,7 +19034,7 @@ function compFirstPicker(phase) { // 홀수 페이즈는 선수, 짝수 페이�
   return phase % 2 === 1 ? comp.first : otherSide(comp.first);
 }
 function botWeightedPick(pool, count) {
-  const weight = { mythic: 4, hidden: 4, legend: 4, epic: 3, rare: 1.5, common: 1 }; // 7.3.3 신화가 빠져 있으면 합이 NaN 이 된다
+  const weight = { limited: 4, mythic: 4, hidden: 4, legend: 4, epic: 3, rare: 1.5, common: 1 }; // 7.3.3 신화가 빠져 있으면 합이 NaN 이 된다
   const bag = pool.slice(), out = [];
   while (out.length < count && bag.length) {
     const total = bag.reduce((sum, id) => sum + weight[CHAR_DB[id].rarity], 0);
@@ -21104,7 +21105,7 @@ function clearPhaseTimer() {
 }
 
 // 4.1 인게임 HUD: 킬 피드 · 스킬 콜아웃 · 하단 아군 스킬 도크 (시안 '전투 화면 v2' 8a)
-const V41_RING = { hidden: '#111', mythic: '#ff3b5c', legend: '#f2c94c', epic: '#c77dff', rare: '#4d8ef7' };
+const V41_RING = { limited: '#14b8a6', hidden: '#111', mythic: '#ff3b5c', legend: '#f2c94c', epic: '#c77dff', rare: '#4d8ef7' };
 
 // 4.1 8×3 칸 배치 (시안 9a): 진영마다 가로 8칸 × 세로 3줄(전열·중열·후열).
 // 칸 번호 = 줄 × 8 + 칸. 배치 기록(placements)에 칸을 저장하고, 라운드마다 그 칸 중심에 그대로 다시 소환한다.
@@ -23197,7 +23198,7 @@ const PREVIEW_TIME_LIMIT = 45;
 // 미리보기: 같은 등급(히든은 전설)의 공격형 지후 하나와 1:1. 서포터는 화염 지후와 함께 나선다.
 const preview = { id: null, lastOpponent: null };
 function pickPreviewOpponent(id) {
-  const tier = CHAR_DB[id].rarity === 'hidden' || CHAR_DB[id].rarity === 'mythic' ? 'legend' : CHAR_DB[id].rarity;
+  const tier = CHAR_DB[id].rarity === 'hidden' || CHAR_DB[id].rarity === 'mythic' || CHAR_DB[id].rarity === 'limited' ? 'legend' : CHAR_DB[id].rarity;
   const fighters = playableIds().filter(other => other !== id && other !== preview.lastOpponent
     && CHAR_DB[other].rarity !== 'hidden' && !ROLE_BACKLINE.includes(CHAR_DB[other].role) && !CHAR_DB[other].noAttack && !CHAR_DB[other].isHealer);
   const sameTier = fighters.filter(other => CHAR_DB[other].rarity === tier);
@@ -23851,7 +23852,7 @@ function applyDamageRaw(target, amount, opts) {
   if (target._portalProtection > 0) finalDmg *= target._portalDamageMultiplier;
   if (target._landingProtection > 0) finalDmg *= 1 - target.def.landingDr;
   if (target.charId === 'levelup' && (target.formLevel || 1) >= 4) finalDmg *= 0.8;
-  if (target.charId === 'metal' && finalDmg > 0) finalDmg = 2;
+  if (target.charId === 'metal' && finalDmg > 0) finalDmg = critHit ? Math.ceil(target.maxHp * 0.25) : 2; // 7.6.5 치명타면 최대 체력의 25%
   if (target._selfAim) finalDmg *= 1 - CHARACTER_BALANCE.roulette.rouletteSelfDr;
   if (target._dosaDr > 0) finalDmg *= 1 - (target.def.dosaDr ?? CHARACTER_BALANCE.dosa.dosaDr);
   if (target._flameGuard > 0) finalDmg *= 1 - (target.def.flameGuardReduction ?? CHARACTER_BALANCE.blackflame.flameGuardReduction);
@@ -30385,7 +30386,7 @@ function dealDamage(caster, target, amount, opts) {
   if (target._portalProtection > 0) finalDmg *= target._portalDamageMultiplier;
   if (target._landingProtection > 0) finalDmg *= 1 - target.def.landingDr;
   if (target.charId === 'levelup' && (target.formLevel || 1) >= 4) finalDmg *= 0.8;
-  if (target.charId === 'metal' && finalDmg > 0) finalDmg = 2;
+  if (target.charId === 'metal' && finalDmg > 0) finalDmg = critHit ? Math.ceil(target.maxHp * 0.25) : 2; // 7.6.5 치명타면 최대 체력의 25%
   if (target._selfAim) finalDmg *= 1 - CHARACTER_BALANCE.roulette.rouletteSelfDr;
   if (target._dosaDr > 0) finalDmg *= 1 - (target.def.dosaDr ?? CHARACTER_BALANCE.dosa.dosaDr);
   if (target._flameGuard > 0) finalDmg *= 1 - (target.def.flameGuardReduction ?? CHARACTER_BALANCE.blackflame.flameGuardReduction);
@@ -30788,7 +30789,7 @@ function aucUnitsTxt(p) { return p.units.length; }
 function aucItemCount(p) { return Object.values(p.items || {}).reduce((s, n) => s + n, 0); }
 // 지후 하나의 힘 (봇 판단용: 티어 점수 × 등급 × 레벨)
 function aucPower(id, lv = 1) {
-  const base = { common: 1, rare: 1.35, epic: 1.75, legend: 2.3, mythic: 2.45, hidden: 2.6 }[CHAR_DB[id]?.rarity] || 1;
+  const base = { common: 1, rare: 1.35, epic: 1.75, legend: 2.3, mythic: 2.45, hidden: 2.6, limited: 2.3 }[CHAR_DB[id]?.rarity] || 1;
   return base * (0.55 + 0.9 * botTierScore(id)) * Math.pow(1.6, (lv || 1) - 1);
 }
 function aucFieldPower(p) { return p.units.reduce((t, [id, lv]) => t + aucPower(id, lv), 0); }
@@ -34120,6 +34121,18 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.6.5': {
+    label: 'v7.6.5 한정 등급 · 메탈 지후',
+    date: '2026.10.12',
+    sections: [
+      { title: '신규 등급', items: [
+        { emoji:'✦', name:'한정 등급', tag:'new', color:'#14b8a6', desc:'특별한 방법으로만 얻을 수 있는 <b>한정</b> 등급이 생겼어요. <b>개발자 지후</b> · <b>전투력측정기 지후</b>가 한정 등급이 돼요. 한정 지후는 <b>실제로 가지고 있을 때만</b> 덱 설정 화면에 보여요.' },
+      ] },
+      { title: '밸런스', items: [
+        { emoji:'🪖', name:'메탈 지후', tag:'nerf', color:'#8a93a3', portraitKey:'metal', desc:'<b>치명타</b>를 맞으면 피해 2 대신 <b>최대 체력의 25%</b>를 잃어요.' },
+      ] },
+    ],
+  },
   '7.6.4': {
     label: 'v7.6.4 전투 규칙 개편',
     date: '2026.10.12',
