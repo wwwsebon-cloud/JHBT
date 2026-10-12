@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -11993,8 +11993,8 @@ function flashSync() {
 }
 function flashCount() { flashSync(); return Math.max(0, Number(profile.inventory.flashlight) || 0); }
 // 4.2.2 빛나는 조각: 같은 등급 아무 지후의 조각으로 쓸 수 있다 (랭크업할 때 원하는 만큼 그 지후 조각으로 바꾼다)
-const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', legend: 'glowLegend' };
-const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각' };
+const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', legend: 'glowLegend', mythic: 'glowMythic' }; // 7.6.2 빛나는 신화조각 (신화 지후에만)
+const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각', mythic: '빛나는 신화조각' };
 function glowCount(rarity) { return GLOW_KEYS[rarity] ? Math.max(0, Number(profile.inventory[GLOW_KEYS[rarity]]) || 0) : 0; }
 function convertGlowShards(id, amount, from) {
   // 7.3.1 빛나는 조각은 같은 등급 지후에만. 빛나는 전설조각은 아직 없는 전설 지후에도 쓸 수 있다(조각 해금)
@@ -12948,7 +12948,7 @@ function normalizeProfile(raw) {
       shop: rawDaily.shop && typeof rawDaily.shop === 'object' ? rawDaily.shop : null,
       allCounted: !!rawDaily.allCounted,
     },
-    inventory: { legendPick: safeCount(rawInventory.legendPick), epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), mythicTicket: safeCount(rawInventory.mythicTicket), mythicPick: safeCount(rawInventory.mythicPick), boxTicket: safeCount(rawInventory.boxTicket), boostTicket: safeCount(rawInventory.boostTicket), epicPick: safeCount(rawInventory.epicPick), hiddenTicket: safeCount(rawInventory.hiddenTicket), luckTicket: safeCount(rawInventory.luckTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend), flashlight: safeCount(rawInventory.flashlight) },
+    inventory: { legendPick: safeCount(rawInventory.legendPick), epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), mythicTicket: safeCount(rawInventory.mythicTicket), mythicPick: safeCount(rawInventory.mythicPick), boxTicket: safeCount(rawInventory.boxTicket), boostTicket: safeCount(rawInventory.boostTicket), epicPick: safeCount(rawInventory.epicPick), hiddenTicket: safeCount(rawInventory.hiddenTicket), luckTicket: safeCount(rawInventory.luckTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend), glowMythic: safeCount(rawInventory.glowMythic), flashlight: safeCount(rawInventory.flashlight) },
     flashDay: String(raw.flashDay || ''), // 7.6 손전등: 마지막으로 5개로 채운 날
     draftTickets: safeCount(raw.draftTickets),
     discordRewarded: !!raw.discordRewarded,
@@ -12979,7 +12979,7 @@ function normalizeProfile(raw) {
       noticePending: !!rawNewcomer.noticePending,
     },
     // 4.1.9 튜토리얼: 이 필드가 없던 기존 유저(닉네임 있음)는 이미 본 것으로 친다
-    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), gid: String(m.gid || '').slice(0, 40), exp: Math.max(0, Math.floor(Number(m.exp) || 0)), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'epicChar', 'frame', 'shard'].includes(r?.kind) && (r.kind !== 'shard' || validIds.has(r.id))).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : r.kind === 'shard' ? { id: r.id } : {}) })) : [] })) : [],
+    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), gid: String(m.gid || '').slice(0, 40), exp: Math.max(0, Math.floor(Number(m.exp) || 0)), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'glowMythic', 'legendChar', 'epicChar', 'frame', 'shard'].includes(r?.kind) && (r.kind !== 'shard' || validIds.has(r.id))).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : r.kind === 'shard' ? { id: r.id } : {}) })) : [] })) : [],
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     ownerUid: typeof raw.ownerUid === 'string' ? raw.ownerUid.slice(0, 64) : '', // 7.1.1 이 기기 기록의 주인 계정
@@ -15822,7 +15822,7 @@ function renderInventory(message = '') {
       <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
     <b class="v4-h3">빛나는 조각</b>
-    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '전설 지후의 조각으로 바꿀 수 있어요 (아직 없는 전설 지후도)' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
+    <div class="v4-tickets">${['mythic', 'legend', 'epic', 'rare', 'common'].filter(r => r !== 'mythic' || glowCount(r) > 0).map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '전설 지후의 조각으로 바꿀 수 있어요 (아직 없는 전설 지후도)' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}
     ${dustSwapHtml()}`);
@@ -33778,6 +33778,17 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.6.2': {
+    label: 'v7.6.2 S랭크 복구 · 사과 보상',
+    date: '2026.10.12',
+    sections: [
+      { title: '복구 · 보상', items: [
+        { emoji:'↺', name:'S랭크 복구', tag:'fix', color:'#e5322d', desc:'7.1 랭크 개편 때 A로 돌아갔던, <b>예전에 S랭크 이상이던 지후</b>를 모두 <b>S랭크(한계돌파 Lv0)</b>로 되돌렸어요. 그때 받은 환급(조각 · 골드)은 그대로 가지세요. 7.1 이후 처음 접속하는 분도 A로 돌아가지 않고 바로 S랭크로 옮겨져요.' },
+        { emoji:'🙇', name:'사과 보상 (전원)', tag:'new', color:'#111111', desc:'우편으로 빛나는 일반조각 <b>100</b> · 빛나는 희귀조각 <b>50</b> · 빛나는 영웅조각 <b>20</b> · 빛나는 전설조각 <b>10</b> · 빛나는 신화조각 <b>5</b> (7일 안에 받기).' },
+        { emoji:'✦', name:'빛나는 신화조각', tag:'new', color:'#a65ef2', desc:'새 아이템. 신화 지후 아무나의 조각으로 바꿔 쓸 수 있어요 (덱 설정에서 지후를 눌러 바꿔요).' },
+      ] },
+    ],
+  },
   '7.6.1': {
     label: 'v7.6.1 클래스 · 레벨 개편 · 정산 화면',
     date: '2026.10.11',
@@ -37000,7 +37011,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { mythicTicket: ['★', '랜덤 신화 지후 확정권'], mythicPick: ['★', '선택 신화 지후 모집권'], luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
+const MAIL_REWARD_KINDS = { mythicTicket: ['★', '랜덤 신화 지후 확정권'], mythicPick: ['★', '선택 신화 지후 모집권'], luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'], glowMythic: ['✦', '빛나는 신화조각'] };
 function mailRewardText(rewards) { return rewards.map(r => r.kind === 'shard' ? `${shardIco()} ${CHAR_DB[r.id]?.name || r.id} 조각 ${formatNumber(r.amount)}` : r.kind === 'frame' ? `◎ ${frameInfo(r.id)?.name || '테두리'} 테두리` : `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 const MAIL_DEFAULT_MS = 24 * 3600 * 1000; // 7.3.2 우편은 기본 24시간 안에 받아야 한다
 function sendMail(mail) {
@@ -37016,7 +37027,7 @@ const SEASON_REWARDS = [
 ];
 // 4.5 경쟁전 시즌 종료 보상: 새 시즌에 접속하면 지난 경쟁전 시즌 최종 순위(TP)를 읽어 한 번 우편으로 보낸다.
 // 5.5 운영 우편 받기: 나 · 전체에게 온 giftMail 중 아직 안 받은 것을 우편함에 넣는다
-const GIFT_KINDS = ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'boostTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'hiddenTicket', 'epicPick', 'legendPick', 'mythicPick', 'epicChar', 'legendChar', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend'];
+const GIFT_KINDS = ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'boostTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'hiddenTicket', 'epicPick', 'legendPick', 'mythicPick', 'epicChar', 'legendChar', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'glowMythic'];
 // 6.0.3 만료: 우편마다 보낼 때 정한 만료 시각(exp) · 운영자가 즉시 만료시킨 우편 · 코드
 let expiredState = { codes: [], mails: [] };
 const mailExpired = m => !!m && !m.claimed && ((m.exp > 0 && Date.now() >= m.exp) || (m.gid && expiredState.mails.includes(m.gid)));
@@ -37428,19 +37439,27 @@ function runMailMigrations() {
     });
     if (lines.length) sendMail({ icon: '📢', title: '중복 조각 회수 안내', body: `7.1 ~ 7.1.2 에 중복 지후 조각이 10개씩 잘못 지급되어, 1개만 남기고 회수했어요 (이미 쓴 조각은 남은 만큼만). 회수: ${lines.join(' · ')}`.slice(0, 300), rewards: [] });
   }
-  if (!profile.mailFlags.includes('rankReset71')) { // 7.1 랭크 초기화: 지금까지 랭크업에 쓴 조각(빛나는 조각을 바꾼 것 포함) · 골드를 돌려준다
-    profile.mailFlags.push('rankReset71'); changed = true;
-    const OLD_SHARD = { common: [10, 20, 30], rare: [5, 10, 16], epic: [2, 6, 12], legend: [1, 2, 3] }, OLD_GOLD = [2500, 10000, 25000];
-    let gold = 0; const rewards = [];
-    Object.entries(profile.ranks || {}).forEach(([id, r]) => {
-      r = Math.min(3, Math.max(0, Math.floor(Number(r) || 0)));
-      const c = CHAR_DB[id]; if (!r || !c || !OLD_SHARD[c.rarity]) return;
-      let sh = 0; for (let i = 0; i < r; i++) { sh += OLD_SHARD[c.rarity][i]; gold += OLD_GOLD[i]; }
-      if (sh) rewards.push({ kind: 'shard', id, amount: sh });
-    });
+  if (!profile.mailFlags.includes('rankReset71')) { // 7.1 랭크 개편 (A · S + 한계돌파). 7.6.2: 예전에 S 이상이던 지후는 A 로 되돌리지 않고 새 S랭크(한계돌파 Lv0)로 옮긴다
+    profile.mailFlags.push('rankReset71', 'rankRestore762'); changed = true;
+    const kept = Object.entries(profile.ranks || {}).filter(([id, r]) => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden' && Math.floor(Number(r) || 0) >= 1).map(([id]) => id);
     profile.ranks = {}; profile.lb = {};
-    if (gold || rewards.length) sendMail({ icon: '↺', title: '랭크 초기화 환급', body: '랭크가 A · S + 한계돌파로 바뀌어 기존 랭크를 초기화했어요. 랭크업에 쓴 조각(빛나는 조각을 바꿔 쓴 것 포함)과 골드를 모두 돌려드려요.', rewards: [{ kind: 'gold', amount: gold }, ...rewards] });
+    kept.forEach(id => { profile.ranks[id] = 1; profile.lb[id] = 0; });
+    if (kept.length) sendMail({ icon: '↺', title: '랭크 개편 안내', body: `랭크가 A · S + 한계돌파로 바뀌었어요. 예전에 S 이상이던 지후 ${kept.length}기는 새 S랭크(한계돌파 Lv0)로 옮겼어요: ${kept.slice(0, 20).map(id => CHAR_DB[id].name).join(' · ')}${kept.length > 20 ? ' …' : ''}`.slice(0, 300), rewards: [], exp: Date.now() + 7 * 86400000 });
   }
+  if (!profile.mailFlags.includes('rankRestore762')) { // 7.6.2 이미 A 로 돌아간 기록: '랭크 초기화 환급' 우편에 적힌 지후(예전 S 이상)를 S랭크(한계돌파 Lv0)로 되돌린다. 받은 환급은 그대로
+    profile.mailFlags.push('rankRestore762'); changed = true;
+    const ids = new Set();
+    (profile.mail || []).filter(m => m && m.title === '랭크 초기화 환급').forEach(m => (m.rewards || []).forEach(r => { if (r && r.kind === 'shard' && CHAR_DB[r.id] && CHAR_DB[r.id].rarity !== 'hidden') ids.add(r.id); }));
+    const back = [...ids].filter(id => !isRankS(id));
+    profile.lb = profile.lb || {};
+    back.forEach(id => { profile.ranks[id] = 1; if (!(lbLevel(id) > 0)) profile.lb[id] = 0; if (!profile.unlocked.includes(id)) profile.unlocked.push(id); });
+    if (back.length) sendMail({ icon: '↺', title: 'S랭크 복구', body: `7.1 랭크 개편 때 A로 돌아갔던, 예전에 S 이상이던 지후 ${back.length}기를 S랭크(한계돌파 Lv0)로 되돌렸어요. 그때 받은 환급은 그대로 가지세요: ${back.slice(0, 20).map(id => CHAR_DB[id].name).join(' · ')}${back.length > 20 ? ' …' : ''}`.slice(0, 300), rewards: [], exp: Date.now() + 7 * 86400000 });
+  }
+  if (!profile.mailFlags.includes('apology762')) { // 7.6.2 사과 보상 (전원)
+    profile.mailFlags.push('apology762'); changed = true;
+    sendMail({ icon: '🙇', title: '랭크 초기화 사과 보상', body: '7.1 랭크 개편 때 예전 S랭크 지후가 A로 돌아가고 환급이 적게 된 문제로 불편을 드려 죄송합니다. 예전에 S 이상이던 지후는 S랭크(한계돌파 Lv0)로 되돌렸어요. 모든 분께 사과 보상을 드려요.', rewards: [{ kind: 'glowCommon', amount: 100 }, { kind: 'glowRare', amount: 50 }, { kind: 'glowEpic', amount: 20 }, { kind: 'glowLegend', amount: 10 }, { kind: 'glowMythic', amount: 5 }], exp: Date.now() + 7 * 86400000 });
+  }
+
   if (flashSync()) changed = true; // 7.6 손전등: 날이 바뀌었으면 5개로
   if (!profile.mailFlags.includes('mile76')) { // 7.6 마일리지 10배: 가격 · 적립이 10배가 되어, 가지고 있던 마일리지도 10배 (가치 그대로)
     profile.mailFlags.push('mile76'); changed = true;
