@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.4"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -22975,9 +22975,45 @@ function physSolvePair(a, b) {
   }
 }
 
+// 7.6.4 무한 빙결 · 정지 방지: 빙결 · 잠금 · 기절은 겹치지도 늘어나지도 않는다 (걸려 있는 동안 새로 걸리지 않는다).
+//   풀린 뒤 0.5초 동안은 셋 다 걸리지 않는다. 걸리는 곳이 많아서 물리 스텝마다 직전 값과 비교해 맞춘다
+const CC_IMMUNE_SEC = 0.5;
+function ccGuard(u, dt) {
+  if (!u.alive || u.isCastle || !u.statuses) { u._cc = null; return; }
+  const st = u.statuses;
+  const cur = () => [st.freeze ? Math.max(0, Number(st.freeze.remaining) || 0) : 0, Math.max(0, Number(u._lockedFor) || 0), Math.max(0, Number(u.stun) || 0)];
+  const set = (i, v) => {
+    if (i === 0) { if (v > 0) st.freeze.remaining = v; else st.freeze = null; }
+    else if (i === 1) u._lockedFor = v;
+    else { u.stun = v; if (!(v > 0) && u.el) u.el.classList.remove('stunned'); }
+  };
+  const g = u._cc || (u._cc = { v: [0, 0, 0], imm: 0 });
+  if (g.imm > 0) g.imm = Math.max(0, g.imm - dt);
+  const now = cur(), wasOn = g.v.some(x => x > 0);
+  if (wasOn) now.forEach((x, i) => { if (x > g.v[i]) set(i, g.v[i]); }); // 걸려 있는 동안: 늘리거나 다른 것을 더 걸 수 없다
+  else if (g.imm > 0) now.forEach((x, i) => { if (x > 0) set(i, 0); }); // 풀린 직후: 면역
+  else if (now.filter(x => x > 0).length > 1) { const keep = now.indexOf(Math.max(...now)); now.forEach((x, i) => { if (i !== keep && x > 0) set(i, 0); }); } // 한 번에 둘 이상: 가장 긴 것 하나만
+  const after = cur();
+  if (wasOn && !after.some(x => x > 0)) g.imm = CC_IMMUNE_SEC;
+  g.v = after;
+}
+// 7.6.4 15초 동안 아무 피해도 없으면 서로 공격할 수 없는 상태로 보고 바로 판정한다
+const STALL_SEC = 15;
+function timeoutLabel() { return state.stallEnded ? `${STALL_SEC}초 동안 피해 없음` : `${COMBAT_TIME_LIMIT}초 종료`; }
+function stallJudge() {
+  if (state.phase !== 'combat' || state.mode === 'coop' || state.mode === 'preview' || state.mode === 'castle') return false;
+  if (state.mode === 'auction' && (!AUC || AUC.farm)) return false;
+  if (state.combatTime - (state.lastDmgAt || 0) < STALL_SEC) return false;
+  state.stallEnded = true;
+  if (state.mode === 'wwe') endRoundCombat(wweJudge(), true);
+  else if (state.mode === 'auction') endRoundCombat(aucJudge(), true);
+  else { const p = LOCK.on ? simRun(updateOddsBar) : updateOddsBar(); endRoundCombat(p > 50 ? 'ally' : p < 50 ? 'enemy' : 'draw', true); }
+  return true;
+}
 function physicsStep(dt) {
   const units = state.units;
   state.combatTime += dt;
+  for (const u of units) ccGuard(u, dt); // 7.6.4
   if (LOCK.on) { // 친선전: 예약 작업 · 승률 샘플 · 고정 유닛 고정도 스텝 기준 (프레임과 무관)
     lockRunDue();
     if (++LOCK.steps % 15 === 0) oddsSampleNow();
@@ -23153,7 +23189,7 @@ function readyRoundSkills(u) {
 }
 
 /* 전투 페이즈 */
-const COMBAT_TIME_LIMIT = 100;
+const COMBAT_TIME_LIMIT = 45; // 7.6.4 100 → 45초
 const AUTO_FAST_FORWARD_MS = 25000; // 3.8.3: 전투가 길어지면 2배속 (10초 → 25초)
 const CASTLE_ROUND_TIME_LIMIT = 30;
 const PREVIEW_TIME_LIMIT = 45;
@@ -23250,6 +23286,7 @@ function beginCombatPhaseInner() {
   state.combatLastTs = performance.now();
   state.combatStartTs = state.combatLastTs;
   state.combatTime = 0;
+  state.lastDmgAt = 0; state.stallEnded = false; state.units.forEach(u => { u._cc = null; }); // 7.6.4
   if (state.mode === 'coop') coopCombatStart(); // 5.1 협동전: 첫 무리 · 정비 전에 남은 적
   genesisReset();
   refreshGenesisAuras();
@@ -23796,6 +23833,7 @@ function applyDamageRaw(target, amount, opts) {
   if (target._nf) return false; // 7.4.7 느와르 [나이트폴]로 사라진 동안 무적
   if (target.isVault) return aucVaultHit(target, opts && opts.src, Math.max(0, amount), opts || {}); // 7.0 금고
   if (state.mode === 'auction' && AUC && AUC.farm && opts && opts.src && opts.src.side !== target.side) return false; // 7.0 파밍: 플레이어끼리 피해 없음
+  if (amount > 0) state.lastDmgAt = state.combatTime; // 7.6.4
   opts = opts || {};
   const source = opts.src || null;
   if (source && source.alive && isHostile(target, source)) target._lastFoe = source;
@@ -23910,6 +23948,7 @@ function combatTick(ts) {
     } else physicsStep(PHYS.STEP);
     steps++;
     if (state.phase !== 'combat') return;
+    if (stallJudge()) return; // 7.6.4
   }
 
   const alpha = clamp(state.physAcc / PHYS.STEP, 0, 1);
@@ -29180,7 +29219,7 @@ function rewindRestore(s) {
   if (!a._realm && !s.realm && !a._flight && !a._leap) { physSnap(a, s.x, s.y); a.vx = 0; a.vy = 0; }
   if (a.statuses) { Object.keys(a.statuses).forEach(k => { a.statuses[k] = null; }); Object.keys(s.st).forEach(k => { a.statuses[k] = typeof s.st[k] === 'object' ? { ...s.st[k] } : s.st[k]; }); }
   if (a.buffs) { Object.keys(a.buffs).forEach(k => delete a.buffs[k]); Object.keys(s.buffs).forEach(k => { a.buffs[k] = { ...s.buffs[k] }; }); }
-  a.stun = s.stun; if (a.el) a.el.classList.toggle('stunned', a.stun > 0);
+  a.stun = s.stun; if (a.el) a.el.classList.toggle('stunned', a.stun > 0); a._cc = null; // 7.6.4 되감기는 빙결 · 기절 규칙 기록도 새로
   a._fatal = s.fatal; if (a.el) a.el.classList.toggle('fatal-wound', a._fatal > 0);
   // 게이지는 되돌리지 않고, 저장 뒤 찬 만큼 한 번 더 채운다
   for (const k in s.nums) {
@@ -30274,6 +30313,7 @@ function dealDamage(caster, target, amount, opts) {
   // crossRealm: 아공간의 공허 지후가 필드의 적을 치는 한 번만 층을 넘는다
   if (target._flight || target._leap || (caster && !opts.fromDeath && !(opts.crossRealm ? caster.side !== target.side : isHostile(caster, target)))) return false;
   if (caster && !opts.crossRealm && !sameRealm(caster, target)) return false;
+  if (amount > 0) state.lastDmgAt = state.combatTime; // 7.6.4 피해 없이 15초면 판정
   if (caster && caster._blindRemaining > 0 && !opts.isSkill && !opts.isDot && !opts.fromDeath && !opts.reflected
     && Math.random() < CHARACTER_BALANCE.tentacle.blindMissChance) {
     spawnDamageNumber(target, '빗나감', { heal: true });
@@ -33274,7 +33314,7 @@ function endRoundCombat(winnerSide, timedOut = false) {
     const overlay = $('roundOverlay');
     $('resultTitle').textContent = 'DRAW';
     $('resultTitle').className = 'result-title';
-    $('resultSub').textContent = '100초 종료 · 승률 50:50 · 같은 라운드 재시작';
+    $('resultSub').textContent = `${timeoutLabel()} · 승률 50:50 · 같은 라운드 재시작`;
     $('lifeTransition').innerHTML = '';
     overlay.classList.add('show');
     scheduleTask(() => {
@@ -33317,8 +33357,8 @@ function endRoundCombat(winnerSide, timedOut = false) {
   const afterLives = lostSide === 'enemy' ? state.enemyLives : state.allyLives;
   $('lifeTransition').innerHTML = lifeSide ? Array.from({ length: beforeLives }, (_, i) => `<span class="life-pip on ${lifeSide}${i >= afterLives ? ' lost' : ''}"></span>`).join('') : '';
   if (state.mode === 'arena') {
-    if (winnerSide === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = timedOut ? '100초 종료 · 승률 우세' : '투기장 전멸전 승리'; }
-    else if (winnerSide === 'enemy') { title.textContent = 'LOSE'; title.className = 'result-title lose'; sub.textContent = timedOut ? '100초 종료 · 상대 승률 우세' : '투기장 전멸전 패배'; }
+    if (winnerSide === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = timedOut ? `${timeoutLabel()} · 승률 우세` : '투기장 전멸전 승리'; }
+    else if (winnerSide === 'enemy') { title.textContent = 'LOSE'; title.className = 'result-title lose'; sub.textContent = timedOut ? `${timeoutLabel()} · 상대 승률 우세` : '투기장 전멸전 패배'; }
     else { title.textContent = 'DRAW'; title.className = 'result-title'; sub.textContent = '양쪽 전멸 — 무승부'; }
     overlay.classList.add('show');
     scheduleTask(() => {
@@ -33330,8 +33370,8 @@ function endRoundCombat(winnerSide, timedOut = false) {
 
   const seen = netFlip() ? ({ ally: 'enemy', enemy: 'ally' }[winnerSide] || winnerSide) : winnerSide; // 친선전 참가자 시점
   const myLeft = netFlip() ? state.enemyLives : state.allyLives, oppLeft = netFlip() ? state.allyLives : state.enemyLives;
-  if (seen === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = `${timedOut ? '100초 종료 · 승률 우세 · ' : ''}적 라이프 -1 (남은 라이프 ${oppLeft})`; }
-  else if (seen === 'enemy') { title.textContent = 'LOSE'; title.className = 'result-title lose'; sub.textContent = `${timedOut ? '100초 종료 · 상대 승률 우세 · ' : ''}내 라이프 -1 (남은 라이프 ${myLeft})`; }
+  if (seen === 'ally') { title.textContent = 'WIN'; title.className = 'result-title win'; sub.textContent = `${timedOut ? timeoutLabel() + ' · 승률 우세 · ' : ''}적 라이프 -1 (남은 라이프 ${oppLeft})`; }
+  else if (seen === 'enemy') { title.textContent = 'LOSE'; title.className = 'result-title lose'; sub.textContent = `${timedOut ? timeoutLabel() + ' · 상대 승률 우세 · ' : ''}내 라이프 -1 (남은 라이프 ${myLeft})`; }
   else { title.textContent = 'DRAW'; title.className = 'result-title'; sub.textContent = '무승부'; }
   overlay.classList.add('show');
 
@@ -34080,6 +34120,17 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.6.4': {
+    label: 'v7.6.4 전투 규칙 개편',
+    date: '2026.10.12',
+    sections: [
+      { title: '전투 규칙', items: [
+        { emoji:'🧊', name:'무한 빙결 · 정지 방지', tag:'system', color:'#5fb3e6', desc:'<b>빙결 · 잠금 · 기절</b>은 서로 겹치지 않고, 걸려 있는 동안 늘어나지도 않아요. 풀린 뒤 <b>0.5초</b> 동안은 빙결 · 잠금 · 기절에 걸리지 않아요.' },
+        { emoji:'⏳', name:'교착 판정', tag:'system', color:'#e0a800', desc:'라운드 중 <b>15초 동안 아무 피해도 없으면</b> 서로 공격할 수 없는 상태로 보고 바로 승패를 판정해요 (승률 우세 쪽 승리).' },
+        { emoji:'⏱️', name:'라운드 시간', tag:'adjust', color:'#777', desc:'라운드 제한 시간 <b>100초 → 45초</b>.' },
+      ] },
+    ],
+  },
   '7.6.3': {
     label: 'v7.6.3 밸런스 패치 · 활동 기록',
     date: '2026.10.12',
