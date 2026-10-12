@@ -225,6 +225,20 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
     }
 
+    // 7.6.1 클래스 리더보드: 일반전 CP (초기화 없음) · 최고 CP · 덱
+    match /classLeaderboard/{userId} {
+      allow get, list: if true;
+      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+      allow create, update: if owner(userId)
+        && request.resource.data.keys().hasAll(['nickname', 'cp', 'best', 'deck', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'cp', 'best', 'deck', 'updatedAt'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
+        && request.resource.data.cp is int && request.resource.data.cp >= 0 && request.resource.data.cp <= 1000000
+        && request.resource.data.best is int && request.resource.data.best >= request.resource.data.cp && request.resource.data.best <= 1000000
+        && validDeck(request.resource.data.deck)
+        && request.resource.data.updatedAt is timestamp;
+    }
+
     match /leaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리

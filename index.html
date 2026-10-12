@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -7601,7 +7601,7 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
     <div class="v4-band"><div class="v4-gridbg"></div><canvas class="v4-particles" data-n="30"></canvas>
       <div class="v4-band-inner">
         <div class="v4-bandtop"><button type="button" class="v4-back" id="btnLeaderboardBack">← 로비</button><h2>리더보드</h2>
-          <div class="v4-right"><select class="v44-season-select" id="lbSeasonSelect" aria-label="시즌"></select><div class="v4-seg lb-tabs" role="tablist"><button type="button" data-lb="level" class="on">레벨</button><button type="button" data-lb="comp">경쟁전</button></div></div></div>
+          <div class="v4-right"><select class="v44-season-select" id="lbSeasonSelect" aria-label="시즌"></select><div class="v4-seg lb-tabs" role="tablist"><button type="button" data-lb="level" class="on">레벨</button><button type="button" data-lb="class">클래스</button><button type="button" data-lb="comp">경쟁전</button></div></div></div>
         <div class="v44-season-bar" id="lbSeasonBar"></div>
         <div class="v4-podium" id="lbPodium"></div>
       </div>
@@ -9184,6 +9184,9 @@ window.JIHOO_FIREBASE_CONFIG = {
     return normalized && !normalized.includes('/') ? 'n_' + normalized : null;
   };
   let claimedNicknameKey = null;
+  // 7.6.2 운영: 리더보드에서 숨기는 계정 (같은 사람의 부계정). 닉네임이 대소문자 · 앞뒤 공백만 빼고 똑같을 때만 ('Ht_Tsukasa :' 는 본계정이라 남긴다)
+  const LB_HIDE_NICKS = new Set(['Ht_Tsukasa', 'realyo1st'].map(nicknameKey));
+  const lbHidden = p => LB_HIDE_NICKS.has(nicknameKey(p && p.nickname));
 
   function checkPassword(password) {
     if (typeof password !== 'string' || password.length < PASSWORD_MIN) throw new Error(`비밀번호는 ${PASSWORD_MIN}자 이상으로 정해 주세요.`);
@@ -9613,18 +9616,30 @@ window.JIHOO_FIREBASE_CONFIG = {
       masteryCounts: Object.fromEntries(Object.entries(profile.masteryCounts || {}).filter(([id, count]) => /^[a-z_]{1,24}$/.test(id) && Number.isInteger(count) && count >= 1 && count <= 9999999)),
       updatedAt: sdk.serverTimestamp()
     };
+    // 7.6.2 숨긴 계정: 예전에 올린 기록을 지우고 더 올리지 않는다. 한 번 숨겨진 계정(UID)은 닉네임을 바꿔도 계속 숨긴다
+    if (lbHidden(profile) || profile.lbHideUid === auth.currentUser.uid) {
+      const uid = auth.currentUser.uid;
+      profile.lbHideUid = uid;
+      await Promise.all(['leaderboard', 'compLeaderboard', 'coopLeaderboard', 'classLeaderboard'].map(c => sdk.deleteDoc(sdk.doc(database, c, uid)).catch(() => {})));
+      return;
+    }
     // 7.6 닉네임 확인을 먼저: 다른 계정이 주인인 닉네임이면 리더보드에 올리지 않고, 예전에 올린 기록도 지운다 (중복 닉네임이 다시 생기지 않게)
     //     확인 자체가 실패하면(규칙 · 네트워크) 예전처럼 그냥 올린다
     nickCheck = claimNickname(profile.nickname, board).catch(() => 'error');
     if (await nickCheck === 'taken') {
       const uid = auth.currentUser.uid;
-      await Promise.all(['leaderboard', 'compLeaderboard', 'coopLeaderboard'].map(c => sdk.deleteDoc(sdk.doc(database, c, uid)).catch(() => {})));
+      await Promise.all(['leaderboard', 'compLeaderboard', 'coopLeaderboard', 'classLeaderboard'].map(c => sdk.deleteDoc(sdk.doc(database, c, uid)).catch(() => {})));
       return;
     }
     // 4.3 프로필 꾸미기: firestore.rules 를 새로 게시하기 전이면 look 없이 다시 쓴다
     await sdk.setDoc(sdk.doc(database, 'leaderboard', auth.currentUser.uid), { ...board, look })
       .catch(() => sdk.setDoc(sdk.doc(database, 'leaderboard', auth.currentUser.uid), board));
     // 4.4.3: 레벨 리더보드는 영구 (시즌 보드에 쓰지 않는다)
+    // 7.6.1 클래스 리더보드 (일반전 CP · 초기화 없음): CP 가 한 번이라도 생긴 사람만. firestore.rules 를 게시하기 전이면 조용히 건너뛴다
+    if ((profile.cp || 0) > 0 || (profile.cpBest || 0) > 0) {
+      const cap = v => Math.min(1000000, Math.max(0, Math.floor(Number(v) || 0)));
+      await sdk.setDoc(sdk.doc(database, 'classLeaderboard', auth.currentUser.uid), { nickname: profile.nickname, cp: cap(profile.cp), best: cap(Math.max(profile.cpBest || 0, profile.cp || 0)), deck: board.deck, updatedAt: sdk.serverTimestamp() }).catch(() => {});
+    }
     // 5.4 협동전 리더보드: 최고 웨이브가 있는 사람만
     if ((profile.coopBest || 0) > 0) {
       const coopDoc = { nickname: profile.nickname, wave: Math.min(99999, Math.floor(Number(profile.coopBest) || 0)), deck: board.deck, updatedAt: sdk.serverTimestamp() };
@@ -9668,6 +9683,11 @@ window.JIHOO_FIREBASE_CONFIG = {
     const results = await sdk.getDocs(sdk.query(sdk.collection(database, 'coopLeaderboard'), sdk.orderBy('wave', 'desc'), sdk.limit(30)));
     return dedupeByNickname(results.docs.map(entry => ({ id: entry.id, ...entry.data() }))); // 7.1.1
   }
+  async function classLeaderboard() { // 7.6.1 클래스 (CP) 순위
+    if (!database) throw new Error('Firebase 연결 전에는 리더보드를 볼 수 없습니다.');
+    const results = await sdk.getDocs(sdk.query(sdk.collection(database, 'classLeaderboard'), sdk.orderBy('cp', 'desc'), sdk.limit(50)));
+    return dedupeByNickname(results.docs.map(entry => ({ id: entry.id, ...entry.data() })));
+  }
   async function compLeaderboard() {
     if (!database) throw new Error('Firebase 연결 전에는 리더보드를 볼 수 없습니다.');
     const results = await sdk.getDocs(sdk.query(sdk.collection(database, 'compLeaderboard'), sdk.orderBy('tp', 'desc'), sdk.limit(50)));
@@ -9694,6 +9714,7 @@ window.JIHOO_FIREBASE_CONFIG = {
 
   // 7.1.1 같은 닉네임이 여럿이면 한 명만 남긴다. 7.6: 닉네임 주인 = 레벨이 높은 쪽 → 같으면 플레이 시간이 긴 쪽 (등록 순서가 아니라)
   async function dedupeByNickname(list) {
+    list = list.filter(p => !lbHidden(p)); // 7.6.2 숨긴 계정은 모든 리더보드(시즌 보드 포함)에서 뺀다
     const groups = new Map();
     list.forEach(p => { const k = nicknameKey(p.nickname || ''); if (!k) return; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p); });
     const drop = new Set();
@@ -9712,7 +9733,7 @@ window.JIHOO_FIREBASE_CONFIG = {
   async function adminDedupeBoards() {
     if (!database || !auth || !auth.currentUser) throw new Error('온라인 계정에 먼저 로그인하세요.');
     let removed = 0, failed = 0;
-    for (const coll of ['leaderboard', 'compLeaderboard', 'coopLeaderboard']) {
+    for (const coll of ['leaderboard', 'compLeaderboard', 'coopLeaderboard', 'classLeaderboard']) {
       const all = (await sdk.getDocs(sdk.collection(database, coll))).docs.map(d => ({ ...d.data(), id: d.id, ref: d.ref }));
       const keep = new Set((await dedupeByNickname(all)).map(p => p.id));
       for (const p of all) { if (keep.has(p.id)) continue; try { await sdk.deleteDoc(p.ref); removed++; } catch (error) { failed++; } }
@@ -9988,7 +10009,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -10008,7 +10029,7 @@ if (PREVIEW_MODE) {
   const noop = () => {}, resolved = () => Promise.resolve(null);
   window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved, deckSamples: () => Promise.resolve([]),
-    leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
+    leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), classLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
     presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, matchGet: () => Promise.reject(new Error('오프라인')), roomGet: () => Promise.reject(new Error('오프라인')), roomInviteSend: () => Promise.reject(new Error('오프라인')), roomInviteUpdate: resolved, roomInvitesSubscribe: () => () => {}, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
 
@@ -11983,8 +12004,8 @@ function flashSync() {
 }
 function flashCount() { flashSync(); return Math.max(0, Number(profile.inventory.flashlight) || 0); }
 // 4.2.2 빛나는 조각: 같은 등급 아무 지후의 조각으로 쓸 수 있다 (랭크업할 때 원하는 만큼 그 지후 조각으로 바꾼다)
-const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', legend: 'glowLegend' };
-const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각' };
+const GLOW_KEYS = { common: 'glowCommon', rare: 'glowRare', epic: 'glowEpic', legend: 'glowLegend', mythic: 'glowMythic' }; // 7.6.2 빛나는 신화조각 (신화 지후에만)
+const GLOW_NAMES = { common: '빛나는 일반조각', rare: '빛나는 희귀조각', epic: '빛나는 영웅조각', legend: '빛나는 전설조각', mythic: '빛나는 신화조각' };
 function glowCount(rarity) { return GLOW_KEYS[rarity] ? Math.max(0, Number(profile.inventory[GLOW_KEYS[rarity]]) || 0) : 0; }
 function convertGlowShards(id, amount, from) {
   // 7.3.1 빛나는 조각은 같은 등급 지후에만. 빛나는 전설조각은 아직 없는 전설 지후에도 쓸 수 있다(조각 해금)
@@ -12938,7 +12959,7 @@ function normalizeProfile(raw) {
       shop: rawDaily.shop && typeof rawDaily.shop === 'object' ? rawDaily.shop : null,
       allCounted: !!rawDaily.allCounted,
     },
-    inventory: { legendPick: safeCount(rawInventory.legendPick), epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), mythicTicket: safeCount(rawInventory.mythicTicket), mythicPick: safeCount(rawInventory.mythicPick), boxTicket: safeCount(rawInventory.boxTicket), boostTicket: safeCount(rawInventory.boostTicket), epicPick: safeCount(rawInventory.epicPick), hiddenTicket: safeCount(rawInventory.hiddenTicket), luckTicket: safeCount(rawInventory.luckTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend), flashlight: safeCount(rawInventory.flashlight) },
+    inventory: { legendPick: safeCount(rawInventory.legendPick), epicTicket: safeCount(rawInventory.epicTicket), legendTicket: safeCount(rawInventory.legendTicket), mythicTicket: safeCount(rawInventory.mythicTicket), mythicPick: safeCount(rawInventory.mythicPick), boxTicket: safeCount(rawInventory.boxTicket), boostTicket: safeCount(rawInventory.boostTicket), epicPick: safeCount(rawInventory.epicPick), hiddenTicket: safeCount(rawInventory.hiddenTicket), luckTicket: safeCount(rawInventory.luckTicket), glowCommon: safeCount(rawInventory.glowCommon), glowRare: safeCount(rawInventory.glowRare), glowEpic: safeCount(rawInventory.glowEpic), glowLegend: safeCount(rawInventory.glowLegend), glowMythic: safeCount(rawInventory.glowMythic), flashlight: safeCount(rawInventory.flashlight) },
     flashDay: String(raw.flashDay || ''), // 7.6 손전등: 마지막으로 5개로 채운 날
     draftTickets: safeCount(raw.draftTickets),
     discordRewarded: !!raw.discordRewarded,
@@ -12969,12 +12990,13 @@ function normalizeProfile(raw) {
       noticePending: !!rawNewcomer.noticePending,
     },
     // 4.1.9 튜토리얼: 이 필드가 없던 기존 유저(닉네임 있음)는 이미 본 것으로 친다
-    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), gid: String(m.gid || '').slice(0, 40), exp: Math.max(0, Math.floor(Number(m.exp) || 0)), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'legendChar', 'epicChar', 'frame', 'shard'].includes(r?.kind) && (r.kind !== 'shard' || validIds.has(r.id))).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : r.kind === 'shard' ? { id: r.id } : {}) })) : [] })) : [],
+    mail: Array.isArray(raw.mail) ? raw.mail.filter(m => m && typeof m === 'object').slice(-60).map(m => ({ id: String(m.id || ''), gid: String(m.gid || '').slice(0, 40), exp: Math.max(0, Math.floor(Number(m.exp) || 0)), title: String(m.title || '').slice(0, 60), body: String(m.body || '').slice(0, 300), icon: String(m.icon || '✉').slice(0, 4), at: Number(m.at) || 0, claimed: !!m.claimed, rewards: Array.isArray(m.rewards) ? m.rewards.filter(r => ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'glowMythic', 'legendChar', 'epicChar', 'frame', 'shard'].includes(r?.kind) && (r.kind !== 'shard' || validIds.has(r.id))).map(r => ({ kind: r.kind, amount: Math.max(0, Math.floor(Number(r.amount) || 0)), ...(r.kind === 'frame' ? { id: String(r.id || '').slice(0, 12), until: Math.max(0, Number(r.until) || 0) } : r.kind === 'shard' ? { id: r.id } : {}) })) : [] })) : [],
     mailFlags: Array.isArray(raw.mailFlags) ? raw.mailFlags.map(String) : [],
     tutorial: raw.tutorial ? { done: !!raw.tutorial.done, giftPending: !!raw.tutorial.giftPending, giftUsed: !!raw.tutorial.giftUsed, stage: ['match', 'reward', 'deck'].includes(raw.tutorial.stage) ? raw.tutorial.stage : '', giftIds: Array.isArray(raw.tutorial.giftIds) ? raw.tutorial.giftIds.filter(id => typeof id === 'string').slice(0, 12) : [], mailed: !!raw.tutorial.mailed } : { done: !!raw.nickname, giftPending: false, giftUsed: !!raw.nickname },
     ownerUid: typeof raw.ownerUid === 'string' ? raw.ownerUid.slice(0, 64) : '', // 7.1.1 이 기기 기록의 주인 계정
     lastDeck: Array.isArray(raw.lastDeck) ? raw.lastDeck.filter(id => validIds.has(id)).slice(0, 5) : [], // 7.1.1 리더보드 · 가장 최근에 쓴 덱
     nickChangedAt: Math.max(0, Number(raw.nickChangedAt) || 0), needNewNick: !!raw.needNewNick, // 7.1.1 닉네임 변경 24시간 · 중복 닉네임
+    lbHideUid: typeof raw.lbHideUid === 'string' ? raw.lbHideUid.slice(0, 128) : '', // 7.6.2 리더보드에서 숨긴 계정
     friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)), day: String(raw.friendlyRecord.day || ''), dia: Math.max(0, Math.floor(Number(raw.friendlyRecord.dia) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
     allowSpectate: raw.allowSpectate !== false, // 6.1 관전 허용
     coopBest: Math.max(0, Math.floor(Number(raw.coopBest) || 0)), // 5.1 협동전 최고 웨이브
@@ -14114,7 +14136,7 @@ function renderSeasonControls(tab = 'level') {
   sel.hidden = !comp;
   sel.innerHTML = Array.from({ length: cur.number }, (_, i) => cur.number - i).map(n => `<option value="${n}">경쟁전 ${seasonLabel(n)}${n === cur.number ? ' (현재)' : ''}</option>`).join('');
   sel.value = String(lbSeason);
-  $('lbSeasonBar').innerHTML = !comp ? '<b>레벨 리더보드</b> · 초기화되지 않는 영구 순위'
+  $('lbSeasonBar').innerHTML = tab === 'class' ? '<b>클래스 리더보드</b> · 일반전 CP 순위 · 초기화되지 않아요' : !comp ? '<b>레벨 리더보드</b> · 얼마나 즐겼는지 · 초기화되지 않는 영구 순위'
     : lbSeason === cur.number ? `<b>경쟁전 ${seasonLabel(cur.number)}</b> · 남은 기간 ${formatRemaining(cur.end - Date.now())} · 매월 1일 초기화 · 시즌 종료 1~50위 보상 (우편)`
     : `<b>경쟁전 ${seasonLabel(lbSeason)}</b> · 종료된 시즌 기록`;
 }
@@ -14129,6 +14151,7 @@ async function openLeaderboard(tab = 'level') {
   if (window.JihooOnline.connected()) await Promise.race([window.JihooOnline.publish().catch(() => {}), new Promise(resolve => setTimeout(resolve, 2500))]);
   if (state.screen !== 'leaderboard') return;
   if (tab === 'comp') return openCompLeaderboard();
+  if (tab === 'class') return openClassLeaderboard(); // 7.6.1
   try {
     const players = await window.JihooOnline.leaderboard(); // 4.4.3: 영구 레벨 리더보드
     if (state.screen !== 'leaderboard') return;
@@ -14192,17 +14215,17 @@ function v4Podium(players, kind) {
   order.forEach((index, slot) => {
     const player = players[index];
     if (!player) return;
-    const face = (kind !== 'comp' && player.look && CHAR_DB[player.look.a] ? player.look.a : null) || (kind === 'comp' ? (player.deck || [])[0] : player.favorite) || (player.deck || [])[0];
+    const face = (kind === 'level' && player.look && CHAR_DB[player.look.a] ? player.look.a : null) || (kind !== 'level' ? (player.deck || [])[0] : player.favorite) || (player.deck || [])[0];
     const pod = document.createElement('button');
     pod.type = 'button'; pod.className = 'pod';
     pod.dataset.uid = player.id || '';
     const delay = (0.15 + slot * 0.12).toFixed(2) + 's';
-    pod.innerHTML = `<span class="face" style="animation-delay:${delay}">${CHAR_DB[face] ? `<img src="${CHAR_DB[face].portrait}" alt="">` : ''}</span><b></b><span class="v44-podmeta"><span class="v44-podtier">${kind === 'comp' ? compTierBadge(Math.max(0, Number(player.tp) || 0), 'small') : ''}</span><small></small></span><div class="block" style="height:${heights[index]};animation-delay:${delay}"><b>${index + 1}</b></div>`;
+    pod.innerHTML = `<span class="face" style="animation-delay:${delay}">${CHAR_DB[face] ? `<img src="${CHAR_DB[face].portrait}" alt="">` : ''}</span><b></b><span class="v44-podmeta"><span class="v44-podtier">${kind === 'comp' ? compTierBadge(Math.max(0, Number(player.tp) || 0), 'small') : kind === 'class' ? classBadge(classOf(player.cp), 24) : ''}</span><small></small></span><div class="block" style="height:${heights[index]};animation-delay:${delay}"><b>${index + 1}</b></div>`;
     pod.querySelector('.face').insertAdjacentText('beforeend', CHAR_DB[face] ? '' : String(player.nickname || 'J')[0]);
     pod.querySelector(':scope > b').textContent = String(player.nickname || '플레이어');
-    if (kind !== 'comp' && player.look) paintAvatar(pod.querySelector('.face'), { ...normalizeLook(player.look), a: CHAR_DB[face] ? face : '' }, player.nickname, { size: 74, mini: false }); // 4.6.5 정식 테두리
-    pod.querySelector('small').textContent = kind === 'comp' ? `${formatNumber(Math.max(0, Number(player.tp) || 0))} TP` : player._seasonal ? `${formatNumber(Math.max(0, Number(player.xp) || 0))} XP` : `Lv.${Math.max(1, Number(player.level) || 1)}`;
-    if (kind !== 'comp') pod.addEventListener('click', () => showLeaderboardDetail(player));
+    if (kind === 'level' && player.look) paintAvatar(pod.querySelector('.face'), { ...normalizeLook(player.look), a: CHAR_DB[face] ? face : '' }, player.nickname, { size: 74, mini: false }); // 4.6.5 정식 테두리
+    pod.querySelector('small').textContent = kind === 'class' ? `${formatNumber(Math.max(0, Number(player.cp) || 0))} CP` : kind === 'comp' ? `${formatNumber(Math.max(0, Number(player.tp) || 0))} TP` : player._seasonal ? `${formatNumber(Math.max(0, Number(player.xp) || 0))} XP` : `Lv.${Math.max(1, Number(player.level) || 1)}`;
+    if (kind === 'level') pod.addEventListener('click', () => showLeaderboardDetail(player));
     podium.appendChild(pod);
   });
   const pin = $('lbMyPin'); if (!pin) return;
@@ -14212,7 +14235,7 @@ function v4Podium(players, kind) {
   entries.forEach((el, i) => el.classList.toggle('v4-me', i === mine));
   if (mine >= 0) {
     const player = players[mine];
-    pin.innerHTML = `<div class="v4-mypin"><b class="r">${mine + 1}</b><b></b><span style="font:800 12px var(--v4-mono)">${kind === 'comp' ? formatNumber(Math.max(0, Number(player.tp) || 0)) + ' TP' : player._seasonal ? formatNumber(Math.max(0, Number(player.xp) || 0)) + ' XP' : 'Lv.' + Math.max(1, Number(player.level) || 1)}</span></div>`;
+    pin.innerHTML = `<div class="v4-mypin"><b class="r">${mine + 1}</b><b></b><span style="font:800 12px var(--v4-mono)">${kind === 'class' ? formatNumber(Math.max(0, Number(player.cp) || 0)) + ' CP' : kind === 'comp' ? formatNumber(Math.max(0, Number(player.tp) || 0)) + ' TP' : player._seasonal ? formatNumber(Math.max(0, Number(player.xp) || 0)) + ' XP' : 'Lv.' + Math.max(1, Number(player.level) || 1)}</span></div>`;
     pin.querySelector('.v4-mypin > b:not(.r)').textContent = String(player.nickname);
   }
 }
@@ -14226,6 +14249,36 @@ function formatLastSeen(value) {
   return `${Math.floor(elapsed / 86400000)}일 전`;
 }
 
+// 7.6.1 클래스 리더보드: 일반전 CP 순
+async function openClassLeaderboard() {
+  const list = $('leaderboardList'), message = $('leaderboardMessage');
+  const stillShown = () => state.screen === 'leaderboard' && !!document.querySelector('[data-lb="class"].on');
+  list.replaceChildren();
+  message.textContent = '온라인 순위를 불러오는 중...';
+  try {
+    const players = await window.JihooOnline.classLeaderboard();
+    if (!stillShown()) return;
+    message.textContent = players.length ? '클래스 CP 기준 상위 50명 · 일반전에서만 오르내려요' : '아직 클래스 기록이 없습니다. 일반전에서 이기면 올라가요.';
+    players.forEach((player, index) => {
+      const cp = Math.max(0, Number(player.cp) || 0), best = Math.max(cp, Number(player.best) || 0), cls = classOf(cp);
+      const entry = document.createElement('div');
+      entry.className = 'leaderboard-entry comp-entry v761-clsentry';
+      const rank = document.createElement('span'); rank.className = 'leaderboard-rank'; rank.textContent = `${index + 1}위`;
+      const main = document.createElement('div'); main.className = 'leaderboard-main';
+      const name = document.createElement('b'); name.textContent = String(player.nickname || '플레이어');
+      const info = document.createElement('span'); info.className = 'leaderboard-record'; info.textContent = `최고 ${formatNumber(best)} CP · 클래스 ${classOf(best)}`;
+      main.append(name, info);
+      const tier = document.createElement('span'); tier.className = 'leaderboard-level comp-tier';
+      tier.innerHTML = `${classBadge(cls, 30)} <span class="v761-clsn">클래스 ${cls}</span> <small>${formatNumber(cp)} CP</small>`;
+      entry.append(rank, main, tier, leaderboardDeck(player.deck, player));
+      list.appendChild(entry);
+    });
+    v4Podium(players, 'class');
+  } catch (error) {
+    if (!stillShown()) return;
+    message.textContent = /permission|insufficient/i.test(error.message || '') ? '클래스 리더보드를 불러올 권한이 없습니다. firestore.rules 를 다시 게시해야 합니다.' : (error.message || '리더보드를 불러오지 못했습니다.');
+  }
+}
 // 경쟁전 리더보드: TP 순. 리더보드 화면과 경쟁전 로비가 같이 쓴다.
 function openCompLeaderboard() {
   return loadCompBoard($('leaderboardList'), $('leaderboardMessage'), () => state.screen === 'leaderboard' && !!document.querySelector('[data-lb="comp"].on'));
@@ -15781,7 +15834,7 @@ function renderInventory(message = '') {
       <div class="v4-ticket"><b>지후 상자 오픈권</b><span class="cnt">×${profile.inventory.boxTicket || 0}</span><small>지후 상자 1개 무료 개봉 · 일반·희귀 8기 + 계단식 보너스</small><button type="button" class="v4-darkbtn" data-reward-action="boxTicket" ${profile.inventory.boxTicket ? '' : 'disabled'}>개봉</button></div>
     </div>
     <b class="v4-h3">빛나는 조각</b>
-    <div class="v4-tickets">${['legend', 'epic', 'rare', 'common'].map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '전설 지후의 조각으로 바꿀 수 있어요 (아직 없는 전설 지후도)' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
+    <div class="v4-tickets">${['mythic', 'legend', 'epic', 'rare', 'common'].filter(r => r !== 'mythic' || glowCount(r) > 0).map(r => `<div class="v4-ticket glow"><b>✦ ${GLOW_NAMES[r]}</b><span class="cnt">×${formatNumber(glowCount(r))}</span><small>${r === 'legend' ? '전설 지후의 조각으로 바꿀 수 있어요 (아직 없는 전설 지후도)' : RARITY_LABEL[r] + ' 지후 아무나의 조각으로 쓸 수 있어요'} · 덱 설정에서 지후를 눌러 바꿔요</small></div>`).join('')}</div>
     <b class="v4-h3">보유 조각</b>
     ${shardCards ? `<div class="v4-shards">${shardCards}</div>` : '<div class="v4-empty">보유한 조각이 없습니다.</div>'}
     ${dustSwapHtml()}`);
@@ -33737,6 +33790,17 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.6.2': {
+    label: 'v7.6.2 S랭크 복구 · 사과 보상',
+    date: '2026.10.12',
+    sections: [
+      { title: '복구 · 보상', items: [
+        { emoji:'↺', name:'S랭크 복구', tag:'fix', color:'#e5322d', desc:'7.1 랭크 개편 때 A로 돌아갔던, <b>예전에 S랭크 이상이던 지후</b>를 모두 <b>S랭크(한계돌파 Lv0)</b>로 되돌렸어요. 그때 받은 환급(조각 · 골드)은 그대로 가지세요. 7.1 이후 처음 접속하는 분도 A로 돌아가지 않고 바로 S랭크로 옮겨져요.' },
+        { emoji:'🙇', name:'사과 보상 (전원)', tag:'new', color:'#111111', desc:'우편으로 빛나는 일반조각 <b>100</b> · 빛나는 희귀조각 <b>50</b> · 빛나는 영웅조각 <b>20</b> · 빛나는 전설조각 <b>10</b> · 빛나는 신화조각 <b>5</b> (7일 안에 받기).' },
+        { emoji:'✦', name:'빛나는 신화조각', tag:'new', color:'#a65ef2', desc:'새 아이템. 신화 지후 아무나의 조각으로 바꿔 쓸 수 있어요 (덱 설정에서 지후를 눌러 바꿔요).' },
+      ] },
+    ],
+  },
   '7.6.1': {
     label: 'v7.6.1 클래스 · 레벨 개편 · 정산 화면',
     date: '2026.10.11',
@@ -33746,6 +33810,7 @@ const PATCH_NOTES = {
         { emoji:'📈', name:'CP', tag:'new', color:'#2f6fed', desc:'CP는 <b>일반전에서만</b> 오르내려요. 클래스 1: 승리 <b>+55</b> · 패배 <b>-25</b> → 클래스가 오를수록 지수함수꼴로 바뀌어 클래스 20: 승리 <b>+20</b> · 패배 <b>-40</b>. 상대 클래스가 높을수록 더 얻고 덜 잃어요 (한 클래스 차이마다 12%). <b>연승 보너스</b>: 연승마다 +1 CP (2연승 +2 … 최대 +10).' },
         { emoji:'🤖', name:'일반전 상대', tag:'adjust', color:'#111111', desc:'일반전 · 2:2 · 드래프트 봇의 실력은 이제 <b>레벨이 아니라 클래스</b>에 맞춰져요 (레벨은 지지 않고 오르기만 해서).' },
         { emoji:'🎁', name:'클래스 보상', tag:'new', color:'#e5322d', desc:'처음 오를 때 한 번: 2 랜덤 영웅 지후권 · 3 골드 3,000 · 4 다이아 500 · 5 랜덤 전설 지후권 · 6 빛나는 전설조각 · 7 다이아 1,000 · 8 골드 5,000 · 9 빛나는 영웅조각 ×20 · 10 랜덤 신화 지후권 · 11 ~ 20 추가 예정.' },
+        { emoji:'🏆', name:'클래스 리더보드', tag:'new', color:'#2f6fed', desc:'리더보드에 <b>클래스</b> 탭이 생겼어요. 일반전 CP 순 상위 50명 · 최고 CP · 덱.' },
       ] },
       { title: '레벨 개편', items: [
         { emoji:'⏳', name:'레벨', tag:'adjust', color:'#7b5cff', desc:'레벨은 이제 <b>얼마나 즐겼는지</b>예요. 져도 경험치를 잃지 않고 조금 올라요. <b>친선전을 뺀 모든 모드</b>(경쟁전 · 투기장 · 경매 · WWE 포함)에서 올라요. 레벨은 리더보드와 내 프로필에서만 보여요.' },
@@ -36958,7 +37023,7 @@ $('creditsRoll')?.addEventListener('scroll', () => {
 
 // ================= 4.1.9 우편함 · 코드 =================
 window.__mailReady = true;
-const MAIL_REWARD_KINDS = { mythicTicket: ['★', '랜덤 신화 지후 확정권'], mythicPick: ['★', '선택 신화 지후 모집권'], luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'] };
+const MAIL_REWARD_KINDS = { mythicTicket: ['★', '랜덤 신화 지후 확정권'], mythicPick: ['★', '선택 신화 지후 모집권'], luckTicket: ['🎲', '임테기 (임시 운빨 테스트기)'], legendPick: ['★', '선택 전설 지후 모집권'], legendChar: ['★', '랜덤 전설 지후'], epicChar: ['★', '랜덤 영웅 지후'], frame: ['◎', '경쟁전 랭커 테두리'], diamonds: ['◆', '다이아'], gold: ['●', '골드'], boxTicket: ['📦', '지후 상자 오픈권'], boostTicket: ['🎫', '부스트 티켓'], epicPick: ['🎟', '선택 영웅 지후 모집권'], hiddenTicket: ['⚡', '히든 지후 확정권'], tutorialBox: ['📦', '지후 상자 오픈권 (영웅 · 전설 확정)'], epicTicket: ['🎟', '랜덤 영웅 모집권'], legendTicket: ['🎟', '랜덤 전설 모집권'], glowCommon: ['✦', '빛나는 일반조각'], glowRare: ['✦', '빛나는 희귀조각'], glowEpic: ['✦', '빛나는 영웅조각'], glowLegend: ['✦', '빛나는 전설조각'], glowMythic: ['✦', '빛나는 신화조각'] };
 function mailRewardText(rewards) { return rewards.map(r => r.kind === 'shard' ? `${shardIco()} ${CHAR_DB[r.id]?.name || r.id} 조각 ${formatNumber(r.amount)}` : r.kind === 'frame' ? `◎ ${frameInfo(r.id)?.name || '테두리'} 테두리` : `${MAIL_REWARD_KINDS[r.kind][0]} ${MAIL_REWARD_KINDS[r.kind][1]} ${formatNumber(r.amount)}`).join(' · '); }
 const MAIL_DEFAULT_MS = 24 * 3600 * 1000; // 7.3.2 우편은 기본 24시간 안에 받아야 한다
 function sendMail(mail) {
@@ -36974,7 +37039,7 @@ const SEASON_REWARDS = [
 ];
 // 4.5 경쟁전 시즌 종료 보상: 새 시즌에 접속하면 지난 경쟁전 시즌 최종 순위(TP)를 읽어 한 번 우편으로 보낸다.
 // 5.5 운영 우편 받기: 나 · 전체에게 온 giftMail 중 아직 안 받은 것을 우편함에 넣는다
-const GIFT_KINDS = ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'boostTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'hiddenTicket', 'epicPick', 'legendPick', 'mythicPick', 'epicChar', 'legendChar', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend'];
+const GIFT_KINDS = ['diamonds', 'gold', 'luckTicket', 'boxTicket', 'boostTicket', 'epicTicket', 'legendTicket', 'mythicTicket', 'hiddenTicket', 'epicPick', 'legendPick', 'mythicPick', 'epicChar', 'legendChar', 'glowCommon', 'glowRare', 'glowEpic', 'glowLegend', 'glowMythic'];
 // 6.0.3 만료: 우편마다 보낼 때 정한 만료 시각(exp) · 운영자가 즉시 만료시킨 우편 · 코드
 let expiredState = { codes: [], mails: [] };
 const mailExpired = m => !!m && !m.claimed && ((m.exp > 0 && Date.now() >= m.exp) || (m.gid && expiredState.mails.includes(m.gid)));
@@ -37386,19 +37451,27 @@ function runMailMigrations() {
     });
     if (lines.length) sendMail({ icon: '📢', title: '중복 조각 회수 안내', body: `7.1 ~ 7.1.2 에 중복 지후 조각이 10개씩 잘못 지급되어, 1개만 남기고 회수했어요 (이미 쓴 조각은 남은 만큼만). 회수: ${lines.join(' · ')}`.slice(0, 300), rewards: [] });
   }
-  if (!profile.mailFlags.includes('rankReset71')) { // 7.1 랭크 초기화: 지금까지 랭크업에 쓴 조각(빛나는 조각을 바꾼 것 포함) · 골드를 돌려준다
-    profile.mailFlags.push('rankReset71'); changed = true;
-    const OLD_SHARD = { common: [10, 20, 30], rare: [5, 10, 16], epic: [2, 6, 12], legend: [1, 2, 3] }, OLD_GOLD = [2500, 10000, 25000];
-    let gold = 0; const rewards = [];
-    Object.entries(profile.ranks || {}).forEach(([id, r]) => {
-      r = Math.min(3, Math.max(0, Math.floor(Number(r) || 0)));
-      const c = CHAR_DB[id]; if (!r || !c || !OLD_SHARD[c.rarity]) return;
-      let sh = 0; for (let i = 0; i < r; i++) { sh += OLD_SHARD[c.rarity][i]; gold += OLD_GOLD[i]; }
-      if (sh) rewards.push({ kind: 'shard', id, amount: sh });
-    });
+  if (!profile.mailFlags.includes('rankReset71')) { // 7.1 랭크 개편 (A · S + 한계돌파). 7.6.2: 예전에 S 이상이던 지후는 A 로 되돌리지 않고 새 S랭크(한계돌파 Lv0)로 옮긴다
+    profile.mailFlags.push('rankReset71', 'rankRestore762'); changed = true;
+    const kept = Object.entries(profile.ranks || {}).filter(([id, r]) => CHAR_DB[id] && CHAR_DB[id].rarity !== 'hidden' && Math.floor(Number(r) || 0) >= 1).map(([id]) => id);
     profile.ranks = {}; profile.lb = {};
-    if (gold || rewards.length) sendMail({ icon: '↺', title: '랭크 초기화 환급', body: '랭크가 A · S + 한계돌파로 바뀌어 기존 랭크를 초기화했어요. 랭크업에 쓴 조각(빛나는 조각을 바꿔 쓴 것 포함)과 골드를 모두 돌려드려요.', rewards: [{ kind: 'gold', amount: gold }, ...rewards] });
+    kept.forEach(id => { profile.ranks[id] = 1; profile.lb[id] = 0; });
+    if (kept.length) sendMail({ icon: '↺', title: '랭크 개편 안내', body: `랭크가 A · S + 한계돌파로 바뀌었어요. 예전에 S 이상이던 지후 ${kept.length}기는 새 S랭크(한계돌파 Lv0)로 옮겼어요: ${kept.slice(0, 20).map(id => CHAR_DB[id].name).join(' · ')}${kept.length > 20 ? ' …' : ''}`.slice(0, 300), rewards: [], exp: Date.now() + 7 * 86400000 });
   }
+  if (!profile.mailFlags.includes('rankRestore762')) { // 7.6.2 이미 A 로 돌아간 기록: '랭크 초기화 환급' 우편에 적힌 지후(예전 S 이상)를 S랭크(한계돌파 Lv0)로 되돌린다. 받은 환급은 그대로
+    profile.mailFlags.push('rankRestore762'); changed = true;
+    const ids = new Set();
+    (profile.mail || []).filter(m => m && m.title === '랭크 초기화 환급').forEach(m => (m.rewards || []).forEach(r => { if (r && r.kind === 'shard' && CHAR_DB[r.id] && CHAR_DB[r.id].rarity !== 'hidden') ids.add(r.id); }));
+    const back = [...ids].filter(id => !isRankS(id));
+    profile.lb = profile.lb || {};
+    back.forEach(id => { profile.ranks[id] = 1; if (!(lbLevel(id) > 0)) profile.lb[id] = 0; if (!profile.unlocked.includes(id)) profile.unlocked.push(id); });
+    if (back.length) sendMail({ icon: '↺', title: 'S랭크 복구', body: `7.1 랭크 개편 때 A로 돌아갔던, 예전에 S 이상이던 지후 ${back.length}기를 S랭크(한계돌파 Lv0)로 되돌렸어요. 그때 받은 환급은 그대로 가지세요: ${back.slice(0, 20).map(id => CHAR_DB[id].name).join(' · ')}${back.length > 20 ? ' …' : ''}`.slice(0, 300), rewards: [], exp: Date.now() + 7 * 86400000 });
+  }
+  if (!profile.mailFlags.includes('apology762')) { // 7.6.2 사과 보상 (전원)
+    profile.mailFlags.push('apology762'); changed = true;
+    sendMail({ icon: '🙇', title: '랭크 초기화 사과 보상', body: '7.1 랭크 개편 때 예전 S랭크 지후가 A로 돌아가고 환급이 적게 된 문제로 불편을 드려 죄송합니다. 예전에 S 이상이던 지후는 S랭크(한계돌파 Lv0)로 되돌렸어요. 모든 분께 사과 보상을 드려요.', rewards: [{ kind: 'glowCommon', amount: 100 }, { kind: 'glowRare', amount: 50 }, { kind: 'glowEpic', amount: 20 }, { kind: 'glowLegend', amount: 10 }, { kind: 'glowMythic', amount: 5 }], exp: Date.now() + 7 * 86400000 });
+  }
+
   if (flashSync()) changed = true; // 7.6 손전등: 날이 바뀌었으면 5개로
   if (!profile.mailFlags.includes('mile76')) { // 7.6 마일리지 10배: 가격 · 적립이 10배가 되어, 가지고 있던 마일리지도 10배 (가치 그대로)
     profile.mailFlags.push('mile76'); changed = true;
