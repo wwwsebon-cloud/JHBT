@@ -9184,6 +9184,9 @@ window.JIHOO_FIREBASE_CONFIG = {
     return normalized && !normalized.includes('/') ? 'n_' + normalized : null;
   };
   let claimedNicknameKey = null;
+  // 7.6.2 운영: 리더보드에서 숨기는 계정 (같은 사람의 부계정). 닉네임이 대소문자 · 앞뒤 공백만 빼고 똑같을 때만 ('Ht_Tsukasa :' 는 본계정이라 남긴다)
+  const LB_HIDE_NICKS = new Set(['Ht_Tsukasa', 'realyo1st'].map(nicknameKey));
+  const lbHidden = p => LB_HIDE_NICKS.has(nicknameKey(p && p.nickname));
 
   function checkPassword(password) {
     if (typeof password !== 'string' || password.length < PASSWORD_MIN) throw new Error(`비밀번호는 ${PASSWORD_MIN}자 이상으로 정해 주세요.`);
@@ -9613,6 +9616,13 @@ window.JIHOO_FIREBASE_CONFIG = {
       masteryCounts: Object.fromEntries(Object.entries(profile.masteryCounts || {}).filter(([id, count]) => /^[a-z_]{1,24}$/.test(id) && Number.isInteger(count) && count >= 1 && count <= 9999999)),
       updatedAt: sdk.serverTimestamp()
     };
+    // 7.6.2 숨긴 계정: 예전에 올린 기록을 지우고 더 올리지 않는다. 한 번 숨겨진 계정(UID)은 닉네임을 바꿔도 계속 숨긴다
+    if (lbHidden(profile) || profile.lbHideUid === auth.currentUser.uid) {
+      const uid = auth.currentUser.uid;
+      profile.lbHideUid = uid;
+      await Promise.all(['leaderboard', 'compLeaderboard', 'coopLeaderboard', 'classLeaderboard'].map(c => sdk.deleteDoc(sdk.doc(database, c, uid)).catch(() => {})));
+      return;
+    }
     // 7.6 닉네임 확인을 먼저: 다른 계정이 주인인 닉네임이면 리더보드에 올리지 않고, 예전에 올린 기록도 지운다 (중복 닉네임이 다시 생기지 않게)
     //     확인 자체가 실패하면(규칙 · 네트워크) 예전처럼 그냥 올린다
     nickCheck = claimNickname(profile.nickname, board).catch(() => 'error');
@@ -9704,6 +9714,7 @@ window.JIHOO_FIREBASE_CONFIG = {
 
   // 7.1.1 같은 닉네임이 여럿이면 한 명만 남긴다. 7.6: 닉네임 주인 = 레벨이 높은 쪽 → 같으면 플레이 시간이 긴 쪽 (등록 순서가 아니라)
   async function dedupeByNickname(list) {
+    list = list.filter(p => !lbHidden(p)); // 7.6.2 숨긴 계정은 모든 리더보드(시즌 보드 포함)에서 뺀다
     const groups = new Map();
     list.forEach(p => { const k = nicknameKey(p.nickname || ''); if (!k) return; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p); });
     const drop = new Set();
@@ -12985,6 +12996,7 @@ function normalizeProfile(raw) {
     ownerUid: typeof raw.ownerUid === 'string' ? raw.ownerUid.slice(0, 64) : '', // 7.1.1 이 기기 기록의 주인 계정
     lastDeck: Array.isArray(raw.lastDeck) ? raw.lastDeck.filter(id => validIds.has(id)).slice(0, 5) : [], // 7.1.1 리더보드 · 가장 최근에 쓴 덱
     nickChangedAt: Math.max(0, Number(raw.nickChangedAt) || 0), needNewNick: !!raw.needNewNick, // 7.1.1 닉네임 변경 24시간 · 중복 닉네임
+    lbHideUid: typeof raw.lbHideUid === 'string' ? raw.lbHideUid.slice(0, 128) : '', // 7.6.2 리더보드에서 숨긴 계정
     friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)), day: String(raw.friendlyRecord.day || ''), dia: Math.max(0, Math.floor(Number(raw.friendlyRecord.dia) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
     allowSpectate: raw.allowSpectate !== false, // 6.1 관전 허용
     coopBest: Math.max(0, Math.floor(Number(raw.coopBest) || 0)), // 5.1 협동전 최고 웨이브
