@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2120,6 +2120,21 @@ html.ui-v7 #app#app .v52-mileage .settlement-note { margin:0; padding:10px 14px;
 .v4-vs-card .pic .v55-rk.r3 { background:linear-gradient(135deg,#ffb800,#ff4d6d); color:#fff; text-shadow:0 1px 1px rgba(0,0,0,.4); }
 .v55-devgift { display:flex; flex-direction:column; gap:6px; margin-top:12px; padding:10px; border:1px dashed currentColor; border-radius:10px; }
 .v55-devrow { display:flex; gap:6px; } .v55-devrow > * { flex:1; min-width:0; }
+/* 7.6.3 활동 기록 조회 */
+.v763-loglist { display:flex; flex-direction:column; gap:4px; max-height:420px; overflow:auto; font-size:12px; }
+.v763-loglist:empty { display:none; }
+.v763-log { display:flex; flex-direction:column; gap:2px; padding:6px 8px; border-radius:8px; background:rgba(127,127,127,.12); border-left:3px solid rgba(127,127,127,.5); text-align:left; }
+.v763-log.k-lb.ok, .v763-log.k-rank, .v763-log.k-unlock { border-left-color:#2f9a5e; }
+.v763-log.k-lb.bad { border-left-color:#d9534f; }
+.v763-log.k-mig, .v763-log.k-restore, .v763-log.k-dev { border-left-color:#e0a800; }
+.v763-log.k-snap { border-left-color:#4a7bd0; }
+.v763-log b { font-weight:700; overflow-wrap:anywhere; }
+.v763-log small { opacity:.85; overflow-wrap:anywhere; }
+.v763-t { font-size:11px; opacity:.6; font-variant-numeric:tabular-nums; }
+.v763-snap { overflow-wrap:anywhere; }
+.v763-snap details p { margin:4px 0 0; }
+.v763-snap summary { cursor:pointer; opacity:.8; }
+.v763-empty { opacity:.6; padding:8px; text-align:center; }
 /* 5.5 긴 봇 닉네임 · 확성기 */
 #matchupEnemyName, #matchupAllyName { display:inline-block; max-width:min(44vw, 520px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
 .v54-duorow .who { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -8130,6 +8145,15 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
       <button type="button" class="btn btn-primary" id="btnDevDedupe">중복 정리</button>
       <div class="settlement-note" id="devDupNote" aria-live="polite"></div>
     </div>
+    <div id="devLogBox" class="v55-devgift">
+      <b>📜 활동 기록 조회 (복구용)</b>
+      <small>최근 30일 동안 한계돌파 · S랭크 · 조각 · 가루 · 뽑기 · 우편 · 상점 · 업데이트 처리 · 백업 불러오기에서 무엇이 얼마나 바뀌었는지 봐요. 하루 한 번 남기는 전체 상태도 있어요. 운영자 계정 + 새 firestore.rules 게시가 필요해요.</small>
+      <div class="v55-devrow"><input class="text-field" id="devLogWho" placeholder="닉네임 · UID(8자리)" maxlength="40" autocomplete="off"><button type="button" class="btn btn-primary" id="btnDevLog">조회</button></div>
+      <div class="v55-devrow"><select class="text-field" id="devLogKind"><option value="">전체</option><option value="lb">한계돌파 · S랭크 · 해금</option><option value="sh">조각 · 가루 · 빛나는 조각</option><option value="gacha">뽑기 · 선택 모집권</option><option value="mail">우편 · 쿠폰</option><option value="shop">상점 · 마일리지 · 인벤토리</option><option value="sys">업데이트 · 백업 불러오기</option><option value="snap">전체 상태</option><option value="auto">기타 (전투 보상 · 출석 등)</option></select><input class="text-field" id="devLogFilter" placeholder="지후 이름 검색" maxlength="20" autocomplete="off"></div>
+      <div class="settlement-note" id="devLogNote" aria-live="polite"></div>
+      <div class="v763-loglist" id="devLogList"></div>
+      <button type="button" class="btn-ghost" id="btnDevLogMore" hidden>이전 기록 더 보기</button>
+    </div>
     <div id="devDisBox" class="v55-devgift" hidden>
       <b>🚧 지후 긴급 비활성화</b>
       <small>켜 둔 지후는 모든 유저가 장착할 수 없고, 덱에 있으면 게임을 할 수 없어요 (개발자 모드는 예외)</small>
@@ -10003,13 +10027,62 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(sdk.query(sdk.collection(database, 'leaderboard'), sdk.orderBy('updatedAt', 'desc'), sdk.limit(80)));
     return snap.docs.map(d => d.data().deck).filter(d => Array.isArray(d) && d.length === 5);
   }
+  // 7.6.3 활동 기록 (복구용): actlog/{uid}/c/{묶음} 에 추가만 한다 (고칠 수 없다). 본인과 운영자만 읽는다.
+  //   actlog/{uid} 에는 닉네임 · UID 를 남겨 운영자가 찾을 수 있게 한다. 30일이 지난 묶음은 본인 기기가 지운다
+  let actlogOff = false, actlogIndexed = '', actlogPruned = false;
+  async function actlogWrite(items) {
+    if (!database || !auth || !auth.currentUser || actlogOff) throw new Error('활동 기록을 보낼 수 없습니다.');
+    const uid = auth.currentUser.uid, id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const v = String(document.querySelector('meta[name="jihoo-version"]')?.content || '').slice(0, 16);
+    try {
+      await sdk.setDoc(sdk.doc(database, 'actlog', uid, 'c', id), { at: sdk.serverTimestamp(), v, n: nick(), items: JSON.parse(JSON.stringify(items.slice(0, 150))) }); // undefined 값이 있으면 Firestore 가 거절한다
+    } catch (error) { if (error.code === 'permission-denied') actlogOff = true; throw error; } // 규칙을 게시하기 전: 이번 접속에서는 그만 보내고 기기에 들고 있는다
+    const key = uid + '|' + nick() + '|' + (code() || '');
+    if (actlogIndexed !== key) sdk.setDoc(sdk.doc(database, 'actlog', uid), { n: nick(), u: String(code() || ''), at: sdk.serverTimestamp() }).then(() => { actlogIndexed = key; }).catch(() => {});
+    if (!actlogPruned) { actlogPruned = true; actlogPrune(uid); }
+  }
+  async function actlogPrune(uid) {
+    try {
+      const snap = await sdk.getDocs(sdk.query(sdk.collection(database, 'actlog', uid, 'c'), sdk.orderBy('at'), sdk.limit(50)));
+      const cut = Date.now() - 31 * 86400000; // 규칙은 30일 · 시계 차이를 생각해 하루 더
+      await Promise.all(snap.docs.filter(d => { const at = d.data().at; return at && at.toMillis && at.toMillis() < cut; }).map(d => sdk.deleteDoc(d.ref).catch(() => {})));
+    } catch (error) {}
+  }
+  // 운영자: 닉네임 · UID(8자리) · 계정 ID 로 찾는다
+  async function actlogFind(who) {
+    if (!database) throw new Error('온라인 연결 전입니다.');
+    who = String(who || '').trim();
+    if (!who) return [];
+    const out = new Map();
+    const add = (uid, n, u) => { if (!uid) return; const x = out.get(uid) || { uid, nickname: '', code: '' }; x.nickname = x.nickname || n || ''; x.code = x.code || u || ''; out.set(uid, x); };
+    const q = async (field, value) => { try { (await sdk.getDocs(sdk.query(sdk.collection(database, 'actlog'), sdk.where(field, '==', value), sdk.limit(10)))).docs.forEach(d => add(d.id, d.data().n, d.data().u)); } catch (error) {} };
+    if (/^\d{4,8}$/.test(who)) await q('u', who);
+    else {
+      try { const hit = await findByNickname(who); if (hit) add(hit.uid, hit.nickname, ''); } catch (error) {}
+      await q('n', who);
+      if (/^[A-Za-z0-9]{20,40}$/.test(who)) add(who, '', '');
+    }
+    await Promise.all([...out.values()].filter(x => !x.code).map(async x => { try { const d = await sdk.getDoc(sdk.doc(database, 'actlog', x.uid)); if (d.exists()) add(x.uid, d.data().n, d.data().u); } catch (error) {} }));
+    return [...out.values()];
+  }
+  async function actlogRead(uid, cursor) { // 최근 묶음부터 20개씩
+    if (!database) throw new Error('온라인 연결 전입니다.');
+    const parts = [sdk.orderBy('at', 'desc')];
+    if (cursor) parts.push(sdk.startAfter(cursor));
+    parts.push(sdk.limit(20));
+    const snap = await sdk.getDocs(sdk.query(sdk.collection(database, 'actlog', String(uid), 'c'), ...parts));
+    return {
+      chunks: snap.docs.map(d => { const x = d.data(); return { id: d.id, at: x.at && x.at.toMillis ? x.at.toMillis() : 0, v: x.v || '', n: x.n || '', items: Array.isArray(x.items) ? x.items : [] }; }),
+      cursor: snap.docs.length === 20 ? snap.docs[snap.docs.length - 1] : null
+    };
+  }
   async function giftFetch() {
     if (!database || !auth || !auth.currentUser) return [];
     const q = sdk.query(sdk.collection(database, 'giftMail'), sdk.where('to', 'in', [auth.currentUser.uid, 'all']), sdk.limit(100));
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -11979,6 +12052,7 @@ function fuseDust(id, times = 1) { // 가루 5개 → 조각 1개 (● 1,000) ·
   profile.dust[id] = dustCount(id) - DUST_PER_SHARD * times;
   profile.shards[id] = shardCount(id) + times;
   profile.gold -= DUST_SWAP_GOLD * times;
+  actLog('fuse', { id, n: times }); // 7.6.3
   saveProfile();
   return times;
 }
@@ -11989,6 +12063,7 @@ function splitShard(id, times = 1) { // 조각 1개 → 가루 5개 (● 1,000) 
   profile.dust = profile.dust || {};
   profile.dust[id] = dustCount(id) + DUST_PER_SHARD * times;
   profile.gold -= DUST_SWAP_GOLD * times;
+  actLog('split', { id, n: times }); // 7.6.3
   saveProfile();
   return times;
 }
@@ -12015,6 +12090,7 @@ function convertGlowShards(id, amount, from) {
   if (!key || from && from !== glowRarity || !(unownedLegend || isUnlocked(id)) || amount <= 0 || amount > glowCount(glowRarity) || (isRankS(id) && lbLevel(id) >= LB_MAX)) return false;
   profile.inventory[key] -= amount;
   profile.shards[id] = (Number(profile.shards[id]) || 0) + amount;
+  actLog('glow', { id, n: amount }); // 7.6.3
   saveProfile();
   return true;
 }
@@ -12357,6 +12433,7 @@ function rankUpCharacter(id) { // A → S
   profile.lb = profile.lb || {}; profile.lb[id] = 0; // 7.6 Lv0 부터
   st44Add('rankUps');
   postEvent('rank', id, 'S');
+  actLog('rank', { id }); // 7.6.3
   saveProfile();
   window.JihooOnline.publish().catch(() => {});
   renderDraftGrid();
@@ -12373,6 +12450,7 @@ function limitBreakTry(id) {
   profile.lbStats = profile.lbStats || { tries: 0, wins: 0 };
   profile.lbStats.tries++;
   if (success) { profile.lb[id] = lv + 1; profile.lbStats.wins++; postEvent('rank', id, 'LB' + (lv + 1)); }
+  actLog('lb', { id, from: lv, ok: success, p: st.p }); // 7.6.3 활동 기록
   saveProfile();
   if (success) window.JihooOnline.publish().catch(() => {});
   return { success, from: lv, to: success ? lv + 1 : lv, p: st.p };
@@ -12381,6 +12459,7 @@ function unlockByShards(id) {
   const c = CHAR_DB[id];
   if (!c || c.rarity === 'hidden' || c.unobtainable || isUnlocked(id) || !spendShards(id, UNLOCK_SHARDS)) return false;
   grantCharacter(id);
+  actLog('unlock', { id }); // 7.6.3
   saveProfile();
   renderDraftGrid();
   playSummonReveal([{ id, duplicate: false }]);
@@ -12997,6 +13076,7 @@ function normalizeProfile(raw) {
     lastDeck: Array.isArray(raw.lastDeck) ? raw.lastDeck.filter(id => validIds.has(id)).slice(0, 5) : [], // 7.1.1 리더보드 · 가장 최근에 쓴 덱
     nickChangedAt: Math.max(0, Number(raw.nickChangedAt) || 0), needNewNick: !!raw.needNewNick, // 7.1.1 닉네임 변경 24시간 · 중복 닉네임
     lbHideUid: typeof raw.lbHideUid === 'string' ? raw.lbHideUid.slice(0, 128) : '', // 7.6.2 리더보드에서 숨긴 계정
+    actSnapDay: String(raw.actSnapDay || '').slice(0, 12), // 7.6.3 활동 기록: 전체 상태를 마지막으로 남긴 날
     friendlyRecord: raw.friendlyRecord && typeof raw.friendlyRecord === 'object' ? { w: Math.max(0, Math.floor(Number(raw.friendlyRecord.w) || 0)), l: Math.max(0, Math.floor(Number(raw.friendlyRecord.l) || 0)), day: String(raw.friendlyRecord.day || ''), dia: Math.max(0, Math.floor(Number(raw.friendlyRecord.dia) || 0)) } : { w: 0, l: 0 }, // 5.0 친선전 전적
     allowSpectate: raw.allowSpectate !== false, // 6.1 관전 허용
     coopBest: Math.max(0, Math.floor(Number(raw.coopBest) || 0)), // 5.1 협동전 최고 웨이브
@@ -13033,9 +13113,197 @@ let profile = loadProfile();
 window.__jhLocalSavedAt = profile.savedAt || 0; // 4.4.1
 document.documentElement.dataset.theme = 'light';
 
+// 7.6.3 활동 기록 (복구용): 재화 · 조각 · 가루 · 랭크 · 한계돌파 · 보유 지후가 바뀌면 무엇 때문에 얼마나 바뀌었는지 서버(actlog/{uid})에 남긴다.
+//   행동(한계돌파 · 뽑기 · 우편 …)은 actLog 로 이름만 붙이고, 실제로 바뀐 양은 저장(persistProfile)할 때 직전 상태와 비교해 그 행동에 붙인다.
+//   이름 없이 바뀐 것(전투 보상 · 출석 등)은 'auto' 로 남는다. 하루 한 번(그리고 백업을 불러올 때) 전체 상태(snap)도 남긴다.
+//   서버에 못 보낸 기록은 기기에 최근 400개까지 들고 있다가 다음에 보낸다.
+const ACT_KEY = SAVE_KEY + '.actlog', ACT_MAX = 400, ACT_SEND_MS = 60000, ACT_OPEN_MS = 10000;
+let actBase = null, actOpen = null, actTimer = 0, actBusy = false;
+let actBuf = (() => { try { const a = JSON.parse(localStorage.getItem(ACT_KEY) || '[]'); return Array.isArray(a) ? a.slice(-ACT_MAX) : []; } catch (error) { return []; } })();
+function actState() {
+  const num = v => Math.floor(Number(v) || 0);
+  const map = o => { const r = {}; Object.entries(o || {}).forEach(([k, v]) => { const n = num(v); if (n) r[k] = n; }); return r; };
+  return { g: num(profile.gold), d: num(profile.diamonds), m: num(profile.mileage), dt: num(profile.draftTickets), inv: map(profile.inventory), sh: map(profile.shards), du: map(profile.dust), rk: map(profile.ranks), lb: map(profile.lb), un: (profile.unlocked || []).slice().sort() };
+}
+function actDiff(a, b) {
+  const d = {};
+  ['g', 'd', 'm', 'dt'].forEach(k => { const x = (b[k] || 0) - (a[k] || 0); if (x) d[k] = x; });
+  ['inv', 'sh', 'du', 'rk', 'lb'].forEach(k => {
+    const m = {};
+    new Set([...Object.keys(a[k]), ...Object.keys(b[k])]).forEach(id => {
+      const x = a[k][id] || 0, y = b[k][id] || 0;
+      if (x !== y) m[id] = k === 'rk' || k === 'lb' ? [x, y] : y - x; // 랭크 · 한계돌파는 [전, 후] · 나머지는 늘어난 양
+    });
+    if (Object.keys(m).length) d[k] = m;
+  });
+  const ua = new Set(a.un), ub = new Set(b.un);
+  const un = [...b.un.filter(id => !ua.has(id)).map(id => '+' + id), ...a.un.filter(id => !ub.has(id)).map(id => '-' + id)];
+  if (un.length) d.un = un;
+  return Object.keys(d).length ? d : null;
+}
+function actWhere() { try { return String(state.screen || '') + (state.mode ? ':' + state.mode : ''); } catch (error) { return ''; } }
+function actPush(item) {
+  if (PREVIEW_MODE) return item;
+  item.o = item.o != null ? item.o : String(profile.ownerUid || ''); // 누구의 기록인지 (계정을 바꾼 뒤 엉뚱한 계정에 보내지 않게)
+  actBuf.push(item);
+  if (actBuf.length > ACT_MAX) actBuf = actBuf.slice(-ACT_MAX);
+  try { localStorage.setItem(ACT_KEY, JSON.stringify(actBuf)); } catch (error) {}
+  actSchedule(/^(mig|restore)$/.test(item.k) ? 5000 : ACT_SEND_MS);
+  return item;
+}
+function actLog(k, data = {}) { // 행동 이름: 다음 저장 때 바뀐 양이 여기에 붙는다
+  const item = actPush({ t: Date.now(), k, ...data });
+  actOpen = item;
+  return item;
+}
+function actCapture() { // persistProfile 에서: 직전 상태와 비교해 바뀐 양을 남긴다
+  if (PREVIEW_MODE || !profile) return;
+  const now = actState();
+  if (!actBase) { actBase = now; return; }
+  const d = actDiff(actBase, now);
+  actBase = now;
+  const open = actOpen && Date.now() - actOpen.t < ACT_OPEN_MS ? actOpen : null;
+  actOpen = null;
+  if (!d) return;
+  if (open) { open.d = d; try { localStorage.setItem(ACT_KEY, JSON.stringify(actBuf)); } catch (error) {} }
+  else actPush({ t: Date.now(), k: 'auto', w: actWhere(), d });
+}
+function actSnap(why) { // 전체 상태 (복구할 때 기준점)
+  profile.actSnapDay = localDayKey();
+  return actPush({ t: Date.now(), k: 'snap', w: why, s: actState() });
+}
+function actReset() { actBase = profile ? actState() : null; actOpen = null; }
+function actSchedule(ms) {
+  if (actTimer && ms >= ACT_SEND_MS) return; // 1분에 한 번 정도로 모아서 보낸다
+  clearTimeout(actTimer);
+  actTimer = setTimeout(() => { actTimer = 0; actFlush(); }, ms);
+}
+async function actFlush() {
+  clearTimeout(actTimer); actTimer = 0;
+  const online = window.JihooOnline;
+  if (PREVIEW_MODE || actBusy || !online || !online.actlogWrite || !online.enabled()) return;
+  const uid = online.myUid();
+  if (!uid || (profile.ownerUid && profile.ownerUid !== uid)) return;
+  actCapture();
+  if (profile.actSnapDay !== localDayKey()) actSnap('day');
+  const mine = actBuf.filter(x => !x.o || x.o === uid);
+  if (!mine.length) return;
+  const batch = mine.slice(0, 150);
+  actBusy = true;
+  try {
+    await online.actlogWrite(batch.map(({ o, ...x }) => x));
+    const sent = new Set(batch);
+    actBuf = actBuf.filter(x => !sent.has(x));
+    try { localStorage.setItem(ACT_KEY, JSON.stringify(actBuf)); } catch (error) {}
+    if (mine.length > batch.length) actSchedule(2000);
+  } catch (error) {} finally { actBusy = false; }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') actFlush(); });
+window.addEventListener('pagehide', () => actFlush());
+// 7.6.3 운영자: 활동 기록 보기 (개발자 패널)
+const ACT_GROUPS = { lb: ['lb', 'rank', 'unlock'], sh: ['fuse', 'split', 'glow'], gacha: ['gacha', 'pick'], mail: ['mail', 'code'], shop: ['shop', 'mile', 'item'], sys: ['mig', 'restore', 'dev'], snap: ['snap'], auto: ['auto'] };
+const ACT_GACHA = { normal: '일반', pickup: '픽업', newpickup: '신규 픽업', black: '블랙', white: '화이트' };
+const ACT_ITEMS = { flashlight: '손전등', exchange100: '다이아 → 골드 환전 (◆100)', exchange1000: '다이아 → 골드 환전 (◆1,000)', boost: '경험치 부스트', glowMythic: '빛나는 신화조각' };
+const actName = id => (CHAR_DB[id] && CHAR_DB[id].name) || String(id);
+const ACT_SCREENS = { lobby: '로비', end: '정산', battle: '전투', draft: '덱 고르기', gacha: '뽑기', shop: '상점', inventory: '인벤토리', quests: '퀘스트', attendance: '출석', achievements: '업적', leaderboard: '리더보드', complobby: '경쟁전 로비', compdraft: '경쟁전 드래프트', wwe: 'WWE', arena: '투기장', intro: '접속', welcome: '처음 화면', loading: '불러오는 중', patch: '패치노트', chat: '채팅' };
+const ACT_MODES = { ranked: '일반전', competitive: '경쟁전', duo: '2:2', castle: '성뿌수기', draftbattle: '3:3', coop: '협동전', friendly: '친선전', arena: '투기장', wwe: 'WWE', auction: '경매', tourney: '토너먼트', ffa: '개인전', duel: '1:1' };
+function actWhereText(w) { // 'end:ranked' → '일반전 정산'
+  const [sc, mode] = String(w || '').split(':');
+  const where = ACT_SCREENS[sc] || sc;
+  return mode && /^(end|battle|draft)$/.test(sc) ? `${ACT_MODES[mode] || mode} ${where}` : where;
+}
+const actSign = n => (n > 0 ? '+' : '') + formatNumber(n);
+const actInvName = k => (MAIL_REWARD_KINDS[k] && MAIL_REWARD_KINDS[k][1]) || ACT_ITEMS[k] || String(k);
+function actDiffText(d) {
+  if (!d) return [];
+  const out = [];
+  [['g', '골드'], ['d', '다이아'], ['m', '마일리지'], ['dt', '티켓']].forEach(([k, n]) => { if (d[k]) out.push(`${n} ${actSign(d[k])}`); });
+  Object.entries(d.inv || {}).forEach(([k, v]) => out.push(`${actInvName(k)} ${actSign(v)}`));
+  Object.entries(d.sh || {}).forEach(([k, v]) => out.push(`${actName(k)} 조각 ${actSign(v)}`));
+  Object.entries(d.du || {}).forEach(([k, v]) => out.push(`${actName(k)} 가루 ${actSign(v)}`));
+  Object.entries(d.rk || {}).forEach(([k, v]) => { if (Array.isArray(v)) out.push(`${actName(k)} 랭크 ${v[0] ? 'S' : 'A'}→${v[1] ? 'S' : 'A'}`); });
+  Object.entries(d.lb || {}).forEach(([k, v]) => { if (Array.isArray(v)) out.push(`${actName(k)} 한계돌파 Lv${v[0]}→Lv${v[1]}`); });
+  (d.un || []).forEach(x => out.push(`${actName(String(x).slice(1))} ${String(x)[0] === '+' ? '획득' : '잃음'}`));
+  return out;
+}
+function actTitle(it) {
+  const n = actName(it.id);
+  switch (it.k) {
+    case 'lb': return `한계돌파 ${it.ok ? '성공' : '실패'} · ${n} Lv${it.from}${it.ok ? '→' + (it.from + 1) : ''} (${Math.round((Number(it.p) || 0) * 100)}%)`;
+    case 'rank': return `S랭크 달성 · ${n}`;
+    case 'unlock': return `조각으로 해금 · ${n}`;
+    case 'fuse': return `가루 → 조각 합성 · ${n} ×${it.n}`;
+    case 'split': return `조각 → 가루 분해 · ${n} ×${it.n}`;
+    case 'glow': return `빛나는 조각 사용 · ${n} 조각 ${it.n}개`;
+    case 'gacha': return `뽑기 (${ACT_GACHA[it.m] || it.m || '?'}) · ${(it.r || []).map(x => { const [id, dn] = String(x).split('*'); return dn ? `${actName(id)} 가루 ${dn}` : actName(id); }).join(', ')}`;
+    case 'pick': return `선택 모집권 · ${n}`;
+    case 'shop': return `상점 구매 · ${n} (${it.pay === 'd' ? '다이아' : '골드'})`;
+    case 'mile': return `마일리지 상점 · ${(MILEAGE_SHOP.find(x => x.id === it.i) || {}).name || it.i}`;
+    case 'item': return `인벤토리 사용 · ${actInvName(it.a)}`;
+    case 'mail': return `우편 받기 · ${it.ti || ''}${it.gid ? ' (운영 우편)' : ''}`;
+    case 'code': return `쿠폰 · ${it.c}`;
+    case 'mig': return `업데이트 처리 · ${(it.f || []).join(', ')}`;
+    case 'restore': return it.x ? '백업 불러오기 (다른 계정에서 바꿔 탐 · 비교 없음)' : '백업 불러오기 (기기 기록 → 서버 백업)';
+    case 'dev': return '개발자 모드 재화 추가';
+    case 'snap': return `전체 상태 (${it.w === 'restore' ? '백업 불러온 직후' : '하루 한 번'})`;
+    default: return `기타 변화${it.w ? ` (${actWhereText(it.w)})` : ''}`;
+  }
+}
+function actSnapHtml(s) {
+  if (!s) return '';
+  const rk = s.rk || {}, lb = s.lb || {}, sh = s.sh || {}, du = s.du || {};
+  const sum = o => Object.values(o).reduce((a, b) => a + (Number(b) || 0), 0);
+  const head = `골드 ${formatNumber(s.g)} · 다이아 ${formatNumber(s.d)} · 마일리지 ${formatNumber(s.m)} · 보유 지후 ${(s.un || []).length} · S랭크 ${Object.keys(rk).length} (한계돌파 합 ${sum(lb)}) · 조각 ${formatNumber(sum(sh))} · 가루 ${formatNumber(sum(du))}`;
+  const list = (title, arr) => arr.length ? `<p><b>${title}</b> ${escapeHtml(arr.join(' · '))}</p>` : '';
+  return `<div class="v763-snap">${escapeHtml(head)}<details><summary>자세히</summary>${list('S랭크 (한계돌파)', Object.keys(rk).map(id => `${actName(id)} Lv${lb[id] || 0}`))}${list('조각', Object.entries(sh).map(([id, n]) => `${actName(id)} ${n}`))}${list('가루', Object.entries(du).map(([id, n]) => `${actName(id)} ${n}`))}${list('인벤토리', Object.entries(s.inv || {}).map(([k, n]) => `${actInvName(k)} ${n}`))}${list('보유 지후', (s.un || []).map(actName))}</details></div>`;
+}
+function actItemHtml(it) {
+  const tm = new Date(it.t || 0), pad = v => String(v).padStart(2, '0');
+  const when = `${pad(tm.getMonth() + 1)}.${pad(tm.getDate())} ${pad(tm.getHours())}:${pad(tm.getMinutes())}:${pad(tm.getSeconds())}`;
+  let diff = actDiffText(it.d);
+  if (!diff.length && it.k === 'mail' && Array.isArray(it.rw) && it.rw.length) diff = ['보상: ' + it.rw.map(x => { const [ka, amt] = String(x).split('*'); const [kind, id] = ka.split(':'); return kind === 'shard' ? `${actName(id)} 조각 ${amt}` : `${actInvName(kind)} ${amt}`; }).join(', ')];
+  const cls = it.k === 'lb' ? (it.ok ? ' ok' : ' bad') : '';
+  return `<div class="v763-log k-${escapeHtml(String(it.k || ''))}${cls}"><span class="v763-t">${when}</span><b>${escapeHtml(actTitle(it))}</b>${diff.length ? `<small>${escapeHtml(diff.join(' · '))}</small>` : ''}${it.k === 'snap' ? actSnapHtml(it.s) : ''}</div>`;
+}
+let actView = { uid: '', who: null, others: [], cursor: null, items: [], busy: false };
+async function devLogLoad(more) {
+  const note = $('devLogNote'), list = $('devLogList'), btnMore = $('btnDevLogMore');
+  if (actView.busy) return;
+  if (!more) {
+    const who = $('devLogWho').value.trim();
+    if (!who) { note.textContent = '닉네임이나 UID(8자리)를 입력하세요.'; return; }
+    note.textContent = '찾는 중…'; list.innerHTML = ''; btnMore.hidden = true;
+    let hits = [];
+    try { hits = await window.JihooOnline.actlogFind(who); } catch (error) { note.textContent = error.message; return; }
+    if (!hits.length) { note.textContent = '그 닉네임 · UID 로 찾은 계정이 없어요. 활동 기록은 7.6.3 이후 접속한 계정에만 있어요.'; return; }
+    actView = { uid: hits[0].uid, who: hits[0], others: hits.slice(1), cursor: null, items: [], busy: false };
+  }
+  actView.busy = true; btnMore.disabled = true;
+  note.textContent = '기록을 불러오는 중…';
+  try {
+    const r = await window.JihooOnline.actlogRead(actView.uid, actView.cursor);
+    r.chunks.forEach(c => c.items.forEach(it => { if (it && typeof it === 'object') actView.items.push(it); }));
+    actView.cursor = r.cursor;
+    actView.items.sort((a, b) => (Number(b.t) || 0) - (Number(a.t) || 0));
+    btnMore.hidden = !r.cursor;
+    devLogRender();
+  } catch (error) {
+    note.textContent = /permission|insufficient/i.test(error.message || '') ? '읽을 권한이 없어요. 운영자 계정으로 로그인했는지, 새 firestore.rules 를 게시했는지 확인하세요.' : (error.message || '불러오지 못했어요.');
+  } finally { actView.busy = false; btnMore.disabled = false; }
+}
+function devLogRender() {
+  if (!actView.uid) return;
+  const kinds = ACT_GROUPS[$('devLogKind').value] || null, q = $('devLogFilter').value.trim();
+  const shown = actView.items.filter(it => !kinds || kinds.includes(it.k)).map(it => actItemHtml(it)).filter(html => !q || html.replace(/<[^>]+>/g, ' ').includes(escapeHtml(q)));
+  $('devLogList').innerHTML = shown.slice(0, 300).join('') || '<div class="v763-empty">조건에 맞는 기록이 없어요.</div>';
+  const w = actView.who || {};
+  $('devLogNote').textContent = `${w.nickname || '(닉네임 없음)'}${w.code ? ' · UID ' + w.code : ''} · 불러온 기록 ${actView.items.length}개${shown.length > 300 ? ' (최근 300개만 표시)' : ''}${actView.others.length ? ` · 같은 검색어로 찾은 다른 계정: ${actView.others.map(h => `${h.nickname || '?'}${h.code ? ' (UID ' + h.code + ')' : ''}`).join(', ')}` : ''}`;
+}
+
 function persistProfile() {
   if (PREVIEW_MODE || profileWritesLocked || sessionBlocked) return; // 미리보기 창은 본 게임 기록을 절대 덮어쓰지 않는다.
   profile.savedAt = Date.now(); // 4.4.1: 기기와 온라인 백업 중 어느 쪽이 최신인지 가린다
+  try { actCapture(); } catch (error) {} // 7.6.3 활동 기록
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch (err) {}
 }
 
@@ -13378,6 +13646,7 @@ function addDeveloperCurrency(key) {
     return;
   }
   profile[key] += amount;
+  actLog('dev', {}); // 7.6.3
   saveProfile();
   $('developerMessage').textContent = `${key === 'gold' ? '골드' : '다이아'} ${formatNumber(amount)} 추가 완료`;
 }
@@ -14927,6 +15196,7 @@ function gachaGrant(raw, mode) {
     return { id: r.id, shard: false, duplicate };
   });
   profile.gachaHistory = profile.gachaHistory.slice(-200);
+  actLog('gacha', { m: String(mode || ''), r: out.map(r => r.shard ? r.id + '*' + r.n : r.id) }); // 7.6.3 (지후 · 꽝은 '지후*가루 수')
   return out;
 }
 function renderGachaPity() {
@@ -15273,6 +15543,7 @@ function buyShopOffer(offerId, payDia = false) {
   const duplicate = grantCharacter(offer.charId);
   const quest = recordDailyProgress('shopBuy', 1);
   setShopMessage(`${CHAR_DB[offer.charId].name} 구매 완료${duplicate ? ` · 중복 조각 +${DUPLICATE_SHARDS}` : ' · 잠금 해제'}${quest.chestRewarded ? ' · 600P 보상 ◆500 지급!' : ''}`);
+  actLog('shop', { id: offer.charId, pay: payDia ? 'd' : 'g' }); // 7.6.3
   saveProfile();
   renderShop();
   renderQuests();
@@ -15523,6 +15794,7 @@ function buyMileage(id) {
   profile.mileage -= item.cost;
   if (key) { profile.mileageBuys = profile.mileageBuys || {}; profile.mileageBuys[key] = (profile.mileageBuys[key] || 0) + 1; }
   const got = item.give();
+  actLog('mile', { i: id }); // 7.6.3
   saveProfile(); renderAccountUI();
   $('gachaMileageBadge').textContent = formatNumber(profile.mileage) + 'P';
   renderMileageShop(`${got} 구매 완료!`);
@@ -16004,6 +16276,7 @@ async function useInventoryAction(action, confirmed = false) {
     summon = { id, duplicate };
     postEvent('gacha', id, rarity);
   } else return;
+  if (action !== 'boxTicket') actLog('item', { a: action }); // 7.6.3 활동 기록 (상자 오픈권은 뽑기 기록으로 남는다)
   saveProfile();
   renderAccountUI();
   const btn = $('inventoryBody').querySelector(`[data-reward-action="${action}"]`);
@@ -33790,6 +34063,16 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.6.3': {
+    label: 'v7.6.3 활동 기록 (복구용)',
+    date: '2026.10.12',
+    sections: [
+      { title: '시스템', items: [
+        { emoji:'📜', name:'활동 기록 저장', tag:'new', color:'#4a7bd0', desc:'한계돌파(성공 · 실패) · S랭크 · 조각 해금 · 가루 합성/분해 · 빛나는 조각 사용 · 뽑기 · 우편 · 쿠폰 · 상점 · 마일리지 상점 · 업데이트 처리 · 백업 불러오기에서 <b>무엇이 얼마나 바뀌었는지</b> 서버에 저장해요. 하루 한 번 전체 상태도 남겨요.' },
+        { emoji:'🛟', name:'더 빠른 복구', tag:'fix', color:'#2f9a5e', desc:'이번 랭크 초기화 같은 문제가 생기면, 기록을 보고 <b>잃어버린 지후 · 조각 · 재화를 정확히 되돌려</b> 드릴 수 있어요. 기록은 본인과 운영자만 볼 수 있고 30일 동안 보관해요.' },
+      ] },
+    ],
+  },
   '7.6.2': {
     label: 'v7.6.2 S랭크 복구 · 사과 보상',
     date: '2026.10.12',
@@ -37370,6 +37653,7 @@ function claimMail(mail) {
     }
     else profile.inventory[r.kind] = (profile.inventory[r.kind] || 0) + r.amount;
   });
+  actLog('mail', { ti: String(mail.title || '').slice(0, 40), gid: String(mail.gid || ''), rw: (mail.rewards || []).map(r => `${r.kind}${r.id ? ':' + r.id : ''}*${r.amount || 1}`) }); // 7.6.3
   return true;
 }
 function renderMail(message = '') {
@@ -37392,6 +37676,7 @@ function runMailMigrations() {
   refreshLearnedDecks(); // 7.3.2 고지능 봇이 배울 덱을 미리 받아 둔다
   profile.mailFlags = profile.mailFlags || [];
   let changed = false;
+  const flags0 = profile.mailFlags.length; // 7.6.3 활동 기록: 이번에 처리한 업데이트
   if (!profile.mailFlags.includes('boostTicket10')) { // 5.2 부스트 티켓 출시 기념
     profile.mailFlags.push('boostTicket10'); changed = true;
     sendMail({ icon: '🎫', title: '부스트 티켓 출시 기념', body: '로비의 게임 시작 버튼 위 🎫 부스트 티켓을 켜고 시작하면, 그 판에 이기면 경험치 ×2! 대신 지면 잃는 경험치도 ×2예요. (연승 보너스 제외 · 경험치 부스트와 중첩 안 됨)', rewards: [{ kind: 'boostTicket', amount: 10 }] });
@@ -37485,7 +37770,7 @@ function runMailMigrations() {
     profile.mailFlags.push('lbReset76'); changed = true;
     lbReset76();
   }
-  if (changed) saveProfile();
+  if (changed) { actLog('mig', { f: profile.mailFlags.slice(flags0) }); saveProfile(); }
   renderMailDot();
 }
 // 7.6 한계돌파 환급: 성공한 단계는 지후마다 정확히, 실패한 시도는 지후별 기록이 없어서 실패 횟수를 단계별 기대 실패 비율로 나눠 계산한다
@@ -37563,6 +37848,7 @@ function redeemCode(code) {
   if (profile.redeemedCodes.includes(code)) return { error: '이미 사용한 코드입니다.' };
   profile.redeemedCodes.push(code);
   const result = entry.apply();
+  actLog('code', { c: code }); // 7.6.3
   saveProfile(); renderAccountUI(); v4BumpDiamond();
   return result;
 }
@@ -39700,6 +39986,7 @@ function showIssuedCredentials(issued) {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (PREVIEW_MODE) { bootPreview(); return; }
+  actReset(); // 7.6.3 활동 기록: 기기에 저장된 상태를 기준으로 (접속하자마자 도는 업데이트 처리도 남긴다)
   applyVersionUI();
   startUpdateChecks();
   settleAbandonedMatch();
@@ -39712,10 +39999,14 @@ document.addEventListener('DOMContentLoaded', () => {
     onStatus: message => { $('onlineStatus').textContent = message; },
     onKicked: reason => onSessionKicked(reason),
     onRestore: data => {
+      const prevOwner = String(profile.ownerUid || '');
       profile = normalizeProfile(data);
+      // 7.6.3 활동 기록: 같은 계정이면 기기 기록 → 백업으로 바뀐 양을 남긴다 (다른 계정에서 바꿔 탄 거면 비교하지 않는다)
+      if (prevOwner && prevOwner === profile.ownerUid) actLog('restore'); else { actReset(); actPush({ t: Date.now(), k: 'restore', x: 1 }); }
       settleAbandonedMatch();
       compApplySeasonReset();
       persistProfile();
+      actSnap('restore');
       renderAccountUI();
       window.JihooOnline.publish().catch(() => { $('onlineStatus').textContent = '백업을 복원했지만 리더보드 갱신에 실패했습니다.'; });
       if (state.screen === 'welcome' && profile.nickname) showScreen('lobby');
@@ -39828,6 +40119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     catch (error) { note.textContent = error.message; }
     finally { b.disabled = false; }
   });
+  $('btnDevLog')?.addEventListener('click', () => devLogLoad(false)); // 7.6.3 활동 기록 조회
+  $('devLogWho')?.addEventListener('keydown', e => { if (e.key === 'Enter') devLogLoad(false); });
+  $('btnDevLogMore')?.addEventListener('click', () => devLogLoad(true));
+  $('devLogKind')?.addEventListener('change', devLogRender);
+  $('devLogFilter')?.addEventListener('input', devLogRender);
   $('btnSessionTakeover')?.addEventListener('click', () => location.reload()); // 새로 열면 이 창이 세션을 다시 잡고, 상대 창이 막힌다
   // 4.1.6 Google로 시작 / 로그인
   const googleFlow = async (button, mode, messageEl) => {
@@ -40031,6 +40327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     profile.inventory[kind]--;
     const duplicate = grantCharacter(id);
     postEvent('gacha', id, CHAR_DB[id].rarity);
+    actLog('pick', { id }); // 7.6.3
     saveProfile(); renderAccountUI(); closeModal('legendPickModal');
     if (state.screen === 'inventory') v4RenderQuiet($('inventoryBody'), () => renderInventory(`${CHAR_DB[id].name} 모집! ${duplicate ? `중복 조각 +${DUPLICATE_SHARDS}` : '새 지후 해금'}`));
     playSummonReveal([{ id, duplicate }]);

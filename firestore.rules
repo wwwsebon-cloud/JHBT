@@ -144,6 +144,31 @@ service cloud.firestore {
       allow create, update: if owner(userId) && validBackup(request.resource.data);
     }
 
+    // 7.6.3 활동 기록 (복구용): 재화 · 조각 · 랭크 · 한계돌파가 바뀐 기록. 본인만 추가하고(고치기 불가) 본인과 운영자만 읽는다.
+    //   actlog/{uid} 는 운영자가 닉네임 · UID 로 찾기 위한 색인. 30일이 지난 묶음은 본인 기기가 지운다
+    match /actlog/{userId} {
+      allow get, list: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+      allow create, update: if owner(userId)
+        && request.resource.data.keys().hasOnly(['n', 'u', 'at'])
+        && request.resource.data.n is string && request.resource.data.n.size() <= 12
+        && request.resource.data.u is string && request.resource.data.u.size() <= 8
+        && request.resource.data.at == request.time;
+      allow delete: if false;
+      match /c/{chunkId} {
+        allow get, list: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+        allow create: if owner(userId) && chunkId.size() <= 24
+          && request.resource.data.keys().hasAll(['at', 'items'])
+          && request.resource.data.keys().hasOnly(['at', 'v', 'n', 'items'])
+          && request.resource.data.at == request.time
+          && request.resource.data.items is list
+          && request.resource.data.items.size() >= 1 && request.resource.data.items.size() <= 150
+          && request.resource.data.get('v', '') is string && request.resource.data.get('v', '').size() <= 16
+          && request.resource.data.get('n', '') is string && request.resource.data.get('n', '').size() <= 12;
+        allow update: if false;
+        allow delete: if owner(userId) && resource.data.at < request.time - duration.value(30, 'd');
+      }
+    }
+
     match /compLeaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
