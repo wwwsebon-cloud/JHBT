@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.5"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.5"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8761,7 +8761,7 @@ const CHARACTER_BALANCE = {
   },
   lock: {
     hp: 3000, atk: 220, atkSpeed: 1.1, range: 225, speed: 90, // 5.5 2 → 1.5초 · 6.0 1 → 1.1초 · 7.6.3 ATK 400 → 220
-    lockChance: 0.25, lockDuration: 5
+    lockChance: 0.25, lockDuration: 2.5 // 7.6.5 5 → 2.5초
   },
   genesis: {
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
@@ -11394,7 +11394,7 @@ const CHAR_DB = {
         spawnDamageNumber(target, '잠금', { heal: true });
       }
     },
-    skillDesc: '공격 간격 <b>1.1초</b> · ATK 220 · 사거리 5칸. 공격 적중 시 <b>25%</b> 확률로 대상을 5초간 잠가 이동을 막는다.'
+    skillDesc: '공격 간격 <b>1.1초</b> · ATK 220 · 사거리 5칸. 공격 적중 시 <b>25%</b> 확률로 대상을 2.5초간 잠가 이동을 막는다.'
   },
   genesis: {
     id: 'genesis', name: '제네시스 지후', emoji: '✧', role: 'support', roleLabel: '서포터',
@@ -12167,7 +12167,7 @@ const RANK_S_ABILITIES = {
   lasso: { name: '강한 당김', desc: '현재 거리의 <b>60%</b>를 끌어온다' },
   unicorn: { name: '성스러운 질주', desc: '피해 감소 <b>25% → 35%</b> · 경로의 아군 <b>500</b> 회복', apply(d) { d.uniGuard = 0.35; } },
   satellite: { name: '최후의 폭격', desc: '사망 시 자폭해 반경 2칸 적에게 <b>1,200</b> 피해' },
-  lock: { name: '이중 잠금', desc: '잠금 지속 <b>+5초</b>', apply(d) { d.lockDuration += 5; } },
+  lock: { name: '이중 잠금', desc: '잠금 지속 <b>2.5 → 3.5초</b>', apply(d) { d.lockDuration = 3.5; } }, // 7.6.5
   zombie: { name: '감염 확산', desc: '좀비로 만든 적이 있으면 <b>다음 라운드</b>에 아군 좀비 1기 추가' },
   jaws: { name: '두 번째 잠수', desc: '체력이 처음 <b>25%</b>가 되면 한 번 더 잠수 (두 번째는 피해·회복 없음)' },
   syringe: { name: '회복 차단', desc: '주사에 맞은 적은 <b>6초</b>간 회복 불가' },
@@ -34132,6 +34132,7 @@ const PATCH_NOTES = {
         { emoji:'🪖', name:'메탈 지후', tag:'nerf', color:'#8a93a3', portraitKey:'metal', desc:'<b>치명타</b>를 맞으면 피해 2 대신 <b>최대 체력의 25%</b>를 잃어요.' },
         { emoji:'💉', name:'힐 지후', tag:'buff', color:'#4ae0c4', portraitKey:'medic', desc:'회복량 <b>400 → 650</b>.' },
         { emoji:'🦈', name:'죠스 지후', tag:'nerf', color:'#3a7bd5', portraitKey:'jaws', desc:'체력 <b>1,700 → 1,500</b>.' },
+        { emoji:'🔒', name:'자물쇠 지후 (추가 패치)', tag:'nerf', color:'#b49950', portraitKey:'lock', desc:'잠금 시간 <b>5 → 2.5초</b> · S랭크 이중 잠금(한계돌파 3레벨) <b>3.5초</b>.' },
         { emoji:'☠', name:'데스매치 (추가 패치)', tag:'adjust', color:'#d32f2f', desc:'데스매치 라운드 배치 횟수 <b>6 → 3번</b>.' },
         { emoji:'🌪️', name:'용오름 지후', tag:'adjust', color:'#4aa3df', portraitKey:'waterspout', desc:'용오름 회복 <b>0.5초마다 120 → 0.1초마다 30</b> · 피해 <b>0.5초마다 70 → 0.1초마다 20</b> · 공격 간격 <b>3 → 5초</b>.' },
       ] },
