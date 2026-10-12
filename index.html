@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.6.5"><meta name="jihoo-build" content="5"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.6.5"><meta name="jihoo-build" content="6"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -10424,7 +10424,7 @@ const CHAR_DB = {
     id: 'cult', name: '사이비 지후', emoji: '🔔', role: 'utility', roleLabel: '보조형',
     rarity: 'legend', color: '#8a5a2b', portrait: PORTRAITS.cult || jhPlaceholder('🔔', '#8a5a2b'),
     ...CHARACTER_BALANCE.cult,
-    skillDesc: 'HP 2,400 · 공격하지 않는다 · <b>출격제한 1</b>. 게임 시작 <b>5초</b> 뒤 <b>포교의 종</b>을 울린다: 반경 7칸의 적에게 <b>200</b> 피해를 주고, 그 안의 적 중 무작위 하나를 <b>[포교 대기]</b>로 만든다. [포교 대기]인 적의 생존 여부와 상관없이 우리 팀이 그 라운드에 <b>패배</b>하면 포교에 성공해 그 지후는 <b>영구히 우리 편</b>이 되고, 우리 진영 배치 한도가 1 늘어난다. 포교된 지후도 포교의 종을 울릴 수 있다. <b>사이비 지후</b>와 <b>한 번 포교된 지후</b>는 포교되지 않는다.'
+    skillDesc: 'HP 2,400 · 공격하지 않는다 · <b>출격제한 1</b>. 게임 시작 <b>5초</b> 뒤 <b>포교의 종</b>을 울린다: 반경 7칸의 적에게 <b>200</b> 피해를 주고, 그 안의 적 중 무작위 하나를 <b>[포교 대기]</b>로 만든다. [포교 대기]인 적의 생존 여부와 상관없이 우리 팀이 그 라운드에 <b>패배</b>하면 포교에 성공해 그 지후는 <b>영구히 우리 편</b>이 되고, 우리 진영 배치 한도가 1 늘어난다. 포교된 지후는 포교의 종을 울리지 못하고, 한 라운드에 <b>최대 1기</b>만 포교된다. <b>사이비 지후</b>와 <b>한 번 포교된 지후</b>는 포교되지 않는다.'
   },
   cotton: {
     id: 'cotton', name: '솜 지후', emoji: '☁️', role: 'support', roleLabel: '서포터',
@@ -28505,7 +28505,7 @@ function readyRound74(u) {
     if (p && p.wineToasts && u.charId === 'wine') { u._toasts = p.wineToasts; battleAPI.setBuff(u, 'wine-toast', 'atk', Math.pow(1 + CHARACTER_BALANCE.wine.toastAtk, p.wineToasts) - 1, 9999); } }
   if (u.charId === 'skulking') { u._skFirst = true; u._skT = u.def.skEvery; }
   u._cultT = 0;
-  if (u.charId === 'cult' || (pl74(u) && pl74(u).cult)) u._cultT = CHARACTER_BALANCE.cult.cultDelay; // 포교된 지후도 종을 울린다
+  if (u.charId === 'cult') u._cultT = CHARACTER_BALANCE.cult.cultDelay; // 7.6.5 빌드 6: 포교된 지후는 종을 울리지 못한다
   const pl = state.placements && u.placementId ? state.placements.find(p => p.id === u.placementId) : null;
   if (pl && pl.sealLv) { // 봉인은 그 판 내내: 레벨을 1 올리기 전까지 다음 라운드에도 봉인된 채로 나온다
     if ((u.level || 1) >= pl.sealLv + (CHARACTER_BALANCE.seal.sealFreeLv || 1)) delete pl.sealLv;
@@ -29032,6 +29032,7 @@ function cultBell(u) {
   const fx = fx38('fx-n74 fx-cult-bell', u.x, u.y, ''); fx.style.width = fx.style.height = R * 2 + 'px'; scheduleTask(() => fx.remove(), 900);
   const inside = state.units.filter(e => e.alive && !e.isCastle && isHostile(u, e) && Math.hypot(e.x - u.x, e.y - u.y) <= R + unitRadius(e));
   inside.forEach(e => dealDamage(u, e, d.cultDamage, { isSkill: true }));
+  if (state.units.some(e => e._cultMark === u.side)) return; // 7.6.5 빌드 6: 한 라운드에 [포교 대기]는 한 진영당 1기까지
   const cand = inside.filter(e => e.alive && !e._cultMark && e.placementId && !e.skipCount && e.charId !== 'cult' && !(pl74(e) && pl74(e).cult));
   if (!cand.length) return;
   const t = cand[Math.floor(Math.random() * cand.length)];
@@ -29042,7 +29043,10 @@ function cultBell(u) {
 function cultResolve(winnerSide) { // 라운드가 끝날 때 (endRoundCombat)
   if (winnerSide !== 'ally' && winnerSide !== 'enemy') return;
   // 7.6.3 [포교 대기]인 적이 살아 있든 쓰러졌든, 종을 울린 팀이 지면 포교 성공
+  const done = new Set(); // 7.6.5 빌드 6: 한 라운드에 최대 1기만 포교
   state.units.filter(u => u._cultMark && u.side !== u._cultMark && winnerSide !== u._cultMark).forEach(u => {
+    if (done.has(u._cultMark)) { u._cultMark = null; if (u.el) u.el.classList.remove('cult-mark'); return; }
+    done.add(u._cultMark);
     const side = u._cultMark;
     u._cultMark = null;
     if (u.el) u.el.classList.remove('cult-mark');
@@ -34132,6 +34136,7 @@ const PATCH_NOTES = {
         { emoji:'🪖', name:'메탈 지후', tag:'nerf', color:'#8a93a3', portraitKey:'metal', desc:'<b>치명타</b>를 맞으면 피해 2 대신 <b>최대 체력의 25%</b>를 잃어요.' },
         { emoji:'💉', name:'힐 지후', tag:'buff', color:'#4ae0c4', portraitKey:'medic', desc:'회복량 <b>400 → 650</b>.' },
         { emoji:'🦈', name:'죠스 지후', tag:'nerf', color:'#3a7bd5', portraitKey:'jaws', desc:'체력 <b>1,700 → 1,500</b>.' },
+        { emoji:'🔔', name:'사이비 지후 (긴급 패치)', tag:'nerf', color:'#8a5a2b', portraitKey:'cult', desc:'포교된 지후는 <b>포교의 종을 울릴 수 없어요</b>. 한 라운드에 <b>최대 1기</b>만 포교돼요.' },
         { emoji:'🌙', name:'느와르 지후 (추가 패치)', tag:'nerf', color:'#2b2b3a', portraitKey:'noir', desc:'체력 <b>3,280 → 2,980</b> · 공격력 <b>390 → 190</b> · 나이트폴 <b>3 → 5번째 공격</b>마다 · 나이트폴 피해 <b>280 → 220</b>.' },
         { emoji:'🌾', name:'농부 지후 (추가 패치)', tag:'nerf', color:'#c9a227', portraitKey:'farmer', desc:'밭 가는 간격 <b>3.5 → 6초</b>.' },
         { emoji:'💉', name:'주사 지후 (추가 패치)', tag:'nerf', color:'#7fd1ff', portraitKey:'syringe', desc:'공격 간격 <b>4.4 → 5.6초</b>.' },
