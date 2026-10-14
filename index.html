@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.7.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.7.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -12804,16 +12804,16 @@ const LB_STEPS_LOW = [ // 일반 · 희귀 · 영웅: 골드는 그대로(3,000 
 ];
 function lbHigh(id) { const r = CHAR_DB[id] && CHAR_DB[id].rarity; return r === 'legend' || r === 'mythic'; }
 const LB_HIDDEN = { gold: 50000, shards: 1, hp: 100, atk: 0.05, skill: 0.05 }; // 7.7.1 히든 지후 한계돌파
-// 7.7.1 유예 기간이 끝나면 모든 한계돌파 골드 약 +30% (천 단위)
-const LB_GOLD_UP_HIGH = [3000, 7000, 10000, 13000, 13000], LB_GOLD_UP_LOW = [2000, 4000, 7000, 9000, 13000];
+// 7.7.1 유예 기간이 끝나면 (골드는 그대로) Lv1 → 2 확률 35% · Lv2 → 3 확률 25%
+const LB_P_AFTER = { 1: 0.35, 2: 0.25 };
 function lbStep(id, lv) {
   if (CHAR_DB[id] && CHAR_DB[id].rarity === 'hidden') return lv >= 1 && lv < LB_MAX ? { shards: LB_HIDDEN.shards, gold: LB_HIDDEN.gold, p: 1 } : null;
   const st = (lbHigh(id) ? LB_STEPS_HIGH : LB_STEPS_LOW)[lv] || null;
-  if (st && !lbLv5Free()) return { ...st, gold: (lbHigh(id) ? LB_GOLD_UP_HIGH : LB_GOLD_UP_LOW)[lv] };
+  if (st && !lbLv5Free() && LB_P_AFTER[lv] != null) return { ...st, p: LB_P_AFTER[lv] };
   return st;
 }
 // 7.7 한계돌파 확률 보정: 실패할 때마다 그 지후의 성공 확률 +0.5%p (최대 +5%p) · 성공하면 처음부터
-const LB_PITY_STEP = 0.005, LB_PITY_MAX = 0.05;
+const LB_PITY_STEP = 0.025, LB_PITY_MAX = 0.10; // 7.7.1 +0.5%p → +2.5%p · 최대 5%p → 10%p
 const LB_LV5_FREE_UNTIL = Date.parse('2026-10-17T00:00:00+09:00'); // 7.7 Lv4 → 5 골드 유예: 10/16(금) 자정까지는 골드 없이
 function lbPityBonus(id) { return Math.min(LB_PITY_MAX, LB_PITY_STEP * Math.max(0, Math.floor(Number(profile.lbPity && profile.lbPity[id]) || 0))); }
 function lbLv5Free() { return Date.now() < LB_LV5_FREE_UNTIL; }
@@ -13007,7 +13007,7 @@ function lbIdle(keepGauge) {
     el.querySelector('.lb-pct').innerHTML = `성공 확률 ${lbPctText(st)}`;
     el.querySelector('.lb-needle').style.left = '0%';
   }
-  el.querySelector('.lb-info').innerHTML = st ? `${st.shards ? `<span>${shardIco()} 조각 <b class="${have >= st.shards ? '' : 'short'}">${st.shards}</b> <small>(보유 ${formatNumber(have)})</small></span>` : '<span>조각 필요 없음</span>'}${st.gold ? `<span>● <b class="${profile.gold >= st.gold ? '' : 'short'}">${formatNumber(st.gold)}</b> <small>(보유 ${formatNumber(profile.gold)})</small></span>` : st.free ? '<span>● <s>10,000</s> <b class="free">10/16(금)까지 무료</b></span>' : '<span>골드 필요 없음</span>'}<span class="warn">실패해도 재료는 사라져요 · 실패할 때마다 확률 +0.5%p (최대 +5%p)</span>` : '<span>최대 돌파 완료</span>';
+  el.querySelector('.lb-info').innerHTML = st ? `${st.shards ? `<span>${shardIco()} 조각 <b class="${have >= st.shards ? '' : 'short'}">${st.shards}</b> <small>(보유 ${formatNumber(have)})</small></span>` : '<span>조각 필요 없음</span>'}${st.gold ? `<span>● <b class="${profile.gold >= st.gold ? '' : 'short'}">${formatNumber(st.gold)}</b> <small>(보유 ${formatNumber(profile.gold)})</small></span>` : st.free ? '<span>● <s>10,000</s> <b class="free">10/16(금)까지 무료</b></span>' : '<span>골드 필요 없음</span>'}<span class="warn">실패해도 재료는 사라져요 · 실패할 때마다 확률 +2.5%p (최대 +10%p)</span>` : '<span>최대 돌파 완료</span>';
   const go = el.querySelector('.lb-go');
   go.hidden = !st; go.disabled = !can;
   go.textContent = el.classList.contains('lose') ? '다시 도전' : '돌파 시도';
@@ -35233,7 +35233,8 @@ const PATCH_NOTES = {
     sections: [
       { title: '성장', items: [
         { emoji:'💠', name:'히든 지후 한계돌파', tag:'new', color:'#111', desc:'히든 지후도 한계돌파! 랭크 없이 <b>Lv1</b>부터 시작해 <b>Lv5</b>까지. 레벨과 상관없이 <b>● 50,000 + 조각 1개</b>로 <b>확정 성공</b>. 레벨마다 체력 <b>+100</b> · 공격력 <b>+5%</b> · 스킬 피해 <b>+5%</b>.' },
-        { emoji:'💥', name:'한계돌파 골드', tag:'adjust', color:'#e5322d', desc:'유예 기간(10/16 자정)이 끝나면 한계돌파 골드가 약 <b>30%</b> 올라요. 전설 · 신화 <b>3,000 · 7,000 · 10,000 · 13,000 · 13,000</b> / 일반 ~ 영웅 <b>2,000 · 4,000 · 7,000 · 9,000 · 13,000</b>.' },
+        { emoji:'💥', name:'한계돌파 확률', tag:'adjust', color:'#e5322d', desc:'유예 기간(10/16 자정)이 끝나면 <b>Lv1 → 2</b> 성공 확률 <b>35%</b> · <b>Lv2 → 3</b> <b>25%</b> (모든 등급). 골드는 그대로.' },
+        { emoji:'🎯', name:'확률 보정 상향', tag:'buff', color:'#2fb344', desc:'실패할 때마다 성공 확률 <b>+0.5%p → +2.5%p</b> · 최대 <b>+5%p → +10%p</b>.' },
         { emoji:'🏷', name:'덱 설정 돌파 레벨', tag:'new', color:'#555', desc:'덱 설정 화면 초상화 밑에 지금 <b>한계돌파 레벨</b>이 보여요 (A랭크는 Lv0).' },
       ] },
       { title: '경매 모드', items: [
