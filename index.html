@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.7"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.7"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -31703,9 +31703,10 @@ function aucPortalResolve() {
   });
 }
 
-// ── 초성 퀴즈: 지후 이름이 "_ _ _ 지후" 로 나오고 5초마다 초성 하나, 초성이 다 나오면 글자 하나씩. 3문제 · 빨리 맞힐수록 100~1점 ──
+// ── 초성 퀴즈: 지후 이름이 "_ _ _ 지후" 로 나오고 6초마다 초성 하나, 초성이 다 나오면 4초마다 글자 하나씩. 3문제 · 빨리 맞힐수록 100~50점 (7.7) ──
 const AUC_CHO = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-const AUC_QUIZ_SEC = 15, AUC_QUIZ_N = 3;
+const AUC_QUIZ_SEC = 30, AUC_QUIZ_N = 3, AUC_QUIZ_CHO = 6000, AUC_QUIZ_SYL = 4000; // 7.7 15 → 30초 이상 · 공개 간격 5 → 6초 · 초성이 다 나오면 글자도 하나씩
+function aucQuizSec(n) { return Math.max(AUC_QUIZ_SEC, Math.ceil((AUC_QUIZ_CHO * n + AUC_QUIZ_SYL * Math.max(1, n - 1)) / 1000) + 5); } // 이름이 길면 시간도 길게
 function aucCho(ch) { const c = ch.charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 ? AUC_CHO[Math.floor(c / 588)] : ch; }
 function aucStem(name) { return String(name || '').replace(/\s*지후\s*$/, '').replace(/\s+/g, ''); }
 function aucQuizStart() {
@@ -31720,19 +31721,20 @@ function aucQuizAsk(q) {
   const stem = AUC.sec.quiz[q], syl = [...stem];
   const cur = AUC.sec.cur = { q, stem, syl, order: wweShuffle(syl.map((_, i) => i)), step: 0, at: Date.now() };
   mg.q = q; mg.disp = syl.map(() => '_'); mg.solved = {}; mg.stage = 'ask'; mg.ans = null;
-  G.ph.endsAt = Date.now() + AUC_QUIZ_SEC * 1000; clearTimeout(AUC.phTimer);
+  const qsec = cur.sec = aucQuizSec(syl.length);
+  G.ph.endsAt = Date.now() + qsec * 1000; clearTimeout(AUC.phTimer);
   aucPush(true);
   const reveal = () => {
     if (!aucMgAlive(mg) || mg.q !== q || mg.stage !== 'ask') return;
     const k = cur.step++, n = syl.length;
     if (k < n) mg.disp[cur.order[k]] = aucCho(syl[cur.order[k]]);
-    else if (k < n * 2) mg.disp[cur.order[k - n]] = syl[cur.order[k - n]];
+    else if (k < n * 2 - 1) mg.disp[cur.order[k - n]] = syl[cur.order[k - n]]; // 7.7 글자는 하나를 남기고 (다 보이면 퀴즈가 아니다)
     aucPush(true);
     aucQuizBots(mg, q);
-    aucLater(5000, reveal);
+    aucLater(cur.step < n ? AUC_QUIZ_CHO : AUC_QUIZ_SYL, reveal); // 초성 6초 · 글자 4초
   };
-  aucLater(5000, reveal);
-  aucLater(AUC_QUIZ_SEC * 1000, () => aucQuizClose(q));
+  aucLater(AUC_QUIZ_CHO, reveal);
+  aucLater(qsec * 1000, () => aucQuizClose(q));
   aucQuizBots(mg, q);
 }
 // 봇: 공개된 정보가 많을수록 맞힐 확률이 오른다 (한 번 맞히기로 하면 1~3초 뒤 입력)
@@ -31749,7 +31751,7 @@ function aucQuizInput(p, a, mg) {
   if (!v) return;
   if (v !== cur.stem) { mg.miss[p.side] = (mg.miss[p.side] || 0) + 1; aucPush(true); return; }
   const t = (Date.now() - cur.at) / 1000;
-  const pts = Math.max(1, Math.round(100 * (1 - t / AUC_QUIZ_SEC)));
+  const pts = Math.max(50, Math.round(100 - 50 * t / (cur.sec || AUC_QUIZ_SEC))); // 7.7 점수 차를 줄임: 100 ~ 50점
   mg.solved[p.side] = pts; mg.pts[p.side] = (mg.pts[p.side] || 0) + pts;
   aucPush(true);
   if (AUC.G.ps.every(x => mg.solved[x.side])) aucLater(600, () => aucQuizClose(mg.q));
@@ -32884,7 +32886,7 @@ function aucStageMg(ph) {
     aucStage(`${head}<p class="mg-rule">내 지후 하나를 포탈에 넣을까요? <b>50%</b> 소멸 · <b>50%</b> 같은 등급 지후를 하나 더 데리고 와요</p>
       <div class="mg-c mg-portal"><div class="pt-hole"><i></i></div><div class="pt-mine"></div></div><div class="mg-body"></div>`, 'mg mg-portal');
   } else if (k === 'quiz') {
-    aucStage(`${head}<p class="mg-rule">지후 이름 맞히기 · 5초마다 초성이 하나씩 · 빨리 맞힐수록 높은 점수 <span class="qz-n"></span></p>
+    aucStage(`${head}<p class="mg-rule">지후 이름 맞히기 · 6초마다 초성이 하나씩, 초성이 다 나오면 글자도 하나씩 · 빨리 맞힐수록 높은 점수 (100~50점) <span class="qz-n"></span></p>
       <div class="mg-c"><div class="qz-word"></div><form class="qz-form"><input type="text" maxlength="12" placeholder="이름 입력" autocomplete="off"><button type="submit">확인</button></form></div><div class="mg-body"></div>`, 'mg mg-quiz');
     const f = document.querySelector('#aucStage .qz-form');
     f.onsubmit = e => { e.preventDefault(); const inp = f.querySelector('input'); const v = inp.value.trim(); if (!v) return; aucAct({ k: 'quiz', v }); inp.value = ''; };
@@ -35209,6 +35211,7 @@ const PATCH_NOTES = {
         { emoji:'🤖', name:'AI인척하기', tag:'new', color:'#555', desc:'화염 지후 <b>50마리</b> 중 하나가 나! AI처럼 움직이며 들키지 마세요 (AI는 찾기를 쓰지 않아요). <b>찾기</b>(쿨타임 5초)로 바로 옆을 방망이로 쳐서 사람을 잡아요. <b>30초</b> 동안 살아남으면 <b>잡은 수</b>로 순위.' },
       ] },
       { title: '미니게임 난이도', items: [
+        { emoji:'🔤', name:'초성 퀴즈', tag:'adjust', color:'#2f6fed', desc:'문제 시간 <b>15 → 30초</b> (이름이 길면 더 길게) · 초성 공개 간격 <b>5 → 6초</b> · 초성이 다 나오면 <b>4초마다 글자도 하나씩</b> 공개 · 점수 <b>100~1 → 100~50점</b> (맞힌 시간에 따른 점수 차를 줄였어요).' },
         { emoji:'🥤', name:'야바위', tag:'nerf', color:'#b8324c', desc:'컵을 <b>훨씬 빠르고 많이</b> 섞어요. 못 맞히면 <b>2등 → 4등</b>.' },
         { emoji:'🏇', name:'경마장', tag:'adjust', color:'#3d6b3a', desc:'<b>극도로 예측 불가</b>: 선두는 넘어지기 쉽고 꼴찌는 폭주하기 쉬워요. 결승선 앞에서는 더 요동쳐요.' },
       ] },
