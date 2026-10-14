@@ -264,6 +264,18 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
     }
 
+    // 7.7 고지능 봇이 배우는 실제 경기 덱 (일반전 · 경쟁전 · 추가만)
+    match /matchDecks/{id} {
+      allow get, list: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['d', 'm', 'w', 'u', 'at'])
+        && request.resource.data.u == request.auth.uid
+        && validDeck(request.resource.data.d) && request.resource.data.d.size() == 5
+        && request.resource.data.m in ['ranked', 'competitive']
+        && request.resource.data.w in [0, 1]
+        && request.resource.data.at == request.time;
+    }
+
     match /leaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리

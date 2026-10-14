@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.7"><meta name="jihoo-build" content="6"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.7"><meta name="jihoo-build" content="7"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -10398,10 +10398,25 @@ window.JIHOO_FIREBASE_CONFIG = {
     me();
     await sdk.addDoc(sdk.collection(database, 'giftMail'), { to: String(mail.to), toName: String(mail.toName || '').slice(0, 12), title: String(mail.title).slice(0, 40), body: String(mail.body || '').slice(0, 300), icon: String(mail.icon || '🎁').slice(0, 4), rewards: mail.rewards.slice(0, 6), expiresAt: Math.max(0, Math.floor(Number(mail.expiresAt) || 0)), from: auth.currentUser.uid, at: sdk.serverTimestamp() });
   }
-  async function deckSamples() { // 7.3.2 고지능 봇 덱 학습: 최근에 기록을 올린 유저들의 덱 (리더보드 · 공개)
+  // 7.7 실제 경기 덱 기록: 디스코드 웹후크로 경기 결과를 보내는 순간, 그 판의 내 덱도 matchDecks 에 남긴다 (추가만 · 공개 읽기)
+  async function deckLog(deck, mode, won) {
+    if (!database || !auth || !auth.currentUser) return;
+    const d = (deck || []).map(String).filter(id => /^[a-z_]{1,24}$/.test(id)).slice(0, 5);
+    if (d.length !== 5 || !['ranked', 'competitive'].includes(mode)) return;
+    await sdk.addDoc(sdk.collection(database, 'matchDecks'), { d, m: mode, w: won ? 1 : 0, u: auth.currentUser.uid, at: sdk.serverTimestamp() });
+  }
+  async function deckSamples() { // 7.3.2 고지능 봇 덱 학습 → 7.7 실제로 쓰인 최근 경기 덱 300판 (이긴 덱은 두 번 넣어 더 자주 배운다) · 모자라면 리더보드 최근 덱으로 채운다
     if (!database) return [];
-    const snap = await sdk.getDocs(sdk.query(sdk.collection(database, 'leaderboard'), sdk.orderBy('updatedAt', 'desc'), sdk.limit(200))); // 7.7 최근 80명 → 200명 (모든 유저의 최근 덱)
-    return snap.docs.map(d => d.data().deck).filter(d => Array.isArray(d) && d.length === 5);
+    let out = [];
+    try {
+      const snap = await sdk.getDocs(sdk.query(sdk.collection(database, 'matchDecks'), sdk.orderBy('at', 'desc'), sdk.limit(300)));
+      snap.docs.forEach(doc => { const x = doc.data(); if (Array.isArray(x.d) && x.d.length === 5) { out.push(x.d); if (x.w) out.push(x.d); } });
+    } catch (error) {} // 규칙을 게시하기 전에는 읽지 못한다 → 리더보드만
+    if (out.length < 60) {
+      const snap = await sdk.getDocs(sdk.query(sdk.collection(database, 'leaderboard'), sdk.orderBy('updatedAt', 'desc'), sdk.limit(200)));
+      out = out.concat(snap.docs.map(d => d.data().deck).filter(d => Array.isArray(d) && d.length === 5));
+    }
+    return out;
   }
   // 7.6.3 활동 기록 (복구용): actlog/{uid}/c/{묶음} 에 추가만 한다 (고칠 수 없다). 본인과 운영자만 읽는다.
   //   actlog/{uid} 에는 닉네임 · UID 를 남겨 운영자가 찾을 수 있게 한다. 30일이 지난 묶음은 본인 기기가 지운다
@@ -10458,7 +10473,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { deckLog, init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -10477,7 +10492,7 @@ if (PREVIEW_MODE) {
   document.documentElement.classList.add('preview-mode');
   const noop = () => {}, resolved = () => Promise.resolve(null);
   window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
-    changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved, deckSamples: () => Promise.resolve([]),
+    changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved, deckSamples: () => Promise.resolve([]), deckLog: resolved,
     leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), classLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
     presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, matchGet: () => Promise.reject(new Error('오프라인')), roomGet: () => Promise.reject(new Error('오프라인')), roomInviteSend: () => Promise.reject(new Error('오프라인')), roomInviteUpdate: resolved, roomInvitesSubscribe: () => () => {}, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
@@ -34552,6 +34567,7 @@ function finishMatch(winnerSide, surrendered = false) {
   const settlement = settleMatch(won, draw, surrendered);
   if (DISCORD_MATCH_MODES.includes(state.mode) && !settlement.tutorialReplay) {
     try { discordNotify(discordMatchPayload(won, draw, surrendered, settlement)); } catch (error) {}
+    if (!surrendered && !draw && !developerMode && (state.mode === 'ranked' || state.mode === 'competitive')) window.JihooOnline.deckLog([...new Set(state.myDeckIds || [])], state.mode, won).catch(() => {}); // 7.7 봇이 배울 실제 경기 덱 (디스코드에 올라가는 그 덱)
     const streak = profile.winStreak || 0;
     if (won && !draw && !surrendered && discordStreakMilestone(streak)) discordNotify({ type: 'streak', streak, mode: DISCORD_MODE_LABEL[state.mode] || '' }); // 4.6.8
   }
@@ -35223,7 +35239,7 @@ const PATCH_NOTES = {
         { emoji:'🎯', name:'한계돌파 확률 보정', tag:'new', color:'#2fb344', desc:'실패할 때마다 그 지후의 성공 확률 <b>+0.5%p</b> (최대 <b>+5%p</b>). 성공하면 처음부터.' },
       ] },
       { title: '경쟁전 · 3:3전', items: [
-        { emoji:'🤖', name:'고지능 봇 덱 학습', tag:'adjust', color:'#555', desc:'봇이 <b>모든 유저</b>의 최근 일반전 덱(최근 200명)을 배우고, 배운 덱을 그대로 쓰지 않고 항상 <b>1~3기</b>를 바꿔서 들고 와요 (많이 바꿀수록 자주).' },
+        { emoji:'🤖', name:'고지능 봇 덱 학습', tag:'adjust', color:'#555', desc:'봇이 <b>모든 유저가 실제로 쓴 덱</b>(최근 일반전 · 경쟁전 300판, 이긴 덱은 더 자주)을 배우고, 배운 덱을 그대로 쓰지 않고 항상 <b>1~3기</b>를 바꿔서 들고 와요 (많이 바꿀수록 자주).' },
         { emoji:'✴', name:'신화 지후 픽', tag:'new', color:'#ff3d7f', desc:'경쟁전 · 3:3전에서도 <b>신화 지후</b>를 고를 수 있어요.' },
         { emoji:'🏆', name:'경쟁전 정산창', tag:'new', color:'#c99a17', desc:'경기가 끝나면 먼저 <b>양쪽 덱</b>(WIN · LOSE · MVP · 티어 · TP)이 나오고, 확인을 누르면 <b>결과</b>와 <b>티어 점수 게이지</b>가 차올라요.' },
       ] },
