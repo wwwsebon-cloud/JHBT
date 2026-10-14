@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.7.4"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.7.5"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6211,6 +6211,35 @@ body.auc-picking .battle-world .unit:not(.auc-vault) { cursor:crosshair; }
 .cs-page.comp .cs-up .tier-badge { flex:none; }
 .cs-page.comp .cs-gnow { color:#ffd8c8; }
 
+
+/* 7.7.5 최근 알림: 전설 · 신화 · 히든 · 시크릿 뽑기 이펙트 */
+#noticeList .row.nfx-legend, #noticeList .row.nfx-mythic, #noticeList .row.nfx-hidden, #noticeList .row.nfx-secret { position:relative; overflow:hidden; flex:none; } /* overflow 때문에 줄이 납작해지지 않게 */
+#noticeList .row.nfx-legend { border-color:#c99a17 !important; background:linear-gradient(90deg, rgba(242,201,76,.16), rgba(242,201,76,.04)) !important; box-shadow:0 0 14px rgba(242,201,76,.25); }
+#noticeList .row.nfx-legend .ic { box-shadow:0 0 0 2px #f2c94c; }
+#noticeList .row.nfx-legend::after { content:''; position:absolute; inset:0; background:linear-gradient(110deg, transparent 35%, rgba(255,236,170,.35) 50%, transparent 65%); transform:translateX(-120%); animation:nfxSweep 2.6s ease-in-out infinite; pointer-events:none; }
+#noticeList .row.nfx-mythic { border-color:#ff3d7f !important; background:linear-gradient(90deg, rgba(255,61,127,.2), rgba(255,61,127,.04)) !important; animation:rise .3s backwards, nfxMythic 1.8s ease-in-out infinite; }
+#noticeList .row.nfx-mythic .ic { box-shadow:0 0 0 2px #ff3d7f, 0 0 12px #ff3d7f; }
+#noticeList .row.nfx-mythic b { color:#ff7aa8; }
+#noticeList .row.nfx-mythic::after { content:'✦'; position:absolute; right:56px; top:4px; color:#ff9cc0; font-size:12px; animation:nfxTwinkle 1.4s ease-in-out infinite; pointer-events:none; }
+#noticeList .row.nfx-hidden { border-color:#fff !important; background:#000 !important; box-shadow:0 0 0 1px #fff, 0 0 18px rgba(255,255,255,.35); }
+#noticeList .row.nfx-hidden b { color:#fff; text-shadow:0 0 8px #fff; }
+#noticeList .row.nfx-hidden .ic { filter:grayscale(1) contrast(1.4); box-shadow:0 0 0 2px #fff; animation:nfxGlitch 2.2s steps(1) infinite; }
+#noticeList .row.nfx-hidden::before { content:''; position:absolute; inset:0; background:#fff; opacity:0; animation:nfxFlash 2.2s steps(1) infinite; pointer-events:none; mix-blend-mode:difference; }
+#noticeList .row.nfx-secret { border:1px solid transparent !important; background:linear-gradient(#120818, #120818) padding-box, conic-gradient(from var(--na, 0deg), #ff3d7f, #ffd84a, #4ade80, #3dd6ff, #9b59ff, #ff3d7f) border-box !important; box-shadow:0 0 18px rgba(210,28,240,.45); animation:rise .3s backwards, nfxSpin 3s linear infinite; }
+#noticeList .row.nfx-secret b { color:#e7a6ff; }
+#noticeList .row.nfx-secret .nq-name { background:linear-gradient(90deg, #ff3d7f, #ffd84a, #4ade80, #3dd6ff, #9b59ff); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:.15em; animation:nfxShift 1.2s linear infinite; }
+#noticeList .row.nfx-secret .ic, #m6NewsList .row.nfx-secret .ic { background:radial-gradient(circle, #3a1450, #120818) !important; box-shadow:0 0 0 2px #d21cf0, 0 0 14px #d21cf0; }
+.nq { font-style:normal; font:900 20px/1 var(--v7-exo, system-ui); color:#f3e6ff; text-shadow:0 0 8px #d21cf0; }
+@property --na { syntax:'<angle>'; inherits:false; initial-value:0deg; }
+@keyframes nfxSpin { to { --na:360deg; } }
+@keyframes nfxSweep { 60%, 100% { transform:translateX(120%); } }
+@keyframes nfxMythic { 0%, 100% { box-shadow:0 0 8px rgba(255,61,127,.25); } 50% { box-shadow:0 0 20px rgba(255,61,127,.55); } }
+@keyframes nfxTwinkle { 0%, 100% { opacity:.2; transform:scale(.8); } 50% { opacity:1; transform:scale(1.2); } }
+@keyframes nfxFlash { 0%, 92%, 100% { opacity:0; } 94% { opacity:.9; } 96% { opacity:0; } 98% { opacity:.6; } }
+@keyframes nfxGlitch { 0%, 90%, 100% { transform:none; } 92% { transform:translate(2px, -1px); } 95% { transform:translate(-2px, 1px); } }
+@keyframes nfxShift { to { background-position:200% 0; } }
+#m6NewsList .row.nfx-legend .tx b, #m6NewsList .row.nfx-mythic .tx b { text-shadow:0 0 6px currentColor; }
+@media (prefers-reduced-motion:reduce) { #noticeList .row[class*="nfx-"], #noticeList .row[class*="nfx-"]::after, #noticeList .row[class*="nfx-"]::before, #noticeList .row[class*="nfx-"] .ic { animation:none !important; } }
 /* ═════════ 7.7.3 시크릿 지후 ═════════ */
 .char-card.secret-card { box-shadow:0 0 0 2px #d21cf0, 0 0 14px rgba(210,28,240,.45); }
 .char-card.secret-card.locked .char-portrait { filter:grayscale(.6) brightness(.85); }
@@ -35636,6 +35665,17 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.7.5': {
+    label: 'v7.7.5 최근 알림 개편',
+    date: '2026.10.14',
+    sections: [
+      { title: '최근 알림', items: [
+        { emoji:'✨', name:'뽑기 알림 이펙트', tag:'new', color:'#f2c94c', desc:'최근 알림에서 <b>전설</b>(금빛) · <b>신화</b>(붉은 맥동) · <b>히든</b>(흑백 번쩍임) · <b>시크릿</b>(무지개 테두리) 뽑기가 각자 다른 이펙트로 보여요.' },
+        { emoji:'🔕', name:'영웅 알림', tag:'adjust', color:'#777', desc:'이제 <b>영웅</b> 지후를 뽑으면 알리지 않아요.' },
+        { emoji:'❓', name:'시크릿 알림', tag:'new', color:'#d21cf0', desc:'누군가 시크릿 지후를 뽑으면 무엇인지는 비밀! 초상화는 <b>?</b>, 이름은 <b>??????</b>로 알려요.' },
+      ] },
+    ],
+  },
   '7.7.4': {
     label: 'v7.7.4 흑염룡 돌파 · 설정 음량 슬라이더',
     date: '2026.10.14',
@@ -41549,7 +41589,10 @@ function noticeParts(e) {
   switch (e.type) {
     case 'level': return { ic: '⬆️', html: `<b>${escapeHtml(name)}</b>님이 Lv.${escapeHtml(e.a)}에 도달했습니다` };
     case 'join': return { ic: '👋', html: `<b>${escapeHtml(name)}</b>님이 지후배틀에 가입했습니다` };
-    case 'gacha': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🎴', html: `<b>${escapeHtml(name)}</b>님이 ${RARITY_LABEL[e.b] || ''} <b>${escapeHtml(c ? c.name : e.a)}</b>를 뽑았습니다` };
+    case 'gacha': // 7.7.5 영웅 이하는 알리지 않는다 · 등급별 이펙트 · 시크릿은 무엇인지 숨긴다
+      if (!['legend', 'mythic', 'hidden', 'secret'].includes(e.b)) return null;
+      if (e.b === 'secret') return { cls: 'nfx-secret', ic: '<i class="nq">?</i>', html: `<b>${escapeHtml(name)}</b>님이 <b class="nq-name">??????</b>를 뽑았습니다!` };
+      return { cls: 'nfx-' + e.b, ic: c ? `<img src="${c.portrait}" alt="">` : '🎴', html: `<b>${escapeHtml(name)}</b>님이 ${RARITY_LABEL[e.b] || ''} <b>${escapeHtml(c ? c.name : e.a)}</b>를 뽑았습니다` };
     case 'rank': { const lb = /^LB(\d)$/.exec(String(e.b)); return { ic: c ? `<img src="${c.portrait}" alt="">` : '🏅', html: lb ? `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(c ? c.name : e.a)}</b> <b>한계돌파 Lv.${lb[1]}</b>에 성공했습니다` : `<b>${escapeHtml(name)}</b>님의 <b>${escapeHtml(c ? c.name : e.a)}</b>가 <b>${escapeHtml(e.b === 'S' || e.b === '1' ? 'S랭크' : '랭크 ' + e.b)}</b>로 승급했습니다` }; } // 7.1 한계돌파 성공
     case 'mastery': return { ic: c ? `<img src="${c.portrait}" alt="">` : '🎖️', html: `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(c ? c.name : e.a)}</b> 마스터리 <b>${escapeHtml(e.b)}</b>를 달성했습니다` };
     case 'promo': return /^클래스 \d+$/.test(String(e.a)) ? { ic: '🎖️', html: `<b>${escapeHtml(name)}</b>님이 <b>${escapeHtml(e.a)}</b>에 올랐습니다` } : { ic: '🏆', html: `<b>${escapeHtml(name)}</b>님이 경쟁전 <b>${escapeHtml(e.a)}</b>로 승급했습니다` }; // 7.6.1 클래스
@@ -41566,7 +41609,7 @@ function showNoticeAt(i) {
   msg.style.animation = 'none'; void msg.offsetWidth; msg.style.animation = '';
   msg.innerHTML = parts.html;
   const ev = notices.items[notices.idx], tk = $('noticeTicker'); // 5.4 전설 뽑기 = 노란 글로우 · 히든 뽑기 = 흰 번개
-  if (tk) { tk.classList.toggle('fx-legend', (ev.type === 'gacha' && (ev.b === 'legend' || ev.b === 'mythic')) || (ev.type === 'rank' && /^LB[45]$/.test(String(ev.b)))); tk.classList.toggle('fx-hidden', ev.type === 'gacha' && ev.b === 'hidden'); }
+  if (tk) { tk.classList.toggle('fx-legend', (ev.type === 'gacha' && (ev.b === 'legend' || ev.b === 'mythic')) || (ev.type === 'rank' && /^LB[45]$/.test(String(ev.b)))); tk.classList.toggle('fx-hidden', ev.type === 'gacha' && (ev.b === 'hidden' || ev.b === 'secret')); }
 }
 function startNotices() {
   startSocial(); // 5.0 친구 · 접속 상태 · 친선전 초대
@@ -41589,7 +41632,7 @@ function m6RenderNews() {
   if (!list) return;
   let pin = '';
   try { if (annOn()) pin = `<span class="pin"><b>📌 공지</b> ${escapeHtml(annState.msg)}</span>`; } catch (error) {}
-  const rows = notices.items.slice(0, pin ? 3 : 4).map(e => { const p = noticeParts(e); return p ? `<span class="row"><i class="ic">${p.ic}</i><span class="tx">${p.html}</span><small>${fmtClock(e.at)}</small></span>` : ''; }).join('');
+  const rows = notices.items.slice(0, pin ? 3 : 4).map(e => { const p = noticeParts(e); return p ? `<span class="row${p.cls ? ' ' + p.cls : ''}"><i class="ic">${p.ic}</i><span class="tx">${p.html}</span><small>${fmtClock(e.at)}</small></span>` : ''; }).join('');
   const html = pin + (rows || '<span class="empty">아직 소식이 없어요.</span>');
   if (list.dataset.h !== html) { list.dataset.h = html; list.innerHTML = html; }
 }
@@ -41600,10 +41643,12 @@ function renderNoticeList() {
   let pin = '';
   try { if (annOn()) pin = `<div class="row pin"><span class="ic">📌</span><span><b>공지</b> ${escapeHtml(annState.msg)}</span><span class="t"></span></div>`; } catch (error) {}
   if (!notices.items.length) { list.innerHTML = pin + '<div class="empty">아직 알림이 없습니다.</div>'; return; }
-  list.innerHTML = pin + notices.items.map((e, i) => { const p = noticeParts(e); return `<div class="row" style="animation-delay:${Math.min(0.5, i * 0.03).toFixed(2)}s"><span class="ic">${p.ic}</span><span>${p.html}</span><span class="t">${fmtClock(e.at)}</span></div>`; }).join('');
+  list.innerHTML = pin + notices.items.map((e, i) => { const p = noticeParts(e); return `<div class="row${p.cls ? ' ' + p.cls : ''}" style="animation-delay:${Math.min(0.5, i * 0.03).toFixed(2)}s"><span class="ic">${p.ic}</span><span>${p.html}</span><span class="t">${fmtClock(e.at)}</span></div>`; }).join('');
 }
 $('noticeTicker')?.addEventListener('click', () => { renderNoticeList(); openModal('noticeModal'); });
 function postEvent(type, a = '', b = '') {
+  if (type === 'gacha' && !['legend', 'mythic', 'hidden', 'secret'].includes(b)) return; // 7.7.5 영웅 이하 뽑기는 알리지 않는다
+  if (type === 'gacha' && b === 'secret') a = 'secret'; // 7.7.5 시크릿은 어떤 지후인지 남기지 않는다
   window.JihooOnline.eventPost(type, a, b).catch(() => {});
   if (type === 'join') discordNotify({ type: 'join' });
   if (type === 'gacha' && b === 'legend' && CHAR_DB[a]) discordNotify({ type: 'legend', name: CHAR_DB[a].name });
