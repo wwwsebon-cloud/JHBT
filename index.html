@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.7.1"><meta name="jihoo-build" content="4"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.7.2"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8482,6 +8482,7 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
   <div class="modal-head"><h2 class="title-font">환경설정</h2><button type="button" class="modal-close" data-close-modal="settingsModal">✕</button></div>
   <p class="settings-intro">나에게 맞는 전장 화면을 설정하세요.</p>
   <div class="settings-section-label">효과음</div>
+  <div class="settings-option"><span class="settings-option-icon">🎵</span><span class="settings-option-copy"><b>배경음악 음량 <span id="bgmVolLab">50</span></b><small>로비 · 경매 모드 공식 BGM · 0이면 꺼져요 · 이 기기에 저장</small></span><input type="range" id="bgmVol" min="0" max="100" step="5" value="50" style="width:120px"></div>
   <div class="settings-option"><span class="settings-option-icon">🔊</span><span class="settings-option-copy"><b>효과음 음량 <span id="sfxVolLab">70</span></b><small>0이면 꺼져요 · 이 기기에 저장</small></span><input type="range" id="sfxVol" min="0" max="100" step="5" value="70" style="width:120px"></div>
   <div class="settings-section-label">화면 · 접근성</div>
   <label class="settings-option" for="reduceMotionSetting"><span class="settings-option-icon">✦</span><span class="settings-option-copy"><b>움직임 줄이기</b><small>전투 결과와 정산 등 일회성 연출의 움직임을 최소화합니다.</small></span><input type="checkbox" id="reduceMotionSetting"><span class="settings-switch" aria-hidden="true"></span></label>
@@ -12803,7 +12804,14 @@ const LB_STEPS_LOW = [ // 일반 · 희귀 · 영웅: 골드는 그대로(3,000 
   { shards: 2, gold: 10000, p: 0.15 }, // 7.7 골드 0 → 10,000
 ];
 function lbHigh(id) { const r = CHAR_DB[id] && CHAR_DB[id].rarity; return r === 'legend' || r === 'mythic'; }
-const LB_HIDDEN = { gold: 50000, shards: 1, hp: 100, atk: 0.05, skill: 0.05 }; // 7.7.1 히든 지후 한계돌파
+const LB_HIDDEN = { gold: 50000, shards: 1, hp: 100, atk: 0.05, skill: 0.05 }; // 7.7.1 히든 지후 한계돌파 · 7.7.2 능력치는 Lv2 부터 고정
+const HIDDEN_LV2 = { // 7.7.2 히든 한계돌파 Lv2 고유 능력
+  genesis: '<b>[불멸]</b> 쓰러지면 <b>2.5초</b> 동안 무적이 됐다가 끝나면 쓰러진다',
+  inferno: '<b>[인페르노]</b>에 맞은 적 <b>1.2초 기절</b> · [소각] 0.2초마다 <b>240</b> · <b>2.5초</b>',
+  blackflame: '돌진 중 받는 피해 감소 <b>+5%</b> · 공격 간격 <b>-0.1초</b>',
+  mimic: '<b>변신이 풀리지 않는다</b>',
+  solemn: '사거리 <b>+0.5칸</b>',
+};
 // 7.7.1 유예 기간이 끝나면 (골드는 그대로) Lv1 → 2 35% · Lv2 → 3 25% · Lv3 → 4 15% · Lv4 → 5 5% (모든 등급)
 const LB_P_AFTER = { 1: 0.35, 2: 0.25, 3: 0.15, 4: 0.05 };
 function lbStep(id, lv) {
@@ -12882,7 +12890,7 @@ function unlockByShards(id) {
   return true;
 }
 function lbPerks(id) {
-  if (CHAR_DB[id] && CHAR_DB[id].rarity === 'hidden') return [1, 2, 3, 4, 5].map(n => [n, n === 1 ? '기본 (히든 지후는 Lv1 부터)' : `체력 <b>+${LB_HIDDEN.hp * (n - 1)}</b> · 공격력 <b>+${Math.round(LB_HIDDEN.atk * 100 * (n - 1))}%</b> · 스킬 피해 <b>+${Math.round(LB_HIDDEN.skill * 100 * (n - 1))}%</b>`]);
+  if (CHAR_DB[id] && CHAR_DB[id].rarity === 'hidden') return [1, 2, 3, 4, 5].map(n => [n, n === 1 ? '기본 (히든 지후는 Lv1 부터)' : n === 2 ? `체력 <b>+${LB_HIDDEN.hp}</b> · 공격력 <b>+5%</b> · 스킬 피해 <b>+5%</b> (고정) · ${HIDDEN_LV2[id] || '고유 능력 준비 중'}` : '다음 능력 준비 중 (Lv2 능력치 · 능력 유지)']);
   const ability = RANK_S_ABILITIES[id], step = lbStepText(id);
   return [
     [1, '능력치 변화 없음 · 다음 돌파부터 강해져요'],
@@ -16171,7 +16179,9 @@ function grantCharacter(id) {
 }
 // 모집권·상점 구매도 뽑기와 같은 소환 연출로 보여준다
 function playSummonReveal(results) {
-  if (!results.length || gachaRevealResults.length) return;
+  if (!results.length) return;
+  if (gachaRevealResults.length && !$('gachaReveal')?.classList.contains('show') && !$('gachaMulti')?.classList.contains('show') && !document.querySelector('.gacha-recruit.show, #gachaRecruit.show')) gachaRevealResults = []; // 7.7.2 화면 없이 남은 결과 때문에 연출이 조용히 건너뛰던 문제
+  if (gachaRevealResults.length) { setTimeout(() => playSummonReveal(results), 600); return; } // 다른 연출이 끝나면 이어서
   gachaAgainCost = 0;
   if (results.length > 1) { showGachaMulti(results); return; }
   gachaRevealResults = results;
@@ -21275,7 +21285,12 @@ function spawnUnit(side, x, y, charId, opts) {
   const unitRank = unitRankFor(side, charId);
   applyRankToDef(def, charId, unitRank);
   const hidLb = side === 'ally' && RANK_EFFECT_MODES.includes(state.mode) && baseDef.rarity === 'hidden' && isUnlocked(charId) ? lbLevel(charId) - 1 : 0; // 7.7.1 히든 한계돌파
-  if (hidLb > 0) { def.hp = (def.hp || 0) + LB_HIDDEN.hp * hidLb; if (def.atk > 0) def.atk = Math.round(def.atk * (1 + LB_HIDDEN.atk * hidLb)); } // 4.2: 내 지후의 랭크 효과 (레벨업 배율은 이 값을 기준으로 곱해진다)
+  if (hidLb > 0) { // 7.7.2 능력치는 레벨과 상관없이 고정 + Lv2 고유 능력
+    def.hp = (def.hp || 0) + LB_HIDDEN.hp; if (def.atk > 0) def.atk = Math.round(def.atk * (1 + LB_HIDDEN.atk));
+    if (charId === 'inferno') { def.infTickDmg = 240; def.infBurnTime = 2.5; } // 소각 150 × 4 / 2.5 = 240 · 2.5초
+    if (charId === 'blackflame') { def.flameDashTaken = (def.flameDashTaken ?? 0.15) + 0.05; def.atkSpeed = Math.max(0.1, (def.atkSpeed || 1.75) - 0.1); }
+    if (charId === 'solemn') def.range = (def.range || 225) + 22.5; // 사거리 +0.5칸 (45px 격자 기준 · 아래에서 크기 변환)
+  } // 4.2: 내 지후의 랭크 효과 (레벨업 배율은 이 값을 기준으로 곱해진다)
   applyLbStepsToDef(def, charId, unitLbSteps(side, charId)); // 7.3.6 한계돌파 Lv2 · Lv4
   // 데이터의 px 수치는 이전 45px 격자 기준이다. 유닛별 복사본만 변환해
   // 사거리·이동속도·스킬 범위가 확대된 격자와 같은 칸 수를 유지한다.
@@ -21319,7 +21334,7 @@ function spawnUnit(side, x, y, charId, opts) {
     baseExplosionDamage: charId === 'bomb' ? def.explosionDamage : null,
     baseBoltDamage: charId === 'lightning' ? def.boltDamage : null,
     shield: def.shield || 0, maxShield: def.shield || 0, baseShield: def.shield || 0,
-    alive: true, level: 1, rank: unitRank, _hidSkill: 1 + LB_HIDDEN.skill * Math.max(0, hidLb),
+    alive: true, level: 1, rank: unitRank, _hidSkill: hidLb > 0 ? 1 + LB_HIDDEN.skill : 1, _hidLv2: hidLb > 0, // 7.7.2 고정 · Lv2 능력
     atkCooldown: charId === 'sniper' ? def.atkSpeed : Math.random() * 0.3,
     comboStack: 0,
     awakenTimer: baseDef.awakenTime || 0, awakened: false, invincible: 0, berserked: false, form, buffs: {}, hmgInterval: def.atkSpeed,
@@ -22534,7 +22549,7 @@ function transformMimic(u) {
   u.hmgInterval = def.atkSpeed;
   u.baseShield = def.shield || 0;
   u.shield = u.maxShield = def.shield || 0;
-  u._mimicState = { remaining: CHAR_DB.mimic.mimicDuration };
+  u._mimicState = { remaining: u._hidLv2 ? Infinity : CHAR_DB.mimic.mimicDuration }; // 7.7.2 히든 Lv2: 풀리지 않는다
   u.el.classList.remove('mimic-original');
   u.el.classList.add('mimic-transformed');
   battleAPI.setImage(u, def.portrait);
@@ -29881,6 +29896,7 @@ function infernoFire(u, s) {
     const off = r.ew ? Math.abs(e.y - r.cy) : Math.abs(e.x - r.cx);
     if (off > r.w / 2 + unitRadius(e)) return;
     applyLaceration(e, d.infLacerTime, d.infLacer);
+    if (u._hidLv2 && e.alive) stunUnit(e, 1.2); // 7.7.2 히든 Lv2
     battleAPI.applyBurn(e, d.infBurnDps, d.infBurnTime2, u);
     e._burnAmp = Math.max(e._burnAmp || 0, d.infBurnAmpTime);
     if (e.el) e.el.classList.add('inf-marked');
@@ -31114,6 +31130,15 @@ function killUnit(u) {
   if (u && u.isVault) { u.hp = u.maxHp; return; }
   if (u && u.charId === 'taxi') u._taxiDied = true; // 7.1 // 7.0.1 금고는 쓰러지지 않는다 (즉사 · 처형 효과 무시)
   if (u._guardBy && guardianSave(u)) return; // 수호: 체력 1로 버틴다
+  if (u.charId === 'genesis' && u._hidLv2 && !u._genEnd) { // 7.7.2 히든 Lv2 [불멸]: 2.5초 무적 뒤 쓰러진다
+    u.hp = Math.max(1, u.hp || 0);
+    if (!u._genDying) {
+      u._genDying = true; u.invincible = Math.max(u.invincible || 0, 2.5); u.el && u.el.classList.add('invincible');
+      spawnDamageNumber(u, '불멸 2.5초', { heal: true });
+      scheduleTask(() => { if (!u.alive) return; u._genEnd = true; u.invincible = 0; u.hp = 0; killUnit(u); }, 2500);
+    }
+    return;
+  }
   state.lastDeathPoint = { x: u.x, y: u.y };
   if (u._orbiters) { u._orbiters.forEach(o => o.el.remove()); u._orbiters = []; }
   if (u.isClone || u.expire != null) {
@@ -34843,6 +34868,36 @@ const SFX = {
   attack:       { gap: 0.06, vol: 0.35, desc: '일반 공격 (자기 소리가 없는 지후 전부)' },
   mail:         { gap: 1,    vol: 0.7, desc: '우편 · 선물 받기' },
 };
+// ═════════ 7.7.2 공식 BGM: 로비(메뉴 화면) · 경매 모드. 설정의 배경음악 음량 (0이면 꺼짐) ═════════
+const BGM_VOL_KEY = 'jihoo-bgm-vol';
+const BGM_TRACKS = { lobby: 'bgm/lobby.mp3', auction: 'bgm/auction.mp3' }; // 로비: 얼큰한 유준사골탕 · 경매: 경매 모드 테마
+const BGM_QUIET = ['battle', 'loading', 'end', 'intro', 'credits']; // 이 화면에서는 로비 음악을 끈다
+const bgm = { el: null, cur: null, fade: null, vol: (() => { try { const v = localStorage.getItem(BGM_VOL_KEY); return v == null ? 50 : Math.max(0, Math.min(100, Math.round(Number(v) || 0))); } catch (error) { return 50; } })() };
+function bgmWant() {
+  if (window.top !== window || state.mode === 'preview' || bgm.vol <= 0) return null;
+  if (state.mode === 'auction' && typeof AUC !== 'undefined' && AUC) return 'auction';
+  return BGM_QUIET.includes(state.screen) ? null : 'lobby';
+}
+function bgmTick() {
+  const want = bgmWant(), target = bgm.vol / 100 * 0.6;
+  if (!want) { if (bgm.el && !bgm.el.paused) bgmFadeTo(0, () => { bgm.el.pause(); }); bgm.cur = null; return; }
+  if (want !== bgm.cur || !bgm.el) {
+    bgm.cur = want;
+    const start = () => { const el = bgm.el = new Audio(BGM_TRACKS[want]); el.loop = true; el.volume = 0; el.play().then(() => bgmFadeTo(target)).catch(() => { bgm.cur = null; }); };
+    if (bgm.el && !bgm.el.paused) { const old = bgm.el; bgmFadeTo(0, () => { old.pause(); start(); }); } else start();
+    return;
+  }
+  if (bgm.el.paused) bgm.el.play().then(() => bgmFadeTo(target)).catch(() => {});
+  else if (!bgm.fade && Math.abs(bgm.el.volume - target) > 0.01) bgm.el.volume = target;
+}
+function bgmFadeTo(v, done) {
+  const el = bgm.el; if (!el) { if (done) done(); return; }
+  clearInterval(bgm.fade); const from = el.volume, t0 = Date.now(), ms = 600;
+  bgm.fade = setInterval(() => { const k = Math.min(1, (Date.now() - t0) / ms); try { el.volume = Math.max(0, Math.min(1, from + (v - from) * k)); } catch (error) {} if (k >= 1) { clearInterval(bgm.fade); bgm.fade = null; if (done) done(); } }, 40);
+}
+function bgmSetVolume(v) { bgm.vol = Math.max(0, Math.min(100, Math.round(Number(v) || 0))); try { localStorage.setItem(BGM_VOL_KEY, String(bgm.vol)); } catch (error) {} bgmTick(); }
+setInterval(bgmTick, 1000); // 화면 · 모드가 바뀌면 1초 안에 바꾼다 (자동 재생이 막혀 있으면 처음 누를 때 시작)
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (bgm.cur == null || (bgm.el && bgm.el.paused)) bgmTick(); }, { passive: true }));
 const SFX_VOL_KEY = 'jihoo-sfx-vol';
 const sfxState = { ctx: null, buf: {}, loading: {}, missing: {}, last: {}, vol: (() => { try { const v = localStorage.getItem(SFX_VOL_KEY); return v == null ? 70 : clamp(Number(v) || 0, 0, 100); } catch (error) { return 70; } })() };
 function sfxCtx() {
@@ -35227,6 +35282,27 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.7.2': {
+    label: 'v7.7.2 공식 BGM · 히든 한계돌파 2레벨 능력',
+    date: '2026.10.14',
+    sections: [
+      { title: '공식 BGM', items: [
+        { emoji:'🎵', name:'공식 BGM 추가', tag:'new', color:'#7a5cff', desc:'로비(메뉴 화면)에 <b>얼큰한 유준사골탕</b>, 경매 모드에 <b>경매 모드 테마</b>가 흘러요. <b>설정 → 배경음악 음량</b>에서 조절할 수 있어요 (0이면 꺼져요).' },
+      ] },
+      { title: '히든 지후 한계돌파', items: [
+        { emoji:'💠', name:'능력치 고정', tag:'adjust', color:'#111', desc:'히든 한계돌파로 오르는 능력치는 레벨과 상관없이 <b>체력 +100 · 공격력 +5% · 스킬 피해 +5%</b>로 고정 (Lv2 부터).' },
+        { emoji:'🌀', name:'제네시스 Lv2', tag:'new', color:'#d9d9e1', portraitKey:'genesis', desc:'쓰러지면 <b>2.5초</b> 동안 무적이 됐다가, 무적이 끝나면 쓰러져요.' },
+        { emoji:'🔥', name:'인페르노 Lv2', tag:'new', color:'#d4380d', portraitKey:'inferno', desc:'<b>[인페르노]</b>에 맞은 적 <b>1.2초 기절</b> · [소각] 0.2초마다 <b>150 → 240</b> · 지속 <b>4 → 2.5초</b>.' },
+        { emoji:'🐉', name:'흑염룡 Lv2', tag:'new', color:'#3a3a3a', portraitKey:'blackflame', desc:'돌진 중 받는 피해 감소 <b>+5%</b> · 공격 간격 <b>-0.1초</b>.' },
+        { emoji:'🌈', name:'미믹 Lv2', tag:'new', color:'#8d879e', portraitKey:'mimic', desc:'<b>변신이 풀리지 않아요</b>.' },
+        { emoji:'🦋', name:'솔렘라멘트 Lv2', tag:'new', color:'#9a9aa6', portraitKey:'solemn_black', desc:'사거리 <b>+0.5칸</b>.' },
+      ] },
+      { title: '크레딧', items: [
+        { emoji:'📬', name:'우편 지후 보상', tag:'fix', color:'#f08c00', desc:'우편으로 <b>랜덤 전설 · 영웅 지후</b>를 받으면 뽑기처럼 <b>무엇이 나왔는지</b> 연출과 문구(신규 · 중복)로 보여 줘요.' },
+        { emoji:'✨', name:'크레딧 갱신', tag:'system', color:'#777', desc:'GM (Balance Team) <b>Nem_zzi</b> · GM (Ideas) <b>Kaden</b> · Community Jihoo Designer <b>Kaden · Joy_Rider</b> · Contributor <b>Juwon · Joy_Rider · Knight · Tsukasa</b> · Special Thanks <b>김민준</b>.' },
+      ] },
+    ],
+  },
   '7.7.1': {
     label: 'v7.7.1 히든 지후 한계돌파 · 밸런스 · 버그 수정',
     date: '2026.10.14',
@@ -38503,8 +38579,12 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 const CREDITS = [
   { role: 'DEVELOPER', ko: '개발', names: ['Solyening'] },
   { role: 'SCRIPTER', ko: '스크립트', names: ['Coderabbit', 'Claude'] },
+  { role: 'GM · BALANCE TEAM', ko: '밸런스', names: ['Nem_zzi'] }, // 7.7.2
+  { role: 'GM · IDEAS', ko: '아이디어', names: ['Kaden'] },
+  { role: 'COMMUNITY JIHOO DESIGNER', ko: '커뮤니티 지후 디자인', names: ['Kaden', 'Joy_Rider'] },
   { role: 'TESTER', ko: '테스트', names: ['월1수'] },
-  { role: 'CONTRIBUTOR', ko: '도움', names: ['Kaden', 'Tsukasa'] }
+  { role: 'CONTRIBUTOR', ko: '도움', names: ['Juwon', 'Joy_Rider', 'Knight', 'Tsukasa'] },
+  { role: 'SPECIAL THANKS', ko: '고마운 분', names: ['김민준'] },
 ];
 const CREDITS_SPEED = 38; // px/s
 const credits = { raf: 0, last: 0, idleUntil: 0, io: null, pos: 0 };
@@ -38944,6 +39024,10 @@ function renderMailDot() {
   const n = unreadMailCount();
   dot.hidden = !n; dot.textContent = n > 9 ? '9+' : String(n);
 }
+// 7.7.2 우편으로 받은 지후는 무엇이 나왔는지 뽑기 연출 · 문구로 확실히 보여 준다
+let mailGot = [];
+function mailGotText() { return mailGot.length ? ` · 획득: ${mailGot.map(g => `<b>${escapeHtml(CHAR_DB[g.id]?.name || g.id)}</b>${g.duplicate ? ` (중복 · 조각 +${DUPLICATE_SHARDS})` : ' (신규!)'}`).join(', ')}` : ''; }
+function mailRevealGot() { const list = mailGot; mailGot = []; if (list.length) setTimeout(() => playSummonReveal(list), 250); }
 function claimMail(mail) {
   if (!mail || mail.claimed) return false;
   if (mailExpired(mail)) { purgeExpiredMail(); return false; } // 6.0.3
@@ -38955,7 +39039,7 @@ function claimMail(mail) {
     else if (r.kind === 'gold') profile.gold += r.amount;
     else if (r.kind === 'legendChar' || r.kind === 'epicChar') { // 4.4 랜덤 전설 지후 · 4.7.4 랜덤 영웅 지후
       const pool = playableIds().filter(id => CHAR_DB[id].rarity === (r.kind === 'epicChar' ? 'epic' : 'legend'));
-      for (let i = 0; i < r.amount && pool.length; i++) grantCharacter(pool[Math.floor(Math.random() * pool.length)]);
+      for (let i = 0; i < r.amount && pool.length; i++) { const id = pool[Math.floor(Math.random() * pool.length)]; mailGot.push({ id, duplicate: grantCharacter(id) }); } // 7.7.2 무엇이 나왔는지 기록
     }
     else if (r.kind === 'frame') grantFrame(r.id, Math.max(0, Number(r.until) || 0));
     else if (r.kind === 'shard') { if (CHAR_DB[r.id]) profile.shards[r.id] = shardCount(r.id) + r.amount; } // 7.1 지후 조각
@@ -38977,7 +39061,8 @@ function renderMail(message = '') {
     const mail = profile.mail.find(m => m.id === b.dataset.mail);
     if (!claimMail(mail)) return;
     saveProfile(); renderAccountUI(); v4BumpDiamond();
-    renderMail(mail.rewards.length ? `${mailRewardText(mail.rewards)} 받았습니다.` : '');
+    renderMail(mail.rewards.length ? `${mailRewardText(mail.rewards)} 받았습니다.${mailGotText()}` : '');
+    mailRevealGot(); // 7.7.2
   }));
   $('btnMailClaimAll').disabled = !unreadMailCount();
   renderMailDot();
@@ -41606,7 +41691,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const got = (profile.mail || []).filter(m => !m.claimed && claimMail(m));
     if (!got.length) return;
     saveProfile(); renderAccountUI(); v4BumpDiamond();
-    renderMail(`${got.length}개의 우편을 받았습니다.`);
+    renderMail(`${got.length}개의 우편을 받았습니다.${mailGotText()}`);
+    mailRevealGot(); // 7.7.2
   });
   runMailMigrations();
   migrateLook45(); renderAccountUI();
@@ -41761,6 +41847,8 @@ document.addEventListener('DOMContentLoaded', () => {
     finally { button.disabled = false; }
   });
   $('sfxVol').value = sfxState.vol; $('sfxVolLab').textContent = sfxState.vol; // 5.7.6 효과음 음량
+  $('bgmVol').value = bgm.vol; $('bgmVolLab').textContent = bgm.vol; // 7.7.2 배경음악 음량
+  $('bgmVol').addEventListener('input', e => { bgmSetVolume(e.target.value); $('bgmVolLab').textContent = bgm.vol; });
   $('sfxVol').addEventListener('input', e => { sfxSetVolume(e.target.value); $('sfxVolLab').textContent = sfxState.vol; });
   $('sfxVol').addEventListener('change', () => sfx('click'));
   $('reduceMotionSetting').addEventListener('change', e => { profile.settings.reduceMotion = e.target.checked; saveProfile(); });
