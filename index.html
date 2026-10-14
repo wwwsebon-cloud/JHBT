@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.7.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.7.4"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2652,7 +2652,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .settings-option { display:flex;align-items:center;gap:13px;padding:15px;color:#fff;background:#222;border:1px solid #666;border-radius:4px;cursor:pointer; }
 .settings-option-icon { display:grid;place-items:center;width:38px;height:38px;color:#fff;background:#333;border-radius:3px;flex:0 0 auto; }
 .settings-option-copy { flex:1;min-width:0; }.settings-option-copy b { display:block;color:#fff;font-size:14px; }.settings-option-copy small { display:block;color:#bbb;font-size:11px;line-height:1.5;margin-top:3px; }
-.settings-option input { position:absolute;opacity:0;width:1px;height:1px; }
+.settings-option input:not([type="range"]) { position:absolute;opacity:0;width:1px;height:1px; } /* 7.7.4 음량 슬라이더는 숨기지 않는다 (스위치용 체크박스만) */
+.settings-option input[type="range"] { flex:none; margin-left:auto; height:22px; accent-color:#111; cursor:pointer; }
 .settings-switch { width:44px;height:25px;background:#555;border:1px solid #aaa;border-radius:2px;position:relative;flex:0 0 auto;transition:background .14s; }
 .settings-switch::before { content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;background:#ddd;border-radius:1px;transition:transform .14s; }
 .settings-option input:checked + .settings-switch { background:#eee; }.settings-option input:checked + .settings-switch::before { background:#111;transform:translateX(19px); }
@@ -12910,7 +12911,7 @@ const LB_HIDDEN = { gold: 50000, shards: 1, hp: 100, atk: 0.05, skill: 0.05 }; /
 const HIDDEN_LV2 = { // 7.7.2 히든 한계돌파 Lv2 고유 능력
   genesis: '<b>[불멸]</b> 쓰러지면 <b>2.5초</b> 동안 무적이 됐다가 끝나면 쓰러진다',
   inferno: '<b>[인페르노]</b>에 맞은 적 <b>1.2초 기절</b> · [소각] 0.2초마다 <b>240</b> · <b>2.5초</b>',
-  blackflame: '돌진 중 받는 피해 감소 <b>+5%</b> · 공격 간격 <b>-0.1초</b>',
+  blackflame: '돌진 중 받는 피해 감소 <b>+5%</b> · 공격 간격 <b>-0.175초</b>',
   mimic: '<b>변신이 풀리지 않는다</b>',
   solemn: '사거리 <b>+0.5칸</b>',
 };
@@ -21404,7 +21405,7 @@ function spawnUnit(side, x, y, charId, opts) {
   if (hidLb > 0) { // 7.7.2 능력치는 레벨과 상관없이 고정 + Lv2 고유 능력
     def.hp = (def.hp || 0) + LB_HIDDEN.hp; if (def.atk > 0) def.atk = Math.round(def.atk * (1 + LB_HIDDEN.atk));
     if (charId === 'inferno') { def.infTickDmg = 240; def.infBurnTime = 2.5; } // 소각 150 × 4 / 2.5 = 240 · 2.5초
-    if (charId === 'blackflame') { def.flameDashTaken = (def.flameDashTaken ?? 0.15) + 0.05; def.atkSpeed = Math.max(0.1, (def.atkSpeed || 1.75) - 0.1); }
+    if (charId === 'blackflame') { def.flameDashTaken = (def.flameDashTaken ?? 0.15) + 0.05; def.atkSpeed = Math.max(0.1, (def.atkSpeed || 1.75) - 0.175); /* 7.7.4 -0.1 → -0.175초 */ }
     if (charId === 'solemn') def.range = (def.range || 225) + 22.5; // 사거리 +0.5칸 (45px 격자 기준 · 아래에서 크기 변환)
   } // 4.2: 내 지후의 랭크 효과 (레벨업 배율은 이 값을 기준으로 곱해진다)
   applyLbStepsToDef(def, charId, unitLbSteps(side, charId)); // 7.3.6 한계돌파 Lv2 · Lv4
@@ -35633,6 +35634,18 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.7.4': {
+    label: 'v7.7.4 흑염룡 돌파 · 설정 음량 슬라이더',
+    date: '2026.10.14',
+    sections: [
+      { title: '히든 지후 한계돌파', items: [
+        { emoji:'🐉', name:'흑염룡 Lv2', tag:'buff', color:'#3a3a3a', portraitKey:'blackflame', desc:'공격 간격 <b>-0.1초 → -0.175초</b> (1.75 → <b>1.575초</b>).' },
+      ] },
+      { title: '버그 수정', items: [
+        { emoji:'🎚', name:'음량 슬라이더', tag:'fix', color:'#f08c00', desc:'설정에서 <b>배경음악 · 효과음 음량</b> 슬라이더가 보이지 않던 문제를 고쳤어요.' },
+      ] },
+    ],
+  },
   '7.7.3': {
     label: 'v7.7.3 신규 등급 · 시크릿',
     date: '2026.10.14',
