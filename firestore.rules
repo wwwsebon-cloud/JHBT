@@ -180,7 +180,18 @@ service cloud.firestore {
     // 5.7.4 서버 점검: 누구나 읽고(로그인 전에도), 운영자만 켜고 끈다
     // 6.0 전체 공지: config/announce = { on, msg, by, at } 도 같은 방식 (누구나 읽고 운영자만 쓴다)
     match /config/{docId} {
-      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired';
+      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired' || docId == 'tierlist';
+      // 7.7.6 공식 티어표: config/tierlist = { ver, date, note, tiers, stats, by, at } — 개발자 모드 티어 측정에서 반영
+      allow write: if docId == 'tierlist' && request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && request.resource.data.keys().hasOnly(['ver', 'date', 'note', 'tiers', 'stats', 'by', 'at'])
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 12
+        && request.resource.data.date is string && request.resource.data.date.size() <= 12
+        && request.resource.data.note is string && request.resource.data.note.size() <= 120
+        && request.resource.data.tiers is map && request.resource.data.tiers.size() <= 7
+        && request.resource.data.stats is map && request.resource.data.stats.size() <= 400
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
       allow list: if false;
       // 6.0.3 즉시 만료: config/expired = { codes: [코드…], mails: [우편 id…], by, at }
       allow write: if docId == 'expired' && request.auth != null
