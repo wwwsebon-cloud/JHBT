@@ -32,6 +32,11 @@ def portraits(ids):
         m = re.search(r"^  " + re.escape(pid) + r": '(data:image/[^']+)'", src[start:], re.M)
         if m:
             out[pid] = m.group(1)
+        else:  # 초상화 키가 id 와 다른 지후 (예: 강화 → enhance_lv1)
+            k = re.search(r"^    id: '" + re.escape(pid) + r"',.{0,400}?portrait: PORTRAITS\.(\w+)", src, re.M | re.S)
+            m = k and re.search(r"^  " + k.group(1) + r": '(data:image/[^']+)'", src[start:], re.M)
+            if m:
+                out[pid] = m.group(1)
     return out
 
 
