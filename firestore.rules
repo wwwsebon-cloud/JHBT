@@ -4,6 +4,15 @@ service cloud.firestore {
     function owner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
+    // 7.8.1 계정 밴: bans/{uid} 문서가 있고 기간(until, ms · 0 = 영구)이 남아 있으면 정지된 계정
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function banned() {
+      return request.auth != null && exists(/databases/$(database)/documents/bans/$(request.auth.uid))
+        && (get(/databases/$(database)/documents/bans/$(request.auth.uid)).data.until == 0
+          || get(/databases/$(database)/documents/bans/$(request.auth.uid)).data.until > request.time.toMillis());
+    }
 
     function validDeck(deck) {
       return deck is list && deck.size() <= 5
@@ -123,12 +132,12 @@ service cloud.firestore {
 
     match /chat/{id} {
       allow get, list: if true;
-      allow create: if request.auth != null && validChat(request.resource.data);
+      allow create: if request.auth != null && !banned() && validChat(request.resource.data);
     }
 
     match /events/{id} {
       allow get, list: if true;
-      allow create: if request.auth != null && validEvent(request.resource.data);
+      allow create: if request.auth != null && !banned() && validEvent(request.resource.data);
     }
 
     match /nicknames/{key} {
@@ -172,7 +181,7 @@ service cloud.firestore {
     match /compLeaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
-      allow create, update: if owner(userId) && validCompLeaderboard(request.resource.data);
+      allow create, update: if owner(userId) && !banned() && validCompLeaderboard(request.resource.data);
     }
 
     // 5.4 협동전 리더보드: 최고 웨이브 · 덱
@@ -224,6 +233,18 @@ service cloud.firestore {
         && request.resource.data.by == request.auth.uid
         && request.resource.data.at == request.time;
     }
+    match /bans/{userId} {
+      allow get: if owner(userId) || isAdmin();
+      allow list, delete: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['n', 'r', 'until', 'by', 'at'])
+        && request.resource.data.n is string && request.resource.data.n.size() <= 12
+        && request.resource.data.r is string && request.resource.data.r.size() <= 100
+        && request.resource.data.until is int && request.resource.data.until >= 0
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+    }
+
     match /admins/{userId} {
       allow get: if owner(userId);
       allow list, write: if false;
@@ -252,7 +273,7 @@ service cloud.firestore {
     match /coopLeaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
-      allow create, update: if owner(userId)
+      allow create, update: if owner(userId) && !banned()
         && request.resource.data.keys().hasAll(['nickname', 'wave', 'deck', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['nickname', 'wave', 'deck', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
@@ -265,7 +286,7 @@ service cloud.firestore {
     match /classLeaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
-      allow create, update: if owner(userId)
+      allow create, update: if owner(userId) && !banned()
         && request.resource.data.keys().hasAll(['nickname', 'cp', 'best', 'deck', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['nickname', 'cp', 'best', 'deck', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
@@ -290,18 +311,18 @@ service cloud.firestore {
     match /leaderboard/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
-      allow create, update: if owner(userId) && validLeaderboard(request.resource.data);
+      allow create, update: if owner(userId) && !banned() && validLeaderboard(request.resource.data);
     }
 
     match /seasons/{season}/lb/{userId} {
       allow get, list: if true;
-      allow create, update: if owner(userId) && currentSeason(season) && validSeasonLb(request.resource.data);
+      allow create, update: if owner(userId) && !banned() && currentSeason(season) && validSeasonLb(request.resource.data);
     }
 
     // 4.5: 경쟁전은 지난 시즌 최종 기록(finalSnap)도 한 번 올린다 → 이번 달 · 다음 달 · 지난 달 시즌 허용
     match /seasons/{season}/comp/{userId} {
       allow get, list: if true;
-      allow create, update: if owner(userId) && (currentSeason(season) || int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 9) && validCompLeaderboard(request.resource.data);
+      allow create, update: if owner(userId) && !banned() && (currentSeason(season) || int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 9) && validCompLeaderboard(request.resource.data);
     }
     // ── 5.0 친구 · 접속 상태 · 1:1 채팅 · 친선전 ──
     // 접속 상태: 로그인한 사람은 누구나 읽고, 자기 것만 쓴다 (at 는 서버 시각)
