@@ -11,7 +11,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.8.2"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.8.2"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -16227,13 +16227,13 @@ function renderGachaView0(view = gachaView) {
   else stopCombatPreview($('gachaPreview'));
 }
 // 7.1 확률제: 1회마다 지후 조각 1개(꽝) 또는 지후. 중복 지후는 그 지후 조각 10개
-const GACHA_ODDS = [['shard', 76.0975], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.3], ['hidden', 0.1], ['secret', 0.0025]]; // 7.7.3 스페셜 0.0025% // 잠수함: 신화 0.4 → 0.7% · 7.8.2 잠수함: 0.7 → 0.3% (줄인 만큼 꽝) · 가루 76 → 75.7%
-const GACHA_ODDS_PICKUP = [['shard', 75.5975], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.8], ['mythic', 0.6], ['hidden', 0], ['secret', 0.0025]]; // 잠수함: 신규 지후 뽑기 전설 2.8 · 신화 1 · 7.8.2 잠수함: 신화 1 → 0.6% (줄인 만큼 꽝) · 히든 0%
+const GACHA_ODDS = [['shard', 76.1], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.3], ['hidden', 0.1], ['secret', 0]]; // 7.8.2 빌드 3: 스페셜은 뽑기에서 안 나온다 (0.0025% → 꽝) // 7.7.3 스페셜 0.0025% // 잠수함: 신화 0.4 → 0.7% · 7.8.2 잠수함: 0.7 → 0.3% (줄인 만큼 꽝) · 가루 76 → 75.7%
+const GACHA_ODDS_PICKUP = [['shard', 75.6], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.8], ['mythic', 0.6], ['hidden', 0], ['secret', 0]]; // 7.8.2 빌드 3: 스페셜 제외 // 잠수함: 신규 지후 뽑기 전설 2.8 · 신화 1 · 7.8.2 잠수함: 신화 1 → 0.6% (줄인 만큼 꽝) · 히든 0%
 const gachaOddsFor = mode => mode === 'newpickup' ? GACHA_ODDS_PICKUP : GACHA_ODDS;
 const GACHA_DUST_AMOUNTS = [[1, 50], [2, 30], [3, 20]]; // 7.6 꽝 가루 개수: 1개 50% · 2개 30% · 3개 20%
 const GACHA_SHARD_ODDS = [['common', 50], ['rare', 40], ['epic', 6], ['legend', 3], ['mythic', 1]];
 const GACHA_BOX_PULLS = 10; // 지후 상자 = 10회 뽑기
-function gachaWeighted(list) { let r = Math.random() * list.reduce((s, x) => s + x[1], 0); for (const [k, w] of list) { r -= w; if (r < 0) return k; } return list[list.length - 1][0]; }
+function gachaWeighted(list) { list = list.filter(x => x[1] > 0); /* 7.8.2 확률 0 은 절대 안 나오게 (마지막 칸으로 떨어지는 반올림 오차 막기) */ let r = Math.random() * list.reduce((s, x) => s + x[1], 0); for (const [k, w] of list) { r -= w; if (r < 0) return k; } return list[list.length - 1][0]; }
 // 신화 지후가 아직 없으면 전설로 (신화 지후가 들어오면 자동으로 신화가 나온다)
 function rarityPool(r) { if (r === 'secret') return Object.keys(CHAR_DB).filter(id => CHAR_DB[id].secret); let pool = playableIds().filter(id => CHAR_DB[id].rarity === r); if (!pool.length && r === 'mythic') pool = playableIds().filter(id => CHAR_DB[id].rarity === 'legend'); return pool; }
 // 7.1.1 지후 모집 중: 10회 뽑기 결과가 나오기 전 3초 동안 배경에 지후가 떠다닌다. 확률과는 상관없는 '예측' 연출 (결과를 보고 고른다)
@@ -16269,7 +16269,7 @@ function gachaRecruitLoading(results, done) {
 }
 function gachaOddsHtml(mode = gachaView) { // 7.1 첫 줄은 확률 막대가 읽는다
   const pk = gachaOddsFor(mode) === GACHA_ODDS_PICKUP;
-  return (pk ? '1회: 가루 75.5975% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.8% · 신화 0.6% · 히든 0% · 스페셜 0.0025%<br>' : '1회: 가루 76.0975% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.3% · 히든 0.1% · 스페셜 0.0025%<br>')
+  return (pk ? '1회: 가루 75.6% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.8% · 신화 0.6% · 히든 0%<br>' : '1회: 가루 76.1% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.3% · 히든 0.1%<br>')
     + `${dustIco()} 가루(꽝)는 무작위 지후의 가루 <b>1~3개</b> (1개 50% · 2개 30% · 3개 20%) · 지후 등급: 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1% · 인벤토리에서 가루 ${DUST_PER_SHARD}개 + ● ${formatNumber(DUST_SWAP_GOLD)} = 그 지후 ${shardIco()} 조각 1개<br>`
     + `중복 지후는 그 지후 ${shardIco()} 조각 ${DUPLICATE_SHARDS}개 · 지후 상자는 ${GACHA_BOX_PULLS}회 뽑기<br>`
     + `천장: 전설 이상 지후 없이 ${GACHA_PITY}번째 뽑기는 전설 지후 확정 · 마일리지: 가루 ${MILEAGE_DUST}P · 일반 ${MILEAGE_POINTS.common}P · 희귀 ${MILEAGE_POINTS.rare}P · 영웅 ${MILEAGE_POINTS.epic}P · 전설 ${MILEAGE_POINTS.legend}P · 신화 ${MILEAGE_POINTS.mythic}P<br>`
