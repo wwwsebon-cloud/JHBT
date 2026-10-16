@@ -245,6 +245,21 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
     }
 
+    // 7.8.2 티어 측정 표본 공유 (개발자 모드): 운영자만 읽고 쓴다. 기기마다 문서 하나 (판 조합을 짧게 줄인 문자열)
+    match /tiersim/{device} {
+      allow read, delete: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      allow create, update: if request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && device.size() <= 24
+        && request.resource.data.keys().hasOnly(['ver', 'n', 'ids', 'g', 'st', 'by', 'at'])
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 12
+        && request.resource.data.n is int && request.resource.data.n >= 0
+        && request.resource.data.ids is list && request.resource.data.ids.size() <= 400
+        && request.resource.data.g is string && request.resource.data.g.size() <= 900000
+        && request.resource.data.st is map && request.resource.data.st.size() <= 400
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+    }
     match /admins/{userId} {
       allow get: if owner(userId);
       allow list, write: if false;
