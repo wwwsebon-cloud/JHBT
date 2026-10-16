@@ -39,7 +39,7 @@ window.__fight = function (allyIds, enemyIds) {
   const alive = s => state.units.filter(u => u.side === s && u.alive && !u.isCastle && !u.skipCount).length;
   res.aliveA = alive('ally'); res.aliveE = alive('enemy');
   res.spawnA = spawned.ally.length; res.spawnE = spawned.enemy.length;
-  res.rows = state.units.filter(u => !u.isCastle && !u.ownerUid && !u.isClone && !u.skipCount).map(u => ({ id: u.charId, side: u.side, dealt: Math.round(u.dmgDealt || 0), taken: Math.round(u.dmgTaken || 0), kills: u._kills || 0, alive: !!u.alive }));
+  res.rows = state.units.filter(u => !u.isCastle && !u.ownerUid && !u.isClone && !u.skipCount).map(u => ({ id: u.charId, side: u.side, dealt: Math.round(u.dmgDealt || 0), taken: Math.round(u.dmgTaken || 0), kills: u._kills || 0, alive: !!u.alive, hp: u.alive ? Math.max(0, Math.min(1, u.hp / (u.maxHp || 1))) : 0 })); // 7.8.2 남은 체력 비율 (팀 실력 모델 결과 점수)
   cancelRuntimeTasks();
   return res;
 };

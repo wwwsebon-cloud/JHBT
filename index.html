@@ -11,7 +11,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.8.1"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.8.1"><meta name="jihoo-build" content="4"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8672,7 +8672,7 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
     </div>
     <div id="devTierBox" class="v55-devgift" hidden>
       <b>📊 티어리스트 측정 (5:5)</b>
-      <small>버튼을 누르고 화면을 켜 둔 채 기다리면 돼요. 무작위 10기를 5:5로 붙여 승률로 1~6티어를 만들어요. 결과는 쌓이니까 여러 번 돌릴수록 정확해져요 (A랭크 기준 · 내 지후 랭크 · 기록에는 영향 없음)</small>
+      <small>버튼을 누르고 화면을 켜 둔 채 기다리면 돼요. 무작위 10기를 5:5로 붙이고, <b>팀 실력 모델</b>로 같은 팀 · 상대 팀 운을 걸러 낸 점수로 1~6티어를 만들어요. 결과는 쌓이니까 여러 번 돌릴수록 정확해져요 (A랭크 기준 · 내 지후 랭크 · 기록에는 영향 없음)</small>
       <div class="v55-devrow"><select class="text-field" id="devTierLen" aria-label="측정 길이"><option value="t1">1분</option><option value="t3">3분</option><option value="t5" selected>5분</option><option value="t10">10분</option><option value="t20">20분</option><option value="t30">30분</option><option value="g200">200판</option><option value="g500">500판</option><option value="g1000">1,000판</option><option value="g2000">2,000판</option></select><button type="button" class="btn btn-primary" id="btnTierStart">▶ 측정 시작</button><button type="button" class="btn btn-secondary" id="btnTierStop" hidden>■ 중지</button></div>
       <div class="v60-tierbar" id="devTierBar" hidden><i id="devTierFill"></i></div>
       <div class="settlement-note" id="devTierNote" aria-live="polite"></div>
@@ -10556,6 +10556,21 @@ window.JIHOO_FIREBASE_CONFIG = {
     if (!database) return () => {};
     return sdk.onSnapshot(sdk.doc(database, 'config', 'tierlist'), snap => { if (snap.exists()) fn(snap.data()); }, () => {});
   }
+  // 7.8.2 티어 측정 표본 공유: tiersim/{기기} = { ver, n, ids, g, st, by, at } — 운영자 기기마다 자기 판만 올리고, 모든 기기의 판을 합쳐 계산한다
+  async function tierSimPut(device, data) {
+    me();
+    await sdk.setDoc(sdk.doc(database, 'tiersim', String(device).slice(0, 24)), { ver: String(data.ver).slice(0, 12), n: Math.max(0, Math.floor(data.n) || 0), ids: data.ids.slice(0, 400), g: String(data.g), st: data.st, by: auth.currentUser.uid, at: sdk.serverTimestamp() });
+  }
+  async function tierSimAll() {
+    me();
+    const snap = await sdk.getDocs(sdk.collection(database, 'tiersim'));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  async function tierSimClearAll() {
+    me();
+    const snap = await sdk.getDocs(sdk.collection(database, 'tiersim'));
+    await Promise.all(snap.docs.map(d => sdk.deleteDoc(d.ref)));
+  }
   async function tierSet(t) {
     me();
     await sdk.setDoc(sdk.doc(database, 'config', 'tierlist'), { ver: String(t.ver).slice(0, 12), date: String(t.date).slice(0, 12), note: String(t.note).slice(0, 120), tiers: t.tiers, stats: t.stats, by: auth.currentUser.uid, at: sdk.serverTimestamp() });
@@ -10667,7 +10682,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { deckLog, init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, tierWatch, tierSet, banSet, banLift, banList, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
+  window.JihooOnline = { deckLog, init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, tierWatch, tierSet, tierSimPut, tierSimAll, tierSimClearAll, banSet, banLift, banList, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -39870,13 +39885,58 @@ setInterval(() => { if (document.visibilityState === 'visible') checkGiftMail();
 // tools/tierlist 의 시뮬을 게임 안으로 옮긴 것: 화면 그리기 · 소리 · 저장을 끄고 전투만 최대 속도로 돌린다.
 // 계산 시간 5분이 찰 때까지 무작위 10기를 5:5로 붙이고(모든 지후가 거의 같은 횟수 나오게), 끝나면 원래대로 되돌린다.
 // 결과는 localStorage 에 쌓인다 (이 기기 · 개발자만).
-const TIERSIM_KEY = 'jihooBattle.tierSim.v1', TIERSIM_BUDGET_MS = 5 * 60 * 1000;
+const TIERSIM_KEY = 'jihooBattle.tierSim.v2', TIERSIM_BUDGET_MS = 5 * 60 * 1000; // 7.8.2 v2: 판마다 조합까지 저장 (팀 실력 모델용)
+const TIERSIM_MAX_GAMES = 30000; // 기기에 남기는 판 수 (넘으면 오래된 판부터 버린다)
 function tierSimLimit() { // 7.7.6 길이 고르기: t분 (계산 시간) 또는 g판
   const v = String(($('devTierLen') || {}).value || 't5'), n = Number(v.slice(1)) || 5;
   return v[0] === 'g' ? { games: n, label: `${n.toLocaleString()}판` } : { ms: n * 60 * 1000, label: `${n}분` };
 }
 const TIERSIM = { running: false, stop: false, res: null };
-function tierSimLoad() { try { const d = JSON.parse(localStorage.getItem(TIERSIM_KEY) || 'null'); if (d && d.st && d.games) return d; } catch (error) {} return { games: 0, st: {}, runs: 0 }; }
+function tierSimLoad() { // 버전이 바뀌면(밸런스가 바뀌었으니) 이 기기의 표본은 새로 시작한다
+  try { const d = JSON.parse(localStorage.getItem(TIERSIM_KEY) || 'null'); if (d && d.st && d.games && Array.isArray(d.g) && d.ver === jihooVersionLabel()) return d; } catch (error) {}
+  return { games: 0, st: {}, runs: 0, g: [], ver: jihooVersionLabel() };
+}
+// 7.8.2 기기 사이 동기화: 운영자 기기마다 자기가 돌린 판만 tiersim/{기기} 에 올리고, 같은 버전인 모든 기기의 판을 합쳐 계산한다 (중복 없음)
+const TIERSIM_DEV_KEY = 'jihooBattle.tierSim.device';
+function tierSimDevice() { try { let v = localStorage.getItem(TIERSIM_DEV_KEY); if (!v) { v = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); localStorage.setItem(TIERSIM_DEV_KEY, v); } return v; } catch (error) { return 'd-temp'; } }
+function tierSimEncode(d) { // 판 하나 = 지후 번호 10개(2글자씩) + 결과 점수 2글자(0~100) → 22글자
+  const ids = [...new Set([...Object.keys(d.st), ...d.g.flatMap(l => String(l).split('|').slice(0, 2).join(',').split(','))])].filter(Boolean);
+  const ix = new Map(ids.map((id, i) => [id, i.toString(36).padStart(2, '0')]));
+  const g = d.g.map(l => { const [a, e, y] = String(l).split('|'); return [...a.split(','), ...e.split(',')].map(id => ix.get(id)).join('') + Math.round(Math.min(1, Math.max(0, Number(y) || 0)) * 100).toString(36).padStart(2, '0'); }).join('');
+  return { ver: d.ver, n: d.g.length, ids, g, st: d.st };
+}
+function tierSimDecode(doc) {
+  const ids = doc.ids || [], g = String(doc.g || ''), out = [];
+  for (let i = 0; i + 22 <= g.length; i += 22) {
+    const t = []; for (let k = 0; k < 10; k++) t.push(ids[parseInt(g.slice(i + k * 2, i + k * 2 + 2), 36)]);
+    if (t.some(x => !x)) continue;
+    out.push(t.slice(0, 5).join(',') + '|' + t.slice(5).join(',') + '|' + parseInt(g.slice(i + 20, i + 22), 36) / 100);
+  }
+  return out;
+}
+function tierSimMerged() { // 이 기기 + 다른 운영자 기기(같은 버전)의 판을 모두 합친다
+  const d = tierSimLoad(), me = tierSimDevice(), ver = jihooVersionLabel();
+  const m = { games: d.games, runs: d.runs, st: JSON.parse(JSON.stringify(d.st)), g: d.g.slice(), devices: d.games ? 1 : 0 };
+  (TIERSIM.remote || []).filter(x => x.id !== me && x.ver === ver && x.n > 0).forEach(x => {
+    const g = tierSimDecode(x); m.g.push(...g); m.games += g.length; m.devices++;
+    Object.entries(x.st || {}).forEach(([id, o]) => { const t = m.st[id] || (m.st[id] = { w: 0, n: 0, sh: 0 }); t.w += o.w || 0; t.n += o.n || 0; t.sh += o.sh || 0; });
+  });
+  return m;
+}
+async function tierSimSync(upload) { // 운영자 계정이면: (upload 면) 내 판을 올리고, 모든 기기의 판을 받아 온다
+  const O = window.JihooOnline;
+  if (!O || !O.connected() || !O.tierSimAll) { TIERSIM.syncMsg = '온라인 운영자 계정으로 로그인하면 다른 기기의 측정과 합쳐져요.'; return false; }
+  try {
+    if (upload) { const d = tierSimLoad(); if (d.games) await O.tierSimPut(tierSimDevice(), tierSimEncode(d)); }
+    TIERSIM.remote = await O.tierSimAll(); TIERSIM.synced = Date.now();
+    const others = TIERSIM.remote.filter(x => x.id !== tierSimDevice() && x.ver === jihooVersionLabel() && x.n > 0);
+    TIERSIM.syncMsg = others.length ? `다른 기기 ${others.length}대의 측정 ${others.reduce((t, x) => t + x.n, 0).toLocaleString()}판을 합쳤어요.` : '다른 기기의 같은 버전 측정은 아직 없어요.';
+    return true;
+  } catch (error) {
+    TIERSIM.syncMsg = /permission|insufficient/i.test(String(error && (error.code || error.message))) ? '기기 동기화 권한이 없어요 (운영자 계정 · 새 firestore.rules 게시 필요).' : '기기 동기화에 실패했어요: ' + (error && (error.code || error.message) || error);
+    return false;
+  }
+}
 function tierSimSave(d) { try { localStorage.setItem(TIERSIM_KEY, JSON.stringify(d)); } catch (error) {} }
 function tierSimFight(allyIds, enemyIds) { // tools/tierlist/harness.js 의 __fight 와 같다
   cancelRuntimeTasks();
@@ -39898,35 +39958,113 @@ function tierSimFight(allyIds, enemyIds) { // tools/tierlist/harness.js 의 __fi
   let ts = state.combatStartTs, guard = 0;
   while (state.phase === 'combat' && guard++ < 4000) { ts += 100; combatTick(ts); }
   const res = TIERSIM.res || { w: 'draw', t: state.combatTime, stuck: true };
-  const rows = state.units.filter(u => !u.isCastle && !u.ownerUid && !u.isClone && !u.skipCount).map(u => ({ id: u.charId, side: u.side, dealt: Math.round(u.dmgDealt || 0) }));
+  const rows = state.units.filter(u => !u.isCastle && !u.ownerUid && !u.isClone && !u.skipCount).map(u => ({ id: u.charId, side: u.side, dealt: Math.round(u.dmgDealt || 0), hp: u.alive ? Math.max(0, Math.min(1, u.hp / (u.maxHp || 1))) : 0 })); // 7.8.2 hp: 남은 체력 비율 (승리 여유)
   cancelRuntimeTasks();
   return { w: res.w, rows };
+}
+// 7.8.2 결과 점수 = 얼마나 여유 있게 이겼나: 0.5 + (아군 남은 체력 − 적 남은 체력) / 2 (각 팀 5기 기준 0~1).
+//   그냥 승패(0/1)보다 판마다 정보가 많아서, 실제 시뮬 2,400판을 반으로 나눠 비교했을 때 순위가 더 잘 맞았다 (0.62 → 0.71)
+function tierMargin(r, fallback) {
+  if (!r || !Array.isArray(r.rows) || !r.rows.some(x => x.hp != null)) return fallback;
+  const rem = side => r.rows.filter(x => x.side === side).reduce((t, x) => t + (x.hp || 0), 0) / 5;
+  return Math.round(Math.min(1, Math.max(0, 0.5 + 0.5 * (rem('ally') - rem('enemy')))) * 100) / 100;
 }
 function tierSimAdd(d, a, e, r) { // tools/tierlist/agg.js 와 같은 계산
   if (!r || r.w === 'err') return;
   const sc = side => r.w === side ? 1 : r.w === 'draw' ? 0.5 : 0;
+  (d.g || (d.g = [])).push(a.join(',') + '|' + e.join(',') + '|' + tierMargin(r, sc('ally'))); // 7.8.2 조합 · 결과 (팀 실력 모델)
+  if (d.g.length > TIERSIM_MAX_GAMES) d.g.splice(0, d.g.length - TIERSIM_MAX_GAMES);
   const tot = { ally: 0, enemy: 0 }; (r.rows || []).forEach(x => { tot[x.side] += x.dealt; });
   for (const [side, ids] of [['ally', a], ['enemy', e]]) ids.forEach(id => { const o = d.st[id] || (d.st[id] = { w: 0, n: 0, sh: 0 }); o.n++; o.w += sc(side); });
   (r.rows || []).forEach(x => { const o = d.st[x.id]; if (o) o.sh += tot[x.side] ? x.dealt / tot[x.side] : 0; });
   d.games++;
 }
-function tierSimTable(d) { // 승률 순위 비율로 1~6티어 (5% · 15% · 21% · 20% · 23% · 나머지)
-  const out = Object.entries(d.st).filter(([, o]) => o.n > 0).map(([id, o]) => ({ id, r5: o.w / o.n, n5: o.n, sh5: o.sh / o.n * 5 })).sort((x, y) => y.r5 - x.r5);
-  const cuts = [0.05, 0.20, 0.41, 0.61, 0.84, 1];
-  out.forEach((x, i) => { const q = (i + 0.5) / out.length; x.tier = String(cuts.findIndex(c => q <= c) + 1); });
+// 7.8.2 팀 실력 모델 (Bradley-Terry): 지후마다 숨은 점수 s 가 있고, 우리 팀 점수 합 − 상대 팀 점수 합으로 이길 확률이 정해진다고 본다.
+//   P(아군 승) = 1 / (1 + e^-(Σ아군 s − Σ적 s)). 결과는 0~1 점수(tierMargin)로 넣는다. 모든 판에 가장 잘 맞는 s 를 찾으면 '누구랑 같은 팀이었는지'가 저절로 보정된다
+//   (약한 지후가 강한 팀원 덕에 이긴 판은 그 공이 강한 팀원에게 간다). 뉴턴법 + 약한 정규화(판이 적은 지후는 0 쪽으로 당긴다).
+//   tools/tierlist/agg.js 와 같은 계산
+function tierFit(games, lambda = 0.5) {
+  const idx = new Map(), rows = [];
+  for (const line of games) {
+    const [a, e, y] = String(line).split('|'); if (!a || !e) continue;
+    const id = k => { if (!idx.has(k)) idx.set(k, idx.size); return idx.get(k); };
+    rows.push({ a: a.split(',').map(id), e: e.split(',').map(id), y: Number(y) });
+  }
+  const n = idx.size, s = new Float64Array(n);
+  const sig = z => 1 / (1 + Math.exp(-z));
+  let H = null;
+  for (let it = 0; it < 30; it++) {
+    const g = new Float64Array(n); H = Array.from({ length: n }, () => new Float64Array(n));
+    for (let i = 0; i < n; i++) { g[i] = -lambda * s[i]; H[i][i] = lambda; }
+    for (const r of rows) {
+      let z = 0; r.a.forEach(i => { z += s[i]; }); r.e.forEach(i => { z -= s[i]; });
+      const p = sig(z), w = p * (1 - p), d = r.y - p, xs = [];
+      r.a.forEach(i => xs.push([i, 1])); r.e.forEach(i => xs.push([i, -1]));
+      for (const [i, xi] of xs) { g[i] += d * xi; for (const [j, xj] of xs) H[i][j] += w * xi * xj; }
+    }
+    const step = tierSolve(H.map(row => Float64Array.from(row)), g);
+    let mx = 0; for (let i = 0; i < n; i++) { s[i] += step[i]; mx = Math.max(mx, Math.abs(step[i])); }
+    if (mx < 1e-6) break;
+  }
+  const inv = tierInvDiag(H), mean = s.reduce((t, v) => t + v, 0) / (n || 1), out = {};
+  for (const [k, i] of idx) out[k] = { s: s[i] - mean, se: Math.sqrt(Math.max(0, inv[i])) };
+  return out;
+}
+function tierSolve(A, b) { // 가우스 소거 (A 는 대칭 양정치)
+  const n = b.length, x = Float64Array.from(b);
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [x[c], x[p]] = [x[p], x[c]];
+    const d = A[c][c] || 1e-12;
+    for (let r = c + 1; r < n; r++) { const f = A[r][c] / d; if (!f) continue; for (let k = c; k < n; k++) A[r][k] -= f * A[c][k]; x[r] -= f * x[c]; }
+  }
+  for (let r = n - 1; r >= 0; r--) { let t = x[r]; for (let k = r + 1; k < n; k++) t -= A[r][k] * x[k]; x[r] = t / (A[r][r] || 1e-12); }
+  return x;
+}
+function tierInvDiag(H) { // 점수 오차 = 헤세 역행렬의 대각 (가우스-조르당 한 번)
+  const n = H.length, A = H.map((row, i) => { const r = new Float64Array(2 * n); r.set(row); r[n + i] = 1; return r; });
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]];
+    const d = A[c][c] || 1e-12; for (let k = c; k < 2 * n; k++) A[c][k] /= d;
+    for (let r = 0; r < n; r++) { if (r === c) continue; const f = A[r][c]; if (!f) continue; for (let k = c; k < 2 * n; k++) A[r][k] -= f * A[c][k]; }
+  }
+  return Float64Array.from({ length: n }, (_, i) => A[i][n + i]);
+}
+function tierBreaks(vals, k = 6, minSize = 2) { // 점수가 크게 벌어지는 곳에서 자른다 (1차원 최적 k-평균 · 한 티어 최소 2기)
+  const n = vals.length; if (n <= k) return vals.map((_, i) => i);
+  const pre = [0], pre2 = [0]; vals.forEach(v => { pre.push(pre[pre.length - 1] + v); pre2.push(pre2[pre2.length - 1] + v * v); });
+  const cost = (i, j) => { const m = j - i, t = pre[j] - pre[i]; return pre2[j] - pre2[i] - t * t / m; }; // [i, j)
+  const D = Array.from({ length: k + 1 }, () => new Array(n + 1).fill(Infinity)), B = Array.from({ length: k + 1 }, () => new Array(n + 1).fill(0));
+  D[0][0] = 0;
+  for (let c = 1; c <= k; c++) for (let j = c * minSize; j <= n; j++) for (let i = (c - 1) * minSize; i <= j - minSize; i++) { const v = D[c - 1][i] + cost(i, j); if (v < D[c][j]) { D[c][j] = v; B[c][j] = i; } }
+  const cls = new Array(n); let j = n;
+  for (let c = k; c >= 1; c--) { const i = B[c][j]; for (let t = i; t < j; t++) cls[t] = c - 1; j = i; }
+  return cls;
+}
+function tierSimTable(d) { // 7.8.2 팀 실력 모델 점수 순 · 점수가 크게 벌어지는 곳에서 1~6티어
+  const fit = tierFit(d.g || []), sig = z => 1 / (1 + Math.exp(-z));
+  const out = Object.entries(d.st).filter(([id, o]) => o.n > 0 && fit[id]).map(([id, o]) => {
+    const f = fit[id];
+    // r5: 평균 팀원 4기와 함께 평균 팀을 상대로 이길 확률 (팀원 · 상대 보정된 승률) · raw: 그냥 낀 판 승률
+    return { id, sc: f.s, se: f.se, r5: sig(f.s), err: sig(f.s) * (1 - sig(f.s)) * f.se, raw: o.w / o.n, n5: o.n, sh5: o.sh / o.n * 5 };
+  }).sort((x, y) => y.sc - x.sc);
+  const cls = tierBreaks(out.map(x => x.sc));
+  out.forEach((x, i) => { x.tier = String(cls[i] + 1); });
   return out;
 }
 function tierSimRender() {
   const box = $('devTierResult'); if (!box) return;
-  const d = tierSimLoad(), has = d.games > 0;
+  if (!TIERSIM.synced && !TIERSIM.syncing && !TIERSIM.running) { TIERSIM.syncing = true; tierSimSync(false).finally(() => { TIERSIM.syncing = false; TIERSIM.synced = TIERSIM.synced || -1; tierSimRender(); }); } // 7.8.2 처음 열 때 다른 기기 측정 받아 오기
+  const d = tierSimMerged(), has = d.games > 0;
   $('btnTierCopy').hidden = !has; $('btnTierClear').hidden = !has || TIERSIM.running;
   $('btnTierPublish').hidden = !has || TIERSIM.running; $('btnTierSave').hidden = true;
   if (!has) { box.innerHTML = ''; return; }
-  const out = tierSimTable(d), avgN = out.reduce((t, x) => t + x.n5, 0) / out.length, err = Math.round(Math.sqrt(0.25 / avgN) * 1000) / 10;
+  const out = tierSimTable(d), avgN = out.reduce((t, x) => t + x.n5, 0) / out.length, err = Math.round(out.reduce((t, x) => t + x.err, 0) / out.length * 1000) / 10;
   const hist = typeof TIER_HISTORY === 'object' ? TIER_HISTORY[Object.keys(TIER_HISTORY)[0]] : null, old = {};
   if (hist && hist.tiers) Object.entries(hist.tiers).forEach(([t, ids]) => ids.forEach(id => { old[id] = Number(t) || 0; }));
-  box.innerHTML = `<div class="settlement-note">누적 <b>${d.games.toLocaleString()}판</b> (${d.runs}회) · 지후당 평균 ${Math.round(avgN)}판 · 승률 오차 약 ±${err}%p<br><small>▲▼는 지금 도움말 티어표와 비교한 거예요. 경계 근처의 한 칸 차이는 오차 범위예요.</small></div><div class="v776-tierimg">이미지를 그리는 중…</div>`;
-  tierSimImage(out, old, `5:5 ${d.games.toLocaleString()}판 · 지후당 ${Math.round(avgN)}판 · A랭크 기준`).then(url => {
+  box.innerHTML = `<div class="settlement-note">누적 <b>${d.games.toLocaleString()}판</b> (기기 ${d.devices}대 합산) · 지후당 평균 ${Math.round(avgN)}판 · 점수 오차 약 ±${err}%p<br><small><b>팀 실력 모델</b>: 판마다 같은 팀 · 상대 팀이 누구였는지까지 계산해 지후 한 기의 몫만 뽑아요. 승패만이 아니라 <b>얼마나 여유 있게 이겼는지</b>(남은 체력)까지 봐서 판 수가 같아도 더 정확해요. 이미지의 %는 '평균 팀원 4기와 함께 평균 팀을 상대로 낸 결과 점수'예요. 티어는 점수가 크게 벌어지는 곳에서 나눠요 (비율로 자르지 않음). ▲▼는 지금 도움말 티어표와 비교한 거예요.</small>${TIERSIM.syncMsg ? `<br><small>🔄 ${escapeHtml(TIERSIM.syncMsg)}</small>` : ''}</div><div class="v776-tierimg">이미지를 그리는 중…</div>`;
+  tierSimImage(out, old, `5:5 ${d.games.toLocaleString()}판 · 지후당 ${Math.round(avgN)}판 · 팀 실력 모델 · A랭크 기준`).then(url => {
     const slot = box.querySelector('.v776-tierimg'); if (!slot) return;
     slot.innerHTML = `<img src="${url}" alt="티어리스트">`;
     const save = $('btnTierSave'); save.href = url; save.download = `tierlist-${jihooVersionLabel()}.png`; save.hidden = TIERSIM.running;
@@ -39979,14 +40117,14 @@ async function tierSimImage(out, old, sub) {
 }
 // 7.7.6 측정 결과를 공식 티어표로 반영: config/tierlist 에 올리면 모든 유저의 도움말 · 봇 티어표가 바뀐다
 async function tierSimPublish() {
-  const note = $('devTierNote'), d = tierSimLoad();
+  const note = $('devTierNote'), d = tierSimMerged(); // 7.8.2 모든 기기 합산
   if (!developerMode || !d.games || TIERSIM.running) return;
   const ver = jihooVersionLabel(), out = tierSimTable(d);
   if (!confirm(`이 결과(${d.games.toLocaleString()}판)를 v${ver} 공식 티어표로 반영할까요?\n모든 유저의 도움말 티어리스트와 봇 덱 고르기가 바로 바뀌어요.`)) return;
   const tiers = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }, stats = {};
-  out.forEach(x => { tiers[x.tier].push(x.id); stats[x.id] = { r5: Math.round(x.r5 * 1000) / 1000, n5: x.n5, sh5: Math.round(x.sh5 * 1000) / 1000 }; });
+  out.forEach(x => { tiers[x.tier].push(x.id); stats[x.id] = { r5: Math.round(x.r5 * 1000) / 1000, n5: x.n5, sh5: Math.round(x.sh5 * 1000) / 1000, raw: Math.round(x.raw * 1000) / 1000, sc: Math.round(x.sc * 1000) / 1000, se: Math.round(x.se * 1000) / 1000 }; }); // 7.8.2 r5 = 팀 실력 모델 보정 승률
   const now = new Date(), pad = n => String(n).padStart(2, '0');
-  const payload = { ver, date: `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`, note: `${out.length}기 · A랭크 기준 · 5:5 ${d.games.toLocaleString()}판 시뮬 (1:1 · 3:3 제외)`, tiers, stats };
+  const payload = { ver, date: `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`, note: `${out.length}기 · A랭크 기준 · 5:5 ${d.games.toLocaleString()}판 시뮬 · 팀 실력 모델`, tiers, stats };
   note.textContent = '반영하는 중…';
   try { await window.JihooOnline.tierSet(payload); tierApplyLive(payload); tierSimRender(); note.textContent = `v${ver} 공식 티어표로 반영했어요. 도움말 · 봇에 바로 적용돼요.`; }
   catch (error) { note.textContent = '반영하지 못했어요: ' + (error && (error.code || error.message) || error); }
@@ -40061,12 +40199,13 @@ async function tierSimRun() {
     TIERSIM.running = false;
     tierSimSetUi(false);
     tierSimRender();
+    if (done) tierSimSync(true).then(() => tierSimRender()); // 7.8.2 내 판을 올리고 다른 기기 판을 다시 받아 합친다
   }
 }
 function tierSimCopy() {
-  const d = tierSimLoad(); if (!d.games) return;
+  const d = tierSimMerged(); if (!d.games) return; // 7.8.2 모든 기기 합산
   const out = tierSimTable(d);
-  const text = `티어 측정 (5:5 · A랭크 · 누적 ${d.games}판)\n` + ['1', '2', '3', '4', '5', '6'].map(t => `${t}티어: ` + out.filter(x => x.tier === t).map(x => `${CHAR_DB[x.id] ? CHAR_DB[x.id].name : x.id}(${x.id}) ${Math.round(x.r5 * 1000) / 10}%`).join(', ')).join('\n');
+  const text = `티어 측정 (5:5 · A랭크 · 누적 ${d.games}판 · 팀 실력 모델 · 보정 승률 ± 오차 / 그냥 승률)\n` + ['1', '2', '3', '4', '5', '6'].map(t => `${t}티어: ` + out.filter(x => x.tier === t).map(x => `${CHAR_DB[x.id] ? CHAR_DB[x.id].name : x.id}(${x.id}) ${Math.round(x.r5 * 1000) / 10}%±${Math.round(x.err * 1000) / 10} / ${Math.round(x.raw * 1000) / 10}%`).join(', ')).join('\n');
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => { $('devTierNote').textContent = '복사했어요. 그대로 붙여 넣으면 돼요.'; }).catch(() => { $('devTierNote').textContent = '복사하지 못했어요. 결과를 길게 눌러 직접 복사해 주세요.'; });
 }
 // 개발자 모드: 운영 우편 보내기
@@ -43101,7 +43240,14 @@ document.addEventListener('DOMContentLoaded', () => {
   $('devBanFound').addEventListener('click', e => { const b = e.target.closest('[data-ban-pick]'); if (b) devBanDo(Number(b.dataset.banPick)); });
   $('devBanList').addEventListener('click', e => { const b = e.target.closest('[data-ban-lift]'); if (b) devBanLift(b.dataset.banLift); });
   $('btnDevBanReload').addEventListener('click', renderDevBans);
-  $('btnTierClear').addEventListener('click', () => { if (confirm('쌓인 티어 측정 결과를 모두 지울까요?')) { try { localStorage.removeItem(TIERSIM_KEY); } catch (error) {} tierSimRender(); $('devTierNote').textContent = '지웠어요.'; } });
+  try { localStorage.removeItem('jihooBattle.tierSim.v1'); } catch (error) {} // 7.8.2 예전 측정(조합 기록 없음)은 새 모델로 다시 계산할 수 없어 정리한다
+  $('btnTierClear').addEventListener('click', async () => { // 7.8.2 모든 기기의 측정을 함께 지운다 (밸런스를 바꾼 뒤 새로 잴 때)
+    if (!confirm('쌓인 티어 측정 결과를 모든 기기에서 지울까요?')) return;
+    try { localStorage.removeItem(TIERSIM_KEY); } catch (error) {}
+    let msg = '이 기기의 측정을 지웠어요.';
+    try { if (window.JihooOnline.connected() && window.JihooOnline.tierSimClearAll) { await window.JihooOnline.tierSimClearAll(); msg = '모든 기기의 측정을 지웠어요.'; } } catch (error) { msg += ' (서버의 다른 기기 측정은 지우지 못했어요: 운영자 계정 · 새 firestore.rules 필요)'; }
+    TIERSIM.remote = []; tierSimRender(); $('devTierNote').textContent = msg;
+  });
   $('btnDevAnn').addEventListener('click', () => devSetAnn(true));
   $('btnDevAnnOff').addEventListener('click', () => devSetAnn(false));
   $('codeInput').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== e.target.value) e.target.value = v; });
