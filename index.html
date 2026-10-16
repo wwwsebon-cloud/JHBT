@@ -16197,7 +16197,7 @@ function renderGachaView0(view = gachaView) {
     const [oddsFirst, ...oddsRest] = gachaOddsHtml('newpickup').split('<br>');
     $('gachaOdds').innerHTML = oddsFirst + '<br>' + `<b>🆕 ${newPickup.version} 신규 지후 픽업</b> · ${NEW_PICKUP_HOURS}시간 한정 · 종료까지 <b>${Math.floor(left / 3600000)}시간 ${Math.floor(left / 60000) % 60}분</b><br>`
       + `전설이 나오면 <b>100%</b> 신규 전설 지후: <b>${newPickup.legendIds.map(nm).join(' · ')}</b><br>`
-      + `일반 뽑기보다 <b>전설 2.8%</b> (일반 2.5%) · <b>신화 0.6%</b> (일반 0.4%) · 히든은 나오지 않아요 · 천장 · 마일리지 · 지후 상자는 일반 뽑기와 같아요<br>`
+      + `일반 뽑기보다 <b>전설 2.8%</b> (일반 2.5%) · <b>신화 0.6%</b> (일반 0.3%) · 히든은 나오지 않아요 · 천장 · 마일리지 · 지후 상자는 일반 뽑기와 같아요<br>`
       + (others.length ? `이번 업데이트의 다른 신규 지후 (픽업 확률 UP 없음): ${others.map(id => `${nm(id)} <small>(${RARITY_LABEL[CHAR_DB[id].rarity]})</small>`).join(' · ')}<br>` : '')
       + oddsRest.join('<br>');
     $('gachaDecor').innerHTML = newPickup.legendIds.slice(0, 6).map(id => `<img src="${CHAR_DB[id].portrait}" alt="">`).join('');
@@ -16227,7 +16227,7 @@ function renderGachaView0(view = gachaView) {
   else stopCombatPreview($('gachaPreview'));
 }
 // 7.1 확률제: 1회마다 지후 조각 1개(꽝) 또는 지후. 중복 지후는 그 지후 조각 10개
-const GACHA_ODDS = [['shard', 75.9975], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.4], ['hidden', 0.1], ['secret', 0.0025]]; // 7.7.3 스페셜 0.0025% // 잠수함: 신화 0.4 → 0.7% · 7.8.2 잠수함: 0.7 → 0.4% (줄인 만큼 꽝) · 가루 76 → 75.7%
+const GACHA_ODDS = [['shard', 76.0975], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.5], ['mythic', 0.3], ['hidden', 0.1], ['secret', 0.0025]]; // 7.7.3 스페셜 0.0025% // 잠수함: 신화 0.4 → 0.7% · 7.8.2 잠수함: 0.7 → 0.3% (줄인 만큼 꽝) · 가루 76 → 75.7%
 const GACHA_ODDS_PICKUP = [['shard', 75.5975], ['common', 10], ['rare', 7], ['epic', 4], ['legend', 2.8], ['mythic', 0.6], ['hidden', 0], ['secret', 0.0025]]; // 잠수함: 신규 지후 뽑기 전설 2.8 · 신화 1 · 7.8.2 잠수함: 신화 1 → 0.6% (줄인 만큼 꽝) · 히든 0%
 const gachaOddsFor = mode => mode === 'newpickup' ? GACHA_ODDS_PICKUP : GACHA_ODDS;
 const GACHA_DUST_AMOUNTS = [[1, 50], [2, 30], [3, 20]]; // 7.6 꽝 가루 개수: 1개 50% · 2개 30% · 3개 20%
@@ -16269,7 +16269,7 @@ function gachaRecruitLoading(results, done) {
 }
 function gachaOddsHtml(mode = gachaView) { // 7.1 첫 줄은 확률 막대가 읽는다
   const pk = gachaOddsFor(mode) === GACHA_ODDS_PICKUP;
-  return (pk ? '1회: 가루 75.5975% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.8% · 신화 0.6% · 히든 0% · 스페셜 0.0025%<br>' : '1회: 가루 75.9975% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.4% · 히든 0.1% · 스페셜 0.0025%<br>')
+  return (pk ? '1회: 가루 75.5975% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.8% · 신화 0.6% · 히든 0% · 스페셜 0.0025%<br>' : '1회: 가루 76.0975% · 일반 10% · 희귀 7% · 영웅 4% · 전설 2.5% · 신화 0.3% · 히든 0.1% · 스페셜 0.0025%<br>')
     + `${dustIco()} 가루(꽝)는 무작위 지후의 가루 <b>1~3개</b> (1개 50% · 2개 30% · 3개 20%) · 지후 등급: 일반 50% · 희귀 40% · 영웅 6% · 전설 3% · 신화 1% · 인벤토리에서 가루 ${DUST_PER_SHARD}개 + ● ${formatNumber(DUST_SWAP_GOLD)} = 그 지후 ${shardIco()} 조각 1개<br>`
     + `중복 지후는 그 지후 ${shardIco()} 조각 ${DUPLICATE_SHARDS}개 · 지후 상자는 ${GACHA_BOX_PULLS}회 뽑기<br>`
     + `천장: 전설 이상 지후 없이 ${GACHA_PITY}번째 뽑기는 전설 지후 확정 · 마일리지: 가루 ${MILEAGE_DUST}P · 일반 ${MILEAGE_POINTS.common}P · 희귀 ${MILEAGE_POINTS.rare}P · 영웅 ${MILEAGE_POINTS.epic}P · 전설 ${MILEAGE_POINTS.legend}P · 신화 ${MILEAGE_POINTS.mythic}P<br>`
@@ -18120,7 +18120,7 @@ function v7GachaSync() {
       d.innerHTML = `전설이 나오면 <b>100%</b> 신규 전설 지후 · 전설 <b>2.8%</b> · 신화 <b>0.6%</b> (일반 뽑기보다 높아요) · 히든은 나오지 않아요<br>`
         + `${NEW_PICKUP_HOURS}시간 한정 · 종료까지 <b>${Math.floor(left / 3600000)}시간 ${Math.floor(left / 60000) % 60}분</b> · 천장 ${GACHA_PITY}회 · 마일리지는 일반 뽑기와 같아요`
         + (others.length ? `<br><small>이번 업데이트의 다른 신규 지후 (확률 UP 없음): ${others.map(id => `${CHAR_DB[id].name}(${RARITY_LABEL[CHAR_DB[id].rarity]})`).join(' · ')}</small>` : '');
-    } else d.innerHTML = `전설 2.5% · 신화 0.4% · 히든 0.1% · 전설 이상 없이 ${GACHA_PITY}번째 뽑기는 전설 확정<br>꽝은 ${dustIco()} 가루 1~3개 (가루 ${DUST_PER_SHARD}개 = ${shardIco()} 조각 1개 · 인벤토리)`;
+    } else d.innerHTML = `전설 2.5% · 신화 0.3% · 히든 0.1% · 전설 이상 없이 ${GACHA_PITY}번째 뽑기는 전설 확정<br>꽝은 ${dustIco()} 가루 1~3개 (가루 ${DUST_PER_SHARD}개 = ${shardIco()} 조각 1개 · 인벤토리)`;
   }
   const c = CHAR_DB[gachaSpotlightId];
   if (c && $('v7SpotSub')) $('v7SpotSub').textContent = `${RARITY_LABEL[c.rarity] || ''} · ${c.roleLabel || ''}`;
