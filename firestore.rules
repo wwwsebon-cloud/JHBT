@@ -8,6 +8,10 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
+    // 7.8.3 고급 개발자 (딸깍밸패기): admins 와 seniorDevs/{uid} 문서가 둘 다 있어야 한다. seniorDevs 도 콘솔에서만 만든다
+    function isSenior() {
+      return isAdmin() && exists(/databases/$(database)/documents/seniorDevs/$(request.auth.uid));
+    }
     function banned() {
       return request.auth != null && exists(/databases/$(database)/documents/bans/$(request.auth.uid))
         && (get(/databases/$(database)/documents/bans/$(request.auth.uid)).data.until == 0
@@ -189,7 +193,17 @@ service cloud.firestore {
     // 5.7.4 서버 점검: 누구나 읽고(로그인 전에도), 운영자만 켜고 끈다
     // 6.0 전체 공지: config/announce = { on, msg, by, at } 도 같은 방식 (누구나 읽고 운영자만 쓴다)
     match /config/{docId} {
-      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired' || docId == 'tierlist';
+      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired' || docId == 'tierlist' || docId == 'balance';
+      // 7.8.3 딸깍밸패기: config/balance = { v(게시 번호), ov:{지후:{수치:[코드 값, 바꾼 값]}}, desc:{지후:{h, t}}, notes:[패치노트…], by, at } — 누구나 읽고 고급 개발자만 쓴다
+      allow write: if docId == 'balance' && isSenior()
+        && request.resource.data.keys().hasOnly(['v', 'ov', 'desc', 'notes', 'by', 'at'])
+        && request.resource.data.v is int
+        && ((resource == null && request.resource.data.v == 1) || (resource != null && request.resource.data.v == resource.data.v + 1))
+        && request.resource.data.ov is map && request.resource.data.ov.size() <= 260
+        && request.resource.data.desc is map && request.resource.data.desc.size() <= 260
+        && request.resource.data.notes is list && request.resource.data.notes.size() <= 30
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
       // 7.7.6 공식 티어표: config/tierlist = { ver, date, note, tiers, stats, by, at } — 개발자 모드 티어 측정에서 반영
       allow write: if docId == 'tierlist' && request.auth != null
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
@@ -261,6 +275,10 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
     }
     match /admins/{userId} {
+      allow get: if owner(userId);
+      allow list, write: if false;
+    }
+    match /seniorDevs/{userId} { // 7.8.3 고급 개발자 (딸깍밸패기)
       allow get: if owner(userId);
       allow list, write: if false;
     }

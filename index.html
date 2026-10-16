@@ -6,12 +6,14 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 지후배틀 — 이 파일 하나가 게임 전체입니다 (빌드 과정 없음).
 수치는 CHARACTER_BALANCE, 캐릭터 정의는 CHAR_DB, 초상화는 PORTRAITS(base64), 패치노트는 PATCH_NOTES.
 지후 능력을 바꿀 때는 수치·설명·패치노트를 함께 맞추세요.
+7.8.3 딸깍밸패기: 고급 개발자가 게임 안에서 게시한 서버 밸런스(Firestore config/balance)가 CHARACTER_BALANCE 위에 덮일 수 있습니다.
+서버 값은 '게시할 때의 코드 값'이 그대로일 때만 쓰이므로, 코드에서 그 수치를 고치면 서버 값은 저절로 무시됩니다 (개발자 모드 → 딸깍밸패기 → 서버 적용 중 → 코드 반영용으로 복사).
 -->
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.8.2"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.8.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -2123,6 +2125,150 @@ html.ui-v7 #app#app .v52-mileage .settlement-note { margin:0; padding:10px 14px;
 .v4-vs-card .pic .v55-rk.r3 { background:linear-gradient(135deg,#ffb800,#ff4d6d); color:#fff; text-shadow:0 1px 1px rgba(0,0,0,.4); }
 .v55-devgift { display:flex; flex-direction:column; gap:6px; margin-top:12px; padding:10px; border:1px dashed currentColor; border-radius:10px; }
 .v55-devrow { display:flex; gap:6px; } .v55-devrow > * { flex:1; min-width:0; }
+/* 7.8.3 딸깍밸패기 (고급 개발자 밸런스 패치 편집기) */
+#balModal { z-index:130; padding:10px; }
+#balReviewModal { z-index:135; padding:10px; }
+html #balModal .modal-card.v783-bal, html #balReviewModal .modal-card.v783-bal { --ac:#7a5cff; --ac2:#a78bfa; --ok:#34d399; --bad:#f87171; --ln:rgba(255,255,255,.1); --mut:rgba(255,255,255,.5);
+  width:min(1080px,100%); height:min(880px,94vh); max-height:94vh; display:flex; flex-direction:column; gap:10px; padding:16px 16px 12px; box-sizing:border-box; overflow:hidden; text-align:left;
+  background:linear-gradient(180deg,#191a21,#121318); color:#ececf1; border:1px solid rgba(255,255,255,.12); border-radius:22px; box-shadow:0 40px 100px -30px rgba(0,0,0,.9); font-size:14px; }
+html #balReviewModal .modal-card.v783-bal { width:min(980px,100%); }
+.v783-bal * { box-sizing:border-box; }
+.v783-bal .v783-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex:none; }
+.v783-bal .v783-head h2 { margin:0; font-size:20px; font-weight:900; letter-spacing:-.01em; color:#fff; }
+.v783-bal .v783-head h2 i { font-style:normal; display:inline-block; margin-left:6px; padding:3px 8px; border-radius:999px; background:linear-gradient(135deg,var(--ac),#5b8cff); font-size:11px; font-weight:800; vertical-align:3px; letter-spacing:.02em; }
+.v783-bal .v783-head small { display:block; margin-top:3px; color:var(--mut); font-size:12px; }
+.v783-bal .modal-close, html #balModal .v783-bal .modal-close, html #balReviewModal .v783-bal .modal-close { position:static; flex:none; width:38px; height:38px; display:grid; place-items:center; border-radius:12px; border:1px solid var(--ln) !important; background:rgba(255,255,255,.06) !important; color:#fff !important; font-size:15px; cursor:pointer; box-shadow:none; }
+.v783-tabs { flex:none; display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(0,0,0,.35); border:1px solid var(--ln); width:max-content; max-width:100%; overflow-x:auto; }
+.v783-tabs button { border:0; background:none; color:rgba(255,255,255,.6); font:800 13px inherit; font-family:inherit; padding:9px 14px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+.v783-tabs button.on { background:#fff; color:#111; box-shadow:0 4px 14px rgba(0,0,0,.35); }
+.v783-tabs button i { font-style:normal; display:inline-block; min-width:18px; margin-left:4px; padding:1px 6px; border-radius:999px; background:rgba(122,92,255,.35); color:#fff; font-size:11px; }
+.v783-tabs button.on i { background:var(--ac); }
+.v783-pane { flex:1; min-height:0; overflow:auto; }
+.v783-pane[hidden] { display:none !important; }
+.v783-edit { display:grid; grid-template-columns:270px minmax(0,1fr); gap:12px; overflow:hidden; }
+.v783-pick { display:flex; flex-direction:column; gap:8px; min-height:0; min-width:0; }
+#balModal .v783-search, #balModal .v783-bal input, #balReviewModal .v783-bal input, #balReviewModal .v783-bal select, #balModal .v783-bal textarea { font-family:inherit; color:#fff; background:rgba(0,0,0,.35); border:1px solid var(--ln); border-radius:12px; outline:none; box-shadow:none; margin:0; }
+#balModal .v783-search { width:100%; height:42px; padding:0 12px; font-size:14px; }
+#balModal .v783-bal input:focus, #balReviewModal .v783-bal input:focus, #balModal .v783-bal textarea:focus, #balReviewModal .v783-bal select:focus { border-color:var(--ac2); box-shadow:0 0 0 3px rgba(122,92,255,.25); }
+.v783-chars { flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:3px; padding-right:2px; }
+.v783-chars button { display:flex; align-items:center; gap:9px; width:100%; padding:7px 9px; border:1px solid transparent; border-radius:12px; background:none; color:#ececf1; font-family:inherit; text-align:left; cursor:pointer; }
+.v783-chars button:hover { background:rgba(255,255,255,.05); }
+.v783-chars button.on { background:rgba(122,92,255,.18); border-color:rgba(122,92,255,.6); }
+.v783-chars .e { flex:none; width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 2px var(--rc); font-size:15px; }
+.v783-chars .n { flex:1; min-width:0; font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v783-chars .n small { display:block; font-weight:500; font-size:10.5px; color:var(--mut); overflow:hidden; text-overflow:ellipsis; }
+.v783-chars i { flex:none; font-style:normal; min-width:20px; height:20px; display:grid; place-items:center; padding:0 6px; border-radius:999px; font-size:11px; font-weight:800; }
+.v783-chars i.d { background:var(--ac); color:#fff; }
+.v783-chars i.s { background:rgba(52,211,153,.18); color:var(--ok); }
+.v783-stats { min-height:0; overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:10px; }
+.v783-chead { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:16px; background:linear-gradient(90deg,color-mix(in srgb,var(--rc) 22%,transparent),rgba(255,255,255,.03)); border:1px solid var(--ln); }
+.v783-chead .face { flex:none; width:52px; height:52px; border-radius:50%; overflow:hidden; box-shadow:0 0 0 2px var(--rc); background:#fff; display:grid; place-items:center; font-size:26px; }
+.v783-chead .face img { width:100%; height:100%; object-fit:cover; }
+.v783-chead .t { flex:1; min-width:0; }
+.v783-chead .t b { display:block; font-size:17px; font-weight:900; color:#fff; }
+.v783-chead .t small { color:var(--mut); font-size:12px; }
+.v783-rows { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:6px; }
+.v783-row { display:grid; grid-template-columns:minmax(0,1fr) 128px 32px; grid-template-areas:"lb in rs" "was was was"; align-items:center; gap:3px 8px; padding:8px 8px 8px 11px; border-radius:13px; background:rgba(255,255,255,.035); border:1px solid transparent; transition:border-color .15s, background .15s; }
+.v783-row .lb { grid-area:lb; min-width:0; font-weight:700; font-size:13px; line-height:1.3; color:#f4f4f7; cursor:text; }
+.v783-row .lb small { display:block; font:500 10.5px ui-monospace,SFMono-Regular,Menlo,monospace; color:rgba(255,255,255,.38); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.v783-row .in { grid-area:in; display:flex; align-items:center; height:38px; border-radius:11px; background:rgba(0,0,0,.4); border:1px solid var(--ln); overflow:hidden; }
+.v783-row .in:focus-within { border-color:var(--ac2); box-shadow:0 0 0 3px rgba(122,92,255,.25); }
+#balModal .v783-row .in input { flex:1; min-width:0; width:100%; height:100%; border:0; border-radius:0; background:none; box-shadow:none; color:#fff; font:800 15px ui-monospace,SFMono-Regular,Menlo,monospace; text-align:right; padding:0 6px; -moz-appearance:textfield; appearance:textfield; }
+#balModal .v783-row .in input::-webkit-outer-spin-button, #balModal .v783-row .in input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.v783-row .in em { flex:none; font-style:normal; font-size:12px; color:var(--mut); padding-right:9px; }
+.v783-row .rs { grid-area:rs; width:32px; height:32px; display:grid; place-items:center; padding:0; border-radius:10px; border:1px solid var(--ln); background:rgba(255,255,255,.05); color:#fff; font-size:18px; line-height:1; font-weight:700; cursor:pointer; }
+.v783-row .rs:disabled { opacity:.2; cursor:default; }
+.v783-row .was { grid-area:was; font-size:11.5px; color:var(--mut); line-height:1.4; }
+.v783-row .was:empty { display:none; }
+.v783-row .was b.up { color:var(--ok); } .v783-row .was b.down { color:var(--bad); }
+.v783-row.srv { background:rgba(52,211,153,.06); }
+.v783-row.srv .lb::after { content:'서버'; display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:rgba(52,211,153,.18); color:var(--ok); font-size:10px; font-weight:800; vertical-align:1px; }
+.v783-row.chg { border-color:rgba(122,92,255,.6); background:rgba(122,92,255,.13); }
+.v783-row.hit { box-shadow:inset 3px 0 0 #fbbf24; }
+.v783-desc { padding:12px; border-radius:16px; background:rgba(255,255,255,.035); border:1px solid var(--ln); display:flex; flex-direction:column; gap:8px; }
+.v783-desc .dh { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.v783-desc .st { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:800; background:rgba(255,255,255,.08); }
+.v783-desc .st.auto { background:rgba(52,211,153,.16); color:var(--ok); }
+.v783-desc .st.man { background:rgba(251,191,36,.18); color:#fbbf24; }
+.v783-desc .pv { font-size:13px; line-height:1.65; color:#dcdce3; padding:10px 12px; border-radius:12px; background:rgba(0,0,0,.3); }
+.v783-desc .pv b { color:#fff; }
+.v783-desc .pv mark { background:rgba(52,211,153,.28); color:#fff; border-radius:4px; padding:0 2px; }
+.v783-desc .warn { font-size:12px; color:#fbbf24; line-height:1.5; }
+.v783-desc .info { font-size:12px; color:var(--mut); line-height:1.5; }
+.v783-desc summary { cursor:pointer; font-weight:800; font-size:13px; color:var(--ac2); }
+#balModal .v783-desc textarea { width:100%; margin-top:8px; padding:10px 12px; font-size:13px; line-height:1.55; resize:vertical; min-height:110px; }
+.v783-drow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px; }
+.v783-drow small { color:var(--mut); font-size:11.5px; }
+.v783-mini { flex:none; border:1px solid var(--ln); background:rgba(255,255,255,.06); color:#fff; font:700 12px inherit; font-family:inherit; padding:7px 10px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+.v783-mini.go { background:var(--ac); border-color:var(--ac); }
+.v783-empty { padding:28px 12px; text-align:center; color:var(--mut); font-size:13px; }
+.v783-livetools { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+.v783-livetools small { color:var(--mut); font-size:12px; flex:1; min-width:200px; }
+.v783-livecard { padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.035); border:1px solid var(--ln); margin-bottom:8px; }
+.v783-livecard .h { display:flex; align-items:baseline; gap:6px; width:100%; border:0; background:none; color:#fff; font-family:inherit; font-size:14px; padding:0 0 6px; cursor:pointer; text-align:left; }
+.v783-livecard .h small { color:var(--mut); font-size:11px; }
+.v783-livecard .lr { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:6px 0; border-top:1px solid rgba(255,255,255,.06); font-size:13px; }
+.v783-livecard .lr span { flex:1; min-width:120px; color:#dcdce3; }
+.v783-livecard .lr b { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--ok); }
+.v783-livecard .lr em { font-style:normal; font-size:11.5px; color:var(--mut); }
+.v783-livecard .lr em.d { color:var(--ac2); }
+.v783-livecard .lr.stale { opacity:.55; } .v783-livecard .lr.stale b { color:#aaa; text-decoration:line-through; }
+.v783-hist { border-radius:14px; background:rgba(255,255,255,.035); border:1px solid var(--ln); margin-bottom:8px; }
+.v783-hist summary { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; padding:11px 12px; cursor:pointer; }
+.v783-hist summary b { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--ac2); }
+.v783-hist summary span { font-weight:700; }
+.v783-hist summary small { color:var(--mut); font-size:11.5px; }
+.v783-hist .v783-pv { padding:0 12px 12px; }
+.v783-pvhead { padding:4px 2px 10px; } .v783-pvhead small { display:block; color:var(--mut); font-size:11px; } .v783-pvhead b { font-size:16px; color:#fff; }
+.v783-pvsec { margin:4px 0 6px; font-size:11px; font-weight:800; letter-spacing:.06em; color:var(--mut); text-transform:uppercase; }
+.v783-pvit { display:flex; gap:10px; padding:9px 0; border-top:1px solid rgba(255,255,255,.06); }
+.v783-pvit .ic { flex:none; width:40px; height:40px; border-radius:50%; overflow:hidden; border:2px solid #888; background:#fff; display:grid; place-items:center; font-size:20px; }
+.v783-pvit .ic img { width:100%; height:100%; object-fit:contain; }
+.v783-pvit .nm { font-weight:800; font-size:13.5px; color:#fff; display:flex; align-items:center; gap:6px; }
+.v783-pvit .tg { padding:1px 7px; border-radius:999px; font-size:10.5px; font-weight:800; background:rgba(255,255,255,.12); }
+.v783-pvit .tg.buff { background:rgba(52,211,153,.2); color:var(--ok); } .v783-pvit .tg.nerf { background:rgba(248,113,113,.2); color:var(--bad); } .v783-pvit .tg.adjust { background:rgba(251,191,36,.18); color:#fbbf24; } .v783-pvit .tg.fix { background:rgba(147,197,253,.18); color:#93c5fd; }
+.v783-pvit .ds { margin-top:3px; font-size:12.5px; line-height:1.6; color:#cfcfd8; } .v783-pvit .ds b { color:#fff; }
+.v783-foot { flex:none; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-top:10px; border-top:1px solid var(--ln); }
+.v783-foot .cnt { font-size:12.5px; color:#dcdce3; } .v783-foot .cnt b { color:#fff; }
+.v783-foot .msg { flex:1; min-width:120px; font-size:12px; color:var(--ac2); }
+.v783-prev { display:flex; align-items:center; gap:6px; font-size:12.5px; color:#dcdce3; cursor:pointer; }
+.v783-prev input { accent-color:var(--ac); width:16px; height:16px; }
+.v783-btn { flex:none; height:42px; padding:0 16px; border-radius:12px; border:1px solid var(--ln); background:rgba(255,255,255,.06); color:#fff; font:800 13.5px inherit; font-family:inherit; cursor:pointer; }
+.v783-btn.go { border:0; background:linear-gradient(135deg,var(--ac),#5b8cff); box-shadow:0 10px 24px -10px rgba(122,92,255,.85); }
+.v783-btn:disabled { opacity:.35; cursor:default; box-shadow:none; }
+.v783-revbody { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; overflow:hidden; }
+.v783-revform { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; }
+.v783-revform > label, .v783-grid2 label { display:flex; flex-direction:column; gap:5px; font-size:12px; font-weight:700; color:var(--mut); }
+#balReviewModal .v783-revform input:not([type=checkbox]) { height:40px; padding:0 12px; font-size:14px; width:100%; }
+#balReviewModal .v783-revform input:disabled { opacity:.4; }
+.v783-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.v783-sil { display:flex !important; flex-direction:row !important; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--ln); color:#ececf1 !important; font-size:13px !important; cursor:pointer; }
+.v783-sil input { accent-color:var(--ac); width:16px; height:16px; }
+.v783-revitems { display:flex; flex-direction:column; gap:8px; }
+.v783-revitems.off { opacity:.4; pointer-events:none; }
+.v783-revit { padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid var(--ln); display:flex; flex-direction:column; gap:7px; }
+.v783-revit.off { opacity:.45; }
+.v783-revit .h { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.v783-revit .h label { display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer; }
+.v783-revit .h input { accent-color:var(--ac); width:16px; height:16px; }
+#balReviewModal .v783-revit select { height:32px; padding:0 8px; font-size:12.5px; background:#22232b !important; color:#fff !important; border:1px solid var(--ln) !important; border-radius:10px; }
+.v783-revit .ch { font-size:12.5px; line-height:1.6; color:#cfcfd8; } .v783-revit .ch b { color:#fff; }
+#balReviewModal .v783-revit .memo { height:36px !important; font-size:13px !important; }
+.v783-revpv { min-height:0; overflow:auto; padding:12px 14px; border-radius:16px; background:rgba(0,0,0,.3); border:1px solid var(--ln); }
+.v783-revpv .cap { font-size:11px; font-weight:800; color:var(--ac2); margin-bottom:6px; }
+.v783-senior { display:inline-block; margin-left:4px; padding:1px 7px; border-radius:999px; background:linear-gradient(135deg,#7a5cff,#5b8cff); color:#fff; font-size:10.5px; font-weight:800; vertical-align:1px; }
+@media (max-width:720px) {
+  html #balModal .modal-card.v783-bal, html #balReviewModal .modal-card.v783-bal { height:96vh; max-height:96vh; padding:12px 10px 10px; border-radius:18px; }
+  .v783-edit { grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); overflow:auto; }
+  .v783-pick, .v783-stats { min-width:0; }
+  .v783-chars { flex:none; flex-direction:row; overflow-x:auto; overflow-y:hidden; padding-bottom:4px; }
+  .v783-chars button { flex:none; width:auto; max-width:180px; }
+  .v783-stats { overflow:visible; }
+  .v783-rows { grid-template-columns:1fr; }
+  .v783-revbody { grid-template-columns:1fr; overflow:auto; }
+  .v783-revform, .v783-revpv { overflow:visible; }
+  .v783-foot .msg { order:5; flex-basis:100%; }
+}
 /* 7.8.2 계정 · 로그인 */
 .v782-login { --ac:#7a5cff; --ac2:#a78bfa; width:min(420px,100%); box-sizing:border-box; margin:22px auto 0; padding:22px 22px 18px; display:flex; flex-direction:column; gap:12px; text-align:left;
   background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.035)); border:1px solid rgba(255,255,255,.14); border-radius:24px; color:#f4f4f6;
@@ -8698,6 +8844,12 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
       <label class="field-label" for="developerAmount">추가할 재화 수량</label><input class="text-field" id="developerAmount" type="number" min="1" step="1" value="1000">
       <div class="modal-actions"><button type="button" class="btn btn-secondary" id="btnDeveloperGold">골드 추가</button><button type="button" class="btn btn-secondary" id="btnDeveloperDiamonds">다이아 추가</button><button type="button" class="btn btn-primary" id="btnDeveloperArena">투기장 입장</button></div>
     </div>
+    <div id="devBalBox" class="v55-devgift v783-devbox" hidden>
+      <b>⚖ 딸깍밸패기 <span class="v783-senior">고급 개발자</span></b>
+      <small>모든 지후의 수치(공격력 · 체력 · 쿨타임 · 범위 · 지속시간 · 고유 수치…)와 도감 설명을 바꾸고, 패치노트를 자동으로 만들어 모든 유저에게 업데이트 없이 바로 적용해요.</small>
+      <button type="button" class="btn btn-primary" id="btnDevBal">딸깍밸패기 열기</button>
+      <div class="settlement-note" id="devBalNote" aria-live="polite"></div>
+    </div>
     <div id="devGiftBox" class="v55-devgift" hidden>
       <b>📮 운영 우편 보내기</b>
       <input class="text-field" id="devGiftTo" placeholder="받는 닉네임 (비우면 전체)" maxlength="12">
@@ -8781,6 +8933,37 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
     <div class="settlement-note" id="developerMessage" aria-live="polite"></div>
   </div>
   <div class="settings-help">화면 설정은 브라우저에 저장됩니다. 개발자 모드는 새로고침 시 꺼집니다 (인증된 개발자 기기는 켜 둔 상태가 유지돼요).</div>
+</div></div>
+<div class="app-modal" id="balModal" role="dialog" aria-modal="true" aria-labelledby="balTitle"><div class="modal-card v783-bal">
+  <div class="v783-head"><div><h2 id="balTitle">⚖ 딸깍밸패기<i>BETA</i></h2><small id="balSub">서버 패치 #0 · 고급 개발자 전용</small></div><button type="button" class="modal-close" data-close-modal="balModal" aria-label="닫기">✕</button></div>
+  <div class="v783-tabs" role="tablist"><button type="button" data-baltab="edit" class="on">수치 편집</button><button type="button" data-baltab="live">서버 적용 중 <i id="balLiveN">0</i></button><button type="button" data-baltab="hist">패치 기록</button></div>
+  <div class="v783-pane v783-edit" data-balpane="edit">
+    <div class="v783-pick"><input class="v783-search" id="balSearch" type="search" placeholder="🔍 지후 · 수치 이름 (예: 느와르, 쿨타임)" autocomplete="off"><div class="v783-chars" id="balChars"></div></div>
+    <div class="v783-stats" id="balStats"></div>
+  </div>
+  <div class="v783-pane" data-balpane="live" hidden><div id="balLive"></div></div>
+  <div class="v783-pane" data-balpane="hist" hidden><div id="balHist"></div></div>
+  <div class="v783-foot">
+    <label class="v783-prev" title="개발자 모드인 이 기기에서만 초안 값으로 전투해 볼 수 있어요 (투기장 · 티어 측정 등)"><input type="checkbox" id="balPreview" checked> 이 기기에서 미리 적용</label>
+    <span class="cnt" id="balCount"></span>
+    <span class="msg" id="balMsg" aria-live="polite"></span>
+    <button type="button" class="v783-btn" id="btnBalDiscard">초안 버리기</button>
+    <button type="button" class="v783-btn go" id="btnBalReview">패치노트 · 게시 ▶</button>
+  </div>
+</div></div>
+<div class="app-modal" id="balReviewModal" role="dialog" aria-modal="true" aria-labelledby="balRevH"><div class="modal-card v783-bal">
+  <div class="v783-head"><div><h2 id="balRevH">📝 패치노트 · 게시</h2><small>게시하면 모든 유저에게 바로 적용돼요 (전투 중인 유저는 끝난 뒤)</small></div><button type="button" class="modal-close" data-close-modal="balReviewModal" aria-label="닫기">✕</button></div>
+  <div class="v783-revbody">
+    <div class="v783-revform">
+      <label class="v783-sil"><input type="checkbox" id="balRevSilent"> 🤫 잠수함 패치 (패치노트 없이 수치만)</label>
+      <div class="v783-grid2"><label>버전<input id="balRevVer" maxlength="16" autocomplete="off"></label><label>날짜<input id="balRevDate" maxlength="12" autocomplete="off"></label></div>
+      <label>제목<input id="balRevLabel" maxlength="60" autocomplete="off"></label>
+      <label>구역 이름<input id="balRevTitle" maxlength="30" autocomplete="off"></label>
+      <div class="v783-revitems" id="balRevItems"></div>
+    </div>
+    <div class="v783-revpv"><div class="cap">미리보기 · 유저에게 이렇게 보여요</div><div id="balRevPreview"></div></div>
+  </div>
+  <div class="v783-foot"><span class="msg" id="balRevNote" aria-live="polite"></span><button type="button" class="v783-btn" data-close-modal="balReviewModal">돌아가기</button><button type="button" class="v783-btn go" id="btnBalPublish">📢 게시하기</button></div>
 </div></div>
 <div id="banOverlay" class="v57-maint v781-ban" hidden><div class="box"><div class="ic">⛔</div><b>계정 이용이 정지됐어요</b><p id="banMsg"></p><div class="until" id="banUntil"></div><div class="v782-banacct" id="banAccounts" hidden><b>이 기기의 다른 계정으로</b><div class="v782-alist" id="banAcctList"></div></div><button type="button" class="wwe" id="btnBanNewAccount">⏻ 로그아웃 · 다른 계정으로</button><small>문의는 공식 디스코드로 해 주세요 · 정지가 풀리면 자동으로 열려요</small></div></div>
 <div id="maintOverlay" class="v57-maint" hidden><div class="box"><div class="ic">🛠</div><b>서버 점검 중</b><p id="maintMsg">더 좋은 지후배틀을 위해 점검하고 있어요.</p><div class="until" id="maintUntil" hidden></div><button type="button" class="wwe" id="btnMaintWwe">🤼 기다리는 동안 WWE 하기</button><small>점검이 끝나면 자동으로 열려요 · 화면을 닫지 않아도 돼요</small></div></div>
@@ -9766,6 +9949,42 @@ const CHARACTER_BALANCE = {
   },
 };
 
+// 7.8.3 서버 밸런스 패치 (개발자 모드 → 밸런스 패치에서 고급 개발자가 게시): config/balance 의 ov = { 지후: { 수치: [코드 값, 바꾼 값] } }
+// 코드 값이 그대로일 때만 바꾼 값을 쓴다 (코드에서 그 수치를 고치면 서버 값은 저절로 무시된다).
+// 코드 값을 먼저 기억해 두고, 기기에 저장해 둔 서버 패치를 CHAR_DB 를 만들기 전에 입힌다. 서버에서 새로 받으면 balApplyAll 이 다시 맞춘다.
+const BAL_CACHE_KEY = 'jihooBattle.balance.v1', BAL_DRAFT_KEY = 'jihooBattle.balDraft.v1';
+const BAL_BASE = {};
+Object.keys(CHARACTER_BALANCE).forEach(id => {
+  const base = BAL_BASE[id] = {};
+  Object.entries(CHARACTER_BALANCE[id]).forEach(([key, value]) => { if (typeof value === 'number') base[key] = value; });
+});
+function balSame(a, b) { return typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b)); }
+function balTargets(server, draft) { // 지금 써야 할 값 { 지후: { 수치: 값 } } (서버 → 그 위에 미리보기 초안)
+  const out = {};
+  const ov = server && server.ov && typeof server.ov === 'object' ? server.ov : {};
+  Object.keys(ov).forEach(id => {
+    const base = BAL_BASE[id], row = ov[id];
+    if (!base || !row || typeof row !== 'object') return;
+    Object.keys(row).forEach(key => {
+      const e = row[key];
+      if (Array.isArray(e) && balSame(base[key], e[0]) && typeof e[1] === 'number' && isFinite(e[1])) (out[id] = out[id] || {})[key] = e[1];
+    });
+  });
+  const dov = draft && draft.ov && typeof draft.ov === 'object' ? draft.ov : {};
+  Object.keys(dov).forEach(id => {
+    const base = BAL_BASE[id], row = dov[id];
+    if (!base || !row || typeof row !== 'object') return;
+    Object.keys(row).forEach(key => { const v = row[key]; if (key in base && typeof v === 'number' && isFinite(v)) (out[id] = out[id] || {})[key] = v; });
+  });
+  return out;
+}
+(function balBoot() {
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(BAL_CACHE_KEY) || 'null'); } catch (error) { cached = null; }
+  const t = balTargets(cached, null);
+  Object.keys(t).forEach(id => Object.keys(t[id]).forEach(key => { CHARACTER_BALANCE[id][key] = t[id][key]; }));
+})();
+
 </script>
 <script>
 window.JIHOO_FIREBASE_CONFIG = {
@@ -10699,6 +10918,29 @@ window.JIHOO_FIREBASE_CONFIG = {
     if (!database || !auth || !auth.currentUser) return false;
     try { return (await sdk.getDoc(sdk.doc(database, 'admins', auth.currentUser.uid))).exists(); } catch (error) { return false; }
   }
+  // 7.8.3 고급 개발자: admins 와 seniorDevs/{uid} 둘 다 있어야 한다 (seniorDevs 문서도 콘솔에서만 만든다)
+  async function isSeniorDev() {
+    if (!database || !auth || !auth.currentUser) return false;
+    try {
+      const [a, s] = await Promise.all([sdk.getDoc(sdk.doc(database, 'admins', auth.currentUser.uid)), sdk.getDoc(sdk.doc(database, 'seniorDevs', auth.currentUser.uid))]);
+      return a.exists() && s.exists();
+    } catch (error) { return false; }
+  }
+  // 7.8.3 서버 밸런스 패치: config/balance = { v, ov:{지후:{수치:[코드 값, 바꾼 값]}}, desc:{지후:{h, t}}, notes:[…], by, at } — 누구나 읽고, 고급 개발자만 쓴다
+  function balanceWatch(fn) {
+    if (!database) return () => {};
+    return sdk.onSnapshot(sdk.doc(database, 'config', 'balance'), snap => fn(snap.exists() ? snap.data() : { v: 0, ov: {}, desc: {}, notes: [] }), () => {});
+  }
+  async function balancePublish(build) { // build(지금 서버 문서 | null) → { v, ov, desc, notes } · 그 사이 다른 게시가 끼어들지 않게 트랜잭션으로
+    me();
+    const ref = sdk.doc(database, 'config', 'balance');
+    return sdk.runTransaction(database, async tx => {
+      const snap = await tx.get(ref);
+      const next = build(snap.exists() ? snap.data() : null);
+      tx.set(ref, { v: next.v, ov: next.ov, desc: next.desc, notes: next.notes, by: auth.currentUser.uid, at: sdk.serverTimestamp() });
+      return next;
+    });
+  }
   async function giftSend(mail) {
     me();
     await sdk.addDoc(sdk.collection(database, 'giftMail'), { to: String(mail.to), toName: String(mail.toName || '').slice(0, 12), title: String(mail.title).slice(0, 40), body: String(mail.body || '').slice(0, 300), icon: String(mail.icon || '🎁').slice(0, 4), rewards: mail.rewards.slice(0, 6), expiresAt: Math.max(0, Math.floor(Number(mail.expiresAt) || 0)), from: auth.currentUser.uid, at: sdk.serverTimestamp() });
@@ -10778,7 +11020,7 @@ window.JIHOO_FIREBASE_CONFIG = {
     const snap = await sdk.getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data(), at: d.data().at && d.data().at.toMillis ? d.data().at.toMillis() : Date.now() }));
   }
-  window.JihooOnline = { deckLog, init, code, createAccount, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, tierWatch, tierSet, tierSimPut, tierSimAll, tierSimClearAll, banSet, banLift, banList, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount, signOutSlot,
+  window.JihooOnline = { deckLog, init, code, createAccount, balanceWatch, balancePublish, isSeniorDev, maintWatch, maintSet, expiredWatch, expiredSet, disabledWatch, disabledSet, tierWatch, tierSet, tierSimPut, tierSimAll, tierSimClearAll, banSet, banLift, banList, announceWatch, announceSet, giftClaimed, giftSentList, giftClaims, isAdmin, giftSend, giftFetch, deckSamples, login, signInGoogle, linkGoogle, googleInfo, claimSession, recoverAccount: login, changePassword, resetPasswordWithGoogle, resetPasswordSignedIn, adminDedupeBoards, actlogWrite, actlogFind, actlogRead, nickReady: () => nickCheck, restoreCurrent, saveNow, queueSave, publish, leaderboard, compLeaderboard, coopLeaderboard, classLeaderboard, compTiers, seasonBoard, myUid, chatSend, chatSubscribe, eventPost, eventsSubscribe, signOut: signOutAccount, signOutSlot,
     presencePing, presenceGet, findByNickname, friendRequest, friendRespond, friendRemove, friendsSubscribe, dmSend, dmSubscribe, matchInvite, matchUpdate, matchWatch, invitesSubscribe, matchSend, matchMessages,
     roomCreate, roomsSubscribe, roomWatch, roomJoin, roomLeave, roomUpdate, roomDelete, roomKick, matchGet, roomGet, roomInviteSend, roomInviteUpdate, roomInvitesSubscribe,
     idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null),
@@ -10799,7 +11041,7 @@ if (PREVIEW_MODE) {
   window.JihooOnline = { init: resolved, idToken: () => Promise.resolve(null), code: () => null, createAccount: resolved, login: resolved, recoverAccount: resolved,
     changePassword: resolved, restoreCurrent: resolved, saveNow: resolved, queueSave: noop, publish: resolved, signOut: resolved, deckSamples: () => Promise.resolve([]), deckLog: resolved,
     leaderboard: () => Promise.resolve([]), compLeaderboard: () => Promise.resolve([]), coopLeaderboard: () => Promise.resolve([]), classLeaderboard: () => Promise.resolve([]), compTiers: () => Promise.resolve({}), seasonBoard: () => Promise.resolve([]), myUid: () => null, signInGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), claimSession: () => Promise.resolve(), linkGoogle: () => Promise.reject(new Error('온라인 연결 전입니다.')), googleInfo: () => null, chatSend: () => Promise.reject(new Error('오프라인')), chatSubscribe: () => () => {},
-    presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, matchGet: () => Promise.reject(new Error('오프라인')), roomGet: () => Promise.reject(new Error('오프라인')), roomInviteSend: () => Promise.reject(new Error('오프라인')), roomInviteUpdate: resolved, roomInvitesSubscribe: () => () => {}, isAdmin: () => Promise.resolve(false), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
+    presencePing: resolved, presenceGet: () => Promise.resolve({}), findByNickname: resolved, friendRequest: () => Promise.reject(new Error('오프라인')), friendRespond: resolved, friendRemove: resolved, friendsSubscribe: () => () => {}, dmSend: () => Promise.reject(new Error('오프라인')), dmSubscribe: () => () => {}, matchInvite: () => Promise.reject(new Error('오프라인')), matchUpdate: resolved, matchWatch: () => () => {}, invitesSubscribe: () => () => {}, matchSend: resolved, matchMessages: () => () => {}, roomCreate: () => Promise.reject(new Error('오프라인')), roomsSubscribe: () => () => {}, roomWatch: () => () => {}, roomJoin: () => Promise.reject(new Error('오프라인')), roomLeave: resolved, roomUpdate: resolved, roomDelete: resolved, roomKick: resolved, matchGet: () => Promise.reject(new Error('오프라인')), roomGet: () => Promise.reject(new Error('오프라인')), roomInviteSend: () => Promise.reject(new Error('오프라인')), roomInviteUpdate: resolved, roomInvitesSubscribe: () => () => {}, isAdmin: () => Promise.resolve(false), isSeniorDev: () => Promise.resolve(false), balanceWatch: () => () => {}, balancePublish: () => Promise.reject(new Error('오프라인')), maintWatch: () => () => {}, maintSet: () => Promise.reject(new Error('오프라인')), giftSend: () => Promise.reject(new Error('오프라인')), giftFetch: () => Promise.resolve([]), eventPost: () => Promise.resolve(), eventsSubscribe: () => () => {}, connected: () => false, enabled: () => false };
 }
 
 const PORTRAITS = {
@@ -14424,6 +14666,8 @@ async function devAdminCheck(force) {
 }
 function devAuthChanged(user) { // 로그인 계정이 바뀌면 다시 확인한다
   devAdminOk = null;
+  balSenior = null; // 7.8.3 고급 개발자도 다시 확인
+  if (user && developerMode) setTimeout(balSeniorCheck, 0);
   if (!user) { if (developerMode) setDeveloperMode(false); acctSync({ dev: false }); return; }
   devAdminCheck(true).then(ok => {
     acctSync({ dev: !!ok }); // 7.8.2 계정 목록의 Dev 딱지
@@ -14601,6 +14845,9 @@ function renderDeveloperMode() {
   if ($('devDupBox')) $('devDupBox').hidden = !developerMode; // 중복 닉네임 정리 · 활동 기록 조회도 개발자 모드에서만 (일반 유저에게 보이던 문제)
   if ($('devLogBox')) $('devLogBox').hidden = !developerMode;
   if ($('devBanBox')) { $('devBanBox').hidden = !developerMode; if (developerMode) renderDevBans(); } // 7.8.1 계정 밴
+  if ($('devBalBox')) { $('devBalBox').hidden = !(developerMode && balSenior); if (developerMode && balSenior == null) balSeniorCheck(); } // 7.8.3 딸깍밸패기: 고급 개발자만
+  if (!developerMode && $('balModal') && $('balModal').classList.contains('show')) { closeModal('balModal'); closeModal('balReviewModal'); }
+  if (!balBusy()) balApplyAll(); // 미리보기 초안은 개발자 모드일 때만
   maintApply();
   $('developerRewards').hidden = !developerMode;
   if ($('developerArena')) $('developerArena').hidden = !developerMode;
@@ -36516,6 +36763,16 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.8.3': {
+    label: 'v7.8.3 딸깍밸패기',
+    date: '2026.10.16',
+    sections: [
+      { title: '운영', items: [
+        { emoji:'⚖', name:'업데이트 없는 밸런스 패치', tag:'new', color:'#7a5cff', desc:'이제 밸런스 패치가 <b>업데이트 없이 바로</b> 적용돼요. 개발팀이 지후 수치를 바꾸면 게임을 다시 켜지 않아도 곧바로 반영되고 (전투 중이면 끝난 뒤), 그때마다 <b>패치노트</b>가 떠요. 지후 도감 설명의 숫자도 함께 바뀌어요.' },
+        { emoji:'🛠', name:'딸깍밸패기', tag:'system', color:'#5b8cff', desc:'개발자 모드에 <b>고급 개발자</b> 전용 도구 <b>딸깍밸패기</b>가 생겼어요. 모든 지후의 공격력 · 체력 · 쿨타임 · 범위 · 지속시간 · 고유 수치를 바꿔 보고, 바뀐 내용으로 패치노트를 자동으로 만들어 게시해요.' },
+      ] },
+    ],
+  },
   '7.8.2': {
     label: 'v7.8.2 로그인 개편 · 원터치 계정 전환',
     date: '2026.10.16',
@@ -39924,7 +40181,7 @@ function grantUpdateGift() { // 5.5 업데이트마다 운테기 1개
 function maybeShowPatchOverlay() {
   if (state.screen === 'lobby') grantUpdateGift();
   const ver = gameVersion();
-  if (!PATCH_NOTES[ver] || profile.seenPatch === ver || state.screen !== 'lobby') return;
+  if (!PATCH_NOTES[ver] || profile.seenPatch === ver || state.screen !== 'lobby') { balMaybeOverlay(); return; } // 7.8.3 서버 밸런스 패치노트
   if (!profile.tutorial || !profile.tutorial.done) { profile.seenPatch = ver; saveProfile(); return; } // 처음 시작한 플레이어는 건너뛴다
   if (document.querySelector('.app-modal.show') || $('tutOverlay')?.classList.contains('show')) { setTimeout(maybeShowPatchOverlay, 2500); return; }
   profile.seenPatch = ver; saveProfile();
@@ -40150,9 +40407,16 @@ function tierSimLimit() { // 7.7.6 길이 고르기: t분 (계산 시간) 또는
   return v[0] === 'g' ? { games: n, label: `${n.toLocaleString()}판` } : { ms: n * 60 * 1000, label: `${n}분` };
 }
 const TIERSIM = { running: false, stop: false, res: null };
-function tierSimLoad() { // 버전이 바뀌면(밸런스가 바뀌었으니) 이 기기의 표본은 새로 시작한다
-  try { const d = JSON.parse(localStorage.getItem(TIERSIM_KEY) || 'null'); if (d && d.st && d.games && Array.isArray(d.g) && d.ver === jihooVersionLabel()) return d; } catch (error) {}
-  return { games: 0, st: {}, runs: 0, g: [], ver: jihooVersionLabel() };
+function tierSimVer() { // 7.8.3 딸깍밸패기: 서버 밸런스나 미리보기 초안이 바뀌어도 다른 밸런스로 본다 (tiersim 문서 ver 12자 안)
+  const v = jihooVersionLabel(), t = balTargets(balServer, balDraftActive() ? balDraft : null);
+  if (!Object.keys(t).length) return v;
+  const flat = Object.keys(t).sort().map(id => id + ':' + Object.keys(t[id]).sort().map(k => k + '=' + t[id][k]).join(',')).join(';');
+  return (v + '~' + balHash(flat).slice(0, 4)).slice(0, 12);
+}
+function tierSimLoad() { // 버전 · 밸런스가 바뀌면 이 기기의 표본은 새로 시작한다
+  const ver = tierSimVer();
+  try { const d = JSON.parse(localStorage.getItem(TIERSIM_KEY) || 'null'); if (d && d.st && d.games && Array.isArray(d.g) && d.ver === ver) return d; } catch (error) {}
+  return { games: 0, st: {}, runs: 0, g: [], ver };
 }
 // 7.8.2 기기 사이 동기화: 운영자 기기마다 자기가 돌린 판만 tiersim/{기기} 에 올리고, 같은 버전인 모든 기기의 판을 합쳐 계산한다 (중복 없음)
 const TIERSIM_DEV_KEY = 'jihooBattle.tierSim.device';
@@ -40173,7 +40437,7 @@ function tierSimDecode(doc) {
   return out;
 }
 function tierSimMerged() { // 이 기기 + 다른 운영자 기기(같은 버전)의 판을 모두 합친다
-  const d = tierSimLoad(), me = tierSimDevice(), ver = jihooVersionLabel();
+  const d = tierSimLoad(), me = tierSimDevice(), ver = tierSimVer();
   const m = { games: d.games, runs: d.runs, st: JSON.parse(JSON.stringify(d.st)), g: d.g.slice(), devices: d.games ? 1 : 0 };
   (TIERSIM.remote || []).filter(x => x.id !== me && x.ver === ver && x.n > 0).forEach(x => {
     const g = tierSimDecode(x); m.g.push(...g); m.games += g.length; m.devices++;
@@ -40187,7 +40451,7 @@ async function tierSimSync(upload) { // 운영자 계정이면: (upload 면) 내
   try {
     if (upload) { const d = tierSimLoad(); if (d.games) await O.tierSimPut(tierSimDevice(), tierSimEncode(d)); }
     TIERSIM.remote = await O.tierSimAll(); TIERSIM.synced = Date.now();
-    const others = TIERSIM.remote.filter(x => x.id !== tierSimDevice() && x.ver === jihooVersionLabel() && x.n > 0);
+    const others = TIERSIM.remote.filter(x => x.id !== tierSimDevice() && x.ver === tierSimVer() && x.n > 0);
     TIERSIM.syncMsg = others.length ? `다른 기기 ${others.length}대의 측정 ${others.reduce((t, x) => t + x.n, 0).toLocaleString()}판을 합쳤어요.` : '다른 기기의 같은 버전 측정은 아직 없어요.';
     return true;
   } catch (error) {
@@ -42938,6 +43202,865 @@ function startBattleLoadLines() {
   battleLoadTimer = setInterval(() => { if (state.screen !== 'loading') { clearInterval(battleLoadTimer); return; } next(); }, 700);
 }
 
+// ================= 7.8.3 딸깍밸패기 (고급 개발자 전용 밸런스 패치) =================
+// 개발자 모드에서 모든 지후 수치 · 도감 설명을 바꾸고, 바뀐 내용으로 패치노트를 자동으로 만들어 서버(config/balance)에 게시한다.
+// 모든 기기는 게시된 값을 받아 바로(전투 중이면 끝난 뒤) 적용한다. 도감 설명은 바뀐 숫자가 설명에 딱 한 번 나오면 자동으로 바꾸고, 아니면 직접 고친다.
+// 쓰기는 Firestore admins + seniorDevs/{uid} (콘솔에서만 만든다) 둘 다 있는 계정만 (firestore.rules).
+// 수치 이름표 '이름|단위|방향' (단위 s=초 · px=45px 격자 → 칸 · c=칸 · p=비율 → % · x=배 · d=° · 그 밖은 그대로 붙임 / 방향 - = 낮을수록 좋음 · + = 높을수록 좋음 · 비우면 자동)
+const BAL_LABELS = {
+  hp: '체력', atk: '공격력', atkSpeed: '공격 간격|s|-', range: '사거리|px', speed: '이동속도|px', shield: '쉴드',
+  // 스페셜 · 7.8 신규
+  spHits: '연타 횟수|회', spGap: '연타 간격|s|-', spRevives: '부활 횟수|회', spReviveDelay: '부활 대기|s|-', spDropRadiusCells: '낙하 범위|c', spDropDmg: '낙하 피해',
+  whFirst: '첫 회오리|s|-', whEvery: '회오리 쿨타임|s|-', whTime: '회오리 지속|s', whTick: '회오리 피해 간격|s|-', whDmg: '회오리 피해', whDr: '회오리 중 받는 피해 감소|p', whSpeed: '회오리 이동속도|x',
+  heatKnock: '넉백 거리|c', heatKnockStep: '히트당 넉백 증가|c', heatAtkPct: '히트당 공격력 증가|p', heatHpStep: '히트당 최대 체력 증가', heatHeal: '적중 시 회복 (최대 체력)|p',
+  funcAnnounce: '함수 표시 시간|s|-', funcWarn: '경고 시간|s|-', funcUnit: '그래프 눈금|px', funcWidthMul: '그래프 두께|x',
+  accFirst: '첫 가속|s|-', accEvery: '가속 쿨타임|s|-', accTime: '가속 지속|s', accAspd: '아군 공격속도 증가|p',
+  venomDps: '맹독 초당 피해', venomRamp: '맹독 초당 피해 증가', venomWeak: '맹독 약화 (초당)|p', venomWeakMax: '맹독 약화 최대|p',
+  agDelay: '분해까지|s|-', agHpFrac: '분해된 유닛 체력|p',
+  surfDelay: '서핑 점프까지|s|-', surfTime: '부유 시간|s', surfRadiusCells: '착지 범위|c', surfDmg: '착지 피해',
+  teemoChance: '눈가림 확률|p', teemoBlind: '눈가림 지속|s', teemoMiss: '눈가림 빗나감 확률|p',
+  paintAmp: '페인트 받는 피해 증가|p', paintSlow: '페인트 이동속도 감소|p',
+  sansEvery: '와! 샌즈 쿨타임|s|-', sansFirst: '첫 사용|s|-', sansGap: '밀쳐내기 간격|s|-', sansDmg: '밀쳐내기 피해', sansCount: '밀쳐내기 횟수|회',
+  phaseCells: '하트 이동 거리|c', phaseCd: '재변신 대기|s|-', phaseHeal: '잃은 체력 회복|p', phaseBurst: '변신 폭발 피해', phaseBurstCells: '변신 폭발 범위|c', phaseSpeed: '하트 이동속도 (초당)|c',
+  panPeriod: '후라이팬 회전 주기|s|-', panFanDeg: '후라이팬 각도|d', panReach: '후라이팬 반지름|c', panDmg: '후라이팬 피해', panKnock: '날려 보내는 거리|c', panWall: '벽 충돌 추가 피해', panCd: '타격 후 대기|s|-',
+  pkFirst: '첫 소환|s|-', pkRise: '소환 시간|s|-', pkNext: '다음 소환까지|s|-', pkBoom: '폭발 피해', pkStun: '폭발 기절|s', pkKnock: '폭발 넉백|c',
+  // 7.5
+  rwEvery: '역행 쿨타임|s|-', rwDelay: '되돌리기까지|s', rwStun: '부작용 행동불능|s|-',
+  exoEvery: '강령술 쿨타임|s|-', exoRadiusCells: '강령술 범위|c', exoHeal: '강령술 회복', exoBoost: '강령 공격력 · 공격속도 증가|p', exoTime: '강령 지속|s', exoHpLoss: '강령 끝 체력 손실|p|-', exoStun: '강령 끝 기절|s|-',
+  mcBase: '저격 기본 피해', mcHpFrac: '저격 현재 체력 비례 피해|p', mcEvery: '저격 간격|s|-', mcAim: '스코프 표시|s|-',
+  wsRadiusCells: '용오름 범위|c', wsWarn: '용오름 예고|s|-', wsTime: '용오름 지속|s', wsTick: '용오름 간격|s|-', wsHeal: '아군 회복 (간격마다)', wsDmg: '적 피해 (간격마다)', wsFloat: '아군 부유|s',
+  infRangeCells: '소각 범위|c', infFanDeg: '소각 각도|d', infBurnDr: '소각 중 받는 피해 감소|p', infCharge: '소각 차징|s|-', infBurnTime: '소각 지속|s', infTick: '소각 피해 간격|s|-', infTickDmg: '소각 피해', infLag1: '과열 (행동불능)|s|-', infWarn: '인페르노 경고|s|-', infLineWidth: '인페르노 폭 (지름 배수)|x', infLacer: '인페르노 절상|p', infLacerTime: '절상 지속|s', infBurnDps: '화상 초당 피해', infBurnTime2: '화상 지속|s', infBurnAmpTime: '받는 화상 피해 증가 지속|s', infLag2: '탈진 (행동불능)|s|-',
+  bullyRadiusCells: '일진 영역 반경|c', bullyFreeze: '영역 빙결|s', bullySlowCells: '효과 없는 진입 속도 (초당)|c|-', standTime: '스탠드 지속|s', standCd: '스탠드 쿨타임|s|-', standEvery: '스탠드 타격 간격|s|-', standRadiusCells: '스탠드 범위|c', standDmg: '스탠드 피해', standDr: '스탠드 중 받는 피해 감소|p',
+  // 7.4
+  wineEvery: '와인 마시는 간격|s', wineHpCost: '한 모금 체력 손실|p|-', wineAtk: '한 모금 공격력 증가|p', wineCrit: '치명타 확률 증가|p', wineCritDmg: '치명타 피해 증가|p', wineBuffTime: '치명 버프 지속|s', toastHeal: '건배 회복', toastAtk: '건배 공격력 증가|p',
+  cultDelay: '포교의 종까지|s|-', cultRadiusCells: '포교의 종 범위|c', cultDamage: '포교의 종 피해',
+  cottonEvery: '쉴드 주는 공격 횟수|회|-', cottonRadiusCells: '쉴드 범위|c', cottonShield: '쉴드 (아군 최대 체력)|p', cottonMax: '라운드당 최대|회',
+  skFirst: '시작 때 부르는 스껄|마리', skEvery: '스껄 추가 간격|s|-',
+  kbSpeedCells: '키보드 속도 (초당)|c', kbCharm: '매혹|s', kbSteal: '별풍선 (최대 체력 빼앗기)',
+  cbShots: '리볼버 발수|발', cbShotGap: '리볼버 간격|s|-', cbDodgeCells: '회피 거리|c', cbCooldown: '회피 쿨타임|s|-',
+  nfEvery: '나이트폴 (N번째 공격)|회|-', nfStartup: '나이트폴 준비|s|-', nfHits: '나이트폴 타수|회', nfHitGap: '나이트폴 타격 간격|s|-', nfDmg: '나이트폴 피해', nfEndlag: '나이트폴 후 경직|s|-',
+  rainEvery: '가랑비 (N번째 공격)|회|-', rainDmg: '가랑비 피해', rainHeal: '아군 초당 회복', rainHealTime: '회복 지속|s', rainSlow: '이동속도 감소|p', rainSlowTime: '둔화 지속|s', rainPause: '가랑비 후 대기|s|-',
+  dustSneeze: '재채기 자기 피해', dustUltra: '초미세먼지 1중첩당 피해', dustSneezeChance: '재채기 확률|p',
+  stoneHp: '석화 돌 체력', stoneDecay: '돌 체력 초당 감소||-', stoneLoss: '돌 깨질 때 최대 체력 손실|p', stoneFan: '석화 각도|d', stoneRadiusCells: '석화 발동 반경|c',
+  mDash1: '첫 돌진 거리|c', mDash2: '추가 돌진 거리|c', mGap: '콤보 동작 간격|s|-', mDashSpeed: '돌진 속도 (초당)|c', mShovel: '삽 피해', mShovelR: '삽 범위|c', mExecute: '처형 기준 체력|p', mExecBonus: '처형 추가 피해|p', mBatDmg: '박쥐 떼 피해', mBatHeal: '박쥐 떼 회복', mBatSpeed: '박쥐 떼 속도|c', mBatRange: '박쥐 떼 사거리|c', mBatWidth: '박쥐 떼 폭 (몸 지름)|p', mRest: '콤보 후 휴식|s|-',
+  droneDelay: '드론 소환까지|s|-', droneRespawn: '드론 재소환|s|-', droneShots: '연사 발수|발', droneGap: '연사 간격|s|-', droneRadiusCells: '공격 범위|c',
+  radDps: '방사능 초당 피해', radTime: '방사능 지속|s', leakDelay: '유출까지|s|-', leakRadiusCells: '유출 범위|c', leakTime: '유출 지속|s', leakTick: '유출 피해 간격|s|-', leakDmg: '유출 피해',
+  lightShield: '빛의 방패', lightShare: '빛의 방패 닳는 비율|p|-', escortDr: '방패 깨진 뒤 받는 피해 감소|p',
+  sealDelay: '봉인까지|s|-', sealMaxLv: '봉인 가능 최대 레벨|레벨', sealFreeLv: '풀려면 올려야 하는 레벨|레벨',
+  blTime: '레이저 지속|s', blEvery: '레이저 간격|s|-', blTick: '레이저 피해 간격|s|-', blBounces: '벽 반사|회',
+  // 7.0 ~ 7.3
+  snowMaxStacks: '빙결까지 중첩|중첩|-', howlAspd: '하울링 공격속도 증가|p', howlTime: '하울링 지속|s', wolfLeapDelay: '순간이동까지|s|-', wolfSpeed: '늑대 이동속도|px', wolfAtkSpeed: '늑대 공격 간격|s|-', wolfRange: '늑대 사거리|px', wolfHealRatio: '늑대 공격 흡혈|p',
+  dreamCutPerSec: '초당 최대 체력 잘림|p', forgetMin: '망각 최소 회복 (최대 체력)|p|-', forgetMax: '망각 최대 회복 (최대 체력)|p|-',
+  elecChainTargets: '연쇄 대상|명',
+  potionRange: '포션 사거리|px', potionFlight: '포션 비행|s|-', potHeal: '회복 포션 (최대 체력)|p', potAtk: '공격력 포션|p', potCrit: '치명타 확률 포션|p', potCritDmg: '치명타 피해 포션|p', potBuffTime: '포션 버프 지속|s', potDamage: '피해 포션', potPoisonDps: '독 포션 피해', potPoisonTime: '독 포션 지속|s', potBurnDps: '화상 포션 초당 피해', potBurnTime: '화상 포션 지속|s',
+  secretAt: '비장의 포션 체력 기준|p', secretAtk: '비장의 포션 공격력|p', secretShield: '비장의 포션 쉴드', secretDr: '비장의 포션 받는 피해 감소|p', secretSpeed: '비장의 포션 이동속도|p',
+  reelTime: '낚싯대 당기는 시간|s|-', bobberPull: '찌 끌어오는 속도 (초당)|c', recast: '다시 던지기까지|s|-', stewAtk: '생선조림 공격력 감소|p', stewSpeed: '생선조림 이동속도 감소|p',
+  tendonWindup: '힘줄 끊기 준비|s|-', tendonStay: '힘줄 끊기 후 복귀|s|-', lacerateFraction: '절상 (최대 체력)|p', injureDuration: '부상 지속|s', injureCrit: '부상 치명타 확률|p',
+  blackHp: '흑 체력', flameBounceRange: '이어서 노리는 거리|px', growthDelay: '레벨업까지|s|-',
+  hypnoInterval: '최면 간격|s|-', hypnoRadius: '최면 범위|px', hypnoDuration: '최면 지속|s', hypnoPull: '끌어오는 속도 (초당)|px',
+  edgeSecondDelay: '2연타 간격|s|-', edgeGaugeMax: '비행까지 공격|회|-', edgeLeapTime: '비행 시간|s|-', edgeLandRadius: '착지 범위|px', edgeLandDamage: '착지 피해', edgeSpeedBonus: '착지 후 이동속도|px', edgeSpeedTime: '이동속도 지속|s', lifesteal: '흡혈|p',
+  hatchChance: '부화 확률|p', hatchLevel: '부화 레벨|레벨', eggShakeEvery: '흔들림 간격|s|-',
+  sixSevenDelay: '숫자 굴리기까지|s|-', sixSevenSpeed: '6 · 7 이동속도|px', sixSevenAtk: '6 · 7 공격력', sixSevenAtkSpeed: '6 · 7 공격 간격|s|-',
+  gambleDelay: '도박까지|s|-',
+  shroomInterval: '버섯 간격|s|-', shroomHpGain: '버섯 최대 체력 증가|p', shroomAtkGain: '버섯 공격력 증가', shroomPoisonChance: '독버섯 확률|p|-', shroomPoisonTick: '독버섯 1회 피해 (최대 체력)|p|-', shroomPoisonTicks: '독버섯 피해 횟수|회|-', shroomPoisonEvery: '독버섯 피해 간격|s|+',
+  cardInterval: '예고장 간격|s|-', cardDuration: '훔치기까지|s|-',
+  hackCooldown: '해킹 쿨타임|s|-', hackDuration: '해킹 지속|s', hackTypeTime: '타이핑 시간|s|-',
+  dimensionHitsBeforeRealm: '아공간까지 공격|회|-', realmFearDuration: '아공간 공포|s',
+  syringeShotSpeed: '주사 투사체 속도|px', dosaRealmSpeed: '아공간 이동속도|x', bikeKnockback: '돌진 넉백|px', curseKillPoseTime: '즉사 연출|s|-', assassinStealth: '은신|s',
+  healWaveCells: '회복 파동 범위|c', awakenDashSpeed: '각성 돌진 속도|px', awakenDashDamage: '각성 돌진 피해', awakenChannel: '각성 시간|s|-',
+  berserkAtk: '광폭화 공격력', berserkAtkSpeed: '광폭화 공격 간격|s|-', berserkTime: '광폭화 지속|s',
+  knockbackCells: '넉백|c', lassoStun: '올가미 기절|s',
+  minesPerPlant: '한 번에 설치|개', mineDamageBase: '지뢰 기본 피해', mineCurrentHpFraction: '지뢰 현재 체력 비례 피해|p', mineStunDuration: '지뢰 기절|s',
+  djBuff: 'DJ 공격력 · 공격속도 증가|p', satAtkSpeed: '직접 공격 간격|s|-', telescopeBonusCells: '사거리 증가|c',
+  chargeAuraRadius: '충전 범위|px', chargeAuraRate: '초당 쿨타임 충전|p', blizzardFirst: '첫 블리자드|s|-',
+  mutationDelay: '변이까지|s|-', mutationTime: '변이 지속|s', mimicDelay: '변신까지|s|-', mimicDuration: '변신 지속|s', mimicMultiplier: '변신 능력치|x',
+  orbitPeriod: '공전 주기|s|-', orbitDamageFraction: '위성 현재 체력 비례 피해|p', orbitRadius: '공전 궤도|px',
+  lockChance: '잠금 확률|p', lockDuration: '잠금 지속|s',
+  genesisRadius: '제네시스 범위|px', genesisShield: '제네시스 쉴드', genesisDecay: '쉴드 초당 감소||-', genesisTransfer: '대신 받는 피해|p', genesisAtkBuff: '범위 아군 공격력 증가|p', genesisAloneTaken: '혼자일 때 받는 피해|p|-',
+  dustEveryHits: '황사까지 적중|회|-', dustDuration: '황사 지속|s', dustRadius: '황사 반지름|px', dustEvadeChance: '황사 회피 확률|p',
+  henchKnockCells: '부하 등장 넉백|c', hollowStrikeScatter: '공허 출구 흩어짐|c|-', starMeteorExtra: '별똥별 추가 범위|px', bladeStun: '마검 끝 기절|s|-',
+  triHalf: '삼각형 반폭|px', knightAhead: '나이트 소환 거리|px', farmSize: '밭 크기|px', diveMax: '최대 잠수 시간|s',
+  rockDps: '암석지대 피해', rockTick: '암석지대 피해 간격|s|-', rockScale: '암석지대 크기 (대상 몸)|x',
+  ruinsDecayEvery: '약화 감소 간격|s|+', ruinsAtkDecay: '약화 감소량|p|-', ruinsHealDecay: '회복 감소량||-', ruinsAtkMin: '적 공격력 감소 최소|p', ruinsHealMin: '최소 초당 회복',
+  holoLife: '홀로그램 지속|s', matrixMax: '라운드당 최대 복제|기',
+  supplyDropRadius: '보급 낙하 범위|px', supplyFall: '보급 낙하 시간|s|-', crateRadius: '보급 상자 크기|px',
+  maestroLevelUp: '연주 레벨업|레벨', maestroFrame: '연주 동작 간격|s', maestroBow: '인사 시간|s|-',
+  trainShotGap: '연기 연발 간격|s|-', trainRelocate: '신호기 다시 세우기까지|s|-', trainRedash: '다시 돌진까지|s|-', trainSignalGap: '신호기 최소 간격|px', trainFireTime: '불길 지속|s', trainFireEvery: '불길 피해 간격|s|-', trainFireDamage: '불길 피해', trainCdMin: '최소 쿨타임|s|-',
+  bskAtkSpeed: '버서커 공격 간격|s|-',
+  typhoonLvRadius: '레벨업당 태풍 반경 증가|p', typhoonLvTime: '레벨업당 태풍 지속 증가|s', typhoonHoming: '태풍 유도 세기', stage1Time: '1단계 시간|s|-', stage2Time: '2단계 시간|s', stage2Crit: '2단계 치명타 확률|p',
+  golfWarn: '낙하 경고|s|-', mortarFlight: '포탄 비행|s|-',
+  enhBreak: '강화 실패 시 파괴 확률|p|-', enhFastSpeed: '+3 공격 간격|s|-', enhWaveSpeed: '+5 공격 간격|s|-', enhWaveDamage: '검의 파동 피해',
+  bugEvery: '버러지후 간격|s|-', ctrlTime: '조종 지속|s', ctrlHp: '조종 풀리는 체력|p|-', ctrlSpeed: '조종 이동속도 증가|c', ctrlDr: '조종 중 받는 피해 감소|p',
+  eatDelay: '잡아먹기까지|s|-', eatHold: '뱉기까지|s|-', eatCd: '다시 먹기까지|s|-', spitHit: '뱉은 적이 부딪힌 적 피해', spitSelf: '뱉어진 적 낙하 피해', spitSpeed: '뱉는 속도|c',
+  lanternHeal: '회복 빔 (0.1초마다)', lanternDim: '흐려진 빔 유지|s', lanternDimValue: '흐려진 빔 피해 · 회복',
+  rocketRadius: '로켓 범위|c', rocketFlight: '로켓 비행|s|-', rocketFireTime: '불길 지속|s', rocketFireDps: '불길 초당 피해',
+  noteMin: '화살표 최소 간격|s|-', noteMax: '화살표 최대 간격|s|-', noteDamage: '화살표 피해', beatLock: '회피 후 대기|s|-', noteSpeed: '화살표 속도|c', beatWindow: '회피 판정|s', beatTeleport: '회피 순간이동|c', beatRadius: '회피 피해 범위|c', beatDamage: '회피 피해',
+  shotMax: '샷건 최대 피해', shotMin: '샷건 최소 피해',
+  bhEvery: '중력장 간격|s|-', bhRadiusCells: '중력장 범위|c', bhDamage: '중력장 피해', bhPull: '끌어당기기 (거리)|p',
+  ufcDelay: '링 세우기까지|s|-', ufcFightDelay: 'FIGHT 후 입장|s|-', ufcCool: '다음 경기까지|s|-', ufcWinAtk: '승리 팀 공격력 증가|p', ufcWinAspd: '승리 팀 공격속도 증가|p',
+  dubEvery: '파동 간격|s|-', dubRadiusCells: '파동 범위|c', dubDamage: '파동 피해', dubSpeakerChance: '스피커 확률|p', dubSpeakerTime: '스피커 지속|s', dubSpeakerTick: '스피커 피해 간격|s|-', dubSpeakerDamage: '스피커 피해', dubSpeakerRadiusCells: '스피커 범위 (반변)|c',
+  laserEvery: '강화 레이저 (N번째 공격)|회|-', laserBigTime: '강화 레이저 지속|s', laserBigTick: '강화 레이저 간격|s|-', laserBigDamage: '강화 레이저 피해',
+  frostStacks: '빙결까지 공격|회|-', frostFreeze: '빙결|s', frostBonus: '빙결마다 받는 피해 증가|p',
+  waveEvery: '파도 간격|s|-', waveKnockCells: '파도 넉백|c', waveMissing: '잃은 체력 비례 피해|p', waveFlat: '파도 고정 피해', waveSpeedCells: '파도 속도 (초당)|c',
+  hgShieldMax: '수은 쉴드 최대', hgEvery: '쉴드 얻는 공격 횟수|회|-', hgShield: '수은 쉴드', hgPoisonDps: '반격 중독 초당 피해', hgPoisonTime: '반격 중독 지속|s', hgAtkGain: '쉴드당 공격력 증가',
+  zapRadiusCells: '전기 튀는 범위|c', zapStunChance: '기절 확률|p', zapStun: '기절|s',
+  blessAt: '축복 받기까지|s|-', blessCount: '축복 개수|개',
+  teslaOrbs: '전기 개수|개', teslaOrbitRadius: '전기 공전 반경|px', teslaPeriod: '전기 공전 주기|s|-', teslaDamage: '전기 피해', teslaZapRadiusCells: '전기 튀는 범위|c', teslaFieldTick: '전기장 간격|s|-', teslaFieldDamage: '전기장 피해',
+  taxiSpeed: '택시 속도', taxiLaunchSpeed: '외벽 돌진 속도', taxiCall: '출발까지|s|-', taxiShield: '운행 쉴드', taxiDropRest: '내려 준 뒤 휴식|s|-', taxiFoeCall: '적 태우러 출발까지|s|-', taxiLoadRest: '적 태운 뒤 휴식|s|-', taxiAway: '돌아오기까지|s|-',
+  rcStart: '첫 소환|s|-', rcEvery: '소환 간격|s|-', rcWarn: '경로 예고|s', rcLaneCells: '경로 폭|c', rcCarFraction: '자동차 현재 체력 비례 피해|p',
+  rvTime: '유린 지속|s', rvCritDmg: '유린 치명타 피해|p', rvCrit: '유린 치명타 확률|p', ravageDamage: '파괴 피해', ravageBoxCells: '파괴 범위 (한 변)|c', ravageStep: '처치마다 공격력 · 파괴 피해 증가',
+  stoneSpeed: '굴러가는 속도', stoneHitFraction: '충돌 현재 체력 비례 피해|p', stoneHit: '충돌 피해', radiusMul: '전투 중 몸집|x',
+  bellEvery: '종 간격|s|-', bellRadiusCells: '종 범위|c', bellDamage: '종 피해', bellHeal: '종 회복', bellImmune: '디버프 면역|s',
+  soulDelay: '흡수까지|s|-', soulAtk: '영혼당 공격력', soulHeal: '영혼당 회복', soulAtkPct: '영혼당 공격력 증가|p', soulHpPct: '영혼당 최대 체력 증가|p', soulHealPct: '영혼당 회복 (늘어난 최대 체력)|p',
+  moaiEvery: '파동 간격|s|-', moaiRadius: '파동 범위|px', moaiStun: '빙결|s',
+  nukeLaunch: '발사까지|s|-', nukeFlight: '낙하까지|s|-',
+};
+const BAL_SEEN_KEY = 'jihooBattle.balSeen.v1', BAL_PREVIEW_KEY = 'jihooBattle.balPreview.v1';
+const BAL_UNIT_TEXT = { s: '초', px: '칸', c: '칸', p: '%', x: '배', d: '°' };
+const BAL_TAGS = { buff: '상향', nerf: '하향', adjust: '조정', fix: '수정' };
+const BAL_DESC_BASE = {}; // 코드에 쓰인 도감 설명 (서버 · 초안 설명을 입히기 전)
+const BAL_NOTE_KEYS = new Set(); // PATCH_NOTES 에 끼워 넣은 서버 패치노트 버전
+let balServer = null, balDraft = { ov: {}, desc: {} }, balPending = null, balPreview = true, balSenior = null, balSel = null, balTab = 'edit', balReview = null;
+
+function balInit() {
+  try { balServer = balSanitize(JSON.parse(localStorage.getItem(BAL_CACHE_KEY) || 'null')); } catch (error) { balServer = balSanitize(null); }
+  try {
+    const d = JSON.parse(localStorage.getItem(BAL_DRAFT_KEY) || 'null');
+    if (d && typeof d === 'object') balDraft = { ov: d.ov && typeof d.ov === 'object' ? d.ov : {}, desc: d.desc && typeof d.desc === 'object' ? d.desc : {} };
+  } catch (error) {}
+  try { balPreview = localStorage.getItem(BAL_PREVIEW_KEY) !== '0'; } catch (error) {}
+  Object.keys(CHAR_DB).forEach(id => { BAL_DESC_BASE[id] = String(CHAR_DB[id].skillDesc || ''); });
+  balApplyAll();
+  balNotesApply(true);
+  balBind();
+}
+function balSanitize(d) {
+  const out = { v: 0, ov: {}, desc: {}, notes: [], at: 0 };
+  if (!d || typeof d !== 'object') return out;
+  out.v = Math.max(0, Math.floor(Number(d.v) || 0));
+  if (d.ov && typeof d.ov === 'object') Object.keys(d.ov).forEach(id => {
+    const row = d.ov[id];
+    if (!row || typeof row !== 'object') return;
+    Object.keys(row).forEach(k => { const e = row[k]; if (Array.isArray(e) && e.length === 2 && e.every(n => typeof n === 'number' && isFinite(n))) (out.ov[id] = out.ov[id] || {})[k] = [e[0], e[1]]; });
+  });
+  if (d.desc && typeof d.desc === 'object') Object.keys(d.desc).forEach(id => { const e = d.desc[id]; if (e && typeof e.t === 'string' && typeof e.h === 'string') out.desc[id] = { h: e.h, t: e.t.slice(0, 2000) }; });
+  if (Array.isArray(d.notes)) out.notes = d.notes.filter(n => n && typeof n === 'object' && typeof n.ver === 'string' && /^[0-9][0-9a-z.\-]{0,15}$/i.test(n.ver)).slice(0, 30).map(n => ({
+    n: Math.max(0, Math.floor(Number(n.n) || 0)), ver: n.ver, date: String(n.date || '').slice(0, 12), label: String(n.label || '').slice(0, 60), title: String(n.title || '').slice(0, 30),
+    items: (Array.isArray(n.items) ? n.items : []).filter(it => it && typeof it.id === 'string').slice(0, 150).map(it => ({
+      id: it.id, tag: BAL_TAGS[it.tag] ? it.tag : 'adjust', memo: String(it.memo || '').slice(0, 200),
+      ch: (Array.isArray(it.ch) ? it.ch : []).filter(c => c && typeof c.k === 'string' && typeof c.a === 'number' && typeof c.b === 'number').slice(0, 80).map(c => ({ k: c.k, a: c.a, b: c.b })),
+    })),
+  }));
+  out.at = typeof d.at === 'number' ? d.at : d.at && typeof d.at.toMillis === 'function' ? d.at.toMillis() : 0;
+  return out;
+}
+
+// ── 수치 이름표 · 단위 ──
+function balInfo(key) {
+  const own = BAL_LABELS[key];
+  if (own) { const [label, unit = '', dir = ''] = own.split('|'); return { label, unit, dir: dir || balGuessDir(key, label, unit) }; }
+  const d = DETAIL_STAT_FIELDS[key];
+  if (d) {
+    const u = d[1] || '';
+    const unit = u === '칸' ? (/Cells$/.test(key) ? 'c' : 'px') : u === '%' ? 'p' : u === '°' ? 'd' : u === '×' ? 'x' : u;
+    return { label: d[0], unit, dir: balGuessDir(key, d[0], unit) };
+  }
+  return { label: key, unit: '', dir: '+' };
+}
+function balGuessDir(key, label, unit) { // 낮을수록 좋은 수치 (쿨타임 · 간격 · 대기 …)
+  if (unit === 's' && (/(Every|Interval|Cooldown|Cd|Delay|First|Gap|Tick|Warn|Windup|Charge|Startup|Lag|Rest|Period|Flight|Respawn|Recast|Hold)/.test(key) || /(간격|쿨타임|대기|준비|예고|경직|휴식|차징|까지)/.test(label))) return '-';
+  if (/받는 피해/.test(label) && !/감소/.test(label)) return '-';
+  return '+';
+}
+function balRound(v) { return Math.round(v * 1000) / 1000; }
+function balShow(v, unit) { return balRound(unit === 'px' ? v / BASE_GRID : unit === 'p' ? v * 100 : v); } // 편집 칸 · 패치노트에 보이는 값
+function balRaw(n, unit) { return unit === 'px' ? n * BASE_GRID : unit === 'p' ? n / 100 : n; }
+function balNumText(n) { return Math.abs(n) >= 1000 ? n.toLocaleString('ko-KR', { maximumFractionDigits: 3 }) : String(n); }
+function balFmt(v, unit) { return balNumText(balShow(v, unit)); }
+function balUnit(unit) { return BAL_UNIT_TEXT[unit] ?? unit ?? ''; }
+function balWholeUnit(unit, key) { return ['회', '명', '기', '개', '마리', '발', '레벨', '중첩', '타'].includes(unit) || key === 'deployLimit'; }
+
+// ── 값 ──
+function balServerVal(id, k) { const e = balServer && balServer.ov[id] && balServer.ov[id][k]; return e && balSame(BAL_BASE[id][k], e[0]) ? e[1] : BAL_BASE[id][k]; }
+function balDraftVal(id, k) { const r = balDraft.ov[id]; return r && typeof r[k] === 'number' ? r[k] : undefined; }
+function balNowVal(id, k) { const d = balDraftVal(id, k); return d !== undefined ? d : balServerVal(id, k); } // 편집기에 보이는 값
+function balDraftActive() { return !!(developerMode && balPreview); } // 초안은 개발자 모드인 이 기기에서만 미리 적용
+function balHash(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); }
+function balCleanDesc(t) { return escapeHtml(String(t || '')).replace(/&lt;(\/?)b&gt;/g, '<$1b>').replace(/&lt;br\s*\/?&gt;/g, '<br>'); } // 수동 설명은 <b> · <br> 만
+
+// 모든 지후 수치 · 도감 설명을 지금 서버(+ 미리보기 초안) 값으로 맞춘다. 전투 중에는 부르지 않는다.
+function balApplyAll() {
+  const t = balTargets(balServer, balDraftActive() ? balDraft : null);
+  let n = 0;
+  Object.keys(BAL_BASE).forEach(id => {
+    const cb = CHARACTER_BALANCE[id], db = CHAR_DB[id];
+    if (!cb) return;
+    Object.keys(BAL_BASE[id]).forEach(k => {
+      const want = t[id] && k in t[id] ? t[id][k] : BAL_BASE[id][k], cur = cb[k];
+      if (balSame(cur, want)) return;
+      cb[k] = want; n++;
+      if (db && balSame(db[k], cur)) db[k] = want;
+    });
+    if (db && id in BAL_DESC_BASE) {
+      const man = balManualDesc(id, balDraftActive());
+      const d = man != null ? balCleanDesc(man) : balAutoDesc(BAL_DESC_BASE[id], balChangesFor(id, t)).text;
+      if (db.skillDesc !== d) { db.skillDesc = d; n++; }
+    }
+  });
+  return n;
+}
+function balChangesFor(id, t) { // [[수치, 코드 값, 지금 값]]
+  const base = BAL_BASE[id] || {}, row = t[id] || {};
+  return Object.keys(row).filter(k => k in base && !balSame(base[k], row[k])).map(k => [k, base[k], row[k]]);
+}
+function balManualDesc(id, withDraft) { // 수동 설명 (없으면 null)
+  if (withDraft && balDraft.desc[id]) return typeof balDraft.desc[id].t === 'string' ? balDraft.desc[id].t : null;
+  const s = balServer && balServer.desc[id];
+  return s && s.h === balHash(BAL_DESC_BASE[id] || '') ? s.t : null;
+}
+
+// ── 도감 설명 자동 수정: 바뀐 수치의 숫자가 설명에 딱 한 번 나오면 그 숫자만 바꾼다 (여러 번이면 사람이 고친다) ──
+function balNumForms(v, unit) { // [설명 속 글자, 바로 뒤에 와야 하는 단위, 형태]
+  const n = balShow(v, unit), suf = BAL_UNIT_TEXT[unit] || '';
+  const out = [[String(n), suf, 'plain']];
+  if (Math.abs(n) >= 1000) out.push([n.toLocaleString('ko-KR', { maximumFractionDigits: 3 }), suf, 'comma']);
+  if (unit === 'x') out.push([String(balRound(v * 100)), '%', 'pct']);
+  return out;
+}
+function balFindNum(text, str, suf) {
+  const hits = [];
+  for (let i = text.indexOf(str); i >= 0; i = text.indexOf(str, i + 1)) {
+    const pre = i > 0 ? text[i - 1] : '', after = text.slice(i + str.length);
+    if (/[\d.,]/.test(pre) || /^\d|^[.,]\d/.test(after)) continue; // 더 긴 숫자의 일부
+    if (suf ? !(after.startsWith(suf) || after.startsWith(' ' + suf)) : /^\s?(초|칸|%|°|배)/.test(after)) continue; // 단위가 다르면 다른 수치
+    if (text.lastIndexOf('<', i) > text.lastIndexOf('>', i)) continue; // 태그 안
+    hits.push(i);
+  }
+  return hits;
+}
+function balAutoDesc(base, changes) {
+  const edits = [], amb = [];
+  changes.forEach(([k, from, to]) => {
+    const { unit } = balInfo(k);
+    const hits = [];
+    balNumForms(from, unit).forEach(([str, suf, form]) => balFindNum(base, str, suf).forEach(i => { if (!hits.some(h => h.i === i)) hits.push({ i, len: str.length, form }); }));
+    if (hits.length === 1) {
+      const h = hits[0], n = balShow(to, unit);
+      const txt = h.form === 'pct' ? String(balRound(to * 100)) : h.form === 'comma' || (Math.abs(n) >= 1000 && Math.abs(balShow(from, unit)) < 1000) ? balNumText(n) : String(n);
+      edits.push({ i: h.i, len: h.len, txt, k });
+    } else if (hits.length > 1) amb.push(k);
+  });
+  const ok = edits.filter(e => !edits.some(o => o !== e && o.i < e.i + e.len && e.i < o.i + o.len)); // 두 수치가 같은 자리를 잡으면 둘 다 사람에게
+  edits.forEach(e => { if (!ok.includes(e)) amb.push(e.k); });
+  let text = base, marked = base;
+  ok.slice().sort((a, b) => b.i - a.i).forEach(e => {
+    text = text.slice(0, e.i) + e.txt + text.slice(e.i + e.len);
+    marked = marked.slice(0, e.i) + '\u0001' + e.txt + '\u0002' + marked.slice(e.i + e.len);
+  });
+  return { text, marked, amb, done: ok.map(e => e.k) };
+}
+
+// ── 서버 패치노트 → PATCH_NOTES (버전 순서대로 끼워 넣는다) ──
+function balChangeText(ch) {
+  return ch.map(c => { const { label, unit } = balInfo(c.k); return `${escapeHtml(label)} <b>${balFmt(c.a, unit)} → ${balFmt(c.b, unit)}${escapeHtml(balUnit(unit))}</b>`; }).join(' · ');
+}
+function balNoteEntry(note) {
+  return {
+    label: escapeHtml(note.label || `v${note.ver} 밸런스 패치`), date: escapeHtml(note.date || ''), live: true, // renderPatchNotes 는 그대로 넣으므로 여기서 이스케이프
+    sections: [{ title: escapeHtml(note.title || '밸런스'), items: note.items.filter(it => CHAR_DB[it.id]).map(it => {
+      const c = CHAR_DB[it.id];
+      const txt = [it.ch.length ? balChangeText(it.ch) + '.' : '', it.memo ? escapeHtml(it.memo) : ''].filter(Boolean).join(' ') || '도감 설명을 고쳤어요.';
+      return { emoji: c.emoji || '⚖', name: c.name, tag: it.tag, color: c.color || '#888', portraitKey: PORTRAITS[it.id] ? it.id : undefined, desc: txt };
+    }) }],
+  };
+}
+function balNotesApply(boot) {
+  BAL_NOTE_KEYS.forEach(k => { delete PATCH_NOTES[k]; });
+  BAL_NOTE_KEYS.clear();
+  const notes = (balServer ? balServer.notes : []).filter(n => n.items.length && !PATCH_NOTES[n.ver]);
+  if (notes.length) {
+    const all = Object.keys(PATCH_NOTES).map(k => [k, PATCH_NOTES[k]]);
+    notes.forEach(n => {
+      if (BAL_NOTE_KEYS.has(n.ver)) return;
+      const at = all.findIndex(([k]) => compareVersions(k, n.ver) < 0);
+      all.splice(at < 0 ? all.length : at, 0, [n.ver, balNoteEntry(n)]);
+      BAL_NOTE_KEYS.add(n.ver);
+    });
+    all.forEach(([k]) => { delete PATCH_NOTES[k]; });
+    all.forEach(([k, v]) => { PATCH_NOTES[k] = v; });
+  }
+  if (!boot && $('patchVerTabs') && $('patchVerTabs').children.length) initPatchUI();
+}
+function balMaybeOverlay() { // 새 서버 패치노트는 로비에서 한 번 보여 준다 (기기마다)
+  const top = balServer && balServer.notes.find(n => BAL_NOTE_KEYS.has(n.ver));
+  if (!top || state.screen !== 'lobby' || !profile) return;
+  let seen = 0;
+  try { seen = Number(localStorage.getItem(BAL_SEEN_KEY)) || 0; } catch (error) {}
+  if (top.n <= seen) return;
+  const mark = () => { try { localStorage.setItem(BAL_SEEN_KEY, String(top.n)); } catch (error) {} };
+  if (!profile.tutorial || !profile.tutorial.done) { mark(); return; }
+  if (document.querySelector('.app-modal.show') || $('tutOverlay')?.classList.contains('show')) { clearTimeout(balMaybeOverlay.t); balMaybeOverlay.t = setTimeout(balMaybeOverlay, 2500); return; }
+  mark();
+  renderPatchNotes(top.ver, $('patchOverlayBody'));
+  openModal('patchOverlay');
+}
+
+// ── 서버에서 받기: 전투 중(친선전 동기화 포함)에는 끝날 때까지 기다렸다가 적용 ──
+function balBusy() { return state.screen === 'battle' || state.screen === 'loading' || LOCK.on; }
+function balOnServer(doc) { balPending = doc; balFlush(); }
+function balFlush() {
+  if (!balPending) return;
+  if (balBusy()) { if (!balFlush.timer) balFlush.timer = setInterval(balFlush, 3000); return; }
+  clearInterval(balFlush.timer); balFlush.timer = null;
+  balServer = balSanitize(balPending);
+  balPending = null;
+  try { localStorage.setItem(BAL_CACHE_KEY, JSON.stringify(balServer)); } catch (error) {}
+  let pruned = false; // 서버가 이미 같은 값이면 초안에서 뺀다
+  Object.keys(balDraft.ov).forEach(id => {
+    Object.keys(balDraft.ov[id] || {}).forEach(k => { if (!BAL_BASE[id] || !(k in BAL_BASE[id]) || balSame(balDraft.ov[id][k], balServerVal(id, k))) { delete balDraft.ov[id][k]; pruned = true; } });
+    if (!Object.keys(balDraft.ov[id] || {}).length) delete balDraft.ov[id];
+  });
+  if (pruned) balSaveDraft();
+  balApplyAll();
+  balNotesApply();
+  if ($('balModal') && $('balModal').classList.contains('show')) balRender();
+  balMaybeOverlay();
+}
+function balSaveDraft() { try { localStorage.setItem(BAL_DRAFT_KEY, JSON.stringify(balDraft)); } catch (error) {} }
+async function balSeniorCheck() {
+  if (balSeniorCheck.busy) return balSenior;
+  const on = window.JihooOnline && window.JihooOnline.connected && window.JihooOnline.connected();
+  if (!on) return balSenior; // 로그인 전에는 판단하지 않는다
+  balSeniorCheck.busy = true;
+  try { balSenior = !!(await window.JihooOnline.isSeniorDev()); } catch (error) { balSenior = false; }
+  balSeniorCheck.busy = false;
+  if ($('devBalBox')) $('devBalBox').hidden = !(developerMode && balSenior);
+  return balSenior;
+}
+
+// ── 편집기 화면 ──
+function balCharList() { return Object.keys(BAL_BASE).filter(id => CHAR_DB[id]); }
+function balCharDraftN(id) { const r = balDraft.ov[id] || {}; return Object.keys(r).filter(k => BAL_BASE[id] && k in BAL_BASE[id] && !balSame(r[k], balServerVal(id, k))).length + (balDraft.desc[id] ? 1 : 0); }
+function balCharServerN(id) {
+  const r = (balServer && balServer.ov[id]) || {};
+  return Object.keys(r).filter(k => BAL_BASE[id] && balSame(BAL_BASE[id][k], r[k][0])).length + (balManualDesc(id, false) != null ? 1 : 0);
+}
+function balDraftCount() {
+  let n = 0, d = 0;
+  const chars = new Set();
+  balCharList().forEach(id => {
+    const r = balDraft.ov[id] || {};
+    Object.keys(r).forEach(k => { if (k in BAL_BASE[id] && !balSame(r[k], balServerVal(id, k))) { n++; chars.add(id); } });
+    if (balDraft.desc[id]) { d++; chars.add(id); }
+  });
+  return { n, d, chars: chars.size };
+}
+async function balOpen() {
+  const note = $('devBalNote');
+  if (!developerMode) return;
+  if (note) note.textContent = '권한 확인 중…';
+  if (!(await balSeniorCheck())) { if (note) note.textContent = '고급 개발자만 쓸 수 있어요 (Firestore seniorDevs/내 계정 ID 문서가 필요해요).'; return; }
+  if (note) note.textContent = '';
+  if (!balSel || !CHAR_DB[balSel]) balSel = balCharList()[0];
+  balTab = 'edit';
+  $('balMsg').textContent = '';
+  balRender();
+  openModal('balModal');
+}
+function balRender() {
+  const s = balServer;
+  $('balSub').textContent = `서버 패치 #${s.v}${s.at ? ' · ' + new Date(s.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''} · 고급 개발자 전용`;
+  document.querySelectorAll('#balModal [data-baltab]').forEach(b => b.classList.toggle('on', b.dataset.baltab === balTab));
+  document.querySelectorAll('#balModal [data-balpane]').forEach(p => { p.hidden = p.dataset.balpane !== balTab; });
+  $('balLiveN').textContent = balCharList().reduce((a, id) => a + balCharServerN(id), 0);
+  $('balPreview').checked = balPreview;
+  if (balTab === 'edit') { balRenderChars(); balRenderStats(); }
+  else if (balTab === 'live') balRenderLive();
+  else balRenderHist();
+  balRenderFoot();
+}
+function balQuery() { return ($('balSearch').value || '').trim().toLowerCase(); }
+function balRenderChars() {
+  const q = balQuery();
+  const ids = balCharList().filter(id => !q || CHAR_DB[id].name.toLowerCase().includes(q) || id.includes(q) || Object.keys(BAL_BASE[id]).some(k => balInfo(k).label.toLowerCase().includes(q)));
+  const drafted = ids.filter(id => balCharDraftN(id)), rest = ids.filter(id => !balCharDraftN(id)); // 초안이 있는 지후가 먼저
+  $('balChars').innerHTML = [...drafted, ...rest].map(id => {
+    const c = CHAR_DB[id], dn = balCharDraftN(id), sn = balCharServerN(id);
+    return `<button type="button" data-balc="${id}" class="${id === balSel ? 'on' : ''}" style="--rc:${c.color || '#888'}"><span class="e">${escapeHtml(c.emoji || '•')}</span><span class="n">${escapeHtml(c.name)}<small>${escapeHtml(RARITY_LABEL[c.rarity] || c.rarity || '')} · ${id}</small></span>${dn ? `<i class="d" title="초안">${dn}</i>` : ''}${sn ? `<i class="s" title="서버에서 바뀐 수치">${sn}</i>` : ''}</button>`;
+  }).join('') || '<div class="v783-empty">찾는 지후가 없어요</div>';
+}
+function balArrow(k, a, b) { const up = b > a, good = balInfo(k).dir === '-' ? !up : up; return `<b class="${good ? 'up' : 'down'}">${good ? '▲ 상향' : '▼ 하향'}</b>`; }
+function balRowHtml(id, k, q) {
+  const { label, unit, dir } = balInfo(k);
+  const base = BAL_BASE[id][k], srv = balServerVal(id, k), dv = balDraftVal(id, k);
+  const drafted = dv !== undefined && !balSame(dv, srv), served = !balSame(srv, base), now = drafted ? dv : srv, u = escapeHtml(balUnit(unit));
+  const sub = drafted ? `서버 ${balFmt(srv, unit)}${u} → ${balFmt(dv, unit)}${u} ${balArrow(k, srv, dv)}${balSame(dv, base) ? ' · 코드 값으로' : ''}` : served ? `코드 ${balFmt(base, unit)}${u} · 서버에서 바뀐 값` : '';
+  const hit = q && label.toLowerCase().includes(q);
+  return `<div class="v783-row${drafted ? ' chg' : ''}${served ? ' srv' : ''}${hit ? ' hit' : ''}" data-k="${k}">
+    <label class="lb" for="balIn_${k}">${escapeHtml(label)}<small>${k}${dir === '-' ? ' · 낮을수록 좋음' : ''}</small></label>
+    <span class="in"><input id="balIn_${k}" data-balin="${k}" type="number" step="any" inputmode="decimal" value="${balShow(now, unit)}"><em>${u}</em></span>
+    <button type="button" class="rs" data-balrs="${k}" title="${drafted ? '초안 취소 (서버 값으로)' : served ? '코드 값으로 되돌리기 (초안)' : '코드 값 그대로'}"${drafted || served ? '' : ' disabled'}>↺</button>
+    <span class="was">${sub}</span>
+  </div>`;
+}
+function balRenderStats() {
+  const id = balSel, c = CHAR_DB[id], box = $('balStats');
+  if (!c) { box.innerHTML = '<div class="v783-empty">왼쪽에서 지후를 골라 주세요</div>'; return; }
+  const q = balQuery();
+  box.innerHTML = `<div class="v783-chead" style="--rc:${c.color || '#888'}"><span class="face">${portraitHtml(c)}</span><div class="t"><b>${escapeHtml(c.name)}</b><small>${escapeHtml(RARITY_LABEL[c.rarity] || c.rarity || '')} · ${escapeHtml(c.roleLabel || '')} · ${id}</small></div>${balCharDraftN(id) ? '<button type="button" class="v783-mini" data-balcharreset="1">이 지후 초안 지우기</button>' : ''}</div>
+    <div class="v783-rows">${Object.keys(BAL_BASE[id]).map(k => balRowHtml(id, k, q)).join('')}</div>
+    <div class="v783-desc" id="balDescBox"></div>`;
+  balRenderDesc();
+}
+function balInput(el) {
+  const id = balSel, k = el.dataset.balin;
+  if (!BAL_BASE[id] || !(k in BAL_BASE[id])) return;
+  const { unit } = balInfo(k), shown = balShow(balNowVal(id, k), unit), txt = String(el.value).trim();
+  let n = Number(txt);
+  if (txt === '' || !isFinite(n) || n < 0) { el.value = shown; $('balMsg').textContent = '0 이상의 숫자만 넣을 수 있어요.'; return; }
+  if (balWholeUnit(unit, k)) n = Math.round(n);
+  if (n === shown) return; // 보이는 값 그대로 (반올림 차이는 무시)
+  $('balMsg').textContent = '';
+  balSet(id, k, balRaw(n, unit));
+}
+function balSet(id, k, raw) { // raw = 새 값 · undefined = 초안 취소
+  const srv = balServerVal(id, k);
+  if (raw === undefined || balSame(raw, srv)) {
+    if (balDraft.ov[id]) { delete balDraft.ov[id][k]; if (!Object.keys(balDraft.ov[id]).length) delete balDraft.ov[id]; }
+  } else (balDraft.ov[id] = balDraft.ov[id] || {})[k] = Math.round(raw * 1e6) / 1e6;
+  balSaveDraft();
+  if (!balBusy()) balApplyAll();
+  const row = balSel === id && $('balStats').querySelector(`.v783-row[data-k="${k}"]`);
+  if (row) row.outerHTML = balRowHtml(id, k, balQuery());
+  if (balTab === 'edit') { balRenderDesc(); balRenderChars(); const head = $('balStats').querySelector('.v783-chead'); if (head && !!head.querySelector('[data-balcharreset]') !== !!balCharDraftN(id)) balRenderStats(); }
+  else balRender();
+  balRenderFoot();
+}
+
+// 도감 설명: 숫자 하나만 바뀌면 자동, 아니면 직접 고친다 (편집기에서는 미리보기 여부와 상관없이 초안 기준)
+function balEditorDesc(id) {
+  const t = balTargets(balServer, balDraft), ch = balChangesFor(id, t);
+  return { auto: balAutoDesc(BAL_DESC_BASE[id] || '', ch), man: balManualDesc(id, true), ch };
+}
+function balRenderDesc() {
+  const id = balSel, box = $('balDescBox');
+  if (!box || !CHAR_DB[id]) return;
+  const { auto, man, ch } = balEditorDesc(id), manual = man != null;
+  const pv = manual ? balCleanDesc(man) : auto.marked.replace(/\u0001/g, '<mark>').replace(/\u0002/g, '</mark>');
+  const amb = auto.amb.map(k => escapeHtml(balInfo(k).label));
+  const none = ch.filter(([k]) => !auto.done.includes(k) && !auto.amb.includes(k)).map(([k]) => escapeHtml(balInfo(k).label));
+  box.innerHTML = `<div class="dh"><b>📖 도감 설명</b><span class="st ${manual ? 'man' : 'auto'}">${manual ? '수동' : auto.done.length ? `자동 · 숫자 ${auto.done.length}개 바꿈` : '자동'}</span>${manual ? '<button type="button" class="v783-mini" data-baldesc="auto">자동 설명으로</button>' : ''}</div>
+    <div class="pv">${pv}</div>
+    ${!manual && amb.length ? `<div class="warn">⚠ 설명에 같은 숫자가 여러 군데 있어서 자동으로 못 바꿨어요: <b>${amb.join(' · ')}</b> — 아래에서 직접 고쳐 주세요.</div>` : ''}
+    ${!manual && none.length ? `<div class="info">설명에 숫자가 안 나와서 그대로 둔 수치: ${none.join(' · ')}</div>` : ''}
+    ${manual && ch.length ? '<div class="info">수동 설명이라 수치를 바꿔도 설명 숫자는 자동으로 안 바뀌어요. 자동으로 돌리려면 [자동 설명으로].</div>' : ''}
+    <details${manual || amb.length ? ' open' : ''}><summary>✏ 설명 직접 고치기</summary>
+      <textarea id="balDescTa" rows="6" spellcheck="false">${escapeHtml(manual ? man : auto.text)}</textarea>
+      <div class="v783-drow"><button type="button" class="v783-mini go" data-baldesc="save">이 설명으로 저장</button><small>&lt;b&gt;굵게&lt;/b&gt; · &lt;br&gt; 만 쓸 수 있어요. 저장하면 수동 설명이 돼요.</small></div>
+    </details>`;
+}
+function balDescSave(mode) {
+  const id = balSel;
+  if (!CHAR_DB[id]) return;
+  const srvMan = balManualDesc(id, false), { auto } = balEditorDesc(id);
+  const toAuto = () => { if (srvMan != null) balDraft.desc[id] = { t: null }; else delete balDraft.desc[id]; };
+  if (mode === 'auto') toAuto();
+  else {
+    const t = String($('balDescTa').value || '').trim().slice(0, 2000);
+    if (!t || t === auto.text) toAuto();
+    else if (srvMan != null && t === srvMan) delete balDraft.desc[id];
+    else balDraft.desc[id] = { t };
+  }
+  balSaveDraft();
+  if (!balBusy()) balApplyAll();
+  balRenderDesc(); balRenderChars(); balRenderFoot();
+  $('balMsg').textContent = mode === 'auto' ? '자동 설명으로 돌렸어요 (초안).' : '설명을 초안에 저장했어요.';
+}
+function balRenderFoot() {
+  const c = balDraftCount(), any = c.n || c.d;
+  $('balCount').innerHTML = any ? `초안 · 수치 <b>${c.n}</b>${c.d ? ` · 설명 <b>${c.d}</b>` : ''} · 지후 <b>${c.chars}</b>명` : '초안 없음';
+  $('btnBalReview').disabled = !any;
+  $('btnBalDiscard').disabled = !any;
+}
+
+// 서버에 적용 중인 값 (코드 값 → 서버 값) · 되돌리기 · 코드 반영용 복사
+function balRenderLive() {
+  const s = balServer, box = $('balLive');
+  const ids = balCharList().filter(id => (s.ov[id] && Object.keys(s.ov[id]).length) || s.desc[id]);
+  if (!ids.length) { box.innerHTML = '<div class="v783-empty">서버에서 바꾼 수치가 없어요. 지금은 모두 코드 값이에요.</div>'; return; }
+  box.innerHTML = `<div class="v783-livetools"><button type="button" class="v783-mini" data-balcopy="1">📋 코드 반영용으로 복사</button><small>나중에 코드(CHARACTER_BALANCE)로 옮길 때 쓰는 목록이에요. 코드 값을 바꾸면 그 서버 값은 저절로 무시돼요.</small></div>`
+    + ids.map(id => {
+      const c = CHAR_DB[id];
+      const rows = Object.keys(s.ov[id] || {}).map(k => {
+        const e = s.ov[id][k], { label, unit } = balInfo(k), u = escapeHtml(balUnit(unit)), stale = !BAL_BASE[id] || !balSame(BAL_BASE[id][k], e[0]);
+        const dv = balDraftVal(id, k);
+        return `<div class="lr${stale ? ' stale' : ''}"><span>${escapeHtml(label)}</span><b>${balFmt(e[0], unit)} → ${balFmt(e[1], unit)}${u}</b>${stale ? `<em>코드가 ${BAL_BASE[id] ? balFmt(BAL_BASE[id][k], unit) : '?'}${u}(으)로 바뀌어 무시됨</em>` : dv !== undefined ? `<em class="d">초안: ${balFmt(dv, unit)}${u}</em>` : `<button type="button" class="v783-mini" data-balrevert="${id}|${k}">코드 값으로</button>`}</div>`;
+      }).join('');
+      const dd = s.desc[id];
+      const desc = dd ? `<div class="lr${dd.h === balHash(BAL_DESC_BASE[id] || '') ? '' : ' stale'}"><span>도감 설명</span><b>수동</b>${dd.h !== balHash(BAL_DESC_BASE[id] || '') ? '<em>코드 설명이 바뀌어 무시됨</em>' : balDraft.desc[id] ? '<em class="d">초안 있음</em>' : `<button type="button" class="v783-mini" data-baldescrevert="${id}">자동 설명으로</button>`}</div>` : '';
+      return `<div class="v783-livecard"><button type="button" class="h" data-balgo="${id}">${escapeHtml(c.emoji || '')} <b>${escapeHtml(c.name)}</b><small>${id} · 편집 ▸</small></button>${rows}${desc}</div>`;
+    }).join('');
+}
+function balCopyText() {
+  const s = balServer, lines = [`지후배틀 서버 밸런스 패치 #${s.v} (코드 값 → 서버 값)`];
+  Object.keys(s.ov).forEach(id => Object.keys(s.ov[id]).forEach(k => {
+    const e = s.ov[id][k];
+    if (BAL_BASE[id] && balSame(BAL_BASE[id][k], e[0])) lines.push(`${id}.${k}: ${e[0]} → ${e[1]}  // ${CHAR_DB[id] ? CHAR_DB[id].name : id} · ${balInfo(k).label}`);
+  }));
+  Object.keys(s.desc).forEach(id => { if (s.desc[id].h === balHash(BAL_DESC_BASE[id] || '')) lines.push(`${id}.skillDesc (수동): ${s.desc[id].t}`); });
+  return lines.join('\n');
+}
+function balRenderHist() {
+  const notes = balServer.notes, box = $('balHist');
+  if (!notes.length) { box.innerHTML = '<div class="v783-empty">아직 게시한 밸런스 패치노트가 없어요. (잠수함 패치는 기록이 남지 않아요)</div>'; return; }
+  box.innerHTML = notes.map((n, i) => `<details class="v783-hist"${i ? '' : ' open'}><summary><b>v${escapeHtml(n.ver)}</b><span>${escapeHtml(n.label || '')}</span><small>${escapeHtml(n.date)} · 지후 ${n.items.length}명 · #${n.n}</small></summary><div class="v783-pv">${balEntryHtml(balNoteEntry(n), true)}</div></details>`).join('');
+}
+function balEntryHtml(entry, bare) {
+  return (bare ? '' : `<div class="v783-pvhead"><small>${entry.date}</small><b>${entry.label}</b></div>`) // balNoteEntry 가 이미 이스케이프
+    + entry.sections.map(sec => `<div class="v783-pvsec">${sec.title}</div>` + sec.items.map(it => {
+      const src = it.portraitKey && PORTRAITS[it.portraitKey];
+      return `<div class="v783-pvit"><span class="ic" style="border-color:${it.color}">${src ? `<img src="${src}" alt="">` : escapeHtml(it.emoji)}</span><div><div class="nm">${escapeHtml(it.name)}<span class="tg ${it.tag}">${BAL_TAGS[it.tag] || '변경'}</span></div><div class="ds">${it.desc}</div></div></div>`;
+    }).join('')).join('');
+}
+
+// ── 패치노트 · 게시 ──
+function balAutoTag(ch) {
+  if (!ch.length) return 'fix';
+  const d = ch.map(c => { const up = c.b > c.a; return (balInfo(c.k).dir === '-' ? !up : up) ? 1 : -1; });
+  return d.every(x => x > 0) ? 'buff' : d.every(x => x < 0) ? 'nerf' : 'adjust';
+}
+function balReviewItems() {
+  const ids = [...new Set([...Object.keys(balDraft.ov), ...Object.keys(balDraft.desc)])].filter(id => CHAR_DB[id] && BAL_BASE[id]);
+  const order = balCharList();
+  ids.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  return ids.map(id => {
+    const row = balDraft.ov[id] || {};
+    const ch = Object.keys(BAL_BASE[id]).filter(k => typeof row[k] === 'number' && !balSame(row[k], balServerVal(id, k))).map(k => ({ k, a: balServerVal(id, k), b: row[k] }));
+    if (!ch.length && !balDraft.desc[id]) return null;
+    return { id, ch, tag: balAutoTag(ch), memo: '', on: true };
+  }).filter(Boolean);
+}
+function balOpenReview() {
+  const items = balReviewItems();
+  if (!items.length) return;
+  const gv = gameVersion(), used = new Set([...Object.keys(PATCH_NOTES), ...balServer.notes.map(n => n.ver)]);
+  let k = 1;
+  while (used.has(`${gv}.${k}`)) k++;
+  const d = new Date();
+  balReview = { ver: `${gv}.${k}`, label: `v${gv}.${k} 밸런스 패치`, date: `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`, title: '밸런스', silent: false, items, autoLabel: true };
+  $('balRevNote').textContent = '';
+  balRenderReview();
+  openModal('balReviewModal');
+}
+function balRenderReview() {
+  const r = balReview;
+  $('balRevVer').value = r.ver; $('balRevLabel').value = r.label; $('balRevDate').value = r.date; $('balRevTitle').value = r.title; $('balRevSilent').checked = r.silent;
+  $('balRevItems').innerHTML = r.items.map((it, i) => {
+    const c = CHAR_DB[it.id];
+    return `<div class="v783-revit${it.on ? '' : ' off'}" data-i="${i}">
+      <div class="h"><label><input type="checkbox" data-balrev="on"${it.on ? ' checked' : ''}> ${escapeHtml(c.emoji || '')} <b>${escapeHtml(c.name)}</b></label><select data-balrev="tag" aria-label="표시">${Object.entries(BAL_TAGS).map(([k, v]) => `<option value="${k}"${k === it.tag ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
+      <div class="ch">${it.ch.length ? balChangeText(it.ch) : '도감 설명만 고침'}</div>
+      <input class="memo" data-balrev="memo" maxlength="200" placeholder="한 줄 설명 (선택) · 예: 너무 강해서 낮췄어요" value="${escapeHtml(it.memo)}">
+    </div>`;
+  }).join('');
+  balReviewFields();
+}
+function balReviewFields() { // 입력칸 → balReview · 미리보기
+  const r = balReview;
+  if (!r) return;
+  const ver = $('balRevVer').value.trim();
+  if (r.autoLabel && ver !== r.ver) $('balRevLabel').value = `v${ver} 밸런스 패치`;
+  r.ver = ver; r.date = $('balRevDate').value; r.title = $('balRevTitle').value; r.silent = $('balRevSilent').checked;
+  if ($('balRevLabel').value !== r.label) { r.autoLabel = $('balRevLabel').value === `v${ver} 밸런스 패치`; r.label = $('balRevLabel').value; }
+  ['balRevVer', 'balRevLabel', 'balRevDate', 'balRevTitle'].forEach(id => { $(id).disabled = r.silent; });
+  $('balRevItems').classList.toggle('off', r.silent);
+  const items = r.items.filter(it => it.on);
+  $('balRevPreview').innerHTML = r.silent ? '<div class="v783-empty">🤫 잠수함 패치: 패치노트 없이 수치만 바뀌어요.</div>'
+    : !items.length ? '<div class="v783-empty">패치노트에 넣을 지후가 없어요 (수치만 바뀌어요).</div>'
+      : balEntryHtml(balNoteEntry({ ver: r.ver, label: r.label.trim() || `v${r.ver} 밸런스 패치`, date: r.date, title: r.title.trim() || '밸런스', items }));
+  $('btnBalPublish').textContent = r.silent || !items.length ? '🤫 잠수함으로 게시' : '📢 게시하기';
+}
+function balBuildNext(cur, draft, items, r) { // 서버 문서 + 초안 → 새 서버 문서
+  const ov = {};
+  Object.keys(cur.ov).forEach(id => Object.keys(cur.ov[id]).forEach(k => { const e = cur.ov[id][k]; if (BAL_BASE[id] && balSame(BAL_BASE[id][k], e[0])) (ov[id] = ov[id] || {})[k] = e; })); // 코드가 바뀐 낡은 값은 정리
+  Object.keys(draft.ov).forEach(id => Object.keys(draft.ov[id] || {}).forEach(k => {
+    const v = draft.ov[id][k];
+    if (!BAL_BASE[id] || !(k in BAL_BASE[id]) || typeof v !== 'number' || !isFinite(v)) return;
+    if (balSame(v, BAL_BASE[id][k])) { if (ov[id]) { delete ov[id][k]; if (!Object.keys(ov[id]).length) delete ov[id]; } }
+    else (ov[id] = ov[id] || {})[k] = [BAL_BASE[id][k], v];
+  }));
+  const desc = {};
+  Object.keys(cur.desc).forEach(id => { if (id in BAL_DESC_BASE && cur.desc[id].h === balHash(BAL_DESC_BASE[id])) desc[id] = cur.desc[id]; });
+  Object.keys(draft.desc).forEach(id => {
+    if (!(id in BAL_DESC_BASE)) return;
+    const t = draft.desc[id] && draft.desc[id].t;
+    if (typeof t !== 'string' || !t.trim() || t === BAL_DESC_BASE[id]) delete desc[id];
+    else desc[id] = { h: balHash(BAL_DESC_BASE[id]), t: t.slice(0, 2000) };
+  });
+  const v = cur.v + 1, notes = cur.notes.slice();
+  if (items.length) notes.unshift({ n: v, ver: r.ver, date: String(r.date || '').trim().slice(0, 12), label: (String(r.label || '').trim() || `v${r.ver} 밸런스 패치`).slice(0, 60), title: (String(r.title || '').trim() || '밸런스').slice(0, 30), items });
+  return { v, ov, desc, notes: notes.slice(0, 30) };
+}
+async function balPublishNow() {
+  const note = $('balRevNote'), btn = $('btnBalPublish'), r = balReview;
+  if (!r) return;
+  balReviewFields();
+  const items = r.silent ? [] : r.items.filter(it => it.on).map(it => ({ id: it.id, tag: it.tag, memo: String(it.memo || '').trim().slice(0, 200), ch: it.ch.map(c => ({ k: c.k, a: c.a, b: c.b })) }));
+  if (items.length) {
+    if (!/^[0-9][0-9a-z.\-]{0,15}$/i.test(r.ver)) { note.textContent = '버전은 숫자로 시작하는 16자 이하로 써 주세요 (예: 7.8.3.1).'; return; }
+    if ((PATCH_NOTES[r.ver] && !BAL_NOTE_KEYS.has(r.ver)) || balServer.notes.some(n => n.ver === r.ver)) { note.textContent = `v${r.ver} 패치노트가 이미 있어요. 다른 버전으로 써 주세요.`; return; }
+  }
+  if (!window.JihooOnline || !window.JihooOnline.connected()) { note.textContent = '온라인 계정으로 로그인해야 게시할 수 있어요.'; return; }
+  btn.disabled = true; note.textContent = '권한 확인 중…';
+  if (!(await window.JihooOnline.isSeniorDev())) { btn.disabled = false; note.textContent = '고급 개발자 권한이 없어요 (Firestore seniorDevs/내 계정 ID 문서가 필요해요).'; return; }
+  note.textContent = '게시하는 중…';
+  const draft = JSON.parse(JSON.stringify(balDraft)), myV = balServer.v;
+  let latest = null;
+  try {
+    const next = await window.JihooOnline.balancePublish(raw => {
+      const cur = balSanitize(raw);
+      if (cur.v !== myV) { latest = raw; throw new Error('BAL_STALE'); }
+      return balBuildNext(cur, draft, items, r);
+    });
+    balDraft = { ov: {}, desc: {} };
+    balSaveDraft();
+    if (items.length) { try { localStorage.setItem(BAL_SEEN_KEY, String(next.v)); } catch (error) {} }
+    balReview = null;
+    closeModal('balReviewModal');
+    balOnServer({ ...next, at: Date.now() });
+    if (!$('balModal').classList.contains('show') || balBusy()) balRender();
+    $('balMsg').textContent = items.length ? `✓ v${r.ver} 밸런스 패치를 게시했어요 (서버 패치 #${next.v}). 모든 유저에게 바로 적용되고 패치노트가 떠요.` : `✓ 잠수함 패치 #${next.v}를 게시했어요. 모든 유저에게 바로 적용돼요.`;
+  } catch (error) {
+    const msg = String(error && (error.code || error.message) || error);
+    if (msg.includes('BAL_STALE')) {
+      if (latest) balOnServer(latest);
+      r.items = balReviewItems();
+      if (r.items.length) balRenderReview();
+      note.textContent = '그 사이 다른 고급 개발자가 게시했어요. 새 서버 값을 불러왔으니 확인하고 다시 게시해 주세요.';
+    } else if (/permission|insufficient/i.test(msg)) note.textContent = '권한이 없어요. 새 firestore.rules 를 게시했는지, Firestore seniorDevs/내 계정 ID 문서가 있는지 확인해 주세요.';
+    else note.textContent = '게시하지 못했어요: ' + msg;
+  } finally { btn.disabled = false; }
+}
+
+function balBind() {
+  if (balBind.done || !$('balModal')) return;
+  balBind.done = true;
+  $('btnDevBal').addEventListener('click', balOpen);
+  $('balSearch').addEventListener('input', () => {
+    balRenderChars();
+    const q = balQuery();
+    $('balStats').querySelectorAll('.v783-row').forEach(row => { const lb = row.querySelector('.lb'); row.classList.toggle('hit', !!q && !!lb && lb.firstChild.textContent.toLowerCase().includes(q)); });
+  });
+  $('balChars').addEventListener('click', e => {
+    const b = e.target.closest('[data-balc]');
+    if (!b) return;
+    balSel = b.dataset.balc;
+    balRenderChars(); balRenderStats();
+    $('balStats').scrollTop = 0;
+    if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) $('balStats').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  $('balStats').addEventListener('change', e => { const el = e.target.closest('[data-balin]'); if (el) balInput(el); });
+  $('balStats').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-balin]')) { e.preventDefault(); balInput(e.target); } });
+  $('balStats').addEventListener('click', e => {
+    const rs = e.target.closest('[data-balrs]');
+    if (rs) {
+      const id = balSel, k = rs.dataset.balrs, dv = balDraftVal(id, k);
+      balSet(id, k, dv !== undefined && !balSame(dv, balServerVal(id, k)) ? undefined : BAL_BASE[id][k]);
+      return;
+    }
+    const d = e.target.closest('[data-baldesc]');
+    if (d) { balDescSave(d.dataset.baldesc); return; }
+    if (e.target.closest('[data-balcharreset]')) {
+      delete balDraft.ov[balSel]; delete balDraft.desc[balSel];
+      balSaveDraft(); if (!balBusy()) balApplyAll(); balRender();
+    }
+  });
+  document.querySelectorAll('#balModal [data-baltab]').forEach(b => b.addEventListener('click', () => { balTab = b.dataset.baltab; balRender(); }));
+  $('balPreview').addEventListener('change', () => {
+    balPreview = $('balPreview').checked;
+    try { localStorage.setItem(BAL_PREVIEW_KEY, balPreview ? '1' : '0'); } catch (error) {}
+    if (!balBusy()) balApplyAll();
+    $('balMsg').textContent = balPreview ? '이 기기에서 초안 값으로 전투해요 (투기장 · 티어 측정 등).' : '이 기기도 서버 값으로 전투해요.';
+  });
+  $('btnBalDiscard').addEventListener('click', () => {
+    if (!confirm('초안을 모두 버릴까요? (서버에 게시된 값은 그대로예요)')) return;
+    balDraft = { ov: {}, desc: {} };
+    balSaveDraft(); if (!balBusy()) balApplyAll(); balRender();
+    $('balMsg').textContent = '초안을 버렸어요.';
+  });
+  $('btnBalReview').addEventListener('click', balOpenReview);
+  $('balLive').addEventListener('click', e => {
+    const rv = e.target.closest('[data-balrevert]');
+    if (rv) { const [id, k] = rv.dataset.balrevert.split('|'); if (BAL_BASE[id] && k in BAL_BASE[id]) { balSet(id, k, BAL_BASE[id][k]); $('balMsg').textContent = '코드 값으로 되돌리는 초안을 넣었어요. 게시해야 적용돼요.'; } return; }
+    const dr = e.target.closest('[data-baldescrevert]');
+    if (dr) { balDraft.desc[dr.dataset.baldescrevert] = { t: null }; balSaveDraft(); if (!balBusy()) balApplyAll(); balRender(); $('balMsg').textContent = '자동 설명으로 돌리는 초안을 넣었어요. 게시해야 적용돼요.'; return; }
+    const go = e.target.closest('[data-balgo]');
+    if (go) { balSel = go.dataset.balgo; balTab = 'edit'; $('balSearch').value = ''; balRender(); return; }
+    if (e.target.closest('[data-balcopy]')) {
+      const text = balCopyText();
+      const done = () => { $('balMsg').textContent = '복사했어요.'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => window.prompt('복사해 주세요', text));
+      else window.prompt('복사해 주세요', text);
+    }
+  });
+  const onRev = e => {
+    const box = e.target.closest('[data-i]'), r = balReview;
+    if (!box || !r) return;
+    const it = r.items[+box.dataset.i], f = e.target.dataset.balrev;
+    if (!it) return;
+    if (f === 'on') { it.on = e.target.checked; box.classList.toggle('off', !it.on); }
+    else if (f === 'tag') it.tag = BAL_TAGS[e.target.value] ? e.target.value : it.tag;
+    else if (f === 'memo') it.memo = e.target.value;
+    balReviewFields();
+  };
+  $('balRevItems').addEventListener('input', onRev);
+  $('balRevItems').addEventListener('change', onRev);
+  ['balRevVer', 'balRevLabel', 'balRevDate', 'balRevTitle'].forEach(id => { $(id).disabled = r.silent; });
+  $('balRevItems').classList.toggle('off', r.silent);
+  const items = r.items.filter(it => it.on);
+  $('balRevPreview').innerHTML = r.silent ? '<div class="v783-empty">🤫 잠수함 패치: 패치노트 없이 수치만 바뀌어요.</div>'
+    : !items.length ? '<div class="v783-empty">패치노트에 넣을 지후가 없어요 (수치만 바뀌어요).</div>'
+      : balEntryHtml(balNoteEntry({ ver: r.ver, label: r.label.trim() || `v${r.ver} 밸런스 패치`, date: r.date, title: r.title.trim() || '밸런스', items }));
+  $('btnBalPublish').textContent = r.silent || !items.length ? '🤫 잠수함으로 게시' : '📢 게시하기';
+}
+function balBuildNext(cur, draft, items, r) { // 서버 문서 + 초안 → 새 서버 문서
+  const ov = {};
+  Object.keys(cur.ov).forEach(id => Object.keys(cur.ov[id]).forEach(k => { const e = cur.ov[id][k]; if (BAL_BASE[id] && balSame(BAL_BASE[id][k], e[0])) (ov[id] = ov[id] || {})[k] = e; })); // 코드가 바뀐 낡은 값은 정리
+  Object.keys(draft.ov).forEach(id => Object.keys(draft.ov[id] || {}).forEach(k => {
+    const v = draft.ov[id][k];
+    if (!BAL_BASE[id] || !(k in BAL_BASE[id]) || typeof v !== 'number' || !isFinite(v)) return;
+    if (balSame(v, BAL_BASE[id][k])) { if (ov[id]) { delete ov[id][k]; if (!Object.keys(ov[id]).length) delete ov[id]; } }
+    else (ov[id] = ov[id] || {})[k] = [BAL_BASE[id][k], v];
+  }));
+  const desc = {};
+  Object.keys(cur.desc).forEach(id => { if (id in BAL_DESC_BASE && cur.desc[id].h === balHash(BAL_DESC_BASE[id])) desc[id] = cur.desc[id]; });
+  Object.keys(draft.desc).forEach(id => {
+    if (!(id in BAL_DESC_BASE)) return;
+    const t = draft.desc[id] && draft.desc[id].t;
+    if (typeof t !== 'string' || !t.trim() || t === BAL_DESC_BASE[id]) delete desc[id];
+    else desc[id] = { h: balHash(BAL_DESC_BASE[id]), t: t.slice(0, 2000) };
+  });
+  const v = cur.v + 1, notes = cur.notes.slice();
+  if (items.length) notes.unshift({ n: v, ver: r.ver, date: String(r.date || '').trim().slice(0, 12), label: (String(r.label || '').trim() || `v${r.ver} 밸런스 패치`).slice(0, 60), title: (String(r.title || '').trim() || '밸런스').slice(0, 30), items });
+  return { v, ov, desc, notes: notes.slice(0, 30) };
+}
+async function balPublishNow() {
+  const note = $('balRevNote'), btn = $('btnBalPublish'), r = balReview;
+  if (!r) return;
+  balReviewFields();
+  const items = r.silent ? [] : r.items.filter(it => it.on).map(it => ({ id: it.id, tag: it.tag, memo: String(it.memo || '').trim().slice(0, 200), ch: it.ch.map(c => ({ k: c.k, a: c.a, b: c.b })) }));
+  if (items.length) {
+    if (!/^[0-9][0-9a-z.\-]{0,15}$/i.test(r.ver)) { note.textContent = '버전은 숫자로 시작하는 16자 이하로 써 주세요 (예: 7.8.3.1).'; return; }
+    if ((PATCH_NOTES[r.ver] && !BAL_NOTE_KEYS.has(r.ver)) || balServer.notes.some(n => n.ver === r.ver)) { note.textContent = `v${r.ver} 패치노트가 이미 있어요. 다른 버전으로 써 주세요.`; return; }
+  }
+  if (!window.JihooOnline || !window.JihooOnline.connected()) { note.textContent = '온라인 계정으로 로그인해야 게시할 수 있어요.'; return; }
+  btn.disabled = true; note.textContent = '권한 확인 중…';
+  if (!(await window.JihooOnline.isSeniorDev())) { btn.disabled = false; note.textContent = '고급 개발자 권한이 없어요 (Firestore seniorDevs/내 계정 ID 문서가 필요해요).'; return; }
+  note.textContent = '게시하는 중…';
+  const draft = JSON.parse(JSON.stringify(balDraft)), myV = balServer.v;
+  let latest = null;
+  try {
+    const next = await window.JihooOnline.balancePublish(raw => {
+      const cur = balSanitize(raw);
+      if (cur.v !== myV) { latest = raw; throw new Error('BAL_STALE'); }
+      return balBuildNext(cur, draft, items, r);
+    });
+    balDraft = { ov: {}, desc: {} };
+    balSaveDraft();
+    if (items.length) { try { localStorage.setItem(BAL_SEEN_KEY, String(next.v)); } catch (error) {} }
+    balReview = null;
+    closeModal('balReviewModal');
+    balOnServer({ ...next, at: Date.now() });
+    if (!$('balModal').classList.contains('show') || balBusy()) balRender();
+    $('balMsg').textContent = items.length ? `✓ v${r.ver} 밸런스 패치를 게시했어요 (서버 패치 #${next.v}). 모든 유저에게 바로 적용되고 패치노트가 떠요.` : `✓ 잠수함 패치 #${next.v}를 게시했어요. 모든 유저에게 바로 적용돼요.`;
+  } catch (error) {
+    const msg = String(error && (error.code || error.message) || error);
+    if (msg.includes('BAL_STALE')) {
+      if (latest) balOnServer(latest);
+      r.items = balReviewItems();
+      if (r.items.length) balRenderReview();
+      note.textContent = '그 사이 다른 고급 개발자가 게시했어요. 새 서버 값을 불러왔으니 확인하고 다시 게시해 주세요.';
+    } else if (/permission|insufficient/i.test(msg)) note.textContent = '권한이 없어요. 새 firestore.rules 를 게시했는지, Firestore seniorDevs/내 계정 ID 문서가 있는지 확인해 주세요.';
+    else note.textContent = '게시하지 못했어요: ' + msg;
+  } finally { btn.disabled = false; }
+}
+
+function balBind() {
+  if (balBind.done || !$('balModal')) return;
+  balBind.done = true;
+  $('btnDevBal').addEventListener('click', balOpen);
+  $('balSearch').addEventListener('input', () => {
+    balRenderChars();
+    const q = balQuery();
+    $('balStats').querySelectorAll('.v783-row').forEach(row => { const lb = row.querySelector('.lb'); row.classList.toggle('hit', !!q && !!lb && lb.firstChild.textContent.toLowerCase().includes(q)); });
+  });
+  $('balChars').addEventListener('click', e => {
+    const b = e.target.closest('[data-balc]');
+    if (!b) return;
+    balSel = b.dataset.balc;
+    balRenderChars(); balRenderStats();
+    $('balStats').scrollTop = 0;
+    if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) $('balStats').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  $('balStats').addEventListener('change', e => { const el = e.target.closest('[data-balin]'); if (el) balInput(el); });
+  $('balStats').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-balin]')) { e.preventDefault(); balInput(e.target); } });
+  $('balStats').addEventListener('click', e => {
+    const rs = e.target.closest('[data-balrs]');
+    if (rs) {
+      const id = balSel, k = rs.dataset.balrs, dv = balDraftVal(id, k);
+      balSet(id, k, dv !== undefined && !balSame(dv, balServerVal(id, k)) ? undefined : BAL_BASE[id][k]);
+      return;
+    }
+    const d = e.target.closest('[data-baldesc]');
+    if (d) { balDescSave(d.dataset.baldesc); return; }
+    if (e.target.closest('[data-balcharreset]')) {
+      delete balDraft.ov[balSel]; delete balDraft.desc[balSel];
+      balSaveDraft(); if (!balBusy()) balApplyAll(); balRender();
+    }
+  });
+  document.querySelectorAll('#balModal [data-baltab]').forEach(b => b.addEventListener('click', () => { balTab = b.dataset.baltab; balRender(); }));
+  $('balPreview').addEventListener('change', () => {
+    balPreview = $('balPreview').checked;
+    try { localStorage.setItem(BAL_PREVIEW_KEY, balPreview ? '1' : '0'); } catch (error) {}
+    if (!balBusy()) balApplyAll();
+    $('balMsg').textContent = balPreview ? '이 기기에서 초안 값으로 전투해요 (투기장 · 티어 측정 등).' : '이 기기도 서버 값으로 전투해요.';
+  });
+  $('btnBalDiscard').addEventListener('click', () => {
+    if (!confirm('초안을 모두 버릴까요? (서버에 게시된 값은 그대로예요)')) return;
+    balDraft = { ov: {}, desc: {} };
+    balSaveDraft(); if (!balBusy()) balApplyAll(); balRender();
+    $('balMsg').textContent = '초안을 버렸어요.';
+  });
+  $('btnBalReview').addEventListener('click', balOpenReview);
+  $('balLive').addEventListener('click', e => {
+    const rv = e.target.closest('[data-balrevert]');
+    if (rv) { const [id, k] = rv.dataset.balrevert.split('|'); if (BAL_BASE[id] && k in BAL_BASE[id]) { balSet(id, k, BAL_BASE[id][k]); $('balMsg').textContent = '코드 값으로 되돌리는 초안을 넣었어요. 게시해야 적용돼요.'; } return; }
+    const dr = e.target.closest('[data-baldescrevert]');
+    if (dr) { balDraft.desc[dr.dataset.baldescrevert] = { t: null }; balSaveDraft(); if (!balBusy()) balApplyAll(); balRender(); $('balMsg').textContent = '자동 설명으로 돌리는 초안을 넣었어요. 게시해야 적용돼요.'; return; }
+    const go = e.target.closest('[data-balgo]');
+    if (go) { balSel = go.dataset.balgo; balTab = 'edit'; $('balSearch').value = ''; balRender(); return; }
+    if (e.target.closest('[data-balcopy]')) {
+      const text = balCopyText();
+      const done = () => { $('balMsg').textContent = '복사했어요.'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => window.prompt('복사해 주세요', text));
+      else window.prompt('복사해 주세요', text);
+    }
+  });
+  $('balRevItems').addEventListener('input', e => {
+    const box = e.target.closest('[data-i]'), r = balReview;
+    if (!box || !r) return;
+    const it = r.items[+box.dataset.i], f = e.target.dataset.balrev;
+    if (!it) return;
+    if (f === 'on') { it.on = e.target.checked; box.classList.toggle('off', !it.on); }
+    else if (f === 'tag') it.tag = BAL_TAGS[e.target.value] ? e.target.value : it.tag;
+    else if (f === 'memo') it.memo = e.target.value;
+    balReviewFields();
+  });
+  $('balRevItems').addEventListener('change', e => { if (e.target.dataset.balrev === 'tag' || e.target.dataset.balrev === 'on') $('balRevItems').dispatchEvent(new Event('input')) || null; });
+  ['balRevVer', 'balRevLabel', 'balRevDate', 'balRevTitle', 'balRevSilent'].forEach(id => $(id).addEventListener(id === 'balRevSilent' ? 'change' : 'input', balReviewFields));
+  $('btnBalPublish').addEventListener('click', balPublishNow);
+}
+
 function initPatchUI() {
   const tabs = $('patchVerTabs');
   if (!tabs) return;
@@ -43023,7 +44146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.nickPrompt = nickPrompt;
   onlineInitPromise.then(() => setTimeout(nickPrompt, 600));
-  onlineInitPromise.then(() => { if (window.JihooOnline.enabled()) startNotices(); checkSeasonRewards(); checkGiftMail(); window.JihooOnline.maintWatch(m => { maintState = m; maintApply(); }); window.JihooOnline.announceWatch(a => { annState = a; renderDevAnn(); m6RenderNews(); }); window.JihooOnline.disabledWatch(d => { disabledApply(d); }); window.JihooOnline.tierWatch(t => { tierApplyLive(t); }); window.JihooOnline.expiredWatch(x => { expiredState = { codes: Array.isArray(x && x.codes) ? x.codes : [], mails: Array.isArray(x && x.mails) ? x.mails : [] }; if (purgeExpiredMail()) renderAccountUI(); try { renderDevCodes(); } catch (error) {} }); }).catch(() => {}); // 5.7.4 서버 점검 감시
+  onlineInitPromise.then(() => { if (window.JihooOnline.enabled()) startNotices(); checkSeasonRewards(); checkGiftMail(); window.JihooOnline.maintWatch(m => { maintState = m; maintApply(); }); window.JihooOnline.announceWatch(a => { annState = a; renderDevAnn(); m6RenderNews(); }); window.JihooOnline.disabledWatch(d => { disabledApply(d); }); window.JihooOnline.tierWatch(t => { tierApplyLive(t); }); if (window.JihooOnline.balanceWatch) window.JihooOnline.balanceWatch(b => { balOnServer(b); }); window.JihooOnline.expiredWatch(x => { expiredState = { codes: Array.isArray(x && x.codes) ? x.codes : [], mails: Array.isArray(x && x.mails) ? x.mails : [] }; if (purgeExpiredMail()) renderAccountUI(); try { renderDevCodes(); } catch (error) {} }); }).catch(() => {}); // 5.7.4 서버 점검 감시
   // 4.1.6 인트로: 지후 일러스트와 문구가 랜덤으로 돌다가 '로그인 중…' → '게임 시작하는 중…' 뒤 로비로 (약 4.5초)
   runIntroSequence(async () => {
     await Promise.race([onlineInitPromise, new Promise(resolve => setTimeout(resolve, 2500))]).catch(() => {});
@@ -43592,6 +44715,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 renderLobbyPreview();
+balInit(); // 7.8.3 딸깍밸패기: 기기에 저장된 서버 밸런스 · 패치노트를 먼저 입힌다
 initPatchUI();
 
 function oddsSampleNow() { // 친선전: 전투 스텝 안에서만 승률 샘플을 쌓는다 (프레임 속도와 무관)
