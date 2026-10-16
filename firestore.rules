@@ -278,6 +278,19 @@ service cloud.firestore {
       allow get: if owner(userId);
       allow list, write: if false;
     }
+    // 7.8.3 운영자 계정 되돌리기: restores/{uid} = { id, t(되돌릴 시점), s(그때 상태), why, by, at } — 운영자가 쓰고, 그 계정만(과 운영자가) 읽는다. 그 계정 기기가 접속할 때 적용한다
+    match /restores/{userId} {
+      allow get: if owner(userId) || isAdmin();
+      allow list, delete: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['id', 't', 's', 'why', 'by', 'at'])
+        && request.resource.data.id is string && request.resource.data.id.size() <= 40
+        && request.resource.data.t is int && request.resource.data.t >= 0
+        && request.resource.data.s is map && request.resource.data.s.keys().hasOnly(['g', 'd', 'm', 'dt', 'inv', 'sh', 'du', 'rk', 'lb', 'un'])
+        && request.resource.data.why is string && request.resource.data.why.size() <= 200
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+    }
     match /seniorDevs/{userId} { // 7.8.3 고급 개발자 (딸깍밸패기)
       allow get: if owner(userId);
       allow list, write: if false;
