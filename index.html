@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.8.3"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.8.3"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -8903,7 +8903,7 @@ html.ui-v7 #app#app .v7-modes .m6-mode.on .m6-beta { color:#fff; border-color:#e
     </div>
     <div id="devTierBox" class="v55-devgift" hidden>
       <b>📊 티어리스트 측정 (5:5)</b>
-      <small>버튼을 누르고 화면을 켜 둔 채 기다리면 돼요. 무작위 10기를 5:5로 붙이고, <b>팀 실력 모델</b>로 같은 팀 · 상대 팀 운을 걸러 낸 점수로 1~6티어를 만들어요. 결과는 쌓이니까 여러 번 돌릴수록 정확해져요 (A랭크 기준 · 내 지후 랭크 · 기록에는 영향 없음)</small>
+      <small>버튼을 누르고 화면을 켜 둔 채 기다리면 돼요. 무작위 10기를 5:5로 붙이고, <b>팀 실력 모델</b>로 같은 팀 · 상대 팀 운을 걸러 낸 점수로 1~6티어를 만들어요. 결과는 쌓이니까 여러 번 돌릴수록 정확해져요 (A랭크 · 한계돌파 효과 없이 · 스페셜 지후 포함 · 태극 지후는 극의 조화 · 내 지후 랭크 · 기록에는 영향 없음)</small>
       <div class="v55-devrow"><select class="text-field" id="devTierLen" aria-label="측정 길이"><option value="t1">1분</option><option value="t3">3분</option><option value="t5" selected>5분</option><option value="t10">10분</option><option value="t20">20분</option><option value="t30">30분</option><option value="g200">200판</option><option value="g500">500판</option><option value="g1000">1,000판</option><option value="g2000">2,000판</option></select><button type="button" class="btn btn-primary" id="btnTierStart">▶ 측정 시작</button><button type="button" class="btn btn-secondary" id="btnTierStop" hidden>■ 중지</button></div>
       <div class="v60-tierbar" id="devTierBar" hidden><i id="devTierFill"></i></div>
       <div class="settlement-note" id="devTierNote" aria-live="polite"></div>
@@ -40407,15 +40407,34 @@ function tierSimLimit() { // 7.7.6 길이 고르기: t분 (계산 시간) 또는
   return v[0] === 'g' ? { games: n, label: `${n.toLocaleString()}판` } : { ms: n * 60 * 1000, label: `${n}분` };
 }
 const TIERSIM = { running: false, stop: false, res: null };
-function tierSimVer() { // 7.8.3 딸깍밸패기: 서버 밸런스나 미리보기 초안이 바뀌어도 다른 밸런스로 본다 (tiersim 문서 ver 12자 안)
-  const v = jihooVersionLabel(), t = balTargets(balServer, balDraftActive() ? balDraft : null);
-  if (!Object.keys(t).length) return v;
-  const flat = Object.keys(t).sort().map(id => id + ':' + Object.keys(t[id]).sort().map(k => k + '=' + t[id][k]).join(',')).join(';');
-  return (v + '~' + balHash(flat).slice(0, 4)).slice(0, 12);
+// 7.8.3 표본의 '밸런스 지문': 게임 버전 대신 지금 쓰는 모든 지후 수치(서버 밸런스 · 미리보기 초안 포함)로 정한다.
+// 수치가 하나라도 바뀌면 새로 쌓고, 수치가 그대로면 버전이 올라가도(로그인 개편 같은 업데이트) 이어서 쌓인다.
+// 수치 없이 전투 규칙이나 지후 능력 로직, 측정 규칙만 바꿨다면 TIERSIM_RULES 를 바꿔서 새로 시작하게 한다.
+const TIERSIM_RULES = '7.8.3'; // 7.8.3 측정 규칙: 스페셜 지후 포함 · 태극 지후는 극의 조화 · 한계돌파 효과 없이 (tierSimPool · tierSimForms)
+// 예전(버전 이름으로 쌓던) 표본 → 지금 수치의 지문 (수치가 바뀌면 저절로 안 맞는다). drop: 측정 방식이 달라진 지후가 나온 판은 빼고 쓴다 (태극은 청 · 적으로 쟀다)
+const TIERSIM_LEGACY = { '7.8.2': { fp: 'bxzuc7y', drop: ['taeguk'] }, '7.8.3': { fp: 'bxzuc7y', drop: ['taeguk'] } };
+function tierSimPool() { const ids = playableIds(); return ids.concat(Object.keys(CHAR_DB).filter(id => CHAR_DB[id].secret && !ids.includes(id))); } // 스페셜 지후도 넣는다
+function tierSimForms() { state.units.filter(u => u.charId === 'taeguk' && u.alive).forEach(u => { u.taegukBase = 'harmony'; if (u.form !== 'harmony') setTaegukForm(u, 'harmony'); }); } // 태극은 극의 조화로
+function tierSimDrop(v) { return (TIERSIM_LEGACY[v] && TIERSIM_LEGACY[v].drop) || []; }
+function tierSimKeep(line, drop) { return !drop.length || !String(line).split('|').slice(0, 2).join(',').split(',').some(id => drop.includes(id)); }
+function tierSimVer() {
+  const parts = [TIERSIM_RULES];
+  Object.keys(CHARACTER_BALANCE).sort().forEach(id => { const o = CHARACTER_BALANCE[id]; Object.keys(o).sort().forEach(k => { if (typeof o[k] === 'number') parts.push(id + '.' + k + '=' + o[k]); }); });
+  return 'b' + balHash(parts.join(';'));
 }
-function tierSimLoad() { // 버전 · 밸런스가 바뀌면 이 기기의 표본은 새로 시작한다
+function tierSimSameVer(v, cur) { return v === cur || !!(TIERSIM_LEGACY[v] && TIERSIM_LEGACY[v].fp === cur); }
+function tierSimKey() { return balDraftActive() && Object.keys(balDraft.ov).length ? TIERSIM_KEY + '.draft' : TIERSIM_KEY; } // 딸깍밸패기 미리보기 초안으로 잰 판은 따로 (본 표본을 덮지 않는다 · 서버에 올리지 않는다)
+function tierSimLoad(key = tierSimKey()) { // 밸런스가 바뀌면 이 기기의 표본은 새로 시작한다
   const ver = tierSimVer();
-  try { const d = JSON.parse(localStorage.getItem(TIERSIM_KEY) || 'null'); if (d && d.st && d.games && Array.isArray(d.g) && d.ver === ver) return d; } catch (error) {}
+  try {
+    const d = JSON.parse(localStorage.getItem(key) || 'null');
+    if (d && d.st && d.games && Array.isArray(d.g) && tierSimSameVer(d.ver, ver)) {
+      const drop = d.ver === ver ? [] : tierSimDrop(d.ver);
+      if (drop.length) { const n = d.g.length; d.g = d.g.filter(l => tierSimKeep(l, drop)); d.games = Math.max(0, d.games - (n - d.g.length)); drop.forEach(id => { delete d.st[id]; }); }
+      d.ver = ver;
+      return d;
+    }
+  } catch (error) {}
   return { games: 0, st: {}, runs: 0, g: [], ver };
 }
 // 7.8.2 기기 사이 동기화: 운영자 기기마다 자기가 돌린 판만 tiersim/{기기} 에 올리고, 같은 버전인 모든 기기의 판을 합쳐 계산한다 (중복 없음)
@@ -40439,9 +40458,10 @@ function tierSimDecode(doc) {
 function tierSimMerged() { // 이 기기 + 다른 운영자 기기(같은 버전)의 판을 모두 합친다
   const d = tierSimLoad(), me = tierSimDevice(), ver = tierSimVer();
   const m = { games: d.games, runs: d.runs, st: JSON.parse(JSON.stringify(d.st)), g: d.g.slice(), devices: d.games ? 1 : 0 };
-  (TIERSIM.remote || []).filter(x => x.id !== me && x.ver === ver && x.n > 0).forEach(x => {
-    const g = tierSimDecode(x); m.g.push(...g); m.games += g.length; m.devices++;
-    Object.entries(x.st || {}).forEach(([id, o]) => { const t = m.st[id] || (m.st[id] = { w: 0, n: 0, sh: 0 }); t.w += o.w || 0; t.n += o.n || 0; t.sh += o.sh || 0; });
+  (TIERSIM.remote || []).filter(x => x.id !== me && tierSimSameVer(x.ver, ver) && x.n > 0).forEach(x => {
+    const drop = x.ver === ver ? [] : tierSimDrop(x.ver);
+    const g = tierSimDecode(x).filter(l => tierSimKeep(l, drop)); m.g.push(...g); m.games += g.length; m.devices++;
+    Object.entries(x.st || {}).forEach(([id, o]) => { if (drop.includes(id)) return; const t = m.st[id] || (m.st[id] = { w: 0, n: 0, sh: 0 }); t.w += o.w || 0; t.n += o.n || 0; t.sh += o.sh || 0; });
   });
   return m;
 }
@@ -40449,9 +40469,9 @@ async function tierSimSync(upload) { // 운영자 계정이면: (upload 면) 내
   const O = window.JihooOnline;
   if (!O || !O.connected() || !O.tierSimAll) { TIERSIM.syncMsg = '온라인 운영자 계정으로 로그인하면 다른 기기의 측정과 합쳐져요.'; return false; }
   try {
-    if (upload) { const d = tierSimLoad(); if (d.games) await O.tierSimPut(tierSimDevice(), tierSimEncode(d)); }
+    if (upload && tierSimKey() === TIERSIM_KEY) { const d = tierSimLoad(); if (d.games) await O.tierSimPut(tierSimDevice(), tierSimEncode(d)); } // 미리보기 초안 판은 올리지 않는다
     TIERSIM.remote = await O.tierSimAll(); TIERSIM.synced = Date.now();
-    const others = TIERSIM.remote.filter(x => x.id !== tierSimDevice() && x.ver === tierSimVer() && x.n > 0);
+    const others = TIERSIM.remote.filter(x => x.id !== tierSimDevice() && tierSimSameVer(x.ver, tierSimVer()) && x.n > 0);
     TIERSIM.syncMsg = others.length ? `다른 기기 ${others.length}대의 측정 ${others.reduce((t, x) => t + x.n, 0).toLocaleString()}판을 합쳤어요.` : '다른 기기의 같은 버전 측정은 아직 없어요.';
     return true;
   } catch (error) {
@@ -40459,7 +40479,7 @@ async function tierSimSync(upload) { // 운영자 계정이면: (upload 면) 내
     return false;
   }
 }
-function tierSimSave(d) { try { localStorage.setItem(TIERSIM_KEY, JSON.stringify(d)); } catch (error) {} }
+function tierSimSave(d, key = tierSimKey()) { try { localStorage.setItem(key, JSON.stringify(d)); } catch (error) {} }
 function tierSimFight(allyIds, enemyIds) { // tools/tierlist/harness.js 의 __fight 와 같다
   cancelRuntimeTasks();
   TIERSIM.res = null;
@@ -40476,6 +40496,7 @@ function tierSimFight(allyIds, enemyIds) { // tools/tierlist/harness.js 의 __fi
   for (const [side, ids] of [['ally', allyIds], ['enemy', enemyIds]]) {
     for (const id of ids) { const tile = v42PickTile(side, id, v42RoleRow(id)); if (tile != null) v42Spawn(side, tile, id); }
   }
+  tierSimForms(); // 7.8.3 태극은 극의 조화로
   beginCombatPhase();
   let ts = state.combatStartTs, guard = 0;
   while (state.phase === 'combat' && guard++ < 4000) { ts += 100; combatTick(ts); }
@@ -40667,7 +40688,7 @@ async function tierSimRun() {
   const saved = {
     raf: window.requestAnimationFrame, caf: window.cancelAnimationFrame,
     physSyncDom, updateUnitBars, drawMinimap, spawnDamageNumber, v41HudTick, v41Kill, v41Callout, beginFinalMoment, endRoundCombat, sfx, sfxPlay, sfxChar,
-    ranks: profile.ranks, locked: profileWritesLocked, queueSave: window.JihooOnline.queueSave, saveNow: window.JihooOnline.saveNow, presencePing: window.JihooOnline.presencePing,
+    ranks: profile.ranks, lb: profile.lb, locked: profileWritesLocked, queueSave: window.JihooOnline.queueSave, saveNow: window.JihooOnline.saveNow, presencePing: window.JihooOnline.presencePing,
     mode: state.mode, layoutEw: state.layoutEw,
   };
   let wake = null;
@@ -40676,7 +40697,7 @@ async function tierSimRun() {
     physSyncDom = saved.physSyncDom; updateUnitBars = saved.updateUnitBars; drawMinimap = saved.drawMinimap; spawnDamageNumber = saved.spawnDamageNumber;
     v41HudTick = saved.v41HudTick; v41Kill = saved.v41Kill; v41Callout = saved.v41Callout; beginFinalMoment = saved.beginFinalMoment; endRoundCombat = saved.endRoundCombat;
     sfx = saved.sfx; sfxPlay = saved.sfxPlay; sfxChar = saved.sfxChar;
-    profile.ranks = saved.ranks; profileWritesLocked = saved.locked;
+    profile.ranks = saved.ranks; profile.lb = saved.lb; profileWritesLocked = saved.locked;
     window.JihooOnline.queueSave = saved.queueSave; window.JihooOnline.saveNow = saved.saveNow;
     cancelRuntimeTasks(); state.units = []; try { clearArenaUnits(); } catch (error) {}
     state.phase = 'idle'; state.mode = saved.mode; state.layoutEw = saved.layoutEw; state.pendingPick = false;
@@ -40689,10 +40710,10 @@ async function tierSimRun() {
   beginFinalMoment = w => { state.phase = 'roundEnd'; TIERSIM.res = { w, t: state.combatTime }; };
   endRoundCombat = (w, timed) => { state.phase = 'roundEnd'; TIERSIM.res = { w, t: state.combatTime, timed: !!timed }; };
   sfx = noop; sfxPlay = () => false; sfxChar = noop;
-  profile.ranks = {}; profileWritesLocked = true; // 랭크 효과 없이(A랭크) · 시뮬 도중에는 내 기록을 저장하지 않는다
+  profile.ranks = {}; profile.lb = {}; profileWritesLocked = true; // 랭크 · 한계돌파 효과 없이(A랭크 · 스페셜 · 히든 Lv1) · 시뮬 도중에는 내 기록을 저장하지 않는다
   window.JihooOnline.queueSave = noop; window.JihooOnline.saveNow = () => Promise.resolve();
-  const d = tierSimLoad(); d.runs++;
-  const ids = playableIds();
+  const key = tierSimKey(), d = tierSimLoad(key); d.runs++;
+  const ids = tierSimPool(); // 7.8.3 스페셜 지후도 넣는다
   const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
   let bag = [];
   const draw10 = () => { const out = [], skipped = []; while (out.length < 10) { if (!bag.length) bag = shuffle(ids.slice()); const id = bag.pop(); (out.includes(id) ? skipped : out).push(id); } bag.push(...skipped); return out; }; // 모든 지후가 거의 같은 횟수
@@ -40708,7 +40729,7 @@ async function tierSimRun() {
         $('devTierFill').style.width = Math.min(100, frac() * 100).toFixed(1) + '%';
         const left = Math.max(0, Math.round(lim.games ? (performance.now() - t0) / Math.max(1, done) * (lim.games - done) / 1000 : (lim.ms - used) / 1000));
         note.textContent = `측정 중 (${lim.label})… ${done}판 · 남은 시간 약 ${Math.floor(left / 60)}분 ${left % 60}초 · 화면을 켜 둔 채 기다려 주세요`;
-        if (done % 25 === 0) tierSimSave(d);
+        if (done % 25 === 0) tierSimSave(d, key);
         await new Promise(r => setTimeout(r, 0)); // 화면이 멈추지 않게 숨 돌리기
       }
     }
@@ -40716,7 +40737,7 @@ async function tierSimRun() {
   } catch (error) {
     note.textContent = '측정 중 오류가 나서 멈췄어요: ' + (error && error.message || error);
   } finally {
-    tierSimSave(d);
+    tierSimSave(d, key);
     restore();
     TIERSIM.running = false;
     tierSimSetUi(false);
@@ -44678,6 +44699,12 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnDevBanReload').addEventListener('click', renderDevBans);
   try { localStorage.removeItem('jihooBattle.tierSim.v1'); } catch (error) {} // 7.8.2 예전 측정(조합 기록 없음)은 새 모델로 다시 계산할 수 없어 정리한다
   $('btnTierClear').addEventListener('click', async () => { // 7.8.2 모든 기기의 측정을 함께 지운다 (밸런스를 바꾼 뒤 새로 잴 때)
+    if (tierSimKey() !== TIERSIM_KEY) { // 7.8.3 딸깍밸패기 미리보기 초안으로 잰 판만 지운다
+      if (!confirm('미리보기 초안으로 잰 측정을 지울까요? (본 측정 · 다른 기기는 그대로)')) return;
+      try { localStorage.removeItem(tierSimKey()); } catch (error) {}
+      tierSimRender(); $('devTierNote').textContent = '미리보기 초안 측정을 지웠어요.';
+      return;
+    }
     if (!confirm('쌓인 티어 측정 결과를 모든 기기에서 지울까요?')) return;
     try { localStorage.removeItem(TIERSIM_KEY); } catch (error) {}
     let msg = '이 기기의 측정을 지웠어요.';

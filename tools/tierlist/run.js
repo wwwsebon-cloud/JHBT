@@ -9,7 +9,7 @@ function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 10139
   let errs = 0; p.on('pageerror', e => { errs++; if (errs <= 3) console.error('PAGEERR', e.message); });
   await p.route(/^https?:/, r => r.abort());
   await p.goto('file://' + S + '/sim.html'); await p.waitForTimeout(5000);
-  await p.evaluate(() => { __t.profile.nickname = 'T'; __t.profile.ranks = {}; __simSetup(); });
+  await p.evaluate(() => { __t.profile.nickname = 'T'; __t.profile.ranks = {}; __t.profile.lb = {}; __simSetup(); });
   const ids = await p.evaluate(() => __ids);
   const r = rng(20261001 + shard * 7919);
   const pick = n => { const bag = ids.slice(), out = []; while (out.length < n) out.push(bag.splice(Math.floor(r() * bag.length), 1)[0]); return out; };
