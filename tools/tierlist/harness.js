@@ -10,7 +10,7 @@ window.__simSetup = function () {
   v41Callout = () => {};
   beginFinalMoment = w => { state.phase = 'roundEnd'; window.__res = { w, t: state.combatTime }; };
   endRoundCombat = (w, timed) => { state.phase = 'roundEnd'; window.__res = { w, t: state.combatTime, timed: !!timed }; };
-  window.__ids = playableIds();
+  window.__ids = typeof tierSimPool === 'function' ? tierSimPool() : playableIds(); // 7.8.3 게임 안 측정과 같은 규칙: 스페셜 지후 포함
 };
 window.__fight = function (allyIds, enemyIds) {
   cancelRuntimeTasks();
@@ -32,6 +32,7 @@ window.__fight = function (allyIds, enemyIds) {
       if (u) spawned[side].push(u.charId);
     }
   }
+  if (typeof tierSimForms === 'function') tierSimForms(); // 7.8.3 태극은 극의 조화로
   beginCombatPhase();
   let ts = state.combatStartTs, guard = 0;
   while (state.phase === 'combat' && guard++ < 4000) { ts += 100; combatTick(ts); }
