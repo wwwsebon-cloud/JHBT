@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.8.3"><meta name="jihoo-build" content="5"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.9"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -13225,6 +13225,29 @@ function masteryClass(count) { return ['none','novice','intermediate','expert','
 //   예) fire: { name: '불꽃 흔적', desc: '…', apply(def) { def.xxx = … } }
 //   apply(def) 는 유닛 전용 복사본을 받는다 (CHAR_DB 원본은 건드리지 않는다).
 const RANK_S_ABILITIES = {
+  // ── 7.9 한계돌파 Lv3 고유 능력 추가 ──
+  thorn: { name: '깊은 가시', desc: '가시 치명타 구간 <b>끝 3/7 → 1/2</b>', apply(d) { d.thornTipFrac = 0.5; } },
+  meatshield: { name: '두꺼운 살', desc: '체력 <b>+1,000</b>', apply(d) { d.hp += 1000; } },
+  snowball: { name: '얼음 깨기', desc: '자신의 눈덩이로 빙결된 적이 받는 피해 <b>+25%</b>' },
+  mortar: { name: '대구경 포탄', desc: '포탄 범위 <b>+0.3칸</b>', apply(d) { d.mortarRadius += 13.5; } },
+  berserker: { name: '분노의 갑옷', desc: '버서커 모드 받는 피해 감소 <b>+5%</b>', apply(d) { d.bskDr += 0.05; } },
+  rain: { name: '단비', desc: '[가랑비] 아군 초당 회복 <b>+30</b>', apply(d) { d.rainHeal += 30; } },
+  archer: { name: '황금 시위', desc: '황금 화살 확률 <b>+3%</b>', apply(d) { d.goldenArrowChance += 0.03; } },
+  purify: { name: '치유의 종', desc: '종을 울리면 아군이 최대 체력의 <b>2.5%</b>를 추가로 회복' },
+  parasite: { name: '숙주 보호', desc: '버러지후가 소환되어 있는 동안 <b>무적</b>' },
+  flower: { name: '통째로 꿀꺽', desc: '<b>6%</b> 확률로 먹은 적을 그대로 삼켜 <b>즉사</b>' },
+  scythe: { name: '깊은 상처', desc: '[힘줄 끊기]에 맞은 적에게 [출혈]: 3초 동안 초당 <b>80</b> 피해' },
+  wolf: { name: '성급한 울음', desc: '변신까지 필요한 공격 <b>-1회</b>', apply(d) { d.wolfHowlAfter = Math.max(1, d.wolfHowlAfter - 1); } },
+  stone: { name: '묵직한 충돌', desc: '부딪힌 적 <b>1.5초 기절</b>' },
+  lantern: { name: '등불 수호', desc: '아군을 회복하는 동안 받는 피해 <b>-10%</b>' },
+  rocket: { name: '오래 타는 불', desc: '불길 지속 <b>+1초</b>', apply(d) { d.rocketFireTime += 1; } },
+  mercenary: { name: '빠른 장전', desc: '저격 간격 <b>-0.5초</b>', apply(d) { d.mcEvery = Math.max(1, d.mcEvery - 0.5); } },
+  waterspout: { name: '긴 용오름', desc: '용오름 지속 <b>+1초</b>', apply(d) { d.wsTime += 1; } },
+  cowboy: { name: '빠른 손놀림', desc: '회피 쿨타임 <b>-0.3초</b>', apply(d) { d.cbCooldown = Math.max(0.3, d.cbCooldown - 0.3); } },
+  accel: { name: '풀 액셀', desc: '[가속] 지속 <b>+0.5초</b> · 공격속도 증가 <b>+3%</b>', apply(d) { d.accTime += 0.5; d.accAspd += 0.03; } },
+  enhance: { name: '대박 강화', desc: '강화에 성공하면 <b>10%</b> 확률로 <b>2단계</b> 오른다' },
+  fishing: { name: '첫 입질', desc: '적마다 <b>첫 공격</b>은 확정 치명타' },
+  noir: { name: '빠른 복귀', desc: '[나이트폴] 뒤 행동불능 <b>-0.2초</b>', apply(d) { d.nfEndlag = Math.max(0, d.nfEndlag - 0.2); } },
   venom: { name: '치명적인 독', desc: '[맹독]이 초당 대상 공격력 <b>-1%</b> (최대 <b>50%</b>)' }, // 7.8
   surf: { name: '하늘 서핑', desc: '[서핑] 때 [부유] 대신 <b>[비행]</b> (비행 중에는 움직이지 않는다)' }, // 7.8
   teemo: { name: '독버섯 눈가림', desc: '[눈가림] 빗나감 확률 <b>+5%</b>', apply(d) { d.teemoMiss += 0.05; } }, // 7.8
@@ -13244,9 +13267,9 @@ const RANK_S_ABILITIES = {
   mutant: { name: '안정된 변이', desc: '변이 성공 확률 <b>+10%</b>' },
   burning: { name: '타오르는 불', desc: '입히는 화상 피해가 <b>초당 10씩</b> 커진다' },
   skul: { name: '확정 부활', desc: '첫 번째 부활은 <b>100%</b>' },
-  sniper: { name: '장거리 저격', desc: '사거리 <b>무한</b> (맵 전체)', apply(d) { d.range = 2400; } }, // 맵 대각선보다 길다
-  slime: { name: '산성 분열', desc: '분해될 때 반경 2칸에 <b>100</b> 피해' },
-  slot: { name: '빠른 손', desc: '슬롯을 돌리는 간격 <b>-0.5초</b>', apply(d) { d.slotEvery = Math.max(0.3, d.slotEvery - 0.5); } },
+  sniper: { name: '장거리 저격', desc: '사거리 <b>+3칸</b>', apply(d) { d.range += 135; } }, // 7.9 무한 → +3칸
+  slime: { name: '산성 분열', desc: '분해될 때 반경 2칸에 <b>150</b> 피해' }, // 7.9 100 → 150
+  slot: { name: '빠른 손', desc: '슬롯을 돌리는 간격 <b>-0.3초</b>', apply(d) { d.slotEvery = Math.max(0.3, d.slotEvery - 0.3); } }, // 7.9 -0.5 → -0.3초
   smoke: { name: '짙은 연막', desc: '연막 반지름 <b>+1칸</b>', apply(d) { d.smokeRadius += 45; } },
   battery: { name: '고속 충전', desc: '초당 <b>8%p → 10%p</b> 채운다', apply(d) { d.chargeAuraRate += 0.02; } },
   hmg: { name: '과열 연사', desc: '최대 연사 간격 <b>0.05초</b>까지', apply(d) { d.hmgMinInterval = 0.05; } },
@@ -13254,19 +13277,19 @@ const RANK_S_ABILITIES = {
   frog: { name: '끈질긴 개구리', desc: '변신 실패 시 <b>35%</b> 확률로 소멸하지 않고 레벨업' },
   lonely: { name: '고독의 칼날', desc: '공격 간격 <b>-0.15초</b>', apply(d) { d.atkSpeed = Math.max(0.2, d.atkSpeed - 0.15); } },
   berserk: { name: '끝나지 않는 분노', desc: '광폭화 지속 <b>+0.5초</b>', apply(d) { d.berserkTime += 0.5; } }, // 7.8.1 0.75 → 0.5초
-  necro: { name: '망자의 군세', desc: '소환체 <b>+1</b>' },
+  necro: { name: '망자의 군세', desc: '소환할 때 <b>30%</b> 확률로 소환체 <b>+1</b>' }, // 7.9 항상 → 30%
   farmer: { name: '황금 빵', desc: '<b>8%</b> 확률로 황금빵. 먹은 대상 HP <b>750</b> 회복' },
-  ninja: { name: '그림자 분신', desc: '분신이 <b>사라지지 않는다</b>' },
+  ninja: { name: '그림자 분신', desc: '분신이 <b>7초</b> 뒤에 사라진다 (기본 5초)' }, // 7.9 사라지지 않음 → 7초
   charge: { name: '철갑 돌격', desc: '돌격 중 피해 감소 <b>+15%</b>', apply(d) { d.chargeDr += 0.15; } },
   duet: { name: '재회', desc: '처음 한 번, 라운드 시작 때 둘이 <b>서로에게 걸어간다</b>' },
   levelup: { name: '막타 판정', desc: '공격 후 <b>0.15초</b> 안에 죽은 적도 자신의 처치로 친다' },
   maestro: { name: '정화의 서곡', desc: '연주를 시작할 때 아군의 <b>모든 디버프 제거</b>' },
   telescope: { name: '넓은 시야', desc: '<b>근접</b> 아군의 사거리도 <b>+1칸</b>' },
-  mushroom: { name: '버섯 감별', desc: '독버섯을 먹을 확률 <b>-5%</b>', apply(d) { d.shroomPoisonChance = Math.max(0, d.shroomPoisonChance - 0.05); } },
+  mushroom: { name: '버섯 감별', desc: '독버섯을 먹을 확률 <b>-2.5%</b>', apply(d) { d.shroomPoisonChance = Math.max(0, d.shroomPoisonChance - 0.025); } }, // 7.9 -5 → -2.5%
   lightning: { name: '과충전', desc: '낙뢰까지 필요한 공격 <b>-1</b>', apply(d) { d.boltEveryHits = Math.max(1, d.boltEveryHits - 1); } },
   supply: { name: '대량 보급', desc: '맵에 보급 <b>최대 5개</b>', apply(d) { d.supplyMax = 5; } },
   instinct: { name: '생존 본능', desc: '회피 후 <b>0.5초</b>간 받는 피해 <b>-20%</b>' },
-  beam: { name: '예열 완료', desc: '차징 시간 <b>1초</b>', apply(d) { d.beamWarmup = 1; } },
+  beam: { name: '예열 완료', desc: '차징 시간 <b>2.5초</b>', apply(d) { d.beamWarmup = 2.5; } }, // 7.9 1 → 2.5초
   cactus: { name: '가시 폭풍', desc: '가시가 <b>7방향</b>', apply(d) { d.cactusSpikes = 7; } },
   egg: { name: '따뜻한 알', desc: '부화 확률 <b>+2%</b>', apply(d) { d.hatchChance += 0.02; } },
   assassin: { name: '깊은 은신', desc: '은신 지속 <b>+1초</b>' },
@@ -13539,10 +13562,12 @@ const SPECIAL_LV2 = { // 7.8 스페셜 한계돌파 Lv2 고유 능력
 };
 // 7.7.1 유예 기간이 끝나면 (골드는 그대로) Lv1 → 2 35% · Lv2 → 3 25% · Lv3 → 4 15% · Lv4 → 5 5% (모든 등급)
 const LB_P_AFTER = { 1: 0.35, 2: 0.25, 3: 0.15, 4: 0.05 };
+const LB_SHARD_MULT = { common: 5, rare: 2 }; // 7.9 한계돌파 필요 조각: 일반 기존의 5배 · 희귀 2배
 function lbStep(id, lv) {
   if (CHAR_DB[id] && CHAR_DB[id].secret) return lv >= 1 && lv < LB_MAX ? { shards: 0, gold: LB_SPECIAL.gold, p: 1 } : null; // 7.8 스페셜 한계돌파: 레벨마다 ● 150,000 · 조각 없음 · 확정
   if (CHAR_DB[id] && CHAR_DB[id].rarity === 'hidden') return lv >= 1 && lv < LB_MAX ? { shards: LB_HIDDEN.shards, gold: LB_HIDDEN.gold, p: 1 } : null;
-  const st = (lbHigh(id) ? LB_STEPS_HIGH : LB_STEPS_LOW)[lv] || null;
+  let st = (lbHigh(id) ? LB_STEPS_HIGH : LB_STEPS_LOW)[lv] || null;
+  if (st && LB_SHARD_MULT[CHAR_DB[id] && CHAR_DB[id].rarity]) st = { ...st, shards: st.shards * LB_SHARD_MULT[CHAR_DB[id].rarity] }; // 7.9 일반 ×5 · 희귀 ×2
   if (st && !lbLv5Free() && LB_P_AFTER[lv] != null) return { ...st, p: LB_P_AFTER[lv] };
   return st;
 }
@@ -23927,6 +23952,12 @@ function statusAndTimers(u, dt) {
     u.knockStun = Math.max(u.knockStun || 0, dt * 2);
     if (t >= 1) { u._lassoPull = null; u.knockStun = Math.max(u.knockStun, CHARACTER_BALANCE.lasso.lassoStun || 0.12); }
   }
+  if (u._bleed) { // 7.9 낫 S [출혈]: 1초마다
+    const bl = u._bleed;
+    bl.left -= dt; bl.acc += dt;
+    if (bl.acc >= 1) { bl.acc -= 1; applyDamageRaw(u, bl.dps, { isDot: true, src: bl.src }); if (!u.alive) return; }
+    if (u._bleed === bl && bl.left <= 0) u._bleed = null;
+  }
   if (u.statuses.burn) {
     const burn = u.statuses.burn;
     burn.remaining -= dt;
@@ -25374,7 +25405,7 @@ const battleAPI = {
       c.hp = half; c.maxHp = half; c.baseMaxHp = half;
       c.isClone = true; c.noClone = true;
       c.el.classList.add('unit-clone');
-      c.expire = rankS(u, 'ninja') ? null : u.def.cloneDuration; // 닌자 S: 분신이 사라지지 않는다
+      c.expire = rankS(u, 'ninja') ? 7 : u.def.cloneDuration; // 7.9 닌자 S: 분신이 7초 뒤에 사라진다 (기본 5초)
       c._ninjaCd = 9999;
       updateUnitBars(c);
       spawnBurst(c.el, u.def.color);
@@ -25384,7 +25415,7 @@ const battleAPI = {
     if (!u.alive) return;
     const activeSummons = state.units.filter(x => x.alive && x.charId === 'summon' && x.ownerUid === u.uid).length;
     if (activeSummons >= 4) return; // 3.8: 소환체가 4마리 이상이면 이번 소환은 건너뛴다
-    const available = rankS(u, 'necro') ? 3 : 2; // 네크로 S: +1
+    const available = rankS(u, 'necro') && Math.random() < 0.3 ? 3 : 2; // 7.9 네크로 S: 30% 확률로 +1
     const summonOffset = bodySeparation(u, { def: CHAR_DB.summon, level: 1 }) + 4;
     [-summonOffset, summonOffset, 0].slice(0, available).forEach((dx, i) => {
       const c = spawnUnit(u.side, u.x + dx, u.y + (u.side === 'ally' ? -18 : 18) * (i === 2 ? 3 : 1), 'summon', {
@@ -25418,6 +25449,7 @@ function applyDamageRaw(target, amount, opts) {
   if (!target.alive) return false;
   if (target.invincible > 0) return false;
   if (target._nf) return false; // 7.4.7 느와르 [나이트폴]로 사라진 동안 무적
+  if (target.charId === 'parasite' && rankS(target, 'parasite') && state.units.some(b => b.alive && b.charId === 'bug' && b.ownerUid === target.uid)) return false; // 7.9 기생충 S
   if (target.isVault) return aucVaultHit(target, opts && opts.src, Math.max(0, amount), opts || {}); // 7.0 금고
   if (state.mode === 'auction' && AUC && AUC.farm && opts && opts.src && opts.src.side !== target.side) return false; // 7.0 파밍: 플레이어끼리 피해 없음
   if (amount > 0) state.lastDmgAt = state.combatTime; // 7.6.4
@@ -25450,6 +25482,8 @@ function applyDamageRaw(target, amount, opts) {
   finalDmg *= s43TakenMult(target, opts && (opts.src || opts.caster));
   finalDmg *= takenMult46(target);
   if (target.statuses.freeze && target.statuses.freeze.iceS) finalDmg *= 1.2; // 얼음 S
+  if (target.statuses.freeze && target.statuses.freeze.snowS) finalDmg *= 1.25; // 7.9 눈덩이 S
+  if (target._lanternHealing && rankS(target, 'lantern')) finalDmg *= 0.9; // 7.9 랜턴 S: 아군을 회복하는 동안
   if (target._qfVuln) finalDmg *= 1 + target._qfVuln; // 5.5.1 쾌속냉각: 빙결될 때마다 받는 피해 증가 (영구)
   { const bl = blessOf(target.side).dr; if (bl) finalDmg *= Math.max(0.5, 1 - 0.05 * bl); } // 5.5 축복: 받는 피해 감소
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
@@ -28037,10 +28071,11 @@ function enhanceTry(u) {
   if (n >= d.enhRates.length) { spawnDamageNumber(u, '최대 강화', { heal: true }); return; }
   const rate = d.enhRates[n];
   if (Math.random() < rate) {
-    enhanceSet(u, n + 1);
+    const up = rankS(u, 'enhance') && n + 2 <= d.enhRates.length && Math.random() < 0.1 ? 2 : 1; // 7.9 강화 S: 10% 확률로 2단계
+    enhanceSet(u, n + up);
     spawnBurst(u.el, '#ffd84a');
     blastEffect(u.x, u.y, unitRadius(u) * 1.6, '#ffd84a');
-    spawnDamageNumber(u, `⚔️ 강화 성공! +${n + 1}`, { heal: true });
+    spawnDamageNumber(u, up > 1 ? `⚔️ 대박 강화! +${n + up}` : `⚔️ 강화 성공! +${n + 1}`, { heal: true });
   } else if (Math.random() < d.enhBreak) {
     enhanceSet(u, 0);
     spawnBurst(u.el, '#555');
@@ -28180,6 +28215,11 @@ function flowerSize(u, big) {
   else { u.el.style.width = ''; u.el.style.height = ''; }
 }
 function flowerEat(u, e) {
+  if (rankS(u, 'flower') && Math.random() < 0.06 && !(e.invincible > 0) && !e.isCastle) { // 7.9 꽃 S: 그대로 삼켜 즉사
+    spawnDamageNumber(e, '꿀꺽!', { crit: true });
+    executeUnit(u, e);
+    return;
+  }
   const realm = enterRealm(e, [e], 999, null);
   u._eat = { e, t: u.def.eatHold, realm };
   
@@ -28262,6 +28302,7 @@ function tickLantern(u, dt) {
   }
   if (u._lanternRepick <= 0) u._lanternRepick = 0.5;
   lanternStep(u, heal, healPick, (t, dim) => { heal.shown += healUnit(t, dim ? d.lanternDimValue : d.lanternHeal * supportMult(u), true); }, dt);
+  u._lanternHealing = !!heal.target; // 7.9 랜턴 S
   u._lanternNum = (u._lanternNum || 0) + dt;
   if (u._lanternNum >= 1) { // 숫자는 1초마다 모아서
     u._lanternNum = 0;
@@ -29832,6 +29873,7 @@ function snowballHit(c, t) {
   if ((t._snowStacks || 0) >= c.def.snowMaxStacks) {
     t._snowStacks = 0; t._snowDone = true;
     battleAPI.applyFreeze(t, c.def.snowFreeze);
+    if (rankS(c, 'snowball') && t.statuses.freeze) t.statuses.freeze.snowS = true; // 7.9 눈덩이 S: 받는 피해 +25%
     spawnDamageNumber(t, '❄️ 꽁꽁', { crit: true });
     return;
   }
@@ -31464,6 +31506,7 @@ function finishTendonCut(u) {
     if (!dealDamage(u, e, u.def.atk * u.def.tendonDmgRatio, { isSkill: true }) || !e.alive) return;
     applyLaceration(e, u.def.debuffDuration, u.def.lacerateFraction);
     applyInjury(e, u.def.injureDuration); // 7.8.1 [치명상] → [부상]
+    if (rankS(u, 'scythe')) e._bleed = { left: 3, dps: Math.round(80 * skillLevelFactor(u)), acc: 0, src: u }; // 7.9 낫 S: [출혈] 3초 · 초당 80
     applySilence(e, u.def.debuffDuration);
   });
 }
@@ -31928,6 +31971,7 @@ function dealDamage(caster, target, amount, opts) {
   if (!target.alive) return false;
   if (target.invincible > 0) return false;
   if (target._nf) return false; // 7.4.7 느와르 [나이트폴]로 사라진 동안 무적
+  if (target.charId === 'parasite' && rankS(target, 'parasite') && state.units.some(b => b.alive && b.charId === 'bug' && b.ownerUid === target.uid)) return false; // 7.9 기생충 S: 버러지후가 있는 동안 무적
   opts = opts || {};
   if (state.coop && state.mode === 'coop' && caster && caster.side === 'enemy' && !opts.reflected) amount *= caster._coopDmg || coopExtraMult(Math.max(1, state.coop.wave)); // 5.1 협동전: 레벨 7을 넘는 적의 피해
   if (caster && caster._holo && !opts.reflected) amount *= CHAR_DB.matrix.holoDmg; // 5.6.3 홀로그램의 모든 피해는 원본의 60%
@@ -31991,6 +32035,10 @@ function dealDamage(caster, target, amount, opts) {
     return false;
   }
   if (!opts.skipAtkBuff) amount *= atkBuffMult(caster);
+  if (caster && caster.charId === 'fishing' && rankS(caster, 'fishing') && amount > 0 && !opts.isSkill && !opts.isDot && !opts.reflected && !opts.fromDeath) { // 7.9 낚시 S: 적마다 첫 공격은 확정 치명타
+    caster._fishFirst = caster._fishFirst || new Set();
+    if (!caster._fishFirst.has(target.uid)) { caster._fishFirst.add(target.uid); opts.forceCrit = true; }
+  }
   const critHit = amount > 0 && (opts.forceCrit || target._fatal > 0 || Math.random() < Math.max(critChanceOf(caster), target._injured > 0 ? CHARACTER_BALANCE.scythe.injureCrit : 0)); // 7.8.1 [부상] // 7.0 가시·낫: 확정 치명타 · [치명상]
   if (critHit) amount *= 2 + (ravageCritBonus(caster) ? CHARACTER_BALANCE.ravage.rvCritDmg : 0) + (caster && caster._potCritDmg > 0 ? CHARACTER_BALANCE.witch.potCritDmg : 0) + (caster && caster._wineT > 0 ? caster._wineCritDmg || 0 : 0); // 6.2 [유린]: 치명타 피해 +40% · 7.0 마녀 포션 +500%
   if (critHit && caster && caster.charId === 'typhoon' && caster.alive && !opts.isSkill && !opts.isDot && !opts.reflected && !opts.fromDeath) spawnTyphoon(caster);
@@ -32019,6 +32067,8 @@ function dealDamage(caster, target, amount, opts) {
   finalDmg *= s43TakenMult(target, caster);
   finalDmg *= takenMult46(target);
   if (target.statuses.freeze && target.statuses.freeze.iceS) finalDmg *= 1.2; // 얼음 S
+  if (target.statuses.freeze && target.statuses.freeze.snowS) finalDmg *= 1.25; // 7.9 눈덩이 S
+  if (target._lanternHealing && rankS(target, 'lantern')) finalDmg *= 0.9; // 7.9 랜턴 S: 아군을 회복하는 동안
   if (target._qfVuln) finalDmg *= 1 + target._qfVuln; // 5.5.1 쾌속냉각: 빙결될 때마다 받는 피해 증가 (영구)
   { const bl = blessOf(target.side).dr; if (bl) finalDmg *= Math.max(0.5, 1 - 0.05 * bl); } // 5.5 축복: 받는 피해 감소
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
@@ -32268,9 +32318,9 @@ function spawnDeathEffect(u) {
 }
 
 function splitSlime(u) {
-  if (rankS(u, 'slime')) { // 슬라임 S: 분해될 때 반경 2칸 100
+  if (rankS(u, 'slime')) { // 슬라임 S: 분해될 때 반경 2칸 150 (7.9 100 → 150)
     spawnBurst(u.el, '#12a8ef');
-    state.units.slice().forEach(e => { if (e.alive && !e.isCastle && isHostile(u, e) && Math.hypot(e.x - u.x, e.y - u.y) <= 2 * GRID + unitRadius(e)) dealDamage(u, e, 100, { isSkill: true, skipAtkBuff: true, fromDeath: true }); });
+    state.units.slice().forEach(e => { if (e.alive && !e.isCastle && isHostile(u, e) && Math.hypot(e.x - u.x, e.y - u.y) <= 2 * GRID + unitRadius(e)) dealDamage(u, e, 150, { isSkill: true, skipAtkBuff: true, fromDeath: true }); });
   }
   const depth = Math.max(0, u.slimeDepth || 0);
   if (depth >= 2) return;
@@ -35215,7 +35265,7 @@ function purifyBell62(u) {
       cleanseUnit(e);
       e._immuneUntil = Math.max(e._immuneUntil || 0, (state.combatTime || 0) + (d.bellImmune || 2.5)); // 7.0 디버프 면역
       e.el.classList.add('n62-immune');
-      healUnit(e, d.bellHeal); // 7.7.6 고정 회복 · [고자]는 회복으로 풀린다
+      healUnit(e, d.bellHeal + (rankS(u, 'purify') ? e.maxHp * 0.025 : 0)); // 7.7.6 고정 회복 · [고자]는 회복으로 풀린다 · 7.9 정화 S: 최대 체력 2.5% 더
     } else dealDamage(u, e, d.bellDamage, { isSkill: true });
   });
 }
@@ -35248,6 +35298,7 @@ function stoneTick62(u, dt) {
     if (s.hit.has(e.uid) || e._n62Ghost || Math.hypot(e.x - u.x, e.y - u.y) > r + unitRadius(e)) return;
     s.hit.add(e.uid);
     dealDamage(u, e, d.stoneHit ? Math.round(d.stoneHit * skillLevelFactor(u)) : Math.max(1, u.hp * d.stoneHitFraction), { isSkill: true, skipAtkBuff: true }); // 7.0 1,500 고정
+    if (rankS(u, 'stone') && e.alive) stunUnit(e, 1.5); // 7.9 돌 S: 1.5초 기절
   });
   const pad = PHYS.WALL_PAD;
   const end = s.dir.x < 0 ? u.x <= pad : s.dir.x > 0 ? u.x >= MAP_W - pad : s.dir.y < 0 ? u.y <= pad : u.y >= MAP_H - pad;
@@ -36926,6 +36977,48 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.9': {
+    label: 'v7.9 한계돌파 Lv3 고유 능력 확장',
+    date: '2026.10.17',
+    sections: [
+      { title: '한계돌파', items: [
+        { emoji:'💠', name:'한계돌파 필요 조각', tag:'adjust', color:'#e5322d', desc:'<b>일반</b> 지후 필요 조각 <b>5배</b> (1 → 5 · Lv4 → 5 는 2 → 10) · <b>희귀</b> 지후 <b>2배</b> (1 → 2 · Lv4 → 5 는 2 → 4). 영웅 이상은 그대로.' },
+      ] },
+      { title: '한계돌파 Lv3 고유 능력 · 새로 생김', items: [
+        { emoji:'🌵', name:'가시 지후', tag:'buff', color:'#3f8f3a', portraitKey:'thorn', desc:'가시 치명타 구간 <b>끝 3/7 → 1/2</b>' },
+        { emoji:'🥩', name:'고기방패 지후', tag:'buff', color:'#555555', portraitKey:'meatshield', desc:'체력 <b>+1,000</b>' },
+        { emoji:'☃️', name:'눈덩이 지후', tag:'buff', color:'#8fd3ff', portraitKey:'snowball', desc:'자신의 눈덩이로 <b>빙결된 적이 받는 피해 +25%</b>' },
+        { emoji:'💣', name:'박격포 지후', tag:'buff', color:'#2e8b3a', portraitKey:'mortar', desc:'포탄 범위 <b>+0.3칸</b>' },
+        { emoji:'🪓', name:'버서커 지후', tag:'buff', color:'#f08a00', portraitKey:'berserker', desc:'버서커 모드 받는 피해 감소 <b>+5%</b>' },
+        { emoji:'🌧️', name:'비 지후', tag:'buff', color:'#5b8fd9', portraitKey:'rain', desc:'[가랑비] 아군 초당 회복 <b>+30</b>' },
+        { emoji:'🏹', name:'아처 지후', tag:'buff', color:'#1e7a2e', portraitKey:'archer', desc:'황금 화살 확률 <b>+3%</b>' },
+        { emoji:'🔔', name:'정화 지후', tag:'buff', color:'#4fe0f0', portraitKey:'purify', desc:'종을 울리면 아군이 <b>최대 체력의 2.5%</b>를 추가로 회복' },
+        { emoji:'🪱', name:'기생충 지후', tag:'buff', color:'#7f9a2e', portraitKey:'parasite', desc:'버러지후가 소환되어 있는 동안 <b>무적</b>' },
+        { emoji:'🌺', name:'꽃 지후', tag:'buff', color:'#e85d9a', portraitKey:'flower', desc:'<b>6%</b> 확률로 먹은 적을 그대로 삼켜 <b>즉사</b>' },
+        { emoji:'🪓', name:'낫 지후', tag:'buff', color:'#5b4b8a', portraitKey:'scythe', desc:'[힘줄 끊기]에 맞은 적에게 <b>[출혈]</b>: 3초 동안 초당 <b>80</b> 피해' },
+        { emoji:'🐺', name:'늑대 지후', tag:'buff', color:'#6b7a8f', portraitKey:'wolf', desc:'변신까지 필요한 공격 <b>-1회</b>' },
+        { emoji:'🪨', name:'돌 지후', tag:'buff', color:'#8a5a24', portraitKey:'stone', desc:'부딪힌 적 <b>1.5초 기절</b>' },
+        { emoji:'🏮', name:'랜턴 지후', tag:'buff', color:'#f2a93b', portraitKey:'lantern', desc:'아군을 회복하는 동안 받는 피해 <b>-10%</b>' },
+        { emoji:'🚀', name:'로켓병 지후', tag:'buff', color:'#d9480f', portraitKey:'rocket', desc:'불길 지속 <b>+1초</b>' },
+        { emoji:'🎯', name:'용병 지후', tag:'buff', color:'#5d6b3a', portraitKey:'mercenary', desc:'저격 간격 <b>-0.5초</b>' },
+        { emoji:'🌪️', name:'용오름 지후', tag:'buff', color:'#3f8fbf', portraitKey:'waterspout', desc:'용오름 지속 <b>+1초</b>' },
+        { emoji:'🤠', name:'카우보이 지후', tag:'buff', color:'#a5642f', portraitKey:'cowboy', desc:'회피 쿨타임 <b>-0.3초</b>' },
+        { emoji:'⏩', name:'가속 지후', tag:'buff', color:'#ff9f1c', portraitKey:'accel', desc:'[가속] 지속 <b>+0.5초</b> · 공격속도 증가 <b>+3%</b>' },
+        { emoji:'⚔️', name:'강화 지후', tag:'buff', color:'#8e9bb0', portraitKey:'enhance', desc:'강화에 성공하면 <b>10%</b> 확률로 <b>2단계</b> 상승' },
+        { emoji:'🎣', name:'낚시 지후', tag:'buff', color:'#2a7fb8', portraitKey:'fishing', desc:'적마다 <b>첫 공격은 확정 치명타</b>' },
+        { emoji:'🗡️', name:'느와르 지후', tag:'buff', color:'#2b2b2b', portraitKey:'noir', desc:'[나이트폴] 뒤 행동불능 <b>-0.2초</b>' },
+      ] },
+      { title: '한계돌파 Lv3 고유 능력 · 리워크', items: [
+        { emoji:'🎯', name:'스나이퍼 지후', tag:'nerf', color:'#8a6de8', portraitKey:'sniper', desc:'사거리 <b>무한 → +3칸</b>' },
+        { emoji:'💧', name:'슬라임 지후', tag:'buff', color:'#12a8ef', portraitKey:'slime', desc:'분해될 때 피해 <b>100 → 150</b>' },
+        { emoji:'🎰', name:'슬롯머신 지후', tag:'nerf', color:'#1f5fe0', portraitKey:'slot', desc:'슬롯 돌리는 간격 <b>-0.5 → -0.3초</b>' },
+        { emoji:'☠️', name:'네크로맨서 지후', tag:'nerf', color:'#3dcf5a', portraitKey:'necro', desc:'소환체 +1이 <b>항상 → 30% 확률</b>' },
+        { emoji:'🥷', name:'닌자 지후', tag:'nerf', color:'#2a2a32', portraitKey:'ninja', desc:'분신이 <b>사라지지 않음 → 7초 뒤 사라짐</b> (기본 5초)' },
+        { emoji:'🍄', name:'버섯 지후', tag:'nerf', color:'#9b1fe8', portraitKey:'mushroom', desc:'독버섯 확률 감소 <b>-5% → -2.5%</b>' },
+        { emoji:'🔦', name:'빔 지후', tag:'nerf', color:'#54ed13', portraitKey:'beam', desc:'차징 시간 <b>1초 → 2.5초</b>' },
+      ] },
+    ],
+  },
   '7.8.3': {
     label: 'v7.8.3 딸깍밸패기',
     date: '2026.10.16',
