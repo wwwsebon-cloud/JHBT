@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'v7'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'v7'; } catch (e) {} if (t === 'v7') c.add('ui-v7'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="7.9"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="7.9.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -5000,6 +5000,9 @@ html.preview-mode .v42-go, html.preview-mode .v42-grid { display:none !important
 .v44-podtier:empty { display:none; }
 html[data-theme="light"] #lbPodium { pointer-events:none; }
 html[data-theme="light"] #lbPodium .pod { pointer-events:auto; }
+/* 7.9.1 포디움이 위쪽 탭 · 설명을 덮던 문제 (모바일에서 탭이 줄바꿈되면 겹쳤다): 포디움을 흐름 안에 두고 맨 아래로 민다 */
+html[data-theme="light"] #screen-leaderboard .v4-band-inner { display:flex; flex-direction:column; }
+html[data-theme="light"] #screen-leaderboard #lbPodium { position:relative; left:auto; right:auto; bottom:auto; margin-top:auto; padding-top:24px; }
 html[data-theme="light"] .v4-podium .v44-podtier .tier-badge { background:rgba(242,242,240,.12); color:#f2f2f0; border-color:rgba(242,242,240,.35); }
 .v44-detail-tier { display:flex; align-items:center; gap:6px; }
 /* 4.1.1 크레딧 화면 */
@@ -5697,6 +5700,12 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
 .unit.incap-stone { box-shadow:0 0 0 3px #8d8d8d, 0 0 10px rgba(0,0,0,.4); }
 .unit.incap-seal { box-shadow:0 0 0 3px #6d4c8f, 0 0 14px rgba(109,76,143,.8); }
 .unit.incap-seal .unit-icon { filter:saturate(.3) brightness(.7); }
+/* 7.9.1 봉인 X자 사슬 (배치 시간에도 표시) */
+.unit > .seal-x { position:absolute; inset:-6%; pointer-events:none; z-index:9; }
+.unit > .seal-x::before, .unit > .seal-x::after { content:''; position:absolute; left:-4%; right:-4%; top:50%; height:13%; min-height:6px; transform-origin:50% 50%; border-radius:4px;
+  background:repeating-linear-gradient(90deg, #d9d6e6 0 6px, #8a84a3 6px 7px, #55506b 7px 9px, #8a84a3 9px 10px); border:1px solid #2b2638; box-shadow:0 1px 3px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.5); }
+.unit > .seal-x::before { transform:translateY(-50%) rotate(45deg); }
+.unit > .seal-x::after { transform:translateY(-50%) rotate(-45deg); }
 .unit.incap-sync { opacity:.55; }
 .unit.meta-form { box-shadow:0 0 0 3px #7d5bd6, 0 0 16px rgba(125,91,214,.85); }
 .unit.fine-dust { box-shadow:0 0 0 3px rgba(185,162,122,.9), 0 0 14px rgba(150,120,80,.7); }
@@ -9100,11 +9109,12 @@ const CHARACTER_BALANCE = {
   },
   recall: {
     hp: 2000, atk: 160, atkSpeed: 1.2, range: 180, speed: 67.5,
-    deployLimit: 2 // 출격제한 2
+    deployLimit: 2, // 출격제한 2
+    recallFirst: 10, recallEvery: 12 // 7.9.1 리워크: 전투 시작 10초 뒤부터 12초마다 [리콜]
   },
   witch: {
     hp: 2400, atk: 180, atkSpeed: 1.2, range: 180, speed: 72,
-    potionEvery: 2.5, potionRadius: 31.5, potionRange: 315, potionFlight: 0.45,
+    potionEvery: 4, /* 7.9.1 2.5 → 4초 */ potionRadius: 31.5, potionRange: 315, potionFlight: 0.45,
     potHeal: 0.15, potAtk: 0.2, potCrit: 0.05, potCritDmg: 5, potBuffTime: 3,
     potDamage: 500, potPoisonDps: 200, potPoisonTime: 4, potBurnDps: 200, potBurnTime: 4,
     secretAt: 0.25, secretAtk: 0.3, secretShield: 1500, secretDr: 0.15, secretSpeed: 0.15
@@ -9239,11 +9249,11 @@ const CHARACTER_BALANCE = {
     curseHits: 4, curseKillPoseTime: 1.5
   },
   taeguk: {
-    hp: 2000, atk: 120, atkSpeed: 0.7, range: 157.5, speed: 99, // 7.4.7 청 공속 0.5 → 0.7초
+    hp: 2000, atk: 120, atkSpeed: 0.6, range: 157.5, speed: 99, // 7.9.1 청 공속 0.7 → 0.6초 · 7.4.7 0.5 → 0.7초
     taegukForms: {
-      blue: { hp: 2000, atk: 120, atkSpeed: 0.7, range: 157.5, speed: 99 },
+      blue: { hp: 2000, atk: 120, atkSpeed: 0.6, range: 157.5, speed: 99 },
       red: { hp: 2000, atk: 480, atkSpeed: 2, range: 157.5, speed: 99 },
-      harmony: { hp: 3000, atk: 480, atkSpeed: 0.7, range: 202.5, speed: 117 } // 7.4.7 ATK 600 → 480 · 공속 0.5 → 0.7초
+      harmony: { hp: 3000, atk: 480, atkSpeed: 0.6, range: 202.5, speed: 117 } // 7.9.1 공속 0.7 → 0.6초 // 7.4.7 ATK 600 → 480 · 공속 0.5 → 0.7초
     }
   },
   fire: {
@@ -9410,7 +9420,7 @@ const CHARACTER_BALANCE = {
   },
   lasso: {
     hp: 2400, atk: 270, atkSpeed: 1.1, range: 540, speed: 95, // 6.0 240 → 270
-    skipHpMult: true, lassoStun: 0.7
+    skipHpMult: true, lassoStun: 0.4 // 7.9.1 0.7 → 0.4초
   },
   ball: {
     hp: 5000, atk: 500, atkSpeed: 0, range: 45, speed: 189,
@@ -9520,7 +9530,7 @@ const CHARACTER_BALANCE = {
   },
   impeachment: {
     hp: 4800, atk: 120, atkSpeed: 1.2, range: 135, speed: 90,
-    attackRadius: 135, hitThreshold: 12, impeachmentDuration: 5, impeachmentShield: 3000 // 7.4.7 리워크: [탄핵]은 시작부터 죽을 때까지 · 12번 피격 시 쉴드 3,000 (라운드당 1번)
+    attackRadius: 135, hitThreshold: 12, impeachmentDuration: 5, impeachmentShield: 1500 /* 7.9.1 3000 → 1500 */ // 7.4.7 리워크: [탄핵]은 시작부터 죽을 때까지 · 12번 피격 시 쉴드 3,000 (라운드당 1번)
   },
   bomb: {
     hp: 1300, atk: 0, atkSpeed: 0, range: 45, speed: 162,
@@ -9724,7 +9734,7 @@ const CHARACTER_BALANCE = {
   },
   matrix: {
     hp: 5000, atk: 500, atkSpeed: 5, range: 225, speed: 67.5,
-    matrixDelay: 1, matrixSize: 180, holoHp: 1, holoDmg: 0.6, holoLife: 10, matrixMax: 10 // 7.0 홀로그램 HP 1 · 10초 뒤 사라짐 · 7.1.1 라운드당 최대 10기
+    matrixDelay: 1, matrixSize: 180, holoHp: 1, holoDmg: 0.6, holoLife: 10, matrixMax: 5, /* 7.9.1 10 → 5기 */ deployLimit: 1 /* 7.9.1 출격제한 1 */ // 7.0 홀로그램 HP 1 · 10초 뒤 사라짐 · 7.1.1 라운드당 최대 10기
   },
   supply: {
     hp: 1800, atk: 0, atkSpeed: 1, range: 180, speed: 67.5,
@@ -9859,7 +9869,7 @@ const CHARACTER_BALANCE = {
     shotMax: 3000, shotMin: 500 // 7.0 샷건 500 ~ 3000
   },
   bug: {
-    hp: 3000, atk: 0, atkSpeed: 1, range: 45, speed: 171, // 7.0 버러지후 HP 2000 → 3000 · 이동속도 3.5 → 3.8칸
+    hp: 2000, atk: 0, atkSpeed: 1, range: 45, speed: 171, // 7.9.1 HP 3000 → 2000 · 7.0 버러지후 HP 2000 → 3000 · 이동속도 3.5 → 3.8칸
     noAttack: true
   },
   blackhole: { // 5.5 신규
@@ -9913,7 +9923,7 @@ const CHARACTER_BALANCE = {
     noAttack: true,
     teslaOrbs: 3, teslaOrbitRadius: 180, teslaPeriod: 1.6, // 5.5.1 공전 속도 -50%
     teslaDamage: 200, teslaChain: [0.8, 0.6], teslaZapRadiusCells: 3,
-    teslaFieldTick: 0.5, teslaFieldDamage: 100
+    teslaFieldTick: 0.5, teslaFieldDamage: 150 // 7.9.1 100 → 150
   },
   taxi: { // 6.2 신규
     deployLimit: 1, // 출격제한: 한 진영 전장에 1기만
@@ -11670,20 +11680,20 @@ const CHAR_DB = {
     id: 'rockstar', name: '락 지후', emoji: '🎸', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'mythic', color: '#ff3b5c', portrait: PORTRAITS.rockstar || jhPlaceholder('🎸', '#ff3b5c'),
     ...CHARACTER_BALANCE.rockstar,
-    onHit(caster, target) { applyElec(target); },
+    onHit(caster, target) { applyElec(target, caster); },
     skillDesc: 'HP 2,470 · ATK 70 · 부채꼴 100° · 사거리 7칸 · 공격 간격 1.55초 · 이동속도 1칸 · 출격제한 2. 맞은 적은 다음 공격을 맞기 전까지 <b>[일렉]</b>에 걸린다. <b>[일렉]</b>: 걸리는 즉시 모든 쉴드가 사라지고 풀릴 때까지 쉴드를 얻지 못한다. 다음에 공격을 맞으면 그 적과 가장 가까운 아군(그 적의 편) <b>2명</b>에게 그 피해의 <b>70%</b>를 연쇄 전기 피해로 준다.'
   },
   recall: {
     id: 'recall', name: '리콜 지후', emoji: '📣', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#e07a1f', portrait: PORTRAITS.recall || jhPlaceholder('📣', '#e07a1f'),
     ...CHARACTER_BALANCE.recall,
-    skillDesc: 'HP 2,000 · ATK 160 · 사거리 4칸 · 공격 간격 1.2초 · 이동속도 1.5칸 · <b>출격제한 2</b>. 진영에 배치하면 덱의 무작위 지후 하나를 <b>레벨 1</b>로 자신의 <b>상하좌우 한 칸</b> 중 빈 곳에 소환한다. 이후 매 라운드 다시 소환한다. 배치 한도에 걸리거나 상하좌우가 모두 막혀 있으면 소환하지 않는다.'
+    skillDesc: 'HP 2,000 · ATK 160 · 사거리 4칸 · 공격 간격 1.2초 · 이동속도 1.5칸 · <b>출격제한 2</b>. 전투 시작 <b>10초</b> 뒤부터 <b>12초마다</b> <b>[리콜]</b>: 이번 라운드에 사망한 아군 하나를 <b>레벨 1</b>로 그 아군이 <b>사망한 자리</b>에 새로 소환한다 (부활과 다름 · 소환된 지후는 그 라운드 동안 아군으로 싸운다). 소환체도 <b>배치 한도</b>를 차지해, 한도가 찼거나 출격제한에 걸리면 소환하지 않는다.'
   },
   witch: {
     id: 'witch', name: '마녀 지후', emoji: '🧙', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#7b2fbf', portrait: PORTRAITS.witch || jhPlaceholder('🧙', '#7b2fbf'),
     ...CHARACTER_BALANCE.witch,
-    skillDesc: 'HP 2,400 · ATK 180 · 사거리 4칸 · 공격 간격 1.2초 · 이동속도 1.6칸. <b>2.5초마다</b> 무작위 포션을 던진다 (반경 0.7칸). 아군에게는 이로운 것: 최대 체력 15% 회복 · 3초 공격력 +20% · 3초 치명타 확률 +5% · 3초 치명타 피해 +500%. 적에게는 해로운 것: 500 피해 · 독(0.5초마다 100, 4초) · 화상(초당 200, 4초) · <b>개구리화</b>(그 라운드 동안 개구리 지후). 체력이 <b>25%</b> 아래로 떨어지면 즉시 <b>비장의 포션</b>을 마신다: 공격력 +30% · 쉴드 1,500 · 받는 피해 -15% · 이동속도 +15%.'
+    skillDesc: 'HP 2,400 · ATK 180 · 사거리 4칸 · 공격 간격 1.2초 · 이동속도 1.6칸. <b>4초마다</b> 무작위 포션을 던진다 (반경 0.7칸). 아군에게는 이로운 것: 최대 체력 15% 회복 · 3초 공격력 +20% · 3초 치명타 확률 +5% · 3초 치명타 피해 +500%. 적에게는 해로운 것: 500 피해 · 독(0.5초마다 100, 4초) · 화상(초당 200, 4초) · <b>개구리화</b>(그 라운드 동안 개구리 지후 · 다른 포션보다 드물게). 체력이 <b>25%</b> 아래로 떨어지면 즉시 <b>비장의 포션</b>을 마신다: 공격력 +30% · 쉴드 1,500 · 받는 피해 -15% · 이동속도 +15%.'
   },
   // ===== 7.0 신규: GT · 가시 · 낚시 · 낫 =====
   gt: {
@@ -12007,7 +12017,7 @@ const CHAR_DB = {
     id: 'matrix', name: '매트릭스 지후', emoji: '💾', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#1fbf5f', portrait: PORTRAITS.matrix,
     ...CHARACTER_BALANCE.matrix,
-    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번 · 라운드당 <b>최대 10기</b>, 홀로그램 HP는 <b>1</b> 고정 · <b>10초</b> 뒤 사라짐 · 홀로그램의 모든 피해는 원본의 <b>60%</b>, <b>출격제한 1기</b> 지후는 복사하지 않는다). ATK 500 · 5초 · 사거리 5칸.'
+    skillDesc: '라운드 시작 <b>1초</b> 뒤 아군 진영의 아군 하나를 골라 그 자리에 <b>4×4칸</b> 정사각형을 만든다. 정사각형에 걸친 <b>아군</b>은 <b>홀로그램</b>으로 하나 더 복제된다 (아군 1기당 한 번 · 라운드당 <b>최대 5기</b>, 홀로그램 HP는 <b>1</b> 고정 · <b>10초</b> 뒤 사라짐 · 홀로그램의 모든 피해는 원본의 <b>60%</b>, <b>출격제한 1기</b> 지후는 복사하지 않는다). ATK 500 · 5초 · 사거리 5칸 · <b>출격제한 1</b>.'
   },
   supply: {
     id: 'supply', name: '보급병 지후', emoji: '📦', role: 'support', roleLabel: '서포터',
@@ -12096,7 +12106,7 @@ const CHAR_DB = {
       red: { ...CHARACTER_BALANCE.taeguk.taegukForms.red, portrait: PORTRAITS.taeguk_red, suffix: ' (적)' },
       harmony: { ...CHARACTER_BALANCE.taeguk.taegukForms.harmony, portrait: PORTRAITS.taeguk_harmony, suffix: ' (극의 조화)' }
     },
-    skillDesc: '배치 시 <b>청</b>(ATK 120 / 공속 0.7s) 또는 <b>적</b>(ATK 480 / 공속 2s)으로 나온다. 아군 태극 지후의 청과 적 수가 같아지면 모두 <b>극의 조화</b>(HP 3000 / ATK 480 / 공속 0.7s / 사거리 4.5칸)로 변한다. 조화는 다음 라운드 배치 때 청·적으로 다시 나뉜다. <b>[패시브]</b> 같은 지후 <b>3기 제한 없이</b> 배치할 수 있다.'
+    skillDesc: '배치 시 <b>청</b>(ATK 120 / 공속 0.6s) 또는 <b>적</b>(ATK 480 / 공속 2s)으로 나온다. 아군 태극 지후의 청과 적 수가 같아지면 모두 <b>극의 조화</b>(HP 3000 / ATK 480 / 공속 0.6s / 사거리 4.5칸)로 변한다. 극의 조화였던 라운드가 끝나면 아군 태극 지후가 <b>모두 같은 색</b>(청 또는 적)이 된다. <b>[패시브]</b> 같은 지후 <b>3기 제한 없이</b> 배치할 수 있다.'
   },
   fire: {
     id: 'fire', name: '화염 지후', emoji: '🔥', role: 'dealer', roleLabel: '딜러',
@@ -12216,7 +12226,7 @@ const CHAR_DB = {
     id: 'revive', name: '부활 지후', emoji: '😇', role: 'support', roleLabel: '서포터',
     rarity: 'legend', color: '#f2c94c', portrait: PORTRAITS.revive,
     ...CHARACTER_BALANCE.revive,
-    skillDesc: '움직이지 않는다. 아군이 죽을 때마다 <b>50%</b> 확률로 그 아군을 풀 HP로 부활시킨다. 다른 부활 지후는 살리지 않는다.'
+    skillDesc: '움직이지 않는다. 아군이 죽을 때마다 <b>50%</b> 확률로 그 아군을 풀 HP로 <b>자신 바로 앞</b>에 부활시킨다. 다른 부활 지후는 살리지 않는다.'
   },
   burning: {
     id: 'burning', name: '불타는 지후', emoji: '🔥', role: 'tank', roleLabel: '탱커',
@@ -12311,7 +12321,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#c45a1a', portrait: PORTRAITS.lasso,
     ...CHARACTER_BALANCE.lasso,
     customAttack(caster, target) { battleAPI.lassoAttack(caster, target); },
-    skillDesc: 'ATK <b>270</b> · 사거리 <b>12칸</b>. 공격마다 올가미를 던진다. <b>20%</b> 확률로 현재 거리의 <b>30%</b>만큼 당기고, 당긴 대상을 <b>0.7초</b> 기절시킨다'
+    skillDesc: 'ATK <b>270</b> · 사거리 <b>12칸</b>. 공격마다 올가미를 던진다. <b>20%</b> 확률로 현재 거리의 <b>30%</b>만큼 당기고, 당긴 대상을 <b>0.4초</b> 기절시킨다'
   },
 
   ball: {
@@ -12438,7 +12448,7 @@ const CHAR_DB = {
     rarity: 'legend', color: '#a728f5', portrait: PORTRAITS.impeachment,
     ...CHARACTER_BALANCE.impeachment,
     customAttack(caster) { circularAttack(caster, caster.x, caster.y, caster.def.attackRadius, caster.def.atk); },
-    skillDesc: '반경 3칸 광역 공격 (ATK <b>120</b>). 시작하자마자 죽을 때까지 자신에게 <b>[탄핵]</b>: 모든 적이 다른 대상을 무시하고 자신을 <b>먼저 노린다</b>. 라운드당 한 번, <b>12번</b> 피격당하면 쉴드 <b>3,000</b>을 얻는다.'
+    skillDesc: '반경 3칸 광역 공격 (ATK <b>120</b>). 시작하자마자 죽을 때까지 자신에게 <b>[탄핵]</b>: 모든 적이 다른 대상을 무시하고 자신을 <b>먼저 노린다</b>. 라운드당 한 번, <b>12번</b> 피격당하면 쉴드 <b>1,500</b>을 얻는다.'
   },
   bomb: {
     id: 'bomb', name: '폭탄 지후', emoji: '💣', role: 'dealer', roleLabel: '딜러',
@@ -12471,7 +12481,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#54ed13', portrait: PORTRAITS.beam,
     ...CHARACTER_BALANCE.beam,
     customTick(caster, target, distance, dt) { return tickBeam(caster, target, distance, dt); },
-    skillDesc: '4초 조준 후 대상에게 0.2초마다 <b>100 피해</b>, 1초마다 피해 <b>+20</b>. 대상이 사거리 7칸을 벗어나면 빔·증가량 초기화'
+    skillDesc: '2.5초 조준 후 대상에게 0.2초마다 <b>100 피해</b>, 1초마다 피해 <b>+20</b>. 대상이 사거리 7칸을 벗어나면 빔·증가량 초기화'
   },
   mutation: {
     id: 'mutation', name: '돌연변이 지후', emoji: '🧬', role: 'controller', roleLabel: '컨트롤러',
@@ -12570,7 +12580,7 @@ const CHAR_DB = {
     id: 'parasite', name: '기생충 지후', emoji: '🪱', role: 'controller', roleLabel: '컨트롤러',
     rarity: 'epic', color: '#7f9a2e', portrait: PORTRAITS.parasite || jhPlaceholder('🪱', '#7f9a2e'),
     ...CHARACTER_BALANCE.parasite,
-    skillDesc: 'ATK 10 · 공격 간격 <b>0.5초</b> · 사거리 <b>2.5칸</b>. <b>5초마다</b> 몸에서 <b>버러지후</b>(HP <b>3,000</b> · 이동속도 3.8칸, 기생충 레벨만큼 강해짐)를 내보낸다. 버러지후는 가장 가까운 적을 쫓아가, 닿으면 그 적에게 붙어 <b>[조종]</b>: 그 적은 제 편을 공격하고 이동속도 +2칸. 체력이 <b>25%</b> 아래가 되거나 <b>6초</b>가 지나면 풀린다. 조종 중에는 기생충 지후가 받는 피해 <b>60%</b> 감소 · 버러지후 쿨타임이 줄지 않는다.'
+    skillDesc: 'ATK 10 · 공격 간격 <b>0.5초</b> · 사거리 <b>2.5칸</b>. <b>5초마다</b> 몸에서 <b>버러지후</b>(HP <b>2,000</b> · 이동속도 3.8칸, 기생충 레벨만큼 강해짐)를 내보낸다. 버러지후는 가장 가까운 적을 쫓아가, 닿으면 그 적에게 붙어 <b>[조종]</b>: 그 적은 제 편을 공격하고 이동속도 +2칸. 체력이 <b>25%</b> 아래가 되거나 <b>6초</b>가 지나면 풀린다. 조종 중에는 기생충 지후가 받는 피해 <b>60%</b> 감소 · 버러지후 쿨타임이 줄지 않는다.'
   },
   flower: {
     id: 'flower', name: '꽃 지후', emoji: '🌺', role: 'dealer', roleLabel: '딜러',
@@ -12712,7 +12722,7 @@ const CHAR_DB = {
     id: 'tesla', name: '테슬라코일 지후', emoji: '🌀', role: 'dealer', roleLabel: '딜러',
     rarity: 'mythic', color: '#3fe0ff', portrait: PORTRAITS.tesla || jhPlaceholder('🌀', '#3fe0ff'),
     ...CHARACTER_BALANCE.tesla,
-    skillDesc: 'HP 2,600 · 공격하지 않는다. <b>전기 3개</b>가 코일 주위를 공전한다 (유닛 아님 · 행성 지후 위성의 2배 거리 · 행성 위성보다 조금 느리게). 전기에 닿은 적은 <b>200</b> 피해, 인접한 적 2명에게 튄다 (<b>80%</b> · <b>60%</b>). <b>[패시브] 전기장</b>: 코일에 직접 닿아 있는 적은 0.5초마다 <b>100</b> 피해.'
+    skillDesc: 'HP 2,600 · 공격하지 않는다. <b>전기 3개</b>가 코일 주위를 공전한다 (유닛 아님 · 행성 지후 위성의 2배 거리 · 행성 위성보다 조금 느리게). 전기에 닿은 적은 <b>200</b> 피해, 인접한 적 2명에게 튄다 (<b>80%</b> · <b>60%</b>). <b>[패시브] 전기장</b>: 코일에 직접 닿아 있는 적은 0.5초마다 <b>150</b> 피해.'
   },
   soulstealer: {
     id: 'soulstealer', name: '소울스틸러 지후', emoji: '👻', role: 'dealer', roleLabel: '딜러',
@@ -13225,6 +13235,36 @@ function masteryClass(count) { return ['none','novice','intermediate','expert','
 //   예) fire: { name: '불꽃 흔적', desc: '…', apply(def) { def.xxx = … } }
 //   apply(def) 는 유닛 전용 복사본을 받는다 (CHAR_DB 원본은 건드리지 않는다).
 const RANK_S_ABILITIES = {
+  // ── 7.9.1 한계돌파 Lv3 고유 능력 추가 ──
+  gun: { name: '권총 손질', desc: '<b>Lv.1</b>(권총)일 때만 공격력 <b>+50</b>' },
+  shanghai: { name: '단독 저격', desc: '<b>배치 한도</b>를 차지하지 않는다' },
+  rccar: { name: '조준 운전', desc: '라운드마다 첫 장난감은 <b>적 진영</b> 쪽에 나온다' },
+  nuke: { name: '선제 타격', desc: '<b>1라운드</b>에만 핵이 떨어지기까지 <b>-10초</b>' },
+  golf: { name: '빠른 스윙', desc: '공격 간격 <b>-0.5초</b>', apply(d) { d.atkSpeed = Math.max(0.5, d.atkSpeed - 0.5); } },
+  rewind: { name: '가벼운 부작용', desc: '[역행] 부작용 행동불능 <b>-0.5초</b>', apply(d) { d.rwStun = Math.max(0, d.rwStun - 0.5); } },
+  whirl: { name: '긴 회오리', desc: '회오리 지속 <b>+1초</b>', apply(d) { d.whTime += 1; } },
+  heat: { name: '연속 히트', desc: '히트를 얻을 때 <b>10%</b> 확률로 히트 <b>+1</b> 더' },
+  antigrav: { name: '빠른 반중력', desc: '반중력 대기시간 <b>-0.5초</b>', apply(d) { d.agDelay = Math.max(0.5, d.agDelay - 0.5); } },
+  wine: { name: '음미', desc: '와인을 마실 때 잃는 체력 <b>7% → 4%</b>', apply(d) { d.wineHpCost = 0.04; } },
+  skulking: { name: '왕의 부름', desc: '<b>12%</b> 확률로 약화 스껄 대신 <b>일반 스껄 지후</b>를 부른다' },
+  streamer: { name: '팬서비스', desc: '매혹 시간 <b>+0.25초</b>', apply(d) { d.kbCharm += 0.25; } },
+  finedust: { name: '폐 손상', desc: '재채기한 적이 <b>5%</b> 확률로 <b>즉사</b>' },
+  metamorph: { name: '탈피', desc: '변신 후 <b>3초</b> 동안 받는 피해 <b>-15%</b>' },
+  mortis: { name: '귀소 본능', desc: '박쥐가 끝까지 날아간 뒤 <b>자신에게 돌아온다</b> (돌아오며 맞힌 적에게서는 회복량 <b>25%</b>)' },
+  whiteknight: { name: '빛의 가호', desc: '빛의 방패가 깨지면 호위 대상과 자신 모두 <b>1초 무적</b>' },
+  seal: { name: '강한 봉인', desc: '레벨을 올려도 <b>20%</b> 확률로 봉인이 풀리지 않는다 (레벨을 한 번 더 올려야 한다)' },
+  dreamscape: { name: '악몽', desc: '[ㅤㅤㅤ]에 걸린 적 공격력 <b>-15%</b>' },
+  rockstar: { name: '앙코르 전류', desc: '전기 연쇄 대상 <b>+1</b>', apply(d) { d.elecChainTargets += 1; } },
+  taxi: { name: '안전 운행', desc: '맵 밖에서 돌아올 때 그 운행 동안 잃은 체력의 <b>15%</b> 회복' },
+  ravage: { name: '최후의 발악', desc: '라운드마다 한 번, 쓰러질 피해를 받으면 <b>체력 1</b>로 버티고 <b>1초 무적</b>' },
+  paintball: { name: '진한 페인트', desc: '페인트 추가 피해 <b>+5%</b> · 이동속도 감소 <b>+10%</b>', apply(d) { d.paintAmp += 0.05; d.paintSlow += 0.1; } },
+  bully: { name: '꽁꽁', desc: '빙결 시간 <b>+1초</b>', apply(d) { d.bullyFreeze += 1; } },
+  cult: { name: '순교', desc: '쓰러질 때 [포교 대기]인 적이 없으면 필드의 살아 있는 적 하나를 무작위로 <b>[포교 대기]</b>' },
+  cotton: { name: '솜방망이', desc: '공격 간격 <b>-0.1초</b>', apply(d) { d.atkSpeed = Math.max(0.2, d.atkSpeed - 0.1); } },
+  gt: { name: '사방 터보', desc: '터보엔진을 앞 칸 대신 <b>십자(앞 · 뒤 · 좌 · 우)</b> 아군 모두에게 단다' },
+  titanium: { name: '두꺼운 장갑', desc: '쉴드 지속 <b>+0.2초</b>', apply(d) { d.tiShieldTime += 0.2; } },
+  recall: { name: '빠른 호출', desc: '[리콜] 쿨타임 <b>-1초</b>', apply(d) { d.recallEvery = Math.max(1, d.recallEvery - 1); } },
+  witch: { name: '빠른 손놀림', desc: '포션 투척 간격 <b>-0.4초</b>', apply(d) { d.potionEvery = Math.max(0.5, d.potionEvery - 0.4); } },
   // ── 7.9 한계돌파 Lv3 고유 능력 추가 ──
   thorn: { name: '깊은 가시', desc: '가시 치명타 구간 <b>끝 3/7 → 1/2</b>', apply(d) { d.thornTipFrac = 0.5; } },
   meatshield: { name: '두꺼운 살', desc: '체력 <b>+1,000</b>', apply(d) { d.hp += 1000; } },
@@ -13289,7 +13329,7 @@ const RANK_S_ABILITIES = {
   lightning: { name: '과충전', desc: '낙뢰까지 필요한 공격 <b>-1</b>', apply(d) { d.boltEveryHits = Math.max(1, d.boltEveryHits - 1); } },
   supply: { name: '대량 보급', desc: '맵에 보급 <b>최대 5개</b>', apply(d) { d.supplyMax = 5; } },
   instinct: { name: '생존 본능', desc: '회피 후 <b>0.5초</b>간 받는 피해 <b>-20%</b>' },
-  beam: { name: '예열 완료', desc: '차징 시간 <b>2.5초</b>', apply(d) { d.beamWarmup = 2.5; } }, // 7.9 1 → 2.5초
+  beam: { name: '예열 완료', desc: '차징 시간 <b>-0.5초</b>', apply(d) { d.beamWarmup = Math.max(0.5, d.beamWarmup - 0.5); } }, // 7.9.1 2.5초(기본과 같아 효과 없음) → -0.5초
   cactus: { name: '가시 폭풍', desc: '가시가 <b>7방향</b>', apply(d) { d.cactusSpikes = 7; } },
   egg: { name: '따뜻한 알', desc: '부화 확률 <b>+2%</b>', apply(d) { d.hatchChance += 0.02; } },
   assassin: { name: '깊은 은신', desc: '은신 지속 <b>+1초</b>' },
@@ -18040,7 +18080,7 @@ function playableIds() { return Object.keys(CHAR_DB).filter(id => !CHAR_DB[id].u
 function ownableIds() { return playableIds().concat(Object.keys(CHAR_DB).filter(id => CHAR_DB[id].devOnly || CHAR_DB[id].secret)); } // 7.7.3 스페셜
 function playableChars() { return playableIds().map(id => CHAR_DB[id]); }
 function countedAlive(side) {
-  return state.units.filter(u => u.side === side && u.alive && !u.skipCount).length;
+  return state.units.filter(u => u.side === side && u.alive && !u.skipCount && !rankS(u, 'shanghai')).length; // 7.9.1 상하이 S: 배치 한도를 차지하지 않는다
 }
 function withLoading(hint, next) {
   const lab = $('loadingHint');
@@ -20193,7 +20233,7 @@ const DETAIL_STAT_FIELDS = {
   snowSlowPerStack:['중첩당 이동속도 감소','%'], snowFreeze:['3중첩 빙결','s'],
   wolfHowlAfter:['하울링까지 공격','회'], howlRadius:['하울링 반경','칸'], wolfHp:['순간이동 후 HP'], wolfAtk:['순간이동 후 ATK'],
   dreamEvery:['파동 간격','s'], dreamRadius:['파동 반경','칸'], dreamTime:['[ㅤㅤㅤ] 지속','s'],
-  elecChain:['일렉 연쇄 피해','%'], potionEvery:['포션 간격','s'], potionRadius:['포션 범위','칸'],
+  elecChain:['일렉 연쇄 피해','%'], potionEvery:['포션 간격','s'], recallFirst:['첫 리콜','s'], recallEvery:['리콜 쿨타임','s'], potionRadius:['포션 범위','칸'],
   burnDps:['화상 초당 피해'], burnDuration:['화상 지속','s'],
   freezeChance:['빙결 확률','%'], freezeDuration:['빙결 지속','s'],
   loneRadius:['고독 판정 범위','칸'], loneBonusHpFraction:['대상 현재 체력 추가 피해','%'],
@@ -21744,8 +21784,9 @@ function startRoundInner() {
   state.enemyBench = state.enemyDeckIds.slice();
   state.deployRounds = 0;
   state.deadThisRound = { ally: [], enemy: [] };
-  // 극의 조화는 한 라운드만: 다음 배치 때 청·적으로 다시 나뉜다.
-  state.placements.forEach(p => { if (p.charId === 'taeguk' && p.form === 'harmony') p.form = Math.random() < 0.5 ? 'blue' : 'red'; });
+  // 극의 조화는 한 라운드만. 7.9.1 조화였던 진영은 라운드가 끝나면 태극 지후가 모두 같은 색(청 또는 적)이 된다.
+  { const sides = new Set(state.placements.filter(p => p.charId === 'taeguk' && p.form === 'harmony').map(p => p.side));
+    sides.forEach(side => { const c = Math.random() < 0.5 ? 'blue' : 'red'; state.placements.forEach(p => { if (p.charId === 'taeguk' && p.side === side) p.form = c; }); }); }
   // 이전 라운드까지 설치한 지후는 사망 여부와 관계없이 원래 자리에 전부 복귀 (누적)
   state.placements.forEach(p => {
     if (state.mode === 'castle' && state.units.some(u => u.alive && u.placementId === p.id)) return;
@@ -21757,8 +21798,8 @@ function startRoundInner() {
     if (back && p.enh) enhanceSet(back, p.enh, true);
     if (back && back.def.onRestore) back.def.onRestore(back, p); // 4.7.0 강화 수치 · 핵날린 지후
     if (back && p.mate) coopMarkMate(back); // 5.1 협동전 · 5.4 2:2 대전: AI 파트너 표시
+    if (back && p.sealLv) sealMarkSync(back); // 7.9.1 배치 시간에도 봉인 사슬 표시
   });
-  state.units.filter(x => x.alive && x.charId === 'recall').forEach(recallSummon); // 7.0 리콜: 매 라운드 소환
   // 좀비 S: 지난 라운드에 좀비로 만든 적이 있으면 이번 라운드에 아군 좀비 1기
   if (state.zombieCarry) {
     for (const side of ['ally', 'enemy']) {
@@ -22281,6 +22322,7 @@ function levelUpUnit(u) {
   const before = u && u.level;
   levelUpUnitCore(u);
   if (u && !u._settingLevel && u.level !== before && (state.phase === 'deploy' || state.phase === 'deploy-resolve')) deployFeel(u, u.side === 'ally' ? 'merge' : 'enemy'); // 4.6.7
+  if (u && u.el && u.el.querySelector(':scope > .seal-x')) { sealCheckFree(u); sealMarkSync(u); } // 7.9.1 레벨을 올려 봉인이 풀리면 사슬도 뗀다
 }
 function levelUpUnitCore(u) {
   // 봇 히든은 합쳐 레벨업하지 않는다. 스킬로 레벨이 바뀌는 경우(setUnitLevel)는 예외.
@@ -22525,7 +22567,6 @@ function spawnUnit(side, x, y, charId, opts) {
     if (side === 'ally' && state.phase === 'deploy' && (state.mode === 'ranked' || state.mode === 'castle')) recordMasteryPlacement(charId);
     unit.placementId = unit.uid;
     state.placements.push({ id: unit.placementId, side, x, y, charId, form, level: 1 });
-    if (charId === 'recall') scheduleTask(() => recallSummon(unit), 30); // 7.0 리콜: 진영에 배치하면 바로 소환
   }
   // restore level from previous rounds
   if (opts.level && opts.level > 1) {
@@ -23891,6 +23932,7 @@ function statusAndTimers(u, dt) {
   if (u._blindRemaining > 0) u._blindRemaining = Math.max(0, u._blindRemaining - dt);
   if (u._noHeal > 0) u._noHeal = Math.max(0, u._noHeal - dt);
   if (u._instinctDr > 0) u._instinctDr = Math.max(0, u._instinctDr - dt);
+  if (u._metaDr > 0) u._metaDr = Math.max(0, u._metaDr - dt);
   if (u.statuses.poison && rankS(u.statuses.poison.src, 'poison')) battleAPI.setBuff(u, 'poisonS-slow', 'speed', -0.3, 0.2);
   if (u._hot) tickHealOverTime(u, dt);
   if (u._fearT > 0) { u._fearT -= dt; if (u._fearT <= 0) { u._fearT = 0; u._fearSrc = null; } }
@@ -25487,6 +25529,7 @@ function applyDamageRaw(target, amount, opts) {
   if (target._qfVuln) finalDmg *= 1 + target._qfVuln; // 5.5.1 쾌속냉각: 빙결될 때마다 받는 피해 증가 (영구)
   { const bl = blessOf(target.side).dr; if (bl) finalDmg *= Math.max(0.5, 1 - 0.05 * bl); } // 5.5 축복: 받는 피해 감소
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
+  if (target._metaDr > 0) finalDmg *= 0.85; // 7.9.1 메타모르포제 S
   finalDmg = genesisIntercept(target, finalDmg); // 4.7.2 제네시스
   if (target._escortBy && finalDmg > 0) finalDmg = escortIntercept(target, finalDmg); // 7.4 백기사 [빛의 방패]
   const wkAbs = target._wkAbsNow; target._wkAbsNow = false;
@@ -25650,6 +25693,7 @@ function unitRadius(u) {
   return (base + Math.max(0, lv - 1) * 2) * WORLD_SCALE * (u && u._bigNow ? u.def.radiusMul || 1 : 1); // 7.0 돌 지후: 전투 중에만 ×2 (배치할 때는 한 칸)
 }
 // 원이 겹치지 않는 최소 중심 거리
+const TESLA_TOUCH_PAD = 24; // 7.9.1 테슬라 전기장 접촉 판정: 근접 공격 거리에서 멈춘 적(몸 사이 10~20px)도 닿은 것으로 (예전 10px 는 거의 닿지 않았다)
 function bodySeparation(a, b) {
   return unitRadius(a) + unitRadius(b) + 6 * WORLD_SCALE;
 }
@@ -27618,7 +27662,7 @@ function takenMult46(target) {
   if (target.charId === 'bully' && target._bully && target._bully.stand) m *= 1 - (target.def.standDr || 0); // 7.5.4 일진: 스탠드가 있는 동안 받는 피해 -60%
   if (target.charId === 'inferno' && target._inf && (target._inf.phase === 'charge' || target._inf.phase === 'burn')) m *= 1 - (target.def.infBurnDr || 0); // 7.5.2 인페르노: [소각] 중 받는 피해 -40%
   if (target.charId === 'parasite' && parasiteControlling(target)) m *= 1 - target.def.ctrlDr; // 4.7.0 조종 중
-  if (target._paint) m *= 1 + CHARACTER_BALANCE.paintball.paintAmp; // 7.8 [페인트] 받는 피해 +15%
+  if (target._paint) m *= 1 + (target._paintAmp || CHARACTER_BALANCE.paintball.paintAmp); // 7.8 [페인트] 받는 피해 +15%
   if (target._wh && target._wh.on > 0) m *= 1 - target.def.whDr; // 7.8 [퓨전회오리] 받는 피해 -85%
   if (state.mode === 'auction' && (target._aucDr || target._aucTough)) m *= aucTakenMult(target); // 7.1 경매 아이템 (방패 · 맷집)
   return m;
@@ -28107,7 +28151,7 @@ function gunApply(u, announce) {
   if (u._gunRank == null) u._gunRank = (u.baseAtk || u.def.atk) / CHARACTER_BALANCE.gun.atk;
   const w = gunWeaponOf(u);
   if (u.baseMaxHp) { u.maxHp = u.baseMaxHp; u.hp = Math.min(u.hp, u.maxHp); } // 레벨이 올라도 HP 그대로
-  u.def.atk = Math.round(w.atk * u._gunRank);
+  u.def.atk = Math.round(w.atk * u._gunRank) + (rankS(u, 'gun') && (u.level || 1) === 1 ? 50 : 0); // 7.9.1 총 S: Lv.1 에만 +50
   u.def.atkSpeed = w.speed;
   u.def.range = w.range * GRID;
   u.atkCooldown = Math.min(u.atkCooldown || 0, w.speed);
@@ -28367,7 +28411,8 @@ function nukeBecomeLaunched(u) {
 }
 function launchNuke(u) {
   nukeBecomeLaunched(u);
-  (state.nukes || (state.nukes = [])).push({ side: u.side, left: u.def.nukeFlight ?? CHARACTER_BALANCE.nuke.nukeFlight, by: u.def.name, owner: u });
+  const flight = Math.max(1, (u.def.nukeFlight ?? CHARACTER_BALANCE.nuke.nukeFlight) - (rankS(u, 'nuke') && (state.round || 1) === 1 ? 10 : 0)); // 7.9.1 핵 S: 1라운드에만 -10초
+  (state.nukes || (state.nukes = [])).push({ side: u.side, left: flight, max: flight, by: u.def.name, owner: u });
   const f = n47Forward(u.side);
   const trail = n47Fx('n47-nuke-launch', u.x, u.y, '🚀');
   trail.style.setProperty('--dx', f.x * 600 + 'px'); trail.style.setProperty('--dy', f.y * 600 + 'px');
@@ -29646,7 +29691,7 @@ function cleanseUnit(a) {
   if (a.statuses.grudges) a.statuses.grudges = {};
   a.stun = 0; a.knockStun = 0; a._lockedFor = 0; a._blindRemaining = 0; a._fearT = 0; a._fearSrc = null; a.charmRemaining = 0;
   a._butterfly = 0; a._shroomPoison = null; a._injured = 0; if (a.el) a.el.classList.remove('injured'); // 7.8.1 [부상]도 디버프
-  if (a._paint) { a._paint = false; a.el && a.el.classList.remove('painted'); } a._blindMiss = 0; // 7.8
+  if (a._paint) { a._paint = false; a._paintAmp = 0; a.el && a.el.classList.remove('painted'); } a._blindMiss = 0; // 7.8
   if (a._hacked > 0) { a._hacked = 0; a.el.querySelector('.glitch-overlay')?.remove(); }
   if (a._hypno) a._hypno = null;
   for (const k in a.buffs) if (a.buffs[k].bonus < 0) delete a.buffs[k];
@@ -29959,6 +30004,7 @@ function applyDream(e, src) {
   spawnDamageNumber(e, DREAM_NAME, { crit: true });
 }
 function tickDreams(e, dt) {
+  if (e._dreams.some(d => rankS(d.src, 'dreamscape'))) battleAPI.setBuff(e, 'dream-weak', 'atk', -0.15, 0.3); // 7.9.1 드림스케이프 S
   for (const d of e._dreams.slice()) {
     d.t += dt;
     const maxTicks = Math.round(d.src.def.dreamTime);
@@ -29981,9 +30027,10 @@ function tickDreams(e, dt) {
   updateUnitBars(e);
 }
 // [일렉]: 쉴드를 모두 잃고 얻지 못한다. 다음 피격 때 그 적과 가장 가까운 같은 편 2명에게 피해 100% 연쇄 (dealDamage 에서 처리)
-function applyElec(t) {
+function applyElec(t, by) {
   if (!t.alive || t.isCastle) return;
   t._elec = true;
+  t._elecN = Math.max(t._elecN || 0, (by && by.def && by.def.elecChainTargets) || 0); // 7.9.1 락 S: 연쇄 대상 +1
   stripShields(t);
   t.el.classList.add('electrified');
 }
@@ -29995,11 +30042,12 @@ function stripShields(t) {
 }
 function elecChain(target, dmg, attacker) {
   target._elec = false;
+  const chainN = target._elecN || CHARACTER_BALANCE.rockstar.elecChainTargets || 1; target._elecN = 0;
   target.el.classList.remove('electrified');
   if (!(dmg > 0)) return;
   // 7.3.2 가장 가까운 같은 편 2명에게 (피해 100%)
   const near = state.units.filter(a => a !== target && a.alive && !a.isCastle && a.side === target.side && sameRealm(a, target))
-    .map(a => [a, Math.hypot(a.x - target.x, a.y - target.y)]).sort((p, q) => p[1] - q[1]).slice(0, CHARACTER_BALANCE.rockstar.elecChainTargets || 1);
+    .map(a => [a, Math.hypot(a.x - target.x, a.y - target.y)]).sort((p, q) => p[1] - q[1]).slice(0, chainN);
   const src = attacker && attacker.alive ? attacker : null;
   near.forEach(([best, bestD]) => {
     const bolt = document.createElement('div');
@@ -30012,32 +30060,36 @@ function elecChain(target, dmg, attacker) {
     dealDamage(src, best, dmg * CHARACTER_BALANCE.rockstar.elecChain, { isSkill: true, elecChain: true, skipAtkBuff: true, noLifesteal: true, fromDeath: !src, src: attacker });
   });
 }
-// 리콜: 덱의 무작위 지후 하나를 레벨 1로 상하좌우 빈 칸에 소환 (배치 기록에는 남기지 않아 라운드마다 새로 소환)
 function sameHalfAsUnit(u, x, y) {
   if (state.mode === 'auction') return true;
   return isEastWestLayout() ? Math.sign(x - MAP_W / 2) === Math.sign(u.x - MAP_W / 2) : Math.sign(y - MAP_H / 2) === Math.sign(u.y - MAP_H / 2);
 }
+// 7.9.1 리콜 리워크: 전투 시작 10초 뒤부터 12초마다, 이번 라운드에 죽은 아군 하나를 레벨 1로 그 아군이 죽은 자리에 새로 소환한다
+// (부활과 다르다: 새 지후 · 배치 기록에는 남기지 않는다). 소환체도 배치 한도를 차지한다. 쓸 대상이 없으면 0.5초 뒤 다시 본다.
 function recallSummon(u) {
-  if (!u || !u.alive || u.charId !== 'recall') return;
-  if (state.maxUnits && countedAlive(u.side) >= state.maxUnits) return; // 배치 한도
-  const deck = ((u.side === 'ally' ? state.myDeckIds : state.enemyDeckIds) || []).filter(id => CHAR_DB[id] && id !== 'recall' && canPlaceNew(u.side, id));
-  if (!deck.length) return;
-  const spots = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: u.x + dx * GRID, y: u.y + dy * GRID }))
-    .filter(p => p.x >= PHYS.WALL_PAD && p.x <= MAP_W - PHYS.WALL_PAD && p.y >= PHYS.WALL_PAD && p.y <= MAP_H - PHYS.WALL_PAD && sameHalfAsUnit(u, p.x, p.y)
-      && !state.units.some(o => o.alive && Math.hypot(o.x - p.x, o.y - p.y) < GRID * 0.6));
-  if (!spots.length) return;
-  const spot = spots[Math.floor(Math.random() * spots.length)];
-  const id = deck[Math.floor(Math.random() * deck.length)];
-  const s = spawnUnit(u.side, spot.x, spot.y, id, { saved: true, quiet: true, level: 1 });
-  if (!s) return;
+  if (!u || !u.alive || u.charId !== 'recall') return false;
+  if (countedAlive(u.side) >= maxUnitsFor(u.side)) return false; // 배치 한도
+  const dead = state.units.filter(x => !x.alive && x.side === u.side && !x._recallUsed && !x.isCastle && !x.isClone && !x.skipCount && !x.ownerUid
+    && x.expire == null && !x._devoured && !x._negotiating && CHAR_DB[x.charId] && !CHAR_DB[x.charId].unobtainable && canPlaceNew(u.side, x.charId));
+  if (!dead.length) return false;
+  const pick = dead[Math.floor(Math.random() * dead.length)];
+  pick._recallUsed = true;
+  const x = clamp(pick.x, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), y = clamp(pick.y, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
+  const s = spawnUnit(u.side, x, y, pick.charId, { saved: true, quiet: true, level: 1, form: pick.charId === 'taeguk' ? pick.taegukBase : undefined });
+  if (!s) return false;
   s.placementId = null;
   s._recalled = true;
+  physInitBody(s);
+  readyRoundSkills(s);
+  v41Callout(u, '📣 리콜');
   spawnBurst(s.el, u.def.color);
-  spawnDamageNumber(s, '📣 소환', { heal: true });
+  spawnDamageNumber(s, '📣 리콜', { heal: true });
+  return true;
 }
 // 마녀: 2.5초마다 아군(이로운 포션) 또는 적(해로운 포션) 무작위 대상에게 던진다
 const WITCH_GOOD = ['heal', 'atk', 'crit', 'critdmg'];
 const WITCH_BAD = ['damage', 'poison', 'burn', 'frog'];
+const WITCH_BAD_W = { damage: 1, poison: 1, burn: 1, frog: 0.4 }; // 7.9.1 개구리화 확률을 다른 포션보다 낮게 (약 12%)
 function throwPotion(u) {
   const R = u.def.potionRange * WORLD_SCALE;
   const pick = side => state.units.filter(x => x.alive && !x.isCastle && x.side === side && sameRealm(u, x) && Math.hypot(x.x - u.x, x.y - u.y) <= R);
@@ -30047,7 +30099,8 @@ function throwPotion(u) {
   if (!list.length) return false;
   const target = list[Math.floor(Math.random() * list.length)];
   const kinds = toFoe ? WITCH_BAD : WITCH_GOOD;
-  const kind = kinds[Math.floor(Math.random() * kinds.length)];
+  let kind = kinds[Math.floor(Math.random() * kinds.length)];
+  if (toFoe) { let r = Math.random() * kinds.reduce((a, k) => a + WITCH_BAD_W[k], 0); kind = kinds.find(k => (r -= WITCH_BAD_W[k]) < 0) || kinds[0]; }
   const flask = document.createElement('div');
   flask.className = 'fx-potion ' + (toFoe ? 'bad' : 'good');
   flask.style.left = u.x + 'px'; flask.style.top = u.y + 'px';
@@ -30112,13 +30165,41 @@ function setIncap(u, kind, on) {
   if (on) m[kind] = true; else delete m[kind];
   u._incap = Object.keys(m).length ? m : null;
   if (u.el) u.el.classList.toggle('incap-' + kind, !!on);
+  if (kind === 'seal') sealChain(u, !!on); // 7.9.1
   if (on) { u.desVx = 0; u.desVy = 0; u.physLock = 0; u._engaged = false; clearTelegraph(u); }
+}
+// 7.9.1 봉인된 지후에는 X자 사슬을 붙인다. 배치 시간에도 보여서 어떤 지후가 봉인 중인지 알 수 있다
+function sealChain(u, on) {
+  if (!u || !u.el) return;
+  let x = u.el.querySelector(':scope > .seal-x');
+  if (on && !x) { x = document.createElement('div'); x.className = 'seal-x'; u.el.appendChild(x); }
+  else if (!on && x) x.remove();
+}
+// 레벨이 풀 만큼 올랐으면 봉인을 푼다. 7.9.1 봉인 S: 20% 확률로 풀리지 않는다 (그 레벨에서 한 번 더 올려야 한다)
+function sealCheckFree(u) {
+  const p = pl74(u), live = !!(u._incap && u._incap.seal);
+  const lv = live ? (u._sealLv || 1) : (p && p.sealLv);
+  if (!lv || (u.level || 1) < lv + (CHARACTER_BALANCE.seal.sealFreeLv || 1)) return false;
+  if ((live ? u._sealS : p && p.sealS) && Math.random() < 0.2) {
+    u._sealLv = u.level || 1; if (p) p.sealLv = u._sealLv;
+    spawnDamageNumber(u, '🔒 봉인 유지', { crit: true });
+    return false;
+  }
+  if (live) unseal(u); else if (p) { delete p.sealLv; delete p.sealS; }
+  sealChain(u, false);
+  return true;
+}
+function sealMarkSync(u) { // 배치 기록의 봉인(sealLv)을 보고 사슬을 붙이거나 뗀다
+  if (!u || !u.el || !u.alive) return;
+  const p = pl74(u);
+  const on = !!(u._incap && u._incap.seal) || !!(p && p.sealLv && (u.level || 1) < p.sealLv + (CHARACTER_BALANCE.seal.sealFreeLv || 1));
+  sealChain(u, on);
 }
 function incapTick(u, dt) {
   u.desVx = 0; u.desVy = 0; u.physLock = 0;
   if (u._incap.stone) tickStone(u, dt);
   if (u.charId === 'titanium') tickTitanium(u, dt); // 7.4.5 봉인·석화 중에도 티타늄 쉴드는 시간이 지나면 사라진다
-  if (u._incap && u._incap.seal && (u.level || 1) >= (u._sealLv || 1) + (CHARACTER_BALANCE.seal.sealFreeLv || 1)) unseal(u);
+  if (u._incap && u._incap.seal) sealCheckFree(u);
   if (u._incap && u._incap.sync && !(u._syncBy && u._syncBy.alive)) { u._syncBy = null; setIncap(u, 'sync', false); spawnDamageNumber(u, '🔗 동기화 해제', { heal: true }); }
 }
 // 7.4 라운드 시작 준비 (readyRoundSkills 에서)
@@ -30132,6 +30213,8 @@ function readyRound74(u) {
   if (u.charId === 'remote') u._droneCd = u.def.droneDelay;
   if (u.charId === 'whiteknight') { whiteKnightRelease(u); u._wkPending = true; }
   if (u.charId === 'seal') u._sealCd = u.def.sealDelay;
+  if (u.charId === 'recall') { u._recallCd = null; u._recallMax = 0; } // 7.9.1 라운드마다 10초 뒤부터
+  if (u.charId === 'ravage') u._rvSaved = false; // 7.9.1
   if (u.charId === 'bluelight') { u._blCd = 0.6; u._bl = null; }
   if (u.charId === 'cowboy') { u._cbCd = 0; u._cbDash = null; }
   if (u.charId === 'noir') { u._nf = null; u._nfCount = 0; u._holdT = 0; }
@@ -30147,8 +30230,7 @@ function readyRound74(u) {
   if (u.charId === 'cult') u._cultT = CHARACTER_BALANCE.cult.cultDelay; // 7.6.5 빌드 6: 포교된 지후는 종을 울리지 못한다
   const pl = state.placements && u.placementId ? state.placements.find(p => p.id === u.placementId) : null;
   if (pl && pl.sealLv) { // 봉인은 그 판 내내: 레벨을 1 올리기 전까지 다음 라운드에도 봉인된 채로 나온다
-    if ((u.level || 1) >= pl.sealLv + (CHARACTER_BALANCE.seal.sealFreeLv || 1)) delete pl.sealLv;
-    else { u._sealLv = pl.sealLv; setIncap(u, 'seal', true); }
+    if (!sealCheckFree(u) && pl.sealLv) { u._sealLv = pl.sealLv; u._sealS = !!pl.sealS; setIncap(u, 'seal', true); }
   }
 }
 function tickNew74(u, dt) {
@@ -30207,6 +30289,7 @@ function fineDustSneeze(u) {
     dealDamage(owner, a, bal.dustUltra * n, { isSkill: true, skipAtkBuff: true, noLifesteal: true, fromDeath: !owner });
   });
   dealDamage(owner, u, bal.dustSneeze, { isSkill: true, skipAtkBuff: true, noLifesteal: true, fromDeath: !owner });
+  if (u.alive && rankS(fd.owner, 'finedust') && Math.random() < 0.05) executeUnit(fd.owner, u); // 7.9.1 미세먼지 S: 5% 즉사
   fineDustApply(fd.side, fd.owner); // 미세먼지 지후가 쓰러져도 계속된다
 }
 
@@ -30267,6 +30350,7 @@ function metamorphTransform(u) {
   c.def = Object.assign({}, ally.def, { name: '메타모르포제 · ' + ally.def.name });
   Object.keys(ally.buffs || {}).forEach(k => { c.buffs[k] = Object.assign({}, ally.buffs[k]); });
   c._metaOf = ally;
+  if (rankS(u, 'metamorph')) c._metaDr = 3; // 7.9.1 메타모르포제 S: 변신 후 3초 받는 피해 -15%
   if (PORTRAITS.metamorph_form) battleAPI.setImage(c, PORTRAITS.metamorph_form);
   c.el.classList.add('meta-form');
   physInitBody(c);
@@ -30345,15 +30429,23 @@ function tickBats(u, dt) {
   const d = u.def;
   u._moBats = u._moBats.filter(b => {
     const step = d.mBatSpeed * GRID * dt;
-    b.x += b.cs * step; b.y += b.sn * step; b.left -= step;
+    if (b.back) { // 7.9.1 모티 S: 돌아오는 박쥐는 모티를 따라간다
+      const dx = u.x - b.x, dy = u.y - b.y, dist = Math.hypot(dx, dy) || 1;
+      b.cs = dx / dist; b.sn = dy / dist;
+      if (dist <= step + unitRadius(u) * 0.5 || (b.left -= step) <= -d.mBatRange * GRID * 2) { b.el.remove(); return false; }
+    } else b.left -= step;
+    b.x += b.cs * step; b.y += b.sn * step;
     b.el.style.left = b.x + 'px'; b.el.style.top = b.y + 'px';
     state.units.slice().forEach(e => {
       if (!e.alive || e.isCastle || b.hit.has(e.uid) || !isHostile(u, e)) return;
       if (Math.hypot(e.x - b.x, e.y - b.y) > b.w + unitRadius(e)) return;
       b.hit.add(e.uid);
-      if (dealDamage(u, e, d.mBatDmg, { isSkill: true })) healUnit(u, d.mBatHeal);
+      if (dealDamage(u, e, d.mBatDmg, { isSkill: true })) healUnit(u, d.mBatHeal * (b.back ? 0.25 : 1));
     });
-    if (b.left <= 0 || b.x < 0 || b.y < 0 || b.x > MAP_W || b.y > MAP_H) { b.el.remove(); return false; }
+    if (!b.back && (b.left <= 0 || b.x < 0 || b.y < 0 || b.x > MAP_W || b.y > MAP_H)) {
+      if (rankS(u, 'mortis') && u.alive) { b.back = true; b.hit = new Set(); b.left = 0; b.x = clamp(b.x, 0, MAP_W); b.y = clamp(b.y, 0, MAP_H); return true; }
+      b.el.remove(); return false;
+    }
     return true;
   });
 }
@@ -30477,6 +30569,7 @@ function whiteKnightBreak(k, a) {
   cleanseUnit(a);
   fx38Flash('fx-n75 fx-wk-break', a.x, a.y, unitRadius(a) * 3.2, 600);
   spawnDamageNumber(k, '빛의 방패 파괴', { crit: true });
+  if (rankS(k, 'whiteknight')) [k, a].forEach(x => { if (!x.alive) return; x.invincible = Math.max(x.invincible || 0, 1); if (x.el) x.el.classList.add('invincible'); }); // 7.9.1 백기사 S: 둘 다 1초 무적
   if (k._wkAbs > 0) { spawnDamageNumber(a, '🛡️ ' + Math.round(k._wkAbs)); k._wkAbs = 0; }
 }
 function tickWhiteKnight(u, dt) {
@@ -30505,16 +30598,18 @@ function sealRandomFoe(u) {
   if (!foes.length) return;
   const t = foes[Math.floor(Math.random() * foes.length)];
   t._sealLv = t.level || 1;
+  t._sealS = rankS(u, 'seal'); // 7.9.1
   setIncap(t, 'seal', true);
   const pl = t.placementId ? state.placements.find(p => p.id === t.placementId) : null;
-  if (pl) pl.sealLv = t._sealLv;
+  if (pl) { pl.sealLv = t._sealLv; pl.sealS = t._sealS; }
   v41Callout(u, '🔒 봉인');
   spawnDamageNumber(t, '🔒 봉인', { crit: true });
 }
 function unseal(u) {
   setIncap(u, 'seal', false);
+  u._sealS = false;
   const pl = u.placementId ? state.placements.find(p => p.id === u.placementId) : null;
-  if (pl) delete pl.sealLv;
+  if (pl) { delete pl.sealLv; delete pl.sealS; }
   spawnDamageNumber(u, '🔓 봉인 해제', { heal: true });
 }
 
@@ -30682,6 +30777,16 @@ function cultBell(u) {
   if (t.el) t.el.classList.add('cult-mark');
   spawnDamageNumber(t, '🔔 포교 대기', { crit: true });
 }
+// 7.9.1 사이비 S [순교]: 쓰러질 때 우리 [포교 대기]인 적이 없으면 필드의 살아 있는 적 하나를 무작위로 [포교 대기]
+function cultLastRite(u) {
+  if (state.phase !== 'combat' || state.units.some(e => e._cultMark === u.side)) return;
+  const cand = state.units.filter(e => e.alive && !e.isCastle && isHostile(u, e) && !e._cultMark && e.placementId && !e.skipCount && e.charId !== 'cult' && !(pl74(e) && pl74(e).cult));
+  if (!cand.length) return;
+  const t = cand[Math.floor(Math.random() * cand.length)];
+  t._cultMark = u.side;
+  if (t.el) t.el.classList.add('cult-mark');
+  spawnDamageNumber(t, '🔔 순교 · 포교 대기', { crit: true });
+}
 function cultResolve(winnerSide) { // 라운드가 끝날 때 (endRoundCombat)
   if (winnerSide !== 'ally' && winnerSide !== 'enemy') return;
   // 7.6.3 [포교 대기]인 적이 살아 있든 쓰러졌든, 종을 울린 팀이 지면 포교 성공
@@ -30729,10 +30834,11 @@ function skulkingSummon(u, n) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2, r = GRID * (0.8 + Math.random() * 0.6);
     const x = clamp(u.x + Math.cos(a) * r, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD), y = clamp(u.y + Math.sin(a) * r, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
-    const s = spawnUnit(u.side, x, y, 'skul_weak', { saved: true, quiet: true, level: 1, skipCount: true, asExtra: true, ownerUid: u.uid });
+    const real = rankS(u, 'skulking') && CHAR_DB.skul && Math.random() < 0.12; // 7.9.1 스껄킹 S: 12% 로 일반 스껄 지후
+    const s = spawnUnit(u.side, x, y, real ? 'skul' : 'skul_weak', { saved: true, quiet: true, level: 1, skipCount: true, asExtra: true, ownerUid: u.uid });
     if (!s) continue;
     s.placementId = null; s._grown = true; s.skipCount = true;
-    s.el.classList.add('weak-skul');
+    if (!real) s.el.classList.add('weak-skul');
     readyRoundSkills(s);
     spawnBurst(s.el, '#7a7a7a');
   }
@@ -31308,6 +31414,11 @@ function tickNew70c(u, dt) {
     u._dreamCd = (u._dreamCd ?? 0) - dt;
     if (u._dreamCd <= 0) { u._dreamCd = u.def.dreamEvery; dreamPulse(u); }
   }
+  if (u.charId === 'recall') { // 7.9.1
+    if (u._recallCd == null) { u._recallCd = u.def.recallFirst; u._recallMax = u.def.recallFirst; }
+    u._recallCd -= dt;
+    if (u._recallCd <= 0) { if (recallSummon(u)) u._recallCd = u._recallMax = u.def.recallEvery; else u._recallCd = 0.5; }
+  }
   if (u.charId === 'witch') {
     if (!u._witchSecret && u.hp > 0 && u.hp < u.maxHp * u.def.secretAt) witchSecret(u);
     u._potionCd = (u._potionCd ?? 1) - dt;
@@ -31326,14 +31437,16 @@ function frontVector(u) {
 }
 // GT: 자신 바로 앞 칸에 배치된 아군에게 터보엔진 (7.3.6 배치 칸 기준으로 재작성)
 function gtInstallTurbo(u) {
-  const best = tileNeighborUnits(u, ['front'])[0];
-  if (!best) return;
-  const bonus = best.def.speed > 0 ? u.def.turboCells * GRID / best.def.speed : 0; // +5칸/초를 이동속도 배율로
-  if (bonus > 0) battleAPI.setBuff(best, 'gt-turbo', 'speed', bonus, u.def.turboDuration);
-  best._turbo = u.def.turboDuration;
-  best.el.classList.add('turbo');
+  const list = rankS(u, 'gt') ? tileNeighborUnits(u, TILE_DIRS4) : tileNeighborUnits(u, ['front']).slice(0, 1); // 7.9.1 GT S: 십자 범위
+  if (!list.length) return;
+  list.forEach(best => {
+    const bonus = best.def.speed > 0 ? u.def.turboCells * GRID / best.def.speed : 0; // +5칸/초를 이동속도 배율로
+    if (bonus > 0) battleAPI.setBuff(best, 'gt-turbo', 'speed', bonus, u.def.turboDuration);
+    best._turbo = u.def.turboDuration;
+    best.el.classList.add('turbo');
+    spawnDamageNumber(best, '🏎️ 터보엔진!', { crit: true });
+  });
   battleAPI.setImage(u, u.def.portraitTurbo);
-  spawnDamageNumber(best, '🏎️ 터보엔진!', { crit: true });
 }
 // 가시: 앞 사거리 길이 · 몸 지름 폭의 직사각형 관통 찌르기. 끝 0.5칸에 걸린 적은 확정 치명타 + [치명상]
 function thornAttack(c, target) {
@@ -32072,6 +32185,7 @@ function dealDamage(caster, target, amount, opts) {
   if (target._qfVuln) finalDmg *= 1 + target._qfVuln; // 5.5.1 쾌속냉각: 빙결될 때마다 받는 피해 증가 (영구)
   { const bl = blessOf(target.side).dr; if (bl) finalDmg *= Math.max(0.5, 1 - 0.05 * bl); } // 5.5 축복: 받는 피해 감소
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
+  if (target._metaDr > 0) finalDmg *= 0.85; // 7.9.1 메타모르포제 S
   if (target.charId === 'mercury' && target.shield > 0 && caster && caster.alive && caster.def.isMelee && !caster.isRanged && !opts.isSkill && !opts.isDot && !opts.reflected && !opts.fromDeath)
     battleAPI.applyPoison(caster, target.def.hgPoisonDps, target.def.hgPoisonTime, target); // 5.5 수은: 쉴드 중 근접 공격자 중독
   finalDmg = genesisIntercept(target, finalDmg); // 4.7.2 제네시스
@@ -32183,7 +32297,7 @@ function skillCdInfo(u) {
   const hitsLeft = (n, every) => ({ cur: every - Math.min(every, n || 0), max: every, unit: '회' });
   if (u.charId === 'cotton' && (u._cottonUses || 0) < u.def.cottonMax) return hitsLeft(u._cottonHits, u.def.cottonEvery);
   if (u.charId === 'skulking') return { cur: Math.max(0, u._skT ?? u.def.skEvery), max: u.def.skEvery };
-  if (u.charId === 'nuke' && u._launched) { const n = (state.nukes || []).find(k => k.owner === u); if (n) return { cur: Math.max(0, n.left), max: u.def.nukeFlight ?? CHARACTER_BALANCE.nuke.nukeFlight }; }
+  if (u.charId === 'nuke' && u._launched) { const n = (state.nukes || []).find(k => k.owner === u); if (n) return { cur: Math.max(0, n.left), max: n.max || u.def.nukeFlight || CHARACTER_BALANCE.nuke.nukeFlight }; }
   if (u.charId === 'dreamscape') return { cur: Math.max(0, u._dreamCd ?? 0), max: u.def.dreamEvery };
   if (u.charId === 'dubstep') return { cur: Math.max(0, u._dubT ?? 1), max: u.def.dubEvery };
   if (u.charId === 'rain') return hitsLeft(u._rainCount, u.def.rainEvery);
@@ -32196,6 +32310,7 @@ function skillCdInfo(u) {
   if (u.charId === 'cowboy' && u._cbCd > 0) return { cur: u._cbCd, max: u.def.cbCooldown };
   if (u.charId === 'wolf' && !u._wolfForm && !u._wolfLeap) return hitsLeft(u._wolfHits, u.def.wolfHowlAfter);
   if (u.charId === 'witch') return { cur: Math.max(0, u._potionCd ?? 1), max: u.def.potionEvery };
+  if (u.charId === 'recall') return { cur: Math.max(0, u._recallCd ?? u.def.recallFirst), max: u._recallMax || u.def.recallFirst };
   if (u.charId === 'mercury') return hitsLeft((u._hgN || 0) % u.def.hgEvery, u.def.hgEvery);
   if (u.charId === 'impeachment' && !u._impeachmentUsed) return hitsLeft(u._impeachmentHits, u.def.hitThreshold);
   if (u.charId === 'growth' && u._growth != null) return { cur: Math.max(0, u._growth), max: u.def.growthDelay };
@@ -32348,6 +32463,12 @@ function killUnit(u) {
   if (u && u.charId === 'pumpkin' && !(u._pk && u._pk.skul && u._pk.skul.alive)) pkSfxStop(u); // 부르다 쓰러지면
   if (u && u.charId === 'taxi') u._taxiDied = true; // 7.1 // 7.0.1 금고는 쓰러지지 않는다 (즉사 · 처형 효과 무시)
   if (u._guardBy && guardianSave(u)) return; // 수호: 체력 1로 버틴다
+  if (rankS(u, 'ravage') && !u._rvSaved && u.alive && state.phase === 'combat') { // 7.9.1 래비지 S: 라운드마다 한 번 버티고 1초 무적
+    u._rvSaved = true; u.hp = 1; u.invincible = Math.max(u.invincible || 0, 1);
+    if (u.el) u.el.classList.add('invincible');
+    spawnDamageNumber(u, '최후의 발악', { crit: true }); updateUnitBars(u);
+    return;
+  }
   if (u.charId === 'genesis' && u._hidLv2 && !u._genEnd) { // 7.7.2 히든 Lv2 [불멸]: 2.5초 무적 뒤 쓰러진다
     u.hp = Math.max(1, u.hp || 0);
     if (!u._genDying) {
@@ -34610,9 +34731,9 @@ function aucRoomRender() {
 function aucRoomTick() {
   const room = AUCR.room, w = document.querySelector('#aucMBody .al-wait');
   if (!room || room.status !== 'open') return;
-  const host = room.host === window.JihooOnline.myUid(), left = Math.max(0, Math.ceil((AUCR.autoAt - Date.now()) / 1000));
-  if (w) w.textContent = host ? `${left}초 뒤 시작해요 · 빈 자리는 봇이 채워요${[...(AUCR.invited || [])].some(uid => !(room.players || {})[uid]) ? ' · 초대한 친구를 기다리는 중' : ''}` : '방장이 곧 시작해요 · 빈 자리는 봇이 채워요';
-  if (host && AUCR.autoAt && Date.now() >= AUCR.autoAt) aucRoomStart();
+  const host = room.host === window.JihooOnline.myUid();
+  // 7.9.1 방을 만든 뒤 몇 초 지나면 저절로 시작하던 것을 없앴다: 방장이 [시작]을 눌러야 시작한다
+  if (w) w.textContent = host ? `준비되면 [시작]을 눌러 주세요 · 빈 자리는 봇이 채워요${[...(AUCR.invited || [])].some(uid => !(room.players || {})[uid]) ? ' · 초대한 친구를 기다리는 중' : ''}` : '방장이 시작하기를 기다리는 중 · 빈 자리는 봇이 채워요';
 }
 async function aucRoomStart() {
   const room = AUCR.room;
@@ -34660,7 +34781,7 @@ function tick78(u, dt) {
 function goldImmune(u) {
   const st = u.statuses || {};
   if ((u.stun || 0) > 0 || st.freeze || st.burn || st.poison || st.blizzard || u._blindRemaining > 0 || u._lockedFor > 0 || u.charmRemaining > 0 || u._hypno || u._hacked > 0 || Object.values(u.buffs || {}).some(b => b && b.bonus < 0)) cleanseUnit(u);
-  if (u._incap) { u._incap = null; ['stone', 'seal', 'sync'].forEach(k => u.el && u.el.classList.remove('incap-' + k)); }
+  if (u._incap) { u._incap = null; ['stone', 'seal', 'sync'].forEach(k => u.el && u.el.classList.remove('incap-' + k)); sealChain(u, false); }
 }
 // ── 팬텀: 부채꼴 100 × 5 연타 · 쓰러지면 2번까지 2초 뒤 무작위 적 자리로 떨어진다 (반경 2.5칸 500)
 function specterCombo(c, t) {
@@ -34773,7 +34894,7 @@ function heatAttack(c, t) {
   });
   if (!hit) return;
   const m = state.heat78 || (state.heat78 = {});
-  m[heatKey(c)] = heatHits(c) + hit; // 7.8.1 한 번에 여럿을 맞히면 그만큼
+  m[heatKey(c)] = heatHits(c) + hit + (rankS(c, 'heat') && Math.random() < 0.1 ? 1 : 0); // 7.8.1 한 번에 여럿을 맞히면 그만큼 · 7.9.1 히트 S: 10% 로 +1
   healUnit(c, c.maxHp * c.def.heatHeal);
   heatApply(c, true);
 }
@@ -34900,6 +35021,7 @@ function teemoBlind(c, t) {
 function paintMark(c, t) {
   if (!t.alive || t.isCastle) return;
   if (!t._paint) { t._paint = true; if (t.el) t.el.classList.add('painted'); spawnDamageNumber(t, '🎨 페인트', { crit: true }); }
+  t._paintAmp = Math.max(t._paintAmp || 0, c.def.paintAmp || 0); // 7.9.1 페인트볼 S: 추가 피해 +5%
   battleAPI.setBuff(t, 'paint', 'speed', -c.def.paintSlow, 1e9);
 }
 
@@ -35315,10 +35437,15 @@ function rcTick62(u, dt) {
   const k = u._rc || (u._rc = { t: d.rcStart, warn: null });
   k.t -= dt;
   if (!k.warn && k.t <= d.rcWarn) {
-    const lane = d.rcLaneCells * GRID, wall = Math.floor(Math.random() * 4);
+    const lane = d.rcLaneCells * GRID;
+    const aim = rankS(u, 'rccar') && state.mode !== 'auction' && u._rcAimRound !== state.round; // 7.9.1 RC카 S: 라운드마다 첫 장난감은 적 진영 쪽
+    if (aim) u._rcAimRound = state.round;
+    const f = aim ? frontVector(u) : null;
+    const wall = aim ? (f.x ? 2 + Math.floor(Math.random() * 2) : Math.floor(Math.random() * 2)) : Math.floor(Math.random() * 4); // 적 진영을 가로지르는 차선
     const horiz = wall < 2, sign = wall % 2 ? -1 : 1; // 0: 왼→오 · 1: 오→왼 · 2: 위→아래 · 3: 아래→위
     const across = horiz ? MAP_H : MAP_W;
-    const pos = lane / 2 + Math.random() * Math.max(1, across - lane);
+    let pos = lane / 2 + Math.random() * Math.max(1, across - lane);
+    if (aim) { const half = across / 2, dir = f.x || f.y; pos = (dir > 0 ? half : 0) + lane / 2 + Math.random() * Math.max(1, half - lane); }
     const kind = Math.random() < 0.5 ? 'train' : 'car';
     const el = fx38('n62-fx fx-n62-warn', horiz ? MAP_W / 2 : pos, horiz ? pos : MAP_H / 2, '<i></i>');
     el.style.width = (horiz ? MAP_W : lane) + 'px'; el.style.height = (horiz ? lane : MAP_H) + 'px';
@@ -35410,6 +35537,7 @@ function taxiTick62(u, dt) {
       spawnDamageNumber(k.pass, '🚕 택시!', { crit: true });
       v41Callout(u, v41SkillName(u));
       k.phase = 'toPass'; k.t = d.taxiCall;
+      k.runHp = u.hp; // 7.9.1 택시 S: 이번 운행 동안 잃은 체력
       break;
     }
     case 'toPass': {
@@ -35489,6 +35617,7 @@ function taxiTick62(u, dt) {
       k.away = null;
       u.el.classList.remove('n62-away');
       stripShields(u); u.maxShield = 0; updateUnitBars(u); // 7.3.5 질주 뒤 돌아오면 쉴드를 잃는다 (쉴드 막대도 치운다)
+      if (rankS(u, 'taxi') && k.runHp > u.hp) { const h = Math.min(u.maxHp - u.hp, (k.runHp - u.hp) * 0.15); if (h > 0) { u.hp += h; updateUnitBars(u); spawnDamageNumber(u, Math.round(h), { heal: true }); } } // 7.9.1 택시는 회복을 받지 않으므로 직접
       k.pass = null; k.phase = 'call';
       break;
     }
@@ -35747,7 +35876,7 @@ function tickNew55(dt) {
     u._teslaT = (u._teslaT ?? d.teslaFieldTick) - dt;
     if (u._teslaT <= 0) {
       u._teslaT += d.teslaFieldTick;
-      state.units.forEach(e => { if (e.alive && !e.isCastle && isHostile(u, e) && Math.hypot(e.x - u.x, e.y - u.y) <= bodySeparation(u, e) + 10) { dealDamage(u, e, d.teslaFieldDamage, { isSkill: true }); n55Line('fx-n55-zap', u.x, u.y, e.x, e.y, 4, 160); } });
+      state.units.forEach(e => { if (e.alive && !e.isCastle && isHostile(u, e) && sameRealm(u, e) && Math.hypot(e.x - u.x, e.y - u.y) <= bodySeparation(u, e) + TESLA_TOUCH_PAD) { dealDamage(u, e, d.teslaFieldDamage, { isSkill: true }); n55Line('fx-n55-zap', u.x, u.y, e.x, e.y, 4, 160); } });
     }
   });
   tickUfcRings(dt);
@@ -35858,6 +35987,7 @@ function soulOnDeath(u) {
 }
 function onUnitDeath(u) {
   DEATH_HOOKS.forEach(f => { try { f(u); } catch (error) {} });
+  if (rankS(u, 'cult')) cultLastRite(u); // 7.9.1
   soulOnDeath(u);
   if (u._devoured || u.isClone || u.expire != null || u.ownerUid) return;
   if (u.def.isReviver) return; // 4.3: 부활 지후의 죽음은 세지 않는다 (부활 지후끼리 살리지도 않는다)
@@ -35878,6 +36008,10 @@ function onUnitDeath(u) {
 function reviveUnit(u, reviver) {
   if (reviver) v41Callout(reviver, v41SkillName(reviver));
   u.alive = true; u.hp = Math.max(1, u.maxHp * Math.min(1, reviver.def.reviveHpFraction * supportMult(reviver))); u.shield = u.maxShield;
+  if (reviver.def.isReviver) { // 7.9.1 부활 지후는 자신 바로 앞에 살린다
+    const f = frontVector(reviver), off = unitRadius(reviver) + unitRadius(u) + 4;
+    u.x = clamp(reviver.x + f.x * off, PHYS.WALL_PAD, MAP_W - PHYS.WALL_PAD); u.y = clamp(reviver.y + f.y * off, PHYS.WALL_PAD, MAP_H - PHYS.WALL_PAD);
+  }
   physInitBody(u);
   u.statuses = { burn: null, freeze: null, poison: null, grudges: {} };
   u.buffs = {};
@@ -36977,6 +37111,64 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '7.9.1': {
+    label: 'v7.9.1 리콜 리워크 · 한계돌파 Lv3 고유 능력 완성',
+    date: '2026.10.17',
+    sections: [
+      { title: '밸런스', items: [
+        { emoji:'📣', name:'리콜 지후', tag:'adjust', color:'#e07a1f', portraitKey:'recall', desc:'<b>리워크</b>: 덱에서 무작위 지후를 부르던 것 대신, 전투 시작 <b>10초</b> 뒤부터 <b>12초마다 [리콜]</b>: 이번 라운드에 <b>사망한 아군</b> 하나를 <b>레벨 1</b>로 그 아군이 <b>사망한 자리</b>에 새로 소환해요 (부활과 달라요 · 그 라운드 동안 아군으로 싸워요). 소환체도 <b>배치 한도</b>를 차지해요.' },
+        { emoji:'🧙', name:'마녀 지후', tag:'nerf', color:'#7b2fbf', portraitKey:'witch', desc:'포션 투척 간격 <b>2.5 → 4초</b> · <b>개구리화</b> 포션은 다른 해로운 포션보다 드물게 나와요 (약 12%).' },
+        { emoji:'💾', name:'매트릭스 지후', tag:'nerf', color:'#1fbf5f', portraitKey:'matrix', desc:'<b>출격제한 1</b> · 라운드당 최대 복제 <b>10 → 5기</b>.' },
+        { emoji:'😇', name:'부활 지후', tag:'adjust', color:'#f2c94c', portraitKey:'revive', desc:'부활시킨 아군이 쓰러진 자리 대신 <b>부활 지후 바로 앞</b>에서 살아나요.' },
+        { emoji:'🪱', name:'기생충 지후', tag:'nerf', color:'#7f9a2e', portraitKey:'parasite', desc:'버러지후 체력 <b>3,000 → 2,000</b>.' },
+        { emoji:'☯️', name:'태극 지후', tag:'adjust', color:'#7a4ad9', portraitKey:'taeguk_harmony', desc:'<b>리워크</b>: 극의 조화였던 라운드가 끝나면 그 진영의 태극 지후가 <b>모두 같은 색</b>(청 또는 적)이 돼요 · 극의 조화 · 청 공격 간격 <b>0.7 → 0.6초</b>.' },
+        { emoji:'🪢', name:'올가미 지후', tag:'nerf', color:'#c45a1a', portraitKey:'lasso', desc:'기절 시간 <b>0.7 → 0.4초</b>.' },
+        { emoji:'🌀', name:'테슬라코일 지후', tag:'buff', color:'#3fe0ff', portraitKey:'tesla', desc:'전기장 피해 <b>100 → 150</b> (0.5초마다).' },
+        { emoji:'⚖️', name:'탄핵지후', tag:'nerf', color:'#a728f5', portraitKey:'impeachment', desc:'12번 피격당하면 얻는 쉴드 <b>3,000 → 1,500</b>.' },
+      ] },
+      { title: '개선 · 버그 수정', items: [
+        { emoji:'🔒', name:'봉인 지후', tag:'adjust', color:'#6d4c8f', portraitKey:'seal', desc:'봉인당한 지후에 <b>X자 사슬</b>이 붙어요. <b>배치 시간</b>에도 보여서 어떤 지후가 봉인 중인지 알 수 있어요.' },
+        { emoji:'🌀', name:'테슬라코일 전기장', tag:'fix', color:'#3fe0ff', portraitKey:'tesla', desc:'코일에 붙어 있는 적이 전기장 피해를 거의 받지 않던 문제를 고쳤어요 (근접 공격 거리에서 멈춘 적도 닿은 것으로 쳐요).' },
+        { emoji:'🔦', name:'빔 지후 설명', tag:'fix', color:'#54ed13', portraitKey:'beam', desc:'도감 설명의 조준 시간을 실제 값(<b>2.5초</b>)으로 고쳤어요.' },
+        { emoji:'🏆', name:'리더보드', tag:'fix', color:'#c9a227', desc:'모바일에서 1~3위 포디움이 <b>레벨 · 클래스 · 경쟁전 탭</b>과 설명을 가리던 문제를 고쳤어요.' },
+        { emoji:'🔨', name:'경매 방', tag:'adjust', color:'#c9a227', desc:'방을 만들면 몇 초 뒤 <b>저절로 시작하던 것</b>을 없앴어요. 방장이 <b>[시작]</b>을 눌러야 시작해요.' },
+      ] },
+      { title: '한계돌파 Lv3 고유 능력 · 새로 생김', items: [
+        { emoji:'🔫', name:'총 지후', tag:'buff', color:'#3b3f46', portraitKey:'gun_lv1', desc:'<b>Lv.1</b>(권총)일 때만 공격력 <b>+50</b>' },
+        { emoji:'🔫', name:'상하이 지후', tag:'buff', color:'#2b2b2b', portraitKey:'shanghai', desc:'<b>배치 한도</b>를 차지하지 않는다' },
+        { emoji:'🎮', name:'RC카 지후', tag:'buff', color:'#ff4d6d', portraitKey:'rccar', desc:'라운드마다 <b>첫 장난감</b>은 적 진영 쪽에 나온다' },
+        { emoji:'☢️', name:'핵미사일 지후', tag:'buff', color:'#6fbf2a', portraitKey:'nuke', desc:'<b>1라운드</b>에만 핵이 떨어지기까지 <b>-10초</b>' },
+        { emoji:'🏌️', name:'골프 지후', tag:'buff', color:'#1fbf3a', portraitKey:'golf', desc:'공격 간격 <b>-0.5초</b>' },
+        { emoji:'⏪', name:'시간역행 지후', tag:'buff', color:'#4fa3c7', portraitKey:'rewind', desc:'[역행] 부작용 행동불능 <b>-0.5초</b>' },
+        { emoji:'🌀', name:'회오리 지후', tag:'buff', color:'#4aa8c8', portraitKey:'whirl', desc:'회오리 지속 <b>+1초</b>' },
+        { emoji:'🥊', name:'히트 지후', tag:'buff', color:'#d9381e', portraitKey:'heat', desc:'히트를 얻을 때 <b>10%</b> 확률로 히트 <b>+1</b> 더' },
+        { emoji:'🪐', name:'반중력 지후', tag:'buff', color:'#6b5bd6', portraitKey:'antigrav', desc:'반중력 대기시간 <b>-0.5초</b>' },
+        { emoji:'🍷', name:'와인 지후', tag:'buff', color:'#8e1b3a', portraitKey:'wine', desc:'와인을 마실 때 잃는 체력 <b>7% → 4%</b>' },
+        { emoji:'👑', name:'스껄킹 지후', tag:'buff', color:'#4a4a4a', portraitKey:'skulking', desc:'<b>12%</b> 확률로 약화 스껄 대신 <b>일반 스껄 지후</b>를 부른다' },
+        { emoji:'⌨️', name:'스트리머 지후', tag:'buff', color:'#9147ff', portraitKey:'streamer', desc:'매혹 시간 <b>+0.25초</b>' },
+        { emoji:'😷', name:'미세먼지 지후', tag:'buff', color:'#b9a27a', portraitKey:'finedust', desc:'재채기한 적이 <b>5%</b> 확률로 <b>즉사</b>' },
+        { emoji:'🦋', name:'메타모르포제 지후', tag:'buff', color:'#7d5bd6', portraitKey:'metamorph', desc:'변신 후 <b>3초</b> 동안 받는 피해 <b>-15%</b>' },
+        { emoji:'🦇', name:'모티 지후', tag:'buff', color:'#5b2a86', portraitKey:'mortis', desc:'박쥐가 끝까지 날아간 뒤 <b>자신에게 돌아온다</b> (돌아오며 맞힌 적에게서는 회복량 <b>25%</b>)' },
+        { emoji:'🤍', name:'백기사 지후', tag:'buff', color:'#d9d4c3', portraitKey:'whiteknight', desc:'빛의 방패가 깨지면 호위 대상과 자신 모두 <b>1초 무적</b>' },
+        { emoji:'🔒', name:'봉인 지후', tag:'buff', color:'#6d4c8f', portraitKey:'seal', desc:'레벨을 올려도 <b>20%</b> 확률로 봉인이 풀리지 않는다' },
+        { emoji:'🌌', name:'드림스케이프 지후', tag:'buff', color:'#7a5cff', portraitKey:'dreamscape', desc:'[ㅤㅤㅤ]에 걸린 적 공격력 <b>-15%</b>' },
+        { emoji:'🎸', name:'락 지후', tag:'buff', color:'#ff3b5c', portraitKey:'rockstar', desc:'전기 연쇄 대상 <b>+1</b>' },
+        { emoji:'🚕', name:'택시 지후', tag:'buff', color:'#f5b800', portraitKey:'taxi', desc:'맵 밖에서 돌아올 때 그 운행 동안 잃은 체력의 <b>15%</b> 회복' },
+        { emoji:'🦌', name:'래비지 지후', tag:'buff', color:'#2f4a3a', portraitKey:'ravage', desc:'라운드마다 한 번, 쓰러질 피해를 받으면 <b>체력 1</b>로 버티고 <b>1초 무적</b>' },
+        { emoji:'🎨', name:'페인트볼 지후', tag:'buff', color:'#ff4fa3', portraitKey:'paintball', desc:'페인트 추가 피해 <b>+5%</b> · 이동속도 감소 <b>+10%</b>' },
+        { emoji:'😎', name:'일진 지후', tag:'buff', color:'#2b2b3a', portraitKey:'bully', desc:'빙결 시간 <b>+1초</b>' },
+        { emoji:'🔔', name:'사이비 지후', tag:'buff', color:'#8a5a2b', portraitKey:'cult', desc:'쓰러질 때 [포교 대기]인 적이 없으면 필드의 살아 있는 적 하나를 무작위로 <b>[포교 대기]</b>' },
+        { emoji:'☁️', name:'솜 지후', tag:'buff', color:'#e8e4dc', portraitKey:'cotton', desc:'공격 간격 <b>-0.1초</b>' },
+        { emoji:'🏎️', name:'GT 지후', tag:'buff', color:'#e63946', portraitKey:'gt', desc:'터보엔진을 앞 칸 대신 <b>십자(앞 · 뒤 · 좌 · 우)</b> 아군 모두에게' },
+        { emoji:'🔩', name:'티타늄 지후', tag:'buff', color:'#3d4f5c', portraitKey:'titanium', desc:'쉴드 지속 <b>+0.2초</b>' },
+        { emoji:'📣', name:'리콜 지후', tag:'buff', color:'#e07a1f', portraitKey:'recall', desc:'[리콜] 쿨타임 <b>-1초</b>' },
+        { emoji:'🧙', name:'마녀 지후', tag:'buff', color:'#7b2fbf', portraitKey:'witch', desc:'포션 투척 간격 <b>-0.4초</b>' },
+      ] },
+      { title: '한계돌파 Lv3 고유 능력 · 리워크', items: [
+        { emoji:'🔦', name:'빔 지후', tag:'buff', color:'#54ed13', portraitKey:'beam', desc:'차징 시간 <b>2.5초 → -0.5초</b> (2.5초는 기본값과 같아 효과가 없었어요)' },
+      ] },
+    ],
+  },
   '7.9': {
     label: 'v7.9 한계돌파 Lv3 고유 능력 확장',
     date: '2026.10.17',
@@ -43529,6 +43721,7 @@ const BAL_LABELS = {
   snowMaxStacks: '빙결까지 중첩|중첩|-', howlAspd: '하울링 공격속도 증가|p', howlTime: '하울링 지속|s', wolfLeapDelay: '순간이동까지|s|-', wolfSpeed: '늑대 이동속도|px', wolfAtkSpeed: '늑대 공격 간격|s|-', wolfRange: '늑대 사거리|px', wolfHealRatio: '늑대 공격 흡혈|p',
   dreamCutPerSec: '초당 최대 체력 잘림|p', forgetMin: '망각 최소 회복 (최대 체력)|p|-', forgetMax: '망각 최대 회복 (최대 체력)|p|-',
   elecChainTargets: '연쇄 대상|명',
+  recallFirst: '첫 [리콜]|s|-', recallEvery: '[리콜] 쿨타임|s|-', // 7.9.1
   potionRange: '포션 사거리|px', potionFlight: '포션 비행|s|-', potHeal: '회복 포션 (최대 체력)|p', potAtk: '공격력 포션|p', potCrit: '치명타 확률 포션|p', potCritDmg: '치명타 피해 포션|p', potBuffTime: '포션 버프 지속|s', potDamage: '피해 포션', potPoisonDps: '독 포션 피해', potPoisonTime: '독 포션 지속|s', potBurnDps: '화상 포션 초당 피해', potBurnTime: '화상 포션 지속|s',
   secretAt: '비장의 포션 체력 기준|p', secretAtk: '비장의 포션 공격력|p', secretShield: '비장의 포션 쉴드', secretDr: '비장의 포션 받는 피해 감소|p', secretSpeed: '비장의 포션 이동속도|p',
   reelTime: '낚싯대 당기는 시간|s|-', bobberPull: '찌 끌어오는 속도 (초당)|c', recast: '다시 던지기까지|s|-', stewAtk: '생선조림 공격력 감소|p', stewSpeed: '생선조림 이동속도 감소|p',
