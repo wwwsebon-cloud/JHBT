@@ -247,6 +247,17 @@ service cloud.firestore {
         && request.resource.data.by == request.auth.uid
         && request.resource.data.at == request.time;
     }
+    // 8.0 주식 지후: 3시간 기간마다 공격력 배율 한 번 기록 (처음 계산한 사람이 만든다 · 수정 불가)
+    match /stock/{period} {
+      allow get, list: if true;
+      allow create: if request.auth != null && period.size() <= 12
+        && request.resource.data.keys().hasOnly(['m', 'f', 'r', 'a', 'n', 'at'])
+        && request.resource.data.m is number && request.resource.data.m >= 0.1 && request.resource.data.m <= 4
+        && request.resource.data.f in ['up', 'down', 'flat']
+        && request.resource.data.at == request.time;
+      allow update, delete: if false;
+    }
+
     match /bans/{userId} {
       allow get: if owner(userId) || isAdmin();
       allow list, delete: if isAdmin();
