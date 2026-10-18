@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.0.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.0.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -9808,7 +9808,7 @@ const CHARACTER_BALANCE = {
   stock: { hp: 3000, atk: 200, atkSpeed: 1, range: 270, speed: 72, stockMin: 0.1, stockMax: 4 }, // 8.0 신규 · 이동속도*
   jibak: { hp: 2000, atk: 200, atkSpeed: 1.6, range: 315, speed: 72 }, // 8.0 신규 · 이동속도*
   mace: { hp: 3900, atk: 1300, atkSpeed: 2, range: 72, speed: 72, isMelee: true, windupDuration: 3, weakTime: 5, weakTaken: 0.2, weakAtk: 0.15, maceStun: 1 }, // 8.0 신규 · 이동속도*
-  chain: { hp: 3400, atk: 120, atkSpeed: 8, range: 540, speed: 72, chainExtra: 2 }, // 8.0 신규 · 이동속도*
+  chain: { hp: 3400, atk: 120, atkSpeed: 8, range: 540, speed: 72, chainExtra: 2, chainTime: 2, chainDr: 0.5 }, // 8.0.1 리워크: [묶임] 무조건 2초 · 묶인 적 받는 피해 -50% // 8.0 신규 · 이동속도*
   coffee: { hp: 2700, atk: 100, atkSpeed: 1, range: 135, speed: 81, coffeeTime: 10, coffeeHeal: 80 }, // 8.0 신규 · 이동속도*
   fall: { hp: 100, atk: 0, atkSpeed: 1, range: 45, speed: 0, noAttack: true, fallSpeed: 3.5 }, // 8.0 신규
   blackknight: { deployLimit: 1, hp: 3000, atk: 310, atkSpeed: 0.65, range: 72, speed: 90, isMelee: true, bkChance: 0.25, bkRadiusCells: 4, bkFanDeg: 135, bkMaxHp: 0.18, bkWeakAtk: 0.15, bkWeakTime: 5 }, // 8.0 신규 · 체력* · 이동속도*
@@ -12266,7 +12266,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#8a8f98', portrait: PORTRAITS.chain || jhPlaceholder('⛓️', '#8a8f98'),
     ...CHARACTER_BALANCE.chain,
     customAttack(caster, target) { chainAttack80(caster, target); },
-    skillDesc: 'HP 3,400 · ATK 120 · 공격 간격 <b>8초</b> · 사거리 12칸. <b>무작위 적</b>을 공격한다. 맞은 적과 무작위 적 <b>2기</b>가 다음 일반 공격 때까지 (또는 묶인 적 하나가 쓰러질 때까지) <b>[묶임]</b>. <b>[묶임]</b>: 묶인 적이 공격을 받으면 다른 묶인 적도 똑같은 피해를 받는다.'
+    skillDesc: 'HP 3,400 · ATK 120 · 공격 간격 <b>8초</b> · 사거리 12칸. <b>무작위 적</b>을 공격한다. 맞은 적과 무작위 적 <b>2기</b>가 <b>무조건 2초</b> 동안 <b>[묶임]</b>. <b>[묶임]</b>: 받는 피해 <b>-50%</b>. 묶인 적이 공격을 받으면 다른 묶인 적도 (줄어든) 똑같은 피해를 받는다.'
   },
   coffee: {
     id: 'coffee', name: '커피 지후', emoji: '☕', role: 'support', roleLabel: '서포터',
@@ -21353,7 +21353,7 @@ const DETAIL_STAT_FIELDS = {
   snowSlowPerStack:['중첩당 이동속도 감소','%'], snowFreeze:['3중첩 빙결','s'],
   wolfHowlAfter:['하울링까지 공격','회'], howlRadius:['하울링 반경','칸'], wolfHp:['순간이동 후 HP'], wolfAtk:['순간이동 후 ATK'],
   dreamEvery:['파동 간격','s'], dreamRadius:['파동 반경','칸'], dreamTime:['[ㅤㅤㅤ] 지속','s'],
-  elecChain:['일렉 연쇄 피해','%'], potionEvery:['포션 간격','s'], recallFirst:['첫 리콜','s'], recallEvery:['리콜 쿨타임','s'], potionRadius:['포션 범위','칸'],
+  elecChain:['일렉 연쇄 피해','%'], potionEvery:['포션 간격','s'], recallFirst:['첫 리콜','s'], recallEvery:['리콜 쿨타임','s'], chainExtra:['함께 묶이는 적','기'], chainTime:['묶임 지속','s'], chainDr:['묶임 받는 피해 감소','%'], potionRadius:['포션 범위','칸'],
   burnDps:['화상 초당 피해'], burnDuration:['화상 지속','s'],
   freezeChance:['빙결 확률','%'], freezeDuration:['빙결 지속','s'],
   loneRadius:['고독 판정 범위','칸'], loneBonusHpFraction:['대상 현재 체력 추가 피해','%'],
@@ -26653,6 +26653,7 @@ function applyDamageRaw(target, amount, opts) {
   { const bl = blessOf(target.side).dr; if (bl) finalDmg *= Math.max(0.5, 1 - 0.05 * bl); } // 5.5 축복: 받는 피해 감소
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
   if (target._metaDr > 0) finalDmg *= 0.85; // 7.9.1 메타모르포제 S
+  if (target._bound && !(opts && opts.chainShare)) finalDmg *= 1 - (target._bound.dr ?? 0.5); // 8.0.1 체인 [묶임]: 받는 피해 -50% (나눠 받는 피해는 이미 줄어든 값 그대로)
   finalDmg = genesisIntercept(target, finalDmg); // 4.7.2 제네시스
   if (target._escortBy && finalDmg > 0) finalDmg = escortIntercept(target, finalDmg); // 7.4 백기사 [빛의 방패]
   const wkAbs = target._wkAbsNow; target._wkAbsNow = false;
@@ -33327,6 +33328,7 @@ function dealDamage(caster, target, amount, opts) {
   { const bl = blessOf(target.side).dr; if (bl) finalDmg *= Math.max(0.5, 1 - 0.05 * bl); } // 5.5 축복: 받는 피해 감소
   if (target._instinctDr > 0) finalDmg *= 0.8; // 본능 S
   if (target._metaDr > 0) finalDmg *= 0.85; // 7.9.1 메타모르포제 S
+  if (target._bound && !(opts && opts.chainShare)) finalDmg *= 1 - (target._bound.dr ?? 0.5); // 8.0.1 체인 [묶임]: 받는 피해 -50% (나눠 받는 피해는 이미 줄어든 값 그대로)
   if (target.charId === 'mercury' && target.shield > 0 && caster && caster.alive && caster.def.isMelee && !caster.isRanged && !opts.isSkill && !opts.isDot && !opts.reflected && !opts.fromDeath)
     battleAPI.applyPoison(caster, target.def.hgPoisonDps, target.def.hgPoisonTime, target); // 5.5 수은: 쉴드 중 근접 공격자 중독
   finalDmg = genesisIntercept(target, finalDmg); // 4.7.2 제네시스
@@ -35915,7 +35917,7 @@ function tick80(u, dt) {
   if (u.charId === 'coffee' && !u._coffeeDone) coffeeServe80(u);
   if (u._caf > 0) tickCaffeine80(u, dt);
   if (u._weakT > 0) { u._weakT -= dt; if (u._weakT <= 0) { u._weakT = 0; if (u.el) u.el.classList.remove('weakened'); } }
-  if (u._bound && [...u._bound.members].some(m => !m.alive)) chainRelease80(u._bound); // 묶인 적 하나라도 쓰러지면 풀린다
+  if (u._bound && (state.combatTime || 0) >= u._bound.end) chainRelease80(u._bound); // 8.0.1 [묶임]은 무조건 2초 (예전: 묶인 적 하나라도 쓰러지면 풀림)
   if (u.charId === 'fall') tickFall80(u, dt);
   if (u.charId === 'blackknight' || u.charId === 'whiteknight') { // 흑기사 · 백기사: 서로 함께 있으면 디버프 면역
     const partner = u.charId === 'blackknight' ? 'whiteknight' : 'blackknight';
@@ -35999,7 +36001,7 @@ function bkAttack80(c, t) {
     if (dealDamage(c, e, Math.round(e.maxHp * d.bkMaxHp * skillLevelFactor(c)), { isSkill: true, skipAtkBuff: true }) && e.alive) battleAPI.setBuff(e, 'bkweak80', 'atk', -d.bkWeakAtk, d.bkWeakTime);
   });
 }
-// ── 체인: 무작위 적 + 2기 [묶임] (다음 일반 공격 때 풀린다)
+// ── 체인: 무작위 적 + 2기 [묶임] — 8.0.1 리워크: 무조건 2초 동안 (묶인 적이 쓰러져도 나머지는 2초까지) · 묶인 적은 받는 피해 -50%
 function chainRelease80(g) {
   if (!g) return;
   g.members.forEach(m => { if (m._bound === g) { m._bound = null; if (m.el) { m.el.classList.remove('bound'); m.el.querySelector('.chain-ico')?.remove(); } } });
@@ -36013,7 +36015,7 @@ function chainAttack80(c, t) {
   if (!main) return;
   const others = foes.filter(e => e !== main), extra = c.def.chainExtra + (rankS(c, 'chain') ? 1 : 0), pick = [];
   while (pick.length < extra && others.length) pick.push(others.splice(Math.floor(Math.random() * others.length), 1)[0]);
-  const g = { owner: c, members: new Set() };
+  const g = { owner: c, members: new Set(), end: (state.combatTime || 0) + (c.def.chainTime ?? 2), dr: c.def.chainDr ?? 0.5 };
   [main, ...pick].forEach(m => {
     if (m._bound && m._bound !== g) m._bound.members.delete(m);
     m._bound = g; g.members.add(m);
@@ -38450,6 +38452,9 @@ const PATCH_NOTES = {
         { emoji:'🎞️', name:'전투 화면 최대 60fps', tag:'adjust', color:'#2f6fed', desc:'90 · 120Hz 화면의 폰에서 전투를 화면 주사율만큼(최대 2배) 그리던 것을 <b>최대 60fps</b>로 맞췄어요. 전투 계산은 따로 돌아서 <b>결과는 그대로</b>예요.' },
         { emoji:'🔋', name:'배터리 절약 모드', tag:'new', color:'#2f9e44', desc:'<b>메뉴 → 환경설정 → 화면 · 접근성</b>에 새로 생겼어요. 전투를 <b>30fps</b>로 그리고 그림자 · 글자 테두리 · 피해 숫자를 줄여 발열과 배터리 소모를 낮춰요. 기기가 60fps 를 따라가지 못하면 전투 중에 <b>자동으로</b> 켜져요.' },
         { emoji:'⚡', name:'가벼워진 화면 갱신', tag:'adjust', color:'#777', desc:'피격 반짝임이 맞을 때마다 몇 프레임씩 지후 전체를 다시 그리던 것을 없앴어요. 하단 지후 카드 · 미니맵 · 타이머 · 사거리 표시는 <b>값이 바뀔 때만</b> 다시 그려요.' },
+      ] },
+      { title: '밸런스', items: [
+        { emoji:'⛓️', name:'체인 지후', tag:'adjust', color:'#8a8f98', portraitKey:'chain', desc:'<b>리워크</b>: [묶임]이 다음 공격 때까지(또는 묶인 적이 쓰러질 때까지) → <b>무조건 2초</b> 동안 유지돼요. 대신 묶인 적은 받는 피해 <b>-50%</b> (나눠 받는 피해도 줄어든 값 그대로).' },
       ] },
       { title: '버그 수정', items: [
         { emoji:'📈', name:'지후함수 · 모바일 화면 깜빡임', tag:'fix', color:'#22b14c', portraitKey:'func', desc:'모바일에서 지후함수가 함수를 쏠 때 화면이 깜빡이던 문제를 고쳤어요. 좌표축 선이 맵 밖으로 길게 삐져나가 화면보다 몇 배 큰 그래픽 레이어가 만들어지고 있었어요.' },
@@ -45102,6 +45107,7 @@ const BAL_LABELS = {
   dreamCutPerSec: '초당 최대 체력 잘림|p', forgetMin: '망각 최소 회복 (최대 체력)|p|-', forgetMax: '망각 최대 회복 (최대 체력)|p|-',
   elecChainTargets: '연쇄 대상|명',
   recallFirst: '첫 [리콜]|s|-', recallEvery: '[리콜] 쿨타임|s|-', // 7.9.1
+  chainExtra: '함께 묶이는 적|기', chainTime: '[묶임] 지속|s', chainDr: '[묶임] 받는 피해 감소|p', // 8.0.1
   potionRange: '포션 사거리|px', potionFlight: '포션 비행|s|-', potHeal: '회복 포션 (최대 체력)|p', potAtk: '공격력 포션|p', potCrit: '치명타 확률 포션|p', potCritDmg: '치명타 피해 포션|p', potBuffTime: '포션 버프 지속|s', potDamage: '피해 포션', potPoisonDps: '독 포션 피해', potPoisonTime: '독 포션 지속|s', potBurnDps: '화상 포션 초당 피해', potBurnTime: '화상 포션 지속|s',
   secretAt: '비장의 포션 체력 기준|p', secretAtk: '비장의 포션 공격력|p', secretShield: '비장의 포션 쉴드', secretDr: '비장의 포션 받는 피해 감소|p', secretSpeed: '비장의 포션 이동속도|p',
   reelTime: '낚싯대 당기는 시간|s|-', bobberPull: '찌 끌어오는 속도 (초당)|c', recast: '다시 던지기까지|s|-', stewAtk: '생선조림 공격력 감소|p', stewSpeed: '생선조림 이동속도 감소|p',
