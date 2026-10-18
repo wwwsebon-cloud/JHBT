@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.0"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.0"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -21446,7 +21446,7 @@ function showCharDetail(c, unit) {
   const allCharacters = unit || inBattle ? [c] : Object.values(CHAR_DB).filter(character => !character.removed);
   const liveHp = unit ? `${Math.max(0, Math.round(unit.hp))} / ${unit.maxHp}` : c.hp;
   const liveShield = unit && unit.maxShield > 0 ? `<div>쉴드 <b>${Math.max(0, Math.round(unit.shield))} / ${unit.maxShield}</b></div>` : (c.shield ? `<div>쉴드 <b>${c.shield}</b></div>` : '');
-  const liveAtk = unit ? Math.round(unit.def.atk) : c.atk;
+  const liveAtk = Math.round((unit ? unit.def.atk : c.atk) * (c.id === 'stock' ? STOCK.m : 1)); // 8.0.x 주식 지후는 지금 주가(배율)를 곱한 공격력
   const lvlTag = unit && unit.level > 1 ? ` · Lv.${unit.level}` : '';
   body.innerHTML = `
     <h2 class="cdp-subtitle">지후 도감 · 상세정보</h2>
@@ -21535,7 +21535,7 @@ function renderUnitInspect() {
   if (!u.alive || !state.units.includes(u)) { box.querySelector('.st').innerHTML = '<div class="dead">쓰러졌습니다</div>'; return; }
   const base = CHAR_DB[u.charId] || u.def;
   const lvMult = Math.pow(LEVEL_MULT, (u.level || 1) - 1);
-  const atkNow = Math.max(0, u.def.atk || 0) * atkBuffMult(u);
+  const atkNow = Math.max(0, u.def.atk || 0) * atkBuffMult(u) * (u.charId === 'stock' ? STOCK.m : 1); // 주식 지후: 지금 주가 배율
   const intBase = attackInterval(u), intNow = intBase / aspdRate(u);
   const spdBase = u.def.speed || 0, spdNow = spdBase * Math.max(0.1, 1 + buffSum(u, 'speed'));
   const cell = GRID; // 1칸
