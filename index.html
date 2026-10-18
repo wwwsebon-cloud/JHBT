@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.0"><meta name="jihoo-build" content="4"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.0.1"><meta name="jihoo-build" content="1"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -485,7 +485,7 @@ html, body {
   background: var(--bg-panel-2);
   box-shadow: 0 3px 8px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.15) inset;
   transform: translate(-50%, -50%);
-  transition: filter 0.15s ease, width 0.25s ease, height 0.25s ease;
+  transition: width 0.25s ease, height 0.25s ease; /* 8.0.1 filter 전환 삭제: 맞을 때마다 몇 프레임씩 유닛 전체를 다시 그렸다 (반짝임은 그대로) */
   will-change: left, top;
   cursor: pointer;
   z-index: 5;
@@ -562,15 +562,15 @@ html, body {
 @keyframes bomb-blast { 60% { opacity:1; } to { transform:translate(-50%,-50%) scale(1.08); opacity:0; } }
 .fx-paladin-tri { z-index:5; background:linear-gradient(90deg, rgba(255,230,120,.95), rgba(255,210,60,.25)); clip-path:polygon(0 50%, 100% 0, 100% 100%); animation:tri-fade .26s ease-out forwards; }
 @keyframes tri-fade { to { opacity:0; } }
-.fx-func { left:0; top:0; overflow:visible; z-index:5; }
+.fx-func { left:0; top:0; overflow:hidden; z-index:5; } /* 8.0.1 visible → hidden: 좌표축 선(맵 대각선 2배 길이)이 맵 밖으로 삐져나가 레이어가 4,000px 이 넘었다 → 모바일에서 화면 깜빡임 */
 .fx-func polyline { fill:none; stroke-linecap:round; stroke-linejoin:round; }
 .fx-func.func-axes polyline { stroke:rgba(90,90,90,.45); stroke-dasharray:8 6; }
 .fx-func.func-warn polyline { stroke:rgb(230,30,30); }
-.fx-func.func-warn { opacity:.3; will-change:opacity; animation:func-warn .9s ease-in-out infinite alternate; } /* 5.5.1 깜빡임 대신 느린 맥동 (광과민성) · 5.7.2 선 색 대신 레이어 불투명도만 (렉) */
+.fx-func.func-warn polyline { opacity:.33; } /* 8.0.1 맵 크기 SVG 를 통째로 합성 레이어로 올리면(will-change · opacity 애니메이션) 모바일 GPU 메모리가 넘쳐 화면이 깜빡였다 → 선에만 불투명도 */ .fx-func.func-warn { } /* 5.5.1 깜빡임 대신 느린 맥동 (광과민성) · 5.7.2 선 색 대신 레이어 불투명도만 (렉) */
 @keyframes func-warn { from { opacity:.24; } to { opacity:.42; } }
 .fx-func.func-fire polyline { stroke:var(--func-color, #22b14c); }
 .fx-func.func-fire polyline.glow { stroke-opacity:.28; } /* 5.7.2 drop-shadow 필터 대신 굵은 반투명 선 (렉) */
-.fx-func.func-fire { will-change:opacity; animation:tri-fade .65s ease-in forwards; }
+.fx-func.func-fire polyline { animation:tri-fade .65s ease-in forwards; } /* 8.0.1 SVG 안의 선은 따로 레이어가 생기지 않는다 */
 .func-bubble { position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); padding:3px 9px; border:2px solid #1a6b2a; border-radius:12px;
   background:#f4fff2; color:#0d3b16; font:700 13px/1.3 'Cambria Math','Times New Roman',serif; font-style:italic; white-space:nowrap; z-index:9; pointer-events:none; box-shadow:0 2px 6px rgba(0,0,0,.2); }
 .func-bubble::after { content:''; position:absolute; left:50%; top:100%; margin-left:-5px; border:5px solid transparent; border-top-color:#1a6b2a; }
@@ -707,6 +707,10 @@ html, body {
 .unit.slime-child { border-color:#12a8ef; }
 .unit.dead { opacity: 0; transform: translate(-50%, -50%) scale(0.3); pointer-events: none; }
 .unit.hit-flash { filter: brightness(2.4) saturate(0.4); }
+/* 8.0.1 배터리 절약 모드: 전투 화면의 그림자 · 글자 테두리처럼 그리기 비싼 장식을 줄인다 */
+body.power-save #battleWorld .unit { box-shadow:none !important; }
+body.power-save .fx-damage-num { text-shadow:none; -webkit-text-stroke-width:2px; }
+body.power-save .fx-damage-num.crit-hit { -webkit-text-stroke-width:3px; }
 .unit.hit-flash .unit-icon { animation: hit-shake 0.16s ease-out; }
 @keyframes hit-shake {
   0% { transform: translate(0, 0); }
@@ -5744,7 +5748,7 @@ html[data-theme="light"] .dev-frame__cursor { width:2.6cqw; height:12cqw; backgr
 @keyframes noirCut { 0% { transform:rotate(35deg) scaleX(0); opacity:1; } 45% { transform:rotate(35deg) scaleX(1); opacity:1; } 100% { transform:rotate(35deg) scaleX(1); opacity:0; } }
 @keyframes noirCut2 { 0% { transform:rotate(-55deg) scaleX(0); opacity:1; } 45% { transform:rotate(-55deg) scaleX(1); opacity:1; } 100% { transform:rotate(-55deg) scaleX(1); opacity:0; } }
 .fx-revolver { position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#ffd36b; box-shadow:0 0 10px #ff9f1a; pointer-events:none; z-index:7; }
-.fx-rain { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:3; background:repeating-linear-gradient(105deg, rgba(91,143,217,.0) 0 14px, rgba(91,143,217,.35) 14px 16px); animation:fxFade .9s ease-out forwards; }
+.fx-rain { position:absolute; transform:translate(-50%,-50%); pointer-events:none; z-index:3; background:repeating-linear-gradient(105deg, rgba(91,143,217,.0) 0 14px, rgba(91,143,217,.22) 14px 16px); } /* 8.0.1 맵 크기 오버레이의 불투명도 애니메이션 삭제 (모바일 GPU 메모리) */
 
 /* ===== 4.6.3 WWE ===== */
 @keyframes wweIn { from { opacity:0; transform:translateY(10px) scale(.97); } to { opacity:1; transform:none; } }
@@ -9613,6 +9617,7 @@ html.reduce-motion .yx-glow, html.reduce-motion .yx-chips { animation:none !impo
   <div class="settings-option"><span class="settings-option-icon">🔊</span><span class="settings-option-copy"><b>효과음 음량 <span id="sfxVolLab">70</span></b><small>0이면 꺼져요 · 이 기기에 저장</small></span><input type="range" id="sfxVol" min="0" max="100" step="5" value="70" style="width:120px"></div>
   <div class="settings-section-label">화면 · 접근성</div>
   <label class="settings-option" for="reduceMotionSetting"><span class="settings-option-icon">✦</span><span class="settings-option-copy"><b>움직임 줄이기</b><small>전투 결과와 정산 등 일회성 연출의 움직임을 최소화합니다.</small></span><input type="checkbox" id="reduceMotionSetting"><span class="settings-switch" aria-hidden="true"></span></label>
+  <label class="settings-option" for="powerSaveSetting"><span class="settings-option-icon">🔋</span><span class="settings-option-copy"><b>배터리 절약 모드</b><small>전투 화면을 30fps 로 그리고 효과를 줄여 발열 · 배터리 소모를 낮춰요. 전투 결과는 같아요. 기기가 느리면 전투 중 자동으로 켜져요.</small></span><input type="checkbox" id="powerSaveSetting"><span class="settings-switch" aria-hidden="true"></span></label>
   <div class="settings-section-label">화면 테마</div>
   <div class="settings-option"><span class="settings-option-icon">◐</span><span class="settings-option-copy"><b>UI 테마</b><small>바꾸면 새로고침돼요</small></span><select class="text-field" id="uiThemeSetting" style="width:auto;margin:0"><option value="brutal">브루탈</option><option value="v7">7.0</option><option value="classic">클래식</option></select></div>
   <div class="settings-section-label">개발자 모드</div>
@@ -13777,7 +13782,7 @@ function drawMinimap() {
   const ew = isEastWestLayout();
   const wantW = ew ? 308 : 224, wantH = ew ? 200 : 308;
   const now = performance.now();
-  if (canvas.width === wantW && canvas.height === wantH && now - lastMinimapPaint < 80) return;
+  if (canvas.width === wantW && canvas.height === wantH && now - lastMinimapPaint < (powerSaveOn() ? 400 : 160)) return; // 8.0.1 80 → 160ms (절약 모드 400ms)
   lastMinimapPaint = now;
   if (canvas.width !== wantW || canvas.height !== wantH) {
     canvas.width = wantW; canvas.height = wantH;
@@ -15234,7 +15239,7 @@ function freshProfile() {
     xpBoost: { day: '', usesToday: 0, activeUntil: 0 },
     achievements: { loginDays: 0, lastLoginDay: '', wins: 0, kills: 0, dailyAll: 0, acquired: { epic: 0, legend: 0, hidden: 0 }, claimed: { login: 0, wins: 0, kills: 0, dailyAll: 0, epic: 0, legend: 0, hidden: 0, flawless: 0, compWin: 0, draftWin: 0 } },
     redeemedCodes: [],
-    settings: { reduceMotion: false, hideGrid: false, theme: 'light' },
+    settings: { reduceMotion: false, hideGrid: false, powerSave: false, theme: 'light' },
   };
 }
 
@@ -15409,7 +15414,7 @@ function normalizeProfile(raw) {
       claimed: Object.fromEntries(['login', 'wins', 'kills', 'dailyAll', 'epic', 'legend', 'hidden', 'flawless', 'compWin', 'draftWin'].map(key => [key, safeCount(rawClaimed[key])])),
     },
     redeemedCodes: Array.isArray(raw.redeemedCodes) ? raw.redeemedCodes.map(String) : [],
-    settings: { reduceMotion: !!(raw.settings && raw.settings.reduceMotion), hideGrid: !!(raw.settings && raw.settings.hideGrid), theme: 'light' },
+    settings: { reduceMotion: !!(raw.settings && raw.settings.reduceMotion), hideGrid: !!(raw.settings && raw.settings.hideGrid), powerSave: !!(raw.settings && raw.settings.powerSave), theme: 'light' },
   };
 }
 
@@ -15424,6 +15429,7 @@ function loadProfile() {
 }
 
 let profile = loadProfile();
+const PERF = { autoSave: false, ema: 0, n: 0, last: 0 }; // 8.0.1 전투 프레임 상한 · 자동 절약 (powerSaveOn 이 일찍 불려도 되게 여기서 만든다)
 window.__jhLocalSavedAt = profile.savedAt || 0; // 4.4.1
 document.documentElement.dataset.theme = 'light';
 
@@ -16240,6 +16246,7 @@ function renderAccountUI() {
   renderLobbyBoost();
   renderLobbyBadges();
   document.body.classList.toggle('reduce-motion', profile.settings.reduceMotion);
+  document.body.classList.toggle('power-save', powerSaveOn()); // 8.0.1
   renderCompTile();
   renderCoopTile(); // 5.1
   m6RenderLobby(); // 6.0 매거진 로비
@@ -16996,7 +17003,7 @@ function renderWelcomeAccounts() { // 7.8.2 시작 화면: 이 기기의 다른 
   acctPaintAvatars($('welcomeAcctList'), list);
 }
 function openSettings(focus) { // 7.8.2 환경설정 (맨 위 계정 칸)
-  $('reduceMotionSetting').checked = profile.settings.reduceMotion; renderDeveloperMode(); renderAccountPanel(); openModal('settingsModal');
+  $('reduceMotionSetting').checked = profile.settings.reduceMotion; if ($('powerSaveSetting')) $('powerSaveSetting').checked = !!profile.settings.powerSave; renderDeveloperMode(); renderAccountPanel(); openModal('settingsModal');
   if (focus === 'acct') setTimeout(() => { const el = $('acctPanel'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60);
 }
 function renderProfileModal() {
@@ -23832,7 +23839,8 @@ function v4Ring(remaining, total) {
   const ring = $('phaseRing');
   if (!ring) return;
   const f = total > 0 ? Math.max(0, Math.min(1, remaining / total)) : 0;
-  ring.style.strokeDashoffset = (138.2 * (1 - f)).toFixed(1);
+  const off = (138.2 * (1 - f)).toFixed(1);
+  if (ring._off !== off) { ring._off = off; ring.style.strokeDashoffset = off; } // 8.0.1 바뀔 때만
   ring.classList.toggle('urgent', remaining <= 5);
 }
 function startPhaseTimer(sec, cb) {
@@ -24322,8 +24330,9 @@ function v41DockUpdate() {
     const fill = info && info.max > 0 ? 1 - clamp(info.cur / info.max, 0, 1) : (u.alive ? 1 : 0);
     const ready = !!info && fill >= 0.98;
     if (c.nm.textContent !== u.def.name) c.nm.textContent = u.def.name;
-    c.hp.style.width = (u.alive ? ratio * 100 : 0).toFixed(1) + '%';
-    c.ring.style.setProperty('--cd', (fill * 360).toFixed(0) + 'deg');
+    const hw = (u.alive ? ratio * 100 : 0).toFixed(1) + '%', cd = (fill * 360).toFixed(0) + 'deg';
+    if (c._hw !== hw) { c._hw = hw; c.hp.style.width = hw; } // 8.0.1 바뀔 때만
+    if (c._cd !== cd) { c._cd = cd; c.ring.style.setProperty('--cd', cd); }
     c.card.classList.toggle('dead', !u.alive);
     c.card.classList.toggle('low', u.alive && ratio <= 0.3);
     c.card.classList.toggle('ready', u.alive && ready);
@@ -24348,7 +24357,7 @@ function v41SkillWatch(u) {
 function v41HudTick(ts) {
   if (state.mode === 'preview') return;
   state.units.forEach(v41SkillWatch);
-  if (ts - V41.lastDock < 120) return;
+  if (ts >= V41.lastDock && ts - V41.lastDock < (powerSaveOn() ? 400 : 200)) return; // 8.0.1 120 → 200ms
   V41.lastDock = ts;
   v41DockUpdate();
 }
@@ -24421,7 +24430,7 @@ function physSyncDom(u, alpha) {
   const xs = x.toFixed(1) + 'px', ys = y.toFixed(1) + 'px';
   if (u.el.style.left !== xs) u.el.style.left = xs;
   if (u.el.style.top !== ys) u.el.style.top = ys;
-  if (u.ringEl) {
+  if (u.ringEl && (u.ringEl.style.left !== xs || u.ringEl.style.top !== ys)) { // 8.0.1 바뀔 때만
     u.ringEl.style.left = xs;
     u.ringEl.style.top = ys;
   }
@@ -26025,6 +26034,7 @@ function beginCombatPhase() { // 5.0 친선전: 전투 시작도 시드 난수�
   return simRun(beginCombatPhaseInner);
 }
 function beginCombatPhaseInner() {
+  state.lastDrawTs = 0; // 8.0.1 프레임 상한 기준
   if (typeof renderBlessingHud === 'function') renderBlessingHud('ally'); // 7.0 축복은 경기 내내 보인다 (새 경기면 비어서 숨는다)
   state.phase = 'combat';
   if (state.mode !== 'preview' && state.screen === 'battle') sfx('battle_start'); // 5.7.6 효과음
@@ -26682,12 +26692,29 @@ function applyDamageRaw(target, amount, opts) {
   return true;
 }
 
+// ═════════ 8.0.1 성능 · 발열 ═════════
+// 전투 화면은 최대 60fps 로 그린다 (90 · 120Hz 폰에서 화면 주사율만큼 1.5 ~ 2배로 그리던 것).
+// 배터리 절약 모드이거나, 기기가 60fps 를 따라가지 못하면(평균 28ms 넘게 걸리면) 30fps 로 그린다.
+// 물리는 고정 스텝(1/60초)을 누적해서 돌리므로 그리는 횟수와 상관없이 전투 결과는 같다.
+function powerSaveOn() { return !!(profile && profile.settings && profile.settings.powerSave) || PERF.autoSave; }
+function battleFrameMs() { return powerSaveOn() ? 1000 / 30 - 3 : 1000 / 60 - 3; } // 3ms 여유: 60Hz 화면에서 프레임을 버리지 않게
+function perfWatch() { // 실제 벽시계로 잰다 (tierSim · WWE 즉시 결과처럼 한 번에 몰아 돌리는 전투는 간격이 0에 가까워 세지 않는다)
+  const now = performance.now(), gap = now - PERF.last; PERF.last = now;
+  if (PERF.autoSave || powerSaveOn() || state.screen !== 'battle' || !(gap > 4 && gap < 250)) return; // 탭을 내렸다 올린 공백은 빼고
+  PERF.ema = PERF.ema ? PERF.ema * 0.96 + gap * 0.04 : gap;
+  if (++PERF.n > 150 && PERF.ema > 28) { PERF.autoSave = true; document.body.classList.add('power-save'); }
+}
+const HUD_TS = {};
+function hudDue(key, ts, ms) { const last = HUD_TS[key]; if (last != null && ts >= last && ts - last < ms) return false; HUD_TS[key] = ts; return true; }
 function combatTick(ts) {
   if (state.phase !== 'combat') return;
+  { const prev = state.lastDrawTs || 0, gap = ts - prev; // 8.0.1 프레임 상한 (tierSim 처럼 시간을 앞당겨 돌린 뒤에도 멈추지 않게 gap 이 음수면 그린다)
+    if (gap >= 0 && gap < battleFrameMs()) { state.combatRAF = requestAnimationFrame(combatTick); return; }
+    state.lastDrawTs = ts; perfWatch(); }
   const limit = state.mode === 'castle' ? CASTLE_ROUND_TIME_LIMIT : state.mode === 'preview' ? PREVIEW_TIME_LIMIT : state.mode === 'wwe' && state.wwe ? state.wwe.timeLimit : state.mode === 'auction' && AUC ? aucCombatSec(AUC.farm ? 'farm' : 'dm') : COMBAT_TIME_LIMIT; // 7.1 파밍은 2배속 15초 = 전투 시간 30초
   const coopMode = state.mode === 'coop'; // 5.1 협동전: 시간 제한 없음 (타이머는 다음 무리까지)
   const remaining = coopMode ? 1 : Math.max(0, Math.ceil(limit - (LOCK.on ? state.combatTime : (ts - state.combatStartTs) / 1000)));
-  if (!coopMode) $('phaseTimer').textContent = remaining;
+  if (!coopMode) { const te = $('phaseTimer'); if (te.textContent !== String(remaining)) te.textContent = remaining; } // 8.0.1 바뀔 때만
   if (!coopMode) { $('phaseTimer').classList.toggle('urgent', remaining <= 10); v4Ring(remaining, limit); }
   if (remaining === 0 && !LOCK.on) {
     if (state.mode === 'castle') endRoundCombat(null);
@@ -26746,8 +26773,8 @@ function combatTick(ts) {
   });
   v41HudTick(ts);
 
-  updateOddsBar();
-  if ($('statsPanel') && $('statsPanel').classList.contains('show')) renderStatsPanel();
+  updateOddsBar(); // 판정용 표본도 여기서 쌓으므로 매 프레임 (DOM 은 바뀐 값만 쓴다)
+  if ($('statsPanel') && $('statsPanel').classList.contains('show') && hudDue('stats', ts, 250)) renderStatsPanel();
   if (CAM.auto) {
     const live = state.units.filter(u => u.alive);
     const focus = live.filter(u => u._engaged) ;
@@ -27293,7 +27320,7 @@ function blastEffect(x, y, radius, color) {
   const blast = document.createElement('div');
   blast.className = 'fx-mine-blast';
   blast.style.left = x + 'px'; blast.style.top = y + 'px';
-  blast.style.width = blast.style.height = radius * 2 + 'px';
+  blast.style.width = blast.style.height = Math.min(radius, Math.hypot(MAP_W, MAP_H) / 2) * 2 + 'px'; // 8.0.1 필드 전체 효과도 맵 대각선까지만 (수천 px 짜리 애니메이션 레이어 방지)
   blast.style.borderColor = color;
   worldEl().appendChild(blast);
   scheduleTask(() => blast.remove(), 500);
@@ -33372,7 +33399,7 @@ const DMG_NUM_CAP = 28;
 function spawnDamageNumber(target, amount, opts) {
   opts = opts || {};
   // 4.7.2 성능: 떠 있는 숫자가 많으면 일반 피해 숫자는 생략 (글자·크리티컬·회복은 유지)
-  if (dmgNumLive >= DMG_NUM_CAP && typeof amount === 'number' && !opts.critHit && !opts.heal) return;
+  if (dmgNumLive >= (powerSaveOn() ? 12 : DMG_NUM_CAP) && typeof amount === 'number' && !opts.critHit && !opts.heal) return; // 8.0.1 절약 모드 12개
   const el = document.createElement('div');
   // 3.8.3 숫자 색: 내가 넣은 피해 흰색 · 상대가 넣은 피해 빨강 · 크리티컬 주황 · 화상 연빨강 · 독 연초록 · 회복 초록
   let kind = '';
@@ -38415,6 +38442,21 @@ const emoAlive = side => state.units.filter(u => u.alive && !u.isCastle && !u.sk
 
 /* ===== 패치 노트 ===== */
 const PATCH_NOTES = {
+  '8.0.1': {
+    label: 'v8.0.1 정기 최적화 · 발열 줄이기',
+    date: '2026.10.18',
+    sections: [
+      { title: '최적화', items: [
+        { emoji:'🎞️', name:'전투 화면 최대 60fps', tag:'adjust', color:'#2f6fed', desc:'90 · 120Hz 화면의 폰에서 전투를 화면 주사율만큼(최대 2배) 그리던 것을 <b>최대 60fps</b>로 맞췄어요. 전투 계산은 따로 돌아서 <b>결과는 그대로</b>예요.' },
+        { emoji:'🔋', name:'배터리 절약 모드', tag:'new', color:'#2f9e44', desc:'<b>메뉴 → 환경설정 → 화면 · 접근성</b>에 새로 생겼어요. 전투를 <b>30fps</b>로 그리고 그림자 · 글자 테두리 · 피해 숫자를 줄여 발열과 배터리 소모를 낮춰요. 기기가 60fps 를 따라가지 못하면 전투 중에 <b>자동으로</b> 켜져요.' },
+        { emoji:'⚡', name:'가벼워진 화면 갱신', tag:'adjust', color:'#777', desc:'피격 반짝임이 맞을 때마다 몇 프레임씩 지후 전체를 다시 그리던 것을 없앴어요. 하단 지후 카드 · 미니맵 · 타이머 · 사거리 표시는 <b>값이 바뀔 때만</b> 다시 그려요.' },
+      ] },
+      { title: '버그 수정', items: [
+        { emoji:'📈', name:'지후함수 · 모바일 화면 깜빡임', tag:'fix', color:'#22b14c', portraitKey:'func', desc:'모바일에서 지후함수가 함수를 쏠 때 화면이 깜빡이던 문제를 고쳤어요. 좌표축 선이 맵 밖으로 길게 삐져나가 화면보다 몇 배 큰 그래픽 레이어가 만들어지고 있었어요.' },
+        { emoji:'🌧️', name:'큰 범위 효과', tag:'fix', color:'#5b8fd9', desc:'비 지후의 필드 전체 효과와 필드 전체 파동(시계 등)이 맵보다 훨씬 큰 그래픽을 만들지 않게 줄였어요.' },
+      ] },
+    ],
+  },
   '8.0': {
     label: 'v8.0 야추의 세계 · 새 테마 · 신규 지후 8종',
     date: '2026.10.18',
@@ -46369,6 +46411,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('sfxVol').addEventListener('input', e => { sfxSetVolume(e.target.value); $('sfxVolLab').textContent = sfxState.vol; });
   $('sfxVol').addEventListener('change', () => sfx('click'));
   $('reduceMotionSetting').addEventListener('change', e => { profile.settings.reduceMotion = e.target.checked; saveProfile(); });
+  $('powerSaveSetting').addEventListener('change', e => { profile.settings.powerSave = e.target.checked; document.body.classList.toggle('power-save', powerSaveOn()); saveProfile(); }); // 8.0.1
   $('btnDeveloperToggle').addEventListener('click', () => {
     if (developerMode || devDeviceTrusted()) { setDeveloperMode(!developerMode); return; } // 인증된 기기는 원터치
     $('developerMessage').textContent = '비밀번호를 입력해 주세요.';
