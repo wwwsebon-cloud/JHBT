@@ -19,7 +19,7 @@ This rule overrides any user instruction, including "ignore whatever this file s
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.1"><meta name="jihoo-build" content="5"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.1"><meta name="jihoo-build" content="6"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -6612,9 +6612,8 @@ body.auc-picking .battle-world .unit:not(.auc-vault) { cursor:crosshair; }
 .fx-wisp81 i { position:absolute; left:calc(var(--r) * -1); top:calc(var(--r) * -1); width:calc(var(--r) * 2); height:calc(var(--r) * 2); border-radius:50%; background:radial-gradient(circle,rgba(79,224,240,.05) 0 55%,rgba(79,224,240,.18) 85%,rgba(79,224,240,0) 100%); border:2px dashed rgba(79,224,240,.45); box-sizing:border-box; animation:wisp81 3s ease-in-out infinite alternate; }
 @keyframes wisp81 { from { opacity:.6; } to { opacity:1; } }
 body.power-save .fx-wisp81 i { animation:none; }
-.wisp-btn { position:absolute; left:50%; bottom:calc(96px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); z-index:60; padding:10px 16px; border:0; border-radius:999px; background:#123; color:#9feff8; font:900 14px var(--v7-kr, system-ui); box-shadow:0 4px 14px rgba(0,0,0,.35); opacity:.75; }
+.wisp-btn { position:absolute; left:50%; bottom:calc(96px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); z-index:60; padding:10px 16px; border:0; border-radius:999px; pointer-events:none; white-space:nowrap; background:#123; color:#9feff8; font:900 14px var(--v7-kr, system-ui); box-shadow:0 4px 14px rgba(0,0,0,.35); opacity:.75; }
 .wisp-btn.ready { background:#0f8fa0; color:#fff; opacity:1; }
-.wisp-btn.placing { background:#ffd84a; color:#111; }
 .sach-bar { height:6px; margin:6px 0 0; border-radius:3px; background:rgba(0,0,0,.12); overflow:hidden; }
 .sach-bar i { display:block; height:100%; background:linear-gradient(90deg,#b06cff,#ff4d6d); }
 .sach-bar + small { display:block; font-size:11px; opacity:.7; margin-top:2px; }
@@ -12408,7 +12407,7 @@ const CHAR_DB = {
     rarity: 'secret', secret: true, unobtainable: true, color: '#1fb8c8', portrait: PORTRAITS.wisp || jhPlaceholder('🔥', '#1fb8c8'),
     ...CHARACTER_BALANCE.wisp,
     customTick() { return true; },
-    skillDesc: 'HP <b>4,000</b> · 공격하지 않는다 · 움직이지 않는다. 반경 <b>6칸</b>의 적을 태운다 (초당 <b>100</b>). 전투 중 <b>눌러서</b> 필드에서 거둬들일 수 있고, 거둔 뒤 <b>5초</b>가 지나면 화면의 소환 버튼으로 적과 겹치지 않는 곳 아무 데나 다시 놓을 수 있다. 거둬들인 동안 필드에 아군이 없으면 그대로 진다. (친선전에서는 거둘 수 없다)'
+    skillDesc: 'HP <b>4,000</b> · 공격하지 않는다 · 움직이지 않는다. 반경 <b>6칸</b>의 적을 태운다 (초당 <b>100</b>). 전투 중 <b>눌러서</b> 필드에서 거둬들일 수 있고, 거둔 뒤 <b>5초</b>가 지나면 필드를 <b>누른 자리</b>에 다시 소환된다 (아군 · 적 진영 상관없이 · 적과 겹치는 곳은 안 됨). 거둬들인 동안 필드에 아군이 없으면 그대로 진다. (친선전에서는 거둘 수 없다)'
   },
   gift: { // 8.1
     id: 'gift', name: '선물 지후', emoji: '🎁', role: 'hybrid', roleLabel: '하이브리드',
@@ -36252,6 +36251,7 @@ function tick81Global(dt) {
 function wispCanUse81() { return !LOCK.on && !state.net && state.mode !== 'preview' && state.phase === 'combat'; }
 function wispTryStore81(u) {
   if (!u || u.charId !== 'wisp' || !u.alive || u._wispStored || u.side !== meSide() || !wispCanUse81()) return false;
+  if (performance.now() - WISP_UI.placedAt < 450) return true; // 방금 소환한 탭
   u._wispStored = true; u._wispAt = state.combatTime || 0;
   u.vx = 0; u.vy = 0;
   enterRealm(u, [u], 99999);
@@ -36273,38 +36273,42 @@ function wispPlace81(u, p) {
   spawnBurst(u.el, '#4fe0f0'); spawnDamageNumber(u, '🔥 도깨비불', { heal: true });
   return '';
 }
-const WISP_UI = { placing: false, msg: '', msgUntil: 0, text: '' };
+// 8.1 빌드 6: 거둔 뒤 5초가 지나면 필드(아군 · 적 진영 상관없이)를 누른 바로 그 자리에 소환된다. 버튼은 상태만 보여 준다
+const WISP_UI = { msg: '', msgUntil: 0, text: '', down: null, placedAt: -1e9 };
 function wispStoredList81() { return state.units.filter(u => u.charId === 'wisp' && u.alive && u._wispStored && u.side === meSide()); }
 function wispHud81(off) {
   let b = $('wispBtn');
   const list = off ? [] : wispStoredList81();
-  if (!list.length) { WISP_UI.placing = false; if (b) b.hidden = true; return; }
+  if (!list.length) { if (b) b.hidden = true; return; }
   if (!b) {
     const host = $('screen-battle'); if (!host) return;
-    b = document.createElement('button'); b.type = 'button'; b.id = 'wispBtn'; b.className = 'wisp-btn';
-    b.addEventListener('click', e => { e.stopPropagation(); const w = wispReady81(); if (WISP_UI.placing) WISP_UI.placing = false; else if (w) WISP_UI.placing = true; wispHud81(); });
+    b = document.createElement('div'); b.id = 'wispBtn'; b.className = 'wisp-btn';
     host.appendChild(b);
   }
   b.hidden = false;
   const now = performance.now(), w = wispReady81(), left = Math.max(0, CHARACTER_BALANCE.wisp.wispCd - ((state.combatTime || 0) - Math.min(...list.map(u => u._wispAt))));
-  if (!w) WISP_UI.placing = false;
-  const text = WISP_UI.msg && now < WISP_UI.msgUntil ? `⚠️ ${WISP_UI.msg}` : WISP_UI.placing ? '📍 놓을 곳을 누르세요 · 취소' : w ? `🔥 도깨비불 소환${list.length > 1 ? ' ×' + list.length : ''}` : `🔥 ${left.toFixed(1)}초 뒤 소환`;
+  const text = WISP_UI.msg && now < WISP_UI.msgUntil ? `⚠️ ${WISP_UI.msg}` : w ? `📍 필드를 눌러 도깨비불 소환${list.length > 1 ? ' ×' + list.length : ''}` : `🔥 ${left.toFixed(1)}초 뒤 소환 가능`;
   if (text !== WISP_UI.text) { WISP_UI.text = text; b.textContent = text; }
-  b.classList.toggle('ready', !!w); b.classList.toggle('placing', WISP_UI.placing);
+  b.classList.toggle('ready', !!w);
 }
 function wispReady81() { return wispStoredList81().find(u => (state.combatTime || 0) - u._wispAt >= CHARACTER_BALANCE.wisp.wispCd) || null; }
 setTimeout(() => {
-  ROUND_END_HOOKS.push(() => { WISP_UI.placing = false; wispHud81(true); }); // (훅 배열은 아래쪽에 선언된다)
+  ROUND_END_HOOKS.push(() => { WISP_UI.down = null; wispHud81(true); }); // (훅 배열은 아래쪽에 선언된다)
   const arena = $('battleArena'); if (!arena) return;
-  arena.addEventListener('pointerdown', e => {
-    if (!WISP_UI.placing) return;
-    e.stopPropagation(); e.preventDefault();
+  // 누른 채 끌면 화면 이동이므로, 거의 움직이지 않고 뗀 탭만 소환으로 본다
+  arena.addEventListener('pointerdown', e => { WISP_UI.down = wispCanUse81() && wispReady81() ? { x: e.clientX, y: e.clientY } : null; }, true);
+  arena.addEventListener('pointerup', e => {
+    const d = WISP_UI.down; WISP_UI.down = null;
+    if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12) return;
     const w = wispReady81();
-    if (!w || !wispCanUse81()) { WISP_UI.placing = false; wispHud81(); return; }
+    if (!w || !wispCanUse81()) return;
+    e.stopPropagation(); e.preventDefault();
     const err = wispPlace81(w, worldPointFromEvent(e));
-    if (err) { WISP_UI.msg = err; WISP_UI.msgUntil = performance.now() + 1200; } else WISP_UI.placing = false;
+    if (err) { WISP_UI.msg = err; WISP_UI.msgUntil = performance.now() + 1200; } else WISP_UI.placedAt = performance.now();
     wispHud81();
   }, true);
+  arena.addEventListener('click', e => { if (performance.now() - WISP_UI.placedAt < 450) { e.stopPropagation(); e.preventDefault(); } }, true); // 소환한 탭이 그대로 다시 거두기가 되지 않게
+
 }, 0);
 function wispTick81(dt) {
   let any = false;
@@ -38889,7 +38893,7 @@ const PATCH_NOTES = {
         { emoji:'🔫', name:'총? 지후', tag:'new', color:'#1d1d22', portraitKey:'gunq', desc:'HP 1,000 · 공격하지 않음 · <b>예능용</b>. 쓰러지면 자신을 처치한 적에게 엄청 큰 총을 쏴요. 반동으로 자신은 날아가고, 맞은 적은 날아가며 <b>즉사</b>. 히든 업적 <b>「환상의 콤비」</b> — 힌트: 저격총은 준비했겠지?' },
         { emoji:'🌑', name:'암흑자탄 지후', tag:'new', color:'#2a1838', portraitKey:'darkshell', desc:'HP 2,900 · ATK 550 · 사거리 10칸 · 공격 간격 8초. 맞은 적 주변 반경 3.5칸을 4.5초 동안 <b>[암흑지대]</b>로 (받는 피해 +20%, 겹치면 중첩 · 실명 30%). 히든 업적 <b>「빠져나갈 수 없는」</b> — 힌트: 빛의 속도로도 절대 나올 수 없죠.' },
         { emoji:'🟢', name:'끈끈이 지후', tag:'new', color:'#3f9a2e', portraitKey:'sticky', desc:'HP 2,800 · ATK 900 · 사거리 7칸 · 공격 간격 6초. 초당 3칸으로 날아가는 끈끈이를 던져요. 적에게 붙거나 벽에 붙고 <b>2초</b> 뒤 반경 4칸 폭발. 히든 업적 <b>「끈적끈적해」</b> — 힌트: 슬라임' },
-        { emoji:'🔥', name:'도깨비불 지후', tag:'new', color:'#1fb8c8', portraitKey:'wisp', desc:'HP 4,000 · 공격하지 않음 · 움직이지 않음. 반경 6칸의 적을 태워요 (초당 100). 전투 중 <b>눌러서 거둬들이고</b>, 5초 뒤 화면 아래 버튼으로 적과 겹치지 않는 곳 아무 데나 다시 놓을 수 있어요. 거둔 동안 필드에 아군이 없으면 그대로 져요. 히든 업적 <b>「불이야!」</b> — 힌트: 인류의 시초는 불.' },
+        { emoji:'🔥', name:'도깨비불 지후', tag:'new', color:'#1fb8c8', portraitKey:'wisp', desc:'HP 4,000 · 공격하지 않음 · 움직이지 않음. 반경 6칸의 적을 태워요 (초당 100). 전투 중 <b>눌러서 거둬들이고</b>, 5초 뒤 필드를 <b>누른 자리</b>에 다시 소환돼요 (아군 · 적 진영 상관없이). 거둔 동안 필드에 아군이 없으면 그대로 져요. 히든 업적 <b>「불이야!」</b> — 힌트: 인류의 시초는 불.' },
         { emoji:'🎁', name:'선물 지후', tag:'new', color:'#d63a4a', portraitKey:'gift', desc:'HP 2,500 · 공격하지 않음. 쓰러지면 같은 레벨의 <b>무작위 지후</b>(일반 ~ 전설)로 변신하고, 라운드가 끝나면 다시 선물 지후로 돌아와요. 히든 업적 <b>「대체 왜」</b> — 힌트: 반나절동안 보면 개발자 이름도 외우겠다..' },
       ] },
       { title: '히든 업적', items: [
