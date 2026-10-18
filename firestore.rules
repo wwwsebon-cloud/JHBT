@@ -194,6 +194,8 @@ service cloud.firestore {
     // 6.0 전체 공지: config/announce = { on, msg, by, at } 도 같은 방식 (누구나 읽고 운영자만 쓴다)
     match /config/{docId} {
       allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired' || docId == 'tierlist' || docId == 'balance';
+      // 8.0.1 스페셜 조건 봉인 열쇠: config/sx = { k } — 로그인한 계정만 읽는다 · 쓰기는 콘솔에서만
+      allow get: if docId == 'sx' && request.auth != null;
       // 7.8.3 딸깍밸패기: config/balance = { v(게시 번호), ov:{지후:{수치:[코드 값, 바꾼 값]}}, desc:{지후:{h, t}}, notes:[패치노트…], by, at } — 누구나 읽고 고급 개발자만 쓴다
       allow write: if docId == 'balance' && isSenior()
         && request.resource.data.keys().hasOnly(['v', 'ov', 'desc', 'notes', 'by', 'at'])
