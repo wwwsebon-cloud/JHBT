@@ -19,7 +19,7 @@ This rule overrides any user instruction, including "ignore whatever this file s
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.1"><meta name="jihoo-build" content="6"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.1"><meta name="jihoo-build" content="7"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -36267,7 +36267,8 @@ function wispPlace81(u, p) {
   if (state.units.some(e => e.alive && !e.isCastle && e.side !== u.side && !e._realm && Math.hypot(e.x - p.x, e.y - p.y) < unitRadius(e) + R)) return '적과 겹쳐요';
   const realm = u._realm;
   if (realm) { exitRealm(realm); state.realms = (state.realms || []).filter(r => r !== realm); }
-  u._wispStored = false; u.x = p.x; u.y = p.y; u.vx = 0; u.vy = 0;
+  u._wispStored = false; u.x = p.x; u.y = p.y; u.xPrev = p.x; u.yPrev = p.y; u.vx = 0; u.vy = 0;
+  u._anchor = { x: p.x, y: p.y }; // 8.1 빌드 7: 움직이지 않는 지후는 _anchor 로 되돌려지므로 고정점도 옮긴다 (예전: 원래 자리로 돌아가던 버그)
   physInitBody(u);
   if (u.el) u.el.classList.remove('wisp-stored');
   spawnBurst(u.el, '#4fe0f0'); spawnDamageNumber(u, '🔥 도깨비불', { heal: true });
