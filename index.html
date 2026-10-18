@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.0.1"><meta name="jihoo-build" content="2"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.0.1"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -9808,7 +9808,7 @@ const CHARACTER_BALANCE = {
   stock: { hp: 3000, atk: 200, atkSpeed: 1, range: 270, speed: 72, stockMin: 0.1, stockMax: 4 }, // 8.0 신규 · 이동속도*
   jibak: { hp: 2000, atk: 200, atkSpeed: 1.6, range: 315, speed: 72 }, // 8.0 신규 · 이동속도*
   mace: { hp: 3900, atk: 1300, atkSpeed: 2, range: 72, speed: 72, isMelee: true, windupDuration: 3, weakTime: 5, weakTaken: 0.2, weakAtk: 0.15, maceStun: 1 }, // 8.0 신규 · 이동속도*
-  chain: { hp: 3400, atk: 120, atkSpeed: 8, range: 540, speed: 72, chainExtra: 2, chainTime: 2, chainDr: 0.5 }, // 8.0.1 리워크: [묶임] 무조건 2초 · 묶인 적 받는 피해 -50% // 8.0 신규 · 이동속도*
+  chain: { hp: 3400, atk: 120, atkSpeed: 4, /* 8.0.1 8 → 4초 */ range: 540, speed: 72, chainExtra: 2, chainTime: 2, chainDr: 0.5 }, // 8.0.1 리워크: [묶임] 무조건 2초 · 묶인 적 받는 피해 -50% // 8.0 신규 · 이동속도*
   coffee: { hp: 2700, atk: 100, atkSpeed: 1, range: 135, speed: 81, coffeeTime: 10, coffeeHeal: 80 }, // 8.0 신규 · 이동속도*
   fall: { hp: 100, atk: 0, atkSpeed: 1, range: 45, speed: 0, noAttack: true, fallSpeed: 3.5 }, // 8.0 신규
   blackknight: { deployLimit: 1, hp: 3000, atk: 310, atkSpeed: 0.65, range: 72, speed: 90, isMelee: true, bkChance: 0.25, bkRadiusCells: 4, bkFanDeg: 135, bkMaxHp: 0.18, bkWeakAtk: 0.15, bkWeakTime: 5 }, // 8.0 신규 · 체력* · 이동속도*
@@ -12266,7 +12266,7 @@ const CHAR_DB = {
     rarity: 'epic', color: '#8a8f98', portrait: PORTRAITS.chain || jhPlaceholder('⛓️', '#8a8f98'),
     ...CHARACTER_BALANCE.chain,
     customAttack(caster, target) { chainAttack80(caster, target); },
-    skillDesc: 'HP 3,400 · ATK 120 · 공격 간격 <b>8초</b> · 사거리 12칸. <b>무작위 적</b>을 공격한다. 맞은 적과 무작위 적 <b>2기</b>가 <b>무조건 2초</b> 동안 <b>[묶임]</b>. <b>[묶임]</b>: 받는 피해 <b>-50%</b>. 묶인 적이 공격을 받으면 다른 묶인 적도 (줄어든) 똑같은 피해를 받는다.'
+    skillDesc: 'HP 3,400 · ATK 120 · 공격 간격 <b>4초</b> · 사거리 12칸. <b>무작위 적</b>을 공격한다. 맞은 적과 무작위 적 <b>2기</b>가 <b>무조건 2초</b> 동안 <b>[묶임]</b>. <b>[묶임]</b>: 받는 피해 <b>-50%</b>. 묶인 적이 공격을 받으면 다른 묶인 적도 (줄어든) 똑같은 피해를 받는다.'
   },
   coffee: {
     id: 'coffee', name: '커피 지후', emoji: '☕', role: 'support', roleLabel: '서포터',
@@ -38454,7 +38454,7 @@ const PATCH_NOTES = {
         { emoji:'⚡', name:'가벼워진 화면 갱신', tag:'adjust', color:'#777', desc:'피격 반짝임이 맞을 때마다 몇 프레임씩 지후 전체를 다시 그리던 것을 없앴어요. 하단 지후 카드 · 미니맵 · 타이머 · 사거리 표시는 <b>값이 바뀔 때만</b> 다시 그려요.' },
       ] },
       { title: '밸런스', items: [
-        { emoji:'⛓️', name:'체인 지후', tag:'adjust', color:'#8a8f98', portraitKey:'chain', desc:'<b>리워크</b>: [묶임]이 다음 공격 때까지(또는 묶인 적이 쓰러질 때까지) → <b>무조건 2초</b> 동안 유지돼요. 대신 묶인 적은 받는 피해 <b>-50%</b> (나눠 받는 피해도 줄어든 값 그대로).' },
+        { emoji:'⛓️', name:'체인 지후', tag:'adjust', color:'#8a8f98', portraitKey:'chain', desc:'<b>리워크</b>: [묶임]이 다음 공격 때까지(또는 묶인 적이 쓰러질 때까지) → <b>무조건 2초</b> 동안 유지돼요. 대신 묶인 적은 받는 피해 <b>-50%</b> (나눠 받는 피해도 줄어든 값 그대로) · 공격 간격 <b>8 → 4초</b>.' },
       ] },
       { title: '버그 수정', items: [
         { emoji:'📈', name:'지후함수 · 모바일 화면 깜빡임', tag:'fix', color:'#22b14c', portraitKey:'func', desc:'모바일에서 지후함수가 함수를 쏠 때 화면이 깜빡이던 문제를 고쳤어요. 좌표축 선이 맵 밖으로 길게 삐져나가 화면보다 몇 배 큰 그래픽 레이어가 만들어지고 있었어요.' },
