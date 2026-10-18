@@ -13,7 +13,7 @@ How to obtain Special Jihoos (hidden achievements) is intentionally secret. Even
 <head>
 <meta charset="UTF-8">
 <script>(function () { var c = document.documentElement.classList, t = 'brutal'; c.add('ui-classic'); try { t = localStorage.getItem('jihooBattle.uiTheme') || 'brutal'; } catch (e) {} if (t === 'v7' || t === 'brutal') c.add('ui-v7'); if (t === 'brutal') c.add('ui-brutal'); })(); /* 7.0 테마(흰 안개)가 기본. 클래식은 설정에서 고른다. ui-classic 은 다른 화면의 기본 스타일이라 늘 켠다 */</script><!-- 6.0 화면 테마: 클래식(5.x) 선택 시 만화 테마 CSS가 꺼진다 -->
-<meta name="jihoo-version" content="8.0"><meta name="jihoo-build" content="3"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
+<meta name="jihoo-version" content="8.0"><meta name="jihoo-build" content="4"><!-- 5.7.5 빌드 번호: 잠수함 패치(버전 그대로)마다 +1 → 열려 있는 화면도 새로고침을 받는다 --><!-- 게임 버전은 여기 한 곳. 제목·로비 배지·패치 버튼·인트로가 여기서 나오고, 새 버전 감지도 이 태그를 읽는다. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지후 배틀</title>
 <!-- 4.1.1 앱으로 설치 (PWA) -->
@@ -15737,6 +15737,7 @@ function rbApply(r) {
   next.inventory = Object.fromEntries(Object.keys(next.inventory || {}).map(k => [k, 0])); Object.assign(next.inventory, inv);
   next.shards = map(s.sh); next.dust = map(s.du); next.ranks = map(s.rk); next.lb = map(s.lb);
   next.unlocked = (Array.isArray(s.un) ? s.un : []).filter(id => typeof id === 'string' && CHAR_DB[id]);
+  secretAchSync(next); // 8.0 빌드 4 빠진 스페셜 지후의 히든 업적은 달성 전으로
   next.rbDone = [...(profile.rbDone || []), r.id].slice(-20);
   profile = normalizeProfile(next);
   actLog('rb', { id: r.id, why: String(r.why || '').slice(0, 100) });
@@ -36487,6 +36488,17 @@ const SECRET_ACH = [
   { key: 'darkfunc', id: 'darkfunc', name: '교점이 2개지요', hint: '지후함수' },
 ];
 function secretDone(key) { return (profile.secretAch || []).includes(key); }
+// 8.0 빌드 4: 히든 업적 달성 기록은 그 스페셜 지후를 갖고 있을 때만 남긴다. 계정 되돌리기 등으로 스페셜 지후가 빠졌으면
+// 업적도 달성 전으로 돌려 다시 얻을 수 있게 한다 (되돌리기 · 백업 복원 · 접속할 때)
+function secretAchSync(p = profile) {
+  if (!p || !Array.isArray(p.secretAch) || !p.secretAch.length) return false;
+  const own = new Set(p.unlocked || []);
+  const keep = p.secretAch.filter(k => { const a = SECRET_ACH.find(x => x.key === k); return !a || !CHAR_DB[a.id] || own.has(a.id); });
+  if (keep.length === p.secretAch.length) return false;
+  p.secretAch = keep;
+  return true;
+}
+setTimeout(() => { try { if (secretAchSync()) saveProfile(); } catch (error) {} }, 0);
 function secretUnlock(key) {
   if (!profile || !profile.nickname || secretDone(key) || window.top !== window) return false;
   const a = SECRET_ACH.find(x => x.key === key); if (!a || !CHAR_DB[a.id]) return false;
@@ -45840,6 +45852,7 @@ document.addEventListener('DOMContentLoaded', () => {
     onRestore: data => {
       const prevOwner = String(profile.ownerUid || '');
       profile = normalizeProfile(data);
+      secretAchSync(); // 8.0 빌드 4
       // 7.6.3 활동 기록: 같은 계정이면 기기 기록 → 백업으로 바뀐 양을 남긴다 (다른 계정에서 바꿔 탄 거면 비교하지 않는다)
       if (prevOwner && prevOwner === profile.ownerUid) actLog('restore'); else { actReset(); actPush({ t: Date.now(), k: 'restore', x: 1 }); }
       settleAbandonedMatch();
