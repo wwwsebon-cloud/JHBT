@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.3"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.3"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2811,9 +2811,10 @@ function matchBase(extra) { // 봇전 · 친선전 공통 경기 상태
   Object.assign(S, { phase: 'intro', round: 1, rk: 0, lives: { a: CFG.LIVES, e: CFG.LIVES }, place: { a: emptyPlace(), e: emptyPlace() },
     units: [], shots: [], lines: [], zones: [], time: 0, pool: [], pick: null, moveSel: null, ops: [], speed: 1, speedManual: false, hist: [], stats: [], net: null, coinSlot: undefined, dmShown: false, fast: false, specWinner: null }, extra);
 }
+const deckNeedMsg = () => `덱에 지후 5기를 채워야 시작할 수 있어요 (지금 ${profile.deck.filter(owned).length} / 5)`;
 function newMatch() {
   const deck = profile.deck.filter(owned);
-  if (deck.length < 1) { banner('덱을 먼저 설정하세요'); show('deck'); renderDeck(); return; }
+  if (deck.length < 5) { banner(deckNeedMsg()); show('deck'); renderDeck(); return; } // 덱 5기를 채워야 시작 (R2.3 build 2)
   rng = mulberry32((Date.now() ^ 0x9e3779b9) >>> 0);
   matchBase({ deck: { a: deck.slice(0, 5), e: botDeck() } });
   S.nick = { a: profile.nick || '나', e: BOT_NAMES[Math.floor(rng() * BOT_NAMES.length)] };
@@ -3862,7 +3863,7 @@ const fmDeck = () => profile.deck.filter(id => owned(id) && /^[a-z_]{1,24}$/.tes
 const matchRef = id => FB.sdk.doc(FB.db, 'matches', id);
 async function fmInvite(f) { // 보내는 쪽 (방장)
   if (!f || FM.pending || S.phase !== 'idle') return;
-  const deck = fmDeck(); if (!deck.length) { banner('덱을 먼저 설정하세요'); return; }
+  const deck = fmDeck(); if (deck.length < 5) { banner(deckNeedMsg()); return; }
   const p = presenceOf(f.uid); if (!p.on) { banner('친구가 접속해 있지 않아요'); return; }
   let id;
   try { const ref = FB.sdk.doc(FB.sdk.collection(FB.db, 'matches')); id = ref.id;
@@ -3895,7 +3896,7 @@ function fmIncoming(m) {
   const answer = async ok => {
     if (!FM.pending || FM.pending.id !== m.id) return;
     const deck = fmDeck();
-    if (ok && (!deck.length || S.phase !== 'idle')) { banner('덱을 먼저 설정하세요'); ok = false; }
+    if (ok && (deck.length < 5 || S.phase !== 'idle')) { banner(deck.length < 5 ? deckNeedMsg() : '지금은 친선전을 받을 수 없어요'); ok = false; }
     try { await FB.sdk.updateDoc(matchRef(m.id), { status: ok ? 'accepted' : 'declined', guestDeck: ok ? deck : [], at: FB.sdk.serverTimestamp() }); } catch (e) { fmStop(); banner('신청이 취소됐어요'); return; }
     if (!ok) { fmStop(); return; }
     fmCard(`<div class="h">🤝 <b>${esc(m.hostName)}</b>님을 기다리는 중…</div>`, 15, () => { fmStop(); banner('연결하지 못했어요'); });
@@ -4434,6 +4435,9 @@ const PATCH_NOTES = [
       { icon: '📅', name: '출석부 1일차', tag: 'adjust', desc: '1일차 보상 10회 뽑기권 → <b>◆1,000</b>.' },
       { icon: '📖', name: '서사', tag: 'new', desc: '힐 · 슬라임 · 주사위 · 코인 · 물 · 버서커 · 슬롯머신 · 활 · 황사 · 총 · 선인장 · 죠스 · 콤보 · 달 · 선물 · 원자 지후의 <b>서사</b>가 생겼어요 (덱 설정 → 서사).' },
     ] },
+    { title: '규칙', items: [
+      { icon: '5', name: '덱 5기', tag: 'adjust', desc: '덱에 지후 <b>5기</b>를 모두 채워야 일반전 · 친선전을 시작할 수 있어요.' },
+    ] },
     { title: '상향', items: [
       { id: 'magic', name: '마탄 지후', tag: 'buff', desc: '[마탄] 확률 8% → <b>10%</b> · 피해 공격력의 500% → <b>650%</b>' },
       { id: 'combo', name: '콤보 지후', tag: 'adjust', desc: '공격력 70 → <b>67</b> · 공격 간격 1.7초 → <b>1.4초</b>' },
@@ -4694,7 +4698,7 @@ function startUpdateChecks() {
 }
 
 // ═════════ 시작 ═════════
-$('btnPlay').addEventListener('click', () => { if (!profile.deck.filter(owned).length) return newMatch(); matchLoading(newMatch); }); // 일반전 로딩 · TIP 뒤 시작
+$('btnPlay').addEventListener('click', () => { if (profile.deck.filter(owned).length < 5) return newMatch(); matchLoading(newMatch); }); // 일반전 로딩 · TIP 뒤 시작 (덱 5기가 아니면 덱 설정으로)
 $('btnDeckEdit').addEventListener('click', () => openTab('deck'));
 $('btnFriendly').addEventListener('click', () => openSocial());
 $('btnLbTile').addEventListener('click', () => openTab('lb'));
