@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.2.1"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.2.1"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1419,13 +1419,13 @@ const CHARS = {
   jaws: { name: '죠스 지후', rarity: 'epic', role: '어쌔신', hp: 640, atk: 260, atkSpeed: 1.3, range: 'melee', speed: 2, portrait: PORTRAITS.jaws, sfx: 'swing', color: '#3a6ea5',
     story: '',
     passive: '라운드 시작 때 <b>[잠수]</b>: 노릴 수도 피해를 줄 수도 없는 채 무작위 적에게 헤엄쳐 간다 (이동속도 <b>2.5</b>). 그 적 곁에서 떠오르며 반경 <b>2칸</b>에 공격력의 <b>50%</b> 피해. 공격할 때마다 공격력의 <b>30%</b>를 회복한다.',
-    onStart(u, A) { const L = foes(u); if (!L.length) return; u.prey = L[Math.floor(rng() * L.length)]; A.status(u, 'dive', 99); u.speed = 2.5 * CFG.CELL; },
+    onStart(u, A) { const L = foes(u); if (!L.length) return; u.prey = L[Math.floor(rng() * L.length)]; A.status(u, 'dive', 99); u.diveT = 8; u.speed = 2.5 * CFG.CELL; },
     steer(u, dt) {
       if (!(u.st.dive > 0)) return false;
       if (!u.prey || !u.prey.alive) { const L = foes(u); u.prey = L.length ? L[Math.floor(rng() * L.length)] : null; }
-      const t = u.prey;
-      if (t && dist(u, t) > bodySeparation(u, t) + 6) { moveToward(u, t.x, t.y, 1, t); return true; }
-      u.st.dive = 0; u.speed = 2 * CFG.CELL; drawUnit(u); A.ring(u.x, u.y, 2); shake(false); dmgNum(u, '덥석!', { crit: true }); // 떠오른다
+      const t = u.prey; u.diveT -= dt; // R1 그대로: 대상에게 곧장 헤엄쳐 가서 몸이 닿으면(+10) 떠오른다 · 8초가 지나도 떠오른다
+      if (t && u.diveT > 0 && dist(u, t) > bodySeparation(u, t) + 10 * WS) { const a = Math.atan2(t.y - u.y, t.x - u.x); u.desVx = Math.cos(a) * u.speed; u.desVy = Math.sin(a) * u.speed; return true; }
+      u.st.dive = 0; u.cd = 0; u.speed = 2 * CFG.CELL; drawUnit(u); A.ring(u.x, u.y, 2); shake(false); dmgNum(u, '덥석!', { crit: true }); // 떠오른다
       A.around(u, u.x, u.y, 2, e => { if (A.dmg(u, e, 50) > 0) hitFx(u, e, true); });
       return false;
     },
@@ -4345,6 +4345,7 @@ const PATCH_NOTES = [
       { id: 'sun', name: '태양 지후', tag: 'nerf', desc: '같은 적을 2번 공격할 때마다 쌓이는 공격력 +20 이 <b>공격 대상을 바꾸거나 공격을 멈추면 초기화</b>돼요 (예전: 라운드 내내 유지).' },
     ] },
     { title: '수정', items: [
+      { id: 'jaws', name: '죠스 지후', tag: 'fix', desc: '[잠수] 중 적 곁까지 가도 닿지 않아 떠오르지 못하던 문제를 고쳤어요 (지후배틀 R1 처럼 곧장 헤엄쳐 가서 닿으면 떠올라요 · 8초가 지나도 떠올라요).' },
       { id: 'dust', name: '황사 지후', tag: 'fix', desc: '황사 지대가 계속 빙글빙글 돌던 연출을 고쳤어요 (이제 제자리에서 살짝 일렁여요).' },
       { icon: '⏻', name: '게임이 시작되지 않던 문제', tag: 'fix', desc: '출석부 보상(모집권 등)이 가방에 있으면 로딩 화면 0% 에서 멈추던 문제를 고쳤어요.' },
     ] },
