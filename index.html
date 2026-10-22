@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.2.1"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.2.1"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1456,12 +1456,14 @@ const CHARS = {
     } },
   sun: { name: '태양 지후', rarity: 'legend', role: '딜러', hp: 1350, atk: 20, atkSpeed: 0.7, range: 5, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.sun, sfx: 'fire', color: '#ff9f1c',
     story: '',
-    passive: '<b>출격제한 1</b>. 공격이 맞은 자리 반경 <b>1.8칸</b>에 광역 피해. <b>같은 적</b>을 <b>2번</b> 공격할 때마다 공격력 <b>+20</b> (라운드 동안). 쓰러질 때 <b>아군 중 혼자 살아 있으면</b> <b>2초</b> 뒤 무작위 적 위치에 떨어지며 부활한다 (라운드당 1번): 반경 <b>3칸</b>에 <b>400</b> 피해 · <b>2.5초</b> [기절] · 기본 공격력 <b>+50</b>.',
-    onAttack(u, t) { if (t !== u.sunT) { u.sunT = t; u.sunN = 0; } if (++u.sunN % 2 === 0) { u.atk += 20; if (!S.fast) dmgNum(u, '+20', { crit: true }); } },
+    passive: '<b>출격제한 1</b>. 공격이 맞은 자리 반경 <b>1.8칸</b>에 광역 피해. <b>같은 적</b>을 <b>2번</b> 공격할 때마다 공격력 <b>+20</b> (공격 대상을 바꾸거나 공격을 멈추면 초기화). 쓰러질 때 <b>아군 중 혼자 살아 있으면</b> <b>2초</b> 뒤 무작위 적 위치에 떨어지며 부활한다 (라운드당 1번): 반경 <b>3칸</b>에 <b>400</b> 피해 · <b>2.5초</b> [기절] · 기본 공격력 <b>+50</b>.',
+    sunReset(u) { if (u.sunBonus) { u.atk -= u.sunBonus; if (!S.fast && u.alive) dmgNum(u, '공격력 초기화', {}); } u.sunBonus = 0; u.sunN = 0; u.sunT = null; }, // 쌓인 공격력만 되돌린다 (낙하 부활 +50 은 그대로)
+    onAttack(u, t) { if (t !== u.sunT) { u.def.sunReset(u); u.sunT = t; } u.sunIdle = 0; if (++u.sunN % 2 === 0) { u.sunBonus = (u.sunBonus || 0) + 20; u.atk += 20; if (!S.fast) dmgNum(u, '+20', { crit: true }); } },
     onHit(u, t, A) { A.around(u, t.x, t.y, 1.8, e => { if (e !== t) dealDamage(u, e, effAtk(u), {}); }); if (!S.fast) A.ring(t.x, t.y, 1.8); },
     onLethal(u, A) { if (u.sunUsed || friends(u).some(a => a !== u)) return false; // 혼자 남았을 때만 (라운드당 1번)
       u.sunUsed = true; u.sunWait = 2; u.locked = true; A.status(u, 'dive', 2.2); if (u.el) u.el.classList.add('sun-wait'); dmgNum(u, '부활 준비', { crit: true }); return true; },
     tick(u, dt, A) {
+      if (u.sunT && (u.sunIdle = (u.sunIdle || 0) + dt) > baseInterval(u) * 1.5 + 0.3) u.def.sunReset(u); // 공격을 멈추면 (기절 · 이동 · 대상 없음) 초기화
       if (u.sunWait == null) return; u.sunWait -= dt; if (u.sunWait > 0) return; u.sunWait = null;
       const L = foes(u); if (!L.length) { u.locked = false; u.st.dive = 0; return; }
       const e = L[Math.floor(rng() * L.length)]; physSnap(u, e.x, e.y); u.st.dive = 0; u.locked = false; u.hp = u.maxHp; u.atk += Math.round(50 * u.mult);
@@ -4340,6 +4342,7 @@ const PATCH_NOTES = [
   { v: 'R2.2.1', date: '2026.10.22', title: '광폭화 지후 조정', sections: [
     { title: '하향', items: [
       { id: 'berserk', name: '광폭화 지후', tag: 'nerf', desc: '체력 1,300 → <b>910</b>' },
+      { id: 'sun', name: '태양 지후', tag: 'nerf', desc: '같은 적을 2번 공격할 때마다 쌓이는 공격력 +20 이 <b>공격 대상을 바꾸거나 공격을 멈추면 초기화</b>돼요 (예전: 라운드 내내 유지).' },
     ] },
     { title: '수정', items: [
       { id: 'dust', name: '황사 지후', tag: 'fix', desc: '황사 지대가 계속 빙글빙글 돌던 연출을 고쳤어요 (이제 제자리에서 살짝 일렁여요).' },
