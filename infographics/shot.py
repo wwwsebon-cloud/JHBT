@@ -3,6 +3,7 @@
 사용법:  python infographics/shot.py infographics/R2.0.html
 """
 import os
+import re
 import subprocess
 import sys
 
@@ -15,8 +16,10 @@ def main():
     src = os.path.abspath(sys.argv[1])
     png = os.path.splitext(src)[0] + '.png'
     url = 'file:///' + src.replace('\\', '/')
+    m = re.search(r'name="info-width" content="(\d+)"', open(src, encoding='utf-8').read())
+    width = m.group(1) if m else '1080'  # make.py 의 width
     subprocess.run([CHROME, "--no-sandbox", '--headless=new', '--disable-gpu', '--hide-scrollbars', '--force-device-scale-factor=1',
-                    '--window-size=1080,5000', '--virtual-time-budget=8000', '--screenshot=' + png, url], capture_output=True)
+                    '--window-size=' + width + ',5000', '--virtual-time-budget=8000', '--screenshot=' + png, url], capture_output=True)
     im = Image.open(png).convert('RGB')
     w, h = im.size
     px = im.load()
