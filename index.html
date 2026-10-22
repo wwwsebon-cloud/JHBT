@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.3"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.3"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2853,10 +2853,16 @@ function playable(side, id) { return mergeTile(side, id) != null || canPlaceNew(
 function isDeathmatch() { return S.lives.a === 1 && S.lives.e === 1; }
 function deployChances() { return isDeathmatch() ? CFG.DM_DEPLOYS : S.round === 1 ? 4 : 2; } // R2.2: 첫 라운드 4번 · 그다음 2번 · 데스매치 3번
 function rollPool(side, r = rng) { const d = S.deck[side]; return d.length ? Array.from({ length: CFG.POOL }, () => d[Math.floor(r() * d.length)]) : []; } // 전작 일반전: 덱에서 매번 3장 (중복 가능)
-function roleRow(id) { const c = CHARS[id]; return c.role === '탱커' || c.role === '어쌔신' || (c.range === 'melee' && c.role === '딜러') ? 0 : c.role === '서포터' || c.role === '힐러' || c.role === '보조형' ? 2 : 1; } // 전작 botRoleBand
+function roleRow(id) { // 배치 줄 (0 전열 · 1 중열 · 2 후열 · R2.3): 탱커 · 딜러는 앞 · 어쌔신 · 서포터는 뒤 · 근접은 앞으로 · 사거리가 길면 뒤로 · 체력이 높으면 앞으로
+  const c = CHARS[id], rg = c.range === 'melee' ? 0 : Number(c.range) || 0;
+  let s = ({ 탱커: 0, 딜러: 0.7, 컨트롤러: 1.2, 어쌔신: 2, 서포터: 2, 보조형: 2, 힐러: 2 })[c.role] ?? 1;
+  if (c.range === 'melee') s -= 0.5; else if (rg >= 6) s += 0.8; else if (rg >= 4) s += 0.4;
+  if (c.hp >= 1500) s -= 0.6; else if (c.hp >= 1200) s -= 0.3; else if (c.hp <= 800) s += 0.4;
+  return clamp(Math.round(s), 0, 2);
+}
 function pickTile(side, preferRow, r = rng) { // 전작 v42PickTile
   const shuffle = a => a.map(v => ({ v, k: r() })).sort((x, y) => x.k - y.k).map(o => o.v);
-  const rows = preferRow == null ? shuffle([0, 1, 2]) : [preferRow, ...[0, 1, 2].filter(w => w !== preferRow)];
+  const rows = preferRow == null ? shuffle([0, 1, 2]) : [0, 1, 2].sort((x, y) => Math.abs(x - preferRow) - Math.abs(y - preferRow)); // 원하는 줄이 차면 가까운 줄부터
   for (const row of rows) {
     const cols = preferRow == null ? shuffle(CENTER_OUT) : CENTER_OUT.map((c, i) => ({ c, k: r() + i * 0.35 })).sort((x, y) => x.k - y.k).map(o => o.c);
     for (const col of cols) { const t = row * CFG.COLS + col; if (!S.place[side][t]) return t; }
@@ -2965,22 +2971,17 @@ function commitAct(act, delay = 120) {
   renderField();
   setTimeout(nextDeploy, delay);
 }
-function botFuse() { // 봇: 같은 종류 · 같은 레벨 둘이 있으면 60% 확률로 합친다
+function botFuse() { // 봇: 전장이 꽉 찼을 때만 같은 종류 · 같은 레벨 둘을 60% 확률로 합친다 (자리를 비워 다음 배치로 하나 더)
   const L = S.place.e; for (let a = 0; a < TILES; a++) for (let b = a + 1; b < TILES; b++) if (canFuse(L[a], L[b])) { if (rng() < 0.6) moveTile('e', a, b); return; }
 }
-function botDeployOne() {
+const botBest = ids => ids.map(id => ({ id, k: RARITY_ORDER[CHARS[id].rarity] + rng() * 0.9 })).sort((x, y) => y.k - x.k)[0].id; // 등급 높은 카드 우선 (조금 무작위)
+function botDeployOne() { // 봇 (R2.3): 유닛 수를 먼저 늘린다 — 놓을 수 있으면 역할 · 사거리 · 체력에 맞는 줄에 놓고, 못 놓을 때만 겹친다
   const pool = rollPool('e'); if (!pool.length) return;
-  const full = countSide('e') >= CFG.MAX_UNITS;
-  const merges = pool.filter(id => mergeTile('e', id) != null), placeable = pool.filter(id => canPlaceNew('e', id));
-  let id = null;
-  if (merges.length && (full || rng() < 0.55)) id = A.pick(merges, 1)[0];
-  else if (full || !placeable.length) { if (merges.length) id = A.pick(merges, 1)[0]; else return; }
-  else id = A.pick(placeable, 1)[0];
-  const same = mergeTile('e', id);
-  if (same != null && (full || rng() < 0.7)) { levelUp('e', same); return; }
-  if (!canPlaceNew('e', id)) { if (same != null) levelUp('e', same); return; }
-  const t = pickTile('e', rng() < 0.5 ? roleRow(id) : null); if (t != null) placeAt('e', t, id);
-  botFuse();
+  const placeable = pool.filter(id => canPlaceNew('e', id));
+  if (placeable.length) { const id = botBest(placeable), t = pickTile('e', roleRow(id)); if (t != null) { placeAt('e', t, id); return; } }
+  const merges = pool.filter(id => mergeTile('e', id) != null); if (!merges.length) return;
+  levelUp('e', mergeTile('e', botBest(merges)));
+  if (countSide('e') >= CFG.MAX_UNITS) botFuse();
 }
 // ── 그리기 ──
 function renderLives() { [[ME(), 'A'], [OPP(), 'E']].forEach(([s, U]) => { $('hudLives' + U).innerHTML = Array.from({ length: CFG.LIVES }, (_, i) => `<i class="${i < S.lives[s] ? '' : 'off'}"></i>`).join(''); }); }
@@ -4436,6 +4437,7 @@ const PATCH_NOTES = [
       { icon: '📖', name: '서사', tag: 'new', desc: '힐 · 슬라임 · 주사위 · 코인 · 물 · 버서커 · 슬롯머신 · 활 · 황사 · 총 · 선인장 · 죠스 · 콤보 · 달 · 선물 · 원자 지후의 <b>서사</b>가 생겼어요 (덱 설정 → 서사).' },
     ] },
     { title: '규칙', items: [
+      { icon: '🤖', name: '봇 배치', tag: 'system', desc: '봇이 <b>합치기보다 유닛을 늘리는 것</b>을 먼저 해요 (등급 높은 카드 우선 · 전장이 꽉 찼을 때만 합치기). 놓는 줄도 <b>탱커 · 딜러 · 근접 · 체력 높은 지후는 앞</b>, <b>어쌔신 · 서포터 · 사거리 긴 지후는 뒤</b>로 (시간 초과 자동 배치도 같은 규칙).' },
       { icon: '5', name: '덱 5기', tag: 'adjust', desc: '덱에 지후 <b>5기</b>를 모두 채워야 일반전 · 친선전을 시작할 수 있어요.' },
     ] },
     { title: '상향', items: [
