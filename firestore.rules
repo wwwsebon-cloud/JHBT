@@ -84,12 +84,12 @@ service cloud.firestore {
     }
 
     // ── 리더보드 ──
-    // 시즌 R2: r2lb/{uid} = { nickname, level(0~), wins, losses, deck, fav, xp, updatedAt } · 게스트(익명)도 자기 문서만
+    // 시즌 R2: r2lb/{uid} = { nickname, level(0~), wins, losses, deck, fav, xp, frame(프로필 테두리 · 없어도 됨), updatedAt } · 게스트(익명)도 자기 문서만
     match /r2lb/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
@@ -97,6 +97,7 @@ service cloud.firestore {
         && validDeck(request.resource.data.deck)
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
         && request.resource.data.xp is int && request.resource.data.xp >= 0 && request.resource.data.xp <= 1000000
+        && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && request.resource.data.updatedAt is timestamp;
     }
     // 명예의 전당: R1 레벨 리더보드 (읽기만 · 더 이상 바뀌지 않는다)
@@ -167,12 +168,14 @@ service cloud.firestore {
     }
 
     // ── 친구 · 접속 상태 · 1:1 채팅 ──
-    // 접속 상태: 로그인한 사람은 누구나 읽고, 자기 것만 쓴다 (sp = 관전할 수 있는 친선전 번호)
+    // 접속 상태: 로그인한 사람은 누구나 읽고, 자기 것만 쓴다 (sp = 관전할 수 있는 친선전 번호 · frame 프로필 테두리 · fav 대표 지후)
     match /presence/{userId} {
       allow get: if request.auth != null;
       allow create, update: if owner(userId)
-        && request.resource.data.keys().hasOnly(['nickname', 'where', 'at', 'sp'])
+        && request.resource.data.keys().hasOnly(['nickname', 'where', 'at', 'sp', 'frame', 'fav'])
         && (!('sp' in request.resource.data) || (request.resource.data.sp is string && request.resource.data.sp.size() <= 80))
+        && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
+        && (!('fav' in request.resource.data) || (request.resource.data.fav is string && request.resource.data.fav.matches('^[a-z_]{0,24}$')))
         && request.resource.data.nickname is string && request.resource.data.nickname.size() <= 12
         && request.resource.data.where is string && request.resource.data.where.size() <= 12
         && request.resource.data.at == request.time;
