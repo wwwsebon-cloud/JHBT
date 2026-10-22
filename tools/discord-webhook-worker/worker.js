@@ -1,4 +1,4 @@
-// 지후배틀 → 디스코드 알림 중계 (Cloudflare Worker)
+// RE : 지후배틀 → 디스코드 알림 중계 (Cloudflare Worker)
 // 게임은 웹후크 주소를 모른다. 로그인한 플레이어의 Firebase ID 토큰을 붙여 여기로 보내면,
 // 토큰을 검사한 뒤 정해진 모양의 메시지만 디스코드로 넘긴다.
 //
@@ -6,10 +6,10 @@
 // 변수 (wrangler.toml [vars]): FIREBASE_PROJECT_ID, ALLOWED_ORIGINS(쉼표로 구분)
 
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
-const COLORS = { win: 0x1f9d55, lose: 0xe5322d, draw: 0x8a8a87, join: 0x2f6fed, legend: 0xf2c94c, promo: 0x9b59d0, level: 0x14b8a6, streak: 0xf08c00, hidden: 0xffffff, coop: 0x12a594 };
-const MODES = { ranked: '랭크전', competitive: '경쟁전', draftbattle: '드래프트전', duo: '2:2 대전' };
+const COLORS = { win: 0x1f9d55, lose: 0xe5322d, draw: 0x8a8a87, join: 0x2f6fed, legend: 0xf2c94c, level: 0x14b8a6, streak: 0xf08c00 };
+const MODES = { ranked: '일반전' };
 // 같은 플레이어가 너무 자주 보내지 못하게 (워커 인스턴스 안에서만 기억하는 간단한 제한)
-const COOLDOWN_MS = { join: 10 * 60 * 1000, legend: 3000, match: 15000, promo: 10000, level: 5000, streak: 15000, hidden: 3000, coop: 15000 };
+const COOLDOWN_MS = { join: 10 * 60 * 1000, legend: 3000, match: 15000, level: 5000, streak: 15000 };
 const lastSent = new Map();
 let jwkCache = { keys: null, until: 0 };
 
@@ -80,31 +80,12 @@ function buildEmbed(body) {
   const nick = clean(body.nickname, 12) || '플레이어';
   const at = new Date().toISOString();
   if (body.type === 'join') {
-    return { color: COLORS.join, description: `🎉 **${nick}** 님이 지후배틀에 가입했어요!`, timestamp: at };
+    return { color: COLORS.join, description: `🎉 **${nick}** 님이 RE : 지후배틀에 가입했어요!`, timestamp: at };
   }
   if (body.type === 'legend') {
     const name = clean(body.name, 20);
     if (!name) return null;
     return { color: COLORS.legend, description: `🌟 **${nick}** 님이 전설 지후 **${name}** 획득!`, timestamp: at };
-  }
-  if (body.type === 'hidden') { // 5.4 히든 지후 뽑기
-    const name = clean(body.name, 20);
-    if (!name) return null;
-    return { color: COLORS.hidden, description: `⚡ **${nick}** 님이 히든 지후 **${name}** 획득!`, timestamp: at };
-  }
-  if (body.type === 'coop') { // 5.4 협동전 기록
-    const wave = num(body.wave);
-    if (wave == null || wave < 0 || wave > 99999) return null;
-    const best = num(body.best);
-    const fields = [];
-    const deck = list(body.myDeck); if (deck.length) fields.push({ name: plain(body.nickname, 12) || '플레이어', value: deck.join('\n'), inline: true });
-    const mate = list(body.mateDeck); if (mate.length) fields.push({ name: 'AI 파트너', value: mate.join('\n'), inline: true });
-    return { color: COLORS.coop, title: `🤝 협동전 · WAVE ${wave}${body.newBest ? ' · 신기록!' : ''}`, description: `**${nick}** 님이 **${wave}웨이브**까지 버텼어요${best != null ? ` (최고 ${best})` : ''}`, fields, timestamp: at };
-  }
-  if (body.type === 'promo') {
-    const tier = clean(body.tier, 16);
-    if (!tier) return null;
-    return { color: COLORS.promo, description: `🏅 **${nick}** 님이 경쟁전 **${tier}** 승급!`, timestamp: at };
   }
   if (body.type === 'level') {
     const level = num(body.level);

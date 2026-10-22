@@ -1,26 +1,32 @@
-# 지후배틀
+# RE : 지후배틀 (RE:JHBT) · R2.0
 
-웹에서 플레이: https://wwwsebon-cloud.github.io/JHBT/
+웹에서 플레이: https://jihoobattle.kr/
 
-`index.html` 하나로 실행됩니다. 화면·게임 흐름·전투·캐릭터 수치(`CHARACTER_BALANCE`)·초상화(`PORTRAITS`, base64)·Firebase 설정·패치노트(`PATCH_NOTES`)가 모두 이 파일 안에 있습니다. 빌드 과정은 없습니다.
+`index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766`
+
+지후배틀(R1, v8.1)은 R2.0 에서 처음부터 다시 만들었습니다. R1 의 코드 · 지후 · 기능 전체는 **`archive/v8.1` 브랜치**에 그대로 있습니다.
 
 ## 파일
 
-- `index.html` — 게임 전체
-- `firestore.rules` — Firestore 보안 규칙. Firebase 콘솔 → Firestore Database → 규칙에 전체를 붙여넣어 게시합니다.
-- `infographics/` — 업데이트 인포그래픽. `python3 infographics/make.py infographics/<버전>.json`
-- `tools/migrate-leaderboard-deck/` — 레벨 리더보드 덱을 1번 슬롯 덱으로 일괄 변환 (관리자 키로 한 번 실행)
-- `tools/discord-webhook-worker/` — 디스코드 알림 중계 (Cloudflare Worker). 가입 · 전설 획득 · 게임 결과
-- `manifest.webmanifest`, `sw.js`, `icons/` — 앱으로 설치(PWA). 메뉴(☰) → 앱으로 설치. 서비스 워커는 항상 네트워크를 먼저 쓰고 연결이 없을 때만 마지막으로 받은 사본을 보여주므로, 새 버전 배포나 버전 확인에 영향을 주지 않습니다.
+- `index.html` — 게임 전체 (지후 데이터 `CHARS` · 초상화 `PORTRAITS`(base64) · 패치노트 `PATCH_NOTES` · Firebase 설정 포함)
+- `firestore.rules` — Firestore 규칙. 콘솔 → Firestore Database → 규칙에 **파일 전체**를 붙여넣어 게시
+- `infographics/` — 업데이트 인포그래픽 (`make.py` JSON → HTML · `shot.py` HTML → PNG) · R1 시절 인포그래픽은 `infographics/r1/`
+- `tools/discord-webhook-worker/` — 디스코드 알림 중계 (Cloudflare Worker)
+- `emo/` 이모티콘 · `sfx/attack.mp3` 타격음 · `bgm/lobby.mp3` 로비 음악 · `icons/` · `manifest.webmanifest` · `sw.js` (PWA)
 
 ## 릴리스
 
-1. `index.html` 맨 위 `<meta name="jihoo-version" content="…">`의 버전을 올립니다. 문서 제목·로비 배지·패치노트 버튼·인트로 버전이 모두 여기서 나옵니다.
-2. `PATCH_NOTES` 맨 앞에 같은 버전 항목을 추가합니다. 신규 지후가 있으면 섹션 제목을 `신규 지후`로 하고 `releasedAt`을 배포 시각으로 두면 48시간 신규 지후 픽업이 열립니다.
-3. 배포하면 이미 게임을 켜 둔 사람은 버전 태그를 확인해(5분마다·탭으로 돌아올 때) 새로고침 안내를 받습니다. 경기 중에는 끝난 뒤에 뜹니다.
+1. `index.html` 맨 위 `<meta name="jihoo-version">` (R2.0 → R2.1 …) · 잠수함 패치는 `<meta name="jihoo-build">` +1
+2. `PATCH_NOTES` 맨 앞에 새 항목
+3. 인포그래픽: `infographics/<버전>.json` → `python infographics/make.py …` → `python infographics/shot.py …`
+4. 배포하면 켜 둔 화면은 5분마다 버전을 확인해 새로고침 안내를 받습니다 (경기 중에는 끝난 뒤). 태그 이름이 R1 과 같아서 예전 v8.1 화면도 R2.0 을 알아봅니다.
 
-## 온라인 기능
+## R2.0 배포 체크리스트 (콘솔)
 
-Firebase 프로젝트 `jihoobattle`의 이메일/비밀번호 인증과 Firestore를 사용합니다. 닉네임과 비밀번호(6~32자)로 계정을 만들면 8자리 UID가 배정되고, 다른 기기에서는 UID와 비밀번호로 로그인해 백업을 복원합니다. 3.0 시절 4자리 UID 계정은 32자 복구 키를 비밀번호로 써서 로그인할 수 있습니다. 닉네임으로도 로그인할 수 있습니다. 로그인한 계정이 리더보드를 갱신할 때 `nicknames` 컬렉션에 닉네임 → UID를 등록하며, 같은 닉네임은 먼저 등록한 계정만 씁니다. 이 기능은 `firestore.rules`의 `nicknames` 규칙이 게시되어 있어야 동작합니다. 비밀번호 재설정 수단은 없습니다.
+1. **Firestore 규칙**: 이 저장소의 `firestore.rules` 전체를 게시 (R1 · 지후배틀 2 규칙을 대체 · R1 `backups` 는 읽기만, `leaderboard` 는 명예의 전당으로 읽기만)
+2. Authentication → 이메일/비밀번호 · Google · **익명(Anonymous)** 사용 설정 (게스트 리더보드에 필요)
+3. 운영자: `admins/<uid>` 문서 (R1 그대로) · 게임 환경설정에 개발자 모드 · 운영 도구(우편 · 공지 · 점검)가 보인다
 
-웹 API 키는 공개 클라이언트 설정입니다. 리더보드 수치는 클라이언트가 올리므로 조작을 막지는 못합니다.
+## 온라인
+
+같은 Firebase 프로젝트(`jihoobattle`) · 같은 계정(UID 8자리 + 비밀번호, Google 연결). 처음 로그인하면 R1 기록(`backups/<uid>`)에서 골드 · 다이아 · 남은 지후 · 이모티콘 · 사용한 쿠폰을 한 번 가져오고 이후 `r2_backups/<uid>` 에 저장합니다. 자세한 규칙은 `CLAUDE.md`.
