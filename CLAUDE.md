@@ -19,7 +19,7 @@
 1. `index.html` 수정 (CHARS 수치 · 설명 텍스트 · atkText 등 하드코딩된 수치도 같이)
 2. version / build 메타 갱신
 3. `PATCH_NOTES` 맨 위에 새 항목 (tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템)
-4. **디스코드 공지용 인포그래픽 만들기 (잊지 말 것)**: `infographics/<버전>.json` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py infographics/<버전>.html`. 형식은 make.py 상단 주석. 초상화는 `infographics/portraits.json` (index.html 의 PORTRAITS 를 바꾸면 다시 만든다)
+4. **디스코드 공지용 인포그래픽 만들기 (잊지 말 것)**: `infographics/<버전>.json` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py infographics/<버전>.html`. 형식은 make.py 상단 주석. 항목이 많으면 JSON 에 `"width": 1600, "cols": 2` (넓게 2단 · 너무 길쭉하지 않게). 초상화는 `infographics/portraits.json` (index.html 의 PORTRAITS 를 바꾸면 다시 만든다)
 5. 이 파일(CLAUDE.md)에 바뀐 규칙이 있으면 갱신
 
 ## 게임 규칙 · 데이터

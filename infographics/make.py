@@ -6,6 +6,7 @@
 JSON 형식
 {
   "version": "R2.0", "date": "2026.10.22", "title": "손맛 업데이트", "subtitle": "한 줄 설명",
+  "width": 1600, "cols": 2,                                                    ← 없으면 1080 · 1단 (항목이 많으면 넓게 2단으로 · 너무 길쭉하지 않게)
   "headline": [ { "icon": "✦", "title": "...", "desc": "..." }, ... ]          ← 크게 보여 줄 3개
   "sections": [
     { "kind": "new" | "balance" | "change" | "fix", "label": "새 기능",
@@ -58,7 +59,8 @@ body { width:1080px; background:#f4f4f2; font-family:'Pretendard Variable', Pret
 .sec .lab { padding-top:22px; }
 .sec .lab .k { display:inline-block; writing-mode:vertical-rl; transform:rotate(180deg); font:900 30px 'Arial Black', sans-serif; letter-spacing:.06em; color:var(--k); }
 .sec .lab .n { display:block; margin-top:12px; font:800 13px ui-monospace, Consolas, monospace; color:#8f8f8c; letter-spacing:.1em; }
-.sec .body { padding-top:22px; display:flex; flex-direction:column; gap:14px; }
+.sec .body { padding-top:22px; display:grid; grid-template-columns:repeat(var(--cols, 1), minmax(0, 1fr)); gap:14px; align-items:stretch; }
+.sec .body > h2 { grid-column:1 / -1; }
 .sec h2 { font:900 30px 'Pretendard Variable', sans-serif; letter-spacing:-.04em; }
 .item { display:grid; grid-template-columns:64px 1fr; gap:18px; align-items:start; background:#fff; border:1px solid #d9d9d6; border-radius:18px; padding:18px 20px; }
 .item .ic { width:64px; height:64px; border-radius:16px; background:#111; color:#f2f2f0; display:grid; place-items:center; font-size:28px; overflow:hidden; }
@@ -122,8 +124,8 @@ def build(d):
     chars = ''.join(f'<span>{pic(i)}</span>' for i in d.get('chars', ['fire', 'ice', 'sword', 'assassin', 'shield']))
     heads = ''.join(f'<div class="head">{icon(h)}<b>{e(h["title"])}</b><small>{e(h["desc"])}</small></div>' for h in d['headline'])
     secs = ''.join(section(s, i + 1) for i, s in enumerate(d['sections']))
-    major, _, rest = d['version'].partition('.')
-    return f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>{CSS}</style></head><body>
+    w, cols = int(d.get('width', 1080)), int(d.get('cols', 1))
+    return f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="info-width" content="{w}"><style>{CSS}body {{ width:{w}px; --cols:{cols}; }}</style></head><body>
   <div class="hero"><div class="top"><span>RE:JHBT</span><span class="pill">UPDATE</span><span class="sp"></span><span>{e(d['date'])}</span></div>
     <div class="ver">{e(d['version'])}</div><h1>{e(d['title'])}</h1><p>{e(d['subtitle'])}</p><div class="chars">{chars}</div></div>
   <div class="heads">{heads}</div>
