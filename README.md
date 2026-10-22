@@ -1,4 +1,4 @@
-# RE : 지후배틀 (RE:JHBT) · R2.0
+# RE : 지후배틀 (RE:JHBT) · R2.1
 
 웹에서 플레이: https://jihoobattle.kr/
 
