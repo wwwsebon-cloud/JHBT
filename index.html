@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.2.1"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.2.1"><meta name="jihoo-build" content="6"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1189,7 +1189,7 @@ const CFG = {
   DEPTH: [0.60, 0.72, 0.84], ACROSS: [0.1, 0.9], // 전작 V42 칸 위치 (전장 비율)
   MAP_EW: [1760, 1120], MAP_NS: [1120, 1600],     // 전작 전장 크기 (가로 화면 · 세로 화면)
   UNIT_R: 28,                              // 전작 유닛 반지름 (45px 격자 기준 · ×60/45)
-  MAX_UNITS: 10, SAME_LIMIT: 2, POOL: 3, PICK_TIME: 15, // 전장 최대 10기 · 같은 지후 2기 (R2.2 · 출격제한 1 은 그대로) · 카드 3장 · 15초
+  MAX_UNITS: 10, SAME_LIMIT: 3, POOL: 3, PICK_TIME: 15, // 전장 최대 10기 · 같은 지후 3기 (R2.2.1 · 출격제한 1 은 그대로) · 카드 3장 · 15초
   LIVES: 4,                                // 전작은 3
   MAX_LV: 5, LEVEL_MULT: 1.2, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 ×1.2 · 효과 ×1.1 (복리)
   ROUND_TIME: 45, STALL: 15, FAST_AFTER: 25, FAST_SPEED: 1.5, DM_DEPLOYS: 3, // 전작: 45초 · 15초 무피해 판정 · 25초 뒤 1.5배속 · 데스매치 배치 3번
@@ -2809,7 +2809,8 @@ function botDeck() { const ids = Object.keys(CHARS); return A.pick(ids, Math.min
 // ── 배치 판정 (전작 canPlaceNew · mergeTargetFor · poolCardPlayable) ──
 function countSide(side) { return S.place[side].filter(Boolean).length; }
 function sameCount(side, id) { return S.place[side].filter(p => p && p.id === id).length; }
-function mergeTile(side, id) { const i = S.place[side].findIndex(p => p && p.id === id && p.lv === 1); return i < 0 ? null : i; } // 카드(Lv1)는 같은 지후 Lv1 위에만 겹친다
+const stackable = (p, id) => !!(p && p.id === id && p.lv < CFG.MAX_LV); // 새 카드는 전장의 같은 지후 위에 레벨 상관없이 겹쳐 +1 (2렙 + 카드 = 3렙 · 최대 Lv5)
+function mergeTile(side, id) { let best = null; S.place[side].forEach((p, i) => { if (stackable(p, id) && (best == null || p.lv > S.place[side][best].lv)) best = i; }); return best; } // 자동 · 봇: 가장 높은 레벨에
 function canPlaceNew(side, id) { return countSide(side) < CFG.MAX_UNITS && sameCount(side, id) < limitOf(id) && S.place[side].some(p => !p); }
 function playable(side, id) { return mergeTile(side, id) != null || canPlaceNew(side, id); }
 function isDeathmatch() { return S.lives.a === 1 && S.lives.e === 1; }
@@ -2839,7 +2840,7 @@ function applyAct(side, act) {
   (Array.isArray(act.ops) ? act.ops : []).slice(0, 30).forEach(o => { const a = Number(o && o[0]), b = Number(o && o[1]); if (a >= 0 && b >= 0 && a < TILES && b < TILES && a !== b && Number.isInteger(a) && Number.isInteger(b)) moveTile(side, a, b); });
   const id = act.id; if (act.k === 's' || !CHARS[id]) return;
   const t = Number(act.t), p = Number.isInteger(t) && t >= 0 && t < TILES ? S.place[side][t] : undefined;
-  if (act.k === 'm' && p && p.id === id && p.lv === 1) { levelUp(side, t); return; }
+  if (act.k === 'm' && stackable(p, id)) { levelUp(side, t); return; }
   if (act.k === 'p' && p === null && canPlaceNew(side, id)) { placeAt(side, t, id); return; }
   const m = mergeTile(side, id); if (m != null) levelUp(side, m);
 }
@@ -2894,7 +2895,7 @@ function tapTile(t) {
   const me = ME(), p = S.place[me][t];
   if (S.pick != null) {
     const id = S.pool[S.pick];
-    if (p && p.id === id) { if (p.lv !== 1) return tip(`카드는 <b>Lv1</b> ${CHARS[id].name} 위에만 겹칠 수 있어요. 같은 레벨끼리 옮겨 합치면 레벨이 올라요.`); banner(`${CHARS[id].name} Lv.2!`); return commitAct({ k: 'm', id, t }); }
+    if (p && p.id === id) { if (!stackable(p, id)) return tip(`${CHARS[id].name}은(는) 이미 최대 레벨(Lv${CFG.MAX_LV})이에요.`); banner(`${CHARS[id].name} Lv.${p.lv + 1}!`); return commitAct({ k: 'm', id, t }); }
     if (!p) { if (!canPlaceNew(me, id)) return tip(countSide(me) >= CFG.MAX_UNITS ? `유닛은 ${CFG.MAX_UNITS}기까지 놓을 수 있어요. 같은 지후에 겹쳐 레벨업하세요.` : `<b>${CHARS[id].name}</b>은(는) ${limitOf(id)}기까지만 둘 수 있어요.`); return commitAct({ k: 'p', id, t }); }
     return tip('이 칸에는 다른 지후가 있어요. 빈 칸이나 같은 지후를 누르세요.');
   }
@@ -2973,7 +2974,7 @@ function renderField() {
       if (!p) continue;
       const u = makeUnit(side, p.id, p.lv, x, y);
       const el = unitEl(u); el.dataset.side = side; el.dataset.tile = t;
-      if (mine && ((pick && p.id === pick && p.lv === 1) || (S.moveSel != null && S.moveSel !== t && canFuse(S.place[me][S.moveSel], p)))) el.classList.add('merge'); // 겹치거나 합칠 수 있는 지후
+      if (mine && ((pick && stackable(p, pick)) || (S.moveSel != null && S.moveSel !== t && canFuse(S.place[me][S.moveSel], p)))) el.classList.add('merge'); // 겹치거나 합칠 수 있는 지후
       if (mine && S.moveSel === t) el.classList.add('movesel');
       f.appendChild(el); u.el = el; drawUnit(u);
       if (mine && S.moveSel === t) showRangeRing(u);
@@ -4339,7 +4340,11 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
-  { v: 'R2.2.1', date: '2026.10.22', title: '광폭화 지후 조정', sections: [
+  { v: 'R2.2.1', date: '2026.10.22', title: '광폭화 · 태양 · 배치 조정', sections: [
+    { title: '규칙', items: [
+      { icon: '⇪', name: '카드 겹치기', tag: 'adjust', desc: '새 카드는 전장의 같은 지후 위에 <b>레벨 상관없이</b> 겹쳐 레벨 +1 (2렙 + 카드 = 3렙). 전장에 있는 지후끼리 옮겨 합치는 건 그대로 <b>같은 레벨</b>끼리만 (2렙 + 1렙 ✕).' },
+      { icon: '3', name: '같은 지후 2기 → 3기', tag: 'adjust', desc: '출격제한 1 이 아닌 지후는 전장에 <b>최대 3기</b>까지 둘 수 있어요.' },
+    ] },
     { title: '하향', items: [
       { id: 'berserk', name: '광폭화 지후', tag: 'nerf', desc: '체력 1,300 → <b>910</b>' },
       { id: 'sun', name: '태양 지후', tag: 'nerf', desc: '같은 적을 2번 공격할 때마다 쌓이는 공격력 +20 이 <b>공격 대상을 바꾸거나 공격을 멈추면 초기화</b>돼요 (예전: 라운드 내내 유지).' },
@@ -4449,7 +4454,7 @@ function renderHelp(tab) {
   $('helpTabs').querySelectorAll('[data-h]').forEach(b => b.onclick = () => renderHelp(b.dataset.h));
   $('helpBody').innerHTML = tab === 'online' ? `<ul><li><b>친구</b>: 친구 · 채팅 → <b>+ 친구 추가</b>에서 닉네임으로 신청 · 받은 사람이 수락하면 친구</li><li><b>친선전</b>: 접속 중인 친구에게 신청 → 20초 안에 수락하면 시작 · 규칙은 일반전과 같고 두 사람이 동시에 카드를 골라요 · 경험치 · 보상은 없어요</li><li>참가자 화면은 전장을 좌우로 뒤집어 내 진영이 왼쪽에 와요 · 라운드 결과는 방장 화면 기준</li><li><b>관전</b>: 친구가 관전을 허용했으면 친구 목록의 <b>관전</b>으로 지켜볼 수 있어요 (끝난 라운드는 빠르게 따라잡아요)</li><li>상대 연결이 50초 넘게 끊기면 승리 · 포기하면 항복</li><li>전체 채팅 · 1:1 채팅은 욕설이 가려지고 3초에 한 번 보낼 수 있어요</li></ul>`
     : tab === 'rule' ? `<p>덱의 지후 5기로 봇과 싸워요. 라이프 <b>${CFG.LIVES}</b>를 먼저 잃는 쪽이 져요.</p>
-    <h4>배치</h4><ul><li>배치 기회: <b>첫 라운드 4번</b> · 그다음 라운드 <b>2번</b> · 양쪽 라이프가 1이면 데스매치 <b>3번</b></li><li>기회마다 덱에서 카드 <b>3장</b> → 1장을 골라 <b>빈 칸</b>에 놓거나, 같은 지후 <b>Lv1</b> 위에 겹쳐 <b>Lv2</b> (${CFG.PICK_TIME}초가 지나면 자동)</li><li><b>합체</b>: 내 지후를 눌러 같은 종류 · <b>같은 레벨</b> 지후(금색) 위로 옮기면 레벨 +1 (2렙 + 2렙 = 3렙 · 최대 Lv${CFG.MAX_LV})</li><li>내가 하나 놓으면 상대도 하나 · 전장 최대 <b>${CFG.MAX_UNITS}기</b> · 같은 지후는 <b>${CFG.SAME_LIMIT}기</b>까지 (출격제한 1 은 1기)</li><li>놓은 지후는 다음 라운드에도 제자리에서 체력이 가득 찬 채로 다시 나와요 · 내 지후를 눌러 자리를 옮길 수 있어요</li><li>칸은 앞에서부터 전열 · 중열 · 후열 — 전열이 먼저 맞아요</li></ul>
+    <h4>배치</h4><ul><li>배치 기회: <b>첫 라운드 4번</b> · 그다음 라운드 <b>2번</b> · 양쪽 라이프가 1이면 데스매치 <b>3번</b></li><li>기회마다 덱에서 카드 <b>3장</b> → 1장을 골라 <b>빈 칸</b>에 놓거나, 전장의 같은 지후 위에 겹쳐 <b>레벨 +1</b> (레벨 상관없이 · 2렙 + 카드 = 3렙 · ${CFG.PICK_TIME}초가 지나면 자동)</li><li><b>합체</b>: 내 지후를 눌러 같은 종류 · <b>같은 레벨</b> 지후(금색) 위로 옮기면 레벨 +1 (2렙 + 2렙 = 3렙 · 전장의 2렙과 1렙은 합칠 수 없어요 · 최대 Lv${CFG.MAX_LV})</li><li>내가 하나 놓으면 상대도 하나 · 전장 최대 <b>${CFG.MAX_UNITS}기</b> · 같은 지후는 <b>${CFG.SAME_LIMIT}기</b>까지 (출격제한 1 은 1기)</li><li>놓은 지후는 다음 라운드에도 제자리에서 체력이 가득 찬 채로 다시 나와요 · 내 지후를 눌러 자리를 옮길 수 있어요</li><li>칸은 앞에서부터 전열 · 중열 · 후열 — 전열이 먼저 맞아요</li></ul>
     <h4>SP · 치명타</h4><ul><li><b>SP</b>: 일반 공격이 맞을 때마다 1씩 차요 (파란 게이지). <b>SP 6</b>이면 6번째 공격에 스킬 발동 · [침묵]이면 멈춰요</li><li>모든 지후는 공격이 <b>2%</b> 확률로 <b>치명타</b> (피해 ×2) · [부상]에 걸린 적은 <b>50%</b></li><li>출격제한이 있는 지후는 그 수만큼만 전장에 둘 수 있어요</li></ul>
     <h4>전투</h4><ul><li>지후는 가장 가까운 적에게 다가가 싸워요 · 근접 지후는 공격 직전 <b>빨간 부채꼴</b>로 범위를 보여 줘요</li><li>제한 시간 <b>${CFG.ROUND_TIME}초</b> · <b>${CFG.STALL}초</b> 동안 아무도 피해를 못 주면 바로 판정 · 시간이 끝나면 <b>예상 우세</b>로 판정 (50:50이면 같은 라운드를 다시)</li><li>${CFG.FAST_AFTER}초가 지나면 1.5배속 · 아래 1× / 1.5× 로 직접 바꿀 수도 있어요 · <b>자동 배치</b>를 누르면 고른 카드를 알맞은 칸에 바로 놓아요</li><li>전장은 끌어서 옮기고, 휠 · 두 손가락 · ＋/− 버튼으로 확대해요 · 지후를 누르면 사거리 원</li></ul>`
     : tab === 'status' ? `<div class="stl">${Object.entries(STATUS).map(([k, v]) => `<span>${v.icon}</span><b>${v.name}</b><span>${({ stun: '움직이지도 공격하지도 못한다', freeze: '움직이지도 공격하지도 못한다 · 풀린 뒤 0.5초 동안 다시 안 걸린다', burn: '1초마다 피해 · 여러 번 걸리면 따로 쌓인다', poison: '1초마다 피해', blind: '일반 공격이 50% 빗나간다', silence: '스킬 게이지가 멈춘다', weak: '받는 피해 +20% · 공격력 -15%', stealth: '적이 노리지 못한다 (범위 공격에는 맞는다)', lacer: '체력바 끝이 잘려 최대 체력이 줄어든다', wound: '받는 공격이 치명타일 확률 50%', vuln: '받는 피해 증가', inv: '피해 · 상태이상을 받지 않는다', rage: '공격력 +140% · 공격 간격 0.7초', frost: '공격력 -10% · 받는 피해 +10% · 이동속도 -40%', dive: '노릴 수 없고 아무 피해도 받지 않는다', alone: '인접 8칸이 비어 일반 공격에 추가 피해' })[k] || ''}</span>`).join('')}</div>`
