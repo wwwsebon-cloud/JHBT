@@ -1,23 +1,22 @@
 rules_version = '2';
+// RE : 지후배틀 (R2.0) — Firestore 규칙. 콘솔 → Firestore Database → 규칙에 이 파일 전체를 붙여넣어 게시한다.
+// 지후배틀(R1) · 지후배틀 2 의 규칙은 이 파일로 대체된다 (R1 전체 규칙은 archive/v8.1 브랜치에 있다).
+// R1 데이터: backups(가져오기용) · leaderboard(명예의 전당) 은 읽기만 · 나머지 R1 모드 컬렉션은 더 이상 열지 않는다.
 service cloud.firestore {
   match /databases/{database}/documents {
     function owner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
-    // 7.8.1 계정 밴: bans/{uid} 문서가 있고 기간(until, ms · 0 = 영구)이 남아 있으면 정지된 계정
+    // 운영자: admins/{uid} 문서는 콘솔에서만 만든다
     function isAdmin() {
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    // 7.8.3 고급 개발자 (딸깍밸패기): admins 와 seniorDevs/{uid} 문서가 둘 다 있어야 한다. seniorDevs 도 콘솔에서만 만든다
-    function isSenior() {
-      return isAdmin() && exists(/databases/$(database)/documents/seniorDevs/$(request.auth.uid));
-    }
+    // 이용 정지: bans/{uid} 문서가 있고 기간(until, ms · 0 = 영구)이 남아 있으면
     function banned() {
       return request.auth != null && exists(/databases/$(database)/documents/bans/$(request.auth.uid))
         && (get(/databases/$(database)/documents/bans/$(request.auth.uid)).data.until == 0
           || get(/databases/$(database)/documents/bans/$(request.auth.uid)).data.until > request.time.toMillis());
     }
-
     function validDeck(deck) {
       return deck is list && deck.size() <= 5
         && (deck.size() < 1 || (deck[0] is string && deck[0].matches('^[a-z_]{1,24}$')))
@@ -27,27 +26,22 @@ service cloud.firestore {
         && (deck.size() < 5 || (deck[4] is string && deck[4].matches('^[a-z_]{1,24}$')));
     }
 
-    // ranks(지후별 랭크)와 masteryCounts(숙련 횟수)는 예전 클라이언트가 안 보내므로 선택 필드다.
-    function validLeaderboard(data) {
-      return data.keys().hasAll(['nickname', 'level', 'deck', 'wins', 'losses', 'playMs', 'favorite', 'updatedAt'])
-        && data.keys().hasOnly(['nickname', 'level', 'deck', 'wins', 'losses', 'playMs', 'favorite', 'ranks', 'masteryCounts', 'look', 'updatedAt'])
-        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
-        && data.level is int && data.level >= 1 && data.level <= 150
-        && validDeck(data.deck)
-        && data.wins is int && data.wins >= 0 && data.wins <= 99999
-        && data.losses is int && data.losses >= 0 && data.losses <= 99999
-        && data.playMs is int && data.playMs >= 0 && data.playMs <= 315360000000
-        && data.favorite is string && (data.favorite == '' || data.favorite.matches('^[a-z_]{1,24}$'))
-        && (!('ranks' in data) || data.ranks is map)
-        && (!('masteryCounts' in data) || data.masteryCounts is map)
-        // 4.3 프로필 꾸미기: { a: 대표 지후, f: 테두리, t: 칭호, c: 카드 색 }
-        && (!('look' in data) || (data.look is map && data.look.keys().hasOnly(['a', 'f', 't', 'c'])
-            && data.look.a is string && data.look.a.size() <= 24 && data.look.f is string && data.look.f.size() <= 12
-            && data.look.t is string && data.look.t.size() <= 40 && data.look.c is string && data.look.c.size() <= 12))
-        && data.updatedAt is timestamp;
+    // ── 계정 · 기록 ──
+    // R2 기록: r2_backups/{uid} = { payload(프로필 JSON), savedAt, updatedAt }
+    match /r2_backups/{userId} {
+      allow get, delete: if owner(userId);
+      allow create, update: if owner(userId)
+        && request.resource.data.keys().hasOnly(['payload', 'savedAt', 'updatedAt'])
+        && request.resource.data.payload is string && request.resource.data.payload.size() <= 100000
+        && request.resource.data.savedAt is int
+        && request.resource.data.updatedAt is timestamp;
     }
-
-    // 닉네임 로그인용: 문서 ID는 'n_' + 소문자 닉네임, code 는 로그인한 계정 자신의 UID여야 한다.
+    // R1 기록: 처음 로그인할 때 한 번 가져오기만 한다 (더 이상 쓰지 않는다)
+    match /backups/{userId} {
+      allow get: if owner(userId);
+      allow write: if false;
+    }
+    // 닉네임 로그인 · 친구 찾기 (R1 과 같은 등록부): 문서 ID 'n_' + 소문자 닉네임 · code 는 로그인한 계정 자신의 UID
     function validNickname(key, data) {
       return data.keys().hasAll(['owner', 'code', 'nickname', 'updatedAt'])
         && data.keys().hasOnly(['owner', 'code', 'nickname', 'updatedAt'])
@@ -57,209 +51,26 @@ service cloud.firestore {
         && key == 'n_' + data.nickname.lower()
         && data.updatedAt is timestamp;
     }
-
-    // 경쟁전 리더보드: 티어 점수와 경쟁전 전적, 마지막 3:3 덱
-    function validCompLeaderboard(data) {
-      return data.keys().hasAll(['nickname', 'tp', 'wins', 'losses', 'deck', 'updatedAt'])
-        && data.keys().hasOnly(['nickname', 'tp', 'wins', 'losses', 'deck', 'updatedAt'])
-        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
-        && data.tp is int && data.tp >= 0 && data.tp <= 999999
-        && data.wins is int && data.wins >= 0 && data.wins <= 99999
-        && data.losses is int && data.losses >= 0 && data.losses <= 99999
-        && validDeck(data.deck) && data.deck.size() <= 3
-        && data.updatedAt is timestamp;
-    }
-
-    // 4.4 시즌 리더보드: seasons/{시즌}/lb · seasons/{시즌}/comp. 이번 달(UTC 기준 또는 한국 시간으로 이미 넘어간 다음 달) 시즌에만 쓸 수 있다.
-    function currentSeason(season) {
-      return int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 8
-        || int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 7;
-    }
-    function validSeasonLb(data) {
-      return data.keys().hasAll(['nickname', 'level', 'deck', 'wins', 'losses', 'playMs', 'favorite', 'xp', 'updatedAt'])
-        && data.keys().hasOnly(['nickname', 'level', 'deck', 'wins', 'losses', 'playMs', 'favorite', 'ranks', 'masteryCounts', 'look', 'xp', 'updatedAt'])
-        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
-        && data.level is int && data.level >= 1 && data.level <= 150
-        && validDeck(data.deck)
-        && data.wins is int && data.wins >= 0 && data.wins <= 99999
-        && data.losses is int && data.losses >= 0 && data.losses <= 99999
-        && data.playMs is int && data.playMs >= 0 && data.playMs <= 315360000000
-        && data.favorite is string && (data.favorite == '' || data.favorite.matches('^[a-z_]{1,24}$'))
-        && data.xp is int && data.xp >= 0 && data.xp <= 999999999
-        && (!('ranks' in data) || data.ranks is map)
-        && (!('masteryCounts' in data) || data.masteryCounts is map)
-        && (!('look' in data) || data.look is map)
-        && data.updatedAt is timestamp;
-    }
-
-    function validBackup(data) {
-      return data.keys().hasAll(['payload', 'updatedAt'])
-        && data.keys().hasOnly(['payload', 'updatedAt'])
-        && data.payload is string && data.payload.size() <= 100000
-        && data.updatedAt is timestamp;
-    }
-
-    // 4.1.4 글로벌 채팅: 누구나 읽고, 로그인한 계정만 자기 UID로 쓴다. 수정·삭제 불가. at 는 서버 시각이어야 한다.
-    function validChat(data) {
-      return data.keys().hasAll(['uid', 'nickname', 'text', 'at'])
-        && data.keys().hasOnly(['uid', 'nickname', 'text', 'at'])
-        && data.uid == request.auth.uid
-        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
-        && data.text is string && data.text.size() > 0 && data.text.size() <= 120
-        && data.at == request.time;
-    }
-
-    // 4.1.4 공지 이벤트 (레벨업·가입·뽑기·랭크·마스터리·승급)
-    function validEvent(data) {
-      return data.keys().hasAll(['uid', 'nickname', 'type', 'a', 'b', 'at'])
-        && data.keys().hasOnly(['uid', 'nickname', 'type', 'a', 'b', 'at'])
-        && data.uid == request.auth.uid
-        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 12
-        && data.type in ['level', 'join', 'gacha', 'rank', 'mastery', 'promo']
-        && data.a is string && data.a.size() <= 40
-        && data.b is string && data.b.size() <= 40
-        && data.at == request.time;
-    }
-
-    // 4.1.6 동시접속 차단: 계정마다 지금 플레이 중인 세션 번호 하나
-    function validSession(data) {
-      return data.keys().hasAll(['sid', 'at']) && data.keys().hasOnly(['sid', 'at'])
-        && data.sid is string && data.sid.size() > 0 && data.sid.size() <= 40
-        && data.at == request.time;
-    }
-
-    match /sessions/{userId} {
-      allow get: if owner(userId);
-      allow create, update: if owner(userId) && validSession(request.resource.data);
-      allow delete: if owner(userId);
-    }
-
-    match /chat/{id} {
-      allow get, list: if true;
-      allow create: if request.auth != null && !banned() && validChat(request.resource.data);
-    }
-
-    match /events/{id} {
-      allow get, list: if true;
-      allow create: if request.auth != null && !banned() && validEvent(request.resource.data);
-    }
-
     match /nicknames/{key} {
       allow get: if true;
       allow list: if request.auth != null && resource.data.owner == request.auth.uid;
       allow create: if request.auth != null && validNickname(key, request.resource.data);
       allow update: if request.auth != null && resource.data.owner == request.auth.uid && validNickname(key, request.resource.data);
-      allow delete: if request.auth != null && resource.data.owner == request.auth.uid;
+      allow delete: if request.auth != null && (resource.data.owner == request.auth.uid || isAdmin());
     }
-
-    match /backups/{userId} {
-      allow get, delete: if owner(userId);
-      allow create, update: if owner(userId) && validBackup(request.resource.data);
-    }
-
-    // 7.6.3 활동 기록 (복구용): 재화 · 조각 · 랭크 · 한계돌파가 바뀐 기록. 본인만 추가하고(고치기 불가) 본인과 운영자만 읽는다.
-    //   actlog/{uid} 는 운영자가 닉네임 · UID 로 찾기 위한 색인. 30일이 지난 묶음은 본인 기기가 지운다
-    match /actlog/{userId} {
-      allow get, list: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    // 동시 접속 막기: 계정마다 지금 플레이 중인 창 번호 하나
+    match /sessions/{userId} {
+      allow get: if owner(userId);
       allow create, update: if owner(userId)
-        && request.resource.data.keys().hasOnly(['n', 'u', 'at'])
-        && request.resource.data.n is string && request.resource.data.n.size() <= 12
-        && request.resource.data.u is string && request.resource.data.u.size() <= 8
+        && request.resource.data.keys().hasOnly(['sid', 'at'])
+        && request.resource.data.sid is string && request.resource.data.sid.size() > 0 && request.resource.data.sid.size() <= 40
         && request.resource.data.at == request.time;
-      allow delete: if false;
-      match /c/{chunkId} {
-        allow get, list: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
-        allow create: if owner(userId) && chunkId.size() <= 24
-          && request.resource.data.keys().hasAll(['at', 'items'])
-          && request.resource.data.keys().hasOnly(['at', 'v', 'n', 'items'])
-          && request.resource.data.at == request.time
-          && request.resource.data.items is list
-          && request.resource.data.items.size() >= 1 && request.resource.data.items.size() <= 150
-          && request.resource.data.get('v', '') is string && request.resource.data.get('v', '').size() <= 16
-          && request.resource.data.get('n', '') is string && request.resource.data.get('n', '').size() <= 12;
-        allow update: if false;
-        allow delete: if owner(userId) && resource.data.at < request.time - duration.value(30, 'd');
-      }
+      allow delete: if owner(userId);
     }
-
-    match /compLeaderboard/{userId} {
-      allow get, list: if true;
-      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
-      allow create, update: if owner(userId) && !banned() && validCompLeaderboard(request.resource.data);
+    match /admins/{userId} {
+      allow get: if owner(userId);
+      allow list, write: if false;
     }
-
-    // 5.4 협동전 리더보드: 최고 웨이브 · 덱
-    // 5.5 운영 우편: admins/{uid} 문서는 콘솔에서만 만든다. 운영자만 giftMail 을 쓸 수 있고, 받는 사람(또는 전체)만 읽는다.
-    // 5.7.4 서버 점검: 누구나 읽고(로그인 전에도), 운영자만 켜고 끈다
-    // 6.0 전체 공지: config/announce = { on, msg, by, at } 도 같은 방식 (누구나 읽고 운영자만 쓴다)
-    match /config/{docId} {
-      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'disabled' || docId == 'expired' || docId == 'tierlist' || docId == 'balance';
-      // 8.0.1 스페셜 조건 봉인 열쇠: config/sx = { k } — 로그인한 계정만 읽는다 · 쓰기는 콘솔에서만
-      allow get: if docId == 'sx' && request.auth != null;
-      // 7.8.3 딸깍밸패기: config/balance = { v(게시 번호), ov:{지후:{수치:[코드 값, 바꾼 값]}}, desc:{지후:{h, t}}, notes:[패치노트…], by, at } — 누구나 읽고 고급 개발자만 쓴다
-      allow write: if docId == 'balance' && isSenior()
-        && request.resource.data.keys().hasOnly(['v', 'ov', 'desc', 'notes', 'by', 'at'])
-        && request.resource.data.v is int
-        && ((resource == null && request.resource.data.v == 1) || (resource != null && request.resource.data.v == resource.data.v + 1))
-        && request.resource.data.ov is map && request.resource.data.ov.size() <= 260
-        && request.resource.data.desc is map && request.resource.data.desc.size() <= 260
-        && request.resource.data.notes is list && request.resource.data.notes.size() <= 30
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-      // 7.7.6 공식 티어표: config/tierlist = { ver, date, note, tiers, stats, by, at } — 개발자 모드 티어 측정에서 반영
-      allow write: if docId == 'tierlist' && request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && request.resource.data.keys().hasOnly(['ver', 'date', 'note', 'tiers', 'stats', 'by', 'at'])
-        && request.resource.data.ver is string && request.resource.data.ver.size() <= 12
-        && request.resource.data.date is string && request.resource.data.date.size() <= 12
-        && request.resource.data.note is string && request.resource.data.note.size() <= 120
-        && request.resource.data.tiers is map && request.resource.data.tiers.size() <= 7
-        && request.resource.data.stats is map && request.resource.data.stats.size() <= 400
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-      allow list: if false;
-      // 6.0.3 즉시 만료: config/expired = { codes: [코드…], mails: [우편 id…], by, at }
-      allow write: if docId == 'expired' && request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && request.resource.data.keys().hasOnly(['codes', 'mails', 'by', 'at'])
-        && request.resource.data.codes is list && request.resource.data.codes.size() <= 100
-        && request.resource.data.mails is list && request.resource.data.mails.size() <= 200
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-      // 6.0.2 지후 긴급 비활성화: config/disabled = { ids: [지후 id…], by, at }
-      allow write: if docId == 'disabled' && request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && request.resource.data.keys().hasOnly(['ids', 'by', 'at'])
-        && request.resource.data.ids is list && request.resource.data.ids.size() <= 80
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-      allow write: if docId == 'announce' && request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && request.resource.data.keys().hasOnly(['on', 'msg', 'by', 'at'])
-        && request.resource.data.on is bool
-        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-      allow write: if docId == 'maintenance' && request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && request.resource.data.keys().hasOnly(['on', 'msg', 'until', 'by', 'at'])
-        && (!('until' in request.resource.data) || request.resource.data.until is int)
-        && request.resource.data.on is bool
-        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-    }
-    // 8.0 주식 지후: 기간(8.0 빌드 3부터 12시간 · id "h12-번호")마다 공격력 배율 한 번 기록 (처음 계산한 사람이 만든다 · 수정 불가)
-    match /stock/{period} {
-      allow get, list: if true;
-      allow create: if request.auth != null && period.size() <= 12
-        && request.resource.data.keys().hasOnly(['m', 'f', 'r', 'a', 'n', 'at'])
-        && request.resource.data.m is number && request.resource.data.m >= 0.1 && request.resource.data.m <= 4
-        && request.resource.data.f in ['up', 'down', 'flat']
-        && request.resource.data.at == request.time;
-      allow update, delete: if false;
-    }
-
     match /bans/{userId} {
       allow get: if owner(userId) || isAdmin();
       allow list, delete: if isAdmin();
@@ -272,119 +83,91 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
     }
 
-    // 7.8.2 티어 측정 표본 공유 (개발자 모드): 운영자만 읽고 쓴다. 기기마다 문서 하나 (판 조합을 짧게 줄인 문자열)
-    match /tiersim/{device} {
-      allow read, delete: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-      allow create, update: if request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && device.size() <= 24
-        && request.resource.data.keys().hasOnly(['ver', 'n', 'ids', 'g', 'st', 'by', 'at'])
-        && request.resource.data.ver is string && request.resource.data.ver.size() <= 12
-        && request.resource.data.n is int && request.resource.data.n >= 0
-        && request.resource.data.ids is list && request.resource.data.ids.size() <= 400
-        && request.resource.data.g is string && request.resource.data.g.size() <= 900000
-        && request.resource.data.st is map && request.resource.data.st.size() <= 400
+    // ── 리더보드 ──
+    // 시즌 R2: r2lb/{uid} = { nickname, level(0~), wins, losses, deck, fav, xp, updatedAt } · 게스트(익명)도 자기 문서만
+    match /r2lb/{userId} {
+      allow get, list: if true;
+      allow delete: if owner(userId) || isAdmin();
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'updatedAt'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
+        && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
+        && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
+        && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
+        && validDeck(request.resource.data.deck)
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
+        && request.resource.data.xp is int && request.resource.data.xp >= 0 && request.resource.data.xp <= 1000000
+        && request.resource.data.updatedAt is timestamp;
+    }
+    // 명예의 전당: R1 레벨 리더보드 (읽기만 · 더 이상 바뀌지 않는다)
+    match /leaderboard/{userId} {
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // ── 운영: 점검 · 로비 공지 · 운영 우편 ──
+    // config/maintenance = { on, msg, until, by, at } · config/announce = { on, msg, by, at } — 누구나 읽고(로그인 전에도) 운영자만 쓴다
+    match /config/{docId} {
+      allow get: if docId == 'maintenance' || docId == 'announce';
+      allow list: if false;
+      allow write: if docId == 'announce' && isAdmin()
+        && request.resource.data.keys().hasOnly(['on', 'msg', 'by', 'at'])
+        && request.resource.data.on is bool
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+      allow write: if docId == 'maintenance' && isAdmin()
+        && request.resource.data.keys().hasOnly(['on', 'msg', 'until', 'by', 'at'])
+        && (!('until' in request.resource.data) || request.resource.data.until is int)
+        && request.resource.data.on is bool
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
         && request.resource.data.by == request.auth.uid
         && request.resource.data.at == request.time;
     }
-    match /admins/{userId} {
-      allow get: if owner(userId);
-      allow list, write: if false;
-    }
-    // 7.8.3 운영자 계정 되돌리기: restores/{uid} = { id, t(되돌릴 시점), s(그때 상태), why, by, at } — 운영자가 쓰고, 그 계정만(과 운영자가) 읽는다. 그 계정 기기가 접속할 때 적용한다
-    match /restores/{userId} {
-      allow get: if owner(userId) || isAdmin();
-      allow list, delete: if isAdmin();
-      allow create, update: if isAdmin()
-        && request.resource.data.keys().hasOnly(['id', 't', 's', 'why', 'by', 'at'])
-        && request.resource.data.id is string && request.resource.data.id.size() <= 40
-        && request.resource.data.t is int && request.resource.data.t >= 0
-        && request.resource.data.s is map && request.resource.data.s.keys().hasOnly(['g', 'd', 'm', 'dt', 'inv', 'sh', 'du', 'rk', 'lb', 'un'])
-        && request.resource.data.why is string && request.resource.data.why.size() <= 200
-        && request.resource.data.by == request.auth.uid
-        && request.resource.data.at == request.time;
-    }
-    match /seniorDevs/{userId} { // 7.8.3 고급 개발자 (딸깍밸패기)
-      allow get: if owner(userId);
-      allow list, write: if false;
-    }
+    // 운영 우편: 운영자만 쓰고, 받는 사람(또는 전체)만 읽는다 · 받으면 claims/{uid} 에 닉네임을 남긴다 (운영자만 읽는다)
     match /giftMail/{giftId} {
-      allow get, list: if request.auth != null && (resource.data.to == request.auth.uid || resource.data.to == 'all'
-        || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
-      allow create: if request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      allow get, list: if request.auth != null && (resource.data.to == request.auth.uid || resource.data.to == 'all' || isAdmin());
+      allow create: if isAdmin()
         && request.resource.data.from == request.auth.uid
         && request.resource.data.to is string && request.resource.data.title is string
         && request.resource.data.rewards is list && request.resource.data.rewards.size() <= 6;
       allow update, delete: if false;
-      // 6.0 수령 기록: 받는 사람(또는 전체 우편이면 누구나)이 자기 uid 문서 하나만 남긴다. 운영자만 읽는다
       match /claims/{userId} {
         allow create, update: if owner(userId)
           && (get(/databases/$(database)/documents/giftMail/$(giftId)).data.to in [userId, 'all'])
           && request.resource.data.keys().hasOnly(['name', 'at'])
           && request.resource.data.name is string && request.resource.data.name.size() <= 12
           && request.resource.data.at == request.time;
-        allow get, list: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+        allow get, list: if isAdmin();
         allow delete: if false;
       }
     }
 
-    match /coopLeaderboard/{userId} {
+    // ── 전체 채팅 · 공지 이벤트 ──
+    // 누구나 읽고, 로그인한 계정만 자기 UID로 쓴다. 수정 · 삭제 불가 · at 는 서버 시각
+    match /chat/{id} {
       allow get, list: if true;
-      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
-      allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasAll(['nickname', 'wave', 'deck', 'updatedAt'])
-        && request.resource.data.keys().hasOnly(['nickname', 'wave', 'deck', 'updatedAt'])
+      allow create: if request.auth != null && !banned()
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'text', 'at'])
+        && request.resource.data.uid == request.auth.uid
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
-        && request.resource.data.wave is int && request.resource.data.wave >= 0 && request.resource.data.wave <= 99999
-        && validDeck(request.resource.data.deck)
-        && request.resource.data.updatedAt is timestamp;
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 120
+        && request.resource.data.at == request.time;
     }
-
-    // 7.6.1 클래스 리더보드: 일반전 CP (초기화 없음) · 최고 CP · 덱
-    match /classLeaderboard/{userId} {
+    match /events/{id} {
       allow get, list: if true;
-      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
-      allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasAll(['nickname', 'cp', 'best', 'deck', 'updatedAt'])
-        && request.resource.data.keys().hasOnly(['nickname', 'cp', 'best', 'deck', 'updatedAt'])
+      allow create: if request.auth != null && !banned()
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'type', 'a', 'b', 'at'])
+        && request.resource.data.uid == request.auth.uid
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
-        && request.resource.data.cp is int && request.resource.data.cp >= 0 && request.resource.data.cp <= 1000000
-        && request.resource.data.best is int && request.resource.data.best >= request.resource.data.cp && request.resource.data.best <= 1000000
-        && validDeck(request.resource.data.deck)
-        && request.resource.data.updatedAt is timestamp;
-    }
-
-    // 7.7 고지능 봇이 배우는 실제 경기 덱 (일반전 · 경쟁전 · 추가만)
-    match /matchDecks/{id} {
-      allow get, list: if true;
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['d', 'm', 'w', 'u', 'at'])
-        && request.resource.data.u == request.auth.uid
-        && validDeck(request.resource.data.d) && request.resource.data.d.size() == 5
-        && request.resource.data.m in ['ranked', 'competitive']
-        && request.resource.data.w in [0, 1]
+        && request.resource.data.type in ['level', 'join', 'gacha']
+        && request.resource.data.a is string && request.resource.data.a.size() <= 40
+        && request.resource.data.b is string && request.resource.data.b.size() <= 40
         && request.resource.data.at == request.time;
     }
 
-    match /leaderboard/{userId} {
-      allow get, list: if true;
-      allow delete: if owner(userId) || (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); // 7.1.1 운영자: 중복 닉네임 정리
-      allow create, update: if owner(userId) && !banned() && validLeaderboard(request.resource.data);
-    }
-
-    match /seasons/{season}/lb/{userId} {
-      allow get, list: if true;
-      allow create, update: if owner(userId) && !banned() && currentSeason(season) && validSeasonLb(request.resource.data);
-    }
-
-    // 4.5: 경쟁전은 지난 시즌 최종 기록(finalSnap)도 한 번 올린다 → 이번 달 · 다음 달 · 지난 달 시즌 허용
-    match /seasons/{season}/comp/{userId} {
-      allow get, list: if true;
-      allow create, update: if owner(userId) && !banned() && (currentSeason(season) || int(season) == (request.time.year() - 2026) * 12 + request.time.month() - 9) && validCompLeaderboard(request.resource.data);
-    }
-    // ── 5.0 친구 · 접속 상태 · 1:1 채팅 · 친선전 ──
-    // 접속 상태: 로그인한 사람은 누구나 읽고, 자기 것만 쓴다 (at 는 서버 시각)
+    // ── 친구 · 접속 상태 · 1:1 채팅 ──
+    // 접속 상태: 로그인한 사람은 누구나 읽고, 자기 것만 쓴다 (sp = 관전할 수 있는 친선전 번호)
     match /presence/{userId} {
       allow get: if request.auth != null;
       allow create, update: if owner(userId)
@@ -394,20 +177,18 @@ service cloud.firestore {
         && request.resource.data.where is string && request.resource.data.where.size() <= 12
         && request.resource.data.at == request.time;
     }
-
-    // 친구 관계: 문서 ID 는 '작은UID_큰UID'. 요청한 사람이 만들고(pending), 받은 사람만 수락(accepted). 둘 중 누구나 삭제.
+    // 친구 관계: 문서 ID '작은UID_큰UID'. 요청한 사람이 만들고(pending), 받은 사람만 수락(accepted). 둘 중 누구나 삭제
     function friendOk(pairId) {
       let f = get(/databases/$(database)/documents/friendships/$(pairId));
       return f.data.status == 'accepted' && request.auth.uid in f.data.members;
     }
-    // 6.1 로그인한 내가 other 와 친구인가 (문서 ID 는 '작은UID_큰UID')
     function friendsWith(other) {
       return friendOk(request.auth.uid < other ? request.auth.uid + '_' + other : other + '_' + request.auth.uid);
     }
     match /friendships/{pairId} {
       allow get: if request.auth != null && (resource == null || request.auth.uid in resource.data.members);
       allow list: if request.auth != null && request.auth.uid in resource.data.members;
-      allow create: if request.auth != null
+      allow create: if request.auth != null && !banned()
         && request.resource.data.keys().hasOnly(['members', 'names', 'status', 'from', 'at'])
         && request.resource.data.from == request.auth.uid
         && request.resource.data.status == 'pending'
@@ -425,23 +206,23 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
       allow delete: if request.auth != null && request.auth.uid in resource.data.members;
     }
-
     // 1:1 채팅: 친구가 된 두 사람만 읽고 쓴다
     match /dm/{pairId}/msgs/{msgId} {
       allow read: if request.auth != null && friendOk(pairId);
-      allow create: if request.auth != null && friendOk(pairId)
+      allow create: if request.auth != null && !banned() && friendOk(pairId)
         && request.resource.data.keys().hasOnly(['uid', 'text', 'at'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 200
         && request.resource.data.at == request.time;
     }
 
-    // 친선전: 방장(host)이 친구(guest)에게 초대. 두 사람만 읽고, 상태·참가자 덱만 바꿀 수 있다.
+    // ── 친선전 (온라인 1:1) · 관전 ──
+    // 방장(host)이 친구(guest)에게 신청. 두 사람만 상태 · 참가자 덱을 바꾼다. 진행 중인 판은 두 선수의 친구도 읽는다(관전).
+    // cs = 코인 지후 시세 칸 (두 화면이 같은 값을 쓴다)
     function matchMember(id) {
       let m = get(/databases/$(database)/documents/matches/$(id));
       return request.auth.uid == m.data.host || request.auth.uid == m.data.guest;
     }
-    // 6.1 관전: 진행 중인 판은 두 선수의 친구도 읽을 수 있다 (선수가 관전 허용을 끄면 클라이언트가 판 번호를 알리지 않는다)
     function matchSpectator(id) {
       let m = get(/databases/$(database)/documents/matches/$(id));
       return m.data.status in ['playing', 'done'] && (friendsWith(m.data.host) || friendsWith(m.data.guest));
@@ -450,84 +231,22 @@ service cloud.firestore {
       allow get: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest
         || (resource.data.status in ['playing', 'done'] && (friendsWith(resource.data.host) || friendsWith(resource.data.guest))));
       allow list: if request.auth != null && request.auth.uid == resource.data.guest;
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['host', 'guest', 'hostName', 'guestName', 'hostDeck', 'guestDeck', 'status', 'seed', 'ew', 'at'])
-        && (!('ew' in request.resource.data) || request.resource.data.ew is bool)
+      allow create: if request.auth != null && !banned()
+        && request.resource.data.keys().hasOnly(['host', 'guest', 'hostName', 'guestName', 'hostDeck', 'guestDeck', 'status', 'seed', 'cs', 'at'])
         && request.resource.data.host == request.auth.uid
         && request.resource.data.guest is string && request.resource.data.guest != request.auth.uid
-        && (exists(/databases/$(database)/documents/friendships/$(request.auth.uid + '_' + request.resource.data.guest))
-            || exists(/databases/$(database)/documents/friendships/$(request.resource.data.guest + '_' + request.auth.uid)))
+        && friendsWith(request.resource.data.guest)
         && request.resource.data.hostName is string && request.resource.data.hostName.size() <= 12
         && request.resource.data.guestName is string && request.resource.data.guestName.size() <= 12
         && validDeck(request.resource.data.hostDeck) && request.resource.data.guestDeck is list && request.resource.data.guestDeck.size() == 0
         && request.resource.data.status == 'invite'
         && request.resource.data.seed is int
+        && (!('cs' in request.resource.data) || request.resource.data.cs is int)
         && request.resource.data.at == request.time;
       allow update: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'guestDeck', 'at'])
         && request.resource.data.status in ['invite', 'accepted', 'declined', 'cancel', 'playing', 'done']
         && validDeck(request.resource.data.guestDeck)
-        && request.resource.data.at == request.time;
-    }
-    // 5.5 2:2 온라인 방: 방장은 방을 마음대로 바꾸고, 다른 사람은 열린 방에 자기 자리만 넣거나 뺀다 (최대 4명)
-    function validRoomPlayers(ps) {
-      return ps is map && ps.size() <= 4;
-    }
-    function roomMember(id) {
-      return request.auth.uid in get(/databases/$(database)/documents/rooms/$(id)).data.players;
-    }
-    match /rooms/{id} {
-      allow get, list: if request.auth != null;
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['host', 'hostName', 'title', 'status', 'players', 'seed', 'ew', 'at'])
-        && request.resource.data.host == request.auth.uid
-        && request.resource.data.status == 'open'
-        && request.resource.data.hostName is string && request.resource.data.hostName.size() <= 12
-        && request.resource.data.title is string && request.resource.data.title.size() <= 24
-        && validRoomPlayers(request.resource.data.players)
-        && request.resource.data.players.keys().hasOnly([request.auth.uid])
-        && request.resource.data.seed is int
-        && request.resource.data.at == request.time;
-      allow update: if request.auth != null && validRoomPlayers(request.resource.data.players)
-        && request.resource.data.host == resource.data.host
-        && (request.auth.uid == resource.data.host
-            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players', 'at'])
-                && request.resource.data.players.diff(resource.data.players).affectedKeys().hasOnly([request.auth.uid])
-                && (resource.data.status == 'open' || !(request.auth.uid in request.resource.data.players))));
-      allow delete: if request.auth != null && request.auth.uid == resource.data.host;
-    }
-    // 6.1 관전: 진행 중인 2:2 판은 방장의 친구도 읽을 수 있다
-    function roomSpectator(id) {
-      let r = get(/databases/$(database)/documents/rooms/$(id));
-      return r.data.status in ['playing', 'done'] && friendsWith(r.data.host);
-    }
-    // 6.1 2:2 방 초대: 친구에게만 보내고, 받은 사람만 수락 · 거절한다
-    match /roomInvites/{id} {
-      allow get: if request.auth != null && (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to);
-      allow list: if request.auth != null && (request.auth.uid == resource.data.to || request.auth.uid == resource.data.from);
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['from', 'to', 'fromName', 'roomId', 'title', 'status', 'at'])
-        && request.resource.data.from == request.auth.uid
-        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
-        && friendsWith(request.resource.data.to)
-        && request.resource.data.fromName is string && request.resource.data.fromName.size() <= 12
-        && request.resource.data.roomId is string && request.resource.data.roomId.size() <= 40
-        && request.resource.data.title is string && request.resource.data.title.size() <= 24
-        && request.resource.data.status == 'open'
-        && request.resource.data.at == request.time;
-      allow update: if request.auth != null
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'at'])
-        && ((request.auth.uid == resource.data.to && request.resource.data.status in ['accepted', 'declined'])
-            || (request.auth.uid == resource.data.from && request.resource.data.status == 'cancel'))
-        && request.resource.data.at == request.time;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.from;
-    }
-    match /rooms/{id}/msgs/{msgId} {
-      allow read: if request.auth != null && (roomMember(id) || roomSpectator(id));
-      allow create: if request.auth != null && roomMember(id)
-        && request.resource.data.keys().hasOnly(['from', 'body', 'at'])
-        && request.resource.data.from == request.auth.uid
-        && request.resource.data.body is string && request.resource.data.body.size() <= 4000
         && request.resource.data.at == request.time;
     }
     match /matches/{id}/msgs/{msgId} {
