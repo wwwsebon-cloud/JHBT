@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.1"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.2"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -686,6 +686,12 @@ input.text { font-size:20px; font-weight:800; }
 @keyframes death-ring-expand { 0% { transform:scale(.125); opacity:.9; } 100% { transform:scale(1); opacity:0; } }
 .fx-death-fx .death-shard { position:absolute; left:50%; top:50%; width:6px; height:6px; background:var(--death-color, #999); border-radius:1px; transform:translate(-50%,-50%); animation:death-shard-fly .5s cubic-bezier(.2,.7,.3,1) forwards; }
 @keyframes death-shard-fly { 0% { transform:translate(-50%,-50%) rotate(0deg) scale(1); opacity:1; } 100% { transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(.3); opacity:0; } }
+.fx-scythe-spin { position:absolute; transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; z-index:9;
+  background:conic-gradient(from 0deg, transparent 0 55%, rgba(91,75,138,0) 55%, rgba(170,150,230,.55) 80%, rgba(240,235,255,.95) 92%, transparent 93%);
+  -webkit-mask:radial-gradient(circle, transparent 38%, #000 40%, #000 70%, transparent 72%); mask:radial-gradient(circle, transparent 38%, #000 40%, #000 70%, transparent 72%);
+  filter:drop-shadow(0 0 6px rgba(91,75,138,.9)); animation:scythe-spin .45s cubic-bezier(.2,.7,.3,1) forwards; }
+.fx-scythe-spin::after { content:'🪓'; position:absolute; left:50%; top:4%; transform:translateX(-50%) rotate(90deg); font-size:22px; }
+@keyframes scythe-spin { 0% { transform:translate(-50%,-50%) rotate(0deg) scale(.7); opacity:1; } 80% { opacity:1; } 100% { transform:translate(-50%,-50%) rotate(600deg) scale(1.08); opacity:0; } }
 .fx-ring { position:absolute; border-radius:50%; border:3px solid var(--ink); pointer-events:none; z-index:4; animation:ring .45s ease-out forwards; }
 @keyframes ring { from { transform:translate(-50%,-50%) scale(.3); opacity:1; } to { transform:translate(-50%,-50%) scale(1); opacity:0; } }
 /* 이모티콘 (말 카드 · 하단 시트) */
@@ -861,7 +867,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="annbar" id="lobbyAnn" hidden></div>
     <div class="lobby-grid">
       <div class="lobby-left">
-        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.1</span></div>
+        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.2</span></div>
         <div class="g-card deckcard">
           <div class="dh"><b>현재 덱</b><small id="lobbyDeckN">0 / 5</small><span class="sp"></span><button class="link" id="btnDeckEdit">편집 ›</button></div>
           <div class="ldeck" id="lobbyDeck"></div>
@@ -880,7 +886,7 @@ input.text { font-size:20px; font-weight:800; }
 <!-- 닉네임 -->
 <div id="screen-welcome" class="screen">
   <div class="g-card welcome">
-    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.1</span></div>
+    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.2</span></div>
     <div><div class="eyebrow" style="margin-bottom:8px">닉네임 · 1~12자</div><input class="text" id="nickInput" maxlength="12" placeholder="지후왕"></div>
     <button class="k-btn big" id="btnStart">시작하기 →</button>
     <button class="g-btn" id="btnWelcomeLogin">이미 계정이 있어요 · 로그인</button>
@@ -1088,10 +1094,10 @@ const PORTRAITS = {
 // 패시브 훅 (선택): onHit(u, t, A) · onStart(u, A) · tick(u, dt, A) · immune(u) · takenMult(u) · onAttack(u) · bonus(u, t) 추가 피해 · onKill(u, v, A) · onLethal(u, A) 버티기 · gauge(u) 노란 게이지
 // skill.type 'hit' = SP: 일반 공격이 맞을 때마다 SP 1 → need 만큼 차면 발동 · melee: true + range 숫자 = 사거리를 정한 근접 · deployLimit: 출격제한
 const CHARS = {
-  fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1000, atk: 45, atkSpeed: 3, range: 4.5, speed: 1.6, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
+  fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1200, atk: 45, atkSpeed: 3, range: 4.5, speed: 1.6, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
     story: '삼겹살을 구워먹다가 부루스타가 폭주해서 전신 화상을 당한 지후입니다. 하지만 그의 불타오르는 삶의 의지와 열정은 곧 불씨로 되살아났어요. 특기는 가스라이팅.',
-    passive: '일반 공격이 <b>5초</b> 동안 1초마다 공격력의 <b>65%</b> [화상] 피해를 입힌다. [화상]은 <b>중첩</b>된다.',
-    onHit(u, t, A) { A.status(t, 'burn', 5, { dps: u.atk * 0.65, stack: true, src: u }); } },
+    passive: '일반 공격이 <b>5초</b> 동안 1초마다 공격력의 <b>80%</b> [화상] 피해를 입힌다. [화상]은 <b>중첩</b>된다.',
+    onHit(u, t, A) { A.status(t, 'burn', 5, { dps: u.atk * 0.8, stack: true, src: u }); } },
   ice: { name: '얼음 지후', rarity: 'common', role: '컨트롤러', hp: 900, atk: 70, atkSpeed: 4, range: 5, speed: 1.6, portrait: PORTRAITS.ice, starter: true, sfx: 'ice', color: '#4fc3f7',
     story: '집에서 실수로 에어컨을 끄지 않고 잠을 자는 바람에 상시로 감기 상태입니다. 그는 격리 처리 당했고, 결국 그도 세상에 등을 돌리고 냉정해졌습니다.',
     passive: '일반 공격이 대상을 <b>1.6초</b> 동안 [빙결]시킨다.',
@@ -1099,10 +1105,10 @@ const CHARS = {
   sword: { name: '검 지후', rarity: 'common', role: '딜러', hp: 1030, atk: 190, atkSpeed: 1.2, range: 'melee', speed: 1.6, portrait: PORTRAITS.sword, starter: true, sfx: 'swing', color: '#8d8d8d',
     story: '어릴때 놀이동산에서 기념품으로 사왔던 플라스틱 검으로 단련했습니다. 지금은 누구도 넘볼 수 없는 뛰어난 검객입니다.',
     passive: '' },
-  assassin: { name: '암살 지후', rarity: 'common', role: '어쌔신', hp: 830, atk: 140, atkSpeed: 1.5, range: 'melee', speed: 1.6, portrait: PORTRAITS.assassin, starter: true, sfx: 'swing', color: '#e84393',
+  assassin: { name: '암살 지후', rarity: 'common', role: '어쌔신', hp: 830, atk: 70, atkSpeed: 1.5, range: 'melee', speed: 1.6, portrait: PORTRAITS.assassin, starter: true, sfx: 'swing', color: '#e84393',
     story: '남들처럼 평범한 갈색 머리로 염색을 하고싶었으나 미용사가 말을 잘못 알아들어 핑크색 머리로 염색해주자, 해당 미용실에 원한을 품고 미용사를 암살하기 위해 다시 태어났습니다.',
-    passive: '게임 시작 <b>2초</b> 뒤 가장 멀리 있는 적의 <b>후방</b>으로 순간이동하고 <b>1초</b> 동안 [은신]. 순간이동 뒤 첫 공격은 <b>대상 하나</b>에게 공격력의 <b>400%</b>.',
-    tick(u, dt, A) { if (u.blinked) return; u.blinkT = (u.blinkT || 0) + dt; if (u.blinkT >= 2) { u.blinked = true; A.blinkBehindFarthest(u); A.status(u, 'stealth', 1); u.nextHitPct = 400; u.nextHitSingle = true; } } },
+    passive: '게임 시작 <b>2초</b> 뒤 가장 멀리 있는 적의 <b>후방</b>으로 순간이동하고 <b>1초</b> 동안 [은신]. 순간이동 뒤 첫 공격은 <b>대상 하나</b>에게 공격력의 <b>700%</b>.',
+    tick(u, dt, A) { if (u.blinked) return; u.blinkT = (u.blinkT || 0) + dt; if (u.blinkT >= 2) { u.blinked = true; A.blinkBehindFarthest(u); A.status(u, 'stealth', 1); u.nextHitPct = 700; u.nextHitSingle = true; } } },
   shield: { name: '쉴드 지후', rarity: 'common', role: '탱커', hp: 1000, shield: 500, atk: 150, atkSpeed: 3, range: 'melee', speed: 1.6, portrait: PORTRAITS.shield, portraitBroken: PORTRAITS.shield_broken, starter: true, sfx: 'bash', color: '#4f7cff',
     story: "자청해서 고기방패가 되기로 한 지후입니다. 최근에는 그의 특별한 '취향'에 대해 루머가 돌고 있다고 하지만.. 쉴드 지후는 순수하게 마음씨가 착해서 그런거에요.",
     passive: '쉴드가 있는 동안 <b>모든 상태이상에 면역</b>이고 받는 피해 <b>-25%</b>.',
@@ -1120,12 +1126,12 @@ const CHARS = {
     bonus(u, t) { return u.alone ? t.hp * 0.10 : 0; } },
   berserk: { name: '광폭화 지후', rarity: 'epic', role: '딜러', hp: 1300, atk: 102, atkSpeed: 1.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.berserk, portraitRage: PORTRAITS.berserk_rage, sfx: 'swing', color: '#7a4de8',
     story: '어릴 적부터 유난히 성격이 급했던 지후입니다. 게임을 하다가 패배하면 키보드를 내려치고, 시험에서 틀린 문제를 발견하면 시험지와 협상을 시도하곤 했어요. 하지만 어느 날, 자신의 분노가 극에 달하는 순간 세상이 잠시 멈춘 듯한 기이한 경험을 하게 됩니다. 그 짧은 순간만큼은 누구도 그를 건드릴 수 없었고, 그는 마침내 죽음조차 자신의 분노를 진정시킬 수 없다는 사실을 깨달았습니다. 이후 그는 전투에서 쓰러지는 순간조차 2초간 광폭한 집념으로 버텨내는 존재가 되었습니다. 특기는 죽고 나서도 성질부리기.',
-    passive: '쓰러지는 순간 체력 <b>1</b>로 버티고 <b>2초</b> 동안 [무적] · [광폭화]: 공격력 <b>+100%</b> · 공격 간격 <b>0.7초</b>. 2초가 지나면 쓰러진다.',
+    passive: '쓰러지는 순간 체력 <b>1</b>로 버티고 <b>2초</b> 동안 [무적] · [광폭화]: 공격력 <b>+140%</b> · 공격 간격 <b>0.7초</b>. 2초가 지나면 쓰러진다.',
     onLethal(u, A) { if (u.raged) return false; u.raged = true; u.rageT = 2; A.status(u, 'inv', 2); A.status(u, 'rage', 2); u.cd = Math.min(u.cd, 0.15); A.portrait(u, u.def.portraitRage); dmgNum(u, '광폭화!', { crit: true }); shake(true); return true; },
     tick(u, dt) { if (u.rageT == null) return; u.rageT -= dt; if (u.rageT <= 0) { u.rageT = null; u.st.inv = 0; u.st.rage = 0; u.hp = 0; drawUnit(u); killUnit(u); } } },
-  scythe: { name: '낫 지후', rarity: 'epic', role: '어쌔신', hp: 1440, atk: 444, atkSpeed: 3.5, range: 1.65, melee: true, speed: 1.15, portrait: PORTRAITS.scythe, sfx: 'swing', color: '#5b4b8a',
+  scythe: { name: '낫 지후', rarity: 'epic', role: '어쌔신', hp: 1240, atk: 444, atkSpeed: 4.5, range: 1.65, melee: true, speed: 1.15, portrait: PORTRAITS.scythe, sfx: 'swing', color: '#5b4b8a',
     story: '어느 날 마트에서 할인 중이던 원예용 낫을 구매한 지후입니다. 처음에는 잡초나 정리할 생각이었지만, 낫을 휘두르는 순간 자신이 평범한 원예사가 아니라는 사실을 깨달았습니다. 이후 그는 낫 하나만으로 수많은 전투를 헤쳐 나가며 어둠 속에 이름을 새겼습니다. 다만 아직도 낫을 구매할 때 받은 영수증은 소중히 간직하고 있다고 합니다.',
-    passive: '근접 부채꼴 (<b>1.65칸</b> · 120°). 라운드 시작 <b>5초</b> 뒤부터 쿨타임 <b>12초</b>마다 <b>[힘줄 끊기]</b> (시전 중에는 쿨타임이 줄지 않는다): 제자리에 멈춘 뒤 <b>0.5초</b> 뒤 무작위 적 곁으로 순간이동해 반경 <b>1.65칸</b>의 모든 적에게 공격력의 <b>90%</b> 피해 · <b>4초</b> [절상] · [침묵] · <b>1초</b> [부상]. <b>1.25초</b> 뒤 원래 자리로 돌아오며, 그동안은 아무것도 할 수 없다.',
+    passive: '근접 부채꼴 (<b>1.65칸</b> · 120°). 라운드 시작 <b>5초</b> 뒤부터 쿨타임 <b>12초</b>마다 <b>[힘줄 끊기]</b> (시전 중에는 쿨타임이 줄지 않는다): 제자리에 멈춘 뒤 <b>0.5초</b> 뒤 무작위 적 곁으로 순간이동해 반경 <b>1.65칸</b>의 모든 적에게 공격력의 <b>55%</b> 피해 · <b>4초</b> [절상] · [침묵] · <b>1초</b> [부상]. <b>1.25초</b> 뒤 원래 자리로 돌아오며, 그동안은 아무것도 할 수 없다.',
     gauge(u) { const s = u.sc; if (!s) return 0; return s.phase === 'cd' ? clamp(1 - s.t / (s.first ? 5 : 12), 0, 1) : 1; },
     onStart(u) { u.sc = { phase: 'cd', t: 5, first: true }; },
     tick(u, dt, A) {
@@ -1141,13 +1147,13 @@ const CHARS = {
         if (!list.length) { s.phase = 'cd'; s.t = 12; s.first = false; u.locked = false; return; }
         const e = list[Math.floor(rng() * list.length)], ang = rng() * Math.PI * 2, off = bodySeparation(u, e) + 2;
         A.ring(u.x, u.y, 0.6); physSnap(u, e.x + Math.cos(ang) * off, e.y + Math.sin(ang) * off); A.ring(u.x, u.y, 1.65); shake(true);
-        const R = 1.65 * CFG.CELL;
-        foes(u).forEach(t => { if (dist(u, t) > R + unitRadius(t)) return; const done = A.dmg(u, t, 90); if (done > 0) { hitFx(u, t, true); A.cut(t, 0.25, 4); A.status(t, 'silence', 4); A.status(t, 'wound', 1); } });
+        const R = 1.65 * CFG.CELL, sp = (R + unitRadius(u)) * 2; if (!S.fast) fxAt('fx-scythe-spin', u.x, u.y, 480, { width: sp + 'px', height: sp + 'px' }); // 전작 7.4.7: 회전하며 낫으로 베는 이펙트
+        foes(u).forEach(t => { if (dist(u, t) > R + unitRadius(t)) return; const done = A.dmg(u, t, 55); if (done > 0) { hitFx(u, t, true); A.cut(t, 0.25, 4); A.status(t, 'silence', 4); A.status(t, 'wound', 1); } });
         s.phase = 'stay'; s.t = 1.25; return;
       }
       if (s.phase === 'stay') { s.t -= dt; if (s.t > 0) return; physSnap(u, s.home.x, s.home.y); A.ring(u.x, u.y, 0.6); s.phase = 'cd'; s.t = 12; s.first = false; u.locked = false; }
     } },
-  moon: { name: '달 지후', rarity: 'legend', role: '서포터', hp: 1550, atk: 35, atkSpeed: 2.4, range: 6, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.moon, sfx: 'ice', color: '#5aa9ff',
+  moon: { name: '달 지후', rarity: 'legend', role: '서포터', hp: 1550, atk: 35, atkSpeed: 2, range: 6, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.moon, sfx: 'ice', color: '#5aa9ff',
     story: '',
     passive: '<b>출격제한 1</b>. 반경 <b>5칸</b> 안의 모든 아군(자신 포함)에게 공격력 <b>+8%</b> · 공격속도 <b>+12%</b>. 공격할 때마다 두 버프가 각각 <b>2%p</b>씩 오른다 (각 최대 100%).',
     onStart(u) { u.fx = u.fx || []; const el = document.createElement('div'); el.className = 'unit-range-ring moon-ring' + (u.side === OPP() ? ' enemy' : ''); el.style.width = el.style.height = (10 * CFG.CELL) + 'px'; $('field').appendChild(el); u.fx.push(el); u.moonRing = el; },
@@ -1155,10 +1161,10 @@ const CHARS = {
     tick(u, dt, A) { const n = u.moonN || 0, m = effMult(u.lv), atk = Math.min(1, 0.08 * m + 0.02 * n), aspd = Math.min(1, 0.12 * m + 0.02 * n), R = 5 * CFG.CELL;
       if (u.moonRing) { u.moonRing.style.left = u.x.toFixed(1) + 'px'; u.moonRing.style.top = u.y.toFixed(1) + 'px'; } // 효과 범위(반경 5칸) 점선 원
       A.allies(u).forEach(a => { if (dist(a, u) <= R + unitRadius(a)) A.buff(a, 'moon', { atk, aspd }, 0.25); }); } },
-  levelup: { name: '레벨업 지후', rarity: 'epic', role: '딜러', hp: 1250, atk: 175, atkSpeed: 2, range: 'melee', speed: 1.6, portrait: PORTRAITS.levelup, sfx: 'swing', color: '#f12c32',
-    forms: [[1250, 175, 2], [1500, 225, 1.75], [1750, 275, 1.5]], portraitLv: [PORTRAITS.levelup, PORTRAITS.levelup2, PORTRAITS.levelup3],
+  levelup: { name: '레벨업 지후', rarity: 'epic', role: '딜러', hp: 1250, atk: 125, atkSpeed: 2, range: 'melee', speed: 1.6, portrait: PORTRAITS.levelup, sfx: 'swing', color: '#f12c32',
+    forms: [[1250, 125, 2], [1500, 175, 1.75], [1750, 225, 1.5]], portraitLv: [PORTRAITS.levelup, PORTRAITS.levelup2, PORTRAITS.levelup3],
     story: '어릴 적부터 남들보다 빠르게 성장하고 싶었던 지후입니다. 남들이 한 걸음씩 나아갈 때 혼자 열 걸음을 내딛으려 했지만, 정작 공부도 운동도 게임도 제대로 늘지 않았어요. 그러던 어느 날, 우연히 길바닥에서 정체불명의 경험치 물약을 주워 마시게 됩니다. 그 순간 그의 온몸을 감싸는 빛과 함께 믿을 수 없는 성장이 시작되었어요. 이제 그는 전투가 길어질수록 끊임없이 강해지며, 언젠가는 만렙을 넘어선 존재가 되겠다는 원대한 꿈을 품고 있습니다. 다만 아직도 경험치 2배 이벤트가 끝나면 상당히 우울해진다고 합니다.',
-    passive: '적을 <b>직접 처치</b>할 때마다 머리 위 <b>레벨</b>이 오른다 (최대 3): 최대 체력이 늘고 최대 체력의 <b>30%</b>를 회복. 라운드가 끝나면 초기화.<br>Lv1 HP 1,250 · ATK 175 · 2초 / Lv2 HP 1,500 · ATK 225 · 1.75초 / Lv3 HP 1,750 · ATK 275 · 1.5초',
+    passive: '적을 <b>직접 처치</b>할 때마다 머리 위 <b>레벨</b>이 오른다 (최대 3): 최대 체력이 늘고 최대 체력의 <b>30%</b>를 회복. 라운드가 끝나면 초기화.<br>Lv1 HP 1,250 · ATK 125 · 2초 / Lv2 HP 1,500 · ATK 175 · 1.75초 / Lv3 HP 1,750 · ATK 225 · 1.5초',
     onStart(u, A) { u.form = 1; A.headLv(u, 1); },
     onKill(u, v, A) {
       if ((u.form || 1) >= 3) return;
@@ -1167,9 +1173,9 @@ const CHARS = {
       heal(u, u, u.maxHp * 0.3); A.portrait(u, u.def.portraitLv[u.form - 1]); A.headLv(u, u.form);
       const t = fxAt('fx-lvtext', u.x, u.y - unitRadius(u), 900); t.textContent = `LEVEL ${u.form}!`; sfx('merge');
     } },
-  magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 960, atk: 75, atkSpeed: 2, range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad', magicChance: 0.12,
+  magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 960, atk: 75, atkSpeed: 2, range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad', magicChance: 0.08,
     story: '어릴 적부터 장난감 총을 수집하는 취미가 있었던 지후입니다. 처음에는 문구점에서 파는 500원짜리 스펀지 총알에 만족했지만, 어느 날 실수로 총알 대신 자신이 아끼던 구슬을 장전하고 말았어요. 놀랍게도 구슬은 상상을 초월하는 위력으로 날아갔고, 지후는 탄환의 본질이 화약이 아니라 발사자의 마음가짐에 있다는 사실을 깨달았습니다. 이후 그는 모든 종류의 탄환을 자유자재로 다루는 마탄의 사수가 되었으며, 단 한 발로 전황을 뒤집는 무시무시한 존재로 거듭났습니다. 다만 총알이 빗나가면 탄환 탓을 하는 버릇은 고치지 못했다고 합니다.',
-    passive: '일반 공격 시 <b>12%</b> 확률로 공격력의 <b>700%</b> 피해를 입히는 <b>[마탄]</b>을 발사한다. [마탄]은 <b>4초</b> 동안 최대 체력 <b>30%</b> [절상]과 받는 피해 <b>+30%</b> [취약]을 건다.',
+    passive: '일반 공격 시 <b>8%</b> 확률로 공격력의 <b>500%</b> 피해를 입히는 <b>[마탄]</b>을 발사한다. [마탄]은 <b>4초</b> 동안 최대 체력 <b>30%</b> [절상]과 받는 피해 <b>+30%</b> [취약]을 건다.',
     onMagicHit(u, t, A) { A.cut(t, 0.3, 4); A.status(t, 'vuln', 4, { amt: 0.3 }); } },
   gift: { name: '선물 지후', rarity: 'legend', role: '보조형', hp: 1260, atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.gift, color: '#e84393',
     story: '',
@@ -1182,22 +1188,22 @@ const CHARS = {
     onDeath(u, A) { const d = u.slimeDepth || 0; if (d >= 2) return; [-1, 1].forEach(k => A.spawnChild(u, 'slime', { hp: u.baseMaxHp * 0.5, atk: u.atk * 0.5, depth: d + 1, dx: k * unitRadius(u) * 0.9, dy: k * unitRadius(u) * 0.4 })); } },
   atom: { name: '원자 지후', rarity: 'legend', role: '딜러', hp: 1550, atk: 45, atkSpeed: 1, range: 3, speed: 1.6, portrait: PORTRAITS.atom, sfx: 'ice', color: '#3fd0c9',
     story: '',
-    passive: '<b>레벨과 같은 수</b>의 전자가 <b>1.3초</b> 주기로 자신을 공전한다 (궤도 반지름 <b>3칸</b>). 전자에 닿은 적은 <b>현재 체력의 14%</b> 피해 (전자 하나가 같은 적을 한 바퀴에 한 번).',
+    passive: '<b>레벨과 같은 수</b>의 전자가 <b>1.3초</b> 주기로 자신을 공전한다 (궤도 반지름 <b>2칸</b>). 전자에 닿은 적은 <b>현재 체력의 14%</b> 피해 (전자 하나가 같은 적을 한 바퀴에 한 번).',
     onStart(u) { u.ehit = {}; u.fx = u.fx || []; for (let i = 0; i < u.lv; i++) { const el = document.createElement('div'); el.className = 'fx-electron'; $('field').appendChild(el); u.fx.push(el); } },
-    tick(u, dt, A) { const n = u.lv, R = 3 * CFG.CELL, er = 0.3 * CFG.CELL;
+    tick(u, dt, A) { const n = u.lv, R = 2 * CFG.CELL, er = 0.3 * CFG.CELL;
       for (let i = 0; i < n; i++) { const ang = S.time * Math.PI * 2 / 1.3 + i * Math.PI * 2 / n, ex = u.x + Math.cos(ang) * R, ey = u.y + Math.sin(ang) * R, el = u.fx && u.fx[i];
         if (el) { el.style.left = ex.toFixed(1) + 'px'; el.style.top = ey.toFixed(1) + 'px'; }
         foes(u).forEach(e => { const key = i + ':' + e.uid; if ((u.ehit[key] || 0) > S.time || Math.hypot(e.x - ex, e.y - ey) > er + unitRadius(e)) return; u.ehit[key] = S.time + 1.3; const done = dealDamage(u, e, e.hp * 0.14, {}); if (done > 0) hitFx(u, e, false); }); } } },
   dice: { name: '주사위 지후', rarity: 'rare', role: '딜러', hp: 777, atk: 125, atkSpeed: 1.7, range: 5.5, speed: 1.6, dmgRange: [1, 250], portrait: PORTRAITS.dice, sfx: 'shot', color: '#e8e2d4',
     story: '', atkText: () => '1~250',
     passive: '공격마다 <b>1 ~ 250</b> 사이 무작위 피해.' },
-  gun: { name: '총 지후', rarity: 'epic', role: '딜러', hp: 1270, atk: 105, atkSpeed: 2.1, range: 6, speed: 1.6, multiShot: true, portrait: PORTRAITS.gun, sfx: 'shot', color: '#555555',
+  gun: { name: '총 지후', rarity: 'epic', role: '딜러', hp: 860, atk: 105, atkSpeed: 2.1, range: 6, speed: 1.6, multiShot: true, portrait: PORTRAITS.gun, sfx: 'shot', color: '#555555',
     story: '',
     passive: '<b>자신의 레벨</b>만큼의 적을 한꺼번에 공격한다 (Lv3이면 셋). 사거리 안에 그만큼 없으면 있는 만큼.' },
   coin: { name: '코인 지후', rarity: 'rare', role: '딜러', hp: 1000, atk: 80, atkSpeed: 1, range: 5, speed: 1.6, coin: true, portrait: PORTRAITS.coin, sfx: 'shot', color: '#f2c94c',
     story: '', atkText: () => { const m = coinMult(); return `${Math.round(80 * m)} (${m >= 1 ? '+' : ''}${Math.round((m - 1) * 100)}%)`; },
     passive: '기본 공격력이 <b>10분마다</b> <b>-50% ~ +50%</b> 사이 무작위 비율로 변한다. 지난번에 올랐으면 떨어질 가능성이, 내렸으면 오를 가능성이 높다.' },
-  combo: { name: '콤보 지후', rarity: 'epic', role: '딜러', hp: 1100, atk: 70, atkSpeed: 1.2, range: 4.8, speed: 1.6, portrait: PORTRAITS.combo, sfx: 'shot', color: '#ff6b6b',
+  combo: { name: '콤보 지후', rarity: 'epic', role: '딜러', hp: 1100, atk: 70, atkSpeed: 1.7, range: 4.8, speed: 1.6, portrait: PORTRAITS.combo, sfx: 'shot', color: '#ff6b6b',
     story: '',
     passive: '공격할 때마다 공격력이 <b>10%</b>씩 증가한다 (<b>복리</b> · 라운드마다 초기화).',
     onAttack(u) { u.comboMult = (u.comboMult || 1) * 1.1; u.comboN = (u.comboN || 0) + 1; } },
@@ -1217,7 +1223,7 @@ const STATUS = {
   wound: { name: '부상', icon: '🤕' },           // 받는 공격이 치명타일 확률 50%
   vuln: { name: '취약', icon: '🎯' },            // 받는 피해 증가 (vulnX.amt)
   inv: { name: '무적', icon: '✨', buff: true },  // 피해를 받지 않는다
-  rage: { name: '광폭화', icon: '😡', buff: true }, // 공격력 +100% · 공격 간격 0.7초
+  rage: { name: '광폭화', icon: '😡', buff: true }, // 공격력 +140% · 공격 간격 0.7초
   alone: { name: '고독', icon: '🗡️', buff: true },  // 고독한 지후: 인접 8칸이 비었다
 };
 
@@ -1718,7 +1724,7 @@ function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 function nearestFoe(u) { let b = null, bd = Infinity; targets(u).forEach(e => { const d = dist(u, e); if (d < bd) { bd = d; b = e; } }); return b; }
 function blocked(u) { return u.st.stun > 0 || u.st.freeze > 0; }
 function buffSum(u, k) { let n = 0; for (const key in u.buffs) n += u.buffs[key][k] || 0; return n; }
-function effAtk(u) { return u.atk * (u.st.weak > 0 ? 0.85 : 1) * Math.max(0, 1 + buffSum(u, 'atk')) * (u.st.rage > 0 ? 2 : 1) * (u.comboMult || 1); }
+function effAtk(u) { return u.atk * (u.st.weak > 0 ? 0.85 : 1) * Math.max(0, 1 + buffSum(u, 'atk')) * (u.st.rage > 0 ? 2.4 : 1) * (u.comboMult || 1); }
 function aspdRate(u) { return Math.max(0.1, 1 + buffSum(u, 'aspd')); } // 공격속도 버프: 쿨이 그만큼 빨리 준다
 function baseInterval(u) { return u.st.rage > 0 ? 0.7 : u.atkSpeed; } // [광폭화] 공격 간격 0.7초
 // 코인 지후 시세: 10분 칸마다 -50% ~ +50% · 지난 칸에 올랐으면 70% 확률로 내리고, 내렸으면 70% 확률로 오른다 (기준 시각부터 시드로 이어서 · 모두 같은 값)
@@ -1887,7 +1893,7 @@ function performAttack(u, t) {
   if (u.melee) attackLunge(u, t);
   if (u.def.onAttack) u.def.onAttack(u);
   const magic = !u.melee && u.def.magicChance && rng() < u.def.magicChance; // 마탄 지후 [마탄]
-  const pct = magic ? 700 : u.nextHitPct || 100, single = !!u.nextHitSingle; u.nextHitPct = 0; u.nextHitSingle = false;
+  const pct = magic ? 500 : u.nextHitPct || 100, single = !!u.nextHitSingle; u.nextHitPct = 0; u.nextHitSingle = false;
   const roll = u.def.dmgRange ? (u.def.dmgRange[0] + Math.floor(rng() * (u.def.dmgRange[1] - u.def.dmgRange[0] + 1))) * u.mult * effAtk(u) / Math.max(1, u.atk) : 0; // 주사위 지후: 1~250 (레벨 · 버프는 그대로)
   const dmg = (roll || effAtk(u)) * pct / 100, opts = pct > 100 ? { skill: true } : {};
   if (magic) dmgNum(u, '마탄!', { crit: true });
@@ -3762,6 +3768,24 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.2', date: '2026.10.22', title: '밸런스 패치', sections: [
+    { title: '상향', items: [
+      { id: 'fire', name: '화염 지후', tag: 'buff', desc: '체력 1,000 → <b>1,200</b> · [화상] 피해 공격력의 65% → <b>80%</b>' },
+      { id: 'moon', name: '달 지후', tag: 'buff', desc: '공격 간격 2.4초 → <b>2초</b>' },
+      { id: 'berserk', name: '광폭화 지후', tag: 'buff', desc: '[광폭화] 공격력 +100% → <b>+140%</b>' },
+    ] },
+    { title: '하향', items: [
+      { id: 'scythe', name: '낫 지후', tag: 'nerf', desc: '체력 1,440 → <b>1,240</b> · 공격 간격 3.5초 → <b>4.5초</b> · [힘줄 끊기] 피해 90% → <b>55%</b> · 낫을 휘두르는 회전 이펙트가 돌아왔어요' },
+      { id: 'levelup', name: '레벨업 지후', tag: 'nerf', desc: '공격력 Lv1 175 → <b>125</b> · Lv2 → <b>175</b> · Lv3 → <b>225</b> (레벨마다 +50 그대로)' },
+      { id: 'gun', name: '총 지후', tag: 'nerf', desc: '체력 1,270 → <b>860</b>' },
+      { id: 'magic', name: '마탄 지후', tag: 'nerf', desc: '[마탄] 확률 12% → <b>8%</b> · 피해 공격력의 700% → <b>500%</b>' },
+      { id: 'combo', name: '콤보 지후', tag: 'nerf', desc: '공격 간격 1.2초 → <b>1.7초</b>' },
+    ] },
+    { title: '조정', items: [
+      { id: 'assassin', name: '암살 지후', tag: 'adjust', desc: '공격력 140 → <b>70</b> · 순간이동 뒤 첫 공격 공격력의 400% → <b>700%</b>' },
+      { id: 'atom', name: '원자 지후', tag: 'adjust', desc: '전자 궤도 반지름 3칸 → <b>2칸</b>' },
+    ] },
+  ] },
   { v: 'R2.1', date: '2026.10.22', title: '글래스 UI', sections: [
     { title: '화면', items: [
       { icon: '◐', name: '새 글래스 UI', tag: 'system', desc: '모든 화면을 밝은 <b>글래스(iOS 풍)</b> 테마로 새로 칠했어요 · 글꼴은 Pretendard 하나로.' },
@@ -3815,7 +3839,7 @@ function renderHelp(tab) {
     <h4>배치</h4><ul><li>라운드마다 배치 기회 <b>2번</b> (3라운드부터 <b>3번</b> · 양쪽 라이프가 1이면 데스매치 <b>3번</b>)</li><li>기회마다 덱에서 카드 <b>3장</b> → 1장을 골라 <b>빈 칸</b>에 놓거나, <b>같은 지후</b> 위에 겹쳐 <b>레벨업</b> (${CFG.PICK_TIME}초가 지나면 자동)</li><li>내가 하나 놓으면 상대도 하나 · 전장 최대 <b>${CFG.MAX_UNITS}기</b> · 같은 지후는 <b>${CFG.SAME_LIMIT}기</b>까지</li><li>놓은 지후는 다음 라운드에도 제자리에서 체력이 가득 찬 채로 다시 나와요 · 내 지후를 눌러 자리를 옮길 수 있어요</li><li>칸은 앞에서부터 전열 · 중열 · 후열 — 전열이 먼저 맞아요</li></ul>
     <h4>SP · 치명타</h4><ul><li><b>SP</b>: 일반 공격이 맞을 때마다 1씩 차요 (파란 게이지). <b>SP 6</b>이면 6번째 공격에 스킬 발동 · [침묵]이면 멈춰요</li><li>모든 지후는 공격이 <b>2%</b> 확률로 <b>치명타</b> (피해 ×2) · [부상]에 걸린 적은 <b>50%</b></li><li>출격제한이 있는 지후는 그 수만큼만 전장에 둘 수 있어요</li></ul>
     <h4>전투</h4><ul><li>지후는 가장 가까운 적에게 다가가 싸워요 · 근접 지후는 공격 직전 <b>빨간 부채꼴</b>로 범위를 보여 줘요</li><li>제한 시간 <b>${CFG.ROUND_TIME}초</b> · <b>${CFG.STALL}초</b> 동안 아무도 피해를 못 주면 바로 판정 · 시간이 끝나면 <b>예상 우세</b>로 판정 (50:50이면 같은 라운드를 다시)</li><li>${CFG.FAST_AFTER}초가 지나면 1.5배속 · 아래 1× / 1.5× 로 직접 바꿀 수도 있어요 · <b>자동 배치</b>를 누르면 고른 카드를 알맞은 칸에 바로 놓아요</li><li>전장은 끌어서 옮기고, 휠 · 두 손가락 · ＋/− 버튼으로 확대해요 · 지후를 누르면 사거리 원</li></ul>`
-    : tab === 'status' ? `<div class="stl">${Object.entries(STATUS).map(([k, v]) => `<span>${v.icon}</span><b>${v.name}</b><span>${({ stun: '움직이지도 공격하지도 못한다', freeze: '움직이지도 공격하지도 못한다 · 풀린 뒤 0.5초 동안 다시 안 걸린다', burn: '1초마다 피해 · 여러 번 걸리면 따로 쌓인다', poison: '1초마다 피해', blind: '일반 공격이 50% 빗나간다', silence: '스킬 게이지가 멈춘다', weak: '받는 피해 +20% · 공격력 -15%', stealth: '적이 노리지 못한다 (범위 공격에는 맞는다)', lacer: '체력바 끝이 잘려 최대 체력이 줄어든다', wound: '받는 공격이 치명타일 확률 50%', vuln: '받는 피해 증가', inv: '피해 · 상태이상을 받지 않는다', rage: '공격력 +100% · 공격 간격 0.7초', alone: '인접 8칸이 비어 일반 공격에 추가 피해' })[k] || ''}</span>`).join('')}</div>`
+    : tab === 'status' ? `<div class="stl">${Object.entries(STATUS).map(([k, v]) => `<span>${v.icon}</span><b>${v.name}</b><span>${({ stun: '움직이지도 공격하지도 못한다', freeze: '움직이지도 공격하지도 못한다 · 풀린 뒤 0.5초 동안 다시 안 걸린다', burn: '1초마다 피해 · 여러 번 걸리면 따로 쌓인다', poison: '1초마다 피해', blind: '일반 공격이 50% 빗나간다', silence: '스킬 게이지가 멈춘다', weak: '받는 피해 +20% · 공격력 -15%', stealth: '적이 노리지 못한다 (범위 공격에는 맞는다)', lacer: '체력바 끝이 잘려 최대 체력이 줄어든다', wound: '받는 공격이 치명타일 확률 50%', vuln: '받는 피해 증가', inv: '피해 · 상태이상을 받지 않는다', rage: '공격력 +140% · 공격 간격 0.7초', alone: '인접 8칸이 비어 일반 공격에 추가 피해' })[k] || ''}</span>`).join('')}</div>`
     : `<ul><li>뽑기: 일반 65% · 희귀 30% · 영웅 4% · 전설 1% · 이미 가진 지후는 그 지후의 조각 1개</li><li>일반전: 승리 +60 XP · ● 1,000~2,000 / 패배 경험치 −30 (지금 레벨 안에서만 · 레벨은 내려가지 않아요) · 다이아는 주지 않아요</li><li>계정 레벨업마다 ◆${CFG.LEVEL_REWARD} · 레벨은 Lv.0 부터</li><li>업적 · 출석: 접속한 날 · 승리 · 처치 · 새 지후마다 다이아 · 신규 유저 7일 보상</li><li>우편함: 운영 우편 · 쿠폰은 메뉴 → 코드 입력</li><li>일일 퀘스트 포인트 구간마다 골드 · 다이아</li><li>상점: 매일 지후 매물 5개 · 이모티콘 3개 · 다이아 환전</li><li>지후 레벨 (경기 안): 겹칠 때마다 체력 · 공격력 ×${CFG.LEVEL_MULT} · 효과 ×${CFG.EFFECT_MULT} (최대 Lv${CFG.MAX_LV})</li></ul>`;
 }
 // 환경설정: 효과음 음량 · 배속 기억 · 닉네임

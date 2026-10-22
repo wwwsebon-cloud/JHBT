@@ -11,7 +11,8 @@ JSON 형식
     { "kind": "new" | "balance" | "change" | "fix", "label": "새 기능",
       "items": [ { "icon": "✦" | "id": "fire", "title": "...", "lines": ["...", ...] } ] },
     { "kind": "balance", "label": "밸런스",
-      "stats": [ { "id": "ice", "stat": "공격력", "from": 33, "to": 70, "unit": "" } ] }
+      "stats": [ { "id": "ice", "stat": "공격력", "from": 33, "to": 70, "unit": "" },
+                { "id": "moon", "stat": "공격 간격", "from": 2.4, "to": 2, "unit": "초", "lower": true } ] }   ← lower: 작을수록 좋은 수치
   ]
 }
 """
@@ -105,7 +106,7 @@ def section(sec, idx):
     for st in sec.get('stats', []):
         a, b = float(st['from']), float(st['to'])
         mx = max(a, b) * 1.08 or 1
-        down = b < a
+        down = (b < a) != bool(st.get('lower'))  # lower: 값이 작을수록 좋은 수치 (공격 간격 등) → 줄면 상향
         unit = st.get('unit', '')
         fmt = lambda v: (f'{v:g}' if isinstance(v, float) else str(v))
         tag = '하향' if down else '상향'
