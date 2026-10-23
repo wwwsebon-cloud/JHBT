@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.8"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.8"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1841,9 +1841,9 @@ const CHARS = {
   charge: { name: '충전 지후', rarity: 'legend', role: '서포터', hp: 940, atk: 30, atkSpeed: 1, range: 6.5, speed: 1.6, portrait: PORTRAITS.charge, sfx: 'shot', color: '#3ecf4a',
     story: '휴대폰 배터리가 20% 밑으로 내려가면 불안해서 잠을 못 자던 지후입니다. 보조배터리를 다섯 개씩 들고 다니다가, 어느 날 그 배터리들이 몸에 붙어 버렸어요. 이제 그는 주변 친구들에게 전기를 나눠 줄 수 있게 되었습니다. 친구들은 고마워하지만, 그가 콘센트 앞을 지나갈 때마다 멈춰 서는 버릇은 조금 이상하다고 생각합니다.',
     passive: '주변 아군의 SP 를 채워 준다.',
-    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[무선충전]</b>. 반경 <b>3.5칸</b> 안의 아군 SP 를 <b>1</b> 채운다. 자신과 다른 충전 지후에게는 적용되지 않는다.',
+    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[무선충전]</b>. 반경 <b>3.5칸</b> 안의 아군 SP 를 <b>1</b> 채운다. 자신 · 다른 충전 지후 · 일반적인 방법으로 SP 가 차지 않는 지후(부활 · 봉인된 사신)에게는 적용되지 않는다.',
       run(u, A) { const R = 3.5 * CFG.CELL; if (!S.fast) { A.ring(u.x, u.y, 3.5); dmgNum(u, '무선충전!', { crit: true }); }
-        friends(u).forEach(a => { if (a !== u && a.id !== 'charge' && dist(u, a) <= R + unitRadius(a)) spGive(a, 1, true); }); } } },
+        friends(u).forEach(a => { if (a !== u && a.id !== 'charge' && !(a.def.skill && a.def.skill.type === 'ally') && dist(u, a) <= R + unitRadius(a)) spGive(a, 1, true); }); } } }, // 아군이 쓰러질 때만 SP 가 차는 지후(부활 · 봉인 사신)는 제외 (build 4)
   devour: { name: '포식 지후', rarity: 'epic', role: '딜러', hp: 1150, atk: 50, atkSpeed: 1.55, range: 4.4, speed: 1.6, portrait: PORTRAITS.devour, sfx: 'shot', color: '#e5322d',
     story: '급식실에서 남은 반찬을 모두 먹어 치우던 지후입니다. 그런데 이상하게도 먹으면 먹을수록 더 배가 고팠어요. 그는 결국 전장의 기운까지 먹어 치우기 시작했고, 쓰러진 적의 힘을 삼킬 때마다 점점 더 강해졌습니다. 그 배는 아직 한 번도 부른 적이 없다고 해요.',
     passive: '피해를 입힐 때마다 공격력의 <b>5%</b>만큼 회복한다. 반경 <b>4.6칸</b> 안에서 자신이 한 번이라도 공격한 적이 쓰러지면 [포식]을 얻는다. [포식] 하나당 공격력이 기본 공격력의 <b>40%</b>씩 오르고 최대 체력이 <b>50</b> 늘며 체력을 <b>50</b> 회복한다. 경기 내내 유지된다.',
@@ -1910,7 +1910,7 @@ const CHAR_INFO = {
   reaper: [['SP (봉인)', '아군이 쓰러질 때마다 1'], ['[사신강림]', 'SP 5 · 체력 1,444 · 공격 간격 1.2초 · 이동속도 3.5'], ['[즉사] (강림)', 'SP 4 (일반 공격) · 대상 현재 체력 100% · [무적]만 막는다']],
   guardian: [['[수호]', '십자 범위 아군 · 쓰러질 때 체력 1 + [무적] 1초 · 라운드에 한 번'], ['조건', '수호자 지후가 살아 있을 때'], ['예외', '광폭화 지후']],
   clock: [['같은 레벨 적', '공격속도 -7%'], ['같은 레벨 아군', '공격속도 +7% (자신 포함)'], ['범위', '맵 전체 · 중첩']],
-  charge: [['[무선충전]', '반경 3.5칸 아군 SP +1'], ['제외', '자신 · 다른 충전 지후']],
+  charge: [['[무선충전]', '반경 3.5칸 아군 SP +1'], ['제외', '자신 · 다른 충전 지후 · 부활 지후 · 봉인된 사신 지후 (강림한 사신은 받는다)']],
   devour: [['흡혈', '피해를 입힐 때마다 공격력의 5% 회복'], ['[포식]', '반경 4.6칸 · 공격한 적이 쓰러지면 1중첩'], ['중첩마다', '공격력 +기본 공격력의 40% · 최대 체력 +50 · 체력 50 회복 · 경기 내내']],
   tentacle: [['일반 공격', '앞쪽 직사각형 · 폭 = 자기 지름 · 길이 5칸 · 닿은 적 모두'], ['[눈가림]', '35% · 2.5초 (일반 공격 40% 빗나감)'], ['스킬 대상', '사거리 무시 · 가장 가까운 적 최대 5기'], ['스킬 피해', '공격력의 120% · [눈가림] 확정']],
   syringe: [['우선 대상', '사거리 안 체력 40% 미만 아군 (체력 비율이 가장 낮은 · 자신 제외)'], ['투사체', '초당 8칸 · 모든 유닛 관통 · 맵 끝까지'], ['적', '공격력 피해 + [독] 2초 (1초마다 공격력의 100%)'], ['아군', '3초 동안 1초마다 공격력의 150% 회복']],
@@ -5426,6 +5426,7 @@ const PATCH_NOTES = [
       { id: 'deathnote', name: '데스노트 지후', tag: 'buff', desc: '출격제한 1 은 그대로 · 쿨타임 <b>21 → 16초</b> · 즉사까지 <b>20 → 15초</b> (R2.7.2 build 6 이전으로).' },
       { id: 'reaper', name: '사신 지후', tag: 'nerf', desc: '[사신강림] SP <b>3 → 5</b> (build 2).' },
       { id: 'devour', name: '포식 지후', tag: 'adjust', desc: '체력 <b>1,320 → 1,150</b> · 공격 간격 <b>1.2 → 1.55초</b> · [포식] 공격력 <b>+50% → +40%</b> · [포식] 하나당 <b>최대 체력 +50 · 체력 50 회복</b> (build 3).' },
+      { id: 'charge', name: '충전 지후', tag: 'fix', desc: '[무선충전]이 부활 지후 · 봉인된 사신 지후의 SP 를 채우던 문제 수정 (아군이 쓰러질 때만 SP 가 찬다 · 강림한 사신은 받는다 · build 4).' },
     ] },
   ] },
   { v: 'R2.7.2', date: '2026.10.24', title: '경쟁전 · 아케이드 · 촉수 지후', sections: [
