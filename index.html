@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.7.1"><meta name="jihoo-build" content="6"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.7.1"><meta name="jihoo-build" content="7"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1533,9 +1533,9 @@ const CHARS = {
     onAttack(u) { heal(u, u, effAtk(u) * 0.3); } },
   blizzard: { name: '블리자드 지후', rarity: 'legend', role: '컨트롤러', hp: 1310, atk: 45, atkSpeed: 1.1, range: 5.2, speed: 1.6, portrait: PORTRAITS.blizzard, sfx: 'ice', color: '#7fc8f8',
     story: '겨울마다 눈사람을 만들던 지후입니다. 하지만 봄이 오면 눈사람이 녹아 사라지는 것을 도저히 받아들일 수 없었어요. 그래서 그는 봄이 오지 못하게 막기로 결심했습니다. 매일 밤 창문을 열어 두고 찬바람과 대화를 나누던 끝에, 마침내 눈보라를 불러내는 법을 깨우쳤어요. 이제 그가 지나간 자리에는 사계절 내내 눈이 내립니다. 다만 그 덕분에 동네 난방비가 세 배로 뛰어서, 요즘은 반상회에 나가지 못하고 있다고 합니다.',
-    skill: { type: 'hit', need: 10, desc: '<b>SP 10</b> · <b>[눈보라]</b>. 모든 적을 얼린다. 얼음이 녹은 적은 [동상]에 걸린다.',
+    skill: { type: 'hit', need: 8, desc: '<b>SP 8</b> · <b>[눈보라]</b>. 모든 적에게 현재 체력의 <b>10%</b> 피해를 주고 얼린다. 얼음이 녹은 적은 [동상]에 걸린다.',
       run(u, A) { dmgNum(u, '눈보라!', { crit: true }); sfx('ice'); if (!S.fast) fxAt('fx-blizzard', FW() / 2, FH() / 2, 1100, { width: FW() + 'px', height: FH() + 'px' });
-        foes(u).forEach(e => { A.status(e, 'freeze', 2.5); if (e.st.freeze > 0) e._frostAfter = true; }); } } },
+        foes(u).forEach(e => { dealDamage(u, e, e.hp * 0.1, { skill: true, noCrit: true }); if (!e.alive) return; A.status(e, 'freeze', 2.5); if (e.st.freeze > 0) e._frostAfter = true; }); } } }, // R2.7.1: 현재 체력 10% 피해 → 빙결
   bat: { name: '빠따 지후', rarity: 'legend', role: '딜러', hp: 1410, atk: 200, atkSpeed: 3.9, range: 'melee', speed: 1.6, portrait: PORTRAITS.bat, sfx: 'bash', color: '#c0392b',
     story: '동네 야구 대회 9회 말 2아웃 만루, 마지막 타석에 선 지후입니다. 감독은 번트를 지시했지만 그는 끝까지 풀스윙을 고집했어요. 공은 담장을 넘어 옆 동네 유리창까지 날아갔고, 그날 이후 그의 별명은 \'빠따\'가 되었습니다. 지금은 공 대신 앞을 가로막는 모든 것을 담장 밖으로 넘기고 있습니다. 좌우명은 \'깡이 있어야지\'. 유리창 수리비는 아직 갚는 중이라고 합니다.',
     passive: '일반 공격에 맞은 적을 멀리 밀어낸다.',
@@ -1684,7 +1684,7 @@ const CHAR_INFO = {
   dust: [['확률', '10%'], ['황사 지대', '반지름 3.5칸 · 4초'], ['회피율', '+35% (지대 안 아군)']],
   cactus: [['반사', '근접 피해의 35% · 65%만 받음'], ['가시', '4방향 · 맵 끝까지 관통 · 공격력의 50%']],
   jaws: [['[잠수]', '노릴 수 없고 피해를 받지 않음 · 최대 8초'], ['잠수 속도', '3.5칸'], ['떠오를 때', '반경 2칸 · 공격력의 50%'], ['회복', '공격마다 공격력의 30%']],
-  blizzard: [['[빙결]', '모든 적 · 2.5초'], ['[동상]', '2초 · 공격력 -10% · 받는 피해 +10% · 이동속도 -40%']],
+  blizzard: [['SP', '8'], ['[눈보라] 피해', '모든 적 · 현재 체력의 10%'], ['[빙결]', '모든 적 · 2.5초'], ['[동상]', '2초 · 공격력 -10% · 받는 피해 +10% · 이동속도 -40%']],
   bat: [['넉백', '5칸'], ['[홈런] 피해', '공격력의 450%'], ['[홈런] 넉백', '15칸']],
   train: [['출격제한', '1'], ['신호기', '4개 (상대 쪽 2 · 내 쪽 2) · 무작위 위치'], ['돌진 속도', '초당 16칸'], ['충돌 피해', '400'], ['돌진 중', '받는 피해 -35% · 유닛 통과'], ['다음 돌진', '4.5초 (부딪힌 적 1기당 -0.5초 · 최소 0.1초)'], ['일반 공격', '하지 않는다']],
   sun: [['출격제한', '1'], ['광역 범위', '반경 1.8칸'], ['공격력 증가', '같은 적 2번마다 +20 (대상을 바꾸거나 멈추면 초기화)'], ['부활 조건', '쓰러질 때 아군 중 혼자 · 라운드당 1번'], ['낙하', '2초 뒤 무작위 적 위치 · 반경 3칸 400 피해 · 2.5초 [기절]'], ['부활 뒤', '기본 공격력 +50']],
@@ -4912,6 +4912,7 @@ const PATCH_NOTES = [
     { title: '밸런스', items: [
       { id: 'slime', name: '슬라임 지후', tag: 'nerf', desc: '공격력 <b>230 → 130</b>.' },
       { id: 'atom', name: '원자 지후', tag: 'nerf', desc: '사거리 <b>3 → 1.5칸</b> (적에게 붙어야 전자가 닿아요).' },
+      { id: 'blizzard', name: '블리자드 지후', tag: 'buff', desc: '[눈보라] 필요 SP <b>10 → 8</b> · 발동하면 모든 적에게 <b>현재 체력의 10%</b> 피해.' },
       { icon: '🐣', name: '초보자 보호', tag: 'new', desc: '일반전 <b>처음 5판</b>은 봇이 <b>일반 지후 4기 + 희귀 지후 1기</b> 덱만 써요.' },
       { id: 'gumiho', name: '구미호 지후', tag: 'nerf', desc: '공격력 <b>85 → 45</b> · 체력 <b>1,410 → 910</b> · <b>출격제한 1</b> · [매혹] 스킬은 라운드당 1번.' },
       { id: 'moon', name: '달 지후', tag: 'nerf', desc: '공격 간격 <b>2 → 3.5초</b> · 체력 <b>1,550 → 1,150</b> · 사거리 <b>6 → 5칸</b> · 버프 범위 <b>5 → 4칸</b>.' },
