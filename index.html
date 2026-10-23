@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.7"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.7"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1577,9 +1577,9 @@ const CHARS = {
       if (!S.fast) { A.ring(u.x, u.y, 3); fxAt('fx-sun-drop', u.x, u.y, 700, { width: 6 * CFG.CELL + 'px', height: 6 * CFG.CELL + 'px' }); shake(true); dmgNum(u, '☀ 낙하!', { crit: true }); }
       A.around(u, u.x, u.y, 3, t => { if (dealDamage(u, t, 400 * lvMult(u.lv), { skill: true, noCrit: true }) > 0) hitFx(u, t, true); A.status(t, 'stun', 2.5); }); drawUnit(u);
     } },
-  whirl: { name: '회오리 지후', rarity: 'legend', role: '딜러', hp: 1100, atk: 70, atkSpeed: 2, range: 4, speed: 1.6, portrait: PORTRAITS.whirl, portraitSkill: PORTRAITS.whirl_skill, sfx: 'ice', color: '#5ec8e5',
+  whirl: { name: '회오리 지후', rarity: 'legend', role: '딜러', hp: 700, atk: 70, atkSpeed: 2, range: 4, speed: 1.6, portrait: PORTRAITS.whirl, portraitSkill: PORTRAITS.whirl_skill, sfx: 'ice', color: '#5ec8e5',
     story: '어릴 적 놀이터 뺑뺑이를 누구보다 빨리 돌리던 지후입니다. 다른 아이들이 어지러워 내려간 뒤에도 그는 혼자 남아 끝없이 돌았어요. 그러던 어느 날, 너무 빠르게 돈 나머지 몸이 바람이 되어 버렸습니다. 평소에는 폭풍전야처럼 고요하지만, 한번 돌기 시작하면 아무도 말릴 수 없습니다. 본인은 아직도 어지럽다는 게 무슨 느낌인지 모른다고 하네요.',
-    skill: { type: 'hit', need: 5, desc: '<b>SP 5</b> · <b>[회오리]</b>. 회오리로 변해 적 사이를 휘젓고 다니며, 닿은 적에게 <b>0.2초</b>마다 공격력의 <b>50%</b> 피해를 입힌다.',
+    skill: { type: 'hit', need: 5, desc: '<b>SP 5</b> · <b>[회오리]</b>. 회오리로 변해 적 사이를 휘젓고 다니며, 닿은 적에게 <b>0.2초</b>마다 공격력의 <b>30%</b> 피해를 입힌다.',
       run(u, A) { u.wh = { on: 4, tick: 0, ang: 0 }; A.portrait(u, u.def.portraitSkill); if (u.el) u.el.classList.add('whirl-on'); dmgNum(u, '🌀 회오리!', { crit: true }); } },
     steer(u, dt) { // 전작 whirlSteer: 가까운 적 둘레를 돌며 휘젓는다
       const w = u.wh; if (!w) return false; const t = nearestFoe(u); if (!t) return true;
@@ -1588,7 +1588,7 @@ const CHARS = {
     },
     tick(u, dt, A) {
       const w = u.wh; if (!w) return; w.on -= dt; w.tick -= dt;
-      if (w.tick <= 0) { w.tick += 0.2; foes(u).forEach(e => { if (Math.hypot(e.x - u.x, e.y - u.y) <= unitRadius(u) + unitRadius(e) + CFG.CELL * 0.35) dealDamage(u, e, effAtk(u) * 0.5, { skill: true }); }); }
+      if (w.tick <= 0) { w.tick += 0.2; foes(u).forEach(e => { if (Math.hypot(e.x - u.x, e.y - u.y) <= unitRadius(u) + unitRadius(e) + CFG.CELL * 0.35) dealDamage(u, e, effAtk(u) * 0.3, { skill: true }); }); } // R2.7 build 2: 50% → 30%
       if (w.on <= 0) { u.wh = null; A.portrait(u, u.def.portrait); if (u.el) u.el.classList.remove('whirl-on'); }
     } },
   titanium: { name: '티타늄 지후', rarity: 'legend', role: '탱커', hp: 1810, atk: 360, atkSpeed: 7, range: 'melee', speed: 1.6, portrait: PORTRAITS.titanium, sfx: 'bash', color: '#8a94a6',
@@ -1693,7 +1693,7 @@ const CHAR_INFO = {
   bat: [['넉백', '5칸'], ['[홈런] 피해', '공격력의 450%'], ['[홈런] 넉백', '15칸']],
   train: [['출격제한', '1'], ['신호기', '4개 (상대 쪽 2 · 내 쪽 2) · 무작위 위치'], ['돌진 속도', '초당 16칸'], ['충돌 피해', '400'], ['돌진 중', '받는 피해 -35% · 유닛 통과'], ['다음 돌진', '4.5초 (부딪힌 적 1기당 -0.5초 · 최소 0.1초)'], ['일반 공격', '하지 않는다']],
   sun: [['출격제한', '1'], ['광역 범위', '반경 1.8칸'], ['공격력 증가', '같은 적 2번마다 +20 (대상을 바꾸거나 멈추면 초기화)'], ['부활 조건', '쓰러질 때 아군 중 혼자 · 라운드당 1번'], ['낙하', '2초 뒤 무작위 적 위치 · 반경 3칸 400 피해 · 2.5초 [기절]'], ['부활 뒤', '기본 공격력 +50']],
-  whirl: [['지속', '4초'], ['이동속도', '4배'], ['피해', '0.2초마다 공격력의 50%'], ['변신 중', '일반 공격은 하지 않는다']],
+  whirl: [['지속', '4초'], ['이동속도', '4배'], ['피해', '0.2초마다 공격력의 30%'], ['변신 중', '일반 공격은 하지 않는다']],
   titanium: [['쉴드', '맞을 때마다 60 (겹쳐 쌓임)'], ['지속', '0.7초']],
   gumiho: [['발동', '체력 40% 미만 · 라운드당 1번'], ['보호막', '받는 피해 -40% · 3초'], ['[매혹] 범위', '반경 3칸'], ['[매혹]', '3초 · 자기 아군을 공격한다']],
   necro: [['시작 소환', '라운드 시작 즉시 [소환] 1번 (R2.6.1)'], ['소환 수', '2기'], ['소환체 체력', '최대 체력의 20%'], ['소환체 공격', '50 · 0.9초 · 근접'], ['제한', '소환체가 4기 이상 살아 있으면 스킬만 쓰고 소환하지 않는다'], ['소환체', '라운드가 끝나면 사라진다']],
@@ -4924,6 +4924,7 @@ const PATCH_NOTES = [
       { icon: '🧪', name: '임테기 (임시 운빨 테스트기)', tag: 'new', desc: '쓰면 지후 1기: <b>전설 10%</b> · 영웅 30% · 희귀 30% · 일반 30% (이미 있으면 조각).' },
     ] },
     { title: '밸런스', items: [
+      { id: 'whirl', name: '회오리 지후', tag: 'nerf', desc: '체력 <b>1,100 → 700</b> · [회오리] 피해 공격력의 <b>50% → 30%</b>.' },
       { id: 'syringe', name: '주사 지후', tag: 'buff', desc: '사거리 <b>7.4 → 9.4칸</b> · 공격력 <b>40 → 70</b> · 공격 간격 <b>5 → 4.5초</b> · 사거리 안에 체력 <b>40%</b> 아래인 아군이 있으면 그 아군을 먼저 노려요.' },
     ] },
   ] },
