@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.7"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.7"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2545,7 +2545,7 @@ const A = {
   headLv: (u, n) => { if (!u.el) return; let b = u.el.querySelector('.xlv'); if (!b) { b = document.createElement('span'); b.className = 'xlv'; u.el.appendChild(b); } b.textContent = 'LV.' + n; b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); },
 };
 function castSkill(u) {
-  if (!u.def.skill) return;
+  if (!u.def.skill || u.st.ban > 0) return; // [밴]: 스킬도 못 쓴다 (네크로맨서 시작 소환 등)
   u.sk = 0; u.el && (u.el.classList.remove('cast'), void u.el.offsetWidth, u.el.classList.add('cast'));
   try { u.def.skill.run.call(u.def.skill, u, A); } catch (e) { console.error(e); }
 }
@@ -2578,7 +2578,7 @@ function stepUnit(u, dt) {
   let bchg = false; for (const k in u.buffs) { u.buffs[k].left -= dt; if (u.buffs[k].left <= 0) { delete u.buffs[k]; bchg = true; } } if (bchg) drawUnit(u);
   if (u.cuts.length) { u.cuts.forEach(c => { c.left -= dt; }); const n = u.cuts.length; u.cuts = u.cuts.filter(c => c.left > 0); if (u.cuts.length !== n) recut(u); }
   if (u.hots && u.hots.length) { for (const h of u.hots) { h.left -= dt; h.acc += dt; if (h.acc >= 1 - 1e-6) { h.acc -= 1; heal(h.src, u, h.amt); } } u.hots = u.hots.filter(h => h.left > 1e-6); } // 지속 회복 (주사)
-  if (u.def.tick) u.def.tick(u, dt, A);
+  if (u.def.tick) try { u.def.tick(u, dt, A); } catch (e) { console.error('[tick]', u.id, e); } // 한 지후의 오류로 전투가 멈추지 않게
   if (!u.alive) return;
   const sk = u.def.skill;
   if (sk && sk.type === 'cooldown' && !u.st.silence && !blocked(u)) { u.sk = Math.min(sk.cd, u.sk + dt); if (u.sk >= sk.cd) castSkill(u); }
@@ -2851,7 +2851,7 @@ function spawnDeathEffect(u) {
 
 // ── 전투 한 스텝 (전작 physicsStep 순서: 상태 → 조향 · 공격 → 투사체 → 적분 → 충돌 해소 → 벽) ──
 function stepCombat(dt) {
-  if (!S.started) { S.started = true; S.units.forEach(u => u.def.onStart && !(u.st.ban > 0) && u.def.onStart(u, A)); } // [밴]이면 시작 효과도 없다
+  if (!S.started) { S.started = true; S.units.forEach(u => u.def.onStart && u.def.onStart(u, A)); } // 시작 효과는 [밴]이어도 (원자 · 데스노트 등 준비 상태) · 스킬은 castSkill 이 막는다
   const t0 = S.time; S.time += dt; evTick(t0);
   for (const u of S.units) if (u.alive) { u.xPrev = u.x; u.yPrev = u.y; }
   S.units.slice().forEach(u => stepUnit(u, dt));
@@ -4926,6 +4926,7 @@ const PATCH_NOTES = [
     { title: '밸런스', items: [
       { icon: '🎲', name: '랜덤 이벤트 확률', tag: 'adjust', desc: '긍정 <b>60% → 75%</b> · 부정 <b>40% → 25%</b>.' },
       { id: 'rifle', name: '라이플 지후', tag: 'nerf', desc: '공격 간격 <b>2.2 → 2.7초</b>.' },
+      { icon: '🙅', name: '이걸 밴하네 · 너 밴', tag: 'fix', desc: '[밴]에 걸린 원자 지후 등이 있으면 전투가 멈추던 문제를 고쳤어요.' },
       { id: 'whirl', name: '회오리 지후', tag: 'nerf', desc: '체력 <b>1,100 → 700</b> · [회오리] 피해 공격력의 <b>50% → 30%</b>.' },
       { id: 'syringe', name: '주사 지후', tag: 'buff', desc: '사거리 <b>7.4 → 9.4칸</b> · 공격력 <b>40 → 70</b> · 공격 간격 <b>5 → 4.5초</b> · 사거리 안에 체력 <b>40%</b> 아래인 아군이 있으면 그 아군을 먼저 노려요.' },
     ] },
