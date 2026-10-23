@@ -85,6 +85,18 @@ service cloud.firestore {
 
     // ── 리더보드 ──
     // 시즌 R2: r2lb/{uid} = { nickname, level(0~), wins, losses, deck, fav, xp, frame(프로필 테두리 · 없어도 됨), updatedAt } · 게스트(익명)도 자기 문서만
+    // R2.7.2 지후의 탑 리더보드: r2tower/{uid} = { nickname, best(최고 층), fav, frame(없어도 됨), updatedAt }
+    match /r2tower/{userId} {
+      allow get, list: if true;
+      allow delete: if owner(userId) || isAdmin();
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
+        && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
+        && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
+        && request.resource.data.updatedAt is timestamp;
+    }
     match /r2lb/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
