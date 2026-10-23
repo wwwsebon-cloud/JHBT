@@ -12,7 +12,7 @@
 - 화면은 **글래스 UI** (R2.1 · iOS 풍 밝은 글래스모르피즘). R1 UI · 예전 흑백 다크 UI 는 쓰지 않는다
   - 토큰(`:root`): 바탕 `#e4e5e8` + 블롭 3개(파랑 · 보라 · 노랑) · 잉크 `#111318` · 글래스 3단계(필 `.g-pill` · 카드 `.g-card` · 시트 `.modal .box`) · 주 버튼 검정(`.k-btn` / `.btn.primary`) · 보조 버튼 `.g-btn` · 스위치 `.sw` · Pretendard 하나
   - 등급 링: 일반 `#c9c9c6` · 희귀 `#4f9dff` · 영웅 `#b26bff` · 전설 `#ffc21a` · 초상화는 원형 흰 바탕 + 링
-  - 공통 상단 바(`.topbar`) · 하단 탭 바(`#tabbar`)는 `CHROME` 화면(로비 · 덱 · 뽑기 · 상점 · 친구 · 리더보드)에서만 (`body[data-chrome]`, `show()` 가 정한다) · 탭 이동은 `openTab(name)` · 모바일(≤700px) 탭 5개 · 리더보드는 메뉴
+  - 공통 상단 바(`.topbar`) · 하단 탭 바(`#tabbar`)는 `CHROME` 화면(로비 · 덱 · 뽑기 · 상점 · 친구 · 리더보드)에서만 (`body[data-chrome]`, `show()` 가 정한다) · 탭 이동은 `openTab(name)` · 모바일(≤700px) 탭 7개(로비 · 덱 · 뽑기 · 상점 · 가방 · 아케이드 · 친구) · 리더보드는 메뉴
   - 퀘스트 · 출석 · 업적 · 신규 보상은 시트 하나(`#qsModal`) · 전투 화면 상태 클래스 `deploy` / `combat` / `spec` (`setPhase`)
 
 ## 업데이트 때 반드시 할 일
@@ -85,6 +85,7 @@
 - **메인 퀘스트** `MQ` (13단계 · 순서대로 · 14번은 추가 예정): `profile.mq = { i, n, done, day }`. `ev` 이벤트(`mqEvent('win'|'newChar'|'dailyAll'|'shop'|'lb'|'boost')`) · `need` 횟수 · `ok` 이벤트 때 조건(5연승 · 전설 5덱 승리) · `state` 지금 상태로 바로 완료(덱 구성 · 일일 퀘스트 · 내일도 접속 = `day` 와 다른 날) — `mqCheck` 는 로비 · 덱 화면에서. 로비 카드 `#btnMQ` · 퀘스트 · 출석 시트 맨 위에서 받기(`mqClaim`) → 다음 단계. 새 단계를 넣을 땐 `MQ` 끝에 추가
 - **천장** `CFG.PITY` 80: `profile.pity` = 전설 없이 뽑은 수 · 80 이상이면 다음 뽑기는 전설 (`rollLegend`) · 전설이 나오면 0
 - **부스트** `profile.boost = { day, used, until }`: 하루 `BOOST_PER_DAY` 2번 · `BOOST_MIN` 15분 (R2.7.1) · 일반전(봇) 승리마다 ◆1~`BOOST_DIA` 300 (판 시작 때 켜져 있었으면 `S.boost` 로 끝까지)
+- **아케이드 (R2.7.2)**: 탭 `arcade` (`screen-arcade` · `renderArcade`) · `profile.arc = { t 티켓, p 포인트, day, free, buy }` (`arcDay` 가 날마다 무료 · 구매 수 초기화) · 티켓: 매일 `ARC_FREE` 1장 무료 · ●`ARC_GOLD` 10,000 으로 하루 `ARC_BUY` 3장 · 결과 승리 `ARC_WIN_P` 5P · 패배 1P (`arcEnd` · XP · 골드 · 퀘스트 없음 · 결과 뒤 아케이드로 `resBack`) · 랜덤 이벤트 없음. 모드는 `ARC_MODES` · 시작은 `newMatch({ arc, decks() })`. 미러전 🎟1 = 양쪽 같은 무작위 덱 5기. P 상품은 사용자가 정해 줄 예정 (지금은 '준비 중')
 - **가방 (R2.7)**: 탭 `inv` (`screen-inv` · `renderInv`) · 가진 `ITEMS` 전부 · `use` 면 바로 사용 (`useItem` · 뽑기 화면 '내 모집권' 과 같은 함수). 임테기 `testKit` = 전설 10 · 영웅 · 희귀 · 일반 각 30 (Math.random)
 - **업데이트 안내 · 보상 (R2.7)**: `updCheck()` — `profile.updRw` 가 지금 버전(`jihoo-version`)과 다르면 로비에서 간단한 패치노트(`PATCH_NOTES` 의 그 버전 · 6개까지) + 보상 창 `#updModal` → `updClaim` 으로 ◆`CFG.UPD_DIA` 500 + `CFG.UPD_ITEM` 임테기 1개 · `updRw = 버전`. 지금 버전 것만 (놓친 예전 버전은 쌓이지 않는다) · 서버 기록과 맞춘 뒤 부른다 (`accBoot` 끝 · `syncAfterLogin` 끝 · 닉네임 정한 뒤) — 잠수함 패치(build)는 버전이 같아 안 뜬다
 - 시작할 때 프로필 정규화가 보는 데이터(`ITEMS` · `FRAMES` · `MQ`)는 `let profile = loadProfile()` **보다 앞**에 둔다 (정의 전 접근 오류 → 로딩 0% 멈춤)
