@@ -24,13 +24,15 @@
 
 ## 게임 규칙 · 데이터
 - 모드: **일반전**(봇 · 라이프 4) · **친선전**(온라인 1:1 · 관전)만. 경쟁전 · 경매 · 협동 · 드래프트 등 다른 모드는 없다 (다시 넣지 않는다)
-- 지후 33종 (JHBT2 기준 19종 + R2.2 신규 14종): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal water berserker slot bow dust · 영웅 lonely berserk scythe levelup gun combo cactus jaws · 전설 moon magic gift atom blizzard bat train titanium sun whirl. 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
+- 지후 33종 (JHBT2 기준 19종 + R2.2 신규 14종): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal berserker slot bow · 영웅 scythe levelup gun combo cactus jaws water dust · 전설 moon magic gift atom blizzard bat train titanium sun whirl lonely berserk (R2.4: 황사 · 물 → 영웅 · 고독한 · 광폭화 → 전설). 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
 - 아직 안 만든 지후 (그림만 `지후초상화/`): 촉수 · 팔라딘 · 폭탄 · 행성 · 후라이팬 · 흡혈
 - 랭크업 · 한계돌파 없음. 지후 레벨은 경기 안에서만: 새 카드는 전장의 같은 지후 위에 **레벨 상관없이** 겹쳐 +1 (`stackable` · 2렙 + 카드 = 3렙 · R2.2.1) · 전장의 내 지후를 같은 종류 · **같은 레벨** 위로 옮기면 합체 레벨 +1 (`moveTile` · 2렙 + 2렙 = 3렙 · 전장의 2렙 + 1렙은 안 된다) · **최대 Lv5** · 체력/공격력 ×1.2 · 효과 ×1.1 복리 · 레벨이 올라도 몸 크기는 그대로
 - 배치: 진영 3 × 5 칸 · 최대 10기 · 같은 지후 **3기**(R2.2.1 · 출격제한은 deployLimit) · 카드 3장 중 1장 · 15초 · 배치 기회 **첫 라운드 4번 · 그다음 2번 · 데스매치 3번** · 줄 고르기 `roleRow` (탱커 · 딜러 · 근접 · 체력 높으면 앞 / 어쌔신 · 서포터 · 사거리 길면 뒤) · 봇은 유닛 수 먼저 (`botDeployOne` · 등급 높은 카드 · 꽉 찼을 때만 합치기 · R2.3)
 - 전투 화면: 양쪽 이름 · 레벨 (`S.lvl` · 봇은 내 레벨 ±3 · 친선전은 `lv` 메시지로 주고받는다) · 프로필 테두리 · 사진 (`S.pf` · `lv` 메시지의 `fr` · `ph`) · 양쪽 덱 (전장 위 모서리 `.fdeck`) · 봇 닉네임 = R1 `BOT_NAMES` 전부
 - 덱 5기 (**5기를 다 채워야** 일반전 · 친선전 시작 · R2.3) · 등급: 일반 / 희귀 / 영웅 / 전설 · 뽑기 일반 65 · 희귀 30 · 영웅 4 · 전설 1 · 중복은 조각
 - 모든 지후 초상화는 **흰 배경 PNG** (투명 배경 금지 · 새 초상화도 흰 배경으로 맞춘다)
+- **도감 설명 (R2.4)**: `passive` · `skill.desc` 는 **쉽게** (중요한 피해량 · 확률만 숫자로) · 자세한 숫자는 `CHAR_INFO[id] = [[항목, 값], …]` (도감 '상세' · 전투 상세 창). 수치를 바꾸면 `CHAR_INFO` 도 같이 고친다 · 서사(`story`)는 「~입니다」 체
+- **뽑기 연출 (R2.4)**: `showReveal(res, again)` → 봉인 카드(최고 등급 색 · 문구 `GR_SIGN`) → 딜 → 자동 뒤집기 (일반 220 · 희귀 300 · 영웅 520ms · 전설 뒷면은 영웅과 같은 보라) → 전설 컷신 `grCut` (대사 `CHAR_LINE` · 한 글자 140ms · 2.4초 유지 → 섬광 → 등장) → 요약 · 한 번 더. 타이머는 `GR` 한 곳 (`grClear`). **전설이 추가되면 `CHAR_LINE` 대사도 함께**
 - 지후 데이터 `CHARS[id]`: name · rarity · role · hp · atk · atkSpeed · range · speed · passive · skill(`type:'sec'` 초당 SP · `'hit'` 공격마다 SP · `need` · `once`) · onHit/onStart/onDeath/tick/onKill/onLethal 훅
 - 선물 지후: 초당 SP 1 · **SP 18**에 무작위 지후로 변신(1회) · 변신하면 그 자리를 같은 진영 · 같은 레벨의 변신체가 차지하고 **배치 기록도 바뀌어** 다음 라운드에도 유지
 - 슬라임: 쓰러지면 절반 크기 2기 (최대 2단계) · 코인: 10분마다 -50%~+50% (`coinMult` · 친선전은 판 시작 시세로 고정) · 화염: [화상] 5초 · 공격력 80% · 중첩
@@ -41,10 +43,10 @@
 - 전투 화면: 체력바 안에 체력 숫자 · 아군 연두 / 적 빨강 · 깎이면 흰 잔상 (`.unit-hpbar-lag`) · 치명타 숫자 도장 (`.stamp`) · 승률 예측 게이지 (`#hudOdds` 전장 위)
 - 아직 안 만든 지후 그림 원본은 `지후초상화/` (투명 배경 원본 · 게임에 넣을 때는 흰 배경 256×256 으로 바꿔 PORTRAITS 에)
 
-### 현재 밸런스 (R2.3)
+### 현재 밸런스 (R2.4)
 - 화염 HP 1200 · 화상 80% · 암살 ATK 70 · 순간이동 뒤 첫 공격 700% · 달 공격 간격 2초 · 광폭화 HP 910 (R2.2.1) · [광폭화] 공격력 +140%
 - 낫 HP 1240 · 공격 간격 4.5초 · [힘줄 끊기] 55% (회전 낫 이펙트 `.fx-scythe-spin`) · 레벨업 ATK 125 / 175 / 225 · 총 HP 860
-- 마탄 [마탄] 10% · 650% (`magicPct` · R2.3) · 원자 전자 궤도 2칸 · 콤보 ATK 67 · 공격 간격 1.4초 (R2.3) · 죠스 이동속도 2.5 · 잠수 속도 3.5 (R2.3)
+- 마탄 [마탄] 10% · 650% (`magicPct` · R2.3) · 원자 전자 궤도 2칸 · 콤보 ATK 67 · 공격 간격 1.4초 (R2.3) · 공격마다 +5% (R2.4) · 활 ATK 130 (R2.4) · 죠스 이동속도 2.5 · 잠수 속도 3.5 (R2.3)
 - 코인 ATK 50 · 시세 반전 확률 55% · 그대로: 슬라임 HP 600 · 검 ATK 190 · 고독한 HP 1700 · 선물 SP 18
 - 신규 지후 수치는 패치노트 R2.2 · `CHARS` 그대로
 
