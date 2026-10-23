@@ -23,12 +23,13 @@
 5. 이 파일(CLAUDE.md)에 바뀐 규칙이 있으면 갱신
 
 ## 게임 규칙 · 데이터
-- 모드: **일반전**(봇 · 라이프 4) · **친선전**(온라인 1:1 · 관전)만. 경쟁전 · 경매 · 협동 · 드래프트 등 다른 모드는 없다 (다시 넣지 않는다)
-- 지후 41종 (JHBT2 기준 19종 + R2.2 신규 14종 + R2.5 신규 5종 + R2.6 신규 3종): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal berserker slot bow · 영웅 scythe levelup gun combo cactus jaws water dust necro rifle bubble syringe · 전설 moon magic gift atom blizzard bat train titanium sun whirl lonely berserk gumiho deathnote prophecy joker (R2.4: 황사 · 물 → 영웅 · 고독한 · 광폭화 → 전설). 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
-- 아직 안 만든 지후 (그림만 `지후초상화/`): 랜턴 · 번개 · 보호막 · 부활 · 사신 · 수호자 · 시계 · 충전 · 촉수 · 팔라딘 · 포식 · 폭탄 · 핵미사일 · 행성 · 후라이팬 · 흡혈 (일부는 배경이 반만 투명 → 흰 배경에 합성하면 된다)
+- 모드: **일반전**(봇 · 라이프 3 · R2.7.2) · **친선전**(온라인 1:1 · 관전). R2.7.2 부터 아케이드(미러전 · 지후의 탑) · 경쟁전(밴 · 드래프트)을 단계별로 추가 중 (사용자 요청)
+- **게임 모드 (R2.7.2)**: 로비 `#modeSeg` → `profile.mode` 'event'(랜덤 이벤트 · 기본) | 'classic'(이벤트 없음) · 판마다 `S.evOn` (`evRoll` 이 본다). 친선전은 방장 설정을 **시드 맨 아래 비트**로 전달 (`seed & 1` = 랜덤 이벤트 · 규칙 변경 없이)
+- 지후 42종 (JHBT2 기준 19종 + R2.2 신규 14종 + R2.5 신규 5종 + R2.6 신규 3종 + R2.7.2 촉수): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal berserker slot bow · 영웅 scythe levelup gun combo cactus jaws water dust necro rifle bubble syringe tentacle · 전설 moon magic gift atom blizzard bat train titanium sun whirl lonely berserk gumiho deathnote prophecy joker (R2.4: 황사 · 물 → 영웅 · 고독한 · 광폭화 → 전설). 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
+- 아직 안 만든 지후 (그림만 `지후초상화/`): 랜턴 · 번개 · 보호막 · 부활 · 사신 · 수호자 · 시계 · 충전 · 팔라딘 · 포식 · 폭탄 · 핵미사일 · 행성 · 후라이팬 · 흡혈 (일부는 배경이 반만 투명 → 흰 배경에 합성하면 된다)
 - 랭크업 · 한계돌파 없음. 지후 레벨은 경기 안에서만: 새 카드는 전장의 같은 지후 위에 **레벨 상관없이** 겹쳐 +1 (`stackable` · 2렙 + 카드 = 3렙 · R2.2.1) · 전장의 내 지후를 같은 종류 · **같은 레벨** 위로 옮기면 합체 레벨 +1 (`moveTile` · 2렙 + 2렙 = 3렙 · 전장의 2렙 + 1렙은 안 된다) · **최대 Lv5** · 체력/공격력 ×1.2 · 효과 ×1.1 복리 · 레벨이 올라도 몸 크기는 그대로
 - **비공개 배치 (R2.6.2)**: 배치 시간(`HIDE_PHASES` deploy · deploy-resolve · deploy-wait · event)에는 상대 진영을 `S.roundStart` (이번 라운드 시작 때 = 이전 라운드 배치)로 반투명(`.unit.ghost`) 그린다 — `viewPlace(side)` · `oppHidden(side)` (renderField · 미니맵 · 상대 지후 누르기). 전투가 시작되면 공개 · 관전자는 다 본다
-- 배치: 진영 3 × 5 칸 · 최대 **7기** (R2.6.1) · 같은 지후 **3기**(R2.2.1 · 출격제한은 deployLimit) · 카드 3장 중 1장 · 15초 · 배치 기회 **첫 라운드 4번 · 그다음 2번 · 데스매치 3번** · 줄 고르기 `roleRow` (탱커 · 딜러 · 근접 · 체력 높으면 앞 / 어쌔신 · 서포터 · 사거리 길면 뒤) · **초보자 보호** (R2.7.1): 일반전 승 + 패 < `CFG.NEWBIE_GAMES` 5 이면 봇 덱 = 일반 4 + 희귀 1 (`botDeck(true)` · `newbieLeft`) · 봇은 유닛 수 먼저 (`botDeployOne` · 등급 높은 카드 · 꽉 찼을 때만 합치기 · R2.3)
+- 배치: 진영 3 × 5 칸 · 배치 수 **제한 없음** (R2.7.2 · `CFG.MAX_UNITS` 15 = 칸 수) · 같은 지후 **3기**(R2.2.1 · 출격제한은 deployLimit) · 카드 3장 중 1장 · 15초 · 배치 기회 **첫 라운드 4번 · 그다음 2번 · 데스매치 3번** · 줄 고르기 `roleRow` (탱커 · 딜러 · 근접 · 체력 높으면 앞 / 어쌔신 · 서포터 · 사거리 길면 뒤) · **초보자 보호** (R2.7.1): 일반전 승 + 패 < `CFG.NEWBIE_GAMES` 5 이면 봇 덱 = 일반 4 + 희귀 1 (`botDeck(true)` · `newbieLeft`) · 봇은 유닛 수 먼저 (`botDeployOne` · 등급 높은 카드 · 꽉 찼을 때만 합치기 · R2.3)
 - 전투 화면: 양쪽 이름 · 레벨 (`S.lvl` · 봇은 내 레벨 ±3 · 친선전은 `lv` 메시지로 주고받는다) · 프로필 테두리 · 사진 (`S.pf` · `lv` 메시지의 `fr` · `ph`) · 양쪽 덱 (전장 위 모서리 `.fdeck`) · 봇 닉네임 = R1 `BOT_NAMES` 전부
 - 덱 5기 (**5기를 다 채워야** 일반전 · 친선전 시작 · R2.3) · 등급: 일반 / 희귀 / 영웅 / 전설 · 뽑기 일반 64.5 · 희귀 30 · 영웅 4 · 전설 1.5 (R2.7.1 build 2) · 중복은 조각
 - 모든 지후 초상화는 **흰 배경 PNG** (투명 배경 금지 · 새 초상화도 흰 배경으로 맞춘다)
@@ -50,6 +51,8 @@
   - 화면: 이벤트가 나온 라운드는 `startRound` 끝에서 `evShow(nextDeploy)` — 그동안 `S.phase = 'event'` (배치 · 자리 옮기기 막음 · 안 막으면 친선전 행동이 빠져 갈라진다) · 5초 어두운 오버레이 `#evPop` + 양쪽 릴 (연출은 Math.random · 다 멈춘 뒤 누르면 바로) → 배치. 얻은 이벤트 아이콘은 덱 아래 `.fev` (`evIcons` · 마우스를 올리면 설명 `data-tip` · 누르면 `evList()`). 상태 `ban`(밴 · `blocked`) · `doom`(천살성 · `doomKill`)
 - 지후 설명 (R2.7.1): `charDetail(id, view)` — view 면 장착 버튼 없이 설명만. 전투 화면 양쪽 덱 지후 · 배치 카드 `i` 버튼(`.pinfo` · `data-info`) · 로비 현재 덱 지후(`data-cid`)
 - 전투 화면 양쪽 덱(`.fdeck`) · 배치 카드(`.pcard .pp`) 초상화 테두리 = 지후 고유 색 `CHARS[id].color` (R2.6.1 · 전장 · 덱 설정 등 다른 곳은 등급 색)
+- **촉수 (R2.7.2 · 영웅 컨트롤러)**: `customAttack` → `slam` (대상 쪽 직사각형 · 폭 = 자기 지름 · 길이 5칸 · 닿은 적 모두 · 35% [눈가림] 2.5초 · 그림 `portraitAtk` 0.5초) · SP 5 [촉수 내려치기] 가장 가까운 적 최대 5기 120% + [눈가림] 확정 · [눈가림] = 일반 공격 40% 빗나감 (R2.7.2 · 예전 50%)
+- **랜덤 이벤트 R2.7.2 리워크**: 지난 라운드 진 쪽 긍정 · 이긴 쪽 부정 (`S.hist` 마지막 · 첫 라운드 · 무승부는 `EV_POS` 확률) — 야르 · 저주 · 편애(상대 긍정만) 등 이벤트 설명이 먼저 · 편애에서 '나는 못 얻음' 삭제 · 함정카드는 진영만 (덱 그대로) · 지원요청은 빈 칸마다 화염
 - 친선전 배치 동기화 `packPlace` = `[지후, 레벨, 아르카나, 조커, 이벤트 표시 f, 선물 SP sp]` — 배치 기록에 새 필드를 넣으면 여기도 같이 (안 넣으면 두 화면이 갈라진다)
 - 상태 `charm`(매혹 · `foes()` 가 자기 아군을 돌려준다) · `foxguard` · `bubble` · `dnote` · 소환체 같은 '덱에 없는 유닛'은 `SUMMONS` 에 (`makeUnit` · `pic` 이 같이 본다)
 - 엔진 도우미 (R2.2): `A.knock` 넉백 · `A.line` 맵 끝까지 직진 관통탄 (`S.lines`) · `A.zone` 바닥 지대 (`S.zones`) · 훅 `steer`(스스로 이동) · `customAttack` · `onDamaged` · `atkMult` · `reflect` · `shotSpeed`(칸/초) · `ghost`(돌진 중 물리 없음) · 상태 `frost`(동상) · `dive`(잠수)
@@ -57,6 +60,7 @@
 - 아직 안 만든 지후 그림 원본은 `지후초상화/` (투명 배경 원본 · 게임에 넣을 때는 흰 배경 256×256 으로 바꿔 PORTRAITS 에)
 
 ### 현재 밸런스 (R2.4)
+- R2.7.2: 슬롯머신 출격제한 1 · 라이플 ATK 18 · 힐 SP 4 · ATK 50 · 사거리 6.5 · 암살 ATK 100 · 첫 공격 600% · 슬라임 HP 450 · 레벨업 ATK 160/210/260 · 총 ATK 125 · 블리자드 빙결 2초 · 4% · 주사 사거리 8.4 · 검 HP 930 · ATK 215 · 얼음 3.5초 · 죠스 ATK 220 · 잠수 4.5칸 · 태양 +15 · 가속 1초 · 8초 · 3초 · 낫 9초 · 80% · 광폭화 2.5초 · 이동속도 2배
 - R2.7.1: 구미호 ATK 45 · HP 910 · 주사위 1~200 · 슬라임 ATK 130
 - 화염 HP 1200 · 화상 80% · 암살 ATK 70 · 순간이동 뒤 첫 공격 700% · 달 공격 간격 3.5초 · HP 1150 · 사거리 5 · 버프 반경 4칸 (R2.7.1) · 광폭화 HP 910 (R2.2.1) · [광폭화] 공격력 +140%
 - 낫 HP 1240 · 공격 간격 4.5초 · [힘줄 끊기] 55% (회전 낫 이펙트 `.fx-scythe-spin`) · 레벨업 ATK 125 / 175 / 225 · 총 HP 860
@@ -72,7 +76,7 @@
 - **출석부** (`NEWBIE` · 모두에게 · `newbie.v 2`): ◆1,000 (R2.3 · 예전 10회 뽑기권) · 영웅 모집권 · ◆500 · 빛나는 전설조각 · ◆1,000 · 지후 초기화권 · 선택 전설 모집권 → 가방 `profile.items` (`ITEMS`). 뽑기 화면 '내 모집권'에서 사용 (빛나는 전설조각 · 초기화권은 지후 레벨업 시스템과 함께 쓸 예정)
 - 시즌 초기화: 모두 **Lv.0** 부터 (`xpNeed(lv) = 100 + 50 × lv`) · 레벨업마다 ◆1,000 (R2.7.1 build 9)
 - 일반전 보상 (R2.2): 승리 기본 **+100 XP** · 패배 기본 **−30 XP** · 상대 레벨 차 1마다 승리 ±10 (50~200) · 패배 ∓5 (10~60) · ● 1,000~2,000 · **다이아 없음** · 패배는 지금 레벨 안에서만 깎인다 · 친선전 · 관전은 보상 없음
-- 덱 설정: 등급별 칸막이 · [서사] 버튼 (story 없으면 준비 중)
+- 덱 설정: 정렬 3종 (R2.7.2 · `deckSortGet` · localStorage `rejhbt-deck-sort`) 기본순(등급 → 출시) · 역할군순(`DECK_ROLES` 칸막이) · 이름순(등급 → 가나다) · [서사] 버튼 (story 없으면 준비 중)
 - 닉네임 등록부 `nicknames` (R1 과 공유) · 리더보드 `r2lb` (레벨 · 승리) · 명예의 전당 = R1 `leaderboard` 읽기만
 - 운영자 = `admins/<uid>` 문서가 있는 계정 · 개발자 모드(모든 지후 해금 · localStorage `rejhbt-dev`) · 운영 도구(우편 · 로비 공지 · 점검)는 환경설정에 표시
 - 동시 접속: `sessions/<uid>` · 이용 정지: `bans/<uid>` · 점검: `config/maintenance` · 공지: `config/announce`
