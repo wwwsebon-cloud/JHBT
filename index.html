@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.6.3"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.6.4"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1071,7 +1071,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="annbar" id="lobbyAnn" hidden></div>
     <div class="lobby-grid">
       <div class="lobby-left">
-        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.6.3</span></div>
+        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.6.4</span></div>
         <div class="g-card deckcard">
           <div class="dh"><b>현재 덱</b><small id="lobbyDeckN">0 / 5</small><span class="sp"></span><button class="link" id="btnDeckEdit">편집 ›</button></div>
           <div class="ldeck" id="lobbyDeck"></div>
@@ -1092,7 +1092,7 @@ input.text { font-size:20px; font-weight:800; }
 <!-- 닉네임 -->
 <div id="screen-welcome" class="screen">
   <div class="g-card welcome">
-    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.6.3</span></div>
+    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.6.4</span></div>
     <div><div class="eyebrow" style="margin-bottom:8px">닉네임 · 1~12자</div><input class="text" id="nickInput" maxlength="12" placeholder="지후왕"></div>
     <button class="k-btn big" id="btnStart">시작하기 →</button>
     <button class="g-btn" id="btnWelcomeLogin">이미 계정이 있어요 · 로그인</button>
@@ -1434,7 +1434,9 @@ const CHARS = {
     onMagicHit(u, t, A) { A.cut(t, 0.3, 4); A.status(t, 'vuln', 4, { amt: 0.3 }); } },
   gift: { name: '선물 지후', rarity: 'legend', role: '보조형', hp: 1260, atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.gift, color: '#e84393',
     story: '선물은 항상 설렙니다. 오늘은 선물상자에서 무슨 지후가 나올까요?',
-    passive: '움직이지도 공격하지도 않는다. 시간이 지나면 무작위 지후로 변신한다.',
+    passive: '움직이지도 공격하지도 않는다. 시간이 지나면 무작위 지후로 변신한다. 변신하기 전에 쓰러지면 모은 SP가 다음 라운드에도 남는다.',
+    onStart(u) { const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'gift' && p.sp) { u.sk = Math.min(u.def.skill.need, p.sp); delete p.sp; drawUnit(u); } }, // R2.6.4: 지난 라운드에 쓰러질 때 모은 SP
+    onDeath(u) { const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'gift' && !u.skillDone && u.sk > 0) p.sp = Math.round(u.sk * 100) / 100; }, // 배치 기록에 남긴다 (packPlace 6번째 칸)
     skill: { type: 'sec', need: 18, once: true, desc: '<b>SP 18</b> · 1회. 게임에 있는 모든 지후 중 <b>무작위 하나</b>로 변신한다.',
       run(u, A) { const ids = Object.keys(CHARS).filter(id => id !== 'gift'); A.transform(u, ids[Math.floor(rng() * ids.length)]); } } },
   slime: { name: '슬라임 지후', rarity: 'rare', role: '탱커', hp: 300, atk: 230, atkSpeed: 2.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.slime, sfx: 'bash', color: '#12a8ef',
@@ -1654,7 +1656,7 @@ const CHAR_INFO = {
   moon: [['출격제한', '1'], ['범위', '반경 5칸 (자신 포함)'], ['기본 버프', '공격력 +8% · 공격속도 +12%'], ['공격마다', '각각 +2%p (최대 100%)']],
   levelup: [['최대 레벨', '3 (라운드가 끝나면 초기화)'], ['Lv1', 'HP 1,250 · ATK 125 · 2초'], ['Lv2', 'HP 1,500 · ATK 175 · 1.75초'], ['Lv3', 'HP 1,750 · ATK 225 · 1.5초'], ['레벨업 회복', '최대 체력의 30%']],
   magic: [['[마탄] 확률', '10%'], ['[마탄] 피해', '공격력의 650%'], ['[절상]', '최대 체력 30% · 4초'], ['[취약]', '받는 피해 +30% · 4초']],
-  gift: [['SP', '초당 1 (라운드 시작부터)'], ['변신', '모든 지후 중 무작위 1기 · 같은 레벨 · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다']],
+  gift: [['SP', '초당 1 (라운드 시작부터)'], ['변신', '모든 지후 중 무작위 1기 · 같은 레벨 · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다'], ['변신 전에 쓰러지면', '모은 SP가 다음 라운드로 이어진다 (R2.6.4)']],
   slime: [['분열', '2기 · 체력 · 공격력 절반'], ['최대', '2단계']],
   atom: [['전자 수', '레벨과 같음'], ['공전 주기', '1.3초'], ['궤도 반지름', '2칸'], ['전자 피해', '현재 체력의 14% (한 바퀴에 같은 적 한 번)']],
   dice: [['피해', '1 ~ 250 (레벨 · 버프 적용)']],
@@ -3146,7 +3148,7 @@ function moveTile(side, a, b) { // 자리 옮기기: 같은 종류 · 같은 레
   const L = S.place[side];
   if (evN(side, 'seal')) return false; // 봉인 (랜덤 이벤트): 자리를 옮길 수 없다
   if (jokerCan(L[a], L[b])) { L[a] = { id: L[b].id, lv: L[a].lv, jk: 1, f: L[a].f }; (S.fx || (S.fx = [])).push({ side, t: a, kind: 'merge' }); if (side === ME()) sfx('merge'); return 'joker'; } // 조커 레벨 그대로 · 출격제한 무시
-  if (canFuse(L[a], L[b])) { L[b] = { ...L[b], arc: Math.max(L[a].arc || 0, L[b].arc || 0) || undefined, f: normF((L[a].f || '') + (L[b].f || '')), lv: L[b].lv + 1 }; L[a] = null; S.evf[side].fuse += evN(side, 'fusemaster'); evLuck(side, b); (S.fx || (S.fx = [])).push({ side, t: b, kind: 'merge' }); if (side === ME()) sfx('merge'); return true; }
+  if (canFuse(L[a], L[b])) { L[b] = { ...L[b], arc: Math.max(L[a].arc || 0, L[b].arc || 0) || undefined, sp: Math.max(L[a].sp || 0, L[b].sp || 0) || undefined, f: normF((L[a].f || '') + (L[b].f || '')), lv: L[b].lv + 1 }; L[a] = null; S.evf[side].fuse += evN(side, 'fusemaster'); evLuck(side, b); (S.fx || (S.fx = [])).push({ side, t: b, kind: 'merge' }); if (side === ME()) sfx('merge'); return true; }
   swapTiles(side, a, b); return false;
 }
 // 행동 적용: 자리 바꾸기 → 놓기/합치기. 상대가 보낸 행동도 같은 판정으로 (놓을 수 없으면 같은 지후에 합치고, 그것도 안 되면 건너뛴다)
@@ -3417,7 +3419,7 @@ function renderField() {
       tile.style.left = (x - ts.w / 2) + 'px'; tile.style.top = (y - ts.h / 2) + 'px'; tile.style.width = ts.w + 'px'; tile.style.height = ts.h + 'px';
       f.appendChild(tile);
       if (!p) continue;
-      const u = makeUnit(side, p.id, p.lv, x, y);
+      const u = makeUnit(side, p.id, p.lv, x, y); if (p.sp) u.sk = p.sp; // 선물: 이어지는 SP 게이지
       const el = unitEl(u); el.dataset.side = side; el.dataset.tile = t; if (hid) el.classList.add('ghost'); if (p.jk) el.classList.add('jk'); if (p.arc) el.dataset.arc = '🔮' + p.arc;
       if (mine && ((pick && stackable(p, pick)) || (S.moveSel != null && S.moveSel !== t && (canFuse(S.place[me][S.moveSel], p) || jokerCan(S.place[me][S.moveSel], p))))) el.classList.add('merge'); // 겹치거나 합칠 수 있는 지후
       if (mine && S.moveSel === t) el.classList.add('movesel');
@@ -4413,8 +4415,8 @@ function netTry() {
   renderField();
   setTimeout(nextDeploy, S.fast ? 0 : 350);
 }
-const packPlace = () => ({ a: S.place.a.map(p => p ? [p.id, p.lv, p.arc || 0, p.jk ? 1 : 0, p.f || 0] : 0), e: S.place.e.map(p => p ? [p.id, p.lv, p.arc || 0, p.jk ? 1 : 0, p.f || 0] : 0) }); // [지후, 레벨, 아르카나, 조커, 이벤트 표시]
-const unpackPlace = pl => { const side = L => Array.from({ length: TILES }, (_, i) => { const p = Array.isArray(L) && L[i]; if (!p || !CHARS[p[0]]) return null; const o = { id: p[0], lv: clamp(nat(p[1]) || 1, 1, CFG.MAX_LV) }; if (nat(p[2])) o.arc = Math.min(7, nat(p[2])); if (p[3]) o.jk = 1; if (typeof p[4] === 'string' && p[4]) o.f = normF(p[4]); return o; }); return { a: side(pl && pl.a), e: side(pl && pl.e) }; };
+const packPlace = () => ({ a: S.place.a.map(p => p ? [p.id, p.lv, p.arc || 0, p.jk ? 1 : 0, p.f || 0, p.sp || 0] : 0), e: S.place.e.map(p => p ? [p.id, p.lv, p.arc || 0, p.jk ? 1 : 0, p.f || 0, p.sp || 0] : 0) }); // [지후, 레벨, 아르카나, 조커, 이벤트 표시, 선물 SP]
+const unpackPlace = pl => { const side = L => Array.from({ length: TILES }, (_, i) => { const p = Array.isArray(L) && L[i]; if (!p || !CHARS[p[0]]) return null; const o = { id: p[0], lv: clamp(nat(p[1]) || 1, 1, CFG.MAX_LV) }; if (nat(p[2])) o.arc = Math.min(7, nat(p[2])); if (p[3]) o.jk = 1; if (typeof p[4] === 'string' && p[4]) o.f = normF(p[4]); const sp = Number(p[5]); if (sp > 0 && sp < 100) o.sp = sp; return o; }); return { a: side(pl && pl.a), e: side(pl && pl.e) }; };
 const netEndKnown = () => !!(S.net && S.net.ends[S.rk]);
 function netRoundEnd(w, timedOut) {
   const n = S.net;
@@ -4871,6 +4873,11 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.6.4', date: '2026.10.23', title: '선물 지후 패시브', sections: [
+    { title: '지후', items: [
+      { id: 'gift', name: '선물 지후', tag: 'buff', desc: '패시브 추가: 변신하기 전에 쓰러지면 <b>모은 SP가 다음 라운드에도 남아요</b> (배치 화면 게이지로 보여요).' },
+    ] },
+  ] },
   { v: 'R2.6.3', date: '2026.10.23', title: '예언 · 라이플 상향 · 매 라운드 이벤트', sections: [
     { title: '밸런스', items: [
       { id: 'prophecy', name: '예언 지후', tag: 'buff', desc: '예언 성공 변신 공격력 <b>+300% → +350%</b> · 여러 명일 때 나머지 예언 지후 공격력 <b>+10 → +20</b>.' },
