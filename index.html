@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.7.2"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.7.2"><meta name="jihoo-build" content="6"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1694,14 +1694,14 @@ const CHARS = {
         if (!S.fast) { A.ring(u.x, u.y, 1.2); dmgNum(u, '소환!', { crit: true }); }
         [-1, 1].forEach(k => { const c = A.spawnChild(u, 'minion', { hp: u.maxHp * 0.2, atk: SUMMONS.minion.atk * u.mult, dx: k * unitRadius(u) * 1.2, dy: unitRadius(u) * 0.6 * k }); c.summoner = u; c.small = true; c.el.classList.add('small'); });
       } } },
-  deathnote: { name: '데스노트 지후', rarity: 'legend', role: '딜러', hp: 910, atk: 0, atkSpeed: 1, range: 1, speed: 1.6, noAttack: true, portrait: PORTRAITS.deathnote, sfx: 'shot', color: '#222222',
-    story: '하굣길에 떨어진 까만 공책을 주운 지후입니다. 첫 장에는 「이 노트에 이름이 적힌 사람은…」이라는 문장이 있었지만, 뒷부분은 커피 얼룩에 번져 읽을 수 없었어요. 그는 장난삼아 숙제 검사 날짜를 적어 보았고, 15초 뒤 정말로 숙제 검사가 사라졌습니다. 그 뒤로 그는 노트를 함부로 쓰지 않기로 다짐했어요. 지금은 전장에서만, 그것도 16초에 한 번씩만 펜을 든다고 합니다.',
+  deathnote: { name: '데스노트 지후', rarity: 'legend', role: '딜러', hp: 910, atk: 0, atkSpeed: 1, range: 1, speed: 1.6, noAttack: true, deployLimit: 1, portrait: PORTRAITS.deathnote, sfx: 'shot', color: '#222222',
+    story: '하굣길에 떨어진 까만 공책을 주운 지후입니다. 첫 장에는 「이 노트에 이름이 적힌 사람은…」이라는 문장이 있었지만, 뒷부분은 커피 얼룩에 번져 읽을 수 없었어요. 그는 장난삼아 숙제 검사 날짜를 적어 보았고, 20초 뒤 정말로 숙제 검사가 사라졌습니다. 그 뒤로 그는 노트를 함부로 쓰지 않기로 다짐했어요. 지금은 전장에서만, 그것도 21초에 한 번씩만 펜을 든다고 합니다.',
     passive: '일반 공격을 하지 않는다.',
-    onStart(u) { u.sk = 16; }, // 라운드 시작 즉시 첫 발동
-    skill: { type: 'cooldown', cd: 16, desc: '<b>쿨타임 16초</b> · <b>[데스노트]</b>. 무작위 적에게 [데스노트]를 건다. [데스노트]에 걸린 적은 <b>15초</b> 뒤 즉사한다.',
+    onStart(u) { u.sk = 21; }, // 라운드 시작 즉시 첫 발동
+    skill: { type: 'cooldown', cd: 21, desc: '<b>쿨타임 21초</b> · <b>[데스노트]</b>. 무작위 적에게 [데스노트]를 건다. [데스노트]에 걸린 적은 <b>20초</b> 뒤 즉사한다.',
       run(u, A) {
         const L = targets(u).filter(e => !e.dnote); if (!L.length) return;
-        const t = L[Math.floor(rng() * L.length)], wait = Math.max(1, 15 - (u.dnKills || 0)); // 이번 라운드에 데스노트로 처치할 때마다 -1초
+        const t = L[Math.floor(rng() * L.length)], wait = Math.max(1, 20 - (u.dnKills || 0)); // 이번 라운드에 데스노트로 처치할 때마다 -1초
         t.dnote = u; t.st.dnote = wait; if (!S.fast) dmgNum(t, '📓 데스노트', { crit: true }); drawUnit(t);
       } } },
   rifle: { name: '라이플 지후', rarity: 'epic', role: '딜러', hp: 730, atk: 18, atkSpeed: 2.7, range: 5, speed: 1.6, portrait: PORTRAITS.rifle, sfx: 'shot', color: '#55606e',
@@ -1791,7 +1791,7 @@ const CHAR_INFO = {
   titanium: [['쉴드', '맞을 때마다 60 (겹쳐 쌓임)'], ['지속', '0.7초']],
   gumiho: [['출격제한', '1'], ['발동', '체력 40% 미만 · 라운드당 1번'], ['보호막', '받는 피해 -40% · 3초'], ['[매혹] 범위', '반경 3칸'], ['[매혹]', '3초 · 자기 아군을 공격한다']],
   necro: [['시작 소환', '라운드 시작 즉시 [소환] 1번 (R2.6.1)'], ['소환 수', '2기'], ['소환체 체력', '최대 체력의 20%'], ['소환체 공격', '50 · 0.9초 · 근접'], ['제한', '소환체가 4기 이상 살아 있으면 스킬만 쓰고 소환하지 않는다'], ['소환체', '라운드가 끝나면 사라진다']],
-  deathnote: [['첫 발동', '라운드 시작 즉시'], ['쿨타임', '16초'], ['즉사까지', '15초 (이번 라운드에 데스노트로 처치할 때마다 -1초)'], ['해제', '풀 수 없다 · 데스노트 지후가 쓰러져도 남는다'], ['일반 공격', '하지 않는다']],
+  deathnote: [['출격제한', '1'], ['첫 발동', '라운드 시작 즉시'], ['쿨타임', '21초'], ['즉사까지', '20초 (이번 라운드에 데스노트로 처치할 때마다 -1초)'], ['해제', '풀 수 없다 · 데스노트 지후가 쓰러져도 남는다'], ['일반 공격', '하지 않는다']],
   rifle: [['일반 공격', '18 × 3연발'], ['연발 간격', '공격 간격의 1/10 (2.7초 → 0.27초)'], ['레벨업', '기본 공격 간격 -0.25초 (Lv5 1.7초)'], ['공격마다', '공격속도 +10% (복리)'], ['최대', '공격 간격 0.05초'], ['초기화', '라운드마다']],
   prophecy: [['예언 성공', '배치 동안 적 진영 대칭 칸의 지후가 놓이거나 · 바뀌거나 · 레벨이 오르거나 · 사라지면'], ['변신', '그 라운드 동안 공격력 +125%'], ['[아르카나]', '성공마다 1중첩 · 하나당 공격력 +20% · 최대 7 · 경기 내내 유지'], ['여러 명이면', '한 명만 변신 · 나머지 예언 지후는 그 라운드 공격력 +20']],
   joker: [['출격제한', '1'], ['변신', '다른 지후 위로 옮기면 그 지후로 (조커 레벨 그대로 · 출격제한 무시)'], ['되돌아오기', '라운드가 끝나면 다시 조커로'], ['변신 보너스', '체력 · 공격력 +10%'], ['같은 레벨 조커', '보통처럼 합체']],
@@ -5299,6 +5299,7 @@ const PATCH_NOTES = [
       { id: 'accel', name: '가속 지후', tag: 'buff', desc: '공격 간격 <b>2 → 1초</b> · 시작 버프 <b>5 → 8초</b> · 스킬 버프 <b>2.5 → 3초</b>.' },
       { id: 'scythe', name: '낫 지후', tag: 'buff', desc: '[힘줄 끊기] 쿨타임 <b>12 → 9초</b> · 피해 <b>55% → 80%</b>.' },
       { id: 'berserk', name: '광폭화 지후', tag: 'buff', desc: '[광폭화] <b>2 → 2.5초</b> · 광폭화 중 <b>이동속도 2배</b>.' },
+      { id: 'deathnote', name: '데스노트 지후', tag: 'nerf', desc: '<b>출격제한 1</b> · 쿨타임 <b>16 → 21초</b> · 즉사까지 <b>15 → 20초</b>.' },
     ] },
   ] },
   { v: 'R2.7.1', date: '2026.10.23', title: '지후 설명 바로 보기 · 예언 조정', sections: [
