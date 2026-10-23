@@ -25,8 +25,8 @@
 ## 게임 규칙 · 데이터
 - 모드: **일반전**(봇 · 라이프 3 · R2.7.2) · **친선전**(온라인 1:1 · 관전) · **아케이드**(미러전 · 지후의 탑 · 경쟁전 · R2.7.2). 그 밖의 모드(경매 · 협동 등)는 사용자가 요청할 때만
 - **게임 모드 (R2.7.2)**: 로비 `#modeSeg` → `profile.mode` 'event'(랜덤 이벤트 · 기본) | 'classic'(이벤트 없음) · 판마다 `S.evOn` (`evRoll` 이 본다). 친선전은 방장 설정을 **시드 맨 아래 비트**로 전달 (`seed & 1` = 랜덤 이벤트 · 규칙 변경 없이)
-- 지후 51종 (JHBT2 기준 19종 + R2.2 신규 14종 + R2.5 신규 5종 + R2.6 신규 3종 + R2.7.2 촉수 + R2.8 신규 9종): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal berserker slot bow barrier · 영웅 scythe levelup gun combo cactus jaws water dust necro rifle bubble syringe tentacle lantern devour · 전설 moon magic gift atom blizzard bat train titanium sun whirl lonely berserk gumiho deathnote prophecy joker lightning revive guardian clock charge reaper (R2.4: 황사 · 물 → 영웅 · 고독한 · 광폭화 → 전설). 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
-- 아직 안 만든 지후 (그림만 `지후초상화/`): 팔라딘 · 폭탄 · 핵미사일 · 행성 · 후라이팬 · 흡혈 (일부는 배경이 반만 투명 → 흰 배경에 합성하면 된다)
+- 지후 53종 (JHBT2 기준 19종 + R2.2 신규 14종 + R2.5 신규 5종 + R2.6 신규 3종 + R2.7.2 촉수 + R2.8 신규 9종 + R2.9 폭탄 · 핵미사일): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal berserker slot bow barrier · 영웅 scythe levelup gun combo cactus jaws water dust necro rifle bubble syringe tentacle lantern devour bomb · 전설 moon magic gift atom blizzard bat train titanium sun whirl lonely berserk gumiho deathnote prophecy joker lightning revive guardian clock charge reaper nuke (R2.4: 황사 · 물 → 영웅 · 고독한 · 광폭화 → 전설). 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
+- 아직 안 만든 지후 (그림만 `지후초상화/`): 팔라딘 · 행성 · 후라이팬 · 흡혈 (일부는 배경이 반만 투명 → 흰 배경에 합성하면 된다)
 - 랭크업 · 한계돌파 없음. 지후 레벨은 경기 안에서만: 새 카드는 전장의 같은 지후 위에 **레벨 상관없이** 겹쳐 +1 (`stackable` · 2렙 + 카드 = 3렙 · R2.2.1) · 전장의 내 지후를 같은 종류 · **같은 레벨** 위로 옮기면 합체 레벨 +1 (`moveTile` · 2렙 + 2렙 = 3렙 · 전장의 2렙 + 1렙은 안 된다) · **최대 Lv5** · 체력/공격력 ×1.2 · 효과 ×1.1 복리 · 레벨이 올라도 몸 크기는 그대로
 - **비공개 배치 (R2.6.2)**: 배치 시간(`HIDE_PHASES` deploy · deploy-resolve · deploy-wait · event)에는 상대 진영을 `S.roundStart` (이번 라운드 시작 때 = 이전 라운드 배치)로 반투명(`.unit.ghost`) 그린다 — `viewPlace(side)` · `oppHidden(side)` (renderField · 미니맵 · 상대 지후 누르기). 전투가 시작되면 공개 · 관전자는 다 본다
 - 배치: 진영 3 × 5 칸 · 배치 수 **제한 없음** (R2.7.2 · `CFG.MAX_UNITS` 15 = 칸 수) · 같은 지후 **3기**(R2.2.1 · 출격제한은 deployLimit) · 카드 3장 중 1장 · 15초 · 배치 기회 **첫 라운드 4번 · 그다음 2번 · 데스매치 3번** · 줄 고르기 `roleRow` (탱커 · 딜러 · 근접 · 체력 높으면 앞 / 어쌔신 · 서포터 · 사거리 길면 뒤) · **초보자 보호** (R2.7.1): 일반전 승 + 패 < `CFG.NEWBIE_GAMES` 5 이면 봇 덱 = 일반 4 + 희귀 1 (`botDeck(true)` · `newbieLeft`) · 봇은 유닛 수 먼저 (`botDeployOne` · 등급 높은 카드 · 꽉 찼을 때만 합치기 · R2.3)
@@ -34,6 +34,7 @@
 - 덱 5기 (**5기를 다 채워야** 일반전 · 친선전 시작 · R2.3) · 등급: 일반 / 희귀 / 영웅 / 전설 · 뽑기 일반 64.5 · 희귀 30 · 영웅 4 · 전설 1.5 (R2.7.1 build 2) · 중복은 조각
 - 모든 지후 초상화는 **흰 배경 PNG** (투명 배경 금지 · 새 초상화도 흰 배경으로 맞춘다)
 - **세계관 · 서사 (R2.8)**: 지후들이 사는 **지후왕국** — 국왕 **화염 지후** (부루스타 화상 → 불씨로 왕좌 · 특기 가스라이팅) · 신하 **물 지후** (왕자 시절 화염을 불에서 구한 오른팔 · 콜라 비밀). 서사는 서로 얽혀 있다 — 새 서사를 쓰거나 고칠 때 아래 연결을 깨지 않게:
+  - R2.9: 폭탄 = 314호가 반란군 창고에서 만든 무기 (누가 적인지 모름 · 수호자도 안 받아 냄) · 핵미사일 = 티타늄 금고 옆 칸에 잠들어 있던 국왕의 마지막 수단 (한 발 쏘고 선글라스)
   - **메인 스토리 (build 7)**: 같은 종류의 지후도 1호 · 2호 · 3호… 많다 (국왕은 화염 지후 1호). 「황사회주의」를 퍼뜨리려는 **황사 지후**의 지령으로 서쪽 마을의 **화염 지후 314호**가 반란군을 이끌고 반란 (황사 지후도 참전) → 국왕이 소탕군을 모았지만 지원자는 **암살 · 쉴드 · 검 · 얼음** 넷뿐 (= 기본 지급 starter 와 화염). 암살은 서쪽 미용실(조커) 때문에 · 얼음은 격리당했는데도 지원 · 검은 플라스틱 검 그대로 · 물 지후가 모집 공고 · 달은 자느라 못 옴
   - 왕궁: 근위대장 수호자 ← 제자 쉴드 · 기사단 검 · 전령 가속 · 점술가 예언 · 의원 주사 (힐은 반창고로 떨어짐) · 금고 지킴이 티타늄 · 과거 시험 콤보(9수) · 원자 · 선로 신칸센 · 왕궁 앞 시계방 시계 · 지후코인(국왕 발행)에 날린 코인 · 생일 선물 상자 선물 · 공고판을 맞힌 활
   - 앙숙 · 사연: 수호자 ↔ 광폭화(그네) · 수호자가 못 받아 낸 회오리 · 블리자드 ↔ 태양(봄) · 태양 → 달(게으름 질투) · 얼음(북쪽 성 격리 · 국왕과 냉랭) ↔ 블리자드(펜팔) · 포식이 먹어 치운 예언의 돈가스 · 버서커의 푸딩 · 구미호의 라면 · 슬라임도 먹힐 뻔
@@ -62,14 +63,19 @@
   - 랜턴 (영웅 하이브리드): 일반 공격 = `customAttack` 으로 공격 빔(`u.beam`) · 0.25초마다 공격력 피해 · 5.5칸 밖이면 희미(멈춤) · 2초면 끊김 / 회복 빔(`u.hbeam`) 0.5초마다 체력 비율 가장 낮은 아군(자신 제외) 다시 고름 · 0.25초마다 공격력 회복 · 그림 `.fx-beam`
   - 번개 (전설): SP 8 [낙뢰] 2000% + 기절 1초 · 처치하면 0.5초 뒤 무작위 적에게 다시 (`u.boltT`)
   - 보호막 (희귀 서포터): `onStart` 십자(`A.cross`) 아군 쉴드 500% + `guardSh` (쉴드가 남아 있으면 `addStatus` · `A.cut` 디버프 무효) · SP 3 [배리어] `S.barriers` 반지름 3.5칸 2초 — `barrierStop` 이 바깥에서 들어오는 적 투사체(`S.shots` 발사 위치 `sx/sy` · `S.lines` `ox/oy`)를 지운다 (onHit 없음 = SP 없음)
-  - 부활 (전설) · 사신 (전설 · build 5 · 예전 영웅): 스킬 `type: 'ally'` = 아군이 쓰러질 때만 SP (`onUnitDeath` 훅 · `killUnit` 이 전투 중 모든 유닛에 부른다 · `spGive`) · 소환체 · 분열체(`small`)는 안 센다. 부활 SP 5 → 1.5초 뒤(`u.revQ`) 지난 부활 뒤로 쓰러진 아군(`u.revL`)을 레벨 수만큼 자기 자리에 (`c.revived`). 사신 SP 5 (build 2 · 예전 3) [사신강림] → `u.def = CHARS.reaper.awake` (체력 1444 비율로 · 1.2초 · 이동속도 2.4 · `.reaper-on`) · 강림 SP 6 (일반 공격 · build 5) [즉사] = 가장 가까운 적 하나 · [무적]만 막는다 · 이펙트 `reapFx` (`.fx-reap` 낫 호 + 사선 섬광)
+  - 부활 (전설) · 사신 (전설 · build 5 · 예전 영웅): 스킬 `type: 'ally'` = 아군이 쓰러질 때만 SP (`onUnitDeath` 훅 · `killUnit` 이 전투 중 모든 유닛에 부른다 · `spGive`) · 소환체 · 분열체(`small`)는 안 센다. 부활 SP 5 → 1.5초 뒤(`u.revQ`) 지난 부활 뒤로 쓰러진 아군(`u.revL`)을 레벨 수만큼 자기 자리에 (`c.revived`). 사신 SP 5 (build 2 · 예전 3) [사신강림] → `u.def = CHARS.reaper.awake` (체력 1444 비율로 · 1.2초 · 이동속도 2.4 · `.reaper-on`) · 강림 SP 5 (일반 공격 · R2.9 · build 5 는 6) [즉사] = 가장 가까운 적 하나 · [무적]만 막는다 · 이펙트 `reapFx` (`.fx-reap` 낫 호 + 사선 섬광)
   - 수호자 (전설): `onStart` 십자 아군 `guardBy` (광폭화 제외) → `dealDamage` 에서 쓰러질 때 한 번 체력 1 + 무적 1초 (수호자가 살아 있을 때 · `onLethal` 보다 먼저)
   - 시계 (전설): 같은 레벨 적 공격속도 -7% · 아군(자신 포함) +7% (버프 키 `clock<uid>` 라 중첩) · 충전 (전설): SP 3 반경 3.5칸 아군 `spGive(a, 1)` (자신 · 다른 충전 · `type: 'ally'` 스킬(부활 · 봉인 사신) 제외 · build 4 · cooldown 형은 1초)
   - 포식 (영웅): `onHit` 공격한 적 기록(`u.bit`) + 공격력 5% 회복 · 그 적이 4.6칸 안에서 쓰러지면 [포식] +1 = 공격력 + 기본(레벨 반영) 40% · 최대 체력 +50 · 50 회복 (build 3 · HP 1150 · 1.55초) · 배치 기록 `p.dv` 로 경기 내내 (`packPlace` 7번째 칸 · 합체는 큰 쪽)
+- **R2.9 신규 (역할군 `폭발형` · `DECK_ROLES` 끝 · `roleRow` 앞줄)**:
+  - 폭탄 (영웅): `noAttack` + `steer` (공격 안 하는 지후도 `steer` 가 있으면 움직인다) · 가장 가까운 적에게 굴러가 닿으면 `blast` = `A.boom` 반경 2.5칸 · 자신의 최대 체력 · 닿기 전에 쓰러지면 `onDeath` → `A.later(1, …, hold)` (hold 가 남아 있으면 `stepCombat` 이 전멸 판정을 미룬다) · `.rolling`
+  - 핵미사일 (전설 · 근접): 처음 출전한 라운드 1초 뒤(밴 · 기절이면 풀린 뒤) [핵 발사] → 배치 기록 `p.nk = 1` (경기 내내 [핵 다씀] · 합체 · 레벨업해도 · `packPlace` 8번째 칸 · 그림 `portraitUsed` · 배치 화면은 `u.picSrc`) · 22초 뒤 `A.later` 로 적진 가운데(`tileXY(적, 7)`) `A.boom` 반경 99칸 · 공격력 99999% · 라운드가 먼저 끝나면 안 떨어진다 · 스킬 `type: 'nuke'` 라 `spGive` 대상이 아니다 · `gauge`
+  - 엔진: `A.later(sec, fn, hold)` = 전투 시간 기준 예약 (`S.later` · `beginCombat` 에서 비움) · `A.boom(u, x, y, 칸, 피해)` 반경 안 적 모두 (`.fx-boom`) · `spGive` 는 hit · sec · ally · cooldown 스킬만
+- **라운드 시간 (R2.9)**: `CFG.ROUND_TIME` **60초** (예전 45)
 - **피해 규칙 (R2.8)**: `effAtk` 의 감소 배율(약화 · 버프 atk · 동상) 최소 0.05 (공격력 감소 최대 95%) · `dealDamage` 받는 피해 최소 원래의 10% (감소 최대 90%) · 최소 1
 - **경쟁전 매칭 (R2.8)**: `compStart` → `#cpMatch` 매칭 중 (레이더 · 지후 그림 · 시간 · 취소 `cpmClose`) 3~5초 → 매칭 완료 (상대 이름 · 티어) 1.5초 → 밴 화면 (R1 매칭 창)
 - **랜덤 이벤트 R2.7.2 리워크**: 지난 라운드 진 쪽 긍정 · 이긴 쪽 부정 (`S.hist` 마지막 · 첫 라운드 · 무승부는 `EV_POS` 확률) — 야르 · 저주 · 편애(상대 긍정만) 등 이벤트 설명이 먼저 · 편애에서 '나는 못 얻음' 삭제 · 함정카드는 진영만 (덱 그대로) · 지원요청은 빈 칸마다 화염
-- 친선전 배치 동기화 `packPlace` = `[지후, 레벨, 아르카나, 조커, 이벤트 표시 f, 선물 SP sp, 포식 dv]` — 배치 기록에 새 필드를 넣으면 여기도 같이 (안 넣으면 두 화면이 갈라진다)
+- 친선전 배치 동기화 `packPlace` = `[지후, 레벨, 아르카나, 조커, 이벤트 표시 f, 선물 SP sp, 포식 dv, 핵 다씀 nk]` — 배치 기록에 새 필드를 넣으면 여기도 같이 (안 넣으면 두 화면이 갈라진다)
 - 상태 `charm`(매혹 · `foes()` 가 자기 아군을 돌려준다) · `foxguard` · `bubble` · `dnote` · 소환체 같은 '덱에 없는 유닛'은 `SUMMONS` 에 (`makeUnit` · `pic` 이 같이 본다)
 - 엔진 도우미 (R2.2): `A.knock` 넉백 · `A.line` 맵 끝까지 직진 관통탄 (`S.lines`) · `A.zone` 바닥 지대 (`S.zones`) · 훅 `steer`(스스로 이동) · `customAttack` · `onDamaged` · `atkMult` · `reflect` · `shotSpeed`(칸/초) · `ghost`(돌진 중 물리 없음) · 상태 `frost`(동상) · `dive`(잠수)
 - 전투 화면: 체력바 안에 체력 숫자 · 아군 연두 / 적 빨강 · 깎이면 흰 잔상 (`.unit-hpbar-lag`) · 치명타 숫자 도장 (`.stamp`) · 승률 예측 게이지 (`#hudOdds` 전장 위)
