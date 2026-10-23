@@ -85,6 +85,35 @@ service cloud.firestore {
 
     // ── 리더보드 ──
     // 시즌 R2: r2lb/{uid} = { nickname, level(0~), wins, losses, deck, fav, xp, frame(프로필 테두리 · 없어도 됨), updatedAt } · 게스트(익명)도 자기 문서만
+    // R2.7.2 경쟁전 리더보드: r2comp/{시즌}_{uid} = { nickname, tp, season, wins, losses, fav, frame(없어도 됨), updatedAt } · 시즌마다 따로 남는다 (지난 시즌 순위 보상)
+    match /r2comp/{docId} {
+      allow get, list: if true;
+      allow delete: if isAdmin();
+      allow create, update: if request.auth != null && !banned()
+        && request.resource.data.season is int && request.resource.data.season >= 1 && request.resource.data.season <= 100000
+        && docId == string(request.resource.data.season) + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['nickname', 'tp', 'season', 'wins', 'losses', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
+        && request.resource.data.tp is int && request.resource.data.tp >= 0 && request.resource.data.tp <= 10000000
+        && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
+        && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
+        && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
+        && request.resource.data.updatedAt is timestamp;
+    }
+    // R2.7.2 경쟁전 봇 학습: r2picks/{uid} = { picks, pwins, bans, norm, nwins (지후 id → 횟수), updatedAt } · 로그인한 사람 모두 읽기 (봇이 합산)
+    match /r2picks/{userId} {
+      allow get, list: if request.auth != null;
+      allow delete: if owner(userId) || isAdmin();
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['picks', 'pwins', 'bans', 'norm', 'nwins', 'updatedAt'])
+        && request.resource.data.picks is map && request.resource.data.picks.size() <= 100
+        && request.resource.data.pwins is map && request.resource.data.pwins.size() <= 100
+        && request.resource.data.bans is map && request.resource.data.bans.size() <= 100
+        && request.resource.data.norm is map && request.resource.data.norm.size() <= 100
+        && request.resource.data.nwins is map && request.resource.data.nwins.size() <= 100
+        && request.resource.data.updatedAt is timestamp;
+    }
     // R2.7.2 지후의 탑 리더보드: r2tower/{uid} = { nickname, best(최고 층), fav, frame(없어도 됨), updatedAt }
     match /r2tower/{userId} {
       allow get, list: if true;

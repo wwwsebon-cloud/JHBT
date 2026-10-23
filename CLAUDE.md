@@ -12,7 +12,7 @@
 - 화면은 **글래스 UI** (R2.1 · iOS 풍 밝은 글래스모르피즘). R1 UI · 예전 흑백 다크 UI 는 쓰지 않는다
   - 토큰(`:root`): 바탕 `#e4e5e8` + 블롭 3개(파랑 · 보라 · 노랑) · 잉크 `#111318` · 글래스 3단계(필 `.g-pill` · 카드 `.g-card` · 시트 `.modal .box`) · 주 버튼 검정(`.k-btn` / `.btn.primary`) · 보조 버튼 `.g-btn` · 스위치 `.sw` · Pretendard 하나
   - 등급 링: 일반 `#c9c9c6` · 희귀 `#4f9dff` · 영웅 `#b26bff` · 전설 `#ffc21a` · 초상화는 원형 흰 바탕 + 링
-  - 공통 상단 바(`.topbar`) · 하단 탭 바(`#tabbar`)는 `CHROME` 화면(로비 · 덱 · 뽑기 · 상점 · 친구 · 리더보드)에서만 (`body[data-chrome]`, `show()` 가 정한다) · 탭 이동은 `openTab(name)` · 모바일(≤700px) 탭 7개(로비 · 덱 · 뽑기 · 상점 · 가방 · 아케이드 · 친구) · 리더보드는 메뉴
+  - 공통 상단 바(`.topbar`) · 하단 탭 바(`#tabbar`)는 `CHROME` 화면(로비 · 덱 · 뽑기 · 상점 · 가방 · 아케이드 · 탑 · 경쟁전 · 친구 · 리더보드 · 꾸미기)에서만 (드래프트 화면 `screen-draft` 은 아님) (`body[data-chrome]`, `show()` 가 정한다) · 탭 이동은 `openTab(name)` · 모바일(≤700px) 탭 7개(로비 · 덱 · 뽑기 · 상점 · 가방 · 아케이드 · 친구) · 리더보드는 메뉴
   - 퀘스트 · 출석 · 업적 · 신규 보상은 시트 하나(`#qsModal`) · 전투 화면 상태 클래스 `deploy` / `combat` / `spec` (`setPhase`)
 
 ## 업데이트 때 반드시 할 일
@@ -23,7 +23,7 @@
 5. 이 파일(CLAUDE.md)에 바뀐 규칙이 있으면 갱신
 
 ## 게임 규칙 · 데이터
-- 모드: **일반전**(봇 · 라이프 3 · R2.7.2) · **친선전**(온라인 1:1 · 관전). R2.7.2 부터 아케이드(미러전 · 지후의 탑) · 경쟁전(밴 · 드래프트)을 단계별로 추가 중 (사용자 요청)
+- 모드: **일반전**(봇 · 라이프 3 · R2.7.2) · **친선전**(온라인 1:1 · 관전) · **아케이드**(미러전 · 지후의 탑 · 경쟁전 · R2.7.2). 그 밖의 모드(경매 · 협동 등)는 사용자가 요청할 때만
 - **게임 모드 (R2.7.2)**: 로비 `#modeSeg` → `profile.mode` 'event'(랜덤 이벤트 · 기본) | 'classic'(이벤트 없음) · 판마다 `S.evOn` (`evRoll` 이 본다). 친선전은 방장 설정을 **시드 맨 아래 비트**로 전달 (`seed & 1` = 랜덤 이벤트 · 규칙 변경 없이)
 - 지후 42종 (JHBT2 기준 19종 + R2.2 신규 14종 + R2.5 신규 5종 + R2.6 신규 3종 + R2.7.2 촉수): 일반 fire ice sword assassin shield · 희귀 accel slime dice coin heal berserker slot bow · 영웅 scythe levelup gun combo cactus jaws water dust necro rifle bubble syringe tentacle · 전설 moon magic gift atom blizzard bat train titanium sun whirl lonely berserk gumiho deathnote prophecy joker (R2.4: 황사 · 물 → 영웅 · 고독한 · 광폭화 → 전설). 기본 지급(starter): 화염 · 얼음 · 검 · 암살 · 쉴드
 - 아직 안 만든 지후 (그림만 `지후초상화/`): 랜턴 · 번개 · 보호막 · 부활 · 사신 · 수호자 · 시계 · 충전 · 팔라딘 · 포식 · 폭탄 · 핵미사일 · 행성 · 후라이팬 · 흡혈 (일부는 배경이 반만 투명 → 흰 배경에 합성하면 된다)
@@ -77,7 +77,7 @@
 - 시즌 초기화: 모두 **Lv.0** 부터 (`xpNeed(lv) = 100 + 50 × lv`) · 레벨업마다 ◆1,000 (R2.7.1 build 9)
 - 일반전 보상 (R2.2): 승리 기본 **+100 XP** · 패배 기본 **−30 XP** · 상대 레벨 차 1마다 승리 ±10 (50~200) · 패배 ∓5 (10~60) · ● 1,000~2,000 · **다이아 없음** · 패배는 지금 레벨 안에서만 깎인다 · 친선전 · 관전은 보상 없음
 - 덱 설정: 정렬 3종 (R2.7.2 · `deckSortGet` · localStorage `rejhbt-deck-sort`) 기본순(등급 → 출시) · 역할군순(`DECK_ROLES` 칸막이) · 이름순(등급 → 가나다) · [서사] 버튼 (story 없으면 준비 중)
-- 닉네임 등록부 `nicknames` (R1 과 공유) · 리더보드 `r2lb` (레벨 · 승리) · 명예의 전당 = R1 `leaderboard` 읽기만
+- 닉네임 등록부 `nicknames` (R1 과 공유) · 리더보드 탭: `r2lb` (레벨 · 승리) · 지후의 탑 `r2tower` · 경쟁전 `r2comp` (이번 시즌) · 명예의 전당 = R1 `leaderboard` 읽기만
 - 운영자 = `admins/<uid>` 문서가 있는 계정 · 개발자 모드(모든 지후 해금 · localStorage `rejhbt-dev`) · 운영 도구(우편 · 로비 공지 · 점검)는 환경설정에 표시
 - 동시 접속: `sessions/<uid>` · 이용 정지: `bans/<uid>` · 점검: `config/maintenance` · 공지: `config/announce`
 
@@ -87,6 +87,11 @@
 - **부스트** `profile.boost = { day, used, until }`: 하루 `BOOST_PER_DAY` 2번 · `BOOST_MIN` 15분 (R2.7.1) · 일반전(봇) 승리마다 ◆1~`BOOST_DIA` 300 (판 시작 때 켜져 있었으면 `S.boost` 로 끝까지)
 - **아케이드 (R2.7.2)**: 탭 `arcade` (`screen-arcade` · `renderArcade`) · `profile.arc = { t 티켓, p 포인트, day, free, buy }` (`arcDay` 가 날마다 무료 · 구매 수 초기화) · 티켓: 매일 `ARC_FREE` 1장 무료 · ●`ARC_GOLD` 10,000 으로 하루 `ARC_BUY` 3장 · 결과 승리 `ARC_WIN_P` 5P · 패배 1P (`arcEnd` · XP · 골드 · 퀘스트 없음 · 결과 뒤 아케이드로 `resBack`) · 랜덤 이벤트 없음. 모드는 `ARC_MODES` · 시작은 `newMatch({ arc, decks() })`. 미러전 🎟1 = 양쪽 같은 무작위 덱 5기. P 상품은 사용자가 정해 줄 예정 (지금은 '준비 중')
 - **지후의 탑 (R2.7.2)**: 화면 `screen-tower` (`openTower` · `renderTower`) · `profile.tower = { on, deck, draft: { ph, picks, opts }, floor, lose, best }`. 입장 🎟`TOWER_FEE` 2 → 5페이즈 덱 고르기 `TOWER_PH` (일반 3 → 희귀 2 · 영웅 1 → 영웅 3 → 영웅 2~3 · 전설 0~1(50%) → 전설 3 · 이미 고른 지후 제외 · 고르던 선택지도 저장) → 덱 저장 (바꿀 수 없음) → 층마다 `newMatch({ arc: { kind: 'tower', floor } })` 클래식 · 봇 덱 = 같은 규칙 · 높은 등급 먼저 (`towerBotDeck`) · 초보자 보호 없음 → `towerEnd`: 이기면 `towerRw(층)` 보상 · 다음 층 / 지면 `lose` +1 · 2번이면 처음부터 (탑 판은 5P/1P 없음 · 층 보상만). 보상 `TOWER_RW` 1~15층 · 16층부터 `TOWER_RW_LOOP` (● 1,000 → ◆100 → 2P 반복) · 지후 상자는 가방 아이템 `boxLow` · `boxMid` · `boxHigh` (`BOX_RAR`) · 리더보드 탭 '지후의 탑' = `r2tower/<uid>` { nickname, best, fav, frame } (`towerPush` · 규칙 게시 전이면 `FB.noTower`)
+- **경쟁전 (R2.7.2 · 아케이드 · 무료)**: 화면 `screen-comp` (`openComp` · `renderComp`) → `screen-draft` (`compStart` · 상태 `CP`). 밴 `COMP.BAN` 3기 (30초 · 봇 밴은 `cpBotBans`: 후수면 점수 높은 지후 · 선수면 상위 12 중 무작위) → 공개 → 드래프트 5페이즈 (`cpNextPhase`: 남은 지후가 3기 이상인 등급 하나 무작위 · 같은 등급 3기 · 홀수 페이즈는 선수가 먼저 · 후수는 남은 둘 중 · 남은 하나는 버림 · 5페이즈는 **블라인드** = 역할군만 · 20초) → `cpFinish` → `newMatch({ arc: { kind: 'comp', botTp, bans, picks }, lives: COMP.LIVES 2 })` = 클래식 3판 2선승 (`S.maxLives`) → `compEnd`
+  - 티어 · TP · 보상은 R1 그대로: `COMP_TIER_NAMES` · `COMP_TIER_POINTS` · `compWinTp` (골드까지 200~240 → 높을수록 약 50) · `compLossTp` (× `LOSS_SCALE` 0.7 · 최대 200) · 상대 티어 1칸마다 `compDiff` 12% · 한 판 ◆`GAME_DIA` 50 (항복 `S.quit` 은 없음) · 승급 보상 `compPromoReward` (시즌마다 처음 오르는 묶음 · `comp.promo`) · XP 승 100~150 · 패 30~50 (깎이지 않음) · 티어 그림 `TIER_ART` (R1)
+  - 시즌 `compSeason()` = `COMP.SEASON0` (2026-10-24 KST) 부터 14일마다 · 바뀌면 `compApplySeasonReset` (세 묶음 내림 `compSeasonResetTp` · 전적 0 · promo = 지금 묶음) · 지난 시즌 순위 보상 `compSeasonReward` (`COMP_SEASON_RW` 1위 ◆5,000 + 전설 5 … 50위까지 · 우편 `comp-s<시즌>`)
+  - `profile.comp = { tp, peak, wins, losses, season, promo, played, rwDone }` · 리더보드 `r2comp/<시즌>_<uid>` (`compPush` · 이번 시즌만 `where('season')` 로 읽고 정렬은 화면에서 · 색인 필요 없음)
+  - **봇 학습** (서버 공용 통계): `profile.cstat = { picks, pwins, bans, norm, nwins }` (경쟁전 픽 · 승 · 밴 + 일반전 덱 · 승) → `r2picks/<uid>` (`cstatPush` · 규칙 게시 전이면 `FB.noPicks`) → `cstatLoad` 가 최대 300명 합산 (10분 캐시) → `cscore(id)` = 픽률(밴 2배) + 승률(보정) + 등급 조금. 봇 픽은 점수 높은 지후 (블라인드는 무작위)
 - **가방 (R2.7)**: 탭 `inv` (`screen-inv` · `renderInv`) · 가진 `ITEMS` 전부 · `use` 면 바로 사용 (`useItem` · 뽑기 화면 '내 모집권' 과 같은 함수). 임테기 `testKit` = 전설 10 · 영웅 · 희귀 · 일반 각 30 (Math.random)
 - **업데이트 안내 · 보상 (R2.7)**: `updCheck()` — `profile.updRw` 가 지금 버전(`jihoo-version`)과 다르면 로비에서 간단한 패치노트(`PATCH_NOTES` 의 그 버전 · 6개까지) + 보상 창 `#updModal` → `updClaim` 으로 ◆`CFG.UPD_DIA` 500 + `CFG.UPD_ITEM` 임테기 1개 · `updRw = 버전`. 지금 버전 것만 (놓친 예전 버전은 쌓이지 않는다) · 서버 기록과 맞춘 뒤 부른다 (`accBoot` 끝 · `syncAfterLogin` 끝 · 닉네임 정한 뒤) — 잠수함 패치(build)는 버전이 같아 안 뜬다
 - 시작할 때 프로필 정규화가 보는 데이터(`ITEMS` · `FRAMES` · `MQ`)는 `let profile = loadProfile()` **보다 앞**에 둔다 (정의 전 접근 오류 → 로딩 0% 멈춤)
