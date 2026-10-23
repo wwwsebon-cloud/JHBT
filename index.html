@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.3"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.4"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -181,6 +181,7 @@ input.text { font-size:20px; font-weight:800; }
 .stat5 div { padding:10px 12px; border-radius:16px; background:rgba(255,255,255,.7); font-size:11px; font-weight:700; color:var(--mute); display:flex; flex-direction:column; gap:4px; }
 .stat5 b { font-size:17px; font-weight:900; color:var(--ink); }
 .abil { display:grid; grid-template-columns:62px 1fr; gap:8px 12px; font-size:13px; font-weight:700; line-height:1.6; }
+.abil .info, .cdp .info { display:flex; flex-direction:column; gap:4px; } .abil .info p, .cdp .info p { display:flex; gap:10px; margin:0; font-size:12px; line-height:1.5; } .abil .info em, .cdp .info em { flex:none; width:118px; font-style:normal; font-weight:700; color:var(--mute); } .abil .info b, .cdp .info b { font-weight:800; color:var(--ink); }
 .abil > span { color:var(--mute); } .abil > span.sk { color:var(--blue); } .abil p { margin:0; } .abil p b { color:var(--ink); }
 .detail .story { margin:12px 0 0; font-size:12px; line-height:1.7; color:var(--mute); }
 .detail .foot { margin-top:12px; font-size:11px; font-weight:600; color:var(--mute); }
@@ -236,69 +237,99 @@ input.text { font-size:20px; font-weight:800; }
 .gbtns { display:flex; gap:12px; margin-top:6px; }
 .gbtns button { flex-direction:column; gap:2px; width:200px; height:72px; border-radius:24px; }
 .gbtns button b { font-size:18px; font-weight:900; } .gbtns button small { font-size:13px; font-weight:800; color:var(--blue); } .gbtns .k-btn small { color:var(--blue2); }
-/* 뽑기 연출 — 신호 색 (전설 금 · 영웅 보라 · 그 외 흰색) · 카드 한 장씩 · 전설 컷신 */
-#reveal { position:fixed; inset:0; z-index:80; background:rgba(228,229,232,.92); -webkit-backdrop-filter:blur(30px) saturate(1.6); backdrop-filter:blur(30px) saturate(1.6); color:var(--ink); display:none; flex-direction:column; align-items:center; justify-content:flex-start; padding:20px; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; --sc:#ffffff; }
+/* 뽑기 연출 (R2.4 · 서브컬처식): ① 봉인 카드(최고 등급 힌트) → ② 카드 딜 → ③ 한 장씩 뒤집기 → 전설은 ④ 컷신(대사 → 섬광 → 등장) → ⑤ 요약 */
+#reveal { position:fixed; inset:0; z-index:80; background:rgba(228,229,232,.94); -webkit-backdrop-filter:blur(30px) saturate(1.6); backdrop-filter:blur(30px) saturate(1.6); color:var(--ink); display:none; flex-direction:column; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
 #reveal.show { display:flex; }
-#reveal.tier-epic { --sc:#b26bff; } #reveal.tier-legend { --sc:#ffc21a; }
-#reveal::before { content:''; position:fixed; inset:0; background:radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--sc) 30%, transparent), transparent 62%); pointer-events:none; }
-#revealStage { position:relative; display:flex; flex-direction:column; align-items:center; gap:24px; margin:auto 0; }
-.sig { display:flex; flex-direction:column; align-items:center; gap:30px; cursor:pointer; user-select:none; }
-.sig-wrap { position:relative; width:170px; height:236px; }
-.sig-rings i { position:absolute; left:50%; top:50%; width:200px; height:200px; margin:-100px 0 0 -100px; border-radius:50%; border:2px solid var(--sc); animation:sigRing 2.1s ease-out infinite; }
-#reveal:not(.tier-epic):not(.tier-legend) .sig-rings i { border-color:rgba(17,19,24,.25); }
-.sig-rings i:nth-child(2) { animation-delay:.7s; } .sig-rings i:nth-child(3) { animation-delay:1.4s; }
-@keyframes sigRing { from { transform:scale(.5); opacity:.9; } to { transform:scale(2.4); opacity:0; } }
-.cardback, .sig-card { position:absolute; inset:0; border-radius:22px; background:#fff; padding:8px; box-shadow:0 24px 50px -16px rgba(20,24,40,.35); }
-.cardback span, .sig-card span { display:grid; place-items:center; width:100%; height:100%; border-radius:16px; background:repeating-linear-gradient(45deg,#eef0f4 0 7px,#f8f9fb 7px 14px); font-size:34px; font-weight:900; letter-spacing:-.06em; color:var(--ink); }
-.sig-card { box-shadow:0 0 0 3px var(--sc), 0 0 60px 8px var(--sc), 0 24px 50px -16px rgba(20,24,40,.35); animation:sigPulse 1.4s ease-in-out infinite; }
-@keyframes sigPulse { 50% { transform:translateY(-6px) scale(1.03); box-shadow:0 0 0 3px var(--sc), 0 0 110px 20px var(--sc); } }
-.tier-legend .sig-card { animation:sigPulse .9s ease-in-out infinite, sigShake 2.2s infinite; }
-.tier-legend .sig-rings i { animation-duration:1.3s; }
-@keyframes sigShake { 0%,84%,100% { rotate:0deg; } 88% { rotate:-4deg; } 92% { rotate:4deg; } 96% { rotate:-2deg; } }
-.sig.open .sig-card { animation:sigOpen .45s ease-in forwards; }
-@keyframes sigOpen { to { transform:scale(1.5); opacity:0; } }
-.sig-label { font-size:12px; font-weight:800; letter-spacing:.3em; color:var(--ink2); }
-.sig-hint { font-size:13px; font-weight:600; color:var(--mute); animation:blinkDot 1.4s infinite; }
-.sig-flash { position:absolute; inset:0; background:var(--sc); z-index:5; animation:sigFlash .65s ease-out forwards; pointer-events:none; }
-@keyframes sigFlash { 0% { opacity:0; } 25% { opacity:1; } 100% { opacity:0; } }
-.rcards { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:680px; }
-.rcard { width:108px; height:150px; perspective:700px; cursor:pointer; animation:deal .45s cubic-bezier(.2,.8,.2,1) backwards; }
-@keyframes deal { from { opacity:0; transform:translateY(40px) scale(.8); } }
-.rcard .in { position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.8,.2,1); }
-.rcard.open .in { transform:rotateY(180deg); }
-.rcard.next .in { animation:nextBob 1s ease-in-out infinite; }
-@keyframes nextBob { 50% { translate:0 -8px; } }
-.rcard .face, .rcard .back { position:absolute; inset:0; border-radius:20px; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
-.rcard .back { background:#fff; padding:6px; box-shadow:0 14px 24px -12px rgba(20,24,40,.35); }
-.rcard .back span { display:grid; place-items:center; width:100%; height:100%; border-radius:15px; background:repeating-linear-gradient(45deg,#eef0f4 0 6px,#f8f9fb 6px 12px); font-size:20px; font-weight:900; color:var(--ink); }
-.rcard.g-epic .back { box-shadow:0 0 0 2px var(--r-epic), 0 0 26px 2px var(--r-epic); }
-.rcard.g-legend .back { box-shadow:0 0 0 2px var(--r-legend), 0 0 34px 6px var(--r-legend); }
-.rcard.next .back { outline:2px solid var(--ink); outline-offset:5px; }
-.rcard .face { transform:rotateY(180deg); background:#fff; color:var(--ink); box-shadow:0 10px 24px rgba(20,24,40,.12); }
-.rcard.r-epic .face { box-shadow:0 0 0 2px var(--r-epic), 0 0 22px var(--r-epic); }
-.rcard.r-legend .face { background:#fffaf0; box-shadow:0 0 0 2px var(--r-legend), 0 0 30px var(--r-legend); }
-.rcard .face .p { width:62px; height:62px; border-radius:50%; overflow:hidden; background:#fff; box-shadow:0 0 0 3px #fff, 0 6px 14px rgba(20,24,40,.12); }
-.rcard .face b { font-size:12px; font-weight:800; } .rcard .face small { font-size:10px; font-weight:700; color:var(--mute); }
-.rcard .newtag { position:absolute; top:-8px; right:-8px; background:var(--ink); color:#fff; font-size:10px; font-weight:900; padding:3px 8px; border-radius:999px; }
-@media (max-width:520px) { #revealStage { gap:16px; } .rcards { gap:8px; } .rcard { width:76px; height:108px; } .rcard .face .p { width:44px; height:44px; } .rcard .face b { font-size:10px; } .rcard .face small { font-size:9px; text-align:center; padding:0 4px; } }
-#cutscene { position:fixed; inset:0; z-index:90; background:#000; display:none; overflow:hidden; color:#fff; }
+#revealStage { position:relative; flex:1; min-height:100%; display:flex; flex-direction:column; }
+.gr-top { position:relative; z-index:2; display:flex; align-items:center; gap:10px; padding:20px 28px 0; }
+.gr-top .tt { display:flex; flex-direction:column; gap:2px; padding-left:4px; } .gr-top .tt b { font-size:22px; font-weight:900; letter-spacing:-.03em; }
+.gr-top .sp { flex:1; }
+.gr-chip { height:44px; padding:0 18px; display:flex; align-items:center; gap:6px; border-radius:999px; background:rgba(255,255,255,.55); -webkit-backdrop-filter:blur(24px) saturate(1.8); backdrop-filter:blur(24px) saturate(1.8); border:1px solid rgba(255,255,255,.8); box-shadow:0 6px 24px rgba(20,24,40,.06), inset 0 1px 0 rgba(255,255,255,.9); font-size:13px; font-weight:800; color:var(--ink); white-space:nowrap; }
+.gr-chip[hidden] { display:none; } .gr-chip .dm { color:var(--blue2); } .gr-chip b { font-size:14px; font-variant-numeric:tabular-nums; }
+.gr-sign { position:relative; flex:1; min-height:0; border:0; background:transparent; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; padding:24px; color:var(--ink); }
+.gr-sign .sg { position:relative; width:260px; height:320px; display:grid; place-items:center; animation:grRise .5s ease-out; }
+.gr-sign .halo { position:absolute; inset:-60px; border-radius:50%; filter:blur(30px); animation:grBreathe 1.6s ease-in-out infinite; }
+.gr-sign .ring { position:relative; width:200px; height:270px; border-radius:28px; padding:5px; box-shadow:0 30px 70px rgba(20,24,40,.22); }
+.gr-back { position:relative; width:100%; height:100%; overflow:hidden; background:linear-gradient(155deg,#ffffff,#eef1f6 60%,#dfe3ea); display:grid; place-items:center; }
+.gr-sign .gr-back { border-radius:23px; } .gr-sign .gr-back b { font-size:48px; font-weight:900; letter-spacing:-.06em; }
+.gr-back .ln { position:absolute; inset:10px; border-radius:16px; border:1px solid rgba(60,60,67,.12); }
+.gr-back .sh { position:absolute; top:-20%; left:0; width:40%; height:140%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.95), transparent); animation:grShimmer 1.6s ease-in-out infinite; }
+.gr-sign .st { display:flex; flex-direction:column; align-items:center; gap:6px; animation:grRise .6s .2s ease-out both; }
+.gr-sign .st b { font-size:18px; font-weight:900; letter-spacing:-.02em; } .gr-sign .st span { font-size:13px; font-weight:700; color:var(--mute); }
+.gr-table { position:relative; flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:16px 24px 24px; }
+.gr-cards { display:grid; grid-template-columns:repeat(5, minmax(0, 150px)); gap:16px; width:100%; justify-content:center; perspective:1200px; }
+.gr-cards.one { grid-template-columns:minmax(0, 220px); }
+.gr-card { position:relative; aspect-ratio:3 / 4; animation:grDeal .5s cubic-bezier(.2,.8,.3,1) both; }
+.gr-card .in { position:absolute; inset:0; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.3,.7,.2,1); }
+.gr-card.open .in { transform:rotateY(180deg); }
+.gr-card .bk, .gr-card .fc { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:22px; }
+.gr-card .bk { padding:3px; background:linear-gradient(155deg,#ffffff,#d9dbe0); box-shadow:0 10px 26px rgba(20,24,40,.12); }
+.gr-card .bk .gr-back { border-radius:19px; } .gr-card .bk .ln { inset:7px; border-radius:13px; } .gr-card .bk b { font-size:24px; font-weight:900; letter-spacing:-.06em; color:rgba(17,19,24,.8); }
+.gr-card.b-rare .bk { background:linear-gradient(155deg,#cfe6ff,#4f9dff); box-shadow:0 10px 26px rgba(42,125,225,.22); }
+.gr-card.b-epic .bk { background:linear-gradient(155deg,#f0dcff,#b26bff); box-shadow:0 0 22px rgba(178,107,255,.35), 0 10px 26px rgba(138,70,214,.25); }
+.gr-card .fc { transform:rotateY(180deg); overflow:hidden; background:rgba(255,255,255,.92); border:1px solid rgba(255,255,255,.95); box-shadow:0 10px 26px rgba(20,24,40,.12); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:10px; text-align:center; }
+.gr-card.r-epic .fc { background:linear-gradient(160deg,#ffffff,#f4ebff); box-shadow:0 0 0 2px #b26bff, 0 0 22px rgba(178,107,255,.35); }
+.gr-card.r-legend .fc { background:linear-gradient(160deg,#fffaf0,#fff3c4); box-shadow:0 0 0 2px #ffc21a, 0 0 30px rgba(255,194,26,.55), 0 14px 30px rgba(168,121,0,.25); }
+.gr-card .fc .p { width:64%; aspect-ratio:1; border-radius:50%; overflow:hidden; background:#fff; box-shadow:0 0 0 3px var(--rc), 0 8px 18px rgba(20,24,40,.14); }
+.gr-card .fc .p img { width:100%; height:100%; object-fit:cover; }
+.gr-card .fc b { font-size:14px; font-weight:800; margin-top:2px; line-height:1.2; } .gr-card .fc small { font-size:11px; font-weight:800; color:var(--rt); }
+.gr-card .fc em { position:absolute; top:8px; left:8px; padding:2px 8px; border-radius:999px; font-style:normal; font-size:10px; font-weight:900; letter-spacing:.06em; background:#111318; color:#fff; }
+.gr-card .fc em.sh { background:rgba(60,60,67,.1); color:#3c3e44; font-weight:800; letter-spacing:0; }
+.gr-card.r-common { --rc:#c9c9c6; --rt:#6f6f6c; } .gr-card.r-rare { --rc:#4f9dff; --rt:#2a7de1; } .gr-card.r-epic { --rc:#b26bff; --rt:#8a46d6; } .gr-card.r-legend { --rc:#ffc21a; --rt:#a87900; }
+.gr-foot { min-height:56px; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+.gr-foot .sum { height:52px; padding:0 18px; display:flex; align-items:center; border-radius:999px; background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.85); font-size:13px; font-weight:800; animation:grRise .4s ease-out; }
+.gr-foot button { height:52px; padding:0 22px; border-radius:999px; font-size:15px; font-weight:800; animation:grRise .4s ease-out; white-space:nowrap; }
+.gr-foot .again { background:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.9); box-shadow:0 8px 24px rgba(20,24,40,.08); color:var(--ink); }
+.gr-foot .ok { border:0; padding:0 26px; background:var(--ink); color:#fff; box-shadow:0 14px 30px rgba(17,19,24,.25); }
+.gr-foot button:active { transform:scale(.97); }
+/* 전설 컷신 */
+#cutscene { position:fixed; inset:0; z-index:90; display:none; overflow:hidden; cursor:pointer; color:var(--ink); user-select:none; }
 #cutscene.show { display:block; }
-#cutscene .bars::before, #cutscene .bars::after { content:''; position:absolute; left:0; right:0; height:14vh; background:#000; z-index:3; }
-#cutscene .bars::before { top:0; } #cutscene .bars::after { bottom:0; }
-#cutscene .streak { position:absolute; left:-20%; width:140%; height:2px; background:linear-gradient(90deg, transparent, #fff, transparent); opacity:.7; animation:streak 1.1s linear infinite; }
-@keyframes streak { from { transform:translateX(-30%); } to { transform:translateX(30%); } }
-#cutscene .hero { position:absolute; right:8%; top:50%; transform:translateY(-50%); line-height:1; opacity:0; animation:heroIn 1.2s .6s cubic-bezier(.2,.9,.3,1) forwards; filter:drop-shadow(0 0 30px #ffc21a); }
-#cutscene .hero img { width:min(50vh, 50vw); height:min(50vh, 50vw); object-fit:contain; border-radius:50%; }
-@keyframes heroIn { from { transform:translate(30%, -50%); opacity:0; } to { transform:translate(0, -50%); opacity:1; } }
-#cutscene .name { position:absolute; left:8%; top:50%; transform:translateY(-50%); z-index:4; opacity:0; animation:nameIn .6s 1.6s ease forwards; }
-#cutscene .name small { display:block; font-size:14px; font-weight:800; letter-spacing:.5em; color:#ffc21a; }
-#cutscene .name b { display:block; font-size:clamp(40px, 8vw, 84px); font-weight:900; letter-spacing:-.05em; }
-@keyframes nameIn { from { opacity:0; transform:translate(-30px, -50%) scale(1.3); } to { opacity:1; transform:translate(0, -50%); } }
-#cutscene .flash { position:absolute; inset:0; background:#fff; opacity:0; animation:flash .8s 1.5s ease-out; }
-@keyframes flash { 0% { opacity:.9; } 100% { opacity:0; } }
-#cutscene .skip, #cutscene .tap { position:absolute; z-index:5; bottom:4vh; right:24px; }
-#cutscene .skip { color:var(--ink); }
-#cutscene .tap { left:50%; right:auto; transform:translateX(-50%); color:#bbb; font-size:14px; }
+.gc-bg, .gc-show { position:absolute; inset:0; overflow:hidden; }
+.gc-bg { background:radial-gradient(ellipse at 50% 50%, #fff3c4 0%, #fffaeb 42%, #ffffff 78%); animation:grFade 1.3s ease-in-out both; }
+.gc-bg .rays { position:absolute; left:50%; top:50%; width:1600px; height:1600px; margin:-800px 0 0 -800px; background:repeating-conic-gradient(from 0deg, rgba(255,194,26,.12) 0 5deg, rgba(255,194,26,0) 5deg 15deg); animation:grSpin 70s linear infinite; }
+.gc-bg .halo { position:absolute; left:50%; top:50%; width:760px; height:760px; margin:-380px 0 0 -380px; border-radius:50%; background:radial-gradient(circle, rgba(255,214,90,.55), rgba(255,214,90,0) 65%); animation:grBreathe 3.2s ease-in-out infinite; }
+.gc-mote { position:absolute; border-radius:2px; box-shadow:0 0 10px rgba(255,194,26,.7); animation:grFloat 5s ease-out infinite both; }
+.gc-line { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; padding:24px; }
+.gc-line .txt { display:flex; flex-wrap:wrap; justify-content:center; max-width:min(90vw, 1100px); font-size:clamp(36px, 5.6vw, 80px); font-weight:900; letter-spacing:-.04em; line-height:1.15; text-shadow:0 0 28px rgba(255,194,26,.55), 0 2px 0 #fff; }
+.gc-line .txt span { white-space:pre; opacity:0; } .gc-line .txt span.on { opacity:1; animation:grLetter .6s ease-out both; }
+.gc-line .bar { position:relative; width:min(64vw, 560px); height:2px; }
+.gc-line .bar i { position:absolute; inset:0; background:linear-gradient(90deg, transparent, #ffc21a, transparent); animation:grStreak 1.8s .5s ease-out both; }
+.gc-line .bar b { position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:2px; background:#ffc21a; box-shadow:0 0 14px #ffc21a; animation:grTwinkle 2.2s 1s ease-in-out infinite; }
+.gc-skip { position:absolute; right:28px; top:26px; height:38px; padding:0 16px; display:flex; align-items:center; white-space:nowrap; border-radius:999px; border:1px solid rgba(168,121,0,.25); background:rgba(255,255,255,.5); color:#a87900; font-size:12px; font-weight:800; }
+.gc-show { background:#f4f1ea; animation:grFade .2s ease-out both; }
+.gc-show .rays { position:absolute; left:50%; top:46%; width:1400px; height:1400px; margin:-700px 0 0 -700px; background:repeating-conic-gradient(from 0deg, rgba(255,194,26,.16) 0 6deg, rgba(255,194,26,0) 6deg 18deg); animation:grSpin 40s linear infinite; }
+.gc-show .halo { position:absolute; left:50%; top:46%; width:900px; height:900px; margin:-450px 0 0 -450px; border-radius:50%; background:radial-gradient(circle, rgba(255,226,122,.85), rgba(255,194,26,.25) 45%, rgba(244,241,234,0) 70%); }
+.gc-hero { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; }
+.gc-hero .pt { position:relative; flex:none; width:min(38vh, 340px); aspect-ratio:1; animation:grPop 1.2s .15s cubic-bezier(.2,.9,.3,1.15) both; }
+.gc-hero .rg { position:absolute; inset:-8%; border-radius:50%; border:3px solid #ffc21a; animation:grRing 1.6s .2s ease-out both; }
+.gc-hero .rg.r2 { border:2px solid rgba(255,194,26,.7); animation:grRing 1.9s .55s ease-out both; } .gc-hero .rg.r3 { border:1.5px solid rgba(255,194,26,.5); animation:grRing 2.2s .9s ease-out both; }
+.gc-hero .gold { position:absolute; inset:-14px; border-radius:50%; background:conic-gradient(from 210deg,#fff3c4,#ffc21a,#c98a00,#ffe27a,#fff3c4,#e0a400,#ffc21a,#fff3c4); animation:grSpin 10s linear infinite; box-shadow:0 0 70px rgba(255,194,26,.65); }
+.gc-hero .img { position:absolute; inset:0; border-radius:50%; overflow:hidden; background:#fff; box-shadow:0 0 0 4px #fff, 0 30px 60px rgba(120,80,0,.3); }
+.gc-hero .img img { width:100%; height:100%; object-fit:cover; }
+.gc-hero .img .sw { position:absolute; top:-10%; left:0; width:34%; height:120%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent); animation:grSweep 1.4s 1.2s ease-in-out both; }
+.gc-star { position:absolute; border-radius:2px; background:#fff; box-shadow:0 0 12px #ffc21a, 0 0 4px #ffc21a; animation:grTwinkle 2s ease-in-out infinite both; }
+.gc-hero .tags { display:flex; align-items:center; gap:8px; margin-top:16px; animation:grRise .8s 1s ease-out both; }
+.gc-hero .tags span { padding:4px 12px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:.08em; } .gc-hero .tags .lg { background:linear-gradient(135deg,#ffe27a,#e0a400); color:#3d2b00; } .gc-hero .tags .nw { background:#111318; color:#fff; }
+.gc-hero .nm { font-size:clamp(34px, min(6vw, 9vh), 80px); white-space:nowrap; font-weight:900; letter-spacing:-.055em; line-height:1; text-shadow:0 0 30px rgba(255,194,26,.5); animation:grRise .9s 1.2s ease-out both; }
+.gc-hero .tap { margin-top:4px; font-size:13px; font-weight:700; white-space:nowrap; color:rgba(60,60,67,.55); animation:grFade .8s 2.4s both; }
+.gc-flash { position:absolute; inset:0; background:radial-gradient(circle, #ffffff 30%, #fff3c4); animation:grFlash .9s ease-out both; pointer-events:none; }
+@keyframes grDeal { from { opacity:0; transform:translateY(60px) scale(.86) rotate(-4deg); } to { opacity:1; transform:none; } }
+@keyframes grFade { from { opacity:0; } to { opacity:1; } }
+@keyframes grFlash { 0% { opacity:0; } 35% { opacity:1; } 100% { opacity:0; } }
+@keyframes grRise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+@keyframes grPop { 0% { opacity:0; transform:scale(.7); } 60% { opacity:1; transform:scale(1.04); } 100% { transform:scale(1); } }
+@keyframes grSpin { to { transform:rotate(360deg); } }
+@keyframes grBreathe { 0%,100% { transform:scale(1); opacity:.85; } 50% { transform:scale(1.06); opacity:1; } }
+@keyframes grStreak { from { transform:scaleX(0); opacity:0; } to { transform:scaleX(1); opacity:1; } }
+@keyframes grShimmer { from { transform:translateX(-120%) rotate(20deg); } to { transform:translateX(220%) rotate(20deg); } }
+@keyframes grFloat { 0% { opacity:0; transform:translateY(0) rotate(45deg) scale(.6); } 20% { opacity:1; } 100% { opacity:0; transform:translateY(-180px) rotate(45deg) scale(1); } }
+@keyframes grRing { from { opacity:.9; transform:scale(.35); } to { opacity:0; transform:scale(2.6); } }
+@keyframes grTwinkle { 0%,100% { opacity:0; transform:rotate(45deg) scale(.3); } 50% { opacity:1; transform:rotate(45deg) scale(1); } }
+@keyframes grSweep { from { transform:translateX(-160%) skewX(-18deg); } to { transform:translateX(260%) skewX(-18deg); } }
+@keyframes grLetter { from { opacity:0; transform:translateY(14px) scale(1.15); filter:blur(6px); } to { opacity:1; transform:none; filter:none; } }
+@media (max-width:700px) { .gr-top { padding:16px 16px 0; } .gr-cards { gap:8px; } .gr-table { padding:12px 12px 20px; } .gr-card .bk, .gr-card .fc { border-radius:14px; } .gr-card .bk .gr-back { border-radius:11px; } .gr-card .bk b { font-size:15px; } .gr-card .fc { gap:4px; padding:5px; } .gr-card .fc b { font-size:10px; } .gr-card .fc small { font-size:9px; } .gr-card .fc em { top:4px; left:4px; padding:1px 5px; font-size:8px; } .gr-cards.one .fc b { font-size:14px; } .gc-skip { right:16px; top:16px; } }
+@media (prefers-reduced-motion: reduce) { .gc-mote, .gc-bg .rays, .gc-show .rays, .gc-hero .gold, .gc-star { display:none; } }
 /* 상점 */
 .shop-msg { min-height:20px; margin:-6px 0 8px; font-size:13px; font-weight:700; color:var(--blue); }
 .shop-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
@@ -1013,7 +1044,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="annbar" id="lobbyAnn" hidden></div>
     <div class="lobby-grid">
       <div class="lobby-left">
-        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.3</span></div>
+        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.4</span></div>
         <div class="g-card deckcard">
           <div class="dh"><b>현재 덱</b><small id="lobbyDeckN">0 / 5</small><span class="sp"></span><button class="link" id="btnDeckEdit">편집 ›</button></div>
           <div class="ldeck" id="lobbyDeck"></div>
@@ -1034,7 +1065,7 @@ input.text { font-size:20px; font-weight:800; }
 <!-- 닉네임 -->
 <div id="screen-welcome" class="screen">
   <div class="g-card welcome">
-    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.3</span></div>
+    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.4</span></div>
     <div><div class="eyebrow" style="margin-bottom:8px">닉네임 · 1~12자</div><input class="text" id="nickInput" maxlength="12" placeholder="지후왕"></div>
     <button class="k-btn big" id="btnStart">시작하기 →</button>
     <button class="g-btn" id="btnWelcomeLogin">이미 계정이 있어요 · 로그인</button>
@@ -1274,49 +1305,49 @@ const PORTRAITS = {
 const CHARS = {
   fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1200, atk: 45, atkSpeed: 3, range: 4.5, speed: 1.6, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
     story: '삼겹살을 구워먹다가 부루스타가 폭주해서 전신 화상을 당한 지후입니다. 하지만 그의 불타오르는 삶의 의지와 열정은 곧 불씨로 되살아났어요. 특기는 가스라이팅.',
-    passive: '일반 공격이 <b>5초</b> 동안 1초마다 공격력의 <b>80%</b> [화상] 피해를 입힌다. [화상]은 <b>중첩</b>된다.',
+    passive: '일반 공격이 적을 불태워 1초마다 공격력의 <b>80%</b> [화상] 피해를 입힌다. [화상]은 겹쳐 쌓인다.',
     onHit(u, t, A) { A.status(t, 'burn', 5, { dps: u.atk * 0.8, stack: true, src: u }); } },
   ice: { name: '얼음 지후', rarity: 'common', role: '컨트롤러', hp: 900, atk: 70, atkSpeed: 4, range: 5, speed: 1.6, portrait: PORTRAITS.ice, starter: true, sfx: 'ice', color: '#4fc3f7',
     story: '집에서 실수로 에어컨을 끄지 않고 잠을 자는 바람에 상시로 감기 상태입니다. 그는 격리 처리 당했고, 결국 그도 세상에 등을 돌리고 냉정해졌습니다.',
-    passive: '일반 공격이 대상을 <b>1.6초</b> 동안 [빙결]시킨다.',
+    passive: '일반 공격이 적을 [빙결]시킨다.',
     onHit(u, t, A) { A.status(t, 'freeze', 1.6); } },
   sword: { name: '검 지후', rarity: 'common', role: '딜러', hp: 1030, atk: 190, atkSpeed: 1.2, range: 'melee', speed: 1.6, portrait: PORTRAITS.sword, starter: true, sfx: 'swing', color: '#8d8d8d',
     story: '어릴때 놀이동산에서 기념품으로 사왔던 플라스틱 검으로 단련했습니다. 지금은 누구도 넘볼 수 없는 뛰어난 검객입니다.',
     passive: '' },
   assassin: { name: '암살 지후', rarity: 'common', role: '어쌔신', hp: 830, atk: 70, atkSpeed: 1.5, range: 'melee', speed: 1.6, portrait: PORTRAITS.assassin, starter: true, sfx: 'swing', color: '#e84393',
     story: '남들처럼 평범한 갈색 머리로 염색을 하고싶었으나 미용사가 말을 잘못 알아들어 핑크색 머리로 염색해주자, 해당 미용실에 원한을 품고 미용사를 암살하기 위해 다시 태어났습니다.',
-    passive: '게임 시작 <b>2초</b> 뒤 가장 멀리 있는 적의 <b>후방</b>으로 순간이동하고 <b>1초</b> 동안 [은신]. 순간이동 뒤 첫 공격은 <b>대상 하나</b>에게 공격력의 <b>700%</b>.',
+    passive: '게임이 시작되면 가장 멀리 있는 적의 뒤로 순간이동해 잠시 숨는다. 순간이동 뒤 첫 공격은 공격력의 <b>700%</b> 피해를 입힌다.',
     tick(u, dt, A) { if (u.blinked) return; u.blinkT = (u.blinkT || 0) + dt; if (u.blinkT >= 2) { u.blinked = true; A.blinkBehindFarthest(u); A.status(u, 'stealth', 1); u.nextHitPct = 700; u.nextHitSingle = true; } } },
   shield: { name: '쉴드 지후', rarity: 'common', role: '탱커', hp: 1000, shield: 500, atk: 150, atkSpeed: 3, range: 'melee', speed: 1.6, portrait: PORTRAITS.shield, portraitBroken: PORTRAITS.shield_broken, starter: true, sfx: 'bash', color: '#4f7cff',
     story: "자청해서 고기방패가 되기로 한 지후입니다. 최근에는 그의 특별한 '취향'에 대해 루머가 돌고 있다고 하지만.. 쉴드 지후는 순수하게 마음씨가 착해서 그런거에요.",
-    passive: '쉴드가 있는 동안 <b>모든 상태이상에 면역</b>이고 받는 피해 <b>-25%</b>.',
+    passive: '쉴드가 남아 있는 동안 상태이상에 걸리지 않고, 받는 피해가 <b>25%</b> 줄어든다.',
     immune(u) { return u.shield > 0; }, takenMult(u) { return u.shield > 0 ? 0.75 : 1; } },
   heal: { name: '힐 지후', rarity: 'rare', role: '서포터', hp: 860, atk: 30, atkSpeed: 1.3, range: 6, speed: 1.6, portrait: PORTRAITS.heal, portraitSkill: PORTRAITS.heal_skill, sfx: 'shot', color: '#2fb36a',
     story: '남들의 상처를 보면 참지 못하고 반창고부터 꺼내는 지후입니다. 하지만 그의 치료에는 한 가지 심각한 문제가 있었어요. 상처에 반창고를 붙이는 것만으로 모든 병이 나을 거라고 굳게 믿었던 것입니다. 감기에 걸린 친구에게도, 발목을 삔 친구에게도, 심지어 시험을 망친 친구에게도 반창고를 붙여주었어요. 의학계에서는 그의 치료법을 인정하지 않았지만, 이상하게도 그의 곁에 있으면 다친 사람들이 다시 싸울 힘을 얻는다고 합니다.',
-    skill: { type: 'hit', need: 6, desc: '<b>SP 6</b> · <b>[회복]</b>. 체력 비율이 가장 낮은 아군 <b>하나</b>를 자신의 공격력의 <b>1000%</b>만큼 회복한다. 자신도 대상이 될 수 있지만 <b>다른 힐 지후</b>는 회복하지 않는다.',
+    skill: { type: 'hit', need: 6, desc: '<b>SP 6</b> · <b>[회복]</b>. 체력이 가장 낮은 아군 하나를 공격력의 <b>1000%</b>만큼 회복한다.',
       run(u, A) { const t = A.allies(u).filter(a => a.hp < a.maxHp && (a === u || a.id !== 'heal')).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
         A.portrait(u, u.def.portraitSkill); u.healPicT = 0.8; dmgNum(u, '회복!', { crit: true });
         if (t) { heal(u, t, effAtk(u) * 10); A.ring(t.x, t.y, 0.8); } } },
     tick(u, dt, A) { if (u.healPicT == null) return; u.healPicT -= dt; if (u.healPicT <= 0) { u.healPicT = null; A.portrait(u, u.def.portrait); } } }, // 회복 그림은 0.8초
   accel: { name: '가속 지후', rarity: 'rare', role: '서포터', hp: 900, atk: 70, atkSpeed: 2, range: 5, speed: 1.6, portrait: PORTRAITS.accel, sfx: 'shot', color: '#ff9f1c',
     story: '친구들과 달리기 시합을 하던 중, 자신의 느린 발에 깊은 회의감을 느낀 지후입니다. 어떻게 하면 남들보다 빨라질 수 있을지 수년간 연구했지만, 결국 달리기 실력은 전혀 늘지 않았어요. 대신 그는 속도라는 개념 자체를 타인에게 강요하는 경지에 도달했습니다. 이제 그의 곁에 있는 아군은 누구도 평범한 속도로 살아갈 수 없습니다. 특기는 재촉하기.',
-    passive: '라운드 시작 시 <b>5초</b> 동안 <b>십자 범위</b>(앞 · 뒤 · 왼쪽 · 오른쪽 칸)에 배치된 아군에게 공격속도 <b>+18%</b>.',
-    skill: { type: 'hit', need: 6, desc: '<b>SP 6</b>. <b>2.5초</b> 동안 자신을 뺀 모든 아군의 공격속도 <b>+30%</b>.',
+    passive: '라운드가 시작되면 십자 방향으로 붙어 있는 아군의 공격속도가 <b>18%</b> 빨라진다.',
+    skill: { type: 'hit', need: 6, desc: '<b>SP 6</b>. 잠깐 동안 다른 모든 아군의 공격속도가 <b>30%</b> 빨라진다.',
       run(u, A) { const m = effMult(u.lv); A.allies(u).forEach(a => { if (a !== u) A.buff(a, 'accelS', { aspd: 0.3 * m }, 2.5); }); A.ring(u.x, u.y, 1.4); dmgNum(u, '가속!', { crit: true }); } },
     onStart(u, A) { const m = effMult(u.lv); A.cross(u).forEach(a => A.buff(a, 'accelP', { aspd: 0.18 * m }, 5)); } },
-  lonely: { name: '고독한 지후', rarity: 'epic', role: '탱커', hp: 1700, atk: 90, atkSpeed: 1, range: 'melee', speed: 1.6, portrait: PORTRAITS.lonely, sfx: 'swing', color: '#c98a4b',
+  lonely: { name: '고독한 지후', rarity: 'legend', role: '탱커', hp: 1700, atk: 90, atkSpeed: 1, range: 'melee', speed: 1.6, portrait: PORTRAITS.lonely, sfx: 'swing', color: '#c98a4b',
     story: '어린 시절 친구들과 술래잡기를 하던 중, 아무도 자신을 찾으러 오지 않았던 기억을 간직한 지후입니다. 처음에는 단순히 술래들이 자신을 잊었다고 생각했지만, 시간이 흐르면서 그는 누구에게도 의지하지 않는 법을 배웠습니다. 수많은 상처와 고난을 견뎌낸 끝에, 그는 타인의 생명력마저 자신의 전투 방식으로 삼는 경지에 도달했습니다. 이제 그는 혼자서도 충분히 강하지만, 가끔 누군가 먼저 말을 걸어주기를 기다리고 있습니다.',
-    passive: '인접 <b>8방향</b> 칸에 아무 지후도 배치되어 있지 않으면 [고독]: 일반 공격이 대상 <b>현재 체력의 10%</b> 추가 피해.',
+    passive: '주변에 아무도 없으면 [고독] 상태가 되어, 일반 공격이 대상 현재 체력의 <b>10%</b> 추가 피해를 입힌다.',
     onStart(u, A) { u.alone = A.alone(u); if (u.alone) A.status(u, 'alone', 999); },
     bonus(u, t) { return u.alone ? t.hp * 0.10 : 0; } },
-  berserk: { name: '광폭화 지후', rarity: 'epic', role: '딜러', hp: 910, atk: 102, atkSpeed: 1.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.berserk, portraitRage: PORTRAITS.berserk_rage, sfx: 'swing', color: '#7a4de8',
+  berserk: { name: '광폭화 지후', rarity: 'legend', role: '딜러', hp: 910, atk: 102, atkSpeed: 1.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.berserk, portraitRage: PORTRAITS.berserk_rage, sfx: 'swing', color: '#7a4de8',
     story: '어릴 적부터 유난히 성격이 급했던 지후입니다. 게임을 하다가 패배하면 키보드를 내려치고, 시험에서 틀린 문제를 발견하면 시험지와 협상을 시도하곤 했어요. 하지만 어느 날, 자신의 분노가 극에 달하는 순간 세상이 잠시 멈춘 듯한 기이한 경험을 하게 됩니다. 그 짧은 순간만큼은 누구도 그를 건드릴 수 없었고, 그는 마침내 죽음조차 자신의 분노를 진정시킬 수 없다는 사실을 깨달았습니다. 이후 그는 전투에서 쓰러지는 순간조차 2초간 광폭한 집념으로 버텨내는 존재가 되었습니다. 특기는 죽고 나서도 성질부리기.',
-    passive: '쓰러지는 순간 체력 <b>1</b>로 버티고 <b>2초</b> 동안 [무적] · [광폭화]: 공격력 <b>+140%</b> · 공격 간격 <b>0.7초</b>. 2초가 지나면 쓰러진다.',
+    passive: '쓰러지는 순간 <b>2초</b> 동안 [무적], [광폭화] 상태가 된다. 이후 쓰러진다.',
     onLethal(u, A) { if (u.raged) return false; u.raged = true; u.rageT = 2; A.status(u, 'inv', 2); A.status(u, 'rage', 2); u.cd = Math.min(u.cd, 0.15); A.portrait(u, u.def.portraitRage); dmgNum(u, '광폭화!', { crit: true }); shake(true); return true; },
     tick(u, dt) { if (u.rageT == null) return; u.rageT -= dt; if (u.rageT <= 0) { u.rageT = null; u.st.inv = 0; u.st.rage = 0; u.hp = 0; drawUnit(u); killUnit(u); } } },
   scythe: { name: '낫 지후', rarity: 'epic', role: '어쌔신', hp: 1240, atk: 444, atkSpeed: 4.5, range: 1.65, melee: true, speed: 1.15, portrait: PORTRAITS.scythe, sfx: 'swing', color: '#5b4b8a',
     story: '어느 날 마트에서 할인 중이던 원예용 낫을 구매한 지후입니다. 처음에는 잡초나 정리할 생각이었지만, 낫을 휘두르는 순간 자신이 평범한 원예사가 아니라는 사실을 깨달았습니다. 이후 그는 낫 하나만으로 수많은 전투를 헤쳐 나가며 어둠 속에 이름을 새겼습니다. 다만 아직도 낫을 구매할 때 받은 영수증은 소중히 간직하고 있다고 합니다.',
-    passive: '근접 부채꼴 (<b>1.65칸</b> · 120°). 라운드 시작 <b>5초</b> 뒤부터 쿨타임 <b>12초</b>마다 <b>[힘줄 끊기]</b> (시전 중에는 쿨타임이 줄지 않는다): 제자리에 멈춘 뒤 <b>0.5초</b> 뒤 무작위 적 곁으로 순간이동해 반경 <b>1.65칸</b>의 모든 적에게 공격력의 <b>55%</b> 피해 · <b>4초</b> [절상] · [침묵] · <b>1초</b> [부상]. <b>1.25초</b> 뒤 원래 자리로 돌아오며, 그동안은 아무것도 할 수 없다.',
+    passive: '주기적으로 <b>[힘줄 끊기]</b>: 무작위 적 곁으로 순간이동해 주변 모든 적에게 공격력의 <b>55%</b> 피해를 주고 [절상] · [침묵] · [부상]을 건 뒤 제자리로 돌아온다.',
     gauge(u) { const s = u.sc; if (!s) return 0; return s.phase === 'cd' ? clamp(1 - s.t / (s.first ? 5 : 12), 0, 1) : 1; },
     onStart(u) { u.sc = { phase: 'cd', t: 5, first: true }; },
     tick(u, dt, A) {
@@ -1339,8 +1370,8 @@ const CHARS = {
       if (s.phase === 'stay') { s.t -= dt; if (s.t > 0) return; physSnap(u, s.home.x, s.home.y); A.ring(u.x, u.y, 0.6); s.phase = 'cd'; s.t = 12; s.first = false; u.locked = false; }
     } },
   moon: { name: '달 지후', rarity: 'legend', role: '서포터', hp: 1550, atk: 35, atkSpeed: 2, range: 6, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.moon, sfx: 'ice', color: '#5aa9ff',
-    story: '팽이가 되고싶었던 달팽이. 밤낮으로 100일간 부지런히 기도했지만, 소원과 달리 달이 되었습니다. 그 충격으로 게을러졌고, 맨날 잠만 잔답니다.',
-    passive: '<b>출격제한 1</b>. 반경 <b>5칸</b> 안의 모든 아군(자신 포함)에게 공격력 <b>+8%</b> · 공격속도 <b>+12%</b>. 공격할 때마다 두 버프가 각각 <b>2%p</b>씩 오른다 (각 최대 100%).',
+    story: '팽이가 되고 싶었던 달팽이입니다. 밤낮으로 100일간 부지런히 기도했지만, 소원과 달리 달이 되었습니다. 그 충격으로 게을러졌고, 맨날 잠만 잔답니다.',
+    passive: '주변 아군의 공격력과 공격속도를 높인다. 공격할 때마다 이 버프가 점점 강해진다.',
     onStart(u) { u.fx = u.fx || []; const el = document.createElement('div'); el.className = 'unit-range-ring moon-ring' + (u.side === OPP() ? ' enemy' : ''); el.style.width = el.style.height = (10 * CFG.CELL) + 'px'; $('field').appendChild(el); u.fx.push(el); u.moonRing = el; },
     onAttack(u) { u.moonN = (u.moonN || 0) + 1; },
     tick(u, dt, A) { const n = u.moonN || 0, m = effMult(u.lv), atk = Math.min(1, 0.08 * m + 0.02 * n), aspd = Math.min(1, 0.12 * m + 0.02 * n), R = 5 * CFG.CELL;
@@ -1349,7 +1380,7 @@ const CHARS = {
   levelup: { name: '레벨업 지후', rarity: 'epic', role: '딜러', hp: 1250, atk: 125, atkSpeed: 2, range: 'melee', speed: 1.6, portrait: PORTRAITS.levelup, sfx: 'swing', color: '#f12c32',
     forms: [[1250, 125, 2], [1500, 175, 1.75], [1750, 225, 1.5]], portraitLv: [PORTRAITS.levelup, PORTRAITS.levelup2, PORTRAITS.levelup3],
     story: '어릴 적부터 남들보다 빠르게 성장하고 싶었던 지후입니다. 남들이 한 걸음씩 나아갈 때 혼자 열 걸음을 내딛으려 했지만, 정작 공부도 운동도 게임도 제대로 늘지 않았어요. 그러던 어느 날, 우연히 길바닥에서 정체불명의 경험치 물약을 주워 마시게 됩니다. 그 순간 그의 온몸을 감싸는 빛과 함께 믿을 수 없는 성장이 시작되었어요. 이제 그는 전투가 길어질수록 끊임없이 강해지며, 언젠가는 만렙을 넘어선 존재가 되겠다는 원대한 꿈을 품고 있습니다. 다만 아직도 경험치 2배 이벤트가 끝나면 상당히 우울해진다고 합니다.',
-    passive: '적을 <b>직접 처치</b>할 때마다 머리 위 <b>레벨</b>이 오른다 (최대 3): 최대 체력이 늘고 최대 체력의 <b>30%</b>를 회복. 라운드가 끝나면 초기화.<br>Lv1 HP 1,250 · ATK 125 · 2초 / Lv2 HP 1,500 · ATK 175 · 1.75초 / Lv3 HP 1,750 · ATK 225 · 1.5초',
+    passive: '적을 처치할 때마다 레벨이 올라 더 단단하고 강해진다. 레벨이 오르면 최대 체력의 <b>30%</b>를 회복한다.',
     onStart(u, A) { u.form = 1; A.headLv(u, 1); },
     onKill(u, v, A) {
       if ((u.form || 1) >= 3) return;
@@ -1360,20 +1391,20 @@ const CHARS = {
     } },
   magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 960, atk: 75, atkSpeed: 2, range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad', magicChance: 0.1, magicPct: 650,
     story: '어릴 적부터 장난감 총을 수집하는 취미가 있었던 지후입니다. 처음에는 문구점에서 파는 500원짜리 스펀지 총알에 만족했지만, 어느 날 실수로 총알 대신 자신이 아끼던 구슬을 장전하고 말았어요. 놀랍게도 구슬은 상상을 초월하는 위력으로 날아갔고, 지후는 탄환의 본질이 화약이 아니라 발사자의 마음가짐에 있다는 사실을 깨달았습니다. 이후 그는 모든 종류의 탄환을 자유자재로 다루는 마탄의 사수가 되었으며, 단 한 발로 전황을 뒤집는 무시무시한 존재로 거듭났습니다. 다만 총알이 빗나가면 탄환 탓을 하는 버릇은 고치지 못했다고 합니다.',
-    passive: '일반 공격 시 <b>10%</b> 확률로 공격력의 <b>650%</b> 피해를 입히는 <b>[마탄]</b>을 발사한다. [마탄]은 <b>4초</b> 동안 최대 체력 <b>30%</b> [절상]과 받는 피해 <b>+30%</b> [취약]을 건다.',
+    passive: '공격할 때 <b>10%</b> 확률로 공격력의 <b>650%</b> 피해를 주는 <b>[마탄]</b>을 쏜다. [마탄]에 맞은 적은 [절상] · [취약]에 걸린다.',
     onMagicHit(u, t, A) { A.cut(t, 0.3, 4); A.status(t, 'vuln', 4, { amt: 0.3 }); } },
   gift: { name: '선물 지후', rarity: 'legend', role: '보조형', hp: 1260, atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.gift, color: '#e84393',
     story: '선물은 항상 설렙니다. 오늘은 선물상자에서 무슨 지후가 나올까요?',
-    passive: '<b>움직이지 않고 공격하지 않는다.</b> 라운드 시작 뒤 <b>초당 SP 1</b>을 얻는다.',
-    skill: { type: 'sec', need: 18, once: true, desc: '<b>SP 18</b> · 1회. 게임에 있는 모든 지후 중 <b>무작위 하나</b>로 변한다 (같은 레벨). 선물 지후는 사라지고 변한 지후가 그 자리를 차지한다.',
+    passive: '움직이지도 공격하지도 않는다. 시간이 지나면 무작위 지후로 변신한다.',
+    skill: { type: 'sec', need: 18, once: true, desc: '<b>SP 18</b> · 1회. 게임에 있는 모든 지후 중 <b>무작위 하나</b>로 변신한다.',
       run(u, A) { const ids = Object.keys(CHARS).filter(id => id !== 'gift'); A.transform(u, ids[Math.floor(rng() * ids.length)]); } } },
   slime: { name: '슬라임 지후', rarity: 'rare', role: '탱커', hp: 600, atk: 230, atkSpeed: 2.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.slime, sfx: 'bash', color: '#12a8ef',
     story: '다이어트를 위해 살을 빼려 밤낮을 운동했지만 그 결과로 몸의 지방이 0이 되었습니다. 최근에는 살을 다시 찌워보려고 하고있답니다. 하루 10분 트레이닝 영상 대신 액괴 ASMR로 채널을 돌리면서요.',
-    passive: '쓰러지면 <b>작은 슬라임 2기</b>로 분열한다. 자식은 체력 · 공격력이 <b>절반</b>이고 최대 <b>2단계</b>까지 분열한다.',
+    passive: '쓰러지면 작은 슬라임 <b>2기</b>로 나뉜다.',
     onDeath(u, A) { const d = u.slimeDepth || 0; if (d >= 2) return; [-1, 1].forEach(k => A.spawnChild(u, 'slime', { hp: u.baseMaxHp * 0.5, atk: u.atk * 0.5, depth: d + 1, dx: k * unitRadius(u) * 0.9, dy: k * unitRadius(u) * 0.4 })); } },
   atom: { name: '원자 지후', rarity: 'legend', role: '딜러', hp: 1550, atk: 45, atkSpeed: 1, range: 3, speed: 1.6, portrait: PORTRAITS.atom, sfx: 'ice', color: '#3fd0c9',
-    story: '절제적이며 온순하다. 주기율표를 전부 외운 지후. 하지만 실제 수능시험장에서 그걸 외울 필요가 없다는것을 알게되어, 화를 냈다.',
-    passive: '<b>레벨과 같은 수</b>의 전자가 <b>1.3초</b> 주기로 자신을 공전한다 (궤도 반지름 <b>2칸</b>). 전자에 닿은 적은 <b>현재 체력의 14%</b> 피해 (전자 하나가 같은 적을 한 바퀴에 한 번).',
+    story: '절제적이며 온순한 지후입니다. 주기율표를 전부 외웠지만, 정작 수능 시험장에서는 그걸 외울 필요가 없다는 사실을 알게 되어 화를 냈습니다.',
+    passive: '레벨만큼의 전자가 주위를 돈다. 전자에 닿은 적은 현재 체력의 <b>14%</b> 피해를 입는다.',
     onStart(u) { u.ehit = {}; u.fx = u.fx || []; for (let i = 0; i < u.lv; i++) { const el = document.createElement('div'); el.className = 'fx-electron'; $('field').appendChild(el); u.fx.push(el); } },
     tick(u, dt, A) { const n = u.lv, R = 2 * CFG.CELL, er = 0.3 * CFG.CELL;
       for (let i = 0; i < n; i++) { const ang = S.time * Math.PI * 2 / 1.3 + i * Math.PI * 2 / n, ex = u.x + Math.cos(ang) * R, ey = u.y + Math.sin(ang) * R, el = u.fx && u.fx[i];
@@ -1381,32 +1412,32 @@ const CHARS = {
         foes(u).forEach(e => { const key = i + ':' + e.uid; if ((u.ehit[key] || 0) > S.time || Math.hypot(e.x - ex, e.y - ey) > er + unitRadius(e)) return; u.ehit[key] = S.time + 1.3; const done = dealDamage(u, e, e.hp * 0.14, {}); if (done > 0) hitFx(u, e, false); }); } } },
   dice: { name: '주사위 지후', rarity: 'rare', role: '딜러', hp: 777, atk: 125, atkSpeed: 1.7, range: 5.5, speed: 1.6, dmgRange: [1, 250], portrait: PORTRAITS.dice, sfx: 'shot', color: '#e8e2d4',
     story: '친구들과 보드게임을 하던 지후는 주사위가 마음에 들지 않는다는 이유로 게임을 중단시킨 전적이 있습니다. 주사위를 굴릴 때마다 자신이 원하는 숫자가 나오지 않는다는 것이 이유였어요. 그가 집에서 정이십면체 주사위를 가져오기 전까지는 말이죠.', atkText: () => '1~250',
-    passive: '공격마다 <b>1 ~ 250</b> 사이 무작위 피해.' },
+    passive: '공격할 때마다 <b>1 ~ 250</b> 사이 무작위 피해를 입힌다.' },
   gun: { name: '총 지후', rarity: 'epic', role: '딜러', hp: 860, atk: 105, atkSpeed: 2.1, range: 6, speed: 1.6, multiShot: true, portrait: PORTRAITS.gun, sfx: 'shot', color: '#555555',
     story: '딱지치기를 좋아하는 지후입니다. 실력은 굉장하지만 진지하게 임합니다. 하지만 상대가 생각없이 진지하지 않게 게임에 임한다면, 자존심이 상해 러시안룰렛 대결을 신청합니다. 어때요, 이제 생각이 많아지셨나요?',
-    passive: '<b>자신의 레벨</b>만큼의 적을 한꺼번에 공격한다 (Lv3이면 셋). 사거리 안에 그만큼 없으면 있는 만큼.' },
+    passive: '자신의 레벨만큼의 적을 한꺼번에 쏜다.' },
   coin: { name: '코인 지후', rarity: 'rare', role: '딜러', hp: 1000, atk: 50, atkSpeed: 1, range: 5, speed: 1.6, coin: true, portrait: PORTRAITS.coin, sfx: 'shot', color: '#f2c94c',
     story: '어느 날 길에서 500원을 주운 지후입니다. 그는 그 돈으로 과자를 사 먹을 수도 있었지만, 미래를 위해 투자하기로 결심했어요. 무려 500원으로 시작한 그의 투자 생활은 예상보다 험난했습니다. 수익을 내기는커녕 수수료와 각종 손실로 돈이 줄어들었고, 결국 그는 자신이 가진 모든 것을 잃고 말았습니다. 그런데도 지후는 포기하지 않았습니다. 언젠가 다시 500원을 모아 반드시 재기에 성공하겠다는 목표를 세웠다고 합니다. 남들에게 뻐기는 겉모습과는 달리 내향형 병약 멘헤라 히키코모리 백수 미소녀랍니다.', atkText: () => { const m = coinMult(); return `${Math.round(50 * m)} (${m >= 1 ? '+' : ''}${Math.round((m - 1) * 100)}%)`; },
-    passive: '기본 공격력이 <b>10분마다</b> <b>-50% ~ +50%</b> 사이 무작위 비율로 변한다. 지난번에 올랐으면 <b>55%</b> 확률로 떨어지고, 내렸으면 <b>55%</b> 확률로 오른다.' },
+    passive: '기본 공격력이 10분마다 <b>-50% ~ +50%</b> 사이에서 시세처럼 오르내린다.' },
   combo: { name: '콤보 지후', rarity: 'epic', role: '딜러', hp: 1100, atk: 67, atkSpeed: 1.4, range: 4.8, speed: 1.6, portrait: PORTRAITS.combo, sfx: 'shot', color: '#ff6b6b',
     story: '수학 빼고 전과목이 1등급인 올해로 9수 지후입니다. 수학이 9등급이라 대학교를 못가고 있지만, 자신이 수학에 재능이 없다는것을 인정하지 못하고 있습니다. 최근 6하고 7의 대소비교에 어려움을 겪고있습니다.',
-    passive: '공격할 때마다 공격력이 <b>10%</b>씩 증가한다 (<b>복리</b> · 라운드마다 초기화).',
-    onAttack(u) { u.comboMult = (u.comboMult || 1) * 1.1; u.comboN = (u.comboN || 0) + 1; } },
+    passive: '공격할 때마다 공격력이 <b>5%</b>씩 늘어난다.',
+    onAttack(u) { u.comboMult = (u.comboMult || 1) * 1.05; u.comboN = (u.comboN || 0) + 1; } },
   // ── R2.2 신규 지후 ──
-  water: { name: '물 지후', rarity: 'rare', role: '컨트롤러', hp: 1050, atk: 90, atkSpeed: 2.5, range: 4.5, speed: 1.6, portrait: PORTRAITS.water, sfx: 'ice', color: '#2f8fe8',
+  water: { name: '물 지후', rarity: 'epic', role: '컨트롤러', hp: 1050, atk: 90, atkSpeed: 2.5, range: 4.5, speed: 1.6, portrait: PORTRAITS.water, sfx: 'ice', color: '#2f8fe8',
     story: '수영장에 놀러 갔다가 물에 빠진 친구를 구하려던 지후입니다. 다행히 친구는 무사했지만, 정작 지후 본인은 물을 너무 많이 먹어 하루 종일 배가 불렀다고 합니다. 그날 이후 물과 관련된 일이라면 무엇이든 관심을 보이기 시작했고, 급기야 물병에 든 생수의 원산지와 성분까지 따지는 지경에 이르렀어요. 지금은 물을 자유자재로 다룰 수 있지만, 정작 본인이 가장 좋아하는 음료는 콜라입니다.',
-    skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[해일]</b>. 가장 가까운 적을 향해 맵 끝까지 직진하는 해일(폭 = 몸 지름)을 일으킨다. 닿은 적에게 공격력의 <b>120%</b> + 잃은 체력의 <b>20%</b> 피해를 주고 최대 <b>4칸</b> 밀어낸다 (멀리 갈수록 덜 밀린다).',
+    skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[해일]</b>. 맵 끝까지 나아가는 해일로 적에게 공격력의 <b>120%</b> 피해를 주고 밀어낸다.',
       run(u, A) { const t = nearestFoe(u); if (!t) return; const ang = Math.atan2(t.y - u.y, t.x - u.x), hw = unitRadius(u), dx = Math.cos(ang), dy = Math.sin(ang);
         dmgNum(u, '해일!', { crit: true }); sfx('ice');
         A.line(u, u.x, u.y, ang, { speed: 9, hw, h: hw * 2, cls: 'fx-wave', onHit: (e, frac) => { const done = dealDamage(u, e, effAtk(u) * 1.2 + Math.max(0, e.maxHp - e.hp) * 0.2, { skill: true }); if (done > 0) hitFx(u, e, true); A.knock(u, e, 4 * (1 - frac), dx, dy); } }); } } },
   berserker: { name: '버서커 지후', rarity: 'rare', role: '딜러', hp: 1220, atk: 80, atkSpeed: 1.25, range: 'melee', speed: 1.6, portrait: PORTRAITS.berserker, portraitSkill: PORTRAITS.berserker_skill, sfx: 'swing', color: '#f08a00',
     story: '평소에는 조용하고 얌전한 지후입니다. 하지만 누군가 자신이 아껴둔 간식을 허락 없이 먹었다는 사실을 알게 되면 이야기가 달라집니다. 특히 냉장고에 넣어둔 마지막 푸딩을 누군가 먹어버린 날에는 집안 전체가 긴장 상태에 돌입했다고 해요. 가족들은 그에게 간식을 사다 주며 진정시키려 했지만, 이미 늦었습니다. 이제 지후는 간식이 걸린 전투에서만큼은 누구도 말릴 수 없는 존재가 되었습니다.',
-    passive: '체력이 낮을수록 공격력이 오른다 (체력이 바닥에 가까울수록 최대 <b>350%</b>). 체력이 <b>15%</b> 미만이면 공격속도 <b>+20%</b>.',
+    passive: '체력이 낮을수록 공격력이 최대 <b>350%</b>까지 오른다. 체력이 <b>15%</b> 아래로 떨어지면 공격속도도 <b>20%</b> 빨라진다.',
     atkMult(u) { return 1 + 2.5 * clamp(1 - u.hp / Math.max(1, u.maxHp), 0, 1); },
     tick(u, dt, A) { const low = u.hp / Math.max(1, u.maxHp) < 0.15; if (low) A.buff(u, 'berserker', { aspd: 0.2 }, 0.2); if (low !== !!u.bskLow) { u.bskLow = low; A.portrait(u, low ? u.def.portraitSkill : u.def.portrait); if (low) dmgNum(u, '버서커!', { crit: true }); } } },
   slot: { name: '슬롯머신 지후', rarity: 'rare', role: '보조형', hp: 777, atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.slot, portraitLucky: PORTRAITS.slot_lucky, portraitJackpot: PORTRAITS.slot_jackpot, color: '#e8a800',
     story: '왕년에 전설의 도박꾼으로 이름을 떨쳤지만, 어느 한 \'지후\'에 의해 전재산을 잃었습니다. 지금은 카지노에서 다른 사람들과 게임하지 않고, 혼자 슬롯을 돌리며 인생을 허비하고 있습니다.',
-    passive: '움직이지도 공격하지도 않는다. <b>2초</b>마다 슬롯머신(세 자리 · 0~9)을 돌린다. <b>7이 하나</b>: 모든 적에게 <b>7</b> 피해 · <b>7이 둘</b> [럭키독]: 모든 적에게 현재 체력의 <b>77%</b> 피해 · <b>7이 셋</b> [잭팟]: 상대의 라이프를 전부 깎고 <b>즉시 승리</b>.',
+    passive: '<b>2초</b>마다 슬롯머신을 돌린다. 7이 나오면 모든 적에게 피해를 주고, 7이 셋이면 그 자리에서 승리한다.',
     gauge(u) { return u.slot ? clamp(1 - u.slot.t / 2, 0, 1) : 0; },
     onStart(u) { u.slot = { t: 2, pend: null, pic: 0 }; },
     tick(u, dt, A) {
@@ -1418,23 +1449,23 @@ const CHARS = {
       const digits = [0, 1, 2].map(() => Math.floor(rng() * 10)); s.pend = { n: digits.filter(d => d === 7).length, t: 0.95 }; // 릴이 멈추면 결과
       if (!S.fast) slotSpin(u, digits);
     } },
-  bow: { name: '활 지후', rarity: 'rare', role: '딜러', hp: 810, atk: 180, atkSpeed: 3.5, range: 7, speed: 1.6, shotSpeed: 7, shotCls: 'arrow', portrait: PORTRAITS.bow, sfx: 'shot', color: '#1e7a2e',
+  bow: { name: '활 지후', rarity: 'rare', role: '딜러', hp: 810, atk: 130, atkSpeed: 3.5, range: 7, speed: 1.6, shotSpeed: 7, shotCls: 'arrow', portrait: PORTRAITS.bow, sfx: 'shot', color: '#1e7a2e',
     story: '양궁 국가대표를 꿈꿨지만, 첫 체험 수업에서 과녁 대신 옆에 놓인 안내판을 맞힌 지후입니다. 강사는 긴장하지 말라며 격려했지만, 두 번째 화살은 아예 과녁 뒤편으로 사라졌어요. 강사는 화를 내며 그를 쫓아냈습니다. 하지만 여전히 독학으로 공원에서 연습하고 있습니다. 화살에 맞지 않게 조심하세요!',
-    passive: '화살은 초당 <b>7칸</b>으로 날아간다. 공격할 때 <b>8%</b> 확률로 공격력의 <b>130%</b> 피해를 주고 적을 <b>관통</b>해 맵 끝까지 날아가는 <b>황금 화살 2발</b>을 연속으로 쏜다.',
+    passive: '공격할 때 <b>8%</b> 확률로 공격력의 <b>130%</b> 피해를 주고 적을 관통해 맵 끝까지 날아가는 <b>황금 화살 2발</b>을 연속으로 쏜다.',
     customAttack(u, t) { if (rng() >= 0.08) return false; dmgNum(u, '황금 화살!', { crit: true }); u.gold = { ang: Math.atan2(t.y - u.y, t.x - u.x), n: 2, t: 0 }; return true; },
     tick(u, dt, A) { const g = u.gold; if (!g) return; g.t -= dt; if (g.t > 0) return; g.n--; g.t = 0.2; if (!g.n) u.gold = null; sfx('shot');
       A.line(u, u.x, u.y, g.ang, { speed: 7, hw: 8, cls: 'fx-arrow golden', onHit: e => { if (A.dmg(u, e, 130) > 0) hitFx(u, e, true); } }); } },
-  dust: { name: '황사 지후', rarity: 'rare', role: '서포터', hp: 1270, atk: 15, atkSpeed: 0.5, range: 6.2, speed: 1.6, portrait: PORTRAITS.dust, sfx: 'shot', color: '#c9a227',
+  dust: { name: '황사 지후', rarity: 'epic', role: '서포터', hp: 1270, atk: 15, atkSpeed: 0.5, range: 6.2, speed: 1.6, portrait: PORTRAITS.dust, sfx: 'shot', color: '#c9a227',
     story: '서쪽에서 동쪽으로 자신의 세력을 넓히고 싶어하는 지후입니다. 자신의 신념을 굳게 지키는 타입입니다. 그는 친구들에게 황사를 고루고루 나눠주는 것을 좋아하는데, \'황사회주의\' 사상을 가졌기 때문이랍니다.',
-    passive: '공격할 때 <b>6%</b> 확률로 자기 자리에 <b>4초</b> 동안 반지름 <b>3.5칸</b>의 <b>황사 지대</b>를 만든다. 황사 지대 안의 아군은 <b>회피율 35%</b>.',
+    passive: '공격할 때 <b>6%</b> 확률로 자기 자리에 황사 지대를 만든다. 황사 지대 안의 아군은 회피율이 <b>35%</b> 증가한다.',
     onAttack(u) { if (rng() < 0.06) { A.zone(u, 3.5, 4, 'fx-dust-zone', { key: 'dust', v: { dodge: 0.35 } }); dmgNum(u, '황사!', { crit: true }); } } },
   cactus: { name: '선인장 지후', rarity: 'epic', role: '탱커', hp: 1610, atk: 195, atkSpeed: 4, range: 4.8, speed: 1.6, shotSpeed: 6, shotCls: 'needle', reflect: 0.35, portrait: PORTRAITS.cactus, sfx: 'shot', color: '#2e8b3a',
     story: '선인장을 키우다가 물 주는 것을 까먹은 지후입니다. 그런데 선인장은 멀쩡했고, 지후는 식물보다 자신이 더 약하다는 사실을 인정하지 못해 결국 선인장과 똑같이 가시를 달았습니다.',
-    passive: '<b>근접 공격</b>은 <b>65%</b>만 받고 <b>35%</b>를 공격한 적에게 돌려준다. 일반 공격이 맞으면 그 자리에서 <b>4방향</b>으로 유닛을 관통해 맵 끝까지 날아가는 가시를 쏜다 (공격력의 <b>50%</b>).',
+    passive: '근접 공격을 받으면 피해의 <b>35%</b>를 되돌려준다. 일반 공격이 맞으면 네 방향으로 관통 가시를 쏴 공격력의 <b>50%</b> 피해를 입힌다.',
     onHit(u, t, A) { const x = t.x, y = t.y; [0, 0.5, 1, 1.5].forEach(k => A.line(u, x, y, Math.PI * k, { speed: 11, hw: 6, cls: 'fx-spike', skip: [t], onHit: e => { if (dealDamage(u, e, effAtk(u) * 0.5, {}) > 0) hitFx(u, e, false); } })); } },
   jaws: { name: '죠스 지후', rarity: 'epic', role: '어쌔신', hp: 640, atk: 260, atkSpeed: 1.3, range: 'melee', speed: 2.5, portrait: PORTRAITS.jaws, sfx: 'swing', color: '#3a6ea5',
     story: '바다에서 수영하다가 상어에게 물릴 뻔한 지후입니다. 다행히 무사히 빠져나왔지만, 그날 이후 상어의 매력에 푹 빠져버렸어요. 결국 자신도 상어가 되겠다며 바다로 떠났고, 수년 뒤 날카로운 이빨과 무시무시한 턱을 갖춘 죠스 지후로 돌아왔습니다. 다만 육지에서는 숨을 쉬기 힘들어 오래 버티지 못한다고 합니다. 태평양을 누리는 백상아리가 되고싶다네요.',
-    passive: '라운드 시작 때 <b>[잠수]</b>: 노릴 수도 피해를 줄 수도 없는 채 무작위 적에게 헤엄쳐 간다 (잠수 속도 <b>3.5</b>칸). 그 적 곁에서 떠오르며 반경 <b>2칸</b>에 공격력의 <b>50%</b> 피해. 공격할 때마다 공격력의 <b>30%</b>를 회복한다.',
+    passive: '라운드가 시작되면 <b>[잠수]</b>해 무작위 적에게 헤엄쳐 가서 덮친다. 떠오를 때 주변 적에게 공격력의 <b>50%</b> 피해를 주고, 공격할 때마다 체력을 회복한다.',
     onStart(u, A) { const L = foes(u); if (!L.length) return; u.prey = L[Math.floor(rng() * L.length)]; A.status(u, 'dive', 99); u.diveT = 8; u.walkSpeed = u.speed; u.speed = 3.5 * CFG.CELL; }, // 잠수 속도 3.5칸
     steer(u, dt) {
       if (!(u.st.dive > 0)) return false;
@@ -1447,19 +1478,19 @@ const CHARS = {
     },
     onAttack(u) { heal(u, u, effAtk(u) * 0.3); } },
   blizzard: { name: '블리자드 지후', rarity: 'legend', role: '컨트롤러', hp: 1310, atk: 45, atkSpeed: 1.1, range: 5.2, speed: 1.6, portrait: PORTRAITS.blizzard, sfx: 'ice', color: '#7fc8f8',
-    story: '',
-    skill: { type: 'hit', need: 10, desc: '<b>SP 10</b> · <b>[눈보라]</b>. 모든 적을 <b>2.5초</b> 동안 [빙결]. 빙결이 끝난 적은 <b>2초</b> 동안 <b>[동상]</b>: 공격력 <b>-10%</b> · 받는 피해 <b>+10%</b> · 이동속도 <b>-40%</b>.',
+    story: '겨울마다 눈사람을 만들던 지후입니다. 하지만 봄이 오면 눈사람이 녹아 사라지는 것을 도저히 받아들일 수 없었어요. 그래서 그는 봄이 오지 못하게 막기로 결심했습니다. 매일 밤 창문을 열어 두고 찬바람과 대화를 나누던 끝에, 마침내 눈보라를 불러내는 법을 깨우쳤어요. 이제 그가 지나간 자리에는 사계절 내내 눈이 내립니다. 다만 그 덕분에 동네 난방비가 세 배로 뛰어서, 요즘은 반상회에 나가지 못하고 있다고 합니다.',
+    skill: { type: 'hit', need: 10, desc: '<b>SP 10</b> · <b>[눈보라]</b>. 모든 적을 얼린다. 얼음이 녹은 적은 [동상]에 걸린다.',
       run(u, A) { dmgNum(u, '눈보라!', { crit: true }); sfx('ice'); if (!S.fast) fxAt('fx-blizzard', FW() / 2, FH() / 2, 1100, { width: FW() + 'px', height: FH() + 'px' });
         foes(u).forEach(e => { A.status(e, 'freeze', 2.5); if (e.st.freeze > 0) e._frostAfter = true; }); } } },
   bat: { name: '빠따 지후', rarity: 'legend', role: '딜러', hp: 1410, atk: 200, atkSpeed: 3.9, range: 'melee', speed: 1.6, portrait: PORTRAITS.bat, sfx: 'bash', color: '#c0392b',
-    story: '',
-    passive: '일반 공격에 맞은 적을 <b>5칸</b> 밀어낸다.',
-    skill: { type: 'hit', need: 7, desc: '<b>SP 7</b> · <b>[홈런]</b>. 공격한 적에게 공격력의 <b>450%</b> 피해를 주고 <b>15칸</b> 날려 보낸다.',
+    story: '동네 야구 대회 9회 말 2아웃 만루, 마지막 타석에 선 지후입니다. 감독은 번트를 지시했지만 그는 끝까지 풀스윙을 고집했어요. 공은 담장을 넘어 옆 동네 유리창까지 날아갔고, 그날 이후 그의 별명은 \'빠따\'가 되었습니다. 지금은 공 대신 앞을 가로막는 모든 것을 담장 밖으로 넘기고 있습니다. 좌우명은 \'깡이 있어야지\'. 유리창 수리비는 아직 갚는 중이라고 합니다.',
+    passive: '일반 공격에 맞은 적을 멀리 밀어낸다.',
+    skill: { type: 'hit', need: 7, desc: '<b>SP 7</b> · <b>[홈런]</b>. 공격력의 <b>450%</b> 피해를 주고 적을 멀리 날려 보낸다.',
       run(u, A) { const t = u.lastHit && u.lastHit.alive ? u.lastHit : nearestFoe(u); if (!t) return; dmgNum(u, '홈런!', { crit: true }); shake(true); if (A.dmg(u, t, 450) > 0) hitFx(u, t, true); A.knock(u, t, 15); } },
     onHit(u, t, A) { u.lastHit = t; A.knock(u, t, 5); } },
   train: { name: '신칸센 지후', rarity: 'legend', role: '컨트롤러', hp: 980, atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, deployLimit: 1, portrait: PORTRAITS.train, color: '#2f7fe0',
-    story: '',
-    passive: '<b>출격제한 1</b> · 일반 공격은 하지 않는다. 라운드 시작 때 필드 <b>무작위 위치</b>에 신호기 <b>4개</b>(상대 쪽 2 · 내 쪽 2)를 세우고, <b>2초</b> 뒤 가장 가까운 신호기부터 4개를 모두 한 번씩 거쳐 초당 <b>16칸</b>으로 돌진한다 (순서는 무작위). 돌진 중에는 받는 피해 <b>35%</b> 감소 · 유닛을 통과하고, 직접 부딪힌 적에게 <b>400</b> 피해. 다음 돌진까지 <b>4.5초</b> (부딪힌 적 1기당 <b>-0.5초</b> · 최소 0.1초) — 그 절반이 지나면 신호기를 다시 세운다.',
+    story: '태어나서 단 한 번도 지각해 본 적이 없는 지후입니다. 신호등이 빨간불로 바뀌어도, 길이 꽉 막혀도, 그는 언제나 정시에 도착했어요. 비결을 묻는 친구들에게 그는 \'멈추지 않으면 된다\'고 대답했습니다. 결국 자기만의 선로와 신호기를 깔고 초당 16칸으로 달리는 경지에 이르렀어요. 다만 너무 빨라서 내려야 할 역을 매번 지나친다고 합니다.',
+    passive: '신호기를 세우고 신호기 사이를 엄청난 속도로 돌진한다. 부딪힌 적에게 <b>400</b> 피해를 입힌다.',
     takenMult(u) { return u.ghost ? 0.65 : 1; },
     gauge(u) { const t = u.tr; return !t ? 0 : t.dash ? 1 : clamp(1 - t.t / Math.max(0.1, t.full), 0, 1); },
     onStart(u) { u.tr = { phase: 'wait', t: 2, full: 2, signals: null, dash: null }; trainSignals(u); },
@@ -1471,8 +1502,8 @@ const CHARS = {
       trainStart(u);
     } },
   sun: { name: '태양 지후', rarity: 'legend', role: '딜러', hp: 1350, atk: 20, atkSpeed: 0.7, range: 5, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.sun, sfx: 'fire', color: '#ff9f1c',
-    story: '',
-    passive: '<b>출격제한 1</b>. 공격이 맞은 자리 반경 <b>1.8칸</b>에 광역 피해. <b>같은 적</b>을 <b>2번</b> 공격할 때마다 공격력 <b>+20</b> (공격 대상을 바꾸거나 공격을 멈추면 초기화). 쓰러질 때 <b>아군 중 혼자 살아 있으면</b> <b>2초</b> 뒤 무작위 적 위치에 떨어지며 부활한다 (라운드당 1번): 반경 <b>3칸</b>에 <b>400</b> 피해 · <b>2.5초</b> [기절] · 기본 공격력 <b>+50</b>.',
+    story: '하루 종일 하늘에 떠 있는 것이 직업인 지후입니다. 사람들은 해가 뜨고 진다고 말하지만, 그는 자기는 가만히 있고 지구가 도는 것이라며 늘 억울해했어요. 아무도 믿어 주지 않자 결국 땅으로 직접 내려와 증명하기로 했습니다. 혼자 남겨져도 다시 떠오르는 끈기는 그렇게 생겼다고 해요. 다만 가까이 오는 친구들이 모두 땀을 뻘뻘 흘려서, 요즘은 선크림을 선물로 돌리고 있습니다.',
+    passive: '공격이 맞은 자리 주변에 광역 피해를 입힌다. 같은 적을 계속 공격하면 공격력이 오른다. 아군 중 혼자 남으면 한 번 부활해 적진에 떨어진다.',
     sunReset(u) { if (u.sunBonus) { u.atk -= u.sunBonus; if (!S.fast && u.alive) dmgNum(u, '공격력 초기화', {}); } u.sunBonus = 0; u.sunN = 0; u.sunT = null; }, // 쌓인 공격력만 되돌린다 (낙하 부활 +50 은 그대로)
     onAttack(u, t) { if (t !== u.sunT) { u.def.sunReset(u); u.sunT = t; } u.sunIdle = 0; if (++u.sunN % 2 === 0) { u.sunBonus = (u.sunBonus || 0) + 20; u.atk += 20; if (!S.fast) dmgNum(u, '+20', { crit: true }); } },
     onHit(u, t, A) { A.around(u, t.x, t.y, 1.8, e => { if (e !== t) dealDamage(u, e, effAtk(u), {}); }); if (!S.fast) A.ring(t.x, t.y, 1.8); },
@@ -1488,8 +1519,8 @@ const CHARS = {
       A.around(u, u.x, u.y, 3, t => { if (dealDamage(u, t, 400 * lvMult(u.lv), { skill: true, noCrit: true }) > 0) hitFx(u, t, true); A.status(t, 'stun', 2.5); }); drawUnit(u);
     } },
   whirl: { name: '회오리 지후', rarity: 'legend', role: '딜러', hp: 1100, atk: 70, atkSpeed: 2, range: 4, speed: 1.6, portrait: PORTRAITS.whirl, portraitSkill: PORTRAITS.whirl_skill, sfx: 'ice', color: '#5ec8e5',
-    story: '',
-    skill: { type: 'hit', need: 5, desc: '<b>SP 5</b> · <b>[회오리]</b>. <b>4초</b> 동안 회오리로 변신해 이동속도가 <b>4배</b>가 되고, 가까운 적 주위를 휘젓고 다닌다 (그동안 일반 공격은 하지 않는다). 닿아 있는 적에게 <b>0.2초</b>마다 공격력의 <b>50%</b> 피해.',
+    story: '어릴 적 놀이터 뺑뺑이를 누구보다 빨리 돌리던 지후입니다. 다른 아이들이 어지러워 내려간 뒤에도 그는 혼자 남아 끝없이 돌았어요. 그러던 어느 날, 너무 빠르게 돈 나머지 몸이 바람이 되어 버렸습니다. 평소에는 폭풍전야처럼 고요하지만, 한번 돌기 시작하면 아무도 말릴 수 없습니다. 본인은 아직도 어지럽다는 게 무슨 느낌인지 모른다고 하네요.',
+    skill: { type: 'hit', need: 5, desc: '<b>SP 5</b> · <b>[회오리]</b>. 회오리로 변해 적 사이를 휘젓고 다니며, 닿은 적에게 <b>0.2초</b>마다 공격력의 <b>50%</b> 피해를 입힌다.',
       run(u, A) { u.wh = { on: 4, tick: 0, ang: 0 }; A.portrait(u, u.def.portraitSkill); if (u.el) u.el.classList.add('whirl-on'); dmgNum(u, '🌀 회오리!', { crit: true }); } },
     steer(u, dt) { // 전작 whirlSteer: 가까운 적 둘레를 돌며 휘젓는다
       const w = u.wh; if (!w) return false; const t = nearestFoe(u); if (!t) return true;
@@ -1502,13 +1533,51 @@ const CHARS = {
       if (w.on <= 0) { u.wh = null; A.portrait(u, u.def.portrait); if (u.el) u.el.classList.remove('whirl-on'); }
     } },
   titanium: { name: '티타늄 지후', rarity: 'legend', role: '탱커', hp: 1810, atk: 360, atkSpeed: 7, range: 'melee', speed: 1.6, portrait: PORTRAITS.titanium, sfx: 'bash', color: '#8a94a6',
-    story: '',
-    passive: '피격당할 때마다 <b>0.7초</b> 동안 유지되는 쉴드 <b>60</b>을 얻는다 (겹쳐 쌓인다).',
+    story: '어릴 적부터 겁이 많아 무엇이든 단단한 것 뒤에 숨던 지후입니다. 처음에는 책상 밑, 그다음에는 냉장고 뒤, 나중에는 금고 안까지 들어갔어요. 그래도 불안함이 가시지 않자 그는 아예 스스로 단단해지기로 결심했습니다. 수년간의 수련 끝에 그의 몸은 어떤 칼날도 뚫을 수 없는 티타늄이 되었어요. 이제는 맞을수록 더 단단해지지만, 공항 검색대에서는 매번 30분씩 붙잡혀 있다고 합니다.',
+    passive: '맞을 때마다 잠깐 동안 쉴드를 얻는다.',
     onDamaged(u) { const n = Math.round(60 * effMult(u.lv)); (u.tsh || (u.tsh = [])).push({ n, left: 0.7 }); u.shield += n; u.maxShield = Math.max(u.maxShield, u.shield, n * 3); if (u.el) u.el.classList.add('has-shield'); },
     tick(u, dt) { const L = u.tsh; if (!L || !L.length) return; // 쉴드 조각: 막아 낸 만큼 오래된 것부터 줄고, 0.7초가 지나면 남은 만큼 사라진다
       let over = L.reduce((n, c) => n + c.n, 0) - u.shield; for (const c of L) { const k = Math.min(c.n, Math.max(0, over)); c.n -= k; over -= k; }
       L.forEach(c => { c.left -= dt; if (c.left <= 0) u.shield = Math.max(0, u.shield - c.n); }); u.tsh = L.filter(c => c.left > 0 && c.n > 0); drawUnit(u); } },
 };
+// 도감 상세 수치 (R2.4): 설명(passive · skill.desc)은 쉽게 · 숫자는 여기에 [항목, 값] — 수치를 바꾸면 같이 고친다
+const CHAR_INFO = {
+  fire: [['[화상] 지속', '5초'], ['[화상] 피해', '1초마다 공격력의 80%'], ['중첩', '가능']],
+  ice: [['[빙결]', '1.6초']],
+  assassin: [['순간이동', '시작 2초 뒤 · 가장 먼 적의 뒤'], ['[은신]', '1초'], ['첫 공격', '대상 하나 · 공격력의 700%']],
+  shield: [['받는 피해', '-25% (쉴드가 있는 동안)'], ['상태이상', '면역 (쉴드가 있는 동안)']],
+  heal: [['대상', '체력 비율이 가장 낮은 아군 1기 (자신 포함)'], ['회복량', '공격력의 1000%'], ['제외', '다른 힐 지후']],
+  accel: [['시작 버프 범위', '앞 · 뒤 · 왼쪽 · 오른쪽 칸'], ['시작 버프', '공격속도 +18% · 5초'], ['스킬', '공격속도 +30% · 2.5초 · 자신 제외']],
+  lonely: [['[고독] 조건', '인접 8칸에 지후가 없을 때'], ['추가 피해', '대상 현재 체력의 10%']],
+  berserk: [['버티기', '체력 1로 2초'], ['[광폭화] 공격력', '+140%'], ['[광폭화] 공격 간격', '0.7초']],
+  scythe: [['공격 범위', '근접 부채꼴 1.65칸 · 120°'], ['[힘줄 끊기] 쿨타임', '12초 (라운드 시작 5초 뒤부터)'], ['[힘줄 끊기] 범위', '반경 1.65칸'], ['[힘줄 끊기] 피해', '공격력의 55%'], ['[절상] · [침묵]', '4초'], ['[부상]', '1초'], ['시전', '0.5초 멈춤 → 순간이동 → 1.25초 뒤 귀환 (그동안 행동 불가)']],
+  moon: [['출격제한', '1'], ['범위', '반경 5칸 (자신 포함)'], ['기본 버프', '공격력 +8% · 공격속도 +12%'], ['공격마다', '각각 +2%p (최대 100%)']],
+  levelup: [['최대 레벨', '3 (라운드가 끝나면 초기화)'], ['Lv1', 'HP 1,250 · ATK 125 · 2초'], ['Lv2', 'HP 1,500 · ATK 175 · 1.75초'], ['Lv3', 'HP 1,750 · ATK 225 · 1.5초'], ['레벨업 회복', '최대 체력의 30%']],
+  magic: [['[마탄] 확률', '10%'], ['[마탄] 피해', '공격력의 650%'], ['[절상]', '최대 체력 30% · 4초'], ['[취약]', '받는 피해 +30% · 4초']],
+  gift: [['SP', '초당 1 (라운드 시작부터)'], ['변신', '모든 지후 중 무작위 1기 · 같은 레벨 · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다']],
+  slime: [['분열', '2기 · 체력 · 공격력 절반'], ['최대', '2단계']],
+  atom: [['전자 수', '레벨과 같음'], ['공전 주기', '1.3초'], ['궤도 반지름', '2칸'], ['전자 피해', '현재 체력의 14% (한 바퀴에 같은 적 한 번)']],
+  dice: [['피해', '1 ~ 250 (레벨 · 버프 적용)']],
+  gun: [['동시 공격', '레벨 수만큼 (Lv3 = 3명)'], ['적이 적으면', '사거리 안에 있는 만큼']],
+  coin: [['변동 폭', '-50% ~ +50%'], ['주기', '10분 (모두 같은 시세)'], ['반전 확률', '55% (올랐으면 다음엔 내릴 확률)'], ['친선전', '판 시작 시세로 고정']],
+  combo: [['공격마다', '공격력 +5% (복리)'], ['초기화', '라운드마다']],
+  water: [['방향', '가장 가까운 적 쪽으로 맵 끝까지'], ['폭', '몸 지름'], ['피해', '공격력의 120% + 잃은 체력의 20%'], ['넉백', '최대 4칸 (멀수록 덜 밀림)']],
+  berserker: [['공격력', '체력이 낮을수록 최대 350%'], ['위기', '체력 15% 미만: 공격속도 +20%']],
+  slot: [['돌리기', '2초마다 · 세 자리 0~9'], ['7 하나', '모든 적에게 7 피해'], ['7 둘 [럭키독]', '모든 적에게 현재 체력의 77% 피해'], ['7 셋 [잭팟]', '상대 라이프를 모두 깎고 즉시 승리 (확률 0.1%)'], ['특징', '움직이지도 공격하지도 않는다']],
+  bow: [['화살 속도', '초당 7칸'], ['[황금 화살] 확률', '8%'], ['[황금 화살]', '2발 · 공격력의 130% · 관통']],
+  dust: [['확률', '6%'], ['황사 지대', '반지름 3.5칸 · 4초'], ['회피율', '+35% (지대 안 아군)']],
+  cactus: [['반사', '근접 피해의 35% · 65%만 받음'], ['가시', '4방향 · 맵 끝까지 관통 · 공격력의 50%']],
+  jaws: [['[잠수]', '노릴 수 없고 피해를 받지 않음 · 최대 8초'], ['잠수 속도', '3.5칸'], ['떠오를 때', '반경 2칸 · 공격력의 50%'], ['회복', '공격마다 공격력의 30%']],
+  blizzard: [['[빙결]', '모든 적 · 2.5초'], ['[동상]', '2초 · 공격력 -10% · 받는 피해 +10% · 이동속도 -40%']],
+  bat: [['넉백', '5칸'], ['[홈런] 피해', '공격력의 450%'], ['[홈런] 넉백', '15칸']],
+  train: [['출격제한', '1'], ['신호기', '4개 (상대 쪽 2 · 내 쪽 2) · 무작위 위치'], ['돌진 속도', '초당 16칸'], ['충돌 피해', '400'], ['돌진 중', '받는 피해 -35% · 유닛 통과'], ['다음 돌진', '4.5초 (부딪힌 적 1기당 -0.5초 · 최소 0.1초)'], ['일반 공격', '하지 않는다']],
+  sun: [['출격제한', '1'], ['광역 범위', '반경 1.8칸'], ['공격력 증가', '같은 적 2번마다 +20 (대상을 바꾸거나 멈추면 초기화)'], ['부활 조건', '쓰러질 때 아군 중 혼자 · 라운드당 1번'], ['낙하', '2초 뒤 무작위 적 위치 · 반경 3칸 400 피해 · 2.5초 [기절]'], ['부활 뒤', '기본 공격력 +50']],
+  whirl: [['지속', '4초'], ['이동속도', '4배'], ['피해', '0.2초마다 공격력의 50%'], ['변신 중', '일반 공격은 하지 않는다']],
+  titanium: [['쉴드', '맞을 때마다 60 (겹쳐 쌓임)'], ['지속', '0.7초']],
+};
+// 전설 컷신 대사 (R2.4 · 뽑기 연출) — 전설이 추가되면 대사도 함께
+const CHAR_LINE = { magic: '내 왼손에서 심연을 보았노라', moon: '동산에 오르니 긔 더욱 반갑고야', gift: '뭘 고를지 몰라 준비해 봤어', atom: '나 없이는 그 무엇도 존재할 수 없다', blizzard: '싸그락 싸그락 두드려 보았겠지', bat: '깡이 있어야지', train: '아무도 나를 멈출 수 없어', sun: '그래도 지구는 돈다', whirl: '폭풍전야', titanium: '뚫을 수 없다', lonely: '내 안의 무언가가 깨어나고있다..', berserk: '오늘은 얼마나 더 버틸 수 있을까?' };
+Object.entries(CHAR_INFO).forEach(([id, v]) => { if (CHARS[id]) CHARS[id].info = v; }); Object.entries(CHAR_LINE).forEach(([id, v]) => { if (CHARS[id]) CHARS[id].line = v; });
 
 // ═════════ STATUS (전작 상태이상 이름 · 의미 그대로) ═════════
 const STATUS = {
@@ -2051,8 +2120,7 @@ function renderDeckDetail() { // 고른 지후 상세 (전투 중 상세 창과 
   const act = '<button class="g-btn" id="deckStory">서사</button>' + (!have ? '<button class="g-btn" disabled>미보유</button>' : inDeck ? `<button class="g-btn" id="deckOut" ${profile.deck.length <= 1 ? 'disabled' : ''}>덱에서 빼기</button>` : '<button class="k-btn" id="deckIn">덱에 넣기</button>');
   $('deckDetail').innerHTML = `<div class="dt"><span class="p">${pic(id)}</span><div><h3>${c.name}<span class="rbadge r-${c.rarity}">${RARITY[c.rarity]}</span></h3><div class="sub">${c.role} · ${near ? '근거리' : '원거리'} · ${have ? `보유 · 조각 ${profile.shards[id] || 0}` : '미보유'}</div></div><span class="act">${act}</span></div>
     <div class="stat5"><div>체력<b>${c.hp.toLocaleString()}</b></div><div>공격력<b>${c.noAttack ? '—' : c.atkText ? c.atkText() : c.atk}</b></div><div>공격 간격<b>${c.noAttack ? '—' : c.atkSpeed + '초'}</b></div><div>사거리<b>${rng}</b></div><div>이동<b>${c.speed ?? 1.6}</b></div></div>
-    <div class="abil">${c.shield ? `<span>쉴드</span><p><b>${c.shield.toLocaleString()}</b></p>` : ''}${c.passive ? `<span>패시브</span><p>${c.passive}</p>` : ''}${c.skill ? `<span class="sk">스킬</span><p>${c.skill.desc}</p>` : ''}${c.passive || c.skill ? '' : '<span>능력</span><p>특수 능력 없음 · 기본기에 충실하다</p>'}</div>
-    <div class="foot">경기 중 같은 종류 · 같은 레벨을 합치면 레벨 +1 (Lv${CFG.MAX_LV}까지 · 체력/공격력 ×${CFG.LEVEL_MULT} · 효과 ×${CFG.EFFECT_MULT})</div>`;
+    <div class="abil">${c.shield ? `<span>쉴드</span><p><b>${c.shield.toLocaleString()}</b></p>` : ''}${c.passive ? `<span>패시브</span><p>${c.passive}</p>` : ''}${c.skill ? `<span class="sk">스킬</span><p>${c.skill.desc}</p>` : ''}${c.passive || c.skill ? '' : '<span>능력</span><p>특수 능력 없음 · 기본기에 충실하다</p>'}${c.info ? `<span>상세</span><div class="info">${c.info.map(([k, v]) => `<p><em>${k}</em><b>${v}</b></p>`).join('')}</div>` : ''}</div>`;
   if ($('deckIn')) $('deckIn').onclick = () => requestEquip(id);
   $('deckStory').onclick = () => dlg({ icon: '📖', title: `${c.name} · 서사`, html: c.story ? `<p class="story-text">${c.story}</p>` : '<p class="story-text">서사를 준비하고 있어요.</p>' });
   if ($('deckOut')) $('deckOut').onclick = () => { if (profile.deck.length <= 1) return; profile.deck = profile.deck.filter(x => x !== id); pendingEquip = null; save(); renderDeck(); }; // 덱은 1기 이상
@@ -2066,6 +2134,7 @@ function charDetail(id) {
     <div class="cdp-body">
       <div class="stats"><div>체력<b>${c.hp.toLocaleString()}</b></div><div>쉴드<b>${(c.shield || 0).toLocaleString()}</b></div><div>공격력<b>${c.noAttack ? '—' : c.atkText ? c.atkText() : c.atk}</b></div><div>공격 간격<b>${c.noAttack ? '—' : c.atkSpeed + '초'}</b></div><div>사거리<b>${rng}</b></div><div>이동속도<b>${c.speed || 1.6}</b></div></div>
       <div class="ability"><span class="eyebrow">능력</span>${ability}</div>
+      ${c.info ? `<div class="ability"><span class="eyebrow">상세 수치</span><div class="info">${c.info.map(([k, v]) => `<p><em>${k}</em><b>${v}</b></p>`).join('')}</div></div>` : ''}
       ${c.story ? `<div><span class="eyebrow">서사</span><p class="story">${c.story}</p></div>` : ''}
       <div class="cdp-act"><button class="btn primary big wide" id="cdpEquip" ${!have || equipped ? 'disabled' : ''}>${!have ? '미보유' : equipped ? '장착됨' : '장착'}</button></div>
     </div>`;
@@ -3188,49 +3257,69 @@ function pull(n, free) { // free: 10회 뽑기권
   for (let i = 0; i < n; i++) { const id = profile.pity >= CFG.PITY ? rollLegend() : rollOne(), isNew = grantChar(id); profile.pity = CHARS[id].rarity === 'legend' ? 0 : profile.pity + 1; res.push({ id, isNew, seenBefore: !isNew }); } // 같은 판에서 두 번째부터는 중복 (조각) · 천장
   mqEvent('newChar', res.filter(r => r.isNew).length);
   res.forEach(r => { if (CHARS[r.id].rarity === 'legend') { postEvent('gacha', r.id, 'legend'); discordNotify({ type: 'legend', name: CHARS[r.id].name }); } });
-  save(); renderGacha(); gachaLast = res; showReveal(res);
+  save(); renderGacha(); gachaLast = res; showReveal(res, free ? 0 : n);
 }
-// 연출 (서브컬처식): ① 신호 — 카드 색으로 최고 등급 예고 (전설 금 · 영웅 보라 · 그 외 흰색) ② 카드 뒷면 빛으로 장마다 등급 암시 ③ 한 장씩 넘김 ④ 전설은 컷신 (처음 뽑은 전설은 끝까지 · 중복은 스킵 가능)
-function showReveal(res) {
-  const best = res.reduce((b, r) => RARITY_ORDER[CHARS[r.id].rarity] > RARITY_ORDER[b] ? CHARS[r.id].rarity : b, 'common');
-  const tier = best === 'legend' ? 'legend' : best === 'epic' ? 'epic' : 'normal';
-  const rv = $('reveal'), st = $('revealStage');
-  rv.className = 'show tier-' + tier;
-  st.innerHTML = `<div class="sig" id="sig"><div class="sig-wrap"><div class="sig-rings"><i></i><i></i><i></i></div><div class="sig-card"><span>RE</span></div></div><span class="sig-label">${res.length}회 모집</span><span class="sig-hint">화면을 눌러 열기</span></div>`;
-  let opened = false;
-  $('sig').onclick = () => {
-    if (opened) return; opened = true; $('sig').classList.add('open');
-    const f = document.createElement('div'); f.className = 'sig-flash'; rv.appendChild(f); setTimeout(() => f.remove(), 700);
-    setTimeout(() => cardsStage(res), 420);
-  };
+// 연출 (R2.4 · 서브컬처식 순차 공개): ① 봉인 카드(최고 등급 색 · 문구) → ② 카드 딜(70ms 간격) → ③ 자동으로 한 장씩 뒤집기 → 전설은 ④ 컷신(대사 한 글자씩 → 섬광 → 등장) → ⑤ 요약 · 한 번 더
+// 뒷면 색이 등급 힌트 (전설은 영웅과 같은 보라로 끝까지 숨긴다) · 타이머는 GR 한 곳에서 관리 · 확률 · 천장 · 저장은 pull() 그대로
+const GR = { t: [], iv: 0, res: [], again: 0, cut: null };
+const grLater = (fn, ms) => { const t = setTimeout(fn, ms); GR.t.push(t); return t; };
+function grClear() { GR.t.forEach(clearTimeout); GR.t = []; clearInterval(GR.iv); }
+const GR_SIGN = [['rgba(255,255,255,.9)', 'linear-gradient(155deg,#ffffff,#d9dbe0)', '지후가 기다리고 있어요'], ['rgba(79,157,255,.55)', 'linear-gradient(155deg,#cfe6ff,#4f9dff)', '희귀한 기운이 느껴져요'],
+  ['rgba(178,107,255,.6)', 'linear-gradient(155deg,#f0dcff,#b26bff)', '강한 기운이 느껴져요…!'], ['rgba(255,194,26,.7)', 'conic-gradient(from 210deg,#fff3c4,#ffc21a,#b26bff,#4f9dff,#ffe27a,#ffc21a,#fff3c4)', '심상치 않은 기운이…!']];
+const grTop = skip => `<div class="gr-top"><div class="tt"><span class="eyebrow">RECRUIT</span><b>지후 뽑기</b></div><span class="sp"></span><span class="gr-chip"><span class="dm">◆</span><b>${profile.dia.toLocaleString()}</b></span>${skip ? '<button class="gr-chip" id="grSkip">모두 열기 ›</button>' : ''}</div>`;
+function showReveal(res, again = 0) { // again: 뽑기 횟수 (요약의 '한 번 더') · 0 이면 상점 · 우편 · 보상처럼 한 번만
+  grClear(); Object.assign(GR, { res, again, cut: null }); $('cutscene').className = ''; $('cutscene').innerHTML = '';
+  const top = res.reduce((m, r) => Math.max(m, RARITY_ORDER[CHARS[r.id].rarity]), 0), [glow, ring, title] = GR_SIGN[top];
+  $('reveal').className = 'show';
+  $('revealStage').innerHTML = grTop(false) + `<button class="gr-sign" id="grSign"><div class="sg"><i class="halo" style="background:radial-gradient(circle, ${glow}, rgba(255,255,255,0) 65%)"></i><div class="ring" style="background:${ring}"><div class="gr-back"><i class="ln"></i><b>RE:</b><i class="sh"></i></div></div></div><div class="st"><b>${title}</b><span>화면을 눌러 열기</span></div></button>`;
+  $('grSign').onclick = grDeal;
 }
-function cardsStage(res) {
-  const st = $('revealStage'); let next = 0;
-  st.innerHTML = `<div class="rcards" id="rcards">${res.map((r, i) => { const c = CHARS[r.id]; return `<div class="rcard r-${c.rarity} g-${c.rarity}" data-i="${i}" style="animation-delay:${(i * 0.06).toFixed(2)}s"><div class="in"><div class="back"><span>?</span></div><div class="face"><div class="p">${pic(r.id)}</div><b>${c.name}</b><small>${DOTS[c.rarity]} ${RARITY[c.rarity]}${r.isNew ? '' : ' · 조각 +1'}</small>${r.isNew ? '<span class="newtag">NEW</span>' : ''}</div></div></div>`; }).join('')}</div>
-    <div style="display:flex;gap:10px"><button class="btn" id="revAll">모두 넘기기</button><button class="btn primary" id="revDone" hidden>확인</button></div><div class="note" id="revHint">카드를 눌러 한 장씩 넘기세요</div>`;
-  const mark = () => { st.querySelectorAll('.rcard').forEach((c, i) => c.classList.toggle('next', i === next)); };
-  const finish = () => { $('revDone').hidden = false; $('revAll').hidden = true; $('revHint').textContent = ''; };
-  let busy = false;
-  const openNext = () => new Promise(resolve => {
-    if (next >= res.length || busy) return resolve(false);
-    const i = next, r = res[i], card = st.querySelector(`.rcard[data-i="${i}"]`);
-    busy = true;
-    const flip = () => { card.classList.add('open'); sfx('gacha_' + CHARS[r.id].rarity); next++; mark(); busy = false; if (next >= res.length) finish(); resolve(true); };
-    if (CHARS[r.id].rarity === 'legend') cutscene(r.id, !r.isNew, flip); else flip();
-  });
-  mark();
-  st.querySelector('#rcards').addEventListener('click', e => { if (e.target.closest('.rcard')) openNext(); });
-  $('revAll').onclick = async () => { while (await openNext()) await new Promise(r => setTimeout(r, 140)); };
-  $('revDone').onclick = () => { $('reveal').className = ''; renderGacha(); };
+function grDeal() {
+  const res = GR.res, n = res.length; sfx('place');
+  $('revealStage').innerHTML = grTop(true) + `<div class="gr-table"><div class="gr-cards${n === 1 ? ' one' : ''}">${res.map((r, i) => { const c = CHARS[r.id], rr = c.rarity;
+    return `<div class="gr-card r-${rr} b-${rr === 'legend' ? 'epic' : rr}" data-i="${i}" style="animation-delay:${(i * 0.07).toFixed(2)}s"><div class="in"><div class="bk"><div class="gr-back"><i class="ln"></i><b>RE:</b></div></div><div class="fc"><span class="p">${pic(r.id)}</span><b>${c.name}</b><small>${RARITY[rr]}</small><em class="${r.isNew ? '' : 'sh'}">${r.isNew ? 'NEW' : '조각 +1'}</em></div></div></div>`; }).join('')}</div><div class="gr-foot" id="grFoot"></div></div>`;
+  $('grSkip').hidden = true; $('grSkip').onclick = grSkipAll;
+  grLater(() => { $('grSkip').hidden = false; grLater(grNext, 250); }, n * 70 + 550);
 }
-function cutscene(id, canSkip, done) {
-  const c = CHARS[id], cs = $('cutscene');
-  cs.innerHTML = `<div class="bars"></div>${Array.from({ length: 7 }, (_, i) => `<div class="streak" style="top:${12 + i * 12}%;animation-delay:${(i * 0.13).toFixed(2)}s"></div>`).join('')}<div class="flash"></div><div class="hero">${pic(id)}</div><div class="name"><small>LEGEND</small><b>${c.name}</b></div>${canSkip ? '<button class="btn skip" id="csSkip">스킵 ▶▶</button>' : ''}<div class="tap" id="csTap"></div>`;
-  cs.classList.add('show');
-  let ended = false;
-  const end = () => { if (ended) return; ended = true; cs.classList.remove('show'); cs.innerHTML = ''; done(); };
-  if (canSkip) $('csSkip').onclick = e => { e.stopPropagation(); end(); };
-  setTimeout(() => { if (ended) return; $('csTap').textContent = '화면을 눌러 계속'; cs.onclick = end; }, 3200); // 처음 뽑은 전설은 끝까지 봐야 넘어간다
+const grCardEl = i => $('revealStage').querySelector(`.gr-card[data-i="${i}"]`);
+function grOpen(i) { const el = grCardEl(i); if (!el || el.classList.contains('open')) return; el.classList.add('open'); sfx('gacha_' + CHARS[GR.res[i].id].rarity); }
+function grNext() {
+  if (GR.cut) return;
+  const i = GR.res.findIndex((r, k) => !grCardEl(k).classList.contains('open'));
+  if (i < 0) return grLater(grDone, 450);
+  const rr = CHARS[GR.res[i].id].rarity; if (rr === 'legend') return grCut(i);
+  grOpen(i); grLater(grNext, rr === 'epic' ? 520 : rr === 'rare' ? 300 : 220);
+}
+function grSkipAll() { grClear(); GR.res.forEach((r, i) => { if (CHARS[r.id].rarity !== 'legend') grOpen(i); }); grLater(grNext, 300); } // 전설 컷신은 건너뛰지 않는다
+function grDone() {
+  if ($('grSkip')) $('grSkip').hidden = true; const n = GR.res.filter(r => r.isNew).length;
+  $('grFoot').innerHTML = `<span class="sum">새 지후 ${n} · 조각 ${GR.res.length - n}</span>${GR.again ? `<button class="again" id="grAgain">한 번 더 · ◆${(GR.again === 10 ? CFG.PULL10 : CFG.PULL1).toLocaleString()}</button>` : ''}<button class="ok" id="grOk">확인</button>`;
+  $('grOk').onclick = grClose;
+  if (GR.again) $('grAgain').onclick = () => { const n = GR.again, cost = n === 10 ? CFG.PULL10 : CFG.PULL1; if (profile.dia < cost) return banner('다이아가 부족해요'); pull(n); };
+}
+function grClose() { grClear(); GR.cut = null; $('reveal').className = ''; $('cutscene').className = ''; $('cutscene').innerHTML = ''; renderGacha(); renderMoney(); }
+const grMotes = () => Array.from({ length: 26 }, (_, k) => { const sz = 4 + Math.round(Math.random() * 6); return `<i class="gc-mote" style="left:${(Math.random() * 100).toFixed(1)}%;top:${(40 + Math.random() * 60).toFixed(1)}%;width:${sz}px;height:${sz}px;background:${k % 3 ? '#ffc21a' : '#ffffff'};animation-duration:${(3.5 + Math.random() * 3).toFixed(1)}s;animation-delay:${(Math.random() * 4).toFixed(1)}s"></i>`; }).join('');
+function grCut(i) { // ④ 전설 컷신: 배경 페이드 1.5초 → 대사 한 글자씩(140ms) → 2.4초 유지 → 섬광 → 등장 · 아무 곳이나 누르면 다음 단계
+  const r = GR.res[i], c = CHARS[r.id], line = c.line || `${c.name}, 등장!`, cs = $('cutscene');
+  GR.cut = { i, stage: 'fade' }; cs.className = 'show';
+  cs.innerHTML = `<div class="gc-bg"><i class="rays"></i><i class="halo"></i>${grMotes()}</div><div class="gc-line"><div class="txt">${[...line].map(ch => `<span>${esc(ch)}</span>`).join('')}</div><div class="bar"><i></i><b></b></div></div><span class="gc-skip">건너뛰기 ›</span>`;
+  cs.onclick = grCutTap;
+  grLater(() => {
+    if (!GR.cut || GR.cut.stage !== 'fade') return; GR.cut.stage = 'line';
+    const L = cs.querySelectorAll('.gc-line .txt span'); let k = 0;
+    GR.iv = setInterval(() => { if (k >= L.length) { clearInterval(GR.iv); grLater(grCutShow, 2400); return; } L[k++].classList.add('on'); }, 140);
+  }, 1500);
+}
+function grCutShow() {
+  const cut = GR.cut; if (!cut || cut.stage === 'show') return; grClear(); cut.stage = 'show';
+  const r = GR.res[cut.i], c = CHARS[r.id];
+  const stars = Array.from({ length: 10 }, (_, k) => { const a = k / 10 * Math.PI * 2, rr = 56 + Math.random() * 6, sz = 6 + Math.round(Math.random() * 8); return `<i class="gc-star" style="left:${(50 + Math.cos(a) * rr).toFixed(1)}%;top:${(50 + Math.sin(a) * rr).toFixed(1)}%;width:${sz}px;height:${sz}px;margin:-${sz / 2}px 0 0 -${sz / 2}px;animation-duration:${(1.6 + Math.random() * 1.4).toFixed(1)}s;animation-delay:${(1 + Math.random() * 1.5).toFixed(1)}s"></i>`; }).join('');
+  $('cutscene').innerHTML = `<div class="gc-show"><i class="rays"></i><i class="halo"></i>${grMotes()}<div class="gc-hero"><div class="pt"><i class="rg"></i><i class="rg r2"></i><i class="rg r3"></i><i class="gold"></i><div class="img">${pic(r.id)}<i class="sw"></i></div>${stars}</div><div class="tags"><span class="lg">전설</span>${r.isNew ? '<span class="nw">NEW</span>' : ''}</div><b class="nm">${c.name}</b><span class="tap">화면을 눌러 계속</span></div></div><div class="gc-flash"></div>`;
+  sfx('gacha_legend');
+}
+function grCutTap() {
+  const cut = GR.cut; if (!cut) return; if (cut.stage !== 'show') return grCutShow(); // 대사 중에 누르면 바로 등장
+  GR.cut = null; const cs = $('cutscene'); cs.className = ''; cs.innerHTML = ''; grOpen(cut.i); grLater(grNext, 450);
 }
 $('btnPull1').addEventListener('click', () => pull(1));
 $('btnPull10').addEventListener('click', () => pull(10));
@@ -4428,6 +4517,24 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.4', date: '2026.10.23', title: '뽑기 연출 · 전설 컷신 · 도감', sections: [
+    { title: '시스템', items: [
+      { icon: '🎴', name: '뽑기 연출 리뉴얼', tag: 'new', desc: '<b>봉인 카드</b>(최고 등급을 색으로 예고) → 카드 딜 → <b>한 장씩 자동으로 뒤집기</b> (모두 열기 가능) → 요약 · <b>한 번 더</b>. 카드 뒷면 색이 등급 힌트예요 (전설은 끝까지 숨겨요).' },
+      { icon: '★', name: '전설 컷신', tag: 'new', desc: '전설 지후가 나오면 <b>대사</b>가 한 글자씩 → 섬광 → 등장. 전설마다 대사가 있어요 (예: 태양 「그래도 지구는 돈다」).' },
+      { icon: '📖', name: '도감 설명', tag: 'system', desc: '모든 지후의 설명을 <b>쉽게</b> 바꾸고, 자세한 숫자는 아래 <b>상세</b>에 따로 정리했어요. 중요한 피해량 · 확률은 설명에도 적어요.' },
+      { icon: '✍', name: '서사', tag: 'new', desc: '블리자드 · 빠따 · 신칸센 · 태양 · 회오리 · 티타늄 지후의 서사가 생겼어요. 서사 말투를 「~입니다」로 맞췄어요.' },
+    ] },
+    { title: '등급 조정', items: [
+      { id: 'dust', name: '황사 지후', tag: 'adjust', desc: '희귀 → <b>영웅</b>' },
+      { id: 'water', name: '물 지후', tag: 'adjust', desc: '희귀 → <b>영웅</b>' },
+      { id: 'lonely', name: '고독한 지후', tag: 'adjust', desc: '영웅 → <b>전설</b>' },
+      { id: 'berserk', name: '광폭화 지후', tag: 'adjust', desc: '영웅 → <b>전설</b>' },
+    ] },
+    { title: '하향', items: [
+      { id: 'combo', name: '콤보 지후', tag: 'nerf', desc: '공격마다 공격력 증가 10% → <b>5%</b>' },
+      { id: 'bow', name: '활 지후', tag: 'nerf', desc: '공격력 180 → <b>130</b>' },
+    ] },
+  ] },
   { v: 'R2.3', date: '2026.10.22', title: '메인 퀘스트 · 천장 · 부스트', sections: [
     { title: '시스템', items: [
       { icon: '★', name: '메인 퀘스트', tag: 'new', desc: '로비의 <b>메인 퀘스트</b> 카드 · <b>순서대로</b> 하나씩 깨면 보상 (13단계 · 앞으로 더 추가돼요). 게임 승리 · 신규 지후 뽑기 · 덱 구성 · 일일 퀘스트 · 상점 · 리더보드 · 5연승 · 부스트 등 · 보상: 골드 · 다이아 · 랜덤 영웅 지후 · <b>선물 지후</b> · <b>선택 전설 모집권</b>.' },
