@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.8"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.8"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -251,6 +251,17 @@ input.text { font-size:20px; font-weight:800; }
 @keyframes barIn { from { transform:translate(-50%,-50%) scale(.4); opacity:0; } } @keyframes barHit { 50% { filter:brightness(1.8); } }
 .fx-bolt { position:absolute; width:22px; height:420px; margin-left:-11px; transform:translateY(-100%); pointer-events:none; z-index:6; background:linear-gradient(180deg, rgba(255,255,255,0), #fff6b0 40%, #ffd21a); clip-path:polygon(40% 0, 70% 0, 52% 38%, 85% 38%, 30% 100%, 45% 55%, 15% 55%); filter:drop-shadow(0 0 10px #ffd21a); animation:boltFx .52s ease-out forwards; }
 @keyframes boltFx { 0% { opacity:0; } 15% { opacity:1; } 100% { opacity:0; } }
+.fx-reap { position:absolute; width:0; height:0; pointer-events:none; z-index:8; transform:rotate(var(--a, 0deg)); }
+.fx-reap i { position:absolute; display:block; }
+.fx-reap .arc { left:-120px; top:-120px; width:240px; height:240px; border-radius:50%; border:12px solid transparent; border-top-color:#ff2d2d; border-left-color:rgba(255,45,45,.55); filter:drop-shadow(0 0 10px #ff2d2d) drop-shadow(0 0 22px rgba(120,0,0,.9)); animation:reapArc .55s cubic-bezier(.2,.9,.3,1) forwards; }
+.fx-reap .blade { left:-6px; top:-128px; width:12px; height:70px; border-radius:2px 12px 2px 12px; background:linear-gradient(180deg, #fff, #ff5050 40%, #3a0000); transform-origin:6px 128px; box-shadow:0 0 14px #ff2d2d; animation:reapBlade .55s cubic-bezier(.2,.9,.3,1) forwards; }
+.fx-reap .cut { left:-130px; top:-3px; width:260px; height:6px; border-radius:999px; background:linear-gradient(90deg, rgba(255,255,255,0), #fff 45%, #ff2d2d 60%, rgba(255,45,45,0)); box-shadow:0 0 16px #ff2d2d, 0 0 32px rgba(255,0,0,.6); transform:rotate(-35deg) scaleX(0); opacity:0; animation:reapCut .9s ease-out .4s forwards; }
+.fx-reap .cut.c2 { transform:rotate(35deg) scaleX(0); animation-delay:.5s; height:4px; }
+@keyframes reapArc { 0% { transform:rotate(-150deg) scale(.6); opacity:0; } 25% { opacity:1; } 100% { transform:rotate(70deg) scale(1); opacity:0; } }
+@keyframes reapBlade { 0% { transform:rotate(-150deg); opacity:0; } 20% { opacity:1; } 80% { opacity:1; } 100% { transform:rotate(70deg); opacity:0; } }
+@keyframes reapCut { 0% { opacity:1; transform:rotate(var(--r, -35deg)) scaleX(0); } 30% { opacity:1; transform:rotate(var(--r, -35deg)) scaleX(1); } 100% { opacity:0; transform:rotate(var(--r, -35deg)) scaleX(1.1); } }
+.fx-reap .cut.c2 { --r:35deg; }
+@media (prefers-reduced-motion: reduce) { .fx-reap i { animation-duration:.01s !important; } }
 .unit.reaper-on .unit-icon { box-shadow:0 0 0 3px #e5322d, 0 0 22px 6px rgba(229,50,45,.75); animation:reaperAura 1s ease-in-out infinite; } @keyframes reaperAura { 50% { box-shadow:0 0 0 3px #e5322d, 0 0 32px 10px rgba(229,50,45,.5); } }
 .fx-tentacle { position:absolute; transform-origin:0 50%; border-radius:999px; pointer-events:none; z-index:4; background:linear-gradient(90deg, rgba(62,197,224,.85), rgba(62,197,224,.35) 70%, rgba(62,197,224,0)); box-shadow:0 0 18px rgba(62,197,224,.6); animation:tentSlam .45s ease-out forwards; } @keyframes tentSlam { 0% { opacity:0; } 20% { opacity:1; } 100% { opacity:0; } } /* R2.7.2 촉수 */
 .unit .bubfx { display:none; position:absolute; inset:-20px; border-radius:50%; pointer-events:none; z-index:3; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 7%, rgba(255,255,255,0) 15%), radial-gradient(circle at 50% 50%, rgba(120,215,255,0) 55%, rgba(120,215,255,.35) 80%, rgba(190,140,255,.45) 100%); border:4px solid rgba(90,195,255,.95); box-shadow:0 0 26px rgba(79,195,247,.9), inset 0 0 18px rgba(255,255,255,.8); animation:bubWob 2.2s ease-in-out infinite; }
@@ -1821,14 +1832,14 @@ const CHARS = {
       if (u.sk >= u.def.skill.need) castSkill(u); },
     skill: { type: 'ally', need: 5, desc: '<b>SP 5</b> · <b>[부활]</b>. <b>1.5초</b> 뒤, 지난 [부활] 뒤로 쓰러진 아군을 무작위로 <b>자기 레벨 수</b>만큼 자기 자리에 되살린다. 이미 되살린 아군도 다시 되살릴 수 있다.',
       run(u, A) { u.revQ = { t: 1.5, L: u.revL || [] }; u.revL = []; if (!S.fast) { dmgNum(u, '부활 준비', { crit: true }); A.ring(u.x, u.y, 1.2); } } } },
-  reaper: { name: '사신 지후', rarity: 'epic', role: '딜러', hp: 844, atk: 144, atkSpeed: 3, range: 'melee', speed: 1.6, portrait: PORTRAITS.reaper, sfx: 'swing', color: '#2b2b2b',
+  reaper: { name: '사신 지후', rarity: 'legend', role: '딜러', hp: 844, atk: 144, atkSpeed: 3, range: 'melee', speed: 1.6, portrait: PORTRAITS.reaper, sfx: 'swing', color: '#2b2b2b',
     story: '할머니 댁 다락방에서 커다란 낫과 검은 망토를 발견한 지후입니다. 장난삼아 걸쳐 보았더니 망토가 몸에서 떨어지지 않았어요. 그 뒤로 그는 평소에는 얌전한 아이처럼 지내지만, 친구들이 하나둘 쓰러질 때마다 망토 속의 무언가가 깨어나는 것을 느낍니다. 완전히 깨어난 그의 낫 앞에서는 어떤 방패도 소용이 없다고 해요. 한번 강림하고 나면 망토를 벗는 방법은 아직 아무도 모릅니다.',
     passive: '[봉인] 상태로 시작한다. 일반적인 방법으로는 SP 가 차지 않고, 아군이 쓰러질 때마다 SP 가 <b>1</b> 찬다.',
     onStart(u, A) { A.status(u, 'seal', 800); },
     onUnitDeath(u, d) { if (d.side === u.side && !d.small) spGive(u, 1); },
-    skill: { type: 'ally', need: 5, desc: '<b>SP 5</b> · <b>[사신강림]</b>. 봉인이 풀려 <b>강림</b>한다 (체력 1,444 · 공격 간격 1.2초 · 이동속도 3.5 · 붉은 기운). 강림하면 일반 공격으로 SP 가 차고, <b>SP 4</b> · <b>[즉사]</b>: [무적]이 아니면 모든 효과(디버프 · 버프 · 쉴드 등)를 무시하고 대상 현재 체력의 <b>100%</b> 피해를 준다.',
+    skill: { type: 'ally', need: 5, desc: '<b>SP 5</b> · <b>[사신강림]</b>. 봉인이 풀려 <b>강림</b>한다 (체력 1,444 · 공격 간격 1.2초 · 이동속도 2.4 · 붉은 기운). 강림하면 일반 공격으로 SP 가 차고, <b>SP 6</b> · <b>[즉사]</b>: [무적]이 아니면 모든 효과(디버프 · 버프 · 쉴드 등)를 무시하고 대상 현재 체력의 <b>100%</b> 피해를 준다.',
       run(u, A) { const k = 1444 / 844; u.def = CHARS.reaper.awake; u.baseMaxHp = Math.round(u.baseMaxHp * k); u.maxHp = Math.round(u.maxHp * k); u.hp = u.maxHp; // 체력 · 버프 비율 그대로 키운다
-        u.atkSpeed = 1.2; u.cd = Math.min(u.cd, 1.2); u.speed = 3.5 * CFG.CELL; u.st.seal = 0; if (u.el) u.el.classList.add('reaper-on');
+        u.atkSpeed = 1.2; u.cd = Math.min(u.cd, 1.2); u.speed = 2.4 * CFG.CELL; // build 5: 3.5 → 2.4 u.st.seal = 0; if (u.el) u.el.classList.add('reaper-on');
         if (!S.fast) { dmgNum(u, '☠ 사신강림!', { crit: true, stamp: true }); A.ring(u.x, u.y, 1.6); shake(true); } drawUnit(u); } } },
   guardian: { name: '수호자 지후', rarity: 'legend', role: '서포터', hp: 1280, atk: 100, atkSpeed: 3, range: 4, speed: 1.6, portrait: PORTRAITS.guardian, sfx: 'bash', color: '#e0b400',
     story: '동네 놀이터의 자칭 보안관이던 지후입니다. 미끄럼틀에서 떨어지는 아이, 그네에서 미끄러지는 아이를 언제나 몸을 날려 받아 냈어요. 그렇게 수백 번을 받아 내던 어느 날, 그의 등 뒤로 황금빛 방패가 떠올랐습니다. 이제 그는 곁에 선 친구가 쓰러지는 순간 단 한 번, 운명을 붙잡아 줄 수 있어요. 다만 광폭화 지후와는 예전에 놀이터 그네 순서로 크게 싸운 뒤로 말도 섞지 않는다고 합니다.',
@@ -1853,10 +1864,13 @@ const CHARS = {
       u.dv++; u.atk += Math.round((u.dvBase || u.atk) * 0.4); u.baseMaxHp += 50; u.maxHp += 50; heal(u, u, 50); A.status(u, 'feast', 800); const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'devour') p.dv = u.dv; // 배치 기록에 남겨 경기 내내
       if (!S.fast) dmgNum(u, `🍖 포식 ${u.dv}`, { crit: true }); drawUnit(u); } },
 };
-CHARS.reaper.awake = { ...CHARS.reaper, hp: 1444, atkSpeed: 1.2, speed: 3.5, onStart: null, onUnitDeath: null, // 사신 지후 강림 (스킬로만 · 도감에는 없다)
+function reapFx(u, t) { // 사신 [즉사]: 대상 위로 붉은 낫이 크게 휘둘러 베고, 베인 자리에 사선 섬광 (build 5)
+  const ang = Math.atan2(t.y - u.y, t.x - u.x) * 180 / Math.PI, el = fxAt('fx-reap', t.x, t.y, 900); el.style.setProperty('--a', ang.toFixed(1) + 'deg'); el.innerHTML = '<i class="arc"></i><i class="blade"></i><i class="cut"></i><i class="cut c2"></i>';
+}
+CHARS.reaper.awake = { ...CHARS.reaper, hp: 1444, atkSpeed: 1.2, speed: 2.4, onStart: null, onUnitDeath: null, // 사신 지후 강림 (스킬로만 · 도감에는 없다)
   passive: '[강림] 일반 공격으로 SP 가 찬다.',
-  skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[즉사]</b>. [무적]이 아니면 모든 효과를 무시하고 대상 현재 체력의 <b>100%</b> 피해를 준다.',
-    run(u, A) { const t = nearestFoe(u); if (!t) return; if (t.st.inv > 0) { dmgNum(t, '무적', { crit: true }); return; } if (!S.fast) { dmgNum(t, '☠ 즉사', { crit: true, stamp: true }); A.ring(t.x, t.y, 0.8); }
+  skill: { type: 'hit', need: 6, desc: '<b>SP 6</b> · <b>[즉사]</b>. [무적]이 아니면 모든 효과를 무시하고 대상 <b>하나</b>의 현재 체력 <b>100%</b> 피해를 준다.', // build 5: SP 4 → 6
+    run(u, A) { const t = nearestFoe(u); if (!t) return; if (!S.fast) reapFx(u, t); if (t.st.inv > 0) { dmgNum(t, '무적', { crit: true }); return; } if (!S.fast) { dmgNum(t, '☠ 즉사', { crit: true, stamp: true }); shake(true); } // 대상은 가장 가까운 적 하나뿐
       const d = Math.max(0, Math.round(t.hp)); t.shield = 0; t.hp = 0; S.lastDmgAt = S.time; t.dmgTaken = (t.dmgTaken || 0) + d; u.dmgDealt = (u.dmgDealt || 0) + d; u._kills = (u._kills || 0) + 1; killUnit(t); drawUnit(t); } } };
 
 // 소환체 (뽑기 · 덱에는 없다 · 네크로맨서가 싸우는 중에 불러낸다)
@@ -1907,7 +1921,7 @@ const CHAR_INFO = {
   lightning: [['[낙뢰]', '공격력 2000% · [기절] 1초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
   barrier: [['시작 쉴드', '십자 범위 아군 · 공격력 500% · 남아 있는 동안 디버프 무효'], ['[배리어]', '반지름 3.5칸 · 2초 · 바깥에서 오는 투사체를 막는다'], ['못 막는 것', '근접 공격 · 투사체가 아닌 광역 공격']],
   revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 제외)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위']],
-  reaper: [['SP (봉인)', '아군이 쓰러질 때마다 1'], ['[사신강림]', 'SP 5 · 체력 1,444 · 공격 간격 1.2초 · 이동속도 3.5'], ['[즉사] (강림)', 'SP 4 (일반 공격) · 대상 현재 체력 100% · [무적]만 막는다']],
+  reaper: [['SP (봉인)', '아군이 쓰러질 때마다 1'], ['[사신강림]', 'SP 5 · 체력 1,444 · 공격 간격 1.2초 · 이동속도 2.4'], ['[즉사] (강림)', 'SP 6 (일반 공격) · 가장 가까운 적 하나 · 현재 체력 100% · [무적]만 막는다']],
   guardian: [['[수호]', '십자 범위 아군 · 쓰러질 때 체력 1 + [무적] 1초 · 라운드에 한 번'], ['조건', '수호자 지후가 살아 있을 때'], ['예외', '광폭화 지후']],
   clock: [['같은 레벨 적', '공격속도 -7%'], ['같은 레벨 아군', '공격속도 +7% (자신 포함)'], ['범위', '맵 전체 · 중첩']],
   charge: [['[무선충전]', '반경 3.5칸 아군 SP +1'], ['제외', '자신 · 다른 충전 지후 · 부활 지후 · 봉인된 사신 지후 (강림한 사신은 받는다)']],
@@ -5427,6 +5441,7 @@ const PATCH_NOTES = [
       { id: 'reaper', name: '사신 지후', tag: 'nerf', desc: '[사신강림] SP <b>3 → 5</b> (build 2).' },
       { id: 'devour', name: '포식 지후', tag: 'adjust', desc: '체력 <b>1,320 → 1,150</b> · 공격 간격 <b>1.2 → 1.55초</b> · [포식] 공격력 <b>+50% → +40%</b> · [포식] 하나당 <b>최대 체력 +50 · 체력 50 회복</b> (build 3).' },
       { id: 'charge', name: '충전 지후', tag: 'fix', desc: '[무선충전]이 부활 지후 · 봉인된 사신 지후의 SP 를 채우던 문제 수정 (아군이 쓰러질 때만 SP 가 찬다 · 강림한 사신은 받는다 · build 4).' },
+      { id: 'reaper', name: '사신 지후', tag: 'nerf', desc: '강림 이동속도 <b>3.5 → 2.4</b> · [즉사] SP <b>4 → 6</b> · [즉사]에 낫 베기 이펙트 · 등급 <b>영웅 → 전설</b> (build 5).' },
     ] },
   ] },
   { v: 'R2.7.2', date: '2026.10.24', title: '경쟁전 · 아케이드 · 촉수 지후', sections: [
