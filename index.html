@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.7.1"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.7.1"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -296,16 +296,17 @@ input.text { font-size:20px; font-weight:800; }
 #cutscene { position:fixed; inset:0; z-index:90; display:none; overflow:hidden; cursor:pointer; color:var(--ink); user-select:none; }
 #cutscene.show { display:block; }
 .gc-bg, .gc-show { position:absolute; inset:0; overflow:hidden; }
-.gc-bg { background:radial-gradient(ellipse at 50% 50%, #fff3c4 0%, #fffaeb 42%, #ffffff 78%); animation:grFade .3s ease-out both; }
+.gc-bg { background:#000; animation:grFade .3s ease-out both; } /* R2.7.1 build 4: 대사 화면 = 검은 바탕 · 흰 글자 */
 .gc-bg .rays { position:absolute; left:50%; top:50%; width:1600px; height:1600px; margin:-800px 0 0 -800px; background:repeating-conic-gradient(from 0deg, rgba(255,194,26,.12) 0 5deg, rgba(255,194,26,0) 5deg 15deg); animation:grSpin 70s linear infinite; }
 .gc-bg .halo { position:absolute; left:50%; top:50%; width:760px; height:760px; margin:-380px 0 0 -380px; border-radius:50%; background:radial-gradient(circle, rgba(255,214,90,.55), rgba(255,214,90,0) 65%); animation:grBreathe 3.2s ease-in-out infinite; }
 .gc-mote { position:absolute; border-radius:2px; box-shadow:0 0 10px rgba(255,194,26,.7); animation:grFloat 5s ease-out infinite both; }
 .gc-line { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; padding:24px; }
 .gc-line .txt { display:flex; flex-wrap:wrap; justify-content:center; max-width:min(90vw, 1100px); font-size:clamp(36px, 5.6vw, 80px); font-weight:900; letter-spacing:-.04em; line-height:1.15; text-shadow:0 0 28px rgba(255,194,26,.55), 0 2px 0 #fff; }
-.gc-line .txt { opacity:0; text-align:center; } .gc-line.on .txt { opacity:1; } /* R2.7.1 build 2: 한 글자씩 · 번쩍임 없이 한 번에 */
+.gc-line .txt { opacity:0; text-align:center; color:#fff; text-shadow:none; } .gc-line.on .txt { opacity:1; } /* R2.7.1 build 2: 한 글자씩 · 번쩍임 없이 한 번에 */
 .gc-line .bar { position:relative; width:min(64vw, 560px); height:2px; }
 .gc-line .bar i { position:absolute; inset:0; background:linear-gradient(90deg, transparent, #ffc21a, transparent); animation:grStreak 1.8s .5s ease-out both; }
 .gc-line .bar b { position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:2px; background:#ffc21a; box-shadow:0 0 14px #ffc21a; animation:grTwinkle 2.2s 1s ease-in-out infinite; }
+.gc-line ~ .gc-skip { color:#fff !important; background:rgba(255,255,255,.12) !important; border-color:rgba(255,255,255,.35) !important; } /* 검은 대사 화면 */
 .gc-skip { position:absolute; right:28px; top:26px; height:38px; padding:0 16px; display:flex; align-items:center; white-space:nowrap; border-radius:999px; border:1px solid rgba(168,121,0,.25); background:rgba(255,255,255,.5); color:#a87900; font-size:12px; font-weight:800; }
 .gc-show { background:#f4f1ea; animation:grFade .2s ease-out both; }
 .gc-show .rays { position:absolute; left:50%; top:46%; width:1400px; height:1400px; margin:-700px 0 0 -700px; background:repeating-conic-gradient(from 0deg, rgba(255,194,26,.16) 0 6deg, rgba(255,194,26,0) 6deg 18deg); animation:grSpin 40s linear infinite; }
@@ -3708,7 +3709,7 @@ const grMotes = () => Array.from({ length: 26 }, (_, k) => { const sz = 4 + Math
 function grCut(i) { // ④ 전설 컷신 (R2.7.1 build 2): 배경 0.3초 → 대사가 한 번에 → 합쳐 약 2초 → 섬광 → 등장 · 아무 곳이나 누르면 다음 단계
   const r = GR.res[i], c = CHARS[r.id], line = c.line || `${c.name}, 등장!`, cs = $('cutscene');
   GR.cut = { i, stage: 'fade' }; cs.className = 'show';
-  cs.innerHTML = `<div class="gc-bg"><i class="rays"></i><i class="halo"></i>${grMotes()}</div><div class="gc-line"><div class="txt">${esc(line)}</div></div><span class="gc-skip">건너뛰기 ›</span>`;
+  cs.innerHTML = `<div class="gc-bg"></div><div class="gc-line"><div class="txt">${esc(line)}</div></div><span class="gc-skip">건너뛰기 ›</span>`;
   cs.onclick = grCutTap;
   grLater(() => {
     if (!GR.cut || GR.cut.stage !== 'fade') return; GR.cut.stage = 'line';
@@ -4934,7 +4935,7 @@ const PATCH_NOTES = [
       { id: 'dice', name: '주사위 지후', tag: 'nerf', desc: '피해 <b>1~250 → 1~200</b>.' },
       { id: 'bubble', name: '버블 지후', tag: 'buff', desc: '[버블] 필요 SP <b>5 → 4</b> · [버블]이 씌워진 지후에 <b>비눗방울 이펙트</b>가 보여요.' },
       { icon: '🎲', name: '뽑기 확률', tag: 'buff', desc: '전설 <b>1% → 1.5%</b> · 일반 65% → 64.5% (희귀 30% · 영웅 4% 그대로).' },
-      { icon: '🎬', name: '전설 컷신', tag: 'adjust', desc: '대사가 한 글자씩 나오지 않고 <b>한 번에</b> 떠요 · 컷신 대사 시간 약 6초 → <b>2초</b>.' },
+      { icon: '🎬', name: '전설 컷신', tag: 'adjust', desc: '대사가 한 글자씩 나오지 않고 <b>한 번에</b> 떠요 · 컷신 대사 시간 약 6초 → <b>2초</b> · <b>검은 바탕에 흰 글자</b>.' },
       { id: 'prophecy', name: '예언 지후', tag: 'adjust', desc: '공격력 <b>40 → 80</b> · 예언 성공 변신 공격력 <b>+350% → +125%</b> (아르카나 하나당 +20% 는 그대로).' },
     ] },
   ] },
