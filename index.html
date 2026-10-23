@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.7.1"><meta name="jihoo-build" content="7"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.7.1"><meta name="jihoo-build" content="8"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1283,7 +1283,7 @@ const CFG = {
   CRIT: 0.02,                              // 모든 지후: 공격이 2% 확률로 치명타 (피해 ×2) · [부상]이면 50%                              // 근접 사거리 1.6칸 (전작 72px/45px)
   GACHA: [['legend', 1.5], ['epic', 4], ['rare', 30], ['common', 64.5]], // R2.7.1 build 2: 전설 1 → 1.5 (일반에서 0.5)
   PULL1: 100, PULL10: 1000, PITY: 80, // 천장: 전설 없이 80번 뽑으면 다음 뽑기는 전설 확정 (R2.3)
-  BOOST_PER_DAY: 2, BOOST_MIN: 10, BOOST_DIA: 300, // 부스트: 하루 2번 · 10분 동안 일반전 승리마다 ◆1~300 (R2.3)
+  BOOST_PER_DAY: 2, BOOST_MIN: 15, BOOST_DIA: 300, // 부스트: 하루 2번 · 15분 동안 (R2.7.1 · 예전 10분) 일반전 승리마다 ◆1~300 (R2.3)
   START_DIA: 1500,
   NEWBIE_GAMES: 5, // 초보자 보호 (R2.7.1): 일반전 처음 5판은 봇 덱이 일반 4 + 희귀 1
   UPD_DIA: 500, UPD_ITEM: 'testKit', // 업데이트 보상 (R2.7): 버전마다 한 번 · 지금 버전 것만 (중첩 안 됨)
@@ -1355,9 +1355,9 @@ const PORTRAITS = {
 // 패시브 훅 (선택): onHit(u, t, A) · onStart(u, A) · tick(u, dt, A) · immune(u) · takenMult(u) · onAttack(u) · bonus(u, t) 추가 피해 · onKill(u, v, A) · onLethal(u, A) 버티기 · gauge(u) 노란 게이지
 // skill.type 'hit' = SP: 일반 공격이 맞을 때마다 SP 1 → need 만큼 차면 발동 · melee: true + range 숫자 = 사거리를 정한 근접 · deployLimit: 출격제한
 const CHARS = {
-  fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1200, atk: 45, atkSpeed: 3, range: 4.5, speed: 1.6, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
+  fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1200, atk: 45, atkSpeed: 3, range: 4.5, speed: 1.6, splash: 1.2, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
     story: '삼겹살을 구워먹다가 부루스타가 폭주해서 전신 화상을 당한 지후입니다. 하지만 그의 불타오르는 삶의 의지와 열정은 곧 불씨로 되살아났어요. 특기는 가스라이팅.',
-    passive: '일반 공격이 적을 불태워 1초마다 공격력의 <b>80%</b> [화상] 피해를 입힌다. [화상]은 겹쳐 쌓인다.',
+    passive: '일반 공격이 대상 주변 <b>1.2칸</b>에 퍼지고, 맞은 적을 불태워 1초마다 공격력의 <b>80%</b> [화상] 피해를 입힌다. [화상]은 겹쳐 쌓인다.',
     onHit(u, t, A) { A.status(t, 'burn', 5, { dps: u.atk * 0.8, stack: true, src: u }); } },
   ice: { name: '얼음 지후', rarity: 'common', role: '컨트롤러', hp: 900, atk: 70, atkSpeed: 4, range: 5, speed: 1.6, portrait: PORTRAITS.ice, starter: true, sfx: 'ice', color: '#4fc3f7',
     story: '집에서 실수로 에어컨을 끄지 않고 잠을 자는 바람에 상시로 감기 상태입니다. 그는 격리 처리 당했고, 결국 그도 세상에 등을 돌리고 냉정해졌습니다.',
@@ -1450,8 +1450,9 @@ const CHARS = {
     passive: '움직이지도 공격하지도 않는다. 시간이 지나면 무작위 지후로 변신한다. 변신하기 전에 쓰러지면 모은 SP가 다음 라운드에도 남는다.',
     onStart(u) { const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'gift' && p.sp) { u.sk = Math.min(u.def.skill.need, p.sp); delete p.sp; drawUnit(u); } }, // R2.6.4: 지난 라운드에 쓰러질 때 모은 SP
     onDeath(u) { const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'gift' && !u.skillDone && u.sk > 0) p.sp = Math.round(u.sk * 100) / 100; }, // 배치 기록에 남긴다 (packPlace 6번째 칸)
-    skill: { type: 'sec', need: 18, once: true, desc: '<b>SP 18</b> · 1회. 게임에 있는 모든 지후 중 <b>무작위 하나</b>로 변신한다.',
-      run(u, A) { const ids = Object.keys(CHARS).filter(id => id !== 'gift'); A.transform(u, ids[Math.floor(rng() * ids.length)]); } } },
+    skill: { type: 'sec', need: 18, once: true, desc: '<b>SP 18</b> · 1회. 게임에 있는 모든 지후 중 <b>무작위 2기</b>로 변신한다.',
+      run(u, A) { const ids = Object.keys(CHARS).filter(id => id !== 'gift'), id1 = ids[Math.floor(rng() * ids.length)], id2 = ids[Math.floor(rng() * ids.length)], side = u.side, lv = u.lv, x = u.x, y = u.y;
+        A.transform(u, id1); A.summon(side, id2, lv, x, y); } } }, // R2.7.1: 2기 — 두 번째는 빈 칸이 있으면 배치 기록에도 (다음 라운드에도)
   slime: { name: '슬라임 지후', rarity: 'rare', role: '탱커', hp: 300, atk: 130, atkSpeed: 2.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.slime, sfx: 'bash', color: '#12a8ef',
     story: '다이어트를 위해 살을 빼려 밤낮을 운동했지만 그 결과로 몸의 지방이 0이 되었습니다. 최근에는 살을 다시 찌워보려고 하고있답니다. 하루 10분 트레이닝 영상 대신 액괴 ASMR로 채널을 돌리면서요.',
     passive: '쓰러지면 작은 슬라임 <b>2기</b>로 나뉜다.',
@@ -1658,7 +1659,7 @@ const SUMMONS = {
 };
 // 도감 상세 수치 (R2.4): 설명(passive · skill.desc)은 쉽게 · 숫자는 여기에 [항목, 값] — 수치를 바꾸면 같이 고친다
 const CHAR_INFO = {
-  fire: [['[화상] 지속', '5초'], ['[화상] 피해', '1초마다 공격력의 80%'], ['중첩', '가능']],
+  fire: [['일반 공격', '광역 · 대상 주변 반경 1.2칸 (R2.7.1)'], ['[화상] 지속', '5초'], ['[화상] 피해', '1초마다 공격력의 80%'], ['중첩', '가능']],
   ice: [['[빙결]', '1.6초']],
   assassin: [['순간이동', '시작 2초 뒤 · 가장 먼 적의 뒤'], ['[은신]', '1초'], ['첫 공격', '대상 하나 · 공격력의 700%']],
   shield: [['받는 피해', '-25% (쉴드가 있는 동안)'], ['상태이상', '면역 (쉴드가 있는 동안)']],
@@ -1670,7 +1671,7 @@ const CHAR_INFO = {
   moon: [['출격제한', '1'], ['범위', '반경 4칸 (자신 포함)'], ['기본 버프', '공격력 +8% · 공격속도 +12%'], ['공격마다', '각각 +2%p (최대 100%)']],
   levelup: [['최대 레벨', '3 (라운드가 끝나면 초기화)'], ['Lv1', 'HP 1,250 · ATK 125 · 2초'], ['Lv2', 'HP 1,500 · ATK 175 · 1.75초'], ['Lv3', 'HP 1,750 · ATK 225 · 1.5초'], ['레벨업 회복', '최대 체력의 30%']],
   magic: [['[마탄] 확률', '10%'], ['[마탄] 피해', '공격력의 650%'], ['[절상]', '최대 체력 30% · 4초'], ['[취약]', '받는 피해 +30% · 4초']],
-  gift: [['SP', '초당 1 (라운드 시작부터)'], ['변신', '모든 지후 중 무작위 1기 · 같은 레벨 · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다'], ['변신 전에 쓰러지면', '모은 SP가 다음 라운드로 이어진다 (R2.6.4)']],
+  gift: [['SP', '초당 1 (라운드 시작부터)'], ['변신', '모든 지후 중 무작위 2기 · 같은 레벨 · 1회 (R2.7.1)'], ['두 번째 변신체', '빈 칸이 있으면 그 칸에 남는다 (출격제한 · 배치 한도 무시)'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다'], ['변신 전에 쓰러지면', '모은 SP가 다음 라운드로 이어진다 (R2.6.4)']],
   slime: [['분열', '2기 · 체력 · 공격력 절반'], ['최대', '2단계']],
   atom: [['사거리', '1.5칸 (적에게 붙어야 전자가 닿는다 · R2.7.1)'], ['전자 수', '레벨과 같음'], ['공전 주기', '1.3초'], ['궤도 반지름', '2칸'], ['전자 피해', '현재 체력의 14% (한 바퀴에 같은 적 한 번)']],
   dice: [['피해', '1 ~ 200 (레벨 · 버프 적용)']],
@@ -1854,7 +1855,7 @@ const ITEMS = { // 가방 (profile.items · normProfile 이 보므로 프로필 
 // 메인 퀘스트 (R2.3): 순서대로 하나씩 · 완료하면 받고 다음으로. ev 이벤트 · need 횟수 · ok 이벤트 때 조건 · state 지금 상태로 바로 완료 · rw 보상
 const MQ = [
   { label: '게임 1회 승리', ev: 'win', need: 1, rw: { gold: 500 } },
-  { label: '신규 지후 3개 뽑기', ev: 'newChar', need: 3, rw: { dia: 200 } },
+  { label: '신규 지후 1개 뽑기', ev: 'newChar', need: 1, rw: { dia: 200 } }, // R2.7.1: 3개 → 1개
   { label: '덱에 새로운 지후 장착', state: () => profile.deck.some(id => CHARS[id] && !CHARS[id].starter && owned(id)), rw: { gold: 1000 } },
   { label: '일일 퀘스트 전부 완료하기', ev: 'dailyAll', need: 1, state: () => !!dq().allDone, rw: { dia: 200 } },
   { label: '일일 상점 1회 구매', ev: 'shop', need: 1, rw: { gold: 2000 } },
@@ -2530,6 +2531,12 @@ const A = {
     if (u.def.onStart) u.def.onStart(u, A);
     deployFx(u, 'merge'); const t = fxAt('fx-lvtext', u.x, u.y - unitRadius(u), 900); t.textContent = `${CHARS[id].name}!`; sfx('gacha_legend');
   },
+  summon: (side, id, lv, x, y) => { // 선물 지후 두 번째 변신체: 같은 레벨 · 체력 가득 · 빈 칸이 있으면 배치 기록에도 남긴다 (출격제한 · 배치 한도 무시 f 'b')
+    const t = pickTile(side, roleRow(id), rng); if (t != null) S.place[side][t] = { id, lv, f: 'b' };
+    const c = makeUnit(side, id, lv, x + CFG.CELL * 0.9 * (side === 'a' ? -1 : 1), y); c.tile = t;
+    physSnap(c, c.x, c.y); c.el = unitEl(c); $('field').appendChild(c.el); drawUnit(c); S.units.push(c); if (c.def.onStart) c.def.onStart(c, A); deployFx(c, 'merge');
+    return c;
+  },
   spawnChild: (p, id, o) => { // 분열 · 소환: 싸우는 중에 새 지후
     const c = makeUnit(p.side, id, p.lv, p.x + (o.dx || 0), p.y + (o.dy || 0));
     c.small = !!o.depth; c.slimeDepth = o.depth || 0; c.baseMaxHp = c.maxHp = c.hp = Math.max(1, Math.round(o.hp)); c.atk = Math.max(1, Math.round(o.atk)); c.mass = physMass(c); c.invMass = 1 / c.mass;
@@ -2629,7 +2636,7 @@ function performAttack(u, t) {
   } else if (u.def.multiShot) { // 총 지후: 레벨만큼 한꺼번에 (가까운 적부터)
     const reach = attackDist(u), list = [t, ...targets(u).filter(e => e !== t && dist(u, e) <= reach + unitRadius(e)).sort((x, y) => dist(u, x) - dist(u, y))].slice(0, u.lv);
     list.forEach(e => { muzzleFx(u, e); launchProjectile(u, e, () => afterHit(u, hitOne(e))); });
-  } else { muzzleFx(u, t); launchProjectile(u, t, () => afterHit(u, hitOne(t)), magic ? 'magic' : u.def.shotCls || ''); }
+  } else { muzzleFx(u, t); const sp = u.def.splash; launchProjectile(u, t, () => { let d = hitOne(t); if (sp) { foes(u).forEach(e => { if (e !== t && Math.hypot(e.x - t.x, e.y - t.y) <= sp * CFG.CELL + unitRadius(e)) d += hitOne(e); }); if (!S.fast) A.ring(t.x, t.y, sp); } afterHit(u, d); }, magic ? 'magic' : u.def.shotCls || ''); } // splash: 대상 주변 광역 (화염)
 }
 // 부채꼴 명중 판정: 중심점이 아니라 몸(원)이 부채꼴에 걸치면 맞는다
 function inFan(caster, e, angle0, half, reach) {
@@ -4272,7 +4279,7 @@ function renderMQ() { // 로비 카드
 }
 $('btnMQ').addEventListener('click', () => { if (mqReady()) return mqClaim(); const q = MQ[profile.mq.i]; banner(q ? `메인 퀘스트 · ${q.label}` : '다음 메인 퀘스트는 추가 예정이에요'); });
 
-// ═════════ 부스트 (R2.3): 하루 2번 · 10분 동안 일반전 승리마다 ◆1~300 ═════════
+// ═════════ 부스트 (R2.3): 하루 2번 · 15분(R2.7.1) 동안 일반전 승리마다 ◆1~300 ═════════
 const boostActive = () => (profile.boost.until || 0) > Date.now();
 const boostLeft = () => CFG.BOOST_PER_DAY - (profile.boost.day === todayKey() ? profile.boost.used : 0);
 function useBoost() {
@@ -4912,6 +4919,10 @@ const PATCH_NOTES = [
     { title: '밸런스', items: [
       { id: 'slime', name: '슬라임 지후', tag: 'nerf', desc: '공격력 <b>230 → 130</b>.' },
       { id: 'atom', name: '원자 지후', tag: 'nerf', desc: '사거리 <b>3 → 1.5칸</b> (적에게 붙어야 전자가 닿아요).' },
+      { id: 'gift', name: '선물 지후', tag: 'buff', desc: '변신하면 무작위 지후 <b>2기</b>가 나와요 (두 번째는 빈 칸이 있으면 다음 라운드에도 남아요).' },
+      { id: 'fire', name: '화염 지후', tag: 'buff', desc: '일반 공격이 대상 주변 <b>반경 1.2칸 광역</b>으로 퍼져요 ([화상]도 같이).' },
+      { icon: '⚡', name: '부스트', tag: 'buff', desc: '지속 시간 <b>10 → 15분</b>.' },
+      { icon: '📜', name: '메인 퀘스트', tag: 'adjust', desc: '2단계 「신규 지후 3개 뽑기」 → <b>「신규 지후 1개 뽑기」</b>.' },
       { id: 'blizzard', name: '블리자드 지후', tag: 'buff', desc: '[눈보라] 필요 SP <b>10 → 8</b> · 발동하면 모든 적에게 <b>현재 체력의 10%</b> 피해.' },
       { icon: '🐣', name: '초보자 보호', tag: 'new', desc: '일반전 <b>처음 5판</b>은 봇이 <b>일반 지후 4기 + 희귀 지후 1기</b> 덱만 써요.' },
       { id: 'gumiho', name: '구미호 지후', tag: 'nerf', desc: '공격력 <b>85 → 45</b> · 체력 <b>1,410 → 910</b> · <b>출격제한 1</b> · [매혹] 스킬은 라운드당 1번.' },
