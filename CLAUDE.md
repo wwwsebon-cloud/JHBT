@@ -67,14 +67,14 @@
   - 보호막 (희귀 서포터): `onStart` 십자(`A.cross`) 아군 쉴드 500% + `guardSh` (쉴드가 남아 있으면 `addStatus` · `A.cut` 디버프 무효) · SP 3 [배리어] `S.barriers` 반지름 3.5칸 2초 — `barrierStop` 이 바깥에서 들어오는 적 투사체(`S.shots` 발사 위치 `sx/sy` · `S.lines` `ox/oy`)를 지운다 (onHit 없음 = SP 없음)
   - 부활 (전설) · 사신 (전설 · build 5 · 예전 영웅): 스킬 `type: 'ally'` = 아군이 쓰러질 때만 SP (`onUnitDeath` 훅 · `killUnit` 이 전투 중 모든 유닛에 부른다 · `spGive`) · 소환체 · 분열체(`small`)는 안 센다. 부활 SP 5 → 1.5초 뒤(`u.revQ`) 지난 부활 뒤로 쓰러진 아군(`u.revL`)을 레벨 수만큼 자기 자리에 (`c.revived`). 사신 SP 6 (R2.10.2 · 예전 5) [사신강림] → `u.def = CHARS.reaper.awake` (체력 1444 비율로 · 1.2초 · 이동속도 2.4 · `.reaper-on`) · 강림 SP 5 (일반 공격 · R2.9 · build 5 는 6) [즉사] = 가장 가까운 적 하나 (`instaKill` · 아무것도 못 막는다) · 이펙트 `reapFx` (`.fx-reap` 낫 호 + 사선 섬광)
   - 수호자 (전설): `onStart` 십자 아군 `guardBy` (광폭화 제외) → `dealDamage` 에서 쓰러질 때 한 번 체력 1 + 무적 1초 (수호자가 살아 있을 때 · `onLethal` 보다 먼저)
-  - 시계 (전설): 같은 레벨 적 공격속도 -7% · 아군(자신 포함) +7% (버프 키 `clock<uid>` 라 중첩) · 시계 · 순풍 효과는 레벨마다 +1% (R2.10.2) · 충전 (전설): SP 3 반경 3.5칸 아군 `spGive(a, 1)` (자신 · 다른 충전 · `type: 'ally'` 스킬(부활 · 봉인 사신) 제외 · build 4 · cooldown 형은 1초)
-  - 포식 (영웅): `onHit` 공격한 적 기록(`u.bit`) + 공격력 5% 회복 · 그 적이 5.1칸 안에서 쓰러지면 [포식] +1 = 공격력 + 기본(레벨 반영) 25% · 최대 체력 +50 · 50 회복 (R2.10.2 · HP 1150 · ATK 100 · 1.5초) · 배치 기록 `p.dv` 로 경기 내내 (`packPlace` 7번째 칸 · 합체는 큰 쪽)
+  - 시계 (전설): 같은 레벨 적 공격속도 -7% · 아군(자신 포함) +7% (버프 키 `clock<uid>` 라 중첩) · 시계 · 순풍 효과는 레벨마다 +1% (R2.10.2) · 시계 버프 받는 유닛 `.clk-up` 하늘색 · 디버프 `.clk-dn` 빨간 시계 표식 (`drawUnit` 이 `clock*` 버프 aspd 합으로 · `.unit::before`) · 충전 (전설): SP 3 반경 3.5칸 아군 `spGive(a, 1)` (자신 · 다른 충전 · `type: 'ally'` 스킬(부활 · 봉인 사신) 제외 · build 4 · cooldown 형은 1초)
+  - 포식 (영웅): `onHit` 공격한 적 기록(`u.bit`) + 공격력 5% 회복 · 그 적이 5.1칸 안에서 쓰러지면 [포식] +1 = 공격력 + 기본(레벨 반영) 15% · 최대 체력 +20 · 50 회복 (R2.10.2 build 4 · HP 1150 · ATK 100 · 1.6초) · 배치 기록 `p.dv` 로 경기 내내 (`packPlace` 7번째 칸 · 합체는 큰 쪽)
 - **R2.9 신규 (역할군 `폭발형` · `DECK_ROLES` 끝 · `roleRow` 앞줄)**:
   - 폭탄 (영웅): `noAttack` + `steer` (공격 안 하는 지후도 `steer` 가 있으면 움직인다) · 이동속도 3.3 (R2.10) · 가장 가까운 적에게 굴러가 닿으면 `blast` = `A.boom` 반경 2.5칸 · 자신의 최대 체력 · 3칸 넉백 (`A.boom` 의 kb) · 닿기 전에 쓰러지면 `onDeath` → `A.later(1, …, hold)` (hold 가 남아 있으면 `stepCombat` 이 전멸 판정을 미룬다) · `.rolling`
   - 핵미사일 (전설 · 근접): 처음 출전한 라운드 1초 뒤(밴 · 기절이면 풀린 뒤) [핵 발사] → 배치 기록 `p.nk = 1` (경기 내내 [핵 다씀] · 합체 · 레벨업해도 · `packPlace` 8번째 칸 · 그림 `portraitUsed` · 배치 화면은 `u.picSrc`) · 17초 뒤 (R2.10 · 예전 22) `A.later` 로 적진 가운데(`tileXY(적, 7)`) `A.boom` 반경 99칸 · 공격력 99999% · 라운드가 먼저 끝나면 안 떨어진다 · 스킬 `type: 'nuke'` 라 `spGive` 대상이 아니다 · `gauge`
   - 엔진: `A.later(sec, fn, hold)` = 전투 시간 기준 예약 (`S.timed` · `beginCombat` 에서 비움) · `A.boom(u, x, y, 칸, 피해)` 반경 안 적 모두 (`.fx-boom`) · `spGive` 는 hit · sec · ally · cooldown 스킬만
 - **R2.10 신규 지후 8종**:
-  - 별 (전설 어쌔신 · `splash` 2 (R2.10.2 build 2) · 사거리 5.7 build 2 · 공격 간격 3초 R2.10.2): SP 4 [졸음] = 지금 `effAtk` 가 가장 높은 적 · `st.drowsy` 1.5초 (공격력 ×0.6 · `addStatus` 를 거치지 않아 쉴드 · 면역 무시) → `stepUnit` 에서 `st.sleep` 7초 (`blocked` · `dealDamage` 에서 150 이상 맞으면 깬다) → 깨는 순간 `sleepBy` 의 `dash` (관전 · 무적 순간이동 · 200% · SP +1 · `.fx-stardash`)
+  - 별 (전설 어쌔신 · ATK 90 (build 4) · `splash` 2 (R2.10.2 build 2) · 사거리 5.7 build 2 · 공격 간격 3초 R2.10.2): SP 4 [졸음] = 지금 `effAtk` 가 가장 높은 적 · `st.drowsy` 1.5초 (공격력 ×0.6 · `addStatus` 를 거치지 않아 쉴드 · 면역 무시) → `stepUnit` 에서 `st.sleep` 7초 (`blocked` · `dealDamage` 에서 150 이상 맞으면 깬다) → 깨는 순간 `sleepBy` 의 `dash` (관전 · 무적 순간이동 · 200% · SP +1 · `.fx-stardash`)
   - 소믈리에 (영웅 서포터): `onStart` 십자 아군 2명 이상이면 와인 — 배치 기록 `p.wn` +1 (`u.wn`: `effAtk` ×(1+0.05n) · 치명타 확률 +3%n (R2.10.2) · 치명타 피해 +30%n) · 그 라운드 체력 −10% · 자기 기록 `p.sm` += 마신 수 → 공격력 +5 × sm (경기 내내 · `packPlace` 9 · 10번째 칸)
   - 닭 (영웅 소환형): 달걀(`shotCls: 'egg'`) · `onHit` 5% `A.spawnChild` 부화 (원본 `origHp` 의 70% · `summoner`) — 부활 · 사신 SP · 성장 대상에서 소환체(`summoner`)는 빠진다
   - 후라이팬 (영웅 탱커 · R1 그대로): `tick` 에서 110° · 반지름 몸+0.7칸 부채꼴이 4.5초에 한 바퀴 (`.fp-pan`) · 닿으면 200 × 레벨 배율 · 7칸 넉백 · 0.2초 · 일반 공격 없음 (`customAttack` 만 · `atkText` —)
@@ -87,7 +87,7 @@
   - 반중력 (전설 보조형): `onHit` [잠금] 0.5초 · 첫 `tick` 에 무작위 아군(자신 · 소환체 제외) `st.antigrav` → `A.later(4)` `antigravSplit` = 체력 · 최대 체력 절반 둘 (둘째는 `tile` 없음 · `summoner` · 핵은 다시 안 쏨)
   - 티모 (영웅 컨트롤러): 25% `blindOn(t, 3, 0.5)` · SP 9 확정 0.75 + 중첩 [독] 5초 50% · [눈가림] 세기 = `st.blindX.amt` (없으면 0.4 · `dealDamage`) · 끝난 상태는 `stepUnit` 이 `st[k+'X']` 를 지운다
   - 비 (희귀 서포터): SP 8 (사용자가 SP 를 안 줘서 정함) [가랑비] 모든 적 220% + 버프 spd −0.4 3초 · 모든 아군 `hots` 3초 100% · `u.cd` 1.5초
-  - NO U (전설 탱커): SP 6 `st.nou` 3초 — `dealDamage` 가 받은 피해를 공격자에게 `{ reflect }` 로 돌려주고 0 · `t.nouFrom` = 마지막 공격자 → `addStatus` 가 디버프를 그쪽으로 · `afterHit` SP 없음 · [NO U] 끼리 → `nouClash` (초당 50칸 넉백 0.3초 → 둘 다 `instaKill`) · `.nou-on`
+  - NO U (전설 탱커): SP 6 `st.nou` 2초 (build 4) — `dealDamage` 가 받은 피해를 공격자에게 `{ reflect }` 로 돌려주고 0 · `t.nouFrom` = 마지막 공격자 → `addStatus` 가 디버프를 그쪽으로 · `afterHit` SP 없음 · [NO U] 끼리 → `nouClash` (초당 50칸 넉백 0.3초 → 둘 다 `instaKill`) · `.nou-on`
   - 독 (영웅 컨트롤러 · id `venom`): `pickTarget` 중독 안 된 적 먼저 · 중첩 [독] 12초 30% · `t.vmark` → `stepUnit` 이 `st.vweak` (아무 [독] + 체력 50% 이하): 받는 피해 ×1.4 · `heal` ×0.4 · `moveToward` ×0.8 · `effAtk` ×0.85
   - 폭주족 (전설 어쌔신 · R1 초상화): HP 9999 · `immobile` · `noAttack` · `onStart` 각도(적진 가운데 ±35° · `rng`) → 시동 2초 (`takenMult` 0.1 · 기절이면 멈춤 · `.fx-bike-lane`) → `bikerRush` 초당 50칸 · `ghost` · 적 현재 체력 70% · 3칸 넉백 · 기절 3초 · 돌진 중 `immune` → 맵 끝에서 `instaKill` 자신
   - 주사 [독]도 중첩형으로 (`stack` · 섞여도 사라지지 않게)
