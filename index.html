@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.1"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1186,7 +1186,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="annbar" id="lobbyAnn" hidden></div>
     <div class="lobby-grid">
       <div class="lobby-left">
-        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.10</span></div>
+        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.10.1</span></div>
         <div class="g-card deckcard">
           <div class="dh"><b>현재 덱</b><small id="lobbyDeckN">0 / 5</small><span class="sp"></span><button class="link" id="btnDeckEdit">편집 ›</button></div>
           <div class="ldeck" id="lobbyDeck"></div>
@@ -1208,7 +1208,7 @@ input.text { font-size:20px; font-weight:800; }
 <!-- 닉네임 -->
 <div id="screen-welcome" class="screen">
   <div class="g-card welcome">
-    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.10</span></div>
+    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.10.1</span></div>
     <div><div class="eyebrow" style="margin-bottom:8px">닉네임 · 1~12자</div><input class="text" id="nickInput" maxlength="12" placeholder="지후왕"></div>
     <button class="k-btn big" id="btnStart">시작하기 →</button>
     <button class="g-btn" id="btnWelcomeLogin">이미 계정이 있어요 · 로그인</button>
@@ -1968,16 +1968,12 @@ const CHARS = {
       if (!hits.length) return; p.cd = 0.2; if (p.el) { p.el.classList.remove('swing'); void p.el.offsetWidth; p.el.classList.add('swing'); } sfx('bash');
       hits.forEach(e => { if (dealDamage(u, e, 200 * u.mult, { skill: true, noCrit: true }) > 0) hitFx(u, e, true); if (!e.alive) return; if (!S.fast) dmgNum(e, '팡!', { crit: true }); A.knock(u, e, 7); }); } },
   growth: { name: '성장 지후', rarity: 'legend', role: '보조형', hp: 500, atk: 10, atkSpeed: 2, range: 5, speed: 1.6, portrait: PORTRAITS.growth, sfx: 'shot', color: '#3d2bd6',
-    story: '왕궁 온실에서 새싹을 돌보던 지후입니다. 매일 아침 「오늘도 쑥쑥」이라고 속삭이자, 식물보다 먼저 옆에 있던 친구들이 쑥쑥 자라기 시작했어요. 레벨업 지후는 그가 경험치 물약보다 효과가 좋다며 몰래 뒤를 따라다닌다고 합니다. 정작 본인은 키가 하나도 자라지 않아서, 남을 키울 때마다 손이 조금씩 빨라지는 것으로 만족하고 있어요.',
-    passive: '레벨이 오를 때마다 공격 간격이 <b>0.1초</b> 줄어든다.',
-    onStart(u) { u.atkSpeed = Math.max(0.3, u.def.atkSpeed - 0.1 * (u.lv - 1)); u.cd = Math.min(u.cd, u.atkSpeed); },
-    skill: { type: 'hit', need: 5, desc: '<b>SP 5</b> · <b>[성장]</b>. 아군 하나(자신 제외 · 무작위)의 레벨을 <b>1</b> 올린다 (최대 Lv5 · 배치 기록에도 남는다).',
-      run(u, A) { const L = A.allies(u).filter(a => a !== u && a.lv < CFG.MAX_LV && !a.summoner && !a.small); if (!L.length) return; const a = L[Math.floor(rng() * L.length)], k = lvMult(a.lv + 1) / lvMult(a.lv);
-        a.lv++; a.mult = lvMult(a.lv); a.baseMaxHp = Math.round(a.baseMaxHp * k); a.maxHp = Math.round(a.maxHp * k); a.hp = Math.min(a.maxHp, Math.round(a.hp * k)); a.atk = Math.round(a.atk * k);
-        const pa = a.tile != null && S.place[a.side][a.tile]; if (pa && pa.lv < CFG.MAX_LV) pa.lv = a.lv; // 다음 라운드에도
-        if (a.id === 'growth' || a.id === 'rifle') a.def.onStart && a.def.onStart(a, A);
-        if (a.el) { const lvEl = a.el.querySelector('.unit-level'); if (lvEl) lvEl.textContent = a.lv; a.el.className = a.el.className.replace(/\blvl\d\b/g, '') + ' lvl' + Math.min(a.lv, 6); }
-        if (!S.fast) { deployFx(a, 'merge'); dmgNum(a, `⬆ Lv.${a.lv}`, { crit: true }); } drawUnit(a); } } },
+    story: '왕궁 온실에서 새싹을 돌보던 지후입니다. 「오늘도 쑥쑥」이라고 속삭이며 물을 주다가, 어느 날 자기 화분에도 물을 줘 버렸어요. 그 뒤로 그는 싸움이 시작되고 일곱 번 숨을 쉬면 한 뼘 자라나, 함께 싸우는 동료 중 누군가의 모습이 되어 버립니다. 무엇이 될지는 본인도 모른다고 해요. 레벨업 지후는 그 비결이 경험치 물약보다 낫다며 몰래 뒤를 따라다니고, 소탕군에 지원했던 넷도 「다음엔 내가 될 차례」라며 은근히 기대하고 있습니다. 가끔은 더 큰 성장 지후가 되어 한 번 더 자라기도 해요.',
+    passive: '전투가 시작되고 <b>7초</b> 뒤, 내 덱에 있는 지후 중 하나(성장 지후 포함 · 무작위)로 변이한다. 변이한 지후는 레벨이 <b>1</b> 높고 체력이 가득하며, 다음 라운드에도 그 지후로 나온다.',
+    gauge(u) { return u.grown ? 0 : clamp((u.grT || 0) / 7, 0, 1); },
+    tick(u, dt, A) { if (u.grown) return; u.grT = (u.grT || 0) + dt; if (u.grT < 7 || blocked(u)) return; // 7초 뒤 (기절 · 밴이면 풀린 뒤) · 라운드마다 1번
+      const ban = (S.evf && S.evf[u.side] && S.evf[u.side].ban) || [], L = ((S.deck && S.deck[u.side]) || []).filter(id => CHARS[id] && !ban.includes(id)), id = L.length ? L[Math.floor(rng() * L.length)] : 'growth';
+      A.transform(u, id, Math.min(CFG.MAX_LV, u.lv + 1)); u.grown = true; } }, // 배치 기록도 바뀐다 (성장 지후가 되면 다음 라운드에 또 자란다)
   melody: { name: '선율 지후', rarity: 'rare', role: '서포터', hp: 940, atk: 65, atkSpeed: 1.5, range: 4.5, speed: 1.6, portrait: PORTRAITS.melody, sfx: 'shot', color: '#38d8f0',
     story: '왕궁 종탑의 종지기 지후입니다. 그가 종을 치면 다친 지후들의 상처가 아물고, 나쁜 마음을 먹은 지후들은 귀를 막고 쓰러진다고 해요. 반란이 일어난 날에도 그는 다섯 번에 한 번씩 종을 쳐 왕궁에 시간을 알렸습니다. 시계 지후와는 누구의 시간이 더 정확한지를 두고 매일 다투지만, 둘 다 지각을 하는 건 마찬가지입니다.',
     passive: '<b>5초</b>마다 반경 <b>4칸</b>에 종을 울린다. 아군은 각자 최대 체력의 <b>5%</b>를 회복하고 <b>2.5초</b> 동안 디버프에 걸리지 않는다. 적은 공격력의 <b>100%</b> 피해를 입는다.',
@@ -2051,7 +2047,7 @@ const CHAR_INFO = {
   sommelier: [['와인', '라운드 시작 · 십자 범위 아군 2명 이상일 때 · 그 아군들'], ['마시면', '체력 −10% · 공격력 +5% · 치명타 확률 +2% · 치명타 피해 +30% (라운드마다 쌓임 · 경기 내내)'], ['자신', '와인을 마신 아군 하나마다 공격력 +5 (경기 내내)']],
   chicken: [['달걀', '일반 공격 · 투사체'], ['부화', '맞으면 5% · 원본 체력의 70% · 공격력 그대로 · 라운드가 끝나면 사라진다']],
   pan: [['후라이팬', '반지름 = 몸 + 0.7칸 · 110° · 4.5초에 한 바퀴'], ['맞으면', '200 피해 (레벨 반영) · 7칸 넉백 · 다시 치기까지 0.2초'], ['일반 공격', '없음 (적에게 다가가기만)']],
-  growth: [['[성장]', 'SP 5 · 자신을 뺀 아군 하나 · 레벨 +1 (최대 5 · 배치 기록에도)'], ['패시브', '레벨마다 공격 간격 −0.1초']],
+  growth: [['[변이]', '전투 시작 7초 뒤 (기절 · 밴이면 풀린 뒤) · 라운드마다 1번'], ['변이체', '내 덱의 지후 중 무작위 (성장 지후 포함 · [밴] 지후 제외) · 레벨 +1 (최대 5) · 체력 가득'], ['다음 라운드', '배치 기록도 변이체로 · 성장 지후가 되면 또 자란다']],
   melody: [['종', '5초마다 · 반경 4칸'], ['아군', '최대 체력 5% 회복 · 디버프 면역 2.5초'], ['적', '공격력 100% 피해']],
   tailwind: [['순풍', '맵 전체 · 아군 이동속도 +7% · 적 −7% · 중첩'], ['공격', '하지 않는다']],
   lock: [['[잠금]', '일반 공격 25% · 2초 · 움직일 수 없음 (공격은 가능)']],
@@ -2923,9 +2919,9 @@ const A = {
   cut: (t, f, sec) => { if (!t.alive || immune(t) || t.st.inv > 0 || t.guardSh && t.shield > 0) return; t.cuts.push({ f, left: sec }); t.st.lacer = Math.max(t.st.lacer || 0, sec); recut(t); },
   cross: u => friends(u).filter(a => a !== u && a.tile != null && u.tile != null && Math.abs(Math.floor(a.tile / CFG.COLS) - Math.floor(u.tile / CFG.COLS)) + Math.abs(a.tile % CFG.COLS - u.tile % CFG.COLS) === 1), // 십자 (앞뒤좌우 칸)
   alone: u => { if (u.tile == null) return false; const r = Math.floor(u.tile / CFG.COLS), c = u.tile % CFG.COLS; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { if (!dr && !dc) continue; const rr = r + dr, cc = c + dc; if (rr < 0 || cc < 0 || rr >= CFG.ROWS || cc >= CFG.COLS) continue; if (S.place[u.side][rr * CFG.COLS + cc]) return false; } return true; }, // 인접 8칸이 비었나
-  transform: (u, id) => { // 선물 지후: 다른 지후로 변한다 (같은 레벨 · 체력 가득 · 같은 자리)
-    const slot = u.tile != null && S.place && S.place[u.side][u.tile]; if (slot && slot.id === u.id) slot.id = id; // 배치 기록도 바꿔서 다음 라운드부터 계속 변신한 지후로 나온다
-    const n = makeUnit(u.side, id, u.lv, u.x, u.y), old = u.el, keep = { uid: u.uid, tile: u.tile, x: u.x, y: u.y, xPrev: u.x, yPrev: u.y, _sidestep: u._sidestep };
+  transform: (u, id, lv = u.lv) => { // 선물 · 성장 지후: 다른 지후로 변한다 (같은 레벨(성장은 +1) · 체력 가득 · 같은 자리)
+    const slot = u.tile != null && S.place && S.place[u.side][u.tile]; if (slot && slot.id === u.id) { slot.id = id; slot.lv = Math.max(slot.lv || 1, lv); } // 배치 기록도 바꿔서 다음 라운드부터 계속 변신한 지후로 나온다
+    const n = makeUnit(u.side, id, lv, u.x, u.y), old = u.el, keep = { uid: u.uid, tile: u.tile, x: u.x, y: u.y, xPrev: u.x, yPrev: u.y, _sidestep: u._sidestep };
     clearTelegraph(u); (u.fx || []).forEach(e => e.remove());
     Object.keys(u).forEach(k => delete u[k]); Object.assign(u, n, keep);
     u.el = unitEl(u); if (old) old.replaceWith(u.el); drawUnit(u); physSyncDom(u, 1);
@@ -5609,6 +5605,11 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.10.1', date: '2026.10.24', title: '성장 지후 리워크', sections: [
+    { title: '리워크', items: [
+      { id: 'growth', name: '성장 지후', tag: 'adjust', desc: '[성장](아군 레벨업) 삭제 → 전투 시작 <b>7초</b> 뒤 <b>내 덱의 지후</b> 중 하나(성장 지후 포함)로 <b>변이</b> · 레벨 <b>+1</b> · 체력 가득 · 다음 라운드에도 유지 · 서사 수정.' },
+    ] },
+  ] },
   { v: 'R2.10', date: '2026.10.24', title: '신규 지후 8종 · 샌드박스 · 레벨 개편', sections: [
     { title: '신규 지후', items: [
       ...['star', 'sommelier', 'chicken', 'pan', 'growth', 'melody', 'tailwind', 'lock'].map(id => ({ id, name: CHARS[id].name, tag: 'new', desc: `${RARITY[CHARS[id].rarity]} · ${CHARS[id].role} · HP ${CHARS[id].hp.toLocaleString()}${CHARS[id].noAttack || !CHARS[id].atk ? '' : ` · ATK ${CHARS[id].atk}`} — ${CHARS[id].skill ? CHARS[id].skill.desc : CHARS[id].passive}` })),
