@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.2"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.2"><meta name="jihoo-build" content="6"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -691,6 +691,13 @@ input.text { font-size:20px; font-weight:800; }
 .spec-chip { display:none; padding:4px 10px; border-radius:999px; background:var(--ink); color:#fff; font-size:11px; font-weight:800; white-space:nowrap; }
 #screen-battle.spec .spec-chip { display:inline-flex; } #screen-battle.spec .ring { display:none; }
 /* 전장 */
+.comic { position:fixed; inset:0; z-index:900; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)); background:radial-gradient(ellipse at 50% 40%, #23252d, #0b0c10 75%); cursor:pointer; user-select:none; -webkit-user-select:none; } .comic[hidden] { display:none; } /* 인트로 만화 (R2.10.2 build 6) */
+.comic .cm-top { position:absolute; top:max(14px, env(safe-area-inset-top)); left:16px; right:16px; display:flex; align-items:center; justify-content:space-between; } .comic .eyebrow { color:rgba(255,255,255,.55); }
+.comic .cm-skip { border:0; padding:8px 14px; border-radius:999px; background:rgba(255,255,255,.12); color:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer; } .comic .cm-skip:hover { background:rgba(255,255,255,.22); }
+.comic .cm-stage { display:flex; align-items:center; justify-content:center; width:100%; flex:0 1 auto; } .comic img { display:block; width:min(92vw, 820px, calc((100vh - 150px) * 620 / 501)); height:auto; aspect-ratio:620 / 501; border-radius:18px; background:#fff; box-shadow:0 24px 60px rgba(0,0,0,.5); }
+.comic img.in { animation:comicIn .35s cubic-bezier(.2,.8,.2,1); } @keyframes comicIn { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:none; } }
+.comic .cm-bot { display:flex; flex-direction:column; align-items:center; gap:9px; } .comic .cm-dots { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:90vw; } .comic .cm-dots i { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.2); } .comic .cm-dots i.on { background:rgba(255,255,255,.55); } .comic .cm-dots i.cur { background:#ffc21a; transform:scale(1.25); }
+.comic .cm-hint { color:rgba(255,255,255,.7); font-size:13px; font-weight:600; animation:clkPulse 1.6s ease-in-out infinite; }
 .uinfo { position:absolute; left:14px; bottom:14px; z-index:30; width:252px; max-height:calc(100% - 28px); overflow:auto; padding:12px 13px; border-radius:20px; background:rgba(255,255,255,.86); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); box-shadow:0 10px 30px rgba(20,24,40,.16), inset 0 0 0 1px rgba(255,255,255,.7); font-size:12.5px; color:#111318; cursor:default; } /* 전투 중 지후 정보 (R2.10.2 build 5) */
 .uinfo .uh { display:flex; align-items:center; gap:9px; margin-bottom:8px; } .uinfo .uh img { width:38px; height:38px; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #e4e5e8; } .uinfo .uh > div { flex:1; min-width:0; line-height:1.25; } .uinfo .uh small { display:block; color:#777; font-size:11px; } .uinfo .lv { color:#777; font-weight:600; font-size:11.5px; } .uinfo .x { border:0; background:rgba(17,19,24,.06); width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:12px; }
 .uinfo .ur { display:flex; justify-content:space-between; gap:8px; padding:3px 0; border-top:1px solid rgba(17,19,24,.06); } .uinfo .ur span:first-child { color:#666; } .uinfo .ur b { text-align:right; } .uinfo .up { color:#4caf2a; font-weight:700; } .uinfo .dn { color:#e5322d; font-weight:700; } .uinfo .sh { color:#4f9dff; }
@@ -1382,6 +1389,8 @@ input.text { font-size:20px; font-weight:800; }
 <div id="cpMatch" aria-hidden="true"><div class="cpm-card"><span class="eyebrow">COMPETITIVE · 3판 2선승</span><b id="cpmTitle">매칭 중</b><div class="cpm-radar"><i class="r1"></i><i class="r2"></i><i class="sweep"></i><span class="cpm-face" id="cpmPic"></span></div><small id="cpmName"></small><em id="cpmTime">00:00</em><div id="cpmFound"></div><button class="g-btn" id="cpmCancel">매칭 취소</button></div></div>
 <div class="modal" id="charModal"><div class="box cdp" id="charBox"></div></div>
 <div class="modal" id="updModal"><div class="box" id="updBox"></div></div>
+<!-- 인트로 만화 (R2.10.2 build 6): 처음 시작할 때 · 메뉴에서 다시 보기 -->
+<div class="comic" id="comic" hidden><div class="cm-top"><span class="eyebrow">RE:JHBT · PROLOGUE</span><button class="cm-skip" id="comicSkip">건너뛰기 ⏭</button></div><div class="cm-stage"><img id="comicImg" alt="인트로 만화"></div><div class="cm-bot"><div class="cm-dots" id="comicDots"></div><span class="cm-hint" id="comicHint">눌러서 넘기기 ▸</span></div></div>
 <div class="modal pane" id="pickModal"><div class="box"><h3>선택 전설 지후 모집권<button class="btn" data-close="pickModal">✕</button></h3><p class="note" style="margin-top:0">원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.</p><div class="pickgrid" id="pickGrid"></div></div></div>
 <div id="boot"><div class="bl"><small>RE:JHBT</small>RE :<br>지후배틀</div><div class="chars" id="bootChars"></div><div class="ldbar"><i id="bootBar"></i></div><div class="ldmsg" id="bootMsg">지후 깨우는 중</div><div class="ldpct" id="bootPct">0%</div><div class="bver" id="bootVer"></div></div>
 <div id="matchLoad"><div id="mlPf"></div><span class="eyebrow">NORMAL MATCH</span><h2>일반전 준비중</h2><div class="ldbar"><i id="mlBar"></i></div><div class="tip" id="mlTip"></div></div>
@@ -1394,7 +1403,8 @@ input.text { font-size:20px; font-weight:800; }
     <button id="btnMenuSettings" style="animation-delay:.16s"><span class="n">04</span><span class="t">환경설정</span><span class="a">↗</span></button>
     <button id="btnMenuAcc" style="animation-delay:.2s"><span class="n">05</span><span class="t">계정</span><span class="a">↗</span></button>
     <button id="btnMenuCus" style="animation-delay:.24s"><span class="n">06</span><span class="t">꾸미기</span><span class="a">↗</span></button>
-    <button class="mobile-only" id="btnMenuLb" style="animation-delay:.28s"><span class="n">07</span><span class="t">리더보드</span><span class="a">↗</span></button>
+    <button id="btnMenuComic" style="animation-delay:.28s"><span class="n">07</span><span class="t">인트로 만화</span><span class="a">↗</span></button>
+    <button class="mobile-only" id="btnMenuLb" style="animation-delay:.32s"><span class="n">08</span><span class="t">리더보드</span><span class="a">↗</span></button>
   </div><div class="mver">RE:JHBT · <span id="menuVer"></span></div></div></div>
 <div class="modal pane" id="codeModal"><div class="box"><h3>코드 입력<button class="btn" data-close="codeModal">✕</button></h3><input class="codein" id="codeInput" maxlength="24" autocomplete="off" spellcheck="false" placeholder="쿠폰 코드"><div class="codemsg" id="codeMsg">코드는 영어 대문자와 숫자로만 되어 있어요. 코드마다 한 번 쓸 수 있습니다.</div><button class="k-btn wide" id="btnCodeOk">확인</button><div id="codeList"></div></div></div>
 <!-- 우편함 -->
@@ -5751,6 +5761,17 @@ const fromMenu = id => () => { closeModal('menuModal'); openModal(id); };
 $('btnMenuCode').addEventListener('click', () => { $('codeInput').value = ''; renderCodeList(); $('codeMsg').textContent = '코드는 영어 대문자와 숫자로만 되어 있어요. 코드마다 한 번 쓸 수 있습니다.'; fromMenu('codeModal')(); setTimeout(() => $('codeInput').focus(), 50); });
 $('btnMenuPatch').addEventListener('click', () => { closeModal('menuModal'); renderPatch(); show('patch'); });
 $('btnMenuHelp').addEventListener('click', () => { renderHelp('rule'); fromMenu('helpModal')(); });
+// ── 인트로 만화 (R2.10.2 build 6): comic/1~20.png · 누르면 다음 장 · ← 이전 · 건너뛰기 · 끝나면 profile.comic = 1 ──
+const COMIC_N = 20, CM = { i: 0, done: null };
+function showComic(done) { CM.i = 0; CM.done = done || null; $('comic').hidden = false; $('comicDots').innerHTML = Array.from({ length: COMIC_N }, () => '<i></i>').join(''); comicDraw(); }
+function comicDraw() { const img = $('comicImg'); img.src = `comic/${CM.i + 1}.png`; img.classList.remove('in'); void img.offsetWidth; img.classList.add('in');
+  $('comicDots').querySelectorAll('i').forEach((d, k) => d.className = k < CM.i ? 'on' : k === CM.i ? 'cur' : ''); $('comicHint').textContent = CM.i === COMIC_N - 1 ? '눌러서 시작하기 ▸' : `${CM.i + 1} / ${COMIC_N} · 눌러서 넘기기 ▸`;
+  if (CM.i + 1 < COMIC_N) new Image().src = `comic/${CM.i + 2}.png`; } // 다음 장 미리 받기
+function comicGo(d) { const n = CM.i + d; if (n < 0) return; if (n >= COMIC_N) return comicEnd(); CM.i = n; comicDraw(); sfx('place'); }
+function comicEnd() { if ($('comic').hidden) return; $('comic').hidden = true; if (!profile.comic) { profile.comic = 1; save(); } const d = CM.done; CM.done = null; if (d) d(); }
+$('comic').addEventListener('click', e => { if (e.target.closest('#comicSkip')) return comicEnd(); comicGo(1); });
+document.addEventListener('keydown', e => { if ($('comic').hidden) return; if (e.key === 'ArrowLeft') comicGo(-1); else if (e.key === 'Escape') comicEnd(); else if (['ArrowRight', ' ', 'Enter'].includes(e.key)) comicGo(1); else return; e.preventDefault(); });
+$('btnMenuComic').addEventListener('click', () => { closeModal('menuModal'); showComic(); });
 $('btnMenuSettings').addEventListener('click', () => { renderSettings(); fromMenu('setModal')(); });
 $('btnMenuAcc').addEventListener('click', () => { closeModal('menuModal'); openAccount(); });
 $('btnAcc').addEventListener('click', () => openAccount());
@@ -5772,6 +5793,7 @@ const PATCH_NOTES = [
       { icon: '😀', name: '상점 이모티콘', tag: 'system', desc: '가격 <b>◆1,000 → ◆500</b>.' },
       { id: 'coin', name: '코인 지후', tag: 'fix', desc: '시세가 바닥 근처에서 오래 멈춘 것처럼 보이던 문제 수정 — 10분마다 최소 <b>15%p</b> 는 움직여요 · 도감 상세에 <b>지금 시세</b> · 다음 변동까지 남은 시간 표시.' },
       { icon: '🔎', name: '전투 중 지후 정보', tag: 'system', desc: '전투 중 지후를 누르면 체력 · 공격력 · 공격 간격 · 이동속도 · SP · 걸린 효과가 보여요. 공격력 · 공격 간격은 바뀐 만큼을 <b style="color:#4caf2a">연두색</b>으로 (build 5).' },
+      { icon: '📖', name: '인트로 만화', tag: 'new', desc: '처음 시작하면 지후왕국 이야기 만화 <b>20컷</b>이 나와요 (누르면 다음 장 · 건너뛰기). 메뉴 → <b>인트로 만화</b>에서 언제든 다시 볼 수 있어요 (build 6).' },
       { icon: '🛠', name: '로딩 멈춤', tag: 'fix', desc: '업데이트 직후 로딩 화면이 0% 에서 멈추던 문제 수정 (build 3).' },
       { id: 'reaper', name: '사신 지후', tag: 'fix', desc: '[사신강림] 뒤에도 [봉인] 아이콘 · 붉은 기운이 제대로 바뀌지 않던 문제 수정.' },
     ] },
@@ -6301,7 +6323,7 @@ const openQs = () => { $('qMsg').textContent = ''; renderQuest(); renderRewards(
 $('btnQuest').addEventListener('click', openQs); $('btnQuestTop').addEventListener('click', openQs);
 $('lbRetry').addEventListener('click', lbLoad);
 $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = null; if (b === 'arcade') return openTab('arcade'); if (b === 'tower') return openTower(); if (b === 'comp') return openComp(); if (b === 'sandbox') return openSandbox(); renderLobby(); show('lobby'); });
-$('btnStart').addEventListener('click', () => { const n = $('nickInput').value.trim(); if (!n) return banner('닉네임을 넣어 주세요'); profile.nick = n.slice(0, 12); save(); renderLobby(); show('lobby'); setTimeout(updCheck, 400); });
+$('btnStart').addEventListener('click', () => { const n = $('nickInput').value.trim(); if (!n) return banner('닉네임을 넣어 주세요'); profile.nick = n.slice(0, 12); save(); renderLobby(); show('lobby'); if (!profile.comic) showComic(() => setTimeout(updCheck, 400)); else setTimeout(updCheck, 400); }); // 처음 시작: 인트로 만화 → 업데이트 보상
 attend(); questAdd('login', 1); // 오늘 접속 · 출석
 $('welcomeVer').textContent = gameVersion();
 if (profile.nick) { renderLobby(); show('lobby'); } else show('welcome');
