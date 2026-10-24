@@ -92,7 +92,7 @@
   - 폭주족 (전설 어쌔신 · R1 초상화): HP 9999 · `immobile` · `noAttack` · `onStart` 각도(적진 가운데 ±35° · `rng`) → 시동 2초 (`takenMult` 0.1 · 기절이면 멈춤 · `.fx-bike-lane`) → `bikerRush` 초당 50칸 · `ghost` · 적 현재 체력 70% · 3칸 넉백 · 기절 3초 · 돌진 중 `immune` → 맵 끝에서 `instaKill` 자신
   - 주사 [독]도 중첩형으로 (`stack` · 섞여도 사라지지 않게)
 - **[즉사] (R2.10.2)**: `instaKill(src, t, label)` 하나로 — 무적 · 버티기 · 수호 · 버블 · 잠수 · 쉴드 무시 (사신 · 데스노트 · 천살성 · NO U · 폭주족). 새 즉사도 이걸 쓴다
-- **기타 (R2.10.2)**: 상점 이모티콘 `EMO_PRICE` ◆500 · 지후의 탑 드래프트 `TOWER_PH` (일반 3 → 일반~영웅 각 33% → 일반~전설 각 25% · 전설 최대 1 → 전설 1 + 일반~전설 2 → 전설 3) · 코인 시세 한 번에 최소 15%p (`coinMult`) · `CHAR_INFO.coin` 은 getter 로 지금 시세 · 사신강림 주석에 삼켜졌던 봉인 해제 코드 복구
+- **기타 (R2.10.2)**: 상점 이모티콘 `EMO_PRICE` ◆500 · 지후의 탑 드래프트 `TOWER_PH` (일반 3 → 일반~영웅 각 33% → 일반~전설 각 25% · 전설 최대 1 → 전설 1 + 일반~전설 2 → 전설 3) · 코인 시세 한 번에 최소 15%p (`coinMult`) · `CHAR_INFO.coin` 은 getter 로 지금 시세 (`CHARS[id].info` 도 getter — 시작할 때 값을 읽으면 아래쪽 `const`(coinCache 등)가 아직 없어 로딩 0% 멈춤 · build 3) · 사신강림 주석에 삼켜졌던 봉인 해제 코드 복구
 - **샌드박스 (R2.10 · 아케이드 · 무료)**: 화면 `screen-sandbox` (`openSandbox` · `renderSandbox` · 상태 `SB` · 이 기기 localStorage `rejhbt-sandbox`) · 양쪽 팀 최대 5기 · 레벨 1~5 · 보유 상관없음 → `sbStart` = `newMatch({ arc: { kind: 'sandbox' }, lives: 1, setup })` (`setup` 이 `roleRow` 줄로 배치 · `nextDeploy` 가 배치 없이 바로 `beginCombat`) → `roundResult` 가 한 라운드로 `endMatch` → `arcEnd` 보상 · 전적 · 처치 업적 없음 → `resBack` 'sandbox'
 - **계정 레벨 (R2.10)**: **Lv.1** 부터 (`freshProfile` · 정규화가 Lv0 → Lv1) · `xpNeed(lv) = round(100 × 1.15^(lv−1))` · 레벨업 `CFG.LEVEL_REWARD` ◆250 · 봇 레벨 최소 1
 - **기타 (R2.10)**: 랜덤 이벤트는 1라운드에 없다 (`evRoll`) · 밴 된 지후 `.banned` (회색 + 금지 딱지 · 경쟁전 밴 칸 · 밴 공개된 지후 칸 · 전투 화면 덱의 [밴] 이벤트 지후) · 일일 퀘스트 600P ◆200 + 🎟1 · 700P 임테기 (`DAILY_TIERS` 의 `ticket` · `item`) · `S.timed` = `A.later` 예약 (`S.later` 는 라운드 결과 타이머라 이름을 나눴다)
@@ -142,6 +142,7 @@
   - **봇 학습** (서버 공용 통계): `profile.cstat = { picks, pwins, bans, norm, nwins }` (경쟁전 픽 · 승 · 밴 + 일반전 덱 · 승) → `r2picks/<uid>` (`cstatPush` · 규칙 게시 전이면 `FB.noPicks`) → `cstatLoad` 가 최대 300명 합산 (10분 캐시) → `cscore(id)` = 픽률(밴 2배) + 승률(보정) + 등급 조금. 봇 픽은 점수 높은 지후 (블라인드는 무작위)
 - **가방 (R2.7)**: 탭 `inv` (`screen-inv` · `renderInv`) · 가진 `ITEMS` 전부 · `use` 면 바로 사용 (`useItem` · 뽑기 화면 '내 모집권' 과 같은 함수). 임테기 `testKit` = 전설 10 · 영웅 · 희귀 · 일반 각 30 (Math.random)
 - **업데이트 안내 · 보상 (R2.7)**: `updCheck()` — `profile.updRw` 가 지금 버전(`jihoo-version`)과 다르면 로비에서 간단한 패치노트(`PATCH_NOTES` 의 그 버전 · 6개까지) + 보상 창 `#updModal` → `updClaim` 으로 ◆`CFG.UPD_DIA` 500 + `CFG.UPD_ITEM` 임테기 1개 · `updRw = 버전`. 지금 버전 것만 (놓친 예전 버전은 쌓이지 않는다) · 서버 기록과 맞춘 뒤 부른다 (`accBoot` 끝 · `syncAfterLogin` 끝 · 닉네임 정한 뒤) — 잠수함 패치(build)는 버전이 같아 안 뜬다
+- **올리기 전에 반드시 빈 브라우저로 첫 로딩을 확인** (pageerror 없음 · 로비까지) — 수정 뒤 테스트를 다시 안 돌려 로딩 0% 멈춤이 나간 적 있다 (R2.10.2 build 3)
 - 시작할 때 프로필 정규화가 보는 데이터(`ITEMS` · `FRAMES` · `MQ`)는 `let profile = loadProfile()` **보다 앞**에 둔다 (정의 전 접근 오류 → 로딩 0% 멈춤)
 
 ## 소셜 · 우편 · 보상

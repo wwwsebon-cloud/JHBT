@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.2"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.2"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2151,7 +2151,7 @@ const CHAR_INFO = {
   bubble: [['[버블]', '처음 받는 피해 1번 무효 · 겹쳐 쓸 수 없음'], ['대상', '가장 가까운 아군 (이미 버블이 있으면 다음으로)'], ['대상이 없으면', '스킬만 쓰고 무산'], ['라운드 시작', '자신에게 [버블]']],
 };
 // 전설 컷신 대사 (R2.4 · 뽑기 연출) — 전설이 추가되면 대사도 함께
-Object.entries(CHAR_INFO).forEach(([id, v]) => { if (CHARS[id]) CHARS[id].info = v; });
+Object.keys(CHAR_INFO).forEach(id => { if (CHARS[id]) Object.defineProperty(CHARS[id], 'info', { get: () => CHAR_INFO[id], enumerable: true, configurable: true }); }); // 읽을 때마다 (코인 지금 시세 · 시작할 때 계산하면 coinCache 가 아직 없어 로딩이 멈춘다)
 
 // ═════════ STATUS (전작 상태이상 이름 · 의미 그대로) ═════════
 const STATUS = {
@@ -5740,6 +5740,7 @@ const PATCH_NOTES = [
       { icon: '🗼', name: '지후의 탑 드래프트', tag: 'system', desc: '1페이즈 일반 3 · 2페이즈 일반~영웅 각 33% · 3페이즈 일반~전설 각 25% (전설 최대 1) · 4페이즈 전설 1 + 일반~전설 2 · 5페이즈 전설 3.' },
       { icon: '😀', name: '상점 이모티콘', tag: 'system', desc: '가격 <b>◆1,000 → ◆500</b>.' },
       { id: 'coin', name: '코인 지후', tag: 'fix', desc: '시세가 바닥 근처에서 오래 멈춘 것처럼 보이던 문제 수정 — 10분마다 최소 <b>15%p</b> 는 움직여요 · 도감 상세에 <b>지금 시세</b> · 다음 변동까지 남은 시간 표시.' },
+      { icon: '🛠', name: '로딩 멈춤', tag: 'fix', desc: '업데이트 직후 로딩 화면이 0% 에서 멈추던 문제 수정 (build 3).' },
       { id: 'reaper', name: '사신 지후', tag: 'fix', desc: '[사신강림] 뒤에도 [봉인] 아이콘 · 붉은 기운이 제대로 바뀌지 않던 문제 수정.' },
     ] },
     { title: '밸런스', items: [
