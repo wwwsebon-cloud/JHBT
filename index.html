@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.2"><meta name="jihoo-build" content="4"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.2"><meta name="jihoo-build" content="5"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -691,6 +691,11 @@ input.text { font-size:20px; font-weight:800; }
 .spec-chip { display:none; padding:4px 10px; border-radius:999px; background:var(--ink); color:#fff; font-size:11px; font-weight:800; white-space:nowrap; }
 #screen-battle.spec .spec-chip { display:inline-flex; } #screen-battle.spec .ring { display:none; }
 /* 전장 */
+.uinfo { position:absolute; left:14px; bottom:14px; z-index:30; width:252px; max-height:calc(100% - 28px); overflow:auto; padding:12px 13px; border-radius:20px; background:rgba(255,255,255,.86); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); box-shadow:0 10px 30px rgba(20,24,40,.16), inset 0 0 0 1px rgba(255,255,255,.7); font-size:12.5px; color:#111318; cursor:default; } /* 전투 중 지후 정보 (R2.10.2 build 5) */
+.uinfo .uh { display:flex; align-items:center; gap:9px; margin-bottom:8px; } .uinfo .uh img { width:38px; height:38px; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #e4e5e8; } .uinfo .uh > div { flex:1; min-width:0; line-height:1.25; } .uinfo .uh small { display:block; color:#777; font-size:11px; } .uinfo .lv { color:#777; font-weight:600; font-size:11.5px; } .uinfo .x { border:0; background:rgba(17,19,24,.06); width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:12px; }
+.uinfo .ur { display:flex; justify-content:space-between; gap:8px; padding:3px 0; border-top:1px solid rgba(17,19,24,.06); } .uinfo .ur span:first-child { color:#666; } .uinfo .ur b { text-align:right; } .uinfo .up { color:#4caf2a; font-weight:700; } .uinfo .dn { color:#e5322d; font-weight:700; } .uinfo .sh { color:#4f9dff; }
+.uinfo .uw, .uinfo .us { display:flex; flex-wrap:wrap; gap:4px; margin-top:7px; } .uinfo .uw span { font-size:11px; padding:2px 7px; border-radius:999px; background:rgba(76,175,42,.1); } .uinfo .uw span.dn { background:rgba(229,50,45,.08); } .uinfo .us .st { font-size:11px; padding:2px 7px; border-radius:999px; background:rgba(17,19,24,.06); }
+@media (max-width:700px) { .uinfo { width:210px; left:8px; bottom:8px; font-size:11.5px; } }
 .fieldwrap { position:relative; flex:1; min-height:240px; overflow:hidden; border-radius:30px; touch-action:none; cursor:grab; background:rgba(255,255,255,.38); -webkit-backdrop-filter:blur(30px) saturate(1.6); backdrop-filter:blur(30px) saturate(1.6); border:var(--gbd); box-shadow:var(--csh); }
 .fieldwrap.panning { cursor:grabbing; }
 #field { position:relative; transform-origin:0 0; }
@@ -1314,7 +1319,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="hpill mid" id="hudMid"><span class="rd"><small>ROUND</small><b id="hudRound">1</b></span><span class="vr"></span><span class="ph"><b id="hudPhase">배치 단계</b><small id="hudMode">일반전 · 봇</small></span><span class="ring" id="hudRing"><b id="hudTimer">15</b></span><span class="spec-chip">관전 중</span></div>
     <div class="hpill e"><span class="who"><b id="hudNickE">상대</b><span class="lives" id="hudLivesE"></span></span><span class="av pfw" id="hudAvE"></span></div>
   </div>
-  <div class="fieldwrap" id="fieldWrap"><div id="field"></div><span class="flab a" id="flabA">내 진영 · 3 × 5<span class="fdeck" id="fdeckA"></span><span class="fev" id="fevA" data-ev="1"></span></span><span class="flab e" id="flabE">상대 진영<span class="fhide">· 지난 라운드 배치</span><span class="fdeck" id="fdeckE"></span><span class="fev" id="fevE" data-ev="1"></span></span><div class="tipchip" id="deployTip"></div><div class="oddsgauge" id="hudOdds" hidden><span id="oddsLabA">나</span><b id="oddsA">50%</b><span class="og"><i id="oddsBar" style="width:50%"></i></span><b class="e" id="oddsE">50%</b><span id="oddsLabE">상대</span></div><div class="camzoom" id="camZoom"><button id="btnZoomOut" aria-label="축소">−</button><span id="zoomLab">100%</span><button id="btnZoomIn" aria-label="확대">+</button><button id="btnZoomFit" aria-label="전체 보기">⤢</button></div><div class="minimap" id="miniMap"><canvas id="miniMapCanvas" width="308" height="196"></canvas></div><div class="final-moment-overlay" id="finalMoment"><span class="final-moment-kicker">FINAL MOMENT</span><strong>마지막 순간</strong><span class="final-moment-sub">전투 결과를 확인하고 있습니다</span></div></div>
+  <div class="fieldwrap" id="fieldWrap"><div id="field"></div><div class="uinfo" id="uInfo" hidden></div><span class="flab a" id="flabA">내 진영 · 3 × 5<span class="fdeck" id="fdeckA"></span><span class="fev" id="fevA" data-ev="1"></span></span><span class="flab e" id="flabE">상대 진영<span class="fhide">· 지난 라운드 배치</span><span class="fdeck" id="fdeckE"></span><span class="fev" id="fevE" data-ev="1"></span></span><div class="tipchip" id="deployTip"></div><div class="oddsgauge" id="hudOdds" hidden><span id="oddsLabA">나</span><b id="oddsA">50%</b><span class="og"><i id="oddsBar" style="width:50%"></i></span><b class="e" id="oddsE">50%</b><span id="oddsLabE">상대</span></div><div class="camzoom" id="camZoom"><button id="btnZoomOut" aria-label="축소">−</button><span id="zoomLab">100%</span><button id="btnZoomIn" aria-label="확대">+</button><button id="btnZoomFit" aria-label="전체 보기">⤢</button></div><div class="minimap" id="miniMap"><canvas id="miniMapCanvas" width="308" height="196"></canvas></div><div class="final-moment-overlay" id="finalMoment"><span class="final-moment-kicker">FINAL MOMENT</span><strong>마지막 순간</strong><span class="final-moment-sub">전투 결과를 확인하고 있습니다</span></div></div>
   <div class="tray">
     <div class="tl"><span class="ucount">유닛 <b id="hudCount">0</b></span><span class="row"><button class="g-btn" id="btnStatsHud">📊 통계</button></span></div>
     <div class="pool" id="pool"></div>
@@ -1913,15 +1918,15 @@ const CHARS = {
     onStart(u, A) { A.cross(u).forEach(a => { if (a.id === 'berserk' || a.guardBy) return; a.guardBy = u; A.status(a, 'guard', 800); }); } },
   clock: { name: '시계 지후', rarity: 'legend', role: '서포터', hp: 1220, atk: 60, atkSpeed: 1, range: 6, speed: 1.6, portrait: PORTRAITS.clock, sfx: 'shot', color: '#555b66',
     story: '왕궁 앞 시계방 집 아들로 태어난 지후입니다. 가게 안 수백 개의 시계 소리를 들으며 자라서인지, 그는 어느새 남의 심장 박동까지 초침처럼 들을 수 있게 되었어요. 그가 손목을 한 번 돌리면 친구들의 시간은 조금 빨라지고, 적의 시간은 조금 느려집니다. 다만 자기 시간은 어떻게 할 수 없어서 아침마다 지각해요. 단 한 번도 지각한 적 없는 신칸센 지후가 매일 아침 가게 앞을 지나가는 게 그에게는 가장 큰 스트레스라고 합니다.',
-    passive: '살아 있는 동안 맵 전체에서 <b>같은 레벨</b>의 적은 공격속도가 <b>7%</b> 느려지고, 같은 레벨의 아군(자신 포함)은 <b>7%</b> 빨라진다 (레벨마다 <b>1%</b>씩 증가). 여러 기면 중첩된다.',
-    tick(u, dt, A) { const k = 'clock' + u.uid, v = 0.07 + 0.01 * (u.lv - 1); S.units.forEach(e => { if (e.alive && e.lv === u.lv) A.buff(e, k, { aspd: e.side === u.side ? v : -v }, 0.25); }); } }, // R2.10.2: 레벨마다 +1%
+    passive: '살아 있는 동안 맵 전체에서 <b>같은 레벨</b>의 적은 공격속도가 <b>5%</b> 느려지고, 같은 레벨의 아군(자신 포함)은 <b>5%</b> 빨라진다 (레벨마다 <b>1%</b>씩 증가). 여러 기면 중첩된다.',
+    tick(u, dt, A) { const k = 'clock' + u.uid, v = 0.05 + 0.01 * (u.lv - 1); /* build 5: 7 → 5% */ S.units.forEach(e => { if (e.alive && e.lv === u.lv) A.buff(e, k, { aspd: e.side === u.side ? v : -v }, 0.25); }); } }, // R2.10.2: 레벨마다 +1%
   charge: { name: '충전 지후', rarity: 'legend', role: '서포터', hp: 940, atk: 30, atkSpeed: 1, range: 6.5, speed: 1.6, portrait: PORTRAITS.charge, sfx: 'shot', color: '#3ecf4a',
     story: '휴대폰 배터리가 20% 밑으로 내려가면 불안해서 잠을 못 자던 지후입니다. 보조배터리를 다섯 개씩 들고 다니다가, 어느 날 그 배터리들이 몸에 붙어 버렸어요. 이제 그는 주변 친구들에게 전기를 나눠 줄 수 있게 되었습니다. 전기가 떨어지면 번개 지후를 따라다니며 낙뢰를 받아 채우고, 남는 전기로는 랜턴 지후의 배터리를 공짜로 갈아 줘요. 친구들은 고마워하지만, 그가 콘센트 앞을 지나갈 때마다 멈춰 서는 버릇은 조금 이상하다고 생각합니다.',
     passive: '주변 아군의 SP 를 채워 준다.',
     skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[무선충전]</b>. 반경 <b>3.5칸</b> 안의 아군 SP 를 <b>1</b> 채운다. 자신 · 다른 충전 지후 · 일반적인 방법으로 SP 가 차지 않는 지후(부활 · 봉인된 사신)에게는 적용되지 않는다.',
       run(u, A) { const R = 3.5 * CFG.CELL; if (!S.fast) { A.ring(u.x, u.y, 3.5); dmgNum(u, '무선충전!', { crit: true }); }
         friends(u).forEach(a => { if (a !== u && a.id !== 'charge' && !(a.def.skill && a.def.skill.type === 'ally') && dist(u, a) <= R + unitRadius(a)) spGive(a, 1, true); }); } } }, // 아군이 쓰러질 때만 SP 가 차는 지후(부활 · 봉인 사신)는 제외 (build 4)
-  devour: { name: '포식 지후', rarity: 'epic', role: '딜러', hp: 1150, atk: 100, atkSpeed: 1.6, range: 4.4, speed: 1.6, portrait: PORTRAITS.devour, sfx: 'shot', color: '#e5322d',
+  devour: { name: '포식 지후', rarity: 'epic', role: '딜러', hp: 1150, atk: 100, atkSpeed: 1.8, range: 4.4, speed: 1.6, portrait: PORTRAITS.devour, sfx: 'shot', color: '#e5322d',
     story: '왕궁 급식실에서 남은 반찬을 모두 먹어 치우던 지후입니다. 예언 지후가 맞힌 전설의 돈가스도, 버서커 지후가 아껴 둔 마지막 푸딩도, 구미호 지후의 라면도 모두 그의 배 속으로 들어갔어요. 그런데 이상하게도 먹으면 먹을수록 더 배가 고팠습니다. 그는 결국 전장의 기운까지 먹어 치우기 시작했고, 쓰러진 적의 힘을 삼킬 때마다 점점 더 강해졌어요. 그 배는 아직 한 번도 부른 적이 없다고 해요.',
     passive: '피해를 입힐 때마다 공격력의 <b>5%</b>만큼 회복한다. 반경 <b>5.1칸</b> 안에서 자신이 한 번이라도 공격한 적이 쓰러지면 [포식]을 얻는다. [포식] 하나당 공격력이 기본 공격력의 <b>15%</b>씩 오르고 최대 체력이 <b>20</b> 늘며 체력을 <b>50</b> 회복한다. 경기 내내 유지된다.',
     onStart(u, A) { const p = u.tile != null && S.place[u.side][u.tile]; u.dv = (p && p.id === 'devour' && p.dv) || 0; u.dvBase = u.atk; if (u.dv) { u.atk += Math.round(u.dvBase * 0.15 * u.dv); u.baseMaxHp += 20 * u.dv; u.maxHp += 20 * u.dv; /* build 4: 50 → 20 */ u.hp = u.maxHp; A.status(u, 'feast', 800); } }, // 레벨이 오르면 오른 공격력 기준 · 중첩마다 최대 체력 +50 (R2.8 build 3)
@@ -2145,7 +2150,7 @@ const CHAR_INFO = {
   revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 제외)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위']],
   reaper: [['SP (봉인)', '아군이 쓰러질 때마다 1'], ['[사신강림]', 'SP 6 · 체력 1,444 · 공격 간격 1.2초 · 이동속도 2.4'], ['[즉사] (강림)', 'SP 5 (일반 공격) · 가장 가까운 적 하나 · 즉사 (무적 · 버티기 등 어떤 효과로도 못 막는다 · R2.10.2)']],
   guardian: [['[수호]', '십자 범위 아군 · 쓰러질 때 체력 1 + [무적] 1초 · 라운드에 한 번'], ['조건', '수호자 지후가 살아 있을 때'], ['예외', '광폭화 지후']],
-  clock: [['같은 레벨 적', '공격속도 -7% (레벨마다 -1%)'], ['같은 레벨 아군', '공격속도 +7% (자신 포함 · 레벨마다 +1%)'], ['범위', '맵 전체 · 중첩']],
+  clock: [['같은 레벨 적', '공격속도 -5% (레벨마다 -1%)'], ['같은 레벨 아군', '공격속도 +5% (자신 포함 · 레벨마다 +1%)'], ['범위', '맵 전체 · 중첩']],
   charge: [['[무선충전]', '반경 3.5칸 아군 SP +1'], ['제외', '자신 · 다른 충전 지후 · 부활 지후 · 봉인된 사신 지후 (강림한 사신은 받는다)']],
   devour: [['흡혈', '피해를 입힐 때마다 공격력의 5% 회복'], ['[포식]', '반경 5.1칸 · 공격한 적이 쓰러지면 1중첩'], ['중첩마다', '공격력 +기본 공격력의 15% · 최대 체력 +20 · 체력 50 회복 · 경기 내내']],
   tentacle: [['일반 공격', '앞쪽 직사각형 · 폭 = 자기 지름 · 길이 5칸 · 닿은 적 모두'], ['[눈가림]', '35% · 2.5초 (일반 공격 40% 빗나감)'], ['스킬 대상', '사거리 무시 · 가장 가까운 적 최대 5기'], ['스킬 피해', '공격력의 120% · [눈가림] 확정']],
@@ -3429,7 +3434,7 @@ function loop(ts) {
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
   acc += real * S.speed;
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 30) { acc -= CFG.STEP; stepCombat(CFG.STEP); }
-  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); drawMinimap();
+  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
   setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME);
   if (S.phase === 'combat') { const p = allyOdds(), mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; requestAnimationFrame(loop); }
 }
@@ -3549,7 +3554,30 @@ function showRangeRing(u) {
   const d = attackDist(u) * 2; el.style.width = el.style.height = d + 'px'; el.style.left = u.x + 'px'; el.style.top = u.y + 'px';
   $('field').appendChild(el); rangeRing = { el, unit: u };
 }
-function hideRangeRing() { if (rangeRing) rangeRing.el.remove(); rangeRing = null; }
+function hideRangeRing() { if (rangeRing) rangeRing.el.remove(); rangeRing = null; const b = $('uInfo'); if (b) b.hidden = true; }
+// ── 전투 중 지후 정보 (R2.10.2 build 5): 누른 지후의 체력 · 공격력 · 공격 간격 · 이동속도 · SP · 효과 (바뀐 만큼은 연두 · 줄면 빨강) ──
+const BUFF_SRC = { clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', ev: '이벤트', moon: '달', accel: '가속' };
+function buffSrcName(k) { const m = k.match(/^[a-z]+/); return (m && BUFF_SRC[m[0]]) || '효과'; }
+function uInfoHtml(u) {
+  const c = u.def, pct = x => `${x > 0 ? '+' : ''}${Math.round(x * 100)}%`, f1 = x => (Math.round(x * 100) / 100).toString();
+  const chg = (d, good, txt) => Math.abs(d) < 1e-3 ? '' : ` <span class="${good ? 'up' : 'dn'}">(${txt})</span>`;
+  const atk0 = u.atk, atk1 = c.noAttack ? 0 : effAtk(u), iv0 = u.atkSpeed, iv1 = baseInterval(u) / aspdRate(u), sp0 = u.speed / CFG.CELL, sp1 = sp0 * Math.max(0.2, 1 + buffSum(u, 'spd')) * (u.st.vweak > 0 ? 0.8 : 1) * (u.st.frost > 0 ? 0.6 : 1);
+  const why = []; for (const k in u.buffs) { const b = u.buffs[k], n = buffSrcName(k); if (b.atk) why.push(`공격력 ${pct(b.atk)} (${n})`); if (b.aspd) why.push(`공격속도 ${pct(b.aspd)} (${n})`); if (b.spd) why.push(`이동속도 ${pct(b.spd)} (${n})`); if (b.dodge) why.push(`회피 ${pct(b.dodge)} (${n})`); }
+  if (u.st.rage > 0) why.push('공격력 +140% · 공격 간격 0.5초 (광폭화)'); if (u.st.weak > 0) why.push('공격력 −15% (약화)'); if (u.st.vweak > 0) why.push('공격력 −15% · 이동속도 −20% (약화 · 독)'); if (u.st.frost > 0) why.push('공격력 −10% · 이동속도 −40% (동상)'); if (u.st.drowsy > 0) why.push('공격력 −40% (졸음)'); if (u.wn) why.push(`공격력 +${5 * u.wn}% (와인 ${u.wn}잔)`);
+  if (c.atkMult) { const m = c.atkMult(u); if (Math.abs(m - 1) > 1e-3) why.push(`공격력 ×${f1(m)} (패시브)`); } if (u.comboMult && u.comboMult !== 1) why.push(`공격력 ×${f1(u.comboMult)} (콤보)`);
+  const sts = Object.keys(STATUS).filter(k => u.st[k] > 0).map(k => `<span class="st">${STATUS[k].icon} ${STATUS[k].name}${u.st[k] < 900 && k !== 'vweak' ? ` ${u.st[k].toFixed(1)}초` : ''}${u.stk && u.stk[k] && u.stk[k].length > 1 ? ` ×${u.stk[k].length}` : ''}</span>`).join('');
+  const sk = c.skill, spTxt = sk && (sk.type === 'cooldown' ? `${f1(u.sk)} / ${sk.cd}초` : sk.need ? `${Math.floor(u.sk)} / ${sk.need}` : '');
+  return `<div class="uh">${pic(u.id, u.picSrc)}<div><b>${esc(c.name)}</b> <span class="lv">Lv.${u.lv}</span><small>${u.side === ME() ? '아군' : '적'} · ${c.role}${u.alive ? '' : ' · 쓰러짐'}</small></div><button class="x" aria-label="닫기">✕</button></div>
+    <div class="ur"><span>체력</span><b>${Math.max(0, Math.round(u.hp)).toLocaleString()} / ${Math.round(u.maxHp).toLocaleString()}${u.shield > 0 ? ` <span class="sh">+🛡${Math.round(u.shield)}</span>` : ''}</b></div>
+    <div class="ur"><span>공격력</span><b>${c.noAttack ? '—' : Math.round(atk1).toLocaleString()}${c.noAttack ? '' : chg(atk1 - atk0, atk1 > atk0, `${atk1 > atk0 ? '+' : '−'}${Math.round(Math.abs(atk1 - atk0))}`)}</b></div>
+    <div class="ur"><span>공격 간격</span><b>${c.noAttack ? '—' : f1(iv1) + 's'}${c.noAttack ? '' : chg(iv1 - iv0, iv1 < iv0, `${iv1 > iv0 ? '+' : '−'}${f1(Math.abs(iv1 - iv0))}s`)}</b></div>
+    <div class="ur"><span>이동속도</span><b>${f1(sp1)}칸/초${chg(sp1 - sp0, sp1 > sp0, `${sp1 > sp0 ? '+' : '−'}${f1(Math.abs(sp1 - sp0))}`)}</b></div>
+    <div class="ur"><span>사거리</span><b>${u.melee ? '근접' : f1(u.range / CFG.CELL) + '칸'}</b></div>${spTxt ? `<div class="ur"><span>${sk.type === 'cooldown' ? '쿨타임' : 'SP'}</span><b>${spTxt}</b></div>` : ''}
+    ${why.length ? `<div class="uw">${why.map(w => `<span class="${/[+×]/.test(w) && !/−/.test(w) ? 'up' : 'dn'}">${w}</span>`).join('')}</div>` : ''}${sts ? `<div class="us">${sts}</div>` : ''}`;
+}
+function renderUInfo() { const b = $('uInfo'); if (!b || !rangeRing || !rangeRing.unit || !(S.phase === 'combat' || S.phase === 'final')) { if (b) b.hidden = true; return; } const h = uInfoHtml(rangeRing.unit); if (b._v !== h) { b._v = h; b.innerHTML = h; } b.hidden = false; }
+$('uInfo').addEventListener('click', e => { e.stopPropagation(); if (e.target.closest('.x')) hideRangeRing(); });
+$('uInfo').addEventListener('pointerdown', e => e.stopPropagation());
 
 // ── 슬롯머신 지후: 릴 세 개 (새 UI) · 7 하나 7 피해 · 둘 럭키독 · 셋 잭팟 ──
 function slotSpin(u, digits) {
@@ -4006,7 +4034,7 @@ $('field').addEventListener('click', e => {
   if (CAM.moved) { CAM.moved = false; return; } // 끌어서 카메라를 옮긴 것이면 누름이 아니다
   if (S.phase === 'combat' || S.phase === 'final') { // 전투 중: 지후를 누르면 사거리 원
     const el = e.target.closest('.unit'), u = el && S.units.find(x => x.el === el);
-    if (u && (!rangeRing || rangeRing.unit !== u)) showRangeRing(u); else hideRangeRing();
+    if (u && (!rangeRing || rangeRing.unit !== u)) { showRangeRing(u); renderUInfo(); } else hideRangeRing(); // 사거리 원 + 지후 정보 (build 5)
     return;
   }
   const el = e.target.closest('[data-tile]'); if (!el) return;
@@ -5743,15 +5771,16 @@ const PATCH_NOTES = [
       { icon: '🗼', name: '지후의 탑 드래프트', tag: 'system', desc: '1페이즈 일반 3 · 2페이즈 일반~영웅 각 33% · 3페이즈 일반~전설 각 25% (전설 최대 1) · 4페이즈 전설 1 + 일반~전설 2 · 5페이즈 전설 3.' },
       { icon: '😀', name: '상점 이모티콘', tag: 'system', desc: '가격 <b>◆1,000 → ◆500</b>.' },
       { id: 'coin', name: '코인 지후', tag: 'fix', desc: '시세가 바닥 근처에서 오래 멈춘 것처럼 보이던 문제 수정 — 10분마다 최소 <b>15%p</b> 는 움직여요 · 도감 상세에 <b>지금 시세</b> · 다음 변동까지 남은 시간 표시.' },
+      { icon: '🔎', name: '전투 중 지후 정보', tag: 'system', desc: '전투 중 지후를 누르면 체력 · 공격력 · 공격 간격 · 이동속도 · SP · 걸린 효과가 보여요. 공격력 · 공격 간격은 바뀐 만큼을 <b style="color:#4caf2a">연두색</b>으로 (build 5).' },
       { icon: '🛠', name: '로딩 멈춤', tag: 'fix', desc: '업데이트 직후 로딩 화면이 0% 에서 멈추던 문제 수정 (build 3).' },
       { id: 'reaper', name: '사신 지후', tag: 'fix', desc: '[사신강림] 뒤에도 [봉인] 아이콘 · 붉은 기운이 제대로 바뀌지 않던 문제 수정.' },
     ] },
     { title: '밸런스', items: [
       { id: 'growth', name: '성장 지후', tag: 'buff', desc: '레벨이 오를 때마다 변이까지 <b>2초</b> 감소 (Lv5 7초).' },
-      { id: 'devour', name: '포식 지후', tag: 'adjust', desc: '공격 간격 <b>1.55 → 1.6초</b> · 공격력 <b>50 → 100</b> · [포식] 범위 <b>4.6 → 5.1칸</b> · [포식]당 공격력 <b>40% → 15%</b> · [포식]당 최대 체력 <b>+50 → +20</b> (회복 50 그대로 · build 4).' },
+      { id: 'devour', name: '포식 지후', tag: 'adjust', desc: '공격 간격 <b>1.55 → 1.8초</b> (build 5) · 공격력 <b>50 → 100</b> · [포식] 범위 <b>4.6 → 5.1칸</b> · [포식]당 공격력 <b>40% → 15%</b> · [포식]당 최대 체력 <b>+50 → +20</b> (회복 50 그대로 · build 4).' },
       { id: 'sommelier', name: '소믈리에 지후', tag: 'buff', desc: '와인 치명타 확률 <b>+2% → +3%</b>.' },
       { id: 'tailwind', name: '순풍 지후', tag: 'buff', desc: '이동속도 증감 <b>7% → 12%</b> · 레벨이 오를 때마다 <b>+1%</b> · 추가: 아군 공격력 <b>+5%</b> · 적 공격력 <b>−5%</b>.' },
-      { id: 'clock', name: '시계 지후', tag: 'buff', desc: '레벨이 오를 때마다 효과 <b>+1%</b> · 버프를 받는 아군은 하늘색, 디버프를 받는 적은 빨간 시계 표식 (build 4).' },
+      { id: 'clock', name: '시계 지후', tag: 'buff', desc: '공격속도 증감 <b>7% → 5%</b> (build 5) · 레벨이 오를 때마다 효과 <b>+1%</b> · 버프를 받는 아군은 하늘색, 디버프를 받는 적은 빨간 시계 표식 (build 4).' },
       { id: 'nou', name: 'NO U 지후', tag: 'nerf', desc: '[NO U] 지속 <b>3 → 2초</b> (build 4).' },
       { id: 'star', name: '별 지후', tag: 'nerf', desc: '공격 간격 <b>2 → 3초</b> · 광역 범위 <b>2.4 → 2칸</b> (build 2) · 공격력 <b>110 → 90</b> (build 4).' },
       { id: 'reaper', name: '사신 지후', tag: 'nerf', desc: '[사신강림] SP <b>5 → 6</b>.' },
