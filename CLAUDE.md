@@ -74,7 +74,7 @@
   - 핵미사일 (전설 · 근접): 처음 출전한 라운드 1초 뒤(밴 · 기절이면 풀린 뒤) [핵 발사] → 배치 기록 `p.nk = 1` (경기 내내 [핵 다씀] · 합체 · 레벨업해도 · `packPlace` 8번째 칸 · 그림 `portraitUsed` · 배치 화면은 `u.picSrc`) · 17초 뒤 (R2.10 · 예전 22) `A.later` 로 적진 가운데(`tileXY(적, 7)`) `A.boom` 반경 99칸 · 공격력 99999% · 라운드가 먼저 끝나면 안 떨어진다 · 스킬 `type: 'nuke'` 라 `spGive` 대상이 아니다 · `gauge`
   - 엔진: `A.later(sec, fn, hold)` = 전투 시간 기준 예약 (`S.timed` · `beginCombat` 에서 비움) · `A.boom(u, x, y, 칸, 피해)` 반경 안 적 모두 (`.fx-boom`) · `spGive` 는 hit · sec · ally · cooldown 스킬만
 - **R2.10 신규 지후 8종**:
-  - 별 (전설 어쌔신 · `splash` 2.4 · 사거리 5.7 build 2 · 공격 간격 3초 R2.10.2): SP 4 [졸음] = 지금 `effAtk` 가 가장 높은 적 · `st.drowsy` 1.5초 (공격력 ×0.6 · `addStatus` 를 거치지 않아 쉴드 · 면역 무시) → `stepUnit` 에서 `st.sleep` 7초 (`blocked` · `dealDamage` 에서 150 이상 맞으면 깬다) → 깨는 순간 `sleepBy` 의 `dash` (관전 · 무적 순간이동 · 200% · SP +1 · `.fx-stardash`)
+  - 별 (전설 어쌔신 · `splash` 2 (R2.10.2 build 2) · 사거리 5.7 build 2 · 공격 간격 3초 R2.10.2): SP 4 [졸음] = 지금 `effAtk` 가 가장 높은 적 · `st.drowsy` 1.5초 (공격력 ×0.6 · `addStatus` 를 거치지 않아 쉴드 · 면역 무시) → `stepUnit` 에서 `st.sleep` 7초 (`blocked` · `dealDamage` 에서 150 이상 맞으면 깬다) → 깨는 순간 `sleepBy` 의 `dash` (관전 · 무적 순간이동 · 200% · SP +1 · `.fx-stardash`)
   - 소믈리에 (영웅 서포터): `onStart` 십자 아군 2명 이상이면 와인 — 배치 기록 `p.wn` +1 (`u.wn`: `effAtk` ×(1+0.05n) · 치명타 확률 +3%n (R2.10.2) · 치명타 피해 +30%n) · 그 라운드 체력 −10% · 자기 기록 `p.sm` += 마신 수 → 공격력 +5 × sm (경기 내내 · `packPlace` 9 · 10번째 칸)
   - 닭 (영웅 소환형): 달걀(`shotCls: 'egg'`) · `onHit` 5% `A.spawnChild` 부화 (원본 `origHp` 의 70% · `summoner`) — 부활 · 사신 SP · 성장 대상에서 소환체(`summoner`)는 빠진다
   - 후라이팬 (영웅 탱커 · R1 그대로): `tick` 에서 110° · 반지름 몸+0.7칸 부채꼴이 4.5초에 한 바퀴 (`.fp-pan`) · 닿으면 200 × 레벨 배율 · 7칸 넉백 · 0.2초 · 일반 공격 없음 (`customAttack` 만 · `atkText` —)
