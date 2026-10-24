@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.1"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.1"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1968,10 +1968,10 @@ const CHARS = {
       if (!hits.length) return; p.cd = 0.2; if (p.el) { p.el.classList.remove('swing'); void p.el.offsetWidth; p.el.classList.add('swing'); } sfx('bash');
       hits.forEach(e => { if (dealDamage(u, e, 200 * u.mult, { skill: true, noCrit: true }) > 0) hitFx(u, e, true); if (!e.alive) return; if (!S.fast) dmgNum(e, '팡!', { crit: true }); A.knock(u, e, 7); }); } },
   growth: { name: '성장 지후', rarity: 'legend', role: '보조형', hp: 500, atk: 10, atkSpeed: 2, range: 5, speed: 1.6, portrait: PORTRAITS.growth, sfx: 'shot', color: '#3d2bd6',
-    story: '왕궁 온실에서 새싹을 돌보던 지후입니다. 「오늘도 쑥쑥」이라고 속삭이며 물을 주다가, 어느 날 자기 화분에도 물을 줘 버렸어요. 그 뒤로 그는 싸움이 시작되고 열 번 숨을 쉬면 한 뼘 자라나, 함께 싸우는 동료 중 누군가의 모습이 되어 버립니다. 무엇이 될지는 본인도 모른다고 해요. 레벨업 지후는 그 비결이 경험치 물약보다 낫다며 몰래 뒤를 따라다니고, 소탕군에 지원했던 넷도 「다음엔 내가 될 차례」라며 은근히 기대하고 있습니다. 가끔은 더 큰 성장 지후가 되어 한 번 더 자라기도 해요.',
-    passive: '전투가 시작되고 <b>10초</b> 뒤, 내 덱에 있는 지후 중 하나(성장 지후 포함 · 무작위)로 변이한다. 변이한 지후는 레벨이 <b>1</b> 높고 체력이 가득하며, 다음 라운드에도 그 지후로 나온다.',
-    gauge(u) { return u.grown ? 0 : clamp((u.grT || 0) / 10, 0, 1); },
-    tick(u, dt, A) { if (u.grown) return; u.grT = (u.grT || 0) + dt; if (u.grT < 10 || blocked(u)) return; // 10초 뒤 (build 2 · 예전 7) (기절 · 밴이면 풀린 뒤) · 라운드마다 1번
+    story: '왕궁 온실에서 새싹을 돌보던 지후입니다. 「오늘도 쑥쑥」이라고 속삭이며 물을 주다가, 어느 날 자기 화분에도 물을 줘 버렸어요. 그 뒤로 그는 싸움이 시작되고 열다섯 번 숨을 쉬면 한 뼘 자라나, 함께 싸우는 동료 중 누군가의 모습이 되어 버립니다. 무엇이 될지는 본인도 모른다고 해요. 레벨업 지후는 그 비결이 경험치 물약보다 낫다며 몰래 뒤를 따라다니고, 소탕군에 지원했던 넷도 「다음엔 내가 될 차례」라며 은근히 기대하고 있습니다. 가끔은 더 큰 성장 지후가 되어 한 번 더 자라기도 해요.',
+    passive: '전투가 시작되고 <b>15초</b> 뒤, 내 덱에 있는 지후 중 하나(성장 지후 포함 · 무작위)로 변이한다. 변이한 지후는 레벨이 <b>1</b> 높고 체력이 가득하며, 다음 라운드에도 그 지후로 나온다.',
+    gauge(u) { return u.grown ? 0 : clamp((u.grT || 0) / 15, 0, 1); },
+    tick(u, dt, A) { if (u.grown) return; u.grT = (u.grT || 0) + dt; if (u.grT < 15 || blocked(u)) return; // 15초 뒤 (build 3 · 예전 7) (기절 · 밴이면 풀린 뒤) · 라운드마다 1번
       const ban = (S.evf && S.evf[u.side] && S.evf[u.side].ban) || [], L = ((S.deck && S.deck[u.side]) || []).filter(id => CHARS[id] && !ban.includes(id)), id = L.length ? L[Math.floor(rng() * L.length)] : 'growth';
       A.transform(u, id, Math.min(CFG.MAX_LV, u.lv + 1)); u.grown = true; } }, // 배치 기록도 바뀐다 (성장 지후가 되면 다음 라운드에 또 자란다)
   melody: { name: '선율 지후', rarity: 'rare', role: '서포터', hp: 940, atk: 65, atkSpeed: 1.5, range: 4.5, speed: 1.6, portrait: PORTRAITS.melody, sfx: 'shot', color: '#38d8f0',
@@ -2047,7 +2047,7 @@ const CHAR_INFO = {
   sommelier: [['와인', '라운드 시작 · 십자 범위 아군 2명 이상일 때 · 그 아군들'], ['마시면', '체력 −10% · 공격력 +5% · 치명타 확률 +2% · 치명타 피해 +30% (라운드마다 쌓임 · 경기 내내)'], ['자신', '와인을 마신 아군 하나마다 공격력 +5 (경기 내내)']],
   chicken: [['달걀', '일반 공격 · 투사체'], ['부화', '맞으면 5% · 원본 체력의 70% · 공격력 그대로 · 라운드가 끝나면 사라진다']],
   pan: [['후라이팬', '반지름 = 몸 + 0.7칸 · 110° · 4.5초에 한 바퀴'], ['맞으면', '200 피해 (레벨 반영) · 7칸 넉백 · 다시 치기까지 0.2초'], ['일반 공격', '없음 (적에게 다가가기만)']],
-  growth: [['[변이]', '전투 시작 10초 뒤 (기절 · 밴이면 풀린 뒤) · 라운드마다 1번'], ['변이체', '내 덱의 지후 중 무작위 (성장 지후 포함 · [밴] 지후 제외) · 레벨 +1 (최대 5) · 체력 가득'], ['다음 라운드', '배치 기록도 변이체로 · 성장 지후가 되면 또 자란다']],
+  growth: [['[변이]', '전투 시작 15초 뒤 (기절 · 밴이면 풀린 뒤) · 라운드마다 1번'], ['변이체', '내 덱의 지후 중 무작위 (성장 지후 포함 · [밴] 지후 제외) · 레벨 +1 (최대 5) · 체력 가득'], ['다음 라운드', '배치 기록도 변이체로 · 성장 지후가 되면 또 자란다']],
   melody: [['종', '5초마다 · 반경 4칸'], ['아군', '최대 체력 5% 회복 · 디버프 면역 2.5초'], ['적', '공격력 100% 피해']],
   tailwind: [['순풍', '맵 전체 · 아군 이동속도 +7% · 적 −7% · 중첩'], ['공격', '하지 않는다']],
   lock: [['[잠금]', '일반 공격 25% · 2초 · 움직일 수 없음 (공격은 가능)']],
@@ -5608,7 +5608,7 @@ const PATCH_NOTES = [
   { v: 'R2.10.1', date: '2026.10.24', title: '성장 지후 리워크', sections: [
     { title: '리워크', items: [
       { id: 'growth', name: '성장 지후', tag: 'adjust', desc: '[성장](아군 레벨업) 삭제 → 전투 시작 <b>7초</b> 뒤 <b>내 덱의 지후</b> 중 하나(성장 지후 포함)로 <b>변이</b> · 레벨 <b>+1</b> · 체력 가득 · 다음 라운드에도 유지 · 서사 수정.' },
-      { id: 'growth', name: '성장 지후', tag: 'nerf', desc: '변이까지 <b>7 → 10초</b> (build 2).' },
+      { id: 'growth', name: '성장 지후', tag: 'nerf', desc: '변이까지 <b>7 → 15초</b> (build 3).' },
     ] },
   ] },
   { v: 'R2.10', date: '2026.10.24', title: '신규 지후 8종 · 샌드박스 · 레벨 개편', sections: [
