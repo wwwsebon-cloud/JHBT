@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.3"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.4"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1216,7 +1216,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="annbar" id="lobbyAnn" hidden></div>
     <div class="lobby-grid">
       <div class="lobby-left">
-        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.10.3</span></div>
+        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.10.4</span></div>
         <div class="g-card deckcard">
           <div class="dh"><b>현재 덱</b><small id="lobbyDeckN">0 / 5</small><span class="sp"></span><button class="link" id="btnDeckEdit">편집 ›</button></div>
           <div class="ldeck" id="lobbyDeck"></div>
@@ -1238,7 +1238,7 @@ input.text { font-size:20px; font-weight:800; }
 <!-- 닉네임 -->
 <div id="screen-welcome" class="screen">
   <div class="g-card welcome">
-    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.10.3</span></div>
+    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.10.4</span></div>
     <div><div class="eyebrow" style="margin-bottom:8px">닉네임 · 1~12자</div><input class="text" id="nickInput" maxlength="12" placeholder="지후왕"></div>
     <button class="k-btn big" id="btnStart">시작하기 →</button>
     <button class="g-btn" id="btnWelcomeLogin">이미 계정이 있어요 · 로그인</button>
@@ -1454,7 +1454,7 @@ const CFG = {
   UNIT_R: 28,                              // 전작 유닛 반지름 (45px 격자 기준 · ×60/45)
   MAX_UNITS: 15, SAME_LIMIT: 3, POOL: 3, PICK_TIME: 15, // R2.7.2: 배치 수 제한 없음 (빈 칸 15칸까지) · 같은 지후 3기 (R2.2.1 · 출격제한 1 은 그대로) · 카드 3장 · 15초
   LIVES: 3,                                // R2.7.2: 4 → 3 (전작과 같은 3)
-  MAX_LV: 5, LEVEL_ADD: 0.5, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 레벨마다 기본의 +50% 선형 (R2.10.3 build 2 · 예전 ×1.2 복리) · 효과 ×1.1 (복리)
+  MAX_LV: 5, LEVEL_ADD: 0.5, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 레벨마다 기본의 +50% 선형 (R2.10.4 · 예전 ×1.2 복리) · 효과 ×1.1 (복리)
   ROUND_TIME: 60, STALL: 15, FAST_AFTER: 25, FAST_SPEED: 1.5, DM_DEPLOYS: 3, // R2.9: 60초 (전작 45초) · 15초 무피해 판정 · 25초 뒤 1.5배속 · 데스매치 배치 3번
   STEP: 1 / 60,                            // 전작 PHYS.STEP
   MELEE: 1.6,
@@ -1661,7 +1661,7 @@ const CHARS = {
     onDeath(u) { const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'gift' && !u.skillDone && u.sk > 0) p.sp = Math.round(u.sk * 100) / 100; }, // 배치 기록에 남긴다 (packPlace 6번째 칸)
     skill: { type: 'sec', need: 24, once: true, desc: '<b>SP 24</b> · 1회. 게임에 있는 모든 지후 중 <b>무작위 1기</b>로 변신한다. 변신한 지후는 자신의 레벨보다 <b>1</b> 높다 (최대 Lv5).',
       run(u, A) { const ids = Object.keys(CHARS).filter(id => id !== 'gift'), id = ids[Math.floor(rng() * ids.length)];
-        A.transform(u, id, Math.min(CFG.MAX_LV, u.lv + 1)); } } }, // R2.10.3 build 2: 무작위 2기 → 자신의 레벨보다 1 높은 무작위 1기 (배치 기록도 같이 바뀐다 · SP 18 → 24)
+        A.transform(u, id, Math.min(CFG.MAX_LV, u.lv + 1)); } } }, // R2.10.4: 무작위 2기 → 자신의 레벨보다 1 높은 무작위 1기 (배치 기록도 같이 바뀐다 · SP 18 → 24)
   slime: { name: '슬라임 지후', rarity: 'rare', role: '탱커', hp: 450, atk: 130, atkSpeed: 2.3, range: 'melee', speed: 1.6, portrait: PORTRAITS.slime, sfx: 'bash', color: '#12a8ef',
     story: '다이어트를 위해 밤낮으로 운동했지만 그 결과로 몸의 지방이 0이 되었습니다. 최근에는 살을 다시 찌워 보려고 하고 있답니다. 하루 10분 트레이닝 영상 대신 액괴 ASMR로 채널을 돌리면서요. 포식 지후에게 먹는 법을 배우러 갔다가 하마터면 먹힐 뻔했다고 합니다.',
     passive: '쓰러지면 작은 슬라임 <b>2기</b>로 나뉜다.',
@@ -2015,7 +2015,7 @@ const CHARS = {
     passive: '전투가 시작되고 <b>15초</b> 뒤, 내 덱에 있는 지후 중 하나(성장 지후 포함 · 무작위)로 변이한다. 변이한 지후는 레벨이 <b>1</b> 높고 체력이 가득하며, 다음 라운드에도 그 지후로 나온다. 레벨이 오를 때마다 변이까지 <b>2초</b>씩 줄어든다. 변이는 라운드마다 횟수 제한이 없다 (성장 지후로 변이하면 그 성장 지후가 다시 자란다).',
     growT(u) { return Math.max(1, 15 - 2 * (u.lv - 1)); }, // R2.10.2: 레벨마다 −2초 (Lv5 7초)
     gauge(u) { return clamp((u.grT || 0) / u.def.growT(u), 0, 1); },
-    tick(u, dt, A) { u.grT = (u.grT || 0) + dt; if (u.grT < u.def.growT(u) || blocked(u)) return; // 15초 뒤 (build 3 · 예전 7 · R2.10.2 레벨마다 −2초) (기절 · 밴이면 풀린 뒤) · R2.10.3 build 2: 라운드당 횟수 제한 없음 (성장 → 성장이면 새 유닛이 다시 자란다)
+    tick(u, dt, A) { u.grT = (u.grT || 0) + dt; if (u.grT < u.def.growT(u) || blocked(u)) return; // 15초 뒤 (build 3 · 예전 7 · R2.10.2 레벨마다 −2초) (기절 · 밴이면 풀린 뒤) · R2.10.4: 라운드당 횟수 제한 없음 (성장 → 성장이면 새 유닛이 다시 자란다)
       const ban = (S.evf && S.evf[u.side] && S.evf[u.side].ban) || [], L = ((S.deck && S.deck[u.side]) || []).filter(id => CHARS[id] && !ban.includes(id)), id = L.length ? L[Math.floor(rng() * L.length)] : 'growth';
       A.transform(u, id, Math.min(CFG.MAX_LV, u.lv + 1)); } }, // 배치 기록도 바뀐다 (성장 지후가 되면 다음 라운드에 또 자란다)
   melody: { name: '선율 지후', rarity: 'rare', role: '서포터', hp: 940, atk: 65, atkSpeed: 1.5, range: 4.5, speed: 1.6, portrait: PORTRAITS.melody, sfx: 'shot', color: '#38d8f0',
@@ -2879,7 +2879,7 @@ function tileSize() { // 전작 v42BuildGrid 칸 크기
   const tw = (CFG.ACROSS[1] - CFG.ACROSS[0]) * (isEW() ? FH() : FW()) / CFG.COLS - 8, th = (CFG.DEPTH[1] - CFG.DEPTH[0]) * (isEW() ? FW() : FH()) - 10;
   return isEW() ? { w: th, h: tw } : { w: tw, h: th };
 }
-function lvMult(lv) { return 1 + CFG.LEVEL_ADD * (lv - 1); }   // 체력 · 공격력: 레벨마다 기본의 +50% (선형 · Lv2 ×1.5 · Lv3 ×2 · Lv4 ×2.5 · Lv5 ×3 · R2.10.3 build 2)
+function lvMult(lv) { return 1 + CFG.LEVEL_ADD * (lv - 1); }   // 체력 · 공격력: 레벨마다 기본의 +50% (선형 · Lv2 ×1.5 · Lv3 ×2 · Lv4 ×2.5 · Lv5 ×3 · R2.10.4)
 function effMult(lv) { return Math.pow(CFG.EFFECT_MULT, lv - 1); } // 쉴드 등 효과 (전작 EFFECT_MULT)
 const PHYS = { STEP: 1 / 60, SKIN: 3.2, RESTITUTION: 0.045, FRICTION: 0.22, DRAG: 4.4, STEER: 16, WALL_PAD: 30, SOLVER_ITERS: 8, POS_CORR: 0.78, SLOP: 0.55 };
 function unitRadius(u) { return (u && u.small ? 18 : CFG.UNIT_R) * WS; } // small: 분열한 슬라임 · R2.2: 레벨이 올라도 몸 크기는 그대로
@@ -3184,7 +3184,7 @@ function performAttack(u, t) {
     spawnSlash(u, t);
     let any = 0; foes(u).forEach(e => { if (inFan(u, e, a0, half, reach)) any += hitOne(e); });
     afterHit(u, any);
-  } else if (u.def.multiTarget) { // 독 지후 [패시브]: 한 번에 최대 3기 (대상 + 사거리 안의 다른 적 · [중독]되지 않은 적 먼저 → 가까운 순) · R2.10.3 build 2
+  } else if (u.def.multiTarget) { // 독 지후 [패시브]: 한 번에 최대 3기 (대상 + 사거리 안의 다른 적 · [중독]되지 않은 적 먼저 → 가까운 순) · R2.10.4
     const reach = attackDist(u), list = [t, ...targets(u).filter(e => e !== t && dist(u, e) <= reach + unitRadius(e)).sort((x, y) => ((x.st.poison > 0) - (y.st.poison > 0)) || dist(u, x) - dist(u, y))].slice(0, u.def.multiTarget);
     list.forEach(e => { muzzleFx(u, e); launchProjectile(u, e, () => afterHit(u, hitOne(e)), u.def.shotCls || ''); });
   } else if (u.def.multiShot) { // 총 지후: 레벨만큼 한꺼번에 (가까운 적부터)
@@ -3730,7 +3730,7 @@ function mergeTile(side, id) { let best = null; S.place[side].forEach((p, i) => 
 function canPlaceNew(side, id) { return countSide(side) < CFG.MAX_UNITS && sameCount(side, id) < limitOf(id) && S.place[side].some(p => !p); }
 function playable(side, id) { return mergeTile(side, id) != null || canPlaceNew(side, id); }
 function isDeathmatch() { return S.lives.a === 1 && S.lives.e === 1; }
-function deployChances() { return isDeathmatch() ? CFG.DM_DEPLOYS : S.round === 1 ? 3 : 2; } // R2.2: 첫 라운드 4번 → R2.10.3 build 2: 3번 · 그다음 2번 · 데스매치 3번
+function deployChances() { return isDeathmatch() ? CFG.DM_DEPLOYS : S.round === 1 ? 3 : 2; } // R2.2: 첫 라운드 4번 → R2.10.4: 3번 · 그다음 2번 · 데스매치 3번
 function rollPool(side, r = rng) { const ban = (S.evf && S.evf[side] && S.evf[side].ban) || [], d = S.deck[side].filter(id => !ban.includes(id)); // [밴] 이벤트: 그 지후는 나오지 않는다
   return d.length ? Array.from({ length: CFG.POOL }, () => d[Math.floor(r() * d.length)]) : []; } // 전작 일반전: 덱에서 매번 3장 (중복 가능)
 function roleRow(id) { // 배치 줄 (0 전열 · 1 중열 · 2 후열 · R2.3): 탱커 · 딜러는 앞 · 어쌔신 · 서포터는 뒤 · 근접은 앞으로 · 사거리가 길면 뒤로 · 체력이 높으면 앞으로
@@ -5800,6 +5800,27 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.10.4', date: '2026.10.25', title: '레벨 성장 개편 · 밸런스', sections: [
+    { title: '규칙 · 밸런스', items: [
+      { icon: '4', name: '배치 기회', tag: 'nerf', desc: '첫 라운드 <b>4 → 3번</b> (그다음 2번 · 데스매치 3번은 그대로).' },
+      { icon: '⬆', name: '지후 레벨', tag: 'buff', desc: '레벨이 오를 때마다 체력 · 공격력 <b>×1.2 복리 → 기본의 +50% (선형)</b> — Lv2 ×1.5 · Lv3 ×2 · Lv4 ×2.5 · Lv5 ×3. 효과 수치(×1.1)는 그대로.' },
+      { id: 'sword', name: '검 지후', tag: 'nerf', desc: '공격력 <b>180 → 150</b>.' },
+      { id: 'assassin', name: '암살 지후', tag: 'nerf', desc: '체력 <b>430 → 400</b>.' },
+      { id: 'barrier', name: '보호막 지후', tag: 'adjust', desc: '공격 간격 <b>2.5 → 2.2초</b> · 시작 쉴드 공격력의 <b>500% → 250%</b>.' },
+      { id: 'rain', name: '비 지후', tag: 'buff', desc: '사거리 <b>5 → 8칸</b>.' },
+      { id: 'combo', name: '콤보 지후', tag: 'buff', desc: '공격마다 늘어나는 공격력 <b>5% → 8%</b>.' },
+      { id: 'water', name: '물 지후', tag: 'nerf', desc: '[해일] 잃은 체력 추가 피해 <b>20% → 12%</b>.' },
+      { id: 'chicken', name: '닭 지후', tag: 'nerf', desc: '부화 확률 <b>7.5 → 6%</b> · 부화한 닭 체력 원본의 <b>70% → 40%</b>.' },
+      { id: 'magic', name: '마탄 지후', tag: 'nerf', desc: '체력 <b>960 → 660</b>.' },
+      { id: 'biker', name: '폭주족 지후', tag: 'nerf', desc: '돌진 피해 현재 체력의 <b>70% → 50%</b>.' },
+      { id: 'venom', name: '독 지후', tag: 'adjust', desc: '<b>[패시브]</b> 한 번에 최대 <b>3기</b>의 적을 공격한다 · 사거리 <b>5.1 → 6칸</b>.' },
+      { id: 'gift', name: '선물 지후', tag: 'nerf', desc: '변신: 무작위 <b>2기 → 자신의 레벨보다 1 높은 무작위 1기</b> · 필요 SP <b>18 → 24</b>.' },
+      { id: 'blizzard', name: '블리자드 지후', tag: 'nerf', desc: '체력 <b>1,310 → 710</b>.' },
+      { id: 'fire', name: '화염 지후', tag: 'buff', desc: '사거리 <b>4.5 → 5.2칸</b>.' },
+      { id: 'growth', name: '성장 지후', tag: 'buff', desc: '[변이]가 라운드마다 <b>1번 → 횟수 제한 없이</b> 발동해요 (성장 지후가 성장 지후로 변이하면 또 자라요).' },
+      { id: 'nuke', name: '핵미사일 지후', tag: 'nerf', desc: '핵이 떨어지기까지 <b>24 → 27초</b>.' },
+    ] },
+  ] },
   { v: 'R2.10.3', date: '2026.10.25', title: '밸런스 패치', sections: [
     { title: '밸런스', items: [
       { id: 'sword', name: '검 지후', tag: 'nerf', desc: '공격력 <b>215 → 180</b> · 공격 간격 <b>1.2 → 1.5초</b>.' },
@@ -5821,25 +5842,6 @@ const PATCH_NOTES = [
       { id: 'nuke', name: '핵미사일 지후', tag: 'nerf', desc: '핵이 떨어지기까지 <b>17 → 24초</b>.' },
       { id: 'sun', name: '태양 지후', tag: 'buff', desc: '부활 낙하 피해 (반경 3칸) <b>400 → 600</b> · 부활 뒤 기본 공격력 <b>+50 → +80</b>.' },
       { id: 'whirl', name: '회오리 지후', tag: 'buff', desc: '<b>[패시브]</b> [회오리] 중 받는 피해 <b>60% 감소</b>.' },
-    ] },
-    { title: '규칙 · 밸런스 (build 2)', items: [
-      { icon: '4', name: '배치 기회', tag: 'nerf', desc: '첫 라운드 <b>4 → 3번</b> (그다음 2번 · 데스매치 3번은 그대로).' },
-      { icon: '⬆', name: '지후 레벨', tag: 'buff', desc: '레벨이 오를 때마다 체력 · 공격력 <b>×1.2 복리 → 기본의 +50% (선형)</b> — Lv2 ×1.5 · Lv3 ×2 · Lv4 ×2.5 · Lv5 ×3. 효과 수치(×1.1)는 그대로.' },
-      { id: 'sword', name: '검 지후', tag: 'nerf', desc: '공격력 <b>180 → 150</b>.' },
-      { id: 'assassin', name: '암살 지후', tag: 'nerf', desc: '체력 <b>430 → 400</b>.' },
-      { id: 'barrier', name: '보호막 지후', tag: 'adjust', desc: '공격 간격 <b>2.5 → 2.2초</b> · 시작 쉴드 공격력의 <b>500% → 250%</b>.' },
-      { id: 'rain', name: '비 지후', tag: 'buff', desc: '사거리 <b>5 → 8칸</b>.' },
-      { id: 'combo', name: '콤보 지후', tag: 'buff', desc: '공격마다 늘어나는 공격력 <b>5% → 8%</b>.' },
-      { id: 'water', name: '물 지후', tag: 'nerf', desc: '[해일] 잃은 체력 추가 피해 <b>20% → 12%</b>.' },
-      { id: 'chicken', name: '닭 지후', tag: 'nerf', desc: '부화 확률 <b>7.5 → 6%</b> · 부화한 닭 체력 원본의 <b>70% → 40%</b>.' },
-      { id: 'magic', name: '마탄 지후', tag: 'nerf', desc: '체력 <b>960 → 660</b>.' },
-      { id: 'biker', name: '폭주족 지후', tag: 'nerf', desc: '돌진 피해 현재 체력의 <b>70% → 50%</b>.' },
-      { id: 'venom', name: '독 지후', tag: 'adjust', desc: '<b>[패시브]</b> 한 번에 최대 <b>3기</b>의 적을 공격한다 · 사거리 <b>5.1 → 6칸</b>.' },
-      { id: 'gift', name: '선물 지후', tag: 'nerf', desc: '변신: 무작위 <b>2기 → 자신의 레벨보다 1 높은 무작위 1기</b> · 필요 SP <b>18 → 24</b>.' },
-      { id: 'blizzard', name: '블리자드 지후', tag: 'nerf', desc: '체력 <b>1,310 → 710</b>.' },
-      { id: 'fire', name: '화염 지후', tag: 'buff', desc: '사거리 <b>4.5 → 5.2칸</b>.' },
-      { id: 'growth', name: '성장 지후', tag: 'buff', desc: '[변이]가 라운드마다 <b>1번 → 횟수 제한 없이</b> 발동해요 (성장 지후가 성장 지후로 변이하면 또 자라요).' },
-      { id: 'nuke', name: '핵미사일 지후', tag: 'nerf', desc: '핵이 떨어지기까지 <b>24 → 27초</b>.' },
     ] },
   ] },
   { v: 'R2.10.2', date: '2026.10.24', title: '신규 지후 7종 · 즉사 규칙 · 탑 드래프트', sections: [
