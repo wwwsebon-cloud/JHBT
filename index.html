@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.4"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.10.5"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1186,6 +1186,68 @@ input.text { font-size:20px; font-weight:800; }
 @media (max-width:860px) { .cus-grid { grid-template-columns:minmax(0, 1fr); } }
 @media (max-width:700px) { .cus-cards { grid-template-columns:repeat(2, minmax(0, 1fr)); } .cus-h h1 { font-size:28px; } .cus-h .seg { margin-left:0; } .cus-grp { padding:14px; } .cus-pv { padding:28px 18px 20px; } }
 @media (prefers-reduced-motion: reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } .pf-sheen { display:none; } }
+/* ═════ 릴스 모드 (샌드박스 안 · 게임 소개 마케팅 프리뷰): 정사각형 전장 + 밑에 능력치 · 극한으로 단순하게 ═════ */
+.sb-modes { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:14px; } .sb-modes .seg button { padding:8px 16px; }
+.sb-slots.n1 { grid-template-columns:minmax(0, 120px); justify-content:center; } .sb-slots.n3 { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+#screen-battle.reels, #rlIntro { --rlw:min(100vw, calc(100vh * 9 / 16)); }
+@supports (height:100dvh) { #screen-battle.reels, #rlIntro { --rlw:min(100vw, calc(100dvh * 9 / 16)); } }
+body.reels-on .banner, body.reels-on #emoLayer, body.reels-on #lifeFx { display:none !important; }
+#screen-battle.reels { --pad:calc(var(--rlw) * .04); position:fixed; inset:0; z-index:5; height:auto; min-height:0; padding:0; gap:0; align-items:center; justify-content:center; background:#fff; color:#111; overflow:hidden; animation:none; }
+#screen-battle.reels > .hud, #screen-battle.reels > .tray { display:none; }
+#screen-battle.reels .flab, #screen-battle.reels .uinfo, #screen-battle.reels .tipchip, #screen-battle.reels .oddsgauge, #screen-battle.reels .camzoom, #screen-battle.reels .minimap, #screen-battle.reels .final-moment-overlay, #screen-battle.reels #field .tile, #screen-battle.reels #field .rowlab { display:none !important; }
+#screen-battle.reels #field::after { display:none; }
+.rl-top, #rlStats { display:none; }
+#screen-battle.reels .rl-top { display:flex; flex:none; align-items:center; justify-content:space-between; width:var(--rlw); height:calc(var(--rlw) * .1); padding:0 calc(var(--rlw) * .02); }
+.rl-cap { font-size:calc(var(--rlw) * .03); font-weight:800; letter-spacing:.18em; color:#9a9a96; }
+.rl-x { width:44px; height:44px; border:0; background:transparent; padding:0; font-size:18px; font-weight:800; color:#111; opacity:.28; } .rl-x.off { visibility:hidden; }
+#screen-battle.reels .fieldwrap { flex:none; width:calc(var(--rlw) - var(--pad) * 2); height:calc(var(--rlw) - var(--pad) * 2); min-height:0; border-radius:0; background:#fff; border:calc(var(--rlw) * .009) solid #111; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; cursor:default; pointer-events:none; }
+#screen-battle.reels .unit { background:#fff; box-shadow:0 0 0 4px #111, 0 4px 10px rgba(0,0,0,.12); }
+#screen-battle.reels .unit.enemy { box-shadow:0 0 0 4px var(--red), 0 4px 10px rgba(0,0,0,.12); }
+#screen-battle.reels .unit .unit-hpbar-wrap, #screen-battle.reels .unit .unit-cdbar-wrap, #screen-battle.reels .unit .unit-shieldbar-wrap, #screen-battle.reels .unit .unit-level { display:none !important; }
+/* 밑 능력치 칸: 왼쪽 = 검정 · 오른쪽 = 빨강 */
+#screen-battle.reels #rlStats { display:grid; flex:none; width:calc(var(--rlw) - var(--pad) * 2); grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:calc(var(--rlw) * .05); margin-top:calc(var(--rlw) * .03); --nm:.062; --hh:.075; --ch:.027; --gp:.025; }
+#rlStats.n3 { --nm:.04; --hh:.052; --ch:.0245; --gp:.022; }
+.rl-col { display:flex; flex-direction:column; gap:calc(var(--rlw) * var(--gp)); min-width:0; }
+.rl-u { min-width:0; transition:opacity .3s; } .rl-u.dead { opacity:.35; } .rl-u.dead .rl-nm span { text-decoration:line-through; }
+.rl-nm { display:flex; align-items:baseline; gap:.35em; min-width:0; font-size:calc(var(--rlw) * var(--nm)); font-weight:900; letter-spacing:-.05em; line-height:1.15; white-space:nowrap; color:#111; }
+.rl-col.e .rl-nm { flex-direction:row-reverse; color:var(--red); }
+.rl-nm span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.rl-nm em { flex:none; font-size:.5em; font-style:normal; font-weight:800; letter-spacing:0; color:#8d8d89; } .rl-nm em:empty { display:none; }
+.rl-nm i { flex:none; font-style:normal; font-size:.6em; letter-spacing:0; }
+.rl-hp { position:relative; height:calc(var(--rlw) * var(--hh)); margin-top:.2em; background:#e6e6e2; border:calc(var(--rlw) * .006 + 1px) solid #111; overflow:hidden; }
+.rl-hp b { position:absolute; left:0; top:0; bottom:0; width:100%; background:#62c45a; transition:width .12s linear; } .rl-col.e .rl-hp b { left:auto; right:0; }
+.rl-hp i { position:absolute; left:0; bottom:0; height:26%; width:0; background:#65cfff; transition:width .12s linear; } .rl-col.e .rl-hp i { left:auto; right:0; }
+.rl-hp span { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; font-size:calc(var(--rlw) * var(--hh) * .56); font-weight:700; letter-spacing:.02em; color:#fff; text-shadow:0 0 3px rgba(0,0,0,.5); font-variant-numeric:tabular-nums; }
+.rl-sk { height:calc(var(--rlw) * .011 + 1px); margin-top:calc(var(--rlw) * .008); background:#dcdcd8; } .rl-sk i { display:block; height:100%; width:0; background:#111; } .rl-col.e .rl-sk i { margin-left:auto; background:var(--red); }
+.rl-ch { display:flex; flex-wrap:wrap; gap:.2em .8em; margin-top:calc(var(--rlw) * .01); font-size:calc(var(--rlw) * var(--ch)); font-weight:700; line-height:1.3; color:#8d8d89; } .rl-ch b { color:#444; font-weight:800; } .rl-col.e .rl-ch { justify-content:flex-end; }
+/* 끝났을 때: 이긴 쪽 */
+.rl-win { position:absolute; inset:0; z-index:50; display:none; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--rlw) * .02); background:rgba(255,255,255,.88); pointer-events:none; text-align:center; }
+.rl-win.show { display:flex; animation:rlPop .45s cubic-bezier(.2,1.4,.4,1) both; } @keyframes rlPop { from { opacity:0; transform:scale(.92); } }
+.rlw-pics { display:flex; gap:calc(var(--rlw) * .02); } .rl-win .pic { width:calc(var(--rlw) * .26); aspect-ratio:1; border-radius:50%; overflow:hidden; background:#fff; box-shadow:0 0 0 calc(var(--rlw) * .012) var(--wc, #111); } .rl-win.n3 .pic { width:calc(var(--rlw) * .17); } .rl-win .pic img { display:block; width:100%; height:100%; object-fit:cover; }
+.rl-win small { font-size:calc(var(--rlw) * .035); font-weight:900; letter-spacing:.3em; color:#9a9a96; } .rl-win b { font-size:calc(var(--rlw) * .09); font-weight:900; letter-spacing:-.05em; color:var(--wc, #111); }
+/* 시작 전 인트로: 지후마다 능력 · 설명 */
+#rlIntro { position:fixed; inset:0; z-index:86; display:none; justify-content:center; background:#fff; color:#111; } #rlIntro.show { display:flex; }
+.rli-in { --fs:12px; position:relative; width:var(--rlw); height:100%; display:flex; flex-direction:column; gap:calc(var(--rlw) * .03); padding:calc(var(--rlw) * .04); }
+.rli-top { flex:none; display:flex; align-items:baseline; justify-content:space-between; } .rli-top small { font-size:calc(var(--rlw) * .03); font-weight:800; letter-spacing:.18em; color:#9a9a96; } .rli-top b { font-size:calc(var(--rlw) * .07); font-weight:900; letter-spacing:-.04em; }
+.rli-body { position:relative; flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; gap:calc(var(--rlw) * .02); }
+.rli-in.n3 .rli-body { flex-direction:row; align-items:stretch; gap:calc(var(--rlw) * .03); }
+.rli-col { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; gap:calc(var(--rlw) * .02); }
+.rli-card { display:flex; flex-direction:column; gap:.6em; min-height:0; padding:calc(var(--rlw) * .03); border:calc(var(--rlw) * .008) solid #111; border-radius:calc(var(--rlw) * .04); font-size:var(--fs); overflow:hidden; animation:rliIn .5s cubic-bezier(.2,1.2,.3,1) both; animation-delay:calc(var(--i) * .13s + .1s); } .rli-card.e { border-color:var(--red); }
+.rli-in.n3 .rli-card { flex:1; } .rli-in.fit .rli-card { animation:none !important; }
+.rli-h { display:flex; align-items:center; gap:.8em; }
+.rli-pic { flex:none; width:calc(var(--fs) * 4.6); aspect-ratio:1; border-radius:50%; overflow:hidden; background:#fff; box-shadow:0 0 0 .22em #111; } .rli-card.e .rli-pic { box-shadow:0 0 0 .22em var(--red); } .rli-pic img { display:block; width:100%; height:100%; object-fit:cover; }
+.rli-t { min-width:0; } .rli-t b { display:block; font-size:1.55em; font-weight:900; letter-spacing:-.05em; line-height:1.1; } .rli-card.e .rli-t b { color:var(--red); } .rli-t small { font-size:.85em; font-weight:700; color:#8d8d89; }
+.rli-tag { margin:0; font-size:.95em; font-weight:700; line-height:1.4; color:#55555a; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rli-st { display:flex; flex-wrap:wrap; gap:.3em .9em; font-size:.88em; font-weight:700; color:#8d8d89; } .rli-st b { color:#111; font-weight:900; }
+.rli-ab { display:flex; flex-direction:column; gap:.55em; font-size:1em; font-weight:600; line-height:1.5; color:#2b2b30; word-break:keep-all; } .rli-ab p { margin:0; } .rli-ab p.none { color:#9a9a96; } .rli-ab b { font-weight:900; }
+.rli-ab em { display:inline-block; margin-right:.5em; padding:0 .55em; border-radius:999px; background:#111; color:#fff; font-size:.78em; font-style:normal; font-weight:800; vertical-align:.08em; } .rli-card.e .rli-ab em { background:var(--red); }
+.rli-vs { flex:none; align-self:center; font-size:calc(var(--rlw) * .06); font-weight:900; letter-spacing:.1em; }
+.rli-vs.mid { position:absolute; left:50%; top:50%; z-index:2; width:calc(var(--rlw) * .12); aspect-ratio:1; display:grid; place-items:center; transform:translate(-50%, -50%); border-radius:50%; background:#111; color:#fff; font-size:calc(var(--rlw) * .04); box-shadow:0 0 0 calc(var(--rlw) * .012) #fff; }
+.rli-foot { flex:none; display:flex; flex-direction:column; align-items:center; gap:calc(var(--rlw) * .025); }
+.rli-bar { width:100%; height:calc(var(--rlw) * .008 + 1px); background:#e6e6e2; overflow:hidden; } .rli-bar i { display:block; height:100%; background:#111; transform-origin:left; animation:rliBar linear both; }
+.rli-go { border:0; border-radius:999px; background:#111; color:#fff; padding:.8em 2.2em; font-size:calc(var(--rlw) * .04); font-weight:900; }
+@keyframes rliIn { from { opacity:0; transform:translateY(14px) scale(.96); } } @keyframes rliBar { from { transform:scaleX(0); } }
+.rl-btns { display:flex; align-items:center; } .rl-x { cursor:pointer; } .rl-win { overflow:hidden; } .rli-vs.mid { top:calc(var(--rlw) * .1); width:calc(var(--rlw) * .09); font-size:calc(var(--rlw) * .03); } /* 3대3: 가운데 VS 가 카드 글자를 가리지 않게 윗줄(사진 줄)로 */
 </style>
 </head>
 <body data-chrome="0">
@@ -1216,7 +1278,7 @@ input.text { font-size:20px; font-weight:800; }
     <div class="annbar" id="lobbyAnn" hidden></div>
     <div class="lobby-grid">
       <div class="lobby-left">
-        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.10.4</span></div>
+        <div class="hero"><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="lobbyVer">R2.10.5</span></div>
         <div class="g-card deckcard">
           <div class="dh"><b>현재 덱</b><small id="lobbyDeckN">0 / 5</small><span class="sp"></span><button class="link" id="btnDeckEdit">편집 ›</button></div>
           <div class="ldeck" id="lobbyDeck"></div>
@@ -1238,7 +1300,7 @@ input.text { font-size:20px; font-weight:800; }
 <!-- 닉네임 -->
 <div id="screen-welcome" class="screen">
   <div class="g-card welcome">
-    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.10.4</span></div>
+    <div><div class="eyebrow">RE:JHBT</div><div class="logo">RE :<br>지후배틀</div><span class="vpill" id="welcomeVer">R2.10.5</span></div>
     <div><div class="eyebrow" style="margin-bottom:8px">닉네임 · 1~12자</div><input class="text" id="nickInput" maxlength="12" placeholder="지후왕"></div>
     <button class="k-btn big" id="btnStart">시작하기 →</button>
     <button class="g-btn" id="btnWelcomeLogin">이미 계정이 있어요 · 로그인</button>
@@ -1326,18 +1388,22 @@ input.text { font-size:20px; font-weight:800; }
 </div>
 <!-- 전투 -->
 <div id="screen-battle" class="screen">
+  <div class="rl-top"><span class="rl-cap">RE : 지후배틀</span><span class="rl-btns"><button class="rl-x off" id="rlAgain" aria-label="다시">↻</button><button class="rl-x" id="rlExit" aria-label="나가기">✕</button></span></div>
   <div class="hud">
     <div class="hpill a"><span class="av pfw" id="hudAvA"></span><span class="who"><b id="hudNickA">나</b><span class="lives" id="hudLivesA"></span></span></div>
     <div class="hpill mid" id="hudMid"><span class="rd"><small>ROUND</small><b id="hudRound">1</b></span><span class="vr"></span><span class="ph"><b id="hudPhase">배치 단계</b><small id="hudMode">일반전 · 봇</small></span><span class="ring" id="hudRing"><b id="hudTimer">15</b></span><span class="spec-chip">관전 중</span></div>
     <div class="hpill e"><span class="who"><b id="hudNickE">상대</b><span class="lives" id="hudLivesE"></span></span><span class="av pfw" id="hudAvE"></span></div>
   </div>
-  <div class="fieldwrap" id="fieldWrap"><div id="field"></div><div class="uinfo" id="uInfo" hidden></div><span class="flab a" id="flabA">내 진영 · 3 × 5<span class="fdeck" id="fdeckA"></span><span class="fev" id="fevA" data-ev="1"></span></span><span class="flab e" id="flabE">상대 진영<span class="fhide">· 지난 라운드 배치</span><span class="fdeck" id="fdeckE"></span><span class="fev" id="fevE" data-ev="1"></span></span><div class="tipchip" id="deployTip"></div><div class="oddsgauge" id="hudOdds" hidden><span id="oddsLabA">나</span><b id="oddsA">50%</b><span class="og"><i id="oddsBar" style="width:50%"></i></span><b class="e" id="oddsE">50%</b><span id="oddsLabE">상대</span></div><div class="camzoom" id="camZoom"><button id="btnZoomOut" aria-label="축소">−</button><span id="zoomLab">100%</span><button id="btnZoomIn" aria-label="확대">+</button><button id="btnZoomFit" aria-label="전체 보기">⤢</button></div><div class="minimap" id="miniMap"><canvas id="miniMapCanvas" width="308" height="196"></canvas></div><div class="final-moment-overlay" id="finalMoment"><span class="final-moment-kicker">FINAL MOMENT</span><strong>마지막 순간</strong><span class="final-moment-sub">전투 결과를 확인하고 있습니다</span></div></div>
+  <div class="fieldwrap" id="fieldWrap"><div class="rl-win" id="rlWin"></div><div id="field"></div><div class="uinfo" id="uInfo" hidden></div><span class="flab a" id="flabA">내 진영 · 3 × 5<span class="fdeck" id="fdeckA"></span><span class="fev" id="fevA" data-ev="1"></span></span><span class="flab e" id="flabE">상대 진영<span class="fhide">· 지난 라운드 배치</span><span class="fdeck" id="fdeckE"></span><span class="fev" id="fevE" data-ev="1"></span></span><div class="tipchip" id="deployTip"></div><div class="oddsgauge" id="hudOdds" hidden><span id="oddsLabA">나</span><b id="oddsA">50%</b><span class="og"><i id="oddsBar" style="width:50%"></i></span><b class="e" id="oddsE">50%</b><span id="oddsLabE">상대</span></div><div class="camzoom" id="camZoom"><button id="btnZoomOut" aria-label="축소">−</button><span id="zoomLab">100%</span><button id="btnZoomIn" aria-label="확대">+</button><button id="btnZoomFit" aria-label="전체 보기">⤢</button></div><div class="minimap" id="miniMap"><canvas id="miniMapCanvas" width="308" height="196"></canvas></div><div class="final-moment-overlay" id="finalMoment"><span class="final-moment-kicker">FINAL MOMENT</span><strong>마지막 순간</strong><span class="final-moment-sub">전투 결과를 확인하고 있습니다</span></div></div>
+  <div id="rlStats"></div>
   <div class="tray">
     <div class="tl"><span class="ucount">유닛 <b id="hudCount">0</b></span><span class="row"><button class="g-btn" id="btnStatsHud">📊 통계</button></span></div>
     <div class="pool" id="pool"></div>
     <div class="tr"><div class="seg" id="speedSeg"><button data-speed="1">1×</button><button data-speed="2">1.5×</button></div><button class="g-btn" id="btnEmo">이모티콘</button><button class="k-btn" id="btnDeployDone" title="고른 카드(없으면 첫 카드)를 알맞은 칸에 바로 놓아요">자동 배치</button><button class="g-btn danger" id="btnQuit">포기</button></div>
   </div>
 </div>
+<!-- 릴스 모드 (R2.10.5): 시작 전 능력 소개 -->
+<div id="rlIntro"></div>
 <!-- 결과: 결과 카드 + 통계 카드 -->
 <div id="screen-result" class="screen">
   <div class="result">
@@ -1450,6 +1516,7 @@ const CFG = {
   CELL: 75,                                // 1칸 = 75px (전작 GRID 60 의 1.25배) · 사거리 · 이동 단위. 유닛 반지름도 이 비율로 커진다 (UNIT_R × CELL/45)
   COLS: 5, ROWS: 3,                        // 배치 칸: 진영마다 3줄(전열 · 중열 · 후열) × 5칸 (전작은 3 × 8)
   DEPTH: [0.60, 0.72, 0.84], ACROSS: [0.1, 0.9], // 전작 V42 칸 위치 (전장 비율)
+  MAP_REELS: [1120, 1120],                         // 릴스 모드: 정사각형 전장 (R2.10.5)
   MAP_EW: [1760, 1120], MAP_NS: [1120, 1600],     // 전작 전장 크기 (가로 화면 · 세로 화면)
   UNIT_R: 28,                              // 전작 유닛 반지름 (45px 격자 기준 · ×60/45)
   MAX_UNITS: 15, SAME_LIMIT: 3, POOL: 3, PICK_TIME: 15, // R2.7.2: 배치 수 제한 없음 (빈 칸 15칸까지) · 같은 지후 3기 (R2.2.1 · 출격제한 1 은 그대로) · 카드 3장 · 15초
@@ -2713,6 +2780,7 @@ const CHROME = ['lobby', 'deck', 'gacha', 'shop', 'inv', 'arcade', 'tower', 'com
 function show(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $('screen-' + name).classList.add('active'); window.scrollTo(0, 0);
   document.body.dataset.chrome = CHROME.includes(name) ? '1' : '0'; $('tabbar').querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === (name === 'tower' || name === 'comp' || name === 'sandbox' ? 'arcade' : name)));
+  if (name !== 'battle') { document.body.classList.remove('reels-on'); $('screen-battle').classList.remove('reels'); } // 릴스 모드 해제 (R2.10.5)
   if (name === 'battle') fitField(); bgmTick(); if (name !== 'social') dmClose();
 }
 function openTab(name) { // 하단 탭 바 · 로비 버튼
@@ -2866,7 +2934,9 @@ let uidSeq = 0;
 const WS = CFG.CELL / 45; // 전작 WORLD_SCALE: 45px 격자 기준 수치 → 지금 격자 (유닛 반지름 · 몸 간격도 같은 비율)
 // 전장 방향: 모바일 · PC 상관없이 항상 가로 전장 (나는 왼쪽 · 상대는 오른쪽). 세로 전장은 좌표 버그 때문에 쓰지 않는다
 function isEW() { return true; }
-const FW = () => (isEW() ? CFG.MAP_EW : CFG.MAP_NS)[0], FH = () => (isEW() ? CFG.MAP_EW : CFG.MAP_NS)[1];
+function reelsOn() { return !!(S.arc && S.arc.kind === 'reels'); } // 릴스 모드 (R2.10.5 · 샌드박스 안 · reels.js)
+const sandboxLike = () => !!(S.arc && (S.arc.kind === 'sandbox' || S.arc.kind === 'reels')); // 보상 · 전적 · 배치 없는 한 라운드 싸움
+const FW = () => (reelsOn() ? CFG.MAP_REELS : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[0], FH = () => (reelsOn() ? CFG.MAP_REELS : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[1];
 const TILES = CFG.COLS * CFG.ROWS;
 // 배치 칸 중심 (전작 v42TileCenter): tile = row * 5 + col · row 0 = 전열(가운데 쪽) · 나는 왼쪽(세로 화면은 아래)
 function tileXY(side, t) {
@@ -3016,7 +3086,7 @@ function addStatus(t, key, sec, extra) {
 function killUnit(u) {
   botMind.unitDown(u);
   S.lastDeath = { x: u.x, y: u.y }; sfx('death');
-  if (!S.net && !(S.arc && S.arc.kind === 'sandbox') && u.side === OPP() && S.phase === 'combat') { profile.ach.kills++; questAdd('kills', 1); } // 일일 퀘스트 · 업적: 봇전에서 적 처치
+  if (!S.net && !sandboxLike() && u.side === OPP() && S.phase === 'combat') { profile.ach.kills++; questAdd('kills', 1); } // 일일 퀘스트 · 업적: 봇전에서 적 처치
   u.alive = false; u.vx = 0; u.vy = 0; u.desVx = 0; u.desVy = 0; u._engaged = false;
   clearTelegraph(u);
   if (u.el) { u.el.classList.add('dead'); spawnDeathEffect(u); }
@@ -3455,7 +3525,7 @@ function loop(ts) {
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
   acc += real * S.speed;
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 30) { acc -= CFG.STEP; stepCombat(CFG.STEP); }
-  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
+  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); if (reelsOn()) reelsTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
   setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME);
   if (S.phase === 'combat') { const p = allyOdds(), mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; requestAnimationFrame(loop); }
 }
@@ -3696,8 +3766,11 @@ function newMatch(o) { // o: 아케이드 { arc, decks() } — 내 덱 대신 �
   S.pf = { a: { fr: profile.frame, ph: myPhoto() }, e: { fr: botFrame(S.lvl.e), ph: S.deck.e[0] } }; // 프로필 테두리 · 사진
   S.boost = !o && boostActive(); // 부스트 중에 시작한 판은 끝날 때 꺼졌어도 받는다 (아케이드는 없음)
   $('screen-battle').classList.remove('spec');
-  show('battle'); renderIds(); renderLives(); renderField(); renderPool(); showIntro(); presencePing('battle'); if (nb > 0) setTimeout(() => banner(`🐣 초보자 보호 · ${CFG.NEWBIE_GAMES - nb + 1} / ${CFG.NEWBIE_GAMES}판`), 300); // 봇이 일반 4 + 희귀 1
-  clearTimeout(newMatch.t); newMatch.t = setTimeout(() => { if (S.phase === 'intro') startRound(); }, 3000);
+  const rv = !!(o && o.arc && o.arc.kind === 'reels'); // 릴스 모드 (R2.10.5): 화면 · 전장을 show 보다 먼저 바꿔야 크기가 맞다
+  document.body.classList.toggle('reels-on', rv); $('screen-battle').classList.toggle('reels', rv);
+  if (rv) { $('rlWin').className = 'rl-win'; $('rlAgain').classList.add('off'); $('rlIntro').classList.remove('show'); }
+  show('battle'); renderIds(); renderLives(); renderField(); renderPool(); if (rv) reelsIntro(); else showIntro(); presencePing('battle'); if (nb > 0) setTimeout(() => banner(`🐣 초보자 보호 · ${CFG.NEWBIE_GAMES - nb + 1} / ${CFG.NEWBIE_GAMES}판`), 300); // 봇이 일반 4 + 희귀 1
+  clearTimeout(newMatch.t); if (!rv) newMatch.t = setTimeout(() => { if (S.phase === 'intro') startRound(); }, 3000); // 릴스: 인트로가 직접 (또는 자동으로) 시작한다
 }
 // HUD: 양쪽 닉네임 · 라이프 · 모드
 function renderIds() { // 왼쪽(A) = 나 · 오른쪽(E) = 상대
@@ -3706,7 +3779,7 @@ function renderIds() { // 왼쪽(A) = 나 · 오른쪽(E) = 상대
     $('hudNick' + U).innerHTML = `${esc(S.nick[s])}${lv != null ? ` <em>Lv.${lv}</em>` : ''}`; const pf = S.pf && S.pf[s] || {}; $('hudAv' + U).innerHTML = pfHtml(pf.fr, 40, pf.ph, { letter: S.nick[s], fc: s === ME() ? 'var(--ink)' : 'var(--red)' });
     const bn = (S.evf && S.evf[s] && S.evf[s].ban) || []; $('fdeck' + U).innerHTML = S.deck[s].map(id => `<span class="${bn.includes(id) ? 'banned' : ''}" style="--rc:${CHARS[id].color || '#fff'}" title="${CHARS[id].name}${bn.includes(id) ? ' · 밴' : ''}" data-cid="${id}">${pic(id)}</span>`).join(''); /* [밴] 이벤트로 막힌 지후는 회색 + 금지 (R2.10) */ }); // 양쪽 덱 (전장 위 모서리) · 테두리는 지후 고유 색 (R2.6.1)
   const spec = S.net && S.net.spec;
-  $('hudMode').textContent = !S.net ? (S.arc ? ({ sandbox: '아케이드 · 샌드박스', mirror: '아케이드 · 미러전', tower: `지후의 탑 · ${S.arc.floor}층`, comp: '경쟁전 · 3판 2선승' })[S.arc.kind] || '아케이드' : '일반전 · 봇') : spec ? '친선전 · 보상 없음' : '친선전 · 1:1';
+  $('hudMode').textContent = !S.net ? (S.arc ? ({ sandbox: '아케이드 · 샌드박스', reels: '아케이드 · 릴스 모드', mirror: '아케이드 · 미러전', tower: `지후의 탑 · ${S.arc.floor}층`, comp: '경쟁전 · 3판 2선승' })[S.arc.kind] || '아케이드' : '일반전 · 봇') : spec ? '친선전 · 보상 없음' : '친선전 · 1:1';
   $('flabA').firstChild.textContent = `${spec ? S.nick[ME()] + ' 진영' : '내 진영'} · 3 × 5`; $('oddsLabA').textContent = spec ? S.nick[ME()] : '나'; $('oddsLabE').textContent = spec ? S.nick[OPP()] : S.net ? '상대' : S.nick[OPP()]; $('flabE').firstChild.textContent = `${S.nick[OPP()]} 진영`; $('btnQuit').textContent = spec ? '관전 나가기' : '포기';
 }
 // 매치 인트로 — 3초 동안 양쪽 닉네임 · 덱
@@ -3921,7 +3994,7 @@ function startRound() {
 const actKey = () => `${S.rk}-${S.deployN}`;
 function nextDeploy() {
   S.deployN++;
-  if (S.deployN > deployChances() || S.arc && S.arc.kind === 'sandbox') return beginCombat(); // 샌드박스는 배치 없이 바로 전투
+  if (S.deployN > deployChances() || sandboxLike()) return beginCombat(); // 샌드박스는 배치 없이 바로 전투
   S.phase = 'deploy'; S.pick = null; S.moveSel = null; S.ops = [];
   if (S.net && S.net.spec) { S.pool = []; renderField(); renderPool(); return netWait(); } // 관전: 두 선수의 배치를 기다린다
   const me = ME(), r = S.net ? mulberry32(hashSeed(S.net.seed, 'pool', actKey(), me)) : rng; // 친선전: 내 카드는 시드로 (상대 화면의 난수를 건드리지 않는다)
@@ -4113,7 +4186,7 @@ function endRound(w, timedOut) {
 }
 function roundResult(w, timedOut) {
   const me = ME(), wait = S.fast ? 0 : 1800;
-  if (S.arc && S.arc.kind === 'sandbox') { if (!S.fast && w !== 'draw') sfx(w === me ? 'round_win' : 'round_lose'); S.later = setTimeout(() => endMatch(w === me, w === 'draw' ? (timedOut ? '시간 종료 · 무승부' : '양쪽 전멸 · 무승부') : ''), wait); return; } // 샌드박스: 한 라운드로 끝
+  if (sandboxLike()) { if (!S.fast && w !== 'draw' && !reelsOn()) sfx(w === me ? 'round_win' : 'round_lose'); S.later = setTimeout(() => endMatch(w === me, w === 'draw' ? (timedOut ? '시간 종료 · 무승부' : '양쪽 전멸 · 무승부') : ''), wait); return; } // 샌드박스: 한 라운드로 끝
   if (!S.fast) { if (w === me) sfx('round_win'); else if (w !== 'draw') sfx('round_lose'); }
   const why = timedOut ? (S.stallEnded ? `${CFG.STALL}초 동안 피해 없음` : `${CFG.ROUND_TIME}초 종료`) : '';
   if (timedOut && w === 'draw') {
@@ -4249,6 +4322,7 @@ $('arcModes').addEventListener('click', async e => { const b = e.target.closest(
   if (m.k === 'mirror') newMatch({ arc: { kind: 'mirror' }, decks: () => { const d = A.pick(Object.keys(CHARS), 5); return { a: d.slice(), e: d.slice() }; } }); // 미러전: 양쪽이 같은 무작위 덱
 });
 function arcEnd(win, note) { // 아케이드 결과: 포인트만 (탑은 층 보상)
+  if (S.arc.kind === 'reels') return reelsEnd(win, note); // 릴스 모드: 결과 화면 없이 전장 위에 이긴 쪽
   if (S.arc.kind === 'sandbox') { sfx(win ? 'match_win' : 'match_lose'); $('resTitle').textContent = note && note.includes('무승부') ? '무승부' : win ? '승리' : '패배'; $('resMeta').textContent = 'ARCADE · 샌드박스'; $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>보상 없음</span><span>전적에 남지 않아요</span></div>`; resBack = 'sandbox'; show('result'); return; }
   if (S.arc.kind === 'tower') return towerEnd(win, note);
   if (S.arc.kind === 'comp') return compEnd(win, note);
@@ -4406,35 +4480,123 @@ async function compSeasonReward() { // 지난 시즌 최종 순위 보상 (한 �
 }
 
 // ═════════ 샌드박스 (R2.10 · 아케이드 · 무료): 양쪽 팀을 지후 · 레벨로 골라 (팀마다 최대 5기) 한 라운드 싸움 · 보상 · 전적 없음 ═════════
-const SB = { a: [], e: [], side: 'a' };
-try { const v = JSON.parse(localStorage.getItem('rejhbt-sandbox') || 'null'); if (v && Array.isArray(v.a) && Array.isArray(v.e)) ['a', 'e'].forEach(k => { SB[k] = v[k].filter(x => x && CHARS[x.id]).slice(0, 5).map(x => ({ id: x.id, lv: clamp(nat(x.lv) || 1, 1, CFG.MAX_LV) })); }); } catch (e) {} // 이 기기에 마지막 구성
-const sbSave = () => { try { localStorage.setItem('rejhbt-sandbox', JSON.stringify({ a: SB.a, e: SB.e })); } catch (e) {} };
+const SB = { a: [], e: [], side: 'a', mode: 'std', n: 1, auto: true }; // mode: 'std' 일반 · 'reels' 🎬 릴스 모드 (R2.10.5) · n: 릴스 팀 인원 (1 · 3) · auto: 인트로 뒤 자동 시작
+try { const v = JSON.parse(localStorage.getItem('rejhbt-sandbox') || 'null'); if (v && Array.isArray(v.a) && Array.isArray(v.e)) { ['a', 'e'].forEach(k => { SB[k] = v[k].filter(x => x && CHARS[x.id]).slice(0, 5).map(x => ({ id: x.id, lv: clamp(nat(x.lv) || 1, 1, CFG.MAX_LV) })); }); if (v.mode === 'reels') SB.mode = 'reels'; if (v.n === 3) SB.n = 3; if (v.auto === false) SB.auto = false; } } catch (e) {} // 이 기기에 마지막 구성
+const sbSave = () => { try { localStorage.setItem('rejhbt-sandbox', JSON.stringify({ a: SB.a, e: SB.e, mode: SB.mode, n: SB.n, auto: SB.auto })); } catch (e) {} };
+const sbCap = () => (SB.mode === 'reels' ? SB.n : 5); // 팀마다 넣을 수 있는 수
 function openSandbox() { renderSandbox(); show('sandbox'); }
 function renderSandbox() {
-  const team = k => `<div class="g-card sb-team ${k}${SB.side === k ? ' on' : ''}" data-sbside="${k}"><div class="sb-th"><span class="eyebrow">${k === 'a' ? '내 팀 · 왼쪽' : '상대 팀 · 오른쪽'}</span><b>${SB[k].length} / 5</b>${SB.side === k ? '<em>여기에 넣는 중</em>' : '<em>눌러서 고르기</em>'}</div>
-    <div class="sb-slots">${Array.from({ length: 5 }, (_, i) => { const x = SB[k][i]; return x ? `<div class="sb-slot r-${CHARS[x.id].rarity}"><span class="pic">${pic(x.id)}</span><small>${shortName(x.id)}</small><span class="sb-lv"><button data-sblv="-1" data-sbk="${k}" data-sbi="${i}" ${x.lv <= 1 ? 'disabled' : ''}>−</button><b>Lv.${x.lv}</b><button data-sblv="1" data-sbk="${k}" data-sbi="${i}" ${x.lv >= CFG.MAX_LV ? 'disabled' : ''}>＋</button></span><button class="sb-x" data-sbdel="${i}" data-sbk="${k}" aria-label="빼기">✕</button></div>` : '<div class="sb-slot empty">+</div>'; }).join('')}</div>
+  const reels = SB.mode === 'reels', cap = sbCap(), ready = k => (reels ? SB[k].length >= cap : SB[k].length > 0);
+  const team = k => `<div class="g-card sb-team ${k}${SB.side === k ? ' on' : ''}" data-sbside="${k}"><div class="sb-th"><span class="eyebrow">${k === 'a' ? '내 팀 · 왼쪽' : '상대 팀 · 오른쪽'}</span><b>${Math.min(SB[k].length, cap)} / ${cap}</b>${SB.side === k ? '<em>여기에 넣는 중</em>' : '<em>눌러서 고르기</em>'}</div>
+    <div class="sb-slots${reels ? ' n' + cap : ''}">${Array.from({ length: cap }, (_, i) => { const x = SB[k][i]; return x ? `<div class="sb-slot r-${CHARS[x.id].rarity}"><span class="pic">${pic(x.id)}</span><small>${shortName(x.id)}</small><span class="sb-lv"><button data-sblv="-1" data-sbk="${k}" data-sbi="${i}" ${x.lv <= 1 ? 'disabled' : ''}>−</button><b>Lv.${x.lv}</b><button data-sblv="1" data-sbk="${k}" data-sbi="${i}" ${x.lv >= CFG.MAX_LV ? 'disabled' : ''}>＋</button></span><button class="sb-x" data-sbdel="${i}" data-sbk="${k}" aria-label="빼기">✕</button></div>` : '<div class="sb-slot empty">+</div>'; }).join('')}</div>
     <div class="sb-tools"><button class="g-btn" data-sbrand="${k}">무작위</button><button class="g-btn" data-sbclear="${k}">비우기</button></div></div>`;
-  $('sbBody').innerHTML = `<div class="sb-top">${team('a')}<div class="sb-vs"><b>VS</b><button class="k-btn" id="sbGo" ${SB.a.length && SB.e.length ? '' : 'disabled'}>싸움 시작 ▶</button><small>한 라운드 · 배치 단계 없이 바로 전투</small></div>${team('e')}</div>
+  const seg = (attr, opts, cur) => `<div class="seg">${opts.map(([v, t]) => `<button data-${attr}="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${t}</button>`).join('')}</div>`;
+  $('sbBody').innerHTML = `<div class="sb-modes">${seg('sbmode', [['std', '🧪 일반'], ['reels', '🎬 릴스 모드']], SB.mode)}${reels ? seg('sbn', [[1, '1 VS 1'], [3, '3 VS 3']], SB.n) + seg('sbauto', [[1, '자동 시작'], [0, '직접 시작']], SB.auto ? 1 : 0) : ''}</div>
+    <div class="sb-top">${team('a')}<div class="sb-vs"><b>VS</b><button class="k-btn" id="sbGo" ${ready('a') && ready('e') ? '' : 'disabled'}>${reels ? '🎬 릴스 시작 ▶' : '싸움 시작 ▶'}</button><small>${reels ? `${SB.n}대${SB.n} · 정사각형 전장 · 능력 소개 뒤 한 라운드` : '한 라운드 · 배치 단계 없이 바로 전투'}</small></div>${team('e')}</div>
     <div class="g-card sb-pick"><span class="eyebrow">지후 고르기 · ${SB.side === 'a' ? '내 팀' : '상대 팀'}에 넣어요 (누를 때마다 1기 · 같은 지후 여러 번 가능)</span><div class="dr-grid">${Object.keys(RARITY).flatMap(byRarity).map(id => `<button class="dr-c r-${CHARS[id].rarity}" data-sbadd="${id}"><span class="pic">${pic(id)}</span><small>${shortName(id)}</small></button>`).join('')}</div></div>`;
 }
 $('sbBack').addEventListener('click', () => openTab('arcade'));
 $('sbBody').addEventListener('click', e => {
   const t = e.target, q = sel => t.closest(sel); let b;
-  if ((b = q('[data-sblv]'))) { const x = SB[b.dataset.sbk][+b.dataset.sbi]; if (x) x.lv = clamp(x.lv + Number(b.dataset.sblv), 1, CFG.MAX_LV); }
+  if ((b = q('[data-sbmode]'))) SB.mode = b.dataset.sbmode === 'reels' ? 'reels' : 'std';
+  else if ((b = q('[data-sbn]'))) SB.n = Number(b.dataset.sbn) === 3 ? 3 : 1;
+  else if ((b = q('[data-sbauto]'))) SB.auto = b.dataset.sbauto === '1';
+  else if ((b = q('[data-sblv]'))) { const x = SB[b.dataset.sbk][+b.dataset.sbi]; if (x) x.lv = clamp(x.lv + Number(b.dataset.sblv), 1, CFG.MAX_LV); }
   else if ((b = q('[data-sbdel]'))) SB[b.dataset.sbk].splice(+b.dataset.sbdel, 1);
-  else if ((b = q('[data-sbrand]'))) { const k = b.dataset.sbrand; SB[k] = A.pick(Object.keys(CHARS), 5).map(id => ({ id, lv: 1 + Math.floor(Math.random() * 3) })); }
+  else if ((b = q('[data-sbrand]'))) { const k = b.dataset.sbrand; SB[k] = A.pick(Object.keys(CHARS), sbCap()).map(id => ({ id, lv: 1 + Math.floor(Math.random() * 3) })); }
   else if ((b = q('[data-sbclear]'))) SB[b.dataset.sbclear] = [];
-  else if ((b = q('[data-sbadd]'))) { if (SB[SB.side].length >= 5) { banner('팀마다 최대 5기예요'); return; } SB[SB.side].push({ id: b.dataset.sbadd, lv: 1 }); sfx('place'); }
+  else if ((b = q('[data-sbadd]'))) { if (SB[SB.side].length >= sbCap()) { banner(`팀마다 최대 ${sbCap()}기예요`); return; } SB[SB.side].push({ id: b.dataset.sbadd, lv: 1 }); sfx('place'); }
   else if (q('#sbGo')) return sbStart();
   else if ((b = q('[data-sbside]'))) SB.side = b.dataset.sbside;
   else return;
   sbSave(); renderSandbox();
 });
 function sbStart() {
-  if (!SB.a.length || !SB.e.length) return; const team = { a: SB.a.map(x => ({ ...x })), e: SB.e.map(x => ({ ...x })) };
-  newMatch({ arc: { kind: 'sandbox' }, lives: 1, nick: '샌드박스', lvl: profile.level, decks: () => ({ a: team.a.map(x => x.id), e: team.e.map(x => x.id) }),
-    setup: () => ['a', 'e'].forEach(side => team[side].forEach(x => { const t = pickTile(side, roleRow(x.id), Math.random); if (t != null) S.place[side][t] = { id: x.id, lv: x.lv }; })) }); // 줄은 역할군대로 자동
+  const reels = SB.mode === 'reels', cap = sbCap(), n = SB.n, A_ = SB.a.slice(0, cap), E_ = SB.e.slice(0, cap);
+  if (!A_.length || !E_.length || (reels && (A_.length < cap || E_.length < cap))) return; const team = { a: A_.map(x => ({ ...x })), e: E_.map(x => ({ ...x })) };
+  newMatch({ arc: reels ? { kind: 'reels', n } : { kind: 'sandbox' }, lives: 1, nick: reels ? '릴스' : '샌드박스', lvl: profile.level, decks: () => ({ a: team.a.map(x => x.id), e: team.e.map(x => x.id) }),
+    setup: () => { const order = { a: [], e: [] }; ['a', 'e'].forEach(side => team[side].forEach(x => { const t = pickTile(side, roleRow(x.id), Math.random); if (t != null) { S.place[side][t] = { id: x.id, lv: x.lv }; order[side].push({ id: x.id, lv: x.lv, tile: t }); } })); if (reels) S.rl = { n, order, rows: null, t: 0 }; } }); // 줄은 역할군대로 자동 · 릴스는 밑 능력치 칸이 칸 번호(tile)로 지후를 따라간다
 }
+// ═════════ 릴스 모드 (샌드박스 안 · 게임 소개 마케팅 프리뷰): 규칙은 샌드박스와 같다 · 1대1 · 3대3 · 정사각형 전장 · 극한으로 단순한 화면 ═════════
+// 흐름: 샌드박스 [🎬 릴스 모드] → sbStart → newMatch({ arc: { kind: 'reels', n } }) → reelsIntro (지후마다 능력 · 설명) → reelsGo → startRound → 전투 (loop 가 reelsTick 으로 밑 능력치 칸을 갱신)
+//       → roundResult → endMatch → arcEnd → reelsEnd (이긴 쪽 · ↻ 다시 · ✕ 나가기). 전장만 정사각형 (CFG.MAP_REELS) · 화면은 #screen-battle.reels + body.reels-on
+const rlName = (id, n) => (n === 1 ? CHARS[id].name : shortName(id)); // 1대1 은 풀네임 · 3대3 은 짧게
+const rlRange = c => (c.range === 'melee' ? '근접' : c.melee ? `근접 ${c.range}칸` : `${c.range}칸`);
+const rlTag = c => { const m = String(c.story || '').match(/^[^.!?]*[.!?]/); return m && m[0].length <= 80 ? m[0] : ''; }; // 한 줄 소개 = 서사 첫 문장 (1대1 만)
+function reelsIntro() { // 시작 전 인트로: 양쪽 지후의 능력 · 설명 → 자동으로 (또는 눌러서) 시작
+  const rl = S.rl, n = S.arc.n, el = $('rlIntro'), ms = n === 1 ? 7000 : 10000;
+  clearTimeout(newMatch.t); clearTimeout(rl.t); reelsBuild();
+  const card = (side, o, i) => {
+    const c = CHARS[o.id], m = lvMult(o.lv), tag = n === 1 ? rlTag(c) : '', atk = c.noAttack ? '—' : c.atkText ? c.atkText() : Math.round(c.atk * m), skill = c.skill && c.skill.desc;
+    return `<div class="rli-card ${side}" style="--i:${i}"><div class="rli-h"><span class="rli-pic">${pic(o.id)}</span><div class="rli-t"><b>${rlName(o.id, n)}</b><small>${RARITY[c.rarity]} · ${c.role}${o.lv > 1 ? ` · Lv.${o.lv}` : ''}</small></div></div>`
+      + (tag ? `<p class="rli-tag">${tag}</p>` : '')
+      + `<div class="rli-st"><span>HP <b>${Math.round(c.hp * m).toLocaleString()}</b></span><span>ATK <b>${atk}</b></span><span>사거리 <b>${rlRange(c)}</b></span></div>`
+      + `<div class="rli-ab">${c.passive ? `<p><em>패시브</em>${c.passive}</p>` : ''}${skill ? `<p><em>스킬</em>${skill}</p>` : ''}${!c.passive && !skill ? '<p class="none">특수 능력 없음 · 기본기에 충실하다</p>' : ''}</div></div>`;
+  };
+  const A_ = rl.order.a, E_ = rl.order.e;
+  el.innerHTML = `<div class="rli-in n${n}"><div class="rli-top"><small>RE : 지후배틀</small><b>${n} VS ${n}</b></div><div class="rli-body">`
+    + (n === 1 ? `${card('a', A_[0], 0)}<div class="rli-vs">VS</div>${card('e', E_[0], 1)}` : `<div class="rli-col">${A_.map((o, i) => card('a', o, i)).join('')}</div><div class="rli-col">${E_.map((o, i) => card('e', o, i + 0.5)).join('')}</div><div class="rli-vs mid">VS</div>`)
+    + `</div><div class="rli-foot">${SB.auto ? `<div class="rli-bar"><i style="animation-duration:${ms}ms"></i></div>` : ''}<button class="rli-go" id="rlGo">${SB.auto ? '바로 시작 ▶' : '시작 ▶'}</button></div></div>`;
+  el.classList.add('show'); reelsFit(); $('rlGo').onclick = reelsGo;
+  if (SB.auto) rl.t = setTimeout(reelsGo, ms);
+}
+function reelsFit() { // 설명이 길면 글자를 줄여서 한 화면에 (카드가 잘리지 않게)
+  const root = $('rlIntro').querySelector('.rli-in'); if (!root) return;
+  const boxes = [...root.querySelectorAll('.rli-body, .rli-col, .rli-card')];
+  let fs = Math.round(root.clientWidth * (root.classList.contains('n3') ? 0.032 : 0.042) * 2) / 2;
+  root.classList.add('fit'); root.style.setProperty('--fs', fs + 'px'); // fit: 잠깐 애니메이션을 꺼서 정확히 잰다
+  for (let k = 0; k < 28 && fs > 7.5; k++) { if (!boxes.some(b => b.scrollHeight > b.clientHeight + 1)) break; fs -= 0.5; root.style.setProperty('--fs', fs + 'px'); }
+  root.classList.remove('fit');
+}
+function reelsGo() {
+  const rl = S.rl; if (rl) clearTimeout(rl.t);
+  if (!reelsOn() || S.phase !== 'intro') return;
+  $('rlIntro').classList.remove('show'); startRound(); reelsTick();
+}
+function reelsBuild() { // 밑 능력치 칸: 양쪽 지후마다 이름 · 체력바 · 스킬 게이지 · ATK · 공속 · 사거리
+  const rl = S.rl, n = S.arc.n; rl.rows = { a: [], e: [] };
+  ['a', 'e'].forEach(side => rl.order[side].forEach(o => rl.rows[side].push({ side, tile: o.tile, base: makeUnit(side, o.id, o.lv, 0, 0), last: {} })));
+  const box = $('rlStats'); box.className = 'n' + n;
+  box.innerHTML = ['a', 'e'].map(side => `<div class="rl-col ${side}">${rl.rows[side].map(() => '<div class="rl-u"><div class="rl-nm"><span></span><em></em><i></i></div><div class="rl-hp"><b></b><i></i><span></span></div><div class="rl-sk"><i></i></div><div class="rl-ch"></div></div>').join('')}</div>`).join('');
+  ['a', 'e'].forEach(side => { const us = box.querySelectorAll(`.rl-col.${side} .rl-u`); rl.rows[side].forEach((r, i) => { const el = us[i]; r.el = el; r.q = { nm: el.querySelector('.rl-nm span'), lv: el.querySelector('.rl-nm em'), ic: el.querySelector('.rl-nm i'), hp: el.querySelector('.rl-hp b'), sh: el.querySelector('.rl-hp i'), tx: el.querySelector('.rl-hp span'), sk: el.querySelector('.rl-sk i'), ch: el.querySelector('.rl-ch') }; }); });
+  reelsTick();
+}
+function reelsTick() { // 매 프레임 (loop): 바뀐 칸만 다시 쓴다
+  const rl = S.rl; if (!rl || !rl.rows || !reelsOn()) return;
+  const n = S.arc.n, started = S.phase !== 'intro' && S.units && S.units.length > 0;
+  ['a', 'e'].forEach(side => rl.rows[side].forEach(r => {
+    let u = r.base, dead = false;
+    if (started) { const g = S.units.filter(x => x.side === side && x.tile === r.tile); u = g.find(x => x.alive) || g[g.length - 1]; dead = !u || !u.alive; if (!u) u = r.base; } // 변신 · 분열해도 같은 칸 번호로 이어서 본다
+    const c = u.def, q = r.q, L = r.last, full = Math.max(1, Math.round(u.baseMaxHp || u.maxHp)), hp = dead ? 0 : clamp(Math.round(u.hp), 0, full), sh = dead ? 0 : Math.max(0, Math.round(u.shield || 0));
+    const name = rlName(u.id, n); if (L.name !== name) { L.name = name; q.nm.textContent = name; }
+    if (L.lv !== u.lv) { L.lv = u.lv; q.lv.textContent = u.lv > 1 ? `Lv.${u.lv}` : ''; }
+    const ic = dead || !u.st ? '' : Object.keys(STATUS).filter(k => u.st[k] > 0 && u.st[k] < 900).map(k => STATUS[k].icon).join(''); if (L.ic !== ic) { L.ic = ic; q.ic.textContent = ic; }
+    if (L.hp !== hp || L.full !== full) { L.hp = hp; L.full = full; q.hp.style.width = (hp / full * 100).toFixed(1) + '%'; q.tx.textContent = `${hp.toLocaleString()} / ${full.toLocaleString()}`; }
+    const shp = clamp(sh / full * 100, 0, 100).toFixed(1); if (L.shp !== shp) { L.shp = shp; q.sh.style.width = shp + '%'; }
+    let g = 0; const sk = c.skill; if (!dead && (sk || c.gauge)) { try { g = c.gauge ? c.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / sk.need; } catch (e) { g = 0; } } // 스킬 게이지 (drawUnit 과 같은 식)
+    const gp = (clamp(Number(g) || 0, 0, 1) * 100).toFixed(0); if (L.gp !== gp) { L.gp = gp; q.sk.style.width = gp + '%'; }
+    let atk = '—'; if (!c.noAttack) { try { atk = c.atkText ? c.atkText() : Math.round(effAtk(u)); } catch (e) { atk = Math.round(u.atk); } }
+    const asp = c.noAttack ? '—' : `${Number((u.atkSpeed || c.atkSpeed).toFixed(2))}초`;
+    const ch = `<span>ATK <b>${atk}</b></span><span>공속 <b>${asp}</b></span><span>사거리 <b>${rlRange(c)}</b></span>${sh > 0 ? `<span>🛡 <b>${sh}</b></span>` : ''}`;
+    if (L.ch !== ch) { L.ch = ch; q.ch.innerHTML = ch; }
+    if (L.dead !== dead) { L.dead = dead; r.el.classList.toggle('dead', dead); }
+  }));
+}
+function reelsEnd(win, note) { // 끝: 결과 화면 대신 전장 위에 이긴 쪽 · ↻ 다시 · ✕ 나가기
+  const n = S.arc.n, rl = S.rl, draw = !!(note && note.includes('무승부')), side = draw ? null : win ? 'a' : 'e';
+  reelsTick(); fitCamera(); sfx(draw ? 'match_lose' : 'match_win');
+  const alive = side ? S.units.filter(u => u.alive && u.side === side && u.tile != null) : [], ids = alive.length ? alive.map(u => u.id) : side ? rl.order[side].map(o => o.id) : [];
+  const w = $('rlWin'); w.className = 'rl-win n' + n; w.style.setProperty('--wc', side === 'e' ? 'var(--red)' : '#111');
+  w.innerHTML = draw ? '<small>DRAW</small><b>무승부</b>' : `<div class="rlw-pics">${ids.map(id => `<span class="pic">${pic(id)}</span>`).join('')}</div><small>WINNER</small><b>${n === 1 ? CHARS[ids[0]].name : side === 'a' ? '블랙 팀' : '레드 팀'} 승리</b>`;
+  w.classList.add('show'); $('rlAgain').classList.remove('off');
+}
+function reelsExit() { // ✕: 샌드박스 설정 화면으로 (진행 중이어도 그대로 끝낸다)
+  const rl = S.rl; if (rl) clearTimeout(rl.t); clearTimeout(S.later); clearTimeout(newMatch.t); clearInterval(S.timer);
+  S.phase = 'idle'; presencePing('lobby'); $('rlIntro').classList.remove('show'); openSandbox();
+}
+$('rlExit').addEventListener('click', reelsExit);
+$('rlAgain').addEventListener('click', () => { if (S.phase === 'idle') sbStart(); }); // 같은 구성으로 다시
+window.addEventListener('resize', () => { if (reelsOn() && $('screen-battle').classList.contains('active')) fitCamera(); if ($('rlIntro').classList.contains('show')) reelsFit(); });
 let resBack = null; // 결과 화면 '확인' 뒤 갈 곳
 // ═════════ 지후의 탑 (R2.7.2): 입장 🎟2 → 5페이즈 덱 고르기(저장 · 바꿀 수 없음) → 1층부터 끝없이 (클래식 · 3번 지면 처음부터) ═════════
 const TOWER_R4 = ['common', 'rare', 'epic', 'legend'], towerAny = (r, L) => L[Math.floor(r() * L.length)];
@@ -5800,6 +5962,13 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.10.5', date: '2026.10.26', title: '릴스 모드 (샌드박스)', sections: [
+    { title: '시스템', items: [
+      { icon: '🎬', name: '릴스 모드 (샌드박스)', tag: 'new', desc: '게임 소개 영상용 프리뷰. 샌드박스에서 <b>🎬 릴스 모드</b> → <b>1 VS 1</b> 또는 <b>3 VS 3</b> 를 고르면 규칙은 샌드박스와 같게 <b>정사각형 전장</b>에서 한 라운드 · 극한으로 단순한 흑백 화면.' },
+      { icon: '📋', name: '시작 전 능력 소개', tag: 'new', desc: '싸움 전에 양쪽 지후의 <b>HP · ATK · 사거리 · 패시브 · 스킬</b> 설명을 한 화면에 보여 줘요. 자동 시작(7~10초) 또는 직접 시작을 고를 수 있어요.' },
+      { icon: '📊', name: '밑 능력치 칸', tag: 'new', desc: '전장 밑에 지후마다 <b>체력바 · 스킬 게이지 · ATK · 공속 · 사거리 · 쉴드 · 상태이상</b> 이 실시간으로. 끝나면 이긴 쪽 · ↻ 다시 · ✕ 나가기.' },
+    ] },
+  ] },
   { v: 'R2.10.4', date: '2026.10.25', title: '레벨 성장 개편 · 밸런스', sections: [
     { title: '규칙 · 밸런스', items: [
       { icon: '4', name: '배치 기회', tag: 'nerf', desc: '첫 라운드 <b>4 → 3번</b> (그다음 2번 · 데스매치 3번은 그대로).' },
