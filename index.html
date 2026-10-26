@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.10.4"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.11.0"><meta name="jihoo-build" content="1"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -703,6 +703,16 @@ input.text { font-size:20px; font-weight:800; }
 .comic .cm-frame.in, .comic .cm-card.in { animation:comicIn .35s cubic-bezier(.2,.8,.2,1); } @keyframes comicIn { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:none; } }
 .comic .cm-bot { display:flex; flex-direction:column; align-items:center; gap:9px; } .comic .cm-dots { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:90vw; } .comic .cm-dots i { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.2); } .comic .cm-dots i.on { background:rgba(255,255,255,.55); } .comic .cm-dots i.cur { background:#ffc21a; transform:scale(1.25); }
 .comic .cm-hint { color:rgba(255,255,255,.7); font-size:13px; font-weight:600; animation:clkPulse 1.6s ease-in-out infinite; }
+/* ── 인게임 튜토리얼 (R2.11): 특훈 오버레이 — 화면 가장자리 건너뛰기 · 안내 · 대사 ── */
+#tut { position:fixed; inset:0; z-index:905; pointer-events:none; } #tut[hidden] { display:none; }
+#tutSkip { position:fixed; right:0; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; padding:18px 9px; font:inherit; font-size:12.5px; font-weight:800; letter-spacing:.14em; color:#fff; background:rgba(17,19,24,.62); border:1px solid rgba(255,255,255,.3); border-right:0; border-radius:999px 0 0 999px; cursor:pointer; pointer-events:auto; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); } #tutSkip:hover { background:rgba(17,19,24,.88); }
+.tut-tip { position:fixed; left:50%; top:max(64px, calc(env(safe-area-inset-top) + 54px)); transform:translateX(-50%); max-width:calc(100vw - 80px); padding:10px 18px; border-radius:999px; background:rgba(17,19,24,.94); color:#fff; font-size:14px; font-weight:800; line-height:1.45; text-align:center; box-shadow:0 12px 30px rgba(17,19,24,.4); animation:rise .25s ease; z-index:906; } .tut-tip small { display:block; font-size:11.5px; font-weight:600; color:rgba(255,255,255,.65); }
+.tutdlg { position:fixed; left:50%; bottom:max(18px, calc(env(safe-area-inset-bottom) + 14px)); transform:translateX(-50%); width:min(92vw, 640px); display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border-radius:20px; background:rgba(17,19,24,.94); color:#fff; text-align:left; border:1px solid rgba(255,255,255,.14); box-shadow:0 24px 60px rgba(17,19,24,.55); cursor:pointer; pointer-events:auto; z-index:903; animation:rise .25s ease; }
+.tutdlg .pic { flex:0 0 auto; width:64px; height:64px; border-radius:50%; background:#fff; overflow:hidden; display:grid; place-items:center; box-shadow:0 0 0 3px rgba(255,255,255,.25); } .tutdlg .pic img { width:100%; height:100%; object-fit:cover; }
+.tutdlg .tx { flex:1; min-width:0; } .tutdlg .tx b { display:block; font-size:12.5px; letter-spacing:.06em; color:#ffc21a; margin-bottom:5px; } .tutdlg .tx p { margin:0; font-size:16px; font-weight:700; line-height:1.55; overflow-wrap:break-word; overflow-wrap:break-word; }
+.tutdlg.sys .tx b { color:rgba(255,255,255,.55); } .tutdlg.sys .tx p { font-size:13.5px; font-weight:600; color:rgba(255,255,255,.8); }
+.tutdlg .nx { flex:0 0 auto; align-self:flex-end; font-size:18px; font-weight:900; color:#ffc21a; animation:clkPulse 1.4s ease-in-out infinite; }
+.ccard.tut-pulse { position:relative; animation:tutPulse .9s ease-in-out infinite alternate; } @keyframes tutPulse { from { box-shadow:0 0 0 2px rgba(255,194,26,.45); } to { box-shadow:0 0 0 4px #ffc21a, 0 0 26px rgba(255,194,26,.55); } }
 .uinfo { position:absolute; left:14px; bottom:14px; z-index:30; width:252px; max-height:calc(100% - 28px); overflow:auto; padding:12px 13px; border-radius:20px; background:rgba(255,255,255,.86); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); box-shadow:0 10px 30px rgba(20,24,40,.16), inset 0 0 0 1px rgba(255,255,255,.7); font-size:12.5px; color:#111318; cursor:default; } /* 전투 중 지후 정보 (R2.10.2 build 5) */
 .uinfo .uh { display:flex; align-items:center; gap:9px; margin-bottom:8px; } .uinfo .uh img { width:38px; height:38px; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #e4e5e8; } .uinfo .uh > div { flex:1; min-width:0; line-height:1.25; } .uinfo .uh small { display:block; color:#777; font-size:11px; } .uinfo .lv { color:#777; font-weight:600; font-size:11.5px; } .uinfo .x { border:0; background:rgba(17,19,24,.06); width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:12px; }
 .uinfo .ur { display:flex; justify-content:space-between; gap:8px; padding:3px 0; border-top:1px solid rgba(17,19,24,.06); } .uinfo .ur span:first-child { color:#666; } .uinfo .ur b { text-align:right; } .uinfo .up { color:#4caf2a; font-weight:700; } .uinfo .dn { color:#e5322d; font-weight:700; } .uinfo .sh { color:#4f9dff; }
@@ -1396,6 +1406,7 @@ input.text { font-size:20px; font-weight:800; }
 <div class="modal" id="updModal"><div class="box" id="updBox"></div></div>
 <!-- 인트로 만화 (R2.10.2 build 6): 처음 시작할 때 · 메뉴에서 다시 보기 -->
 <div class="comic" id="comic" hidden><div class="cm-top"><span class="eyebrow">RE:JHBT · PROLOGUE</span><button class="cm-skip" id="comicSkip">건너뛰기 ⏭</button></div><div class="cm-stage"><div class="cm-frame" id="comicFrame"><img id="comicImg" alt="인트로 만화"><span class="cm-cap" id="comicCap" hidden></span></div><div class="cm-card" id="comicCard" hidden></div></div><div class="cm-bot"><div class="cm-dots" id="comicDots"></div><span class="cm-hint" id="comicHint">눌러서 넘기기 ▸</span></div></div>
+<div id="tut" hidden><button id="tutSkip" type="button" aria-label="특훈 건너뛰기">특훈 건너뛰기 ⏭</button><div class="tut-tip" id="tutTip" hidden></div><div class="tutdlg" id="tutdlg" hidden><span class="pic" id="tutPic"></span><div class="tx"><b id="tutName"></b><p id="tutText"></p></div><small class="nx">▸</small></div></div>
 <div class="modal pane" id="pickModal"><div class="box"><h3>선택 전설 지후 모집권<button class="btn" data-close="pickModal">✕</button></h3><p class="note" style="margin-top:0">원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.</p><div class="pickgrid" id="pickGrid"></div></div></div>
 <div id="boot"><div class="bl"><small>RE:JHBT</small>RE :<br>지후배틀</div><div class="chars" id="bootChars"></div><div class="ldbar"><i id="bootBar"></i></div><div class="ldmsg" id="bootMsg">지후 깨우는 중</div><div class="ldpct" id="bootPct">0%</div><div class="bver" id="bootVer"></div></div>
 <div id="matchLoad"><div id="mlPf"></div><span class="eyebrow">NORMAL MATCH</span><h2>일반전 준비중</h2><div class="ldbar"><i id="mlBar"></i></div><div class="tip" id="mlTip"></div></div>
@@ -2386,7 +2397,7 @@ const frameCond = f => f.kind === 'free' ? '처음부터 보유' : `업적 「${
 const myPhoto = () => favChar() || 'fire'; // 프로필 사진 = 대표 지후 (가장 많이 놓은 지후)
 const botFrame = lv => (FRAMES.filter(f => f.kind === 'lv' && lv >= f.need).pop() || FRAME.none).id; // 봇: 레벨에 맞는 레벨 테두리
 const freshAch = () => ({ days: 0, lastDay: '', wins: 0, kills: 0, dailyAll: 0, epic: 0, legend: 0, flawless: 0, claimed: {} });
-function freshProfile() { const st = STARTERS(); return { v: 1, nick: '', xp: 0, level: 1, dia: CFG.START_DIA, gold: 0, emos: EMO_START.slice(), emoSlots: [...EMO_START, null, null, null, null], daily: null, owned: Object.fromEntries(st.map(id => [id, 1])), shards: {}, deck: st.slice(0, 5), wins: 0, losses: 0, pulls: 0,
+function freshProfile() { const st = STARTERS(); return { v: 1, nick: '', xp: 0, level: 1, dia: CFG.START_DIA, gold: 0, emos: EMO_START.slice(), emoSlots: [...EMO_START, null, null, null, null], daily: null, owned: Object.fromEntries(st.map(id => [id, 1])), shards: {}, deck: st.slice(0, 5), wins: 0, losses: 0, pulls: 0, tut: 0,
   codes: [], mail: [], giftSeen: [], ach: freshAch(), newbie: { on: true, days: 0, last: '', v: 2 }, fr: { w: 0, l: 0 }, spec: true, legacy: null, items: {}, frames: ['none'], frame: 'none', streak: 0, bestStreak: 0, pity: 0, boost: { day: '', used: 0, until: 0 }, mq: { i: 0, n: 0, done: false, day: '' } }; }
 function loadProfile() {
   let p = null; try { p = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
@@ -2422,6 +2433,7 @@ function normProfile(p) {
   p.streak = nat(p.streak); p.bestStreak = Math.max(nat(p.bestStreak), p.streak);
   p.pity = nat(p.pity); p.boost = Object.assign({ day: '', used: 0, until: 0 }, p.boost || {}); // 천장 · 부스트
   p.mq = Object.assign({ i: 0, n: 0, done: false, day: '' }, p.mq || {}); p.mq.i = Math.min(nat(p.mq.i), MQ.length); p.mq.n = nat(p.mq.n); // 메인 퀘스트
+  p.tut = nat(p.tut) ? 1 : 0; // 특훈 인게임 튜토리얼 (R2.11)
   return p;
 }
 function r1Level(totalXp) { let lv = 1, r = nat(totalXp); while (lv < 150) { const need = Math.ceil(100 * Math.pow(1.03, lv - 1)); if (r < need) break; r -= need; lv++; } return lv; } // R1 레벨 공식
@@ -2595,7 +2607,8 @@ async function accBoot() { // 켤 때: 남아 있는 로그인이면 서버 기�
   if (!(await fbInit())) { renderAccPill(); migrateR22(); updCheck(); return; } // 오프라인: 이 기기 기록으로
   if (isMember()) { try { await syncAfterLogin(true); } catch (e) { console.warn('[rejhbt] 계정 동기화 실패', e); } }
   migrateR22();
-  renderAccPill(); if (profile.nick && $('screen-welcome').classList.contains('active')) { renderLobby(); show('lobby'); }
+  renderAccPill(); if (profile.nick && !profile.tut) { profile.tut = 1; save(); } // 로그인 계정은 특훈 안 봄 (R2.11)
+  if (profile.nick && !TUT.on && $('screen-welcome').classList.contains('active')) { renderLobby(); show('lobby'); }
   onlineStart(); updCheck(); // 서버 기록과 맞춘 뒤 (보상을 두 번 받지 않게)
 }
 async function signUp(pw, pw2) {
@@ -2696,7 +2709,7 @@ function renderAccount() {
       : `<div class="accrow"><span>닉네임</span><b>${esc(profile.nick || '먼저 닉네임을 정해 주세요')}</b></div><input class="accin" id="accPw" type="password" placeholder="비밀번호 (${PW_MIN}~${PW_MAX}자)" autocomplete="new-password"><input class="accin" id="accPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password"><button class="btn primary wide" id="accGo" ${profile.nick ? '' : 'disabled'}>회원가입 · UID 받기</button><button class="btn wide" id="accG" style="margin-top:8px" ${profile.nick ? '' : 'disabled'}>Google 로 시작</button><p class="note">가입하면 <b>8자리 UID</b>를 드려요. 지금까지의 기록이 그대로 계정에 저장돼요.</p>`}
     ${msg}`;
   box.querySelectorAll('[data-acc]').forEach(b => b.onclick = () => { ACC.tab = b.dataset.acc; ACC.msg = ''; renderAccount(); });
-  const done = () => { ACC.msg = ''; closeModal('accModal'); banner('로그인했어요'); if (profile.nick) { renderLobby(); show('lobby'); } else show('welcome'); onlineStart(); };
+  const done = () => { ACC.msg = ''; closeModal('accModal'); banner('로그인했어요'); if (profile.nick && !profile.tut) { profile.tut = 1; save(); } if (profile.nick && !TUT.on) { renderLobby(); show('lobby'); } else show('welcome'); onlineStart(); }; // 특훈 중엔 화면 그대로 (R2.11)
   const go = () => { const id = $('accId') ? $('accId').value : '', pw = $('accPw').value, pw2 = $('accPw2') ? $('accPw2').value : ''; accRun(async () => { // 입력값은 다시 그리기 전에 읽는다
     if (t === 'login') { await logIn(id, pw); done(); }
     else { const code = await signUp(pw, pw2); ACC.newCode = code; ACC.msg = ''; onlineStart(); }
@@ -2716,6 +2729,7 @@ function show(name) {
   if (name === 'battle') fitField(); bgmTick(); if (name !== 'social') dmClose();
 }
 function openTab(name) { // 하단 탭 바 · 로비 버튼
+  if (TUT.on && !tutTabOk(name)) return banner('특훈 중에는 화면을 옮길 수 없어요'); // 특훈: 해당 단계 화면만 (R2.11)
   if (name === 'lobby') renderLobby(); else if (name === 'deck') renderDeck(); else if (name === 'gacha') renderGacha(); else if (name === 'shop') { shopMsg(''); renderShop(); } else if (name === 'inv') renderInv(); else if (name === 'arcade') renderArcade();
   if (name === 'social') return openSocial();
   show(name); if (name === 'lb') lbLoad();
@@ -2799,7 +2813,7 @@ function renderDeck() {
     + groups.map(([label, ids]) => !ids.length ? '' : `<div class="rdiv"><b>${label}</b><span>${ids.filter(owned).length} / ${ids.length}</span></div>` + ids.map(card).join('')).join(''); // 칸막이 (등급 또는 역할군)
   $('deckStatus').innerHTML = pendingEquip ? `<b>${CHARS[pendingEquip].name}</b> · 위에서 바꿀 자리를 고르세요 <button class="link" id="eqCancel">취소</button>` : '';
   if (pendingEquip) $('eqCancel').onclick = () => { pendingEquip = null; renderDeck(); };
-  renderDeckDetail();
+  renderDeckDetail(); if (TUT.on && TUT.stage === 'deck' && TUT.legend) tutDeckPulse(); // 특훈: 뽑은 지후 강조 (R2.11)
 }
 function renderDeckDetail() { // 고른 지후 상세 (전투 중 상세 창과 같은 수치)
   const id = deckSel, c = CHARS[id], have = owned(id), inDeck = profile.deck.includes(id);
@@ -2810,7 +2824,7 @@ function renderDeckDetail() { // 고른 지후 상세 (전투 중 상세 창과 
     <div class="abil">${c.shield ? `<span>쉴드</span><p><b>${c.shield.toLocaleString()}</b></p>` : ''}${c.passive ? `<span>패시브</span><p>${c.passive}</p>` : ''}${c.skill ? `<span class="sk">스킬</span><p>${c.skill.desc}</p>` : ''}${c.passive || c.skill ? '' : '<span>능력</span><p>특수 능력 없음 · 기본기에 충실하다</p>'}${c.info ? `<span>상세</span><div class="info">${c.info.map(([k, v]) => `<p><em>${k}</em><b>${v}</b></p>`).join('')}</div>` : ''}</div>`;
   if ($('deckIn')) $('deckIn').onclick = () => requestEquip(id);
   $('deckStory').onclick = () => dlg({ icon: '📖', title: `${c.name} · 서사`, html: c.story ? `<p class="story-text">${c.story}</p>` : '<p class="story-text">서사를 준비하고 있어요.</p>' });
-  if ($('deckOut')) $('deckOut').onclick = () => { if (profile.deck.length <= 1) return; profile.deck = profile.deck.filter(x => x !== id); pendingEquip = null; save(); renderDeck(); }; // 덱은 1기 이상
+  if ($('deckOut')) $('deckOut').onclick = () => { if (TUT.on) return tutTip('특훈 중에는 덱을 <b>빼고 고칠 수 없어요</b> · 새 지후를 넣어 주세요'); if (profile.deck.length <= 1) return; profile.deck = profile.deck.filter(x => x !== id); pendingEquip = null; save(); renderDeck(); }; // 덱은 1기 이상
 }
 function charDetail(id, view) { // view: 전투 화면 등에서 설명만 (장착 버튼 없음)
   const c = CHARS[id], equipped = profile.deck.includes(id), have = owned(id);
@@ -2833,6 +2847,7 @@ function closeCharDetail() { $('charModal').classList.remove('show'); }
 $('charModal').addEventListener('click', e => { if (e.target === $('charModal')) closeCharDetail(); });
 $('lobbyDeck').addEventListener('click', e => { const d = e.target.closest('[data-cid]'); if (d && CHARS[d.dataset.cid]) charDetail(d.dataset.cid); }); // R2.7.1: 로비 덱 지후 → 설명
 function requestEquip(id) {
+  if (TUT.on && id !== TUT.legend) return tutTip(`지금은 방금 뽑은 <b>${CHARS[TUT.legend].name}</b>만 장착할 수 있어요`); // 특훈: 새로 뽑은 지후만 (R2.11)
   if (!owned(id) || profile.deck.includes(id)) return;
   closeCharDetail(); deckSel = id;
   if (profile.deck.length < 5) { profile.deck.push(id); pendingEquip = null; save(); renderDeck(); return; }
@@ -2841,7 +2856,7 @@ function requestEquip(id) {
 $('deckRow').addEventListener('click', e => {
   const slot = e.target.closest('.deckslot'); if (!slot) return;
   const i = Number(slot.dataset.slot), id = profile.deck[i];
-  if (pendingEquip) { if (id) profile.deck[i] = pendingEquip; else profile.deck.push(pendingEquip); pendingEquip = null; save(); renderDeck(); return; }
+  if (pendingEquip) { if (id) profile.deck[i] = pendingEquip; else profile.deck.push(pendingEquip); const was = pendingEquip; pendingEquip = null; save(); renderDeck(); if (TUT.on) tutEquipped(was); return; }
   if (id) { deckSel = id; renderDeck(); }
 });
 const DECK_ROLES = ['탱커', '딜러', '어쌔신', '컨트롤러', '서포터', '보조형', '하이브리드', '소환형', '폭발형'];
@@ -3916,12 +3931,14 @@ function startRound() {
   $('hudRound').textContent = S.round; $('hudOdds').hidden = true; setPhase('배치 단계');
   renderLives(); renderSpeedBtn();
   if (isDeathmatch() && !S.dmShown) { S.dmShown = true; banner('☠ 데스매치'); }
+  tutRoundStart(); // 특훈 (R2.11): 이번 라운드 각본 준비
   if (S.evPending) { S.evPending = false; evShow(nextDeploy); } else nextDeploy(); // 랜덤 이벤트가 나왔으면 5초 연출 뒤 배치
 }
 const actKey = () => `${S.rk}-${S.deployN}`;
 function nextDeploy() {
   S.deployN++;
   if (S.deployN > deployChances() || S.arc && S.arc.kind === 'sandbox') return beginCombat(); // 샌드박스는 배치 없이 바로 전투
+  if (TUT.on) return tutDeploy(); // 특훈 (R2.11): 각본 배치만
   S.phase = 'deploy'; S.pick = null; S.moveSel = null; S.ops = [];
   if (S.net && S.net.spec) { S.pool = []; renderField(); renderPool(); return netWait(); } // 관전: 두 선수의 배치를 기다린다
   const me = ME(), r = S.net ? mulberry32(hashSeed(S.net.seed, 'pool', actKey(), me)) : rng; // 친선전: 내 카드는 시드로 (상대 화면의 난수를 건드리지 않는다)
@@ -3947,12 +3964,14 @@ function tip(msg) {
 function choosePick(i) {
   if (S.phase !== 'deploy') return;
   const me = ME(), id = S.pool[i];
+  if (TUT.on) return tutPick(i); // 특훈: 카드 선택도 각본대로
   if (!playable(me, id)) { tip(mergeTile(me, id) == null && sameCount(me, id) >= limitOf(id) ? `${CHARS[id].deployLimit ? '출격제한!' : '같은 지후가 많으면 서로 싸워요!'} <b>${CHARS[id].name}</b>은(는) ${limitOf(id)}기까지만 둘 수 있어요.` : `놓을 자리가 없고 합칠 <b>${CHARS[id].name}</b>도 없습니다.`); return; }
   S.pick = S.pick === i ? null : i; S.moveSel = null;
   renderPool(); renderField(); tip();
 }
 function tapTile(t) {
   if (S.phase !== 'deploy') return;
+  if (TUT.on) return tutTap(t); // 특훈: 지시한 행동만 (나머지는 안내문)
   const me = ME(), p = S.place[me][t];
   if (S.pick != null) {
     const id = S.pool[S.pick];
@@ -3971,6 +3990,7 @@ function tapTile(t) {
 // 시간 초과: 고른 카드(없으면 놓을 수 있는 첫 카드) → 합칠 수 있으면 합치고, 아니면 역할에 맞는 줄에 놓는다 (전작 autoPlacePool)
 function autoPlace() {
   if (S.phase !== 'deploy' || !S.pool.length) return;
+  if (TUT.on) return startPickTimer(); // 특훈: 자동 배치 대신 타이머만 다시 (지시를 기다린다)
   const me = ME(), ok = S.pool.map((id, i) => i).filter(i => playable(me, S.pool[i]));
   const i = S.pick != null && ok.includes(S.pick) ? S.pick : ok.length ? ok[0] : 0, id = S.pool[i];
   const m = mergeTile(me, id), r = S.net ? mulberry32(hashSeed(S.net.seed, 'auto', actKey(), me)) : rng;
@@ -3987,7 +4007,7 @@ function commitAct(act, delay = 120) {
   document.querySelectorAll('.pcard').forEach(el => el.classList.add('picked'));
   renderField();
   if (S.net) return netCommit(act, delay);
-  botDeployOne(); botJoker();
+  if (TUT.on) tutBotDeploy(); else botDeployOne(); botJoker(); // 특훈: 봇도 각본대로
   renderField();
   setTimeout(nextDeploy, delay);
 }
@@ -4091,7 +4111,8 @@ function beginCombat() {
     evUnit(u, p);
     u.el = unitEl(u); f.appendChild(u.el); if (pr === 'on') { A.portrait(u, u.def.portraitOn); u.el.classList.add('prophet'); } drawUnit(u); S.units.push(u); if (pr === 'on' && !S.fast) dmgNum(u, `🔮 예언 성공 · 아르카나 ${p.arc}`, { crit: true }); }));
   evCombat();
-  if (!S.speedManual) S.speed = speedPref ? CFG.FAST_SPEED : 1; renderSpeedBtn();
+  if (TUT.on) tutRig(); // 특훈: 승패 각본 (1.4초 뒤 지는 쪽 전멸)
+  if (TUT.on) S.speed = 1; else if (!S.speedManual) S.speed = speedPref ? CFG.FAST_SPEED : 1; renderSpeedBtn();
   setPhase('전투 중'); banner('전투 시작!'); sfx('battle_start');
   botMind.combatStart();
   requestAnimationFrame(loop);
@@ -4129,6 +4150,7 @@ function roundResult(w, timedOut) {
   const spec = S.net && S.net.spec;
   $('deployTip').innerHTML = (why ? why + ' · 승률 판정 · ' : '') + (w === 'draw' ? '양쪽 전멸 · 무승부' : spec ? `${esc(S.nick[w])} 라운드 승리` : w === me ? '라운드 승리' : '라운드 패배');
   S.later = setTimeout(() => {
+    if (TUT.on) return tutRoundNext(); // 특훈: 라운드 사이 대사 · 종료 판정
     if (S.lives.a <= 0 || S.lives.e <= 0) return endMatch(S.lives[me] > 0);
     S.round++; startRound();
   }, wait);
@@ -4522,7 +4544,7 @@ function grantChar(id) {
 function rollRarity() { let x = Math.random() * 100; for (const [r, p] of CFG.GACHA) { x -= p; if (x < 0) return r; } return 'common'; }
 const rollLegend = () => { const pool = byRarity('legend'); return pool[Math.floor(Math.random() * pool.length)]; };
 function rollOne() { let r = rollRarity(), pool = Object.keys(CHARS).filter(id => CHARS[id].rarity === r); while (!pool.length) { r = ({ legend: 'epic', epic: 'rare', rare: 'common' })[r]; pool = Object.keys(CHARS).filter(id => CHARS[id].rarity === r); } return pool[Math.floor(Math.random() * pool.length)]; }
-function pull(n, free) { // free: 10회 뽑기권
+function pull(n, free) { if (TUT.on) return tutPull(n); // 특훈: 무료 각본 뽑기 (R2.11)
   const cost = free ? 0 : n === 10 ? CFG.PULL10 : CFG.PULL1; if (profile.dia < cost) return;
   profile.dia -= cost; profile.pulls += n; questAdd('gacha', n);
   const res = [];
@@ -4569,7 +4591,7 @@ function grDone() {
   $('grOk').onclick = grClose;
   if (GR.again) $('grAgain').onclick = () => { const n = GR.again, cost = n === 10 ? CFG.PULL10 : CFG.PULL1; if (profile.dia < cost) return banner('다이아가 부족해요'); pull(n); };
 }
-function grClose() { grClear(); GR.cut = null; $('reveal').className = ''; $('cutscene').className = ''; $('cutscene').innerHTML = ''; renderGacha(); renderInv(); renderMoney(); }
+function grClose() { grClear(); GR.cut = null; $('reveal').className = ''; $('cutscene').className = ''; $('cutscene').innerHTML = ''; renderGacha(); renderInv(); renderMoney(); if (TUT.on) tutAfterPull(); } // 특훈: 뽑기 뒤 대사
 const grMotes = () => Array.from({ length: 26 }, (_, k) => { const sz = 4 + Math.round(Math.random() * 6); return `<i class="gc-mote" style="left:${(Math.random() * 100).toFixed(1)}%;top:${(40 + Math.random() * 60).toFixed(1)}%;width:${sz}px;height:${sz}px;background:${k % 3 ? '#ffc21a' : '#ffffff'};animation-duration:${(3.5 + Math.random() * 3).toFixed(1)}s;animation-delay:${(Math.random() * 4).toFixed(1)}s"></i>`; }).join('');
 function grCut(i) { // ④ 전설 컷신 (R2.7.1 build 5): 인트로 대사 없이 바로 등장 · 누르면 다음
   const cs = $('cutscene'); GR.cut = { i, stage: 'line' }; cs.className = 'show'; cs.onclick = grCutTap; grCutShow();
@@ -4709,7 +4731,7 @@ const botMind = {
   on() { return $('screen-battle').classList.contains('active') && !S.net && ['deploy', 'deploy-resolve', 'combat', 'roundEnd'].includes(S.phase); }, // 봇전에서만
   // feeling: BOT_TEMPER.read 의 키 · weight: 0~1 (얼마나 큰일인가) · force: 쉬는 중이어도 (큰일)
   feel(feeling, weight, { delay = [300, 2200], force = false } = {}) {
-    if (!this.on()) return false;
+    if (TUT.on || !this.on()) return false; // 특훈: 봇 이모티콘 끔 (R2.11)
     const now = Date.now(), t = BOT_TEMPER[this.temper];
     if (now < this.quietUntil && !(force && Math.random() < 0.7)) return false;
     if (Math.random() > Math.min(0.97, weight * t.talk * this.chatty)) return false;
@@ -5052,7 +5074,8 @@ function renderMail(msg) {
   $('btnMailAll').disabled = !(profile.mail || []).some(mailLive);
   renderMailDot();
 }
-function mailDone(got, text) { save(); renderLobby(); renderMail(text); sfx('buy'); if (got.length) { closeModal('mailModal'); showReveal(got); } }
+function mailDone(got, text) { if (TUT.on) return tutMailClaimed(got, text); // 특훈: 우편도 각본으로 (R2.11)
+  save(); renderLobby(); renderMail(text); sfx('buy'); if (got.length) { closeModal('mailModal'); showReveal(got); } }
 $('mailBody').addEventListener('click', e => { const b = e.target.closest('[data-mail]'); if (!b) return; const m = profile.mail.find(x => x.id === b.dataset.mail); if (!m || !mailLive(m)) return; const got = claimMail(m); mailDone(got, m.rewards.length ? `${rewardText(m.rewards)} 받았어요` : ''); });
 $('btnMailAll').addEventListener('click', () => { const live = profile.mail.filter(mailLive), got = live.flatMap(claimMail); mailDone(got, live.some(m => m.rewards.length) ? '모두 받았어요' : ''); });
 $('btnMail').addEventListener('click', () => { renderMail(); openModal('mailModal'); checkGiftMail().then(() => { if ($('mailModal').classList.contains('show')) renderMail(); }); });
@@ -5789,6 +5812,157 @@ function comicEnd() { if ($('comic').hidden) return; $('comic').hidden = true; i
 $('comic').addEventListener('click', e => { if (e.target.closest('#comicSkip')) return comicEnd(); comicGo(1); });
 document.addEventListener('keydown', e => { if ($('comic').hidden) return; if (e.key === 'ArrowLeft') comicGo(-1); else if (e.key === 'Escape') comicEnd(); else if (['ArrowRight', ' ', 'Enter'].includes(e.key)) comicGo(1); else return; e.preventDefault(); });
 $('btnMenuComic').addEventListener('click', () => { closeModal('menuModal'); showComic(); });
+// ═════════ 인게임 튜토리얼 (R2.11) ═════════
+// 첫 실행(닉네임 없음 · profile.tut 0)은 닉네임 화면 대신 '특훈': 봇 「봇」과 4라운드 각본 경기 → 보상 우편 → 무료 뽑기 → 덱 장착 → 닉네임 화면.
+// 전투 자체는 일반전 엔진 그대로 — 배치 지시(tutDeploy · tutPick · tutTap) · 봇 행동(tutBotDeploy) · 승패(tutRig)만각본으로 고정한다.
+// 건너뛰기는 화면 오른쪽 가장자리 (#tutSkip). 대사는 화면 아래 대화 상자 (클릭 · Space · Enter 로 한 줄씩).
+const TUT = { on: false, stage: '', rp: null, q: [], beat: null, lines: null, li: 0, after: null, legend: '' };
+const TUT_NPC = { fire: ['화염 지후', 'fire'], water: ['물 지후', 'water'], shield: ['쉴드 지후', 'shield'], f8: ['화염 지후 8호', 'fire'], f12: ['화염 지후 12호', 'fire'] }; // 담당 지후: [이름, 초상화]
+const TUT_D = { // 각본 대사 · sys 는 각본 메모 · 나레이션 (초상화 없음)
+  r1pre: [['fire', '요이.. 드디어 깨어났군..'], ['fire', '그렇게 퍼질러 누워있을 시간이 없다'], ['fire', '몰려오는 적들을 막아야한다!'], ['sys', '[화염 지후를 설치함]']],
+  r1bot: [['sys', '[상대는 물 지후 소환]'], ['fire', '자, 이놈이 너가 싸우게 될 친구야.'], ['water', '아니 왜 전데요'], ['fire', '알빠노'], ['water', '제가 항상 왕국 밖에서는 언행을 조심하라 했거늘'], ['water', '신이 만만해 보이십니까? 자꾸 이런식으로 나오시면 제가 진짜로'], ['fire', '치킨사줄게'], ['water', '너무나 감사드리죠 아이고 행님 성은이 망극하옵니다']],
+  r1post: [['water', '정말 놀라워서 숨을 쉴 수가 없습니다.'], ['water', '맙소사, 이와 같은 공격은 어디서 오는 것입니까? 혹여 가보로 내려옵니까? 나의 공중제비를 멈추게 하십시오!'], ['fire', '조용해라 쫌'], ['fire', '이번엔 업그레이드를 해볼까'], ['fire', '화염 지후를 선택하고 전장에 있는 화염 지후를 클릭해보자'], ['water', '같은 종류 지후를 같은 종류 지후한테 올려놓으면 레벨이 1 증가해요!']],
+  r2note: [['sys', '[상대 진영은 쉴드지후 설치]']],
+  r2post: [['fire', '이걸 지네'], ['fire', '아 줴줴이야'], ['water', '(말투 개킹빋네)'], ['fire', '다 들린다'], ['water', '죄송합니다!']],
+  r3pre: [['fire', '이번엔 얼음 지후를 설치해 보자.'], ['sys', '[얼음 지후 2마리를 각기 다른 위치에 설치]']],
+  r3mid: [['fire', '전장에 있는 지후끼리도'], ['fire', '하지만 2레벨하고 2레벨끼리 합치면 3레벨이 되니까 효율이 별로 안좋으니 주의하여라'], ['sys', '[상대는 물 지후 업그레이드, 쉴드지후 업그레이드]']],
+  r3post: [['fire', '쉴드 너프좀'], ['water', 'ㅋ'], ['shield', 'ㅋ'], ['fire', '원래는 이러면 안되긴 하는데 내 동료들을 소환해야겠다']],
+  r4pre0: [['sys', '[남은 자리에 5레벨 화염지후를 전부 소환한다]']],
+  r4pre1: [['f8', '형님 저희가 왔습니다'], ['f12', '저도 왔습니다'], ['water', '선넘네'], ['shield', '아 줴줴이야'], ['fire', '자 드가자']],
+  r4post: [['water', '이걸 어떻게 이겨'], ['water', '닷지요'], ['sys', '[봇이 항복한다]']],
+  reward: [['fire', '야르'], ['fire', '수고했으니 보상을 줄게'], ['sys', '[우편함에서 보상을 받아라]']],
+  gacha: [['fire', '자 그럼 이제 새 지후들을 모집해야겠지?']],
+  pulled: [['fire', '오 전설이다'], ['fire', '표정이 왜그래 컷신이 SSS급 뽑기에서 C급 뜬 기분이냐'], ['fire', '이번엔 방금 뽑은 지후를 장착해보자.']],
+  end: [['fire', '이걸로 기초적인 강의는 끝났다'], ['fire', '뽑은 지후가 마음에 안든다고 접고 자러가지 말아라'], ['fire', '그럼 기대하고 있을게! 바이~']],
+};
+// 라운드별 각본: rig 지는 쪽('e' 봇 · 'a' 나) · bot { 배치 번호: 봇 행동 } · post 라운드 뒤 대사 · q 순서 (s 대사 / a 연출 / u 배치 지시)
+const TUT_PLAN = {
+  1: { rig: 'e', post: TUT_D.r1post, bot: { 1: { k: 'p', id: 'water' } }, q: [ { s: TUT_D.r1pre }, { u: 'place', id: 'fire', tip: '<b>화염 지후</b> 카드를 누르고 <b>빈 칸</b>을 눌러 설치하기' }, { s: TUT_D.r1bot } ] },
+  2: { rig: 'a', post: TUT_D.r2post, bot: { 1: { k: 'p', id: 'shield' } }, q: [ { u: 'merge', id: 'fire', tip: '<b>화염 지후</b> 카드를 누르고 전장의 <b>화염 지후(금색)</b>를 눌러 레벨 업!' }, { s: TUT_D.r2note } ] },
+  3: { rig: 'a', post: TUT_D.r3post, bot: { 1: { k: 'm', id: 'water' }, 2: { k: 'm', id: 'shield' } }, q: [ { s: TUT_D.r3pre }, { u: 'place', id: 'ice', tip: '<b>얼음 지후</b>를 빈 칸에 설치 (1 / 2)' }, { s: TUT_D.r3mid }, { u: 'place', id: 'ice', tip: '<b>얼음 지후</b>를 <b>다른 빈 칸</b>에 하나 더 설치 (2 / 2)' } ] },
+  4: { rig: 'e', post: TUT_D.r4post, bot: {}, q: [ { s: TUT_D.r4pre0 }, { a: tutSummonFires }, { s: TUT_D.r4pre1 } ] },
+};
+function tutTip(msg) { const el = $('tutTip'); if (msg) el.innerHTML = msg; el.hidden = !msg; } // 상단 안내 칩
+const tutTipHide = () => tutTip('');
+function tutSay(lines, after) { // 대사 진행 (after: 대사가 끝나면)
+  TUT.lines = lines && lines.length ? lines : null; TUT.li = 0; TUT.after = after || null;
+  if (TUT.lines) { $('tut').hidden = false; tutShowLine(); } else { TUT.after = null; if (after) after(); }
+}
+function tutShowLine() { const L = TUT.lines[TUT.li], npc = L && TUT_NPC[L[0]], d = $('tutdlg');
+  d.hidden = false; d.classList.toggle('sys', !npc); $('tutPic').hidden = !npc; if (npc) $('tutPic').innerHTML = pic(npc[1]);
+  $('tutName').textContent = npc ? npc[0] : ''; $('tutText').textContent = L[1];
+}
+function tutAdv() { if (!TUT.lines) return; sfx('place'); TUT.li++;
+  if (TUT.li < TUT.lines.length) return tutShowLine();
+  TUT.lines = null; $('tutdlg').hidden = true; const cb = TUT.after; TUT.after = null; if (cb) cb(); else tutWave();
+}
+const tutHideDlg = () => { TUT.lines = null; TUT.after = null; $('tutdlg').hidden = true; };
+function tutRunQ() { // 각본 큐: 대사 → 연출 → 배치 지시 (지시는 플레이어 행동을 기다린다)
+  if (TUT.lines || TUT.beat) return;
+  while (TUT.q.length) {
+    const b = TUT.q.shift();
+    if (b.s) { tutSay(b.s); return; } // 대사: 넘기기를 기다린다
+    if (b.a) { b.a(); continue; } // 연출: 바로 다음
+    TUT.beat = b; return; // 배치 지시
+  }
+}
+function tutWave() { // 각본 진행 1보: 다음 지시를 화면에 (대사 · 연출 먼저)
+  const old = TUT.beat; TUT.beat = null;
+  while (TUT.q.length) {
+    const b = TUT.q.shift();
+    if (b.s) { tutSay(b.s); return; } // 대사: 넘기기를 기다린다 (끝나면 다시 tutWave)
+    if (b.a) { b.a(); continue; } // 연출: 바로 다음
+    TUT.beat = b; break;
+  }
+  if (TUT.beat) {
+    S.phase = 'deploy'; S.pick = null; S.moveSel = null; S.ops = []; S.pool = [TUT.beat.id];
+    renderField(); renderPool(); startPickTimer(); tutTip(TUT.beat.tip);
+  } else if (TUT.rp && (S.phase === 'deploy' || S.phase === 'deploy-resolve')) beginCombat(); // 지시 없음 → 전투 (중복 호출은 phase 로 막힌다)
+}
+function tutDeploy() { tutWave(); } // 특훈 배치: 정해진 카드 한 장만
+function tutPick(i) { if (!TUT.beat || i >= S.pool.length) return; S.pick = S.pick === i ? null : i; renderPool(); renderField(); sfx('place'); }
+function tutTap(t) { const b = TUT.beat, me = ME(), p = S.place[me][t]; if (!b) return; // 지시 외 행동은 안내문으로 거절
+  if (S.pick == null) return tutTip(b.tip + '<small>먼저 아래에서 카드를 골라 주세요</small>');
+  const id = S.pool[S.pick];
+  if (b.u === 'place' && !p && canPlaceNew(me, id)) { TUT.beat = null; tutTipHide(); return commitAct({ k: 'p', id, t }); }
+  if (b.u === 'merge' && p && p.id === id && stackable(p, id)) { TUT.beat = null; tutTipHide(); return commitAct({ k: 'm', id, t }); }
+  return tutTip(b.u === 'place' ? '<b>빈 칸</b>을 눌러 주세요' : '전장의 <b>화염 지후(금색)</b>를 눌러 겹쳐 주세요');
+}
+function tutBotDeploy() { const act = TUT.rp && TUT.rp.bot && TUT.rp.bot[S.deployN]; if (!act) return; // 봇 행동도 각본대로
+  if (act.k === 'p') { const t = pickTile('e', roleRow(act.id)); if (t != null) placeAt('e', t, act.id); }
+  else { const t = S.place.e.findIndex(p => p && p.id === act.id); if (t >= 0) levelUp('e', t); } // 레벨 업
+}
+function tutRig() { const side = TUT.rp && TUT.rp.rig; if (!side) return; // 각본 승패: 1.4초 뒤 지는 쪽 전멸
+  A.later(1.4, () => S.units.filter(u => u.alive && u.side === side).forEach(u => instaKill(null, u, false)));
+}
+function tutSummonFires() { // 각본 연출: 남은 자리에 모두 Lv5 화염 지후 소환 (R4)
+  S.place.a.forEach((p, t) => { if (!p) S.place.a[t] = { id: 'fire', lv: 5 }; }); renderField(); sfx('merge'); banner('🔥 동료 소환!');
+}
+function tutRoundStart() { const rp = TUT_PLAN[S.round]; if (!rp) return; TUT.rp = rp; TUT.q = rp.q.slice(); TUT.beat = null; tutTipHide(); }
+function tutRoundNext() { // 라운드 결과 대사 → 다음 라운드 · R4 결과면 종료
+  const over = S.round >= 4 || S.lives.a <= 0 || S.lives.e <= 0;
+  if (over) return tutSay(TUT.rp.post, tutRewardStage);
+  const nxt = () => { S.round++; startRound(); };
+  if (TUT.rp.post) return tutSay(TUT.rp.post, nxt);
+  nxt(); // 대사 없는 라운드는 바로
+}
+function tutRewardStage() { // 경기 정리 → 보상 우편 (특훈은 결과 화면 없이)
+  evHide(); S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); emoClear(); presencePing('lobby');
+  if (winCalc()) sfx('match_win'); else sfx('match_lose');
+  show('lobby');
+  if (!(profile.mail || []).some(m => m.id === 'tut-reward')) addMail({ id: 'tut-reward', icon: '🎁', title: '특훈 보상', body: '이리 와서 받아 가도록. 성의는 없지만 아낌없이 준 특훈 보상이다!', rewards: [{ kind: 'diamonds', amount: 5000 }, { kind: 'gold', amount: 10000 }] });
+  save(); renderLobby(); renderMoney(); TUT.stage = 'mail'; tutTip('우편함에서 <b>받기</b>를 눌러 보상을 챙기세요');
+  tutSay(TUT_D.reward, tutMailStep);
+}
+const winCalc = () => S.lives[ME()] > 0; // 특훈 승리 판정 (R4 뒤)
+function tutMailStep() { renderMail(); openModal('mailModal'); }
+function tutMailClaimed(got, text) { // 우편 수령 → 뽑기 단계
+  save(); renderLobby(); renderMoney(); renderMail(text); sfx('buy'); closeModal('mailModal'); tutTipHide();
+  TUT.stage = 'gacha'; tutSay(TUT_D.gacha, () => { openTab('gacha'); tutGachaUi(); });
+}
+function tutGachaUi() { $('btnPull1').disabled = true; $('btnPull10').innerHTML = '<b>무료 뽑기</b><small>10회 · 전설 1 확정</small>'; tutTip('<b>10회 뽑기</b>를 눌러 지후를 모집하세요<small>무료 · 전설 1 확정</small>'); }
+function tutPull(n) { // 무료 각본 뽑기: 전설 1 + 일반 9 (전설은 자리 무작위)
+  profile.pulls += 10; questAdd('gacha', 10); tutTipHide();
+  const lgPool = byRarity('legend'), lg = lgPool[Math.floor(Math.random() * lgPool.length)]; TUT.legend = lg;
+  const cs = byRarity('common'), res = Array.from({ length: 9 }, () => cs[Math.floor(Math.random() * cs.length)]); res.splice(Math.floor(Math.random() * 10), 0, lg); // 10장: 전설 1 + 일반 9 (전설 자리 무작위)
+  const out = res.map(id => { const isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
+  save(); renderGacha(); showReveal(out, 0);
+}
+function tutAfterPull() { if (TUT.stage !== 'gacha') return; $('btnPull10').innerHTML = '<b>10회 뽑기</b><small>◆ 1,000</small>'; tutTipHide();
+  tutSay(TUT_D.pulled, tutDeckStage);
+}
+function tutDeckStage() { TUT.stage = 'deck'; openTab('deck');
+  tutTip(`<b>${CHARS[TUT.legend].name}</b> 카드를 눌러 상세를 연 뒤 <b>덱에 넣기</b><small>위에서 바꿀 자리를 고르면 장착돼요</small>`);
+}
+function tutDeckPulse() { const el = document.querySelector('#deckCards .ccard[data-id="' + TUT.legend + '"]'); if (!el) return; el.classList.add('tut-pulse'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+function tutEquipped(id) { if (!TUT.on || !TUT.legend || id !== TUT.legend) return; TUT.stage = ''; tutTipHide();
+  document.querySelectorAll('.ccard.tut-pulse').forEach(el => el.classList.remove('tut-pulse'));
+  tutSay(TUT_D.end, tutFinish);
+}
+function tutFinish() { // 특훈 완료 → 닉네임 화면
+  TUT.on = false; TUT.stage = ''; $('tut').hidden = true; tutTipHide(); tutHideDlg(); profile.tut = 1; save(); renderLobby(); show('welcome');
+}
+function tutQuit() { // 건너뛰기: 특훈 중 보상 없이 (다음 실행부터는 닉네임 화면)
+  const battle = $('screen-battle').classList.contains('active');
+  if (battle) { evHide(); S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); emoClear(); presencePing('lobby'); }
+  TUT.on = false; TUT.stage = ''; $('tut').hidden = true; tutTipHide(); tutHideDlg(); profile.tut = 1; save(); renderLobby(); show('lobby'); banner('특훈을 건너뛰었어요');
+}
+function tutTabOk(name) { if (!TUT.stage) return false; if (TUT.stage === 'gacha') return name === 'gacha'; if (TUT.stage === 'deck') return name === 'deck'; return false; } // 특훈 단계에서 갈 수 있는 화면
+function startTutorial() { // 첫 실행: 닉네임 대신 바로 특훈 (봇 '봇' · 라이프 3)
+  TUT.on = true; TUT.stage = 'battle'; profile.tut = 0; save(); $('tut').hidden = false;
+  newMatch({ decks: () => ({ a: profile.deck.filter(owned).slice(0, 5), e: ['water', 'shield', 'water', 'shield', 'ice'] }), lives: 3, nick: '봇', lvl: 1 });
+}
+$('tutSkip').addEventListener('click', async () => { // 오른쪽 가장자리 건너뛰기
+  if (!(await dlg({ icon: '⏭', title: '특훈을 건너뛸까요?', html: '특훈 중이기 때문에 <b>보상은 받지 못해요</b>.', ok: '건너뛰기', cancel: '계속하기' }))) return;
+  tutQuit();
+});
+$('tutdlg').addEventListener('click', tutAdv);
+document.addEventListener('keydown', e => { if (!TUT.on || !TUT.lines) return; if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); tutAdv(); } else if (e.key === 'Escape') tutAdv(); }); // 키보드로도 넘기기
+document.addEventListener('click', e => { // 특훈 중: 로비 이동 · 메뉴 · 나가기 차단 (우편은 단계일 때 열어 둔다)
+  if (!TUT.on) return;
+  if (e.target.closest('#btnPlay,#btnDeckEdit,#btnFriendly,#btnLbTile,#btnMenu,#btnAcc,#btnQuest,#btnQuestTop,#btnQuit,#btnMail')) { e.stopPropagation(); return banner('특훈 중에는 쓸 수 없어요'); }
+  if (TUT.stage === 'mail' && (e.target.id === 'mailModal' || e.target.closest('[data-close="mailModal"]'))) e.stopPropagation(); // 우편 단계: 닫기 막음
+}, true);
 $('btnMenuSettings').addEventListener('click', () => { renderSettings(); fromMenu('setModal')(); });
 $('btnMenuAcc').addEventListener('click', () => { closeModal('menuModal'); openAccount(); });
 $('btnAcc').addEventListener('click', () => openAccount());
@@ -5800,6 +5974,14 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템' };
 const PATCH_NOTES = [
+  { v: 'R2.11.0', date: '2026.10.26', title: '인게임 튜토리얼', sections: [
+    { title: '신규', items: [
+      { icon: '🎓', name: '인게임 튜토리얼 · 특훈', tag: 'new', desc: '처음 켜면 <b>닉네임 화면 대신</b> 바로 전장으로: 봇 「봇」과 4라운드 스크립트 경기로 기초 강의 — 배치 · 레벨 업 · 승패 싸우기.' },
+      { icon: '✉', name: '특훈 보상', tag: 'new', desc: '특훈을 끝내면 <b>우편함</b>에 보상: ◆5,000 · ●10,000.' },
+      { icon: '🎫', name: '특별 뽑기 · 장착', tag: 'new', desc: '보상 뒤 <b>무료 10회 뽑기</b> (전설 1 확정) → 뽑은 지후를 덱에 <b>장착</b>까지 안내.' },
+      { icon: '⏭', name: '특훈 건너뛰기', tag: 'system', desc: '특훈 중 <b>화면 오른쪽 가장자리</b>의 건너뛰기 버튼으로 언제든 나가기 (보상은 받지 못해요).' },
+    ] },
+  ] },
   { v: 'R2.10.4', date: '2026.10.25', title: '레벨 성장 개편 · 밸런스', sections: [
     { title: '규칙 · 밸런스', items: [
       { icon: '4', name: '배치 기회', tag: 'nerf', desc: '첫 라운드 <b>4 → 3번</b> (그다음 2번 · 데스매치 3번은 그대로).' },
@@ -6387,11 +6569,11 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
 $('btnStart').addEventListener('click', () => { const n = $('nickInput').value.trim(); if (!n) return banner('닉네임을 넣어 주세요'); profile.nick = n.slice(0, 12); save(); renderLobby(); show('lobby'); setTimeout(updCheck, 400); }); // 처음 시작: 인트로 만화 → 업데이트 보상 (updCheck 가 본다)
 attend(); questAdd('login', 1); // 오늘 접속 · 출석
 $('welcomeVer').textContent = gameVersion();
-if (profile.nick) { renderLobby(); show('lobby'); } else show('welcome');
+if (profile.nick) { if (!profile.tut) { profile.tut = 1; save(); } renderLobby(); show('lobby'); } else if (profile.tut) show('welcome'); else startTutorial(); // R2.11: 첫 실행(닉네임 없음)은 닉네임 대신 특훈
 runBoot(); // 접속 로딩 (인트로)
 accBoot(); // 남아 있는 로그인이면 서버 기록과 맞춘다 (처음이면 지후배틀 기록을 가져온다) · 친구 · 우편 · 점검
 startUpdateChecks(); // PWA 등록 + 5분마다 새 버전 확인
-window.__rejhbt = { S, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+window.__rejhbt = { S, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct, TUT, TUT_D, TUT_PLAN, startTutorial, tutWave }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
