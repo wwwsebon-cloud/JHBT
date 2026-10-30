@@ -29,7 +29,8 @@ service cloud.firestore {
     // ── 계정 · 기록 ──
     // R2 기록: r2_backups/{uid} = { payload(프로필 JSON), savedAt, updatedAt }
     match /r2_backups/{userId} {
-      allow get, delete: if owner(userId);
+      allow get: if owner(userId) || isAdmin(); // R2.12: 운영자는 의심 계정 기록을 본다 (핵 방지)
+      allow delete: if owner(userId);
       allow create, update: if owner(userId)
         && request.resource.data.keys().hasOnly(['payload', 'savedAt', 'updatedAt'])
         && request.resource.data.payload is string && request.resource.data.payload.size() <= 100000
@@ -130,7 +131,7 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
@@ -138,6 +139,12 @@ service cloud.firestore {
         && validDeck(request.resource.data.deck)
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
         && request.resource.data.xp is int && request.resource.data.xp >= 0 && request.resource.data.xp <= 1000000
+        // R2.12 핵 방지: 재화 · 뽑기 수 · 보유 지후 수 · 핵 흔적 (운영 도구 '의심 계정') · 없어도 됨
+        && (!('dia' in request.resource.data) || (request.resource.data.dia is int && request.resource.data.dia >= 0 && request.resource.data.dia <= 99999999))
+        && (!('gold' in request.resource.data) || (request.resource.data.gold is int && request.resource.data.gold >= 0 && request.resource.data.gold <= 999999999))
+        && (!('pulls' in request.resource.data) || (request.resource.data.pulls is int && request.resource.data.pulls >= 0 && request.resource.data.pulls <= 999999))
+        && (!('own' in request.resource.data) || (request.resource.data.own is int && request.resource.data.own >= 0 && request.resource.data.own <= 999))
+        && (!('cheat' in request.resource.data) || (request.resource.data.cheat is int && request.resource.data.cheat >= 0 && request.resource.data.cheat <= 9999))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && request.resource.data.updatedAt is timestamp;
     }
