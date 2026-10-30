@@ -70,6 +70,11 @@ body.ui2-on .blobs, body.ui2-on .topbar, body.ui2-on .tabbar { display:none !imp
 @keyframes u2modal { from { opacity:0; transform:translateY(24px) scale(.92); } }
 @keyframes u2drop { from { opacity:0; transform:scale(.85) translateY(-8px); } }
 @keyframes u2toast { from { opacity:0; transform:translate(-50%, 18px) scale(.9); } }
+#ui2 .u2-float { position:absolute; inset:0; overflow:hidden; pointer-events:none; } /* 로비: 내 덱이 반투명하게 떠다닌다 (흰 바탕은 invert + screen 으로 지운다 · 테두리 없음) */
+#ui2 .u2-float img { position:absolute; aspect-ratio:1; object-fit:contain; opacity:.32; filter:brightness(1.6) saturate(1.2); animation:u2drift 8s ease-in-out infinite alternate; }
+#ui2 .u2-float img[src=""] { display:none; }
+@keyframes u2drift { 0% { transform:translate(0, 0) rotate(-8deg); } 50% { transform:translate(14px, -18px) rotate(6deg); } 100% { transform:translate(-10px, 12px) rotate(-3deg); } }
+body.u2-wide #ui2 .u2-app { max-width:none !important; } /* 전체화면 (PC): 좌우로 넓게 */
 #ui2 .u2-sheet { animation:u2sheet .36s cubic-bezier(.2,1,.3,1) both; } @keyframes u2sheet { from { opacity:0; transform:translateY(48px); } }
 #ui2 .u2-pen { animation:u2pen 2.6s ease-in-out infinite; } @keyframes u2pen { 0%, 80%, 100% { transform:none; } 88% { transform:rotate(-14deg) scale(1.12); } 94% { transform:rotate(10deg); } }
 /* 시작 화면 (R2.12 · 로그인 필수) */
@@ -1553,15 +1558,8 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
             </div>
           </sc-if>
           <div class="u2-glow" style="position:absolute; top:40%; left:50%; margin:-150px 0 0 -150px; width:300px; height:300px; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(255,194,26,.16) 0%,rgba(255,194,26,0) 65%);"></div>
-          <div onClick="{{ openFav }}" style="position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; cursor:pointer;">
-            <div class="u2-hero" style="width:min(46vw,22vh,188px); aspect-ratio:1; border-radius:50%; background:#fff; border:6px solid {{ favColor }}; box-shadow:0 0 0 6px {{ favGlow }}, 0 18px 30px rgba(0,0,0,.35); overflow:hidden; display:flex;">
-              <img src="{{ favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;">
-            </div>
-            <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border:1px solid #3b466b; border-radius:999px; padding:5px 12px 5px 6px;">
-              <div style="background:{{ favColor }}; color:#141826; font-size:11px; font-weight:800; padding:2px 6px; border-radius:999px;">대표</div>
-              <div style="font-family:'Do Hyeon'; font-size:17px;">{{ favName }} 지후</div>
-            </div>
-          </div>
+          <div class="u2-float" aria-hidden="true"><sc-for list="{{ floatDeck }}" as="f"><img src="{{ f.img }}" alt="" style="left:{{ f.x }}; top:{{ f.y }}; width:{{ f.s }}; animation-delay:{{ f.d }}; animation-duration:{{ f.t }};"></sc-for></div>
+          <div style="flex:1;"></div><!-- R2.12: 큰 대표 지후 대신 떠다니는 내 덱만 (대표 지후는 프로필 배지 · 꾸미기) -->
         </div>
 
         <div style="flex-shrink:0; margin:0 12px; background:#2c3553; border:1px solid #3b466b; border-radius:18px; padding:10px; display:flex; flex-direction:column; gap:8px;">
@@ -1631,10 +1629,11 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
         <div style="flex:1; min-height:0; overflow-y:auto; padding:12px 12px 20px; display:flex; flex-direction:column; gap:12px;">
           <div style="flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:8px;">
             <div style="display:flex; align-items:baseline; gap:6px;">
+              <sc-if value="{{ recShow }}"><div onClick="{{ recOpen }}" style="align-self:center; font-family:'Do Hyeon'; font-size:15px; padding:6px 10px; border-radius:10px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 3px 0 #c98a1c; cursor:pointer;" style-active="transform:translateY(2px); box-shadow:0 1px 0 #c98a1c;">✨ 덱 추천</div></sc-if>
               <div style="font-family:'Do Hyeon'; font-size:19px;">보유 중인 지후</div>
               <div style="font-size:13px; color:#9aa3bf; font-weight:600;">{{ ownedCount }}/{{ totalCount }}</div>
             </div>
-            <div onClick="{{ cycleSort }}" style="display:flex; align-items:center; gap:6px; background:#3b466b; box-shadow:0 3px 0 #252d48; border-radius:10px; padding:7px 12px; font-size:13px; font-weight:700; cursor:pointer;">{{ sortLabel }} <span style="font-size:10px; opacity:.8;">▼</span></div>
+            <div onClick="{{ cycleSort }}" style="display:flex; align-items:center; gap:6px; background:#3b466b; box-shadow:0 3px 0 #252d48; border-radius:10px; padding:7px 12px; font-size:13px; font-weight:700; cursor:pointer;">{{ sortLabel }} <span onClick="{{ flipSort }}" title="오름차순 · 내림차순" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; margin:-4px -6px -4px 0; border-radius:7px; background:#2c3553; font-size:11px;">{{ sortArrow }}</span></div>
           </div>
           <div style="flex-shrink:0; display:grid; grid-template-columns:{{ gridTpl }}; gap:14px 8px;">
             <sc-for list="{{ unitCards }}" as="u" hint-placeholder-count="12">
@@ -1673,7 +1672,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
         <div style="flex:1; min-height:0; overflow-y:auto; padding:0 12px; display:flex; flex-direction:column; gap:10px;">
           <sc-if value="{{ lbMsg }}"><div style="flex-shrink:0; text-align:center; padding:28px 0; color:#9aa3bf; font-size:13px; font-weight:600;">{{ lbMsg }}</div></sc-if>
           <sc-for list="{{ lbRows }}" as="r" hint-placeholder-count="5">
-            <div style="display:grid; grid-template-columns:72px minmax(0,1fr); gap:8px; background:#2c3553; border:1px solid {{ r.border }}; border-radius:16px; padding:8px; flex-shrink:0;">
+            <div onClick="{{ r.open }}" style="display:grid; grid-template-columns:72px minmax(0,1fr); gap:8px; background:#2c3553; border:1px solid {{ r.border }}; border-radius:16px; padding:8px; flex-shrink:0; cursor:pointer;" style-active="transform:scale(.985);">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <div style="height:38px; background:#1a2034; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:26px; color:{{ r.rankColor }};">{{ r.rank }}</div>
                 <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;">
@@ -1689,7 +1688,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
                 <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border-radius:12px; padding:6px;">
                   <div style="width:46px; height:46px; flex-shrink:0; border-radius:10px; background:#fff; border:3px solid {{ r.frame }}; overflow:hidden; display:flex;"><img src="{{ r.favImg }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div>
                   <div style="width:1px; align-self:stretch; background:#3b466b; margin:2px 1px;"></div>
-                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:3px; padding-left:4px;"><div style="font-size:13px; font-weight:700; color:#f2f4fa;">{{ r.stat1 }}</div><div style="font-size:11px; font-weight:600; color:#9aa3bf;">{{ r.stat2 }}</div></div>
+                  <div style="flex:1; min-width:0; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ r.deck }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div>
                 </div>
               </div>
             </div>
@@ -1703,7 +1702,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
               </div>
               <div style="min-width:0; display:flex; align-items:center; gap:6px;">
                 <div style="width:46px; height:46px; flex-shrink:0; border-radius:10px; background:{{ myFrameBg }}; padding:3px; display:flex;"><div style="flex:1; border-radius:7px; background:#fff; overflow:hidden; display:flex;"><img src="{{ favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div></div>
-                <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:3px; padding-left:4px;"><div style="font-size:14px; font-weight:800;">{{ nickname }}</div><div style="font-size:11px; font-weight:600; color:#c9d0e6;">{{ myStat }}</div></div>
+                <div style="flex:1; min-width:0; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ myDeck }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div>
               </div>
             </div>
           </div>
@@ -1944,6 +1943,55 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#1a2034; border-radius:12px; padding:4px;"><sc-for list="{{ pfv.tabs }}" as="t"><div onClick="{{ t.onClick }}" style="position:relative; text-align:center; padding:8px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; background:{{ t.bg }}; color:{{ t.fc }};">{{ t.label }}<sc-if value="{{ t.dot }}"><span style="position:absolute; top:6px; margin-left:4px; width:7px; height:7px; border-radius:50%; background:#ff5d6c;"></span></sc-if></div></sc-for></div>
           <sc-if value="{{ pfv.isFrame }}"><div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;"><sc-for list="{{ pfv.frames }}" as="f"><div onClick="{{ f.onClick }}" style="position:relative; background:#2c3553; border:1.5px solid {{ f.line }}; border-radius:14px; padding:10px 6px 8px; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer;" style-active="transform:scale(.96);"><div>{{ f.pf }}</div><div style="font-size:12px; font-weight:800;">{{ f.name }}</div><div style="font-size:10px; color:#9aa3bf; font-weight:600; text-align:center; min-height:24px; line-height:1.2;">{{ f.cond }}</div><div style="width:100%; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; background:{{ f.btnBg }}; color:{{ f.btnFc }};">{{ f.btn }}</div><sc-if value="{{ f.dot }}"><div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:#ff5d6c; border:2px solid #232a48;"></div></sc-if></div></sc-for></div></sc-if>
           <sc-if value="{{ pfv.isFav }}"><div style="font-size:12px; color:#9aa3bf; font-weight:600;">대표 지후는 프로필 사진 · 로비 가운데 · 리더보드에 보여요</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px;"><sc-for list="{{ pfv.favs }}" as="c"><div onClick="{{ c.onClick }}" style="position:relative; border-radius:12px; padding:3px; background:{{ c.color }}; box-shadow:0 3px 0 {{ c.dark }}; outline:{{ c.outline }}; outline-offset:2px; cursor:pointer;" style-active="transform:scale(.94);"><div style="aspect-ratio:1; border-radius:9px; background:#fff; overflow:hidden; display:flex;"><img src="{{ c.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div><sc-if value="{{ c.on }}"><div style="position:absolute; top:-6px; right:-5px; background:#ffc94a; color:#3b2600; font-size:9px; font-weight:900; padding:2px 5px; border-radius:999px;">대표</div></sc-if></div></sc-for></div></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- R2.12: 전투기록 · 유저 정보 · 덱 추천 -->
+  <sc-if value="{{ hasHist }}">
+    <div onClick="{{ histClose }}" class="u2-fade" style="position:absolute; inset:0; z-index:56; background:rgba(8,11,22,.74); display:flex; align-items:flex-end; justify-content:center;">
+      <div onClick="{{ stop }}" class="u2-sheet" style="width:100%; max-height:90%; display:flex; flex-direction:column; background:#232a48; border:1px solid #46527a; border-bottom:0; border-radius:22px 22px 0 0; overflow:hidden;">
+        <div style="flex-shrink:0; display:flex; align-items:center; gap:8px; padding:14px 14px 8px 18px;"><div style="font-family:'Do Hyeon'; font-size:22px; flex:1; min-width:0;">전투기록</div><div onClick="{{ histClose }}" style="width:36px; height:36px; border-radius:11px; background:#3b466b; box-shadow:0 3px 0 #252d48; display:flex; align-items:center; justify-content:center; font-weight:800; cursor:pointer;">✕</div></div>
+        <div style="flex:1; min-height:0; overflow-y:auto; padding:4px 14px 22px; display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:12px; color:#9aa3bf; font-weight:600;">{{ histNote }}</div>
+          <sc-if value="{{ histEmpty }}"><div style="text-align:center; padding:30px 0; color:#9aa3bf; font-weight:600;">아직 전투기록이 없어요 · 한 판 해 보세요!</div></sc-if>
+          <sc-for list="{{ hist }}" as="h"><div style="flex-shrink:0; background:#2c3553; border:1px solid {{ h.line }}; border-radius:16px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;"><div style="font-family:'Do Hyeon'; font-size:20px; color:{{ h.color }};">{{ h.res }}</div><div style="flex:1; min-width:0; font-size:12px; color:#c9d0e6; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ h.title }}</div><div style="font-size:11px; color:#9aa3bf; font-weight:600;">{{ h.when }}</div></div>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;"><sc-for list="{{ h.rounds }}" as="r"><div style="min-width:30px; text-align:center; font-family:'Do Hyeon'; font-size:13px; padding:2px 6px; border-radius:7px; background:{{ r.bg }}; color:{{ r.fc }};">{{ r.t }}</div></sc-for><div style="margin-left:auto; font-size:12px; font-weight:800; color:#c9d0e6;">{{ h.score }}</div></div>
+            <div style="display:grid; grid-template-columns:28px minmax(0,1fr); gap:6px; align-items:center;"><div style="font-size:11px; color:#53d3c0; font-weight:800;">나</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ h.me }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div><div style="font-size:11px; color:#ff7a85; font-weight:800;">상대</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ h.op }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div></div>
+          </div></sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasUinfo }}">
+    <div onClick="{{ uinfoClose }}" class="u2-fade" style="position:absolute; inset:0; z-index:56; background:rgba(8,11,22,.74); display:flex; align-items:flex-end; justify-content:center;">
+      <div onClick="{{ stop }}" class="u2-sheet" style="width:100%; max-height:90%; display:flex; flex-direction:column; background:#232a48; border:1px solid #46527a; border-bottom:0; border-radius:22px 22px 0 0; overflow:hidden;">
+        <div style="flex-shrink:0; display:flex; align-items:center; gap:8px; padding:14px 14px 8px 18px;"><div style="font-family:'Do Hyeon'; font-size:22px; flex:1; min-width:0;">{{ ui.name }}</div><div onClick="{{ uinfoClose }}" style="width:36px; height:36px; border-radius:11px; background:#3b466b; box-shadow:0 3px 0 #252d48; display:flex; align-items:center; justify-content:center; font-weight:800; cursor:pointer;">✕</div></div>
+        <div style="flex:1; min-height:0; overflow-y:auto; padding:4px 14px 22px; display:flex; flex-direction:column; gap:10px;">
+          <sc-if value="{{ ui.loading }}"><div style="text-align:center; padding:30px 0; color:#9aa3bf; font-weight:600;">불러오는 중…</div></sc-if>
+          <sc-if value="{{ ui.ready }}">
+            <div style="display:flex; align-items:center; gap:14px; background:#2c3553; border:1px solid #3b466b; border-radius:18px; padding:12px;"><div>{{ ui.pf }}</div><div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:5px;"><div style="display:flex; align-items:center; gap:6px;"><div style="background:#53d3c0; color:#08342e; font-family:'Do Hyeon'; font-size:13px; padding:3px 6px 2px; border-radius:6px;">Lv.{{ ui.lv }}</div><div style="font-family:'Do Hyeon'; font-size:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ ui.name }}</div></div><div style="font-size:12px; color:#9aa3bf; font-weight:600;">{{ ui.seen }}</div><div style="font-size:12px; color:#c9d0e6; font-weight:700;">애용하는 지후 · {{ ui.favName }}</div></div></div>
+            <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;"><sc-for list="{{ ui.stats }}" as="s"><div style="background:#1a2034; border-radius:12px; padding:8px 10px; display:flex; flex-direction:column; gap:2px;"><div style="font-size:11px; color:#9aa3bf; font-weight:700;">{{ s.k }}</div><div style="font-family:'Do Hyeon'; font-size:19px; color:{{ s.c }};">{{ s.v }}</div></div></sc-for></div>
+            <div style="font-size:12px; font-weight:800; color:#c9d0e6;">최근 덱</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ ui.deck }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div>
+          </sc-if>
+          <sc-if value="{{ ui.err }}"><div style="text-align:center; padding:30px 0; color:#ff7a85; font-weight:600;">{{ ui.err }}</div></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasRec }}">
+    <div onClick="{{ recClose }}" class="u2-fade" style="position:absolute; inset:0; z-index:56; background:rgba(8,11,22,.74); display:flex; align-items:flex-end; justify-content:center;">
+      <div onClick="{{ stop }}" class="u2-sheet" style="width:100%; max-height:90%; display:flex; flex-direction:column; background:#232a48; border:1px solid #46527a; border-bottom:0; border-radius:22px 22px 0 0; overflow:hidden;">
+        <div style="flex-shrink:0; display:flex; align-items:center; gap:8px; padding:14px 14px 8px 18px;"><div style="font-family:'Do Hyeon'; font-size:22px; flex:1; min-width:0;">덱 추천</div><div onClick="{{ recClose }}" style="width:36px; height:36px; border-radius:11px; background:#3b466b; box-shadow:0 3px 0 #252d48; display:flex; align-items:center; justify-content:center; font-weight:800; cursor:pointer;">✕</div></div>
+        <div style="flex:1; min-height:0; overflow-y:auto; padding:4px 14px 22px; display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:12px; color:#9aa3bf; font-weight:600; line-height:1.5;">보유한 지후 중에서 잘 싸우는 지후를 더 자주 고르고, 탱커 · 딜러 · 서포터가 섞이게 짜요. 늘 최선은 아니에요 · 다시 누르면 새 덱. (Lv.10 까지)</div>
+          <div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px;"><sc-for list="{{ rec.cards }}" as="c"><div style="display:flex; flex-direction:column; align-items:center; gap:4px;"><div style="position:relative; width:100%; border-radius:12px; padding:3px; background:{{ c.color }}; box-shadow:0 3px 0 {{ c.dark }};"><div style="aspect-ratio:1; border-radius:9px; background:#fff; overflow:hidden; display:flex;"><img src="{{ c.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div></div><div style="font-family:'Do Hyeon'; font-size:13px;">{{ c.name }}</div><div style="font-size:10px; color:#9aa3bf; font-weight:600;">{{ c.role }}</div></div></sc-for></div>
+          <div style="font-size:12px; color:#c9d0e6; font-weight:700; text-align:center;">{{ rec.summary }}</div>
+          <div style="display:grid; grid-template-columns:1fr 1.3fr; gap:10px;"><div onClick="{{ recAgain }}" style="height:48px; border-radius:14px; background:#3b466b; box-shadow:0 4px 0 #252d48; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:18px; cursor:pointer;" style-active="transform:translateY(3px); box-shadow:0 1px 0 #252d48;">↻ 다시 추천</div><div onClick="{{ recUse }}" style="height:48px; border-radius:14px; background:linear-gradient(180deg,#ffd76a,#ffc23d); box-shadow:0 4px 0 #c98a1c; color:#3b2600; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:18px; cursor:pointer;" style-active="transform:translateY(3px); box-shadow:0 1px 0 #c98a1c;">덱 {{ rec.preset }}에 넣기</div></div>
         </div>
       </div>
     </div>
@@ -3282,6 +3330,7 @@ function normProfile(p) {
   p.pity = nat(p.pity); p.boost = Object.assign({ day: '', used: 0, until: 0 }, p.boost || {}); // 천장 · 부스트
   p.mq = Object.assign({ i: 0, n: 0, done: false, day: '' }, p.mq || {}); p.mq.i = Math.min(nat(p.mq.i), MQ.length); p.mq.n = nat(p.mq.n); // 메인 퀘스트
   p.cheat = p.cheat && typeof p.cheat === 'object' ? p.cheat : { n: 0, kinds: {}, at: 0 }; // 핵 흔적 (R2.12 · 지우지 않는다)
+  p.mlog = Array.isArray(p.mlog) ? p.mlog.filter(m => m && Array.isArray(m.me)).slice(0, 30) : []; // 전투기록 (R2.12)
   return guardProfile(p);
 }
 function r1Level(totalXp) { let lv = 1, r = nat(totalXp); while (lv < 150) { const need = Math.ceil(100 * Math.pow(1.03, lv - 1)); if (r < need) break; r -= need; lv++; } return lv; } // R1 레벨 공식
@@ -5067,6 +5116,8 @@ function endMatch(win, note) {
   S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); emoClear(); presencePing('lobby');
   const me = ME(), hist = (S.hist || []).map(h => h === 'D' ? 'D' : (h === 'A') === (me === 'a') ? 'W' : 'L');
   const side = spec ? S.specWinner || (S.lives.a > 0 ? 'a' : 'e') : me; // 결과 카드의 덱 · 통계: 내 쪽 (관전은 이긴 쪽)
+  if (!spec && !TUT.on) { const op = me === 'a' ? 'e' : 'a', L = profile.mlog = Array.isArray(profile.mlog) ? profile.mlog : []; // 전투기록 (R2.12 · 최근 30판 · 햄버거 메뉴)
+    L.unshift({ at: Date.now(), win: !!win, kind: net ? 'friendly' : S.arc ? S.arc.kind : 'normal', opp: String((S.nick && S.nick[op]) || '').slice(0, 12), olv: (S.lvl && S.lvl[op]) | 0, me: (S.deck[me] || []).slice(0, 5), op: (S.deck[op] || []).slice(0, 5), r: hist.join('').slice(0, 12) }); L.length = Math.min(L.length, 30); }
   $('screen-result').classList.toggle('win', !!win || spec); // 패배만 빨간 제목
   $('resRounds').innerHTML = spec ? '' : hist.map((h, i) => `<span class="${h === 'W' ? 'on' : ''}" style="animation-delay:${(i * 0.06).toFixed(2)}s">${h}</span>`).join('');
   $('resDeck').innerHTML = (S.deck[side] || []).map((id, i) => `<span style="animation-delay:${(0.1 + i * 0.06).toFixed(2)}s" title="${CHARS[id].name}">${pic(id)}</span>`).join('');
@@ -5937,7 +5988,7 @@ function renderFriends() {
   const order = f => { const p = presenceOf(f.uid); return p.on ? (p.where === 'battle' ? 1 : 0) : 2; };
   acc.sort((x, y) => order(x) - order(y) || x.nick.localeCompare(y.nick));
   $('socFriendN').textContent = `${acc.filter(f => presenceOf(f.uid).on).length} / ${acc.length} 접속`;
-  const row = (f, acts, i) => { const p = presenceOf(f.uid), name = p.nick || f.nick; return `<div class="frow" style="animation-delay:${(i * 0.03).toFixed(2)}s"><span class="fav">${pfHtml(p.frame, 42, p.fav, { letter: name, fc: friendColor(f.uid) })}<span class="pd${p.on ? p.where === 'battle' ? ' battle' : ' on' : ''}"></span></span><span class="nm"><b>${esc(name)}</b><small>${p.label}</small></span><span class="acts">${acts}</span></div>`; };
+  const row = (f, acts, i) => { const p = presenceOf(f.uid), name = p.nick || f.nick; return `<div class="frow" data-fuid="${f.uid}" style="animation-delay:${(i * 0.03).toFixed(2)}s"><span class="fav">${pfHtml(p.frame, 42, p.fav, { letter: name, fc: friendColor(f.uid) })}<span class="pd${p.on ? p.where === 'battle' ? ' battle' : ' on' : ''}"></span></span><span class="nm"><b>${esc(name)}</b><small>${p.label}</small></span><span class="acts">${acts}</span></div>`; };
   body.innerHTML = (inc.length ? `<span class="fsec">받은 요청 · ${inc.length}</span>` + inc.map((f, i) => row(f, `<button class="k-btn" data-facc="${f.id}">수락</button><button class="g-btn" data-fdel="${f.id}">거절</button>`, i)).join('') : '')
     + (inc.length || out.length ? `<span class="fsec">친구 · ${acc.length}</span>` : '')
     + (acc.length ? acc.map((f, i) => { const p = presenceOf(f.uid); return row(f, `${p.sp ? `<button class="g-btn" data-fspec="${f.id}">관전</button>` : ''}${p.on && p.where !== 'battle' ? `<button class="k-btn" data-fm="${f.id}">친선전</button>` : ''}<button class="g-btn" data-fdm="${f.id}">대화</button><button class="g-btn x" data-fdel="${f.id}" title="친구 끊기">✕</button>`, i); }).join('') : '<div class="chat-empty">아직 친구가 없어요.<br><b>+ 친구 추가</b>에서 닉네임으로 신청해 보세요.</div>')
@@ -6871,6 +6922,12 @@ const PATCH_NOTES = [
       { icon: '🔁', name: '계정 전환', tag: 'new', desc: '이 기기에 로그인했던 계정은 시작 화면 · 환경설정에서 <b>한 번 눌러 전환</b> · 계정 메뉴는 <b>환경설정</b> 안으로 옮겼어요.' },
       { icon: '🛡️', name: '핵 방지', tag: 'system', desc: '다이아 · 골드를 조작하면 되돌리고 기록을 남겨요 · 조작된 기기 기록은 무시하고 서버 기록을 써요 · 운영자가 의심 계정을 찾아 <b>이용 정지</b>할 수 있어요.' },
       { icon: '✏️', name: '프로필', tag: 'new', desc: '로비 프로필 사진의 <b>연필</b> → 테두리 · 대표 지후 · <b>닉네임 변경</b> (첫 번째 무료 · 그다음 ● 100 · 24시간에 한 번).' },
+      { icon: '📜', name: '전투기록', tag: 'new', desc: '햄버거 메뉴 → <b>전투기록</b> · 최근 30판의 내 덱 · 상대 덱 · 라운드별 승패 (다시보기는 없어요).' },
+      { icon: '🫧', name: '떠다니는 내 덱', tag: 'new', desc: '로비 가운데 큰 대표 지후 대신 <b>지금 덱의 지후들</b>이 반투명하게 떠다녀요.' },
+      { icon: '🏆', name: '랭킹 덱 · 유저 정보', tag: 'new', desc: '랭킹에 각 유저가 <b>최근에 쓴 덱</b> (없으면 기본 덱) · 유저를 누르면 전적 · 승률 · 애용하는 지후 · 최근 접속 · 친구 목록에서도 똑같이.' },
+      { icon: '✨', name: '덱 추천', tag: 'new', desc: '덱 설정의 <b>덱 추천</b> · 가진 지후로 덱을 짜 줘요 (늘 최선은 아니에요 · 다시 누르면 새 덱) · <b>Lv.10 까지</b>만 보여요.' },
+      { icon: '↕️', name: '정렬 방향', tag: 'adjust', desc: '지후 목록 정렬 옆 <b>화살표</b>를 누르면 오름차순 · 내림차순이 바뀌어요.' },
+      { icon: '🖥️', name: '전체화면 (PC)', tag: 'new', desc: '햄버거 메뉴 → <b>전체화면</b> · 화면을 좌우로 넓게 써요.' },
     ] },
   ] },
   { v: 'R2.11.4', date: '2026.10.28', title: '밸런스 패치', sections: [
@@ -7755,10 +7812,46 @@ function u2Show(tab, page = null) { // show() 가 부른다: 새 로비를 켜�
 function u2Hide() { if (!UI2.on) return; UI2.on = false; UI2.st.page = null; u2Attach(); document.body.classList.remove('ui2-on'); $('ui2').hidden = true; UI2.st.detail = null; UI2.st.confirm = null; }
 function u2Go(tab) { const back = Object.keys(U2_TAB).find(k => U2_TAB[k] === tab && k !== 'gacha'); openTab(back); }
 function u2LbLoad() { UI2.st.lb = { tab: lbTab, loading: true }; const tab = lbTab; lbLoad().finally(() => { if (UI2.st.lb && UI2.st.lb.tab === tab && UI2.st.lb.loading) UI2.st.lb = { tab, msg: $('lbList').textContent.trim() || '기록을 불러오지 못했어요' }; u2Render(); }); }
-function u2Sorted() { // 지후 탭 정렬: 보유 먼저 → 기본순(등급 → 출시) · 역할군순 · 이름순 (기존 덱 정렬과 같은 기억)
-  const sort = deckSortGet(), R = RARITY_ORDER, ids = Object.keys(CHARS), idx = Object.fromEntries(ids.map((id, i) => [id, i])), own = id => (owned(id) ? 0 : 1);
-  return ids.sort((a, b) => own(a) - own(b) || (sort === 'role' ? DECK_ROLES.indexOf(CHARS[a].role) - DECK_ROLES.indexOf(CHARS[b].role) : 0) || (sort === 'name' ? CHARS[a].name.localeCompare(CHARS[b].name, 'ko') : R[CHARS[b].rarity] - R[CHARS[a].rarity] || idx[a] - idx[b]));
+const sortDir = () => { try { return localStorage.getItem('rejhbt-deck-sort-dir') === 'up' ? -1 : 1; } catch (e) { return 1; } }; // 1 = 기본 방향 (전설 먼저 · 가나다) · -1 = 반대 (R2.12 화살표)
+function u2Sorted() { // 지후 탭 정렬: 보유 먼저 → 기본순(등급 → 출시) · 역할군순 · 이름순 (기존 덱 정렬과 같은 기억) · 화살표로 방향
+  const sort = deckSortGet(), dir = sortDir(), R = RARITY_ORDER, ids = Object.keys(CHARS), idx = Object.fromEntries(ids.map((id, i) => [id, i])), own = id => (owned(id) ? 0 : 1);
+  return ids.sort((a, b) => own(a) - own(b) || dir * ((sort === 'role' ? DECK_ROLES.indexOf(CHARS[a].role) - DECK_ROLES.indexOf(CHARS[b].role) : 0) || (sort === 'name' ? CHARS[a].name.localeCompare(CHARS[b].name, 'ko') : R[CHARS[b].rarity] - R[CHARS[a].rarity] || idx[a] - idx[b])));
 }
+// ── 티어 점수 (R2.12 티어리스트 · 덱 추천이 쓴다 · 티어리스트를 다시 매기면 같이 바꾼다) ──
+const TIER_SC = {"fire":50,"ice":0,"sword":10,"assassin":100,"shield":50,"heal":100,"accel":100,"lonely":10,"berserk":15,"scythe":75,"moon":100,"levelup":0,"magic":50,"gift":10,"slime":15,"atom":20,"dice":60,"gun":20,"coin":0,"combo":100,"water":35,"berserker":10,"slot":50,"bow":5,"dust":65,"cactus":30,"jaws":65,"blizzard":100,"bat":30,"train":95,"sun":85,"whirl":0,"titanium":20,"gumiho":25,"necro":80,"deathnote":35,"rifle":45,"bubble":75,"prophecy":25,"joker":30,"syringe":100,"tentacle":65,"lantern":100,"lightning":85,"barrier":100,"revive":55,"reaper":5,"guardian":50,"clock":100,"charge":100,"devour":65,"bomb":10,"nuke":100,"star":90,"sommelier":0,"chicken":85,"pan":35,"growth":55,"melody":100,"tailwind":100,"lock":0,"radiation":20,"antigrav":25,"teemo":55,"rain":100,"nou":55,"venom":95,"biker":0,"lament":100,"soulcaller":25,"laser":50};
+const tierOf = id => { const v = TIER_SC[id] ?? 50; return v >= 80 ? 'S' : v >= 65 ? 'A' : v >= 40 ? 'B' : v >= 20 ? 'C' : 'D'; }, TIER_C = { S: '#ff5d6c', A: '#ff9f43', B: '#ffc94a', C: '#53d3c0', D: '#7c8bb5' };
+const REC_MAX_LV = 10; // 덱 추천은 Lv.10 까지 (초보 도움 · 이후 버튼이 사라진다)
+function recDeck() { // 덱 추천: 보유 지후 · 점수가 높을수록 자주 (무작위) · 탱커 최대 2 · 서포터류 최대 2 · 딜러류 최소 1
+  const SUP = ['서포터', '보조형', '하이브리드'], DEAL = ['딜러', '어쌔신', '폭발형', '소환형', '컨트롤러'];
+  for (let tries = 0; tries < 40; tries++) {
+    const pool = Object.keys(CHARS).filter(owned), pick = [];
+    while (pick.length < 5 && pool.length) { const w = pool.map(id => Math.pow((TIER_SC[id] ?? 50) + 12, 1.6)), tot = w.reduce((s, x) => s + x, 0); let r = Math.random() * tot, i = 0; while (r > w[i] && i < w.length - 1) r -= w[i++]; pick.push(pool.splice(i, 1)[0]); }
+    const role = id => CHARS[id].role, n = f => pick.filter(f).length;
+    if (pick.length < 5) return pick;
+    if (n(id => role(id) === '탱커') <= 2 && n(id => SUP.includes(role(id))) <= 2 && n(id => DEAL.includes(role(id))) >= 1) return pick;
+  }
+  return Object.keys(CHARS).filter(owned).sort((a, b) => (TIER_SC[b] ?? 50) - (TIER_SC[a] ?? 50)).slice(0, 5);
+}
+// ── 유저 정보 (리더보드 · 친구 · R2.12) ──
+async function u2UserInfo(uid, base) {
+  if (!uid) return; u2Set({ uinfo: { uid, loading: true, d: base || null } });
+  try { if (!(await fbInit())) throw new Error('오프라인');
+    const [lb, tw, cp, pr] = await Promise.all([FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2lb', uid)), FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2tower', uid)).catch(() => null), FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2comp', compSeason().number + '_' + uid)).catch(() => null), FB.sdk.getDoc(FB.sdk.doc(FB.db, 'presence', uid)).catch(() => null)]);
+    if (!lb.exists()) throw new Error('기록이 없는 유저예요');
+    if (!UI2.st.uinfo || UI2.st.uinfo.uid !== uid) return;
+    u2Set({ uinfo: { uid, d: lb.data(), tw: tw && tw.exists() ? tw.data() : null, cp: cp && cp.exists() ? cp.data() : null, pr: pr && pr.exists() ? pr.data() : null } });
+  } catch (e) { if (UI2.st.uinfo && UI2.st.uinfo.uid === uid) u2Set({ uinfo: { uid, err: e.message || '불러오지 못했어요' } }); }
+}
+const U2_CLEAR = {};
+function u2Clear(id) { // 초상화의 흰 바탕을 투명하게 (떠다니는 덱 · 테두리 없이) — 처음엔 비워 두고 다 만들면 다시 그린다
+  if (U2_CLEAR[id]) return U2_CLEAR[id] === 1 ? '' : U2_CLEAR[id]; U2_CLEAR[id] = 1; const im = new Image();
+  im.onload = () => { try { const c = document.createElement('canvas'), n = 160; c.width = c.height = n; const x = c.getContext('2d'); x.drawImage(im, 0, 0, n, n); const d = x.getImageData(0, 0, n, n), a = d.data; for (let i = 0; i < a.length; i += 4) { const m = Math.min(a[i], a[i + 1], a[i + 2]); if (m > 225) a[i + 3] = 0; else if (m > 190) a[i + 3] = Math.round(a[i + 3] * (225 - m) / 35); } x.putImageData(d, 0, 0); U2_CLEAR[id] = c.toDataURL(); u2Render(); } catch (e) { U2_CLEAR[id] = u2Img(id); } };
+  im.src = u2Img(id); return '';
+}
+const agoTxt = ms => { if (!ms) return '알 수 없음'; const s = Math.max(0, (Date.now() - ms) / 1000); return s < 120 ? '방금' : s < 3600 ? Math.floor(s / 60) + '분 전' : s < 86400 ? Math.floor(s / 3600) + '시간 전' : Math.floor(s / 86400) + '일 전'; };
+function u2Wide(on) { document.body.classList.toggle('u2-wide', on); try { localStorage.setItem('rejhbt-wide', on ? '1' : '0'); } catch (e) {} if (UI2.on) u2Render(); } // PC 전체화면: 좌우로 넓게 (R2.12)
+document.addEventListener('fullscreenchange', () => u2Wide(!!document.fullscreenElement));
+$('socFriends').addEventListener('click', e => { if (e.target.closest('button')) return; const r = e.target.closest('[data-fuid]'); if (r && window.__u2) u2UserInfo(r.dataset.fuid); }); // 친구를 누르면 유저 정보 (R2.12)
 function u2Equip(id) { // 상세 창 '장착': 빈 칸이 있으면 바로 · 꽉 찼으면 지후 탭에서 바꿀 자리를 고른다
   if (!owned(id)) return u2Toast('아직 없는 지후예요');
   if (profile.deck.includes(id)) return;
@@ -7826,7 +7919,7 @@ function u2Vals() {
   // 랭킹 (리더보드 기록: 닉네임 · 레벨 · 대표 지후 · 테두리 · 승패 · 탑 · TP)
   const L = s.lb && s.lb.tab === lbTab ? s.lb : null, rankC = ['#ffc21a', '#dfe4ee', '#e8a06a'], frameBg = fr => (hasKey(FRAME, fr) ? FRAME[fr] : FRAME.none).bg;
   const lbVal = d => { const w = Number(d.wins) || 0, l = Number(d.losses) || 0; return lbTab === 'comp' ? [fmt(d.tp) + ' TP', compTierInfo(d.tp).name, `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'tower' ? [fmt(d.best) + '층', '최고 층', `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'wins' ? [fmt(w) + '승', `${fmt(l)}패`, `Lv.${clamp(Number(d.level) || 0, 0, 999)}`] : ['Lv.' + clamp(Number(d.level) || 0, 0, 999), lbTab === 'hall' ? 'R1 기록' : `${fmt(w)}승`, `${fmt(w)}승 ${fmt(l)}패`]; };
-  const lbRows = L && L.rows ? L.rows.map((r, i) => { const d = r.data, v = lbVal(d); return { rank: i + 1, rankColor: rankC[i] || '#f2f4fa', border: r.uid === L.me ? '#53d3c0' : i < 3 ? rankC[i] : '#3b466b', main: v[0], sub: v[1], lv: clamp(Number(d.level) || 0, 0, 999), name: String(d.nickname || '?').slice(0, 12) + (r.uid === L.me ? ' (나)' : ''), frame: frameBg(d.frame), favImg: CHARS[d.fav] ? u2Img(d.fav) : u2Img('fire'), stat1: v[2], stat2: lbTab === 'comp' ? compTierInfo(d.tp).name : lbTab === 'tower' ? '지후의 탑' : '시즌 R2' }; }) : [];
+  const lbRows = L && L.rows ? L.rows.map((r, i) => { const d = r.data, v = lbVal(d); return { rank: i + 1, rankColor: rankC[i] || '#f2f4fa', border: r.uid === L.me ? '#53d3c0' : i < 3 ? rankC[i] : '#3b466b', main: v[0], sub: v[1], lv: clamp(Number(d.level) || 0, 0, 999), name: String(d.nickname || '?').slice(0, 12) + (r.uid === L.me ? ' (나)' : ''), frame: frameBg(d.frame), favImg: CHARS[d.fav] ? u2Img(d.fav) : u2Img('fire'), deck: ((Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS()).filter(id => CHARS[id]).slice(0, 5)).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })), open: () => u2UserInfo(r.uid, d), stat1: v[2], stat2: lbTab === 'comp' ? compTierInfo(d.tp).name : lbTab === 'tower' ? '지후의 탑' : '시즌 R2' }; }) : [];
   const myAt = L && L.rows ? L.rows.findIndex(r => r.uid === L.me) : -1, myD = { wins: profile.wins, losses: profile.losses, level: profile.level, best: profile.tower.best, tp: profile.comp.tp, ...(lbTab === 'comp' ? { wins: profile.comp.wins, losses: profile.comp.losses } : {}) }, myV = lbVal(myD);
   const lbTabs = [['level', '레벨'], ['wins', '승리'], ['tower', '탑'], ['comp', '경쟁전'], ['hall', '명예']].map(([k, label]) => ({ label, bg: lbTab === k ? '#3b466b' : 'transparent', fc: lbTab === k ? '#fff' : '#9aa3bf', onClick: () => { if (lbTab === k) return; lbTab = k; u2LbLoad(); u2Render(); } }));
   // 상점
@@ -7847,8 +7940,8 @@ function u2Vals() {
       btnBg: b[0], btnFc: b[1], btnEdge: b[2], onClick: () => { renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${x.k}"]`); if (el) el.click(); } }; });
   // 메뉴 · 하단 탭 (점은 기존 화면 상태를 그대로)
   const dot = id => !!$(id) && !$(id).hidden, mailN = dot('mailDot'), questN = dot('questDot'), socN = dot('socialDot'), frameN = framesReady() > 0;
-  const menuItems = [['공지 · 패치노트', '#ffc94a', false, () => $('btnMenuPatch').click()], ['우편함', '#7cc8ff', mailN, () => $('btnMail').click()], ['퀘스트 · 출석', '#53d3c0', questN, openQs], ['친구', '#ff8fb1', socN, () => openSocial()], ['가방', '#ff9f43', dot('invDot'), () => openTab('inv')],
-    ['코드 입력', '#ff7fa6', false, () => $('btnMenuCode').click()], ['도움말', '#7cc8ff', false, () => $('btnMenuHelp').click()], ['인트로 만화', '#b26bff', false, () => $('btnMenuComic').click()], ['튜토리얼', '#36c98a', false, () => $('btnMenuTut').click()], ['환경설정', '#c9d0e6', false, () => { renderSettings(); openModal('setModal'); }]] // R2.12: MENU 서랍 없이 햄버거 하나로
+  const menuItems = [['전투기록', '#53d3c0', false, () => u2Set({ hist: true })], ['공지 · 패치노트', '#ffc94a', false, () => $('btnMenuPatch').click()], ['우편함', '#7cc8ff', mailN, () => $('btnMail').click()], ['퀘스트 · 출석', '#53d3c0', questN, openQs], ['친구', '#ff8fb1', socN, () => openSocial()], ['가방', '#ff9f43', dot('invDot'), () => openTab('inv')],
+    ['코드 입력', '#ff7fa6', false, () => $('btnMenuCode').click()], ['도움말', '#7cc8ff', false, () => $('btnMenuHelp').click()], ['인트로 만화', '#b26bff', false, () => $('btnMenuComic').click()], ['튜토리얼', '#36c98a', false, () => $('btnMenuTut').click()], [document.body.classList.contains('u2-wide') ? '전체화면 끄기' : '전체화면 (PC)', '#9aa3bf', false, () => { const on = !document.body.classList.contains('u2-wide'); if (on) { const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } else if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); u2Wide(on); }], ['환경설정', '#c9d0e6', false, () => { renderSettings(); openModal('setModal'); }]] // R2.12: MENU 서랍 없이 햄버거 하나로
     .map(([label, color, d2, fn]) => ({ label, color, dot: d2, onClick: e => { e.stopPropagation(); u2Set({ menuOpen: false }); fn(); } }));
   const navItems = [['shop', '상점', 'gift', !shop.freeClaimed], ['units', '지후', 'fire', false], ['battle', '전투', 'sword', false], ['arcade', '아케이드', 'slot', dot('arcDot')], ['rank', '랭킹', 'guardian', false]].map(([k, label, im, d2]) => { const on = (pg && U2_PAGE[pg][1] === '아케이드' ? 'arcade' : s.tab) === k && (!pg || U2_PAGE[pg][1] === '아케이드');
     return { label, img: u2Img(im), dot: d2, h: on ? '86px' : '72px', size: on ? '46px' : '34px', fs: on ? '16px' : '13px', fc: on ? '#ffffff' : '#9aa3bf', bg: on ? 'linear-gradient(180deg,#3b466b,#2c3553)' : 'transparent', line: on ? '#4a5680' : 'transparent', ring: on ? '#ffc94a' : '#3b466b', filter: on ? 'none' : 'saturate(.7)', go: () => u2Go(k) }; });
@@ -7865,10 +7958,11 @@ function u2Vals() {
     // 지후
     isUnits: tab === 'units', equipping: !!s.equipId, equipImg: s.equipId ? u2Img(s.equipId) : '', equipName: s.equipId ? shortName(s.equipId) : '', cancelEquip: () => u2Set({ equipId: null }),
     ownedCount: Object.keys(CHARS).filter(owned).length, totalCount: Object.keys(CHARS).length, sortLabel, cycleSort: () => { const o = ['base', 'role', 'name'], k = o[(o.indexOf(deckSortGet()) + 1) % 3]; try { localStorage.setItem('rejhbt-deck-sort', k); } catch (e) {} u2Render(); },
-    gridTpl: 'repeat(4,minmax(0,1fr))', unitCards,
+    gridTpl: document.body.classList.contains('u2-wide') ? 'repeat(auto-fill,minmax(92px,1fr))' : 'repeat(4,minmax(0,1fr))', unitCards,
     hasDetail: !!s.detail && !!CHARS[s.detail], d: dv, closeDetail: () => u2Set({ detail: null }), stop: e => e.stopPropagation(), toggleStory: () => u2Set({ story: !s.story }), prevDetail: e => { e.stopPropagation(); u2Set({ detail: dv.prev }); }, nextDetail: e => { e.stopPropagation(); u2Set({ detail: dv.next }); },
     // 랭킹
     isRank: tab === 'rank', lbTabs, lbRows, lbMsg: !L || L.loading ? '불러오는 중…' : L.msg || (L.rows && !L.rows.length ? '아직 기록이 없어요' : ''), lbCaption: ($('lbSub') || {}).textContent || '', lbNote: L && L.rows ? `상위 ${L.rows.length}명` : '',
+    myDeck: profile.deck.filter(id => CHARS[id]).slice(0, 5).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })),
     myRank: myAt >= 0 ? myAt + 1 : lbTab === 'hall' && !profile.legacy ? '—' : `${LB_TOP}+`, myMain: myV[0], myStat: myV[2],
     // 상점
     isShop: tab === 'shop', hero1: u2Img('moon'), hero2: u2Img('lightning'), hero3: u2Img('lantern'), pityLeft: Math.max(1, CFG.PITY - (profile.pity || 0)), pityPct: Math.min(100, (profile.pity || 0) / CFG.PITY * 100) + '%',
@@ -7880,6 +7974,21 @@ function u2Vals() {
     // 아케이드
     isArcade: tab === 'arcade', tickets: fmt(a.t), points: fmt(a.p), arcadeModes,
     navItems, hasToast: !!s.toast, toast: s.toast,
+    floatDeck: deck.slice(0, 5).map((id, i) => ({ img: u2Clear(id), x: ['3%', '79%', '9%', '73%', '44%'][i], y: ['30%', '24%', '64%', '60%', '86%'][i], s: ['62px', '56px', '52px', '60px', '48px'][i], d: (-i * 1.7).toFixed(1) + 's', t: (7 + i * 1.3).toFixed(1) + 's' })),
+    sortArrow: sortDir() > 0 ? '▼' : '▲', flipSort: e => { e.stopPropagation(); try { localStorage.setItem('rejhbt-deck-sort-dir', sortDir() > 0 ? 'up' : 'down'); } catch (err) {} u2Render(); },
+    hasHist: !!s.hist, histClose: () => u2Set({ hist: false }), histEmpty: !(profile.mlog || []).length, histNote: `최근 ${(profile.mlog || []).length}판 · 이 기기와 계정에 저장돼요 (최대 30판)`,
+    hist: s.hist ? (profile.mlog || []).map(m => { const W = (m.r || '').split('').filter(x => x === 'W').length, Lr = (m.r || '').split('').filter(x => x === 'L').length, kind = { normal: '일반전', friendly: '친선전', mirror: '미러전', comp: '경쟁전', tower: '지후의 탑', sandbox: '샌드박스', reels: '릴스' }[m.kind] || m.kind;
+      const dk = L => (L || []).filter(id => CHARS[id]).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c }));
+      return { res: m.win ? '승리' : '패배', color: m.win ? '#53d3c0' : '#ff7a85', line: m.win ? '#2a9483' : '#7a3a48', title: `${kind} · vs ${m.opp || '상대'}${m.olv ? ' Lv.' + m.olv : ''}`, when: agoTxt(m.at), score: `${W}승 ${Lr}패`, rounds: (m.r || '').split('').map((x, i) => ({ t: (i + 1) + 'R ' + (x === 'W' ? '승' : x === 'L' ? '패' : '무'), bg: x === 'W' ? '#53d3c0' : x === 'L' ? '#ff5d6c' : '#3b466b', fc: x === 'D' ? '#f2f4fa' : '#141826' })), me: dk(m.me), op: dk(m.op) }; }) : [],
+    hasUinfo: !!s.uinfo, uinfoClose: () => u2Set({ uinfo: null }), ui: (() => { const u = s.uinfo; if (!u) return {}; const d = u.d || {}, w = Number(d.wins) || 0, l = Number(d.losses) || 0, fav = CHARS[d.fav] ? d.fav : 'fire';
+      const seenAt = u.pr && u.pr.at ? ts(u.pr.at) : d.updatedAt ? ts(d.updatedAt) : 0, online = !!(u.pr && u.pr.at && Date.now() - ts(u.pr.at) < 150000); // 접속 신호(presence)가 2분 반 안이면 접속 중
+      return { name: String(d.nickname || '유저'), loading: !!u.loading, err: u.err || '', ready: !u.loading && !u.err && !!u.d, lv: clamp(Number(d.level) || 1, 1, 999), pf: { html: pfHtml(d.frame, 84, fav, { letter: d.nickname }) }, favName: shortName(fav) + ' 지후', seen: online ? '🟢 지금 접속 중' : '최근 접속 · ' + agoTxt(seenAt),
+        stats: [['승리', w.toLocaleString(), '#53d3c0'], ['패배', l.toLocaleString(), '#ff7a85'], ['승률', w + l ? Math.round(w / (w + l) * 100) + '%' : '—', '#ffc94a'], ['경험치', (Number(d.xp) || 0).toLocaleString(), '#7cc8ff'], ['탑 최고', u.tw ? (Number(u.tw.best) || 0) + '층' : '—', '#b26bff'], ['경쟁전', u.cp ? compTierInfo(u.cp.tp).name : '—', '#ff9f43']].map(([k, v, c]) => ({ k, v, c })),
+        deck: ((Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS()).filter(id => CHARS[id]).slice(0, 5)).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })) }; })(),
+    recShow: profile.level <= REC_MAX_LV, recOpen: () => profile.level <= REC_MAX_LV && u2Set({ rec: recDeck() }), hasRec: !!s.rec && profile.level <= REC_MAX_LV, recClose: () => u2Set({ rec: null }), recAgain: () => u2Set({ rec: recDeck() }),
+    recUse: () => { const L = (s.rec || []).slice(0, 5); if (!L.length) return; profile.deck.length = 0; L.forEach(id => profile.deck.push(id)); save(); mqCheck(); u2Set({ rec: null }); u2Toast(`덱 ${profile.preset}에 추천 덱을 넣었어요`); },
+    rec: s.rec ? { preset: profile.preset, cards: s.rec.map(id => { const r = U2_RAR[CHARS[id].rarity]; return { img: u2Img(id), color: r.c, dark: r.d, name: shortName(id), role: CHARS[id].role }; }), // 티어는 보여 주지 않는다
+      summary: [...new Set(s.rec.map(id => CHARS[id].role))].join(' · ') } : {},
     openProfile: e => { e.stopPropagation(); u2Set({ profile: true, pfTab: s.pfTab || 'frame', nickDraft: null, menuOpen: false }); }, hasProfile: !!s.profile, closeProfile: () => u2Set({ profile: false, nickDraft: null }), pfv: s.profile ? u2ProfileVals(s) : {},
     isPage: !!pg, pageTitle: pg ? U2_PAGE[pg][0] : '', pageNote: pg === 'social' ? ($('tabSocialSub') || {}).textContent || '' : pg ? U2_PAGE[pg][1] : '', pageBack: () => u2Go(pg && U2_PAGE[pg][1] === '아케이드' ? 'arcade' : s.tab),
   };
