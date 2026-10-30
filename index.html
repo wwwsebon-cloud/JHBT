@@ -785,9 +785,9 @@ input.text { font-size:20px; font-weight:800; }
 #btnEmo { position:relative; overflow:hidden; }
 #btnEmo::after { content:''; position:absolute; left:0; bottom:0; height:3px; width:calc(var(--emo-cd, 0) * 100%); background:var(--red); }
 /* 유닛 — 원형 초상화 · 내 편 흰 링 / 상대 빨강 링 · 위 Lv 금색 배지 · 아래 HP 6px + SP 3px */
-.unit { position:absolute; width:93px; height:93px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fff; box-shadow:0 0 0 3px #fff, 0 10px 22px rgba(20,24,40,.16); transform:translate(-50%,-50%); transition:filter .15s ease, width .25s ease, height .25s ease; will-change:left, top; z-index:5; user-select:none; }
+.unit { position:absolute; left:0; top:0; width:73px; height:73px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fff; box-shadow:0 0 0 3px #fff, 0 10px 22px rgba(20,24,40,.16); transform:translate(-50%,-50%); transition:filter .15s ease, width .25s ease, height .25s ease; will-change:translate; z-index:5; user-select:none; } /* 위치는 translate (R2.12 · physSyncDom) */
 .unit.enemy { box-shadow:0 0 0 3px var(--red), 0 10px 22px rgba(20,24,40,.16); }
-.unit.small { width:60px !important; height:60px !important; }
+.unit.small { width:47px !important; height:47px !important; }
 .unit .unit-icon { position:absolute; inset:0; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .unit .unit-icon img { width:100%; height:100%; object-fit:cover; }
 .unit .unit-level { position:absolute; top:-12px; left:50%; transform:translateX(-50%); padding:2px 9px; border-radius:999px; background:var(--gold); color:var(--ink); font-size:12px; font-weight:900; z-index:6; white-space:nowrap; box-shadow:0 2px 6px rgba(20,24,40,.15); }
@@ -796,26 +796,19 @@ input.text { font-size:20px; font-weight:800; }
 .unit .status-icons { position:absolute; top:-24px; left:50%; transform:translateX(-50%); display:flex; gap:2px; z-index:7; white-space:nowrap; }
 .unit[class*="lvl"] .status-icons { top:-40px; }
 .unit .status-icons span { background:rgba(255,255,255,.92); color:var(--ink); border-radius:11px; min-width:22px; height:22px; padding:0 4px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; box-shadow:0 2px 6px rgba(20,24,40,.12); }
-.unit .unit-hpbar-wrap { position:absolute; bottom:-19px; left:50%; transform:translateX(-50%); }
-.unit .unit-hpbar-track { position:relative; width:78px; height:14px; border-radius:7px; background:rgba(17,19,24,.55); overflow:hidden; box-shadow:0 0 0 1.5px #fff, 0 2px 6px rgba(20,24,40,.18); }
-.unit .unit-hpbar, .unit .unit-hpbar-lag { position:absolute; left:0; top:0; bottom:0; width:100%; }
-.unit .unit-hpbar { z-index:1; background:linear-gradient(180deg, #a6ee6e, #6fcf3d); transition:width .12s ease-out; }
-.unit .unit-hpbar-lag { background:#fff; transition:width .5s cubic-bezier(.3,.7,.3,1) .28s; } /* 잔상: 잠깐 머물렀다가 따라 줄어든다 */
-.unit.enemy .unit-hpbar { background:linear-gradient(180deg, #ff6b62, #e5322d); }
-.unit .unit-hpbar-track.hit { animation:hpHit .28s ease-out; }
-@keyframes hpHit { 0% { transform:scale(1.12, 1.35); filter:brightness(1.8); } 100% { transform:none; filter:none; } }
-.unit .unit-hpbar-track.heal .unit-hpbar { animation:hpHeal .45s ease-out; }
-@keyframes hpHeal { 0% { filter:brightness(1.7) saturate(1.3); } }
-.unit .unit-hpbar-track .cut { position:absolute; top:0; right:0; bottom:0; width:0; background:repeating-linear-gradient(135deg, #3c3e44 0 2px, #8b8d93 2px 4px); z-index:1; transition:width .2s; }
+.unit .unit-hpbar-wrap { position:absolute; bottom:-11px; left:50%; transform:translateX(-50%); }
+.unit .unit-hpbar-track { position:relative; width:60px; height:7px; border-radius:4px; background:rgba(17,19,24,.45); overflow:hidden; box-shadow:0 0 0 1.5px #fff; }
+.unit .unit-hpbar { position:absolute; inset:0; z-index:1; background:#6fcf3d; transform-origin:0 50%; }
+.unit.enemy .unit-hpbar { background:#e5322d; }
+.unit .unit-shieldbar { position:absolute; left:0; right:0; top:0; height:3px; z-index:2; background:#65cfff; transform-origin:0 50%; transform:scaleX(0); }
+.unit .unit-hpbar-track .cut { position:absolute; inset:0; background:repeating-linear-gradient(135deg, #3c3e44 0 2px, #8b8d93 2px 4px); z-index:1; transform-origin:100% 50%; transform:scaleX(0); }
 .unit .unit-hp-text { position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; line-height:1; color:#fff; letter-spacing:.02em; -webkit-text-stroke:2.5px rgba(17,19,24,.75); paint-order:stroke fill; }
-.unit .unit-cdbar-wrap { position:absolute; bottom:-25px; left:50%; transform:translateX(-50%); width:58px; height:3px; border-radius:3px; background:rgba(60,60,67,.15); overflow:hidden; display:none; }
+.unit .unit-cdbar-wrap { position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); width:46px; height:3px; border-radius:3px; background:rgba(60,60,67,.15); overflow:hidden; display:none; }
 .unit.has-cd .unit-cdbar-wrap { display:block; }
-.unit.has-shield .unit-cdbar-wrap { bottom:-30px; }
-.unit .unit-cdbar { height:100%; width:0; background:var(--blue2); }
+
+.unit .unit-cdbar { height:100%; width:100%; background:var(--blue2); transform-origin:0 50%; transform:scaleX(0); }
 .unit .unit-cdbar.cd { background:#8b8d93; }
-.unit .unit-shieldbar-wrap { position:absolute; bottom:-25px; left:50%; transform:translateX(-50%); width:72px; height:3px; border-radius:3px; background:rgba(60,60,67,.15); overflow:hidden; display:none; }
-.unit.has-shield .unit-shieldbar-wrap { display:block; }
-.unit .unit-shieldbar { height:100%; width:100%; background:#65cfff; }
+
 .unit .xlv { position:absolute; z-index:7; top:-12px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:900; background:var(--ink); color:var(--gold); border-radius:999px; padding:2px 9px; white-space:nowrap; }
 .unit .xlv.pop { animation:lvPopB .5s cubic-bezier(.2,1.6,.4,1); }
 @keyframes lvPopB { from { transform:translateX(-50%) scale(1.8); } }
@@ -943,7 +936,7 @@ input.text { font-size:20px; font-weight:800; }
 .slot-reels.win3 { background:conic-gradient(from 0deg, #ff5f6d, #ffc21a, #34c759, #4f9dff, #b26bff, #ff5f6d); box-shadow:0 0 0 2px #fff, 0 0 30px var(--gold); animation:slotWin .25s ease-in-out 12 alternate; }
 @keyframes slotWin { to { transform:translateX(-50%) scale(1.18); } }
 .slot-callout { position:absolute; z-index:30; transform:translate(-50%,-50%); pointer-events:none; display:flex; flex-direction:column; align-items:center; gap:6px; padding:18px 34px; border-radius:28px; background:rgba(17,19,24,.9); color:#fff; box-shadow:0 20px 50px rgba(17,19,24,.35); animation:slam .5s cubic-bezier(.2,.8,.2,1); white-space:nowrap; }
-.slot-callout.flip { scale:-1 1; }
+.slot-callout.flip { scale:-1 1; } #field.ns .slot-callout.flip { scale:1 -1; }
 .slot-callout b { font-size:46px; font-weight:900; letter-spacing:-.04em; } .slot-callout small { font-size:14px; font-weight:700; opacity:.75; }
 .slot-callout.lucky b { color:var(--gold); }
 .slot-callout.jackpot { background:conic-gradient(from 0deg, #ff5f6d, #ffc21a, #34c759, #4f9dff, #b26bff, #ff5f6d); color:var(--ink); } .slot-callout.jackpot b { font-size:64px; } .slot-callout.jackpot small { opacity:.9; }
@@ -1101,6 +1094,8 @@ input.text { font-size:20px; font-weight:800; }
 /* 친선전 참가자 화면: 전장을 좌우로 뒤집어 내 진영이 왼쪽에 오게 (글자는 다시 뒤집는다) */
 #field.flip .unit, #field.flip .fx-damage-num, #field.flip .fx-lvtext, #field.flip .rowlab { scale:-1 1; }
 #field.flip .unit.cast { animation-name:castF; }
+#field.ns.flip .unit, #field.ns.flip .fx-damage-num, #field.ns.flip .fx-lvtext, #field.ns.flip .rowlab, #field.ns.flip .fx-train-signal b { scale:1 -1; } #field.ns.flip .unit.cast { animation-name:castFV; } /* 세로 전장 참가자: 위아래 반전 (R2.12) */
+@keyframes castFV { 40% { scale:1.18 -1.18; } }
 @keyframes castF { 40% { scale:-1.18 1.18; } }
 /* 좁은 화면 (모바일) */
 @media (max-width:1000px) {
@@ -1552,8 +1547,8 @@ const CFG = {
   COLS: 5, ROWS: 3,                        // 배치 칸: 진영마다 3줄(전열 · 중열 · 후열) × 5칸 (전작은 3 × 8)
   DEPTH: [0.60, 0.72, 0.84], ACROSS: [0.1, 0.9], // 전작 V42 칸 위치 (전장 비율)
   MAP_REELS: [1120, 1120],                         // 릴스 모드: 정사각형 전장 (R2.10.5)
-  MAP_EW: [1760, 1120], MAP_NS: [1120, 1600],     // 전작 전장 크기 (가로 화면 · 세로 화면)
-  UNIT_R: 28,                              // 전작 유닛 반지름 (45px 격자 기준 · ×60/45)
+  MAP_EW: [1760, 1120], MAP_NS: [1260, 1800],     // 전장 크기 (가로 · 세로) · R2.12: 세로 전장 1120 × 1600 → 1260 × 1800
+  UNIT_R: 22,                              // 유닛 반지름 (45px 격자 기준 · R2.12: 28 → 22 · 화면 지름 93 → 73px)
   MAX_UNITS: 15, SAME_LIMIT: 3, POOL: 3, PICK_TIME: 15, // R2.7.2: 배치 수 제한 없음 (빈 칸 15칸까지) · 같은 지후 3기 (R2.2.1 · 출격제한 1 은 그대로) · 카드 3장 · 15초
   LIVES: 3,                                // R2.7.2: 4 → 3 (전작과 같은 3)
   MAX_LV: 5, LEVEL_ADD: 0.5, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 레벨마다 기본의 +50% 선형 (R2.10.4 · 예전 ×1.2 복리) · 효과 ×1.1 (복리)
@@ -1711,7 +1706,7 @@ const CHARS = {
     onLethal(u, A) { if (u.raged) return false; u.raged = true; u.rageT = 2; A.status(u, 'inv', 2); A.status(u, 'rage', 2); u.speed *= 2; // R2.11.4: 2초 · 이동속도 2배 · 공격력 +50% · 공격 속도 +30%
       u.cd = Math.min(u.cd, 0.15); A.portrait(u, u.def.portraitRage); dmgNum(u, '광폭화!', { crit: true }); shake(true); return true; },
     tick(u, dt) { if (u.rageT == null) return; u.rageT -= dt; if (u.rageT <= 0) { u.rageT = null; u.st.inv = 0; u.st.rage = 0; u.hp = 0; drawUnit(u); killUnit(u); } } },
-  scythe: { name: '낫 지후', rarity: 'epic', role: '어쌔신', hp: 1240, atk: 444, atkSpeed: 4.5, range: 1.65, melee: true, speed: 1.15, portrait: PORTRAITS.scythe, sfx: 'swing', color: '#5b4b8a',
+  scythe: { name: '낫 지후', cleave: true, rarity: 'epic', role: '어쌔신', hp: 1240, atk: 444, atkSpeed: 4.5, range: 1.65, melee: true, speed: 1.15, portrait: PORTRAITS.scythe, sfx: 'swing', color: '#5b4b8a',
     story: '어느 날 마트에서 할인 중이던 원예용 낫을 구매한 지후입니다. 처음에는 잡초나 정리할 생각이었지만, 낫을 휘두르는 순간 자신이 평범한 원예사가 아니라는 사실을 깨달았어요. 이후 그는 낫 하나만으로 수많은 전투를 헤쳐 나가며 어둠 속에 이름을 새겼습니다. 가끔 사신 지후가 그 낫이 원래 자기 할머니 것이라며 따라오지만, 그는 영수증을 보여 주며 당당하게 거절합니다.',
     passive: '주기적으로 <b>[힘줄 끊기]</b>: 무작위 적 곁으로 순간이동해 주변 모든 적에게 공격력의 <b>70%</b> 피해를 주고 [절상] · [침묵] · [부상]을 건 뒤 제자리로 돌아온다.',
     gauge(u) { const s = u.sc; if (!s) return 0; return s.phase === 'cd' ? clamp(1 - s.t / (s.first ? 5 : 9), 0, 1) : 1; },
@@ -3028,14 +3023,15 @@ $('deckCards').addEventListener('click', e => {
 // 전작의 수백 지후 특수 분기는 빼고 일반 경로만 남겼다. 지후별 능력은 CHARS 의 훅으로 얹는다.
 const S = { phase: 'idle' }; // 경기 상태
 const TUT = { on: false }; // 인게임 튜토리얼 (아래 '인게임 튜토리얼' 절에서 채운다) · 엔진 쪽은 TUT.on 일 때만 아래 훅을 탄다
-// 내 진영 · 상대 진영: 봇전은 늘 'a'(왼쪽). 친선전은 방장 'a' · 참가자 'e' 로 같은 전투를 돌리고, 참가자 화면은 전장을 좌우로 뒤집어 보여 준다
+// 내 진영 · 상대 진영: 봇전은 늘 'a'(아래). 친선전은 방장 'a' · 참가자 'e' 로 같은 전투를 돌리고, 참가자 화면은 전장을 위아래로 뒤집어 보여 준다 (R2.12)
 const ME = () => (S.net ? S.net.me : 'a'), OPP = () => (ME() === 'a' ? 'e' : 'a');
 const flipView = () => !!(S.net && S.net.me === 'e');
-const mx = x => (flipView() ? FW() - x : x); // 화면(카메라 · 미니맵) 좌표
+const mx = x => (flipView() && isEW() ? FW() - x : x), my = y => (flipView() && !isEW() ? FH() - y : y); // 화면(카메라 · 미니맵) 좌표
 let uidSeq = 0;
 const WS = CFG.CELL / 45; // 전작 WORLD_SCALE: 45px 격자 기준 수치 → 지금 격자 (유닛 반지름 · 몸 간격도 같은 비율)
-// 전장 방향: 모바일 · PC 상관없이 항상 가로 전장 (나는 왼쪽 · 상대는 오른쪽). 세로 전장은 좌표 버그 때문에 쓰지 않는다
-function isEW() { return true; }
+// 전장 방향 (R2.12): 모든 모드 세로 전장 (나는 아래 · 상대는 위). 가로(EW) 분기는 남겨 두지만 쓰지 않는다
+function isEW() { return false; }
+const backDir = side => (isEW() ? { x: side === 'a' ? -1 : 1, y: 0 } : { x: 0, y: side === 'a' ? 1 : -1 }); // 자기 진영 뒤쪽 (소환 · 분열 자리)
 function reelsOn() { return !!(S.arc && S.arc.kind === 'reels'); } // 릴스 모드 (R2.10.5 · 샌드박스 안 · reels.js)
 const sandboxLike = () => !!(S.arc && (S.arc.kind === 'sandbox' || S.arc.kind === 'reels')); // 보상 · 전적 · 배치 없는 한 라운드 싸움
 const FW = () => (reelsOn() ? CFG.MAP_REELS : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[0], FH = () => (reelsOn() ? CFG.MAP_REELS : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[1];
@@ -3053,11 +3049,11 @@ function tileSize() { // 전작 v42BuildGrid 칸 크기
 }
 function lvMult(lv) { return 1 + CFG.LEVEL_ADD * (lv - 1); }   // 체력 · 공격력: 레벨마다 기본의 +50% (선형 · Lv2 ×1.5 · Lv3 ×2 · Lv4 ×2.5 · Lv5 ×3 · R2.10.4)
 function effMult(lv) { return Math.pow(CFG.EFFECT_MULT, lv - 1); } // 쉴드 등 효과 (전작 EFFECT_MULT)
-const PHYS = { STEP: 1 / 60, SKIN: 3.2, RESTITUTION: 0.045, FRICTION: 0.22, DRAG: 4.4, STEER: 16, WALL_PAD: 30, SOLVER_ITERS: 8, POS_CORR: 0.78, SLOP: 0.55 };
-function unitRadius(u) { return (u && u.small ? 18 : CFG.UNIT_R) * WS; } // small: 분열한 슬라임 · R2.2: 레벨이 올라도 몸 크기는 그대로
+const PHYS = { STEP: 1 / 60, SKIN: 3.2, RESTITUTION: 0.045, FRICTION: 0.22, DRAG: 4.4, STEER: 16, WALL_PAD: 30, SOLVER_ITERS: 4, POS_CORR: 0.78, SLOP: 0.55 };
+function unitRadius(u) { return (u && u.small ? 14 : CFG.UNIT_R) * WS; } // small: 분열한 슬라임 · R2.2: 레벨이 올라도 몸 크기는 그대로
 function bodySeparation(a, b) { return unitRadius(a) + unitRadius(b) + 6 * WS; } // 원이 겹치지 않는 최소 중심 거리
 function attackDist(u) { return u.melee ? Math.max(u.range + 6, unitRadius(u) * 2 + 12) : u.range + 6; } // 공격 가능 거리 (사거리 + 아주 작은 여유)
-function holdDist(u, t) { const body = bodySeparation(u, t), maxR = attackDist(u); return Math.min(maxR * 0.82, Math.max(body, maxR * 0.55)); } // 교전 시 유지하고 싶은 거리
+const ENGAGE_HYST = 0.25 * CFG.CELL; // 공격 상태를 놓는 여유 (R2.12): 사거리 + 0.25칸까지 밀려나도 계속 때린다 (경계에서 떨지 않게)
 function physMass(u) { return Math.max(0.65, u.maxHp / 2400) * (u.def.role === '탱커' ? 1.4 : 1) * (1 + (u.lv - 1) * 0.16); }
 function makeUnit(side, id, lv, x, y) {
   const c = CHARS[id] || SUMMONS[id], m = lvMult(lv);
@@ -3069,11 +3065,28 @@ function makeUnit(side, id, lv, x, y) {
   u.baseMaxHp = u.maxHp; u.hp = u.maxHp; u.shield = u.maxShield; u.mass = physMass(u); u.invMass = c.immobile ? 0 : 1 / u.mass; // 움직이지 않는 지후는 밀리지도 않는다
   return u;
 }
-function foes(u) { return S.units.filter(e => e.alive && (u.st.charm > 0 ? e.side === u.side && e !== u : e.side !== u.side)); } // [매혹]: 자기 아군을 노린다
+// 진영별 살아 있는 유닛 (R2.12 최적화): S.units 순서 그대로 · 유닛 수가 바뀌거나 누가 쓰러지면 (killUnit 이 S.deaths +1) 다시 만든다
+function sideIx() {
+  const ix = S._ix; if (ix && ix.ref === S.units && ix.n === S.units.length && ix.d === S.deaths) return ix;
+  const a = [], e = []; for (const u of S.units) if (u.alive) (u.side === 'a' ? a : e).push(u);
+  return (S._ix = { ref: S.units, n: S.units.length, d: S.deaths, a, e });
+}
+const foeList = u => sideIx()[u.st.charm > 0 ? u.side : u.side === 'a' ? 'e' : 'a']; // [매혹]: 자기 아군을 노린다 (자신은 빼고 써야 한다)
+function foes(u) { return foeList(u).filter(e => e.alive && e !== u); }
 function targets(u) { return foes(u).filter(e => !(e.st.stealth > 0) && !(e.st.dive > 0)); } // [은신]은 노리지 못한다 (범위 공격에는 맞는다) · [잠수]는 아무것도 닿지 않는다
-function friends(u) { return S.units.filter(e => e.alive && e.side === u.side); }
+function friends(u) { return sideIx()[u.side].filter(e => e.alive); }
 function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
-function nearestFoe(u) { let b = null, bd = Infinity; targets(u).forEach(e => { const d = dist(u, e); if (d < bd) { bd = d; b = e; } }); return b; }
+const canTarget = (u, e) => e.alive && e !== u && !(e.st.stealth > 0) && !(e.st.dive > 0) && (u.st.charm > 0 ? e.side === u.side : e.side !== u.side);
+function nearestFoe(u) { let b = null, bd = Infinity; for (const e of foeList(u)) { if (!canTarget(u, e)) continue; const dx = e.x - u.x, dy = e.y - u.y, d = dx * dx + dy * dy; if (d < bd) { bd = d; b = e; } } return b; }
+// 대상 유지 (R2.12): 때리는 중이면 그대로 · 훨씬 가까운 적(80%)이 생기면 바꾼다 · 근접은 자리가 꽉 찬 적 대신 자리가 남은 적
+function pickFoe(u) {
+  let n = nearestFoe(u); const c = u.tgt;
+  if (n && u.melee && slotsFull(u, n)) { let b = null, bd = Infinity; for (const e of foeList(u)) { if (!canTarget(u, e) || slotsFull(u, e)) continue; const d = dist(u, e); if (d < bd) { bd = d; b = e; } } if (b) n = b; }
+  if (!c || c === n || !canTarget(u, c)) return n;
+  if (!n) return c;
+  const dc = dist(u, c); if (u._engaged && dc <= attackDist(u) + ENGAGE_HYST) return c;
+  return dist(u, n) < dc * 0.8 ? n : c;
+}
 function blocked(u) { return u.st.stun > 0 || u.st.freeze > 0 || u.st.ban > 0 || u.st.sleep > 0; } // [수면] (R2.10) // [밴] (랜덤 이벤트): 아무것도 못 한다
 function buffSum(u, k) { let n = 0; for (const key in u.buffs) n += u.buffs[key][k] || 0; return n; }
 function effAtk(u) { return u.atk * Math.max(0.05, (u.st.weak > 0 ? 0.85 : 1) * Math.max(0, 1 + buffSum(u, 'atk')) * (u.st.frost > 0 ? 0.9 : 1) * (u.st.drowsy > 0 ? 0.6 : 1) * (u.st.vweak > 0 ? 0.85 : 1)) * (1 + 0.05 * (u.wn || 0)) * (u.st.rage > 0 ? 1.5 : 1) * (u.def.atkMult ? u.def.atkMult(u) : 1) * (u.comboMult || 1); } // R2.8: 공격력 감소는 최대 95%
@@ -3152,7 +3165,7 @@ function nouClash(a, b) { // NO U 지후 (R2.10.2): [NO U] 중인 NO U 끼리 �
 function antigravSplit(a) { // 반중력 지후 (R2.10.2): 체력이 절반인 둘로 (그 라운드만 · 둘째는 배치 기록에 없다)
   if (!a.alive || S.phase !== 'combat') return; a.st.antigrav = 0;
   const hm = Math.max(1, Math.round(a.baseMaxHp / 2)); a.baseMaxHp = hm; a.maxHp = Math.max(1, Math.round(a.maxHp / 2)); a.hp = Math.max(1, Math.min(a.maxHp, Math.round(a.hp / 2)));
-  const c = makeUnit(a.side, a.id, a.lv, a.x + unitRadius(a) * 1.4 * (a.side === 'a' ? -1 : 1), a.y + unitRadius(a) * 0.6); // c.tile 없음 → 배치 기록을 건드리지 않는다
+  const bd = backDir(a.side), c = makeUnit(a.side, a.id, a.lv, a.x + unitRadius(a) * (bd.x * 1.4 + bd.y * 0.6), a.y + unitRadius(a) * (bd.y * 1.4 + bd.x * 0.6)); // c.tile 없음 → 배치 기록을 건드리지 않는다
   if (c.def.onStart) try { c.def.onStart(c, A); } catch (e) { console.error(e); }
   c.def = a.def; c.atkSpeed = a.atkSpeed; c.speed = a.speed; c.range = a.range; c.atk = a.atk; c.wn = a.wn; c.baseMaxHp = hm; c.maxHp = a.maxHp; c.hp = a.hp; c.summoner = a.agBy || a; c.agSplit = true;
   if (a.nkUsed || c.id === 'nuke') { c.nkUsed = true; } c.mass = physMass(c); c.invMass = c.def.immobile ? 0 : 1 / c.mass; // 핵은 한 번만
@@ -3190,7 +3203,7 @@ function killUnit(u) {
   botMind.unitDown(u);
   S.lastDeath = { x: u.x, y: u.y }; sfx('death');
   if (!S.net && !sandboxLike() && !(S.arc && S.arc.kind === 'tutorial') && u.side === OPP() && S.phase === 'combat') { profile.ach.kills++; questAdd('kills', 1); } // 일일 퀘스트 · 업적: 봇전에서 적 처치
-  u.alive = false; u.vx = 0; u.vy = 0; u.desVx = 0; u.desVy = 0; u._engaged = false;
+  u.alive = false; u.vx = 0; u.vy = 0; u.desVx = 0; u.desVy = 0; u._engaged = false; S.deaths = (S.deaths || 0) + 1; // S.deaths: 진영 목록 캐시 (sideIx)
   clearTelegraph(u);
   if (u.el) { u.el.classList.add('dead'); spawnDeathEffect(u); }
   (u.fx || []).forEach(e => e.remove()); u.fx = [];
@@ -3250,7 +3263,7 @@ const A = {
   },
   summon: (side, id, lv, x, y) => { // 선물 지후 두 번째 변신체: 같은 레벨 · 체력 가득 · 빈 칸이 있으면 배치 기록에도 남긴다 (출격제한 · 배치 한도 무시 f 'b')
     const t = pickTile(side, roleRow(id), rng); if (t != null) S.place[side][t] = { id, lv, f: 'b' };
-    const c = makeUnit(side, id, lv, x + CFG.CELL * 0.9 * (side === 'a' ? -1 : 1), y); c.tile = t;
+    const bd = backDir(side), c = makeUnit(side, id, lv, x + CFG.CELL * 0.9 * bd.x, y + CFG.CELL * 0.9 * bd.y); c.tile = t;
     physSnap(c, c.x, c.y); c.el = unitEl(c); $('field').appendChild(c.el); drawUnit(c); S.units.push(c); if (c.def.onStart) c.def.onStart(c, A); deployFx(c, 'merge');
     return c;
   },
@@ -3316,32 +3329,26 @@ function aiSteerAndAttack(u, dt) {
   u.desVx = 0; u.desVy = 0;
   if (blocked(u) || u.locked || u.def.noAttack && !u.def.steer) { clearTelegraph(u); return; } // 낫 지후 [힘줄 끊기] 중 · 공격하지 않는 지후
   if (u.def.steer && u.def.steer(u, dt)) { clearTelegraph(u); return; } // 죠스 [잠수] 등 스스로 움직이는 동안
-  const target = (u.def.pickTarget && !(u.st.charm > 0) && u.def.pickTarget(u)) || nearestFoe(u); // pickTarget: 주사 지후는 위험한 아군을 먼저
-  if (!target) { clearTelegraph(u); u._engaged = false; return; }
+  const target = (u.def.pickTarget && !(u.st.charm > 0) && u.def.pickTarget(u)) || pickFoe(u); // pickTarget: 주사 지후는 위험한 아군을 먼저
+  if (!target) { clearTelegraph(u); u._engaged = false; u.tgt = null; return; }
+  if (target !== u.tgt) { u.tgt = target; u._engaged = false; }
   const d = dist(u, target), reach = attackDist(u);
-  if (d <= reach) {
-    u._engaged = true; u._outT = 0;
-    const hold = holdDist(u, target);
-    if (d < hold * 0.88 || d > reach * 0.96) moveToward(u, target.x, target.y, 0.55, target);
-    else { // 사거리 안: 미세 궤도만
-      const ang = Math.atan2(target.y - u.y, target.x - u.x), sp = Math.max(28, u.speed * 0.14), side = u._sidestep;
-      u.desVx = -Math.sin(ang) * side * sp; u.desVy = Math.cos(ang) * side * sp;
-    }
+  if (d <= reach || u._engaged && d <= reach + ENGAGE_HYST) { // R2.12: 사거리 안이면 그 자리에 멈춰서 때린다 (궤도 · 뒷걸음 · 유지 거리 없음)
+    u._engaged = true; if (u.melee) { u.slotT = target; u.slotA = Math.atan2(u.y - target.y, u.x - target.x); const sl = target._sl || (target._sl = []); if (!sl.includes(u)) sl.push(u); } // 근접: 서 있는 자리를 예약해 둔다
     u.cd -= dt * aspdRate(u);
     tickTelegraph(u, target);
     let guard = 0;
     while (u.cd <= 0 && target.alive && u.alive && guard++ < 20) { performAttack(u, target); u.cd += baseInterval(u); }
   } else {
-    clearTelegraph(u);
-    u._outT += dt; if (u._outT > 0.45) u._engaged = false;
+    clearTelegraph(u); u._engaged = false;
     u.cd = Math.max(0, u.cd - dt * aspdRate(u));
-    moveToward(u, target.x, target.y, 1, target);
+    const g = u.melee ? meleeSlot(u, target) : target; moveToward(u, g.x, g.y, 1, target); // 근접: 대상 둘레의 빈 자리로
   }
 }
 function performAttack(u, t) {
   sfxAttack(u);
   fireTelegraph(u); // 예고가 가득 찬 순간 = 공격 발동
-  if (u.el) { u.el.style.filter = 'brightness(1.3)'; setTimeout(() => u.el && (u.el.style.filter = ''), 120); }
+  if (u.el) { if (sideIx().a.length + sideIx().e.length <= 20) { u.el.style.filter = 'brightness(1.3)'; setTimeout(() => u.el && (u.el.style.filter = ''), 120); } } // 유닛이 많으면 번쩍임 생략 (R2.12)
   if (u.melee) attackLunge(u, t);
   if (u.def.onAttack) u.def.onAttack(u, t);
   if (u.def.customAttack && u.def.customAttack(u, t)) return; // 활 지후 [황금 화살] 등
@@ -3352,7 +3359,8 @@ function performAttack(u, t) {
   if (magic) dmgNum(u, '마탄!', { crit: true });
   const hitOne = e => { const done = dealDamage(u, e, dmg + (u.def.bonus ? u.def.bonus(u, e) : 0), opts); if (done > 0) { hitFx(u, e, pct > 100); if (u.def.onHit) u.def.onHit(u, e, A); if (magic && u.def.onMagicHit) u.def.onMagicHit(u, e, A); } return done; };
   if (u.melee && single) { spawnSlash(u, t); afterHit(u, hitOne(t)); } // 대상 하나만 (암살 첫 공격 등)
-  else if (u.melee) { // 120° 부채꼴 광역 타격
+  else if (u.melee && !u.def.cleave) { spawnSlash(u, t); afterHit(u, hitOne(t)); } // R2.12: 근접은 대상 하나
+  else if (u.melee) { // 낫 지후 (cleave): 120° 부채꼴 광역 타격
     const a0 = Math.atan2(t.y - u.y, t.x - u.x), half = Math.PI / 3, reach = Math.max(u.range + 8, bodySeparation(u, t) + 8);
     spawnSlash(u, t);
     let any = 0; foes(u).forEach(e => { if (inFan(u, e, a0, half, reach)) any += hitOne(e); });
@@ -3376,23 +3384,40 @@ function inFan(caster, e, angle0, half, reach) {
   return Math.abs(ang) <= half + Math.asin(Math.min(1, r / d));
 }
 
-// ── 이동: 전작 moveToward (교전 거리 유지 · 옆걸음 · 겹침 회피 · 전방 장애물 우회) ──
+// ── 근접 자리 (R2.12): 대상 둘레에 최대 6자리 (서로 56° 이상) · 가까운 빈 자리를 예약하고 그쪽으로 다가간다 (원주를 따라 밀리지 않게) ──
+const SLOT_MAX = 6, SLOT_GAP = Math.PI / 3.2;
+const angGap = (a, b) => { const d = Math.abs(a - b) % (Math.PI * 2); return d > Math.PI ? Math.PI * 2 - d : d; };
+function slotTakers(t, u) { return (t._sl || []).filter(o => o !== u && o.alive && o.slotT === t); }
+function slotsFull(u, t) { return !!t._sl && t._sl.length >= SLOT_MAX && slotTakers(t, u).length >= SLOT_MAX; }
+function meleeSlot(u, t) {
+  const want = Math.atan2(u.y - t.y, u.x - t.x), L = slotTakers(t, u); let best = want, ok = !L.length || L.every(o => angGap(o.slotA, want) >= SLOT_GAP);
+  for (let k = 1; k <= 9 && !ok; k++) for (const s of [1, -1]) { const a = want + s * k * Math.PI / 9; if (L.every(o => angGap(o.slotA, a) >= SLOT_GAP)) { best = a; ok = true; break; } }
+  if (!ok) best = want; // 꽉 찼다: 바깥에서 기다린다
+  u.slotT = t; u.slotA = best; const sl = t._sl || (t._sl = []); if (!sl.includes(u)) sl.push(u);
+  const R = unitRadius(u) + unitRadius(t) + (ok ? 4 : unitRadius(u) * 2 + 12);
+  return { x: t.x + Math.cos(best) * R, y: t.y + Math.sin(best) * R };
+}
+// ── 공간 격자 (R2.12 최적화): 스텝마다 살아 있는 유닛을 칸에 넣고 근처만 본다 (겹침 · 회피 · 이동) ──
+const GRID = { cs: 1, w: 1, h: 1, cells: [], list: [] };
+const gridCell = (x, y) => clamp(Math.floor(y / GRID.cs), 0, GRID.h - 1) * GRID.w + clamp(Math.floor(x / GRID.cs), 0, GRID.w - 1);
+function gridBuild() {
+  const cs = GRID.cs = Math.ceil(CFG.UNIT_R * WS * 2 + 24), w = GRID.w = Math.ceil(FW() / cs) + 1, h = GRID.h = Math.ceil(FH() / cs) + 1;
+  if (GRID.cells.length !== w * h) GRID.cells = Array.from({ length: w * h }, () => []); else for (const c of GRID.cells) c.length = 0;
+  const L = GRID.list = []; for (const u of S.units) if (u.alive) { u._gi = L.length; L.push(u); GRID.cells[gridCell(u.x, u.y)].push(u); }
+}
+function gridNear(x, y, r, fn) {
+  const cs = GRID.cs, x0 = clamp(Math.floor((x - r) / cs), 0, GRID.w - 1), x1 = clamp(Math.floor((x + r) / cs), 0, GRID.w - 1), y0 = clamp(Math.floor((y - r) / cs), 0, GRID.h - 1), y1 = clamp(Math.floor((y + r) / cs), 0, GRID.h - 1);
+  for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) for (const o of GRID.cells[cy * GRID.w + cx]) fn(o);
+}
+// ── 이동 (R2.12): 목표 쪽으로 곧장 · 겹침 회피 · 전방 장애물 우회 (근처만 격자로) ──
 function moveToward(u, tx, ty, mul, tgt) {
   if (u.def.immobile) { u.desVx = 0; u.desVy = 0; return; }
   const angle = Math.atan2(ty - u.y, tx - u.x);
   const sp = Math.max(35, u.speed * (mul || 1) * Math.max(0.2, 1 + buffSum(u, 'spd')) * (u.st.vweak > 0 ? 0.8 : 1)); // 순풍 (R2.10) · 비 · 약화 (독)
   let vx = Math.cos(angle) * sp, vy = Math.sin(angle) * sp;
-  if (tgt && tgt.alive) {
-    const dT = Math.hypot(tgt.x - u.x, tgt.y - u.y) || 0.001, hold = holdDist(u, tgt), maxR = attackDist(u), side = u._sidestep;
-    if (dT < hold) {
-      const back = (hold - dT) / hold;
-      vx = -Math.cos(angle) * sp * (0.28 + back * 0.55); vy = -Math.sin(angle) * sp * (0.28 + back * 0.55);
-      vx += -Math.sin(angle) * side * sp * 0.22; vy += Math.cos(angle) * side * sp * 0.22;
-    } else if (dT <= maxR) { vx = -Math.sin(angle) * side * sp * 0.1; vy = Math.cos(angle) * side * sp * 0.1; }
-  }
   const fx = Math.cos(angle), fy = Math.sin(angle), look = 58 * WS / (60 / 45); // 전작 58px (60px 격자 기준)
   let sx = 0, sy = 0, avoidX = 0, avoidY = 0, avoidW = 0;
-  S.units.forEach(o => {
+  gridNear(u.x, u.y, Math.max(look, unitRadius(u) * 2 + 12 * WS + 6), o => {
     if (o === u || o === tgt || !o.alive) return;
     const dx = u.x - o.x, dy = u.y - o.y, d = Math.hypot(dx, dy) || 0.001, need = bodySeparation(u, o) + 6;
     if (d < need) { const w = (need - d) / need; sx += (dx / d) * w; sy += (dy / d) * w; }
@@ -3430,8 +3455,8 @@ function physSolvePair(a, b) {
   if (a._engaged && b._engaged && a.side !== b.side) minDist = unitRadius(a) + unitRadius(b) + 1.2; // 교전 중인 적끼리는 살짝 더 붙는다
   if (dist2 > minDist * minDist && dist2 > 0.0001) return;
   if (dist2 < 0.0001) { const ang = (a.uid & 1) ? 0.7 : 2.4; dx = Math.cos(ang) * 0.4; dy = Math.sin(ang) * 0.4; dist2 = dx * dx + dy * dy; }
-  const d = Math.sqrt(dist2), nx = dx / d, ny = dy / d;
-  const invA = a.invMass * (a.st.freeze > 0 ? 0.4 : 1), invB = b.invMass * (b.st.freeze > 0 ? 0.4 : 1), invSum = invA + invB;
+  const d = Math.sqrt(dist2), nx = dx / d, ny = dy / d, anchored = a._engaged || b._engaged;
+  const invA = a.invMass * (a.st.freeze > 0 ? 0.4 : 1) * (a._engaged ? 0.15 : 1), invB = b.invMass * (b.st.freeze > 0 ? 0.4 : 1) * (b._engaged ? 0.15 : 1), invSum = invA + invB; // R2.12: 때리는 중인 지후는 잘 안 밀린다 (걷는 쪽이 비켜 간다)
   if (invSum <= 1e-8) return;
   const pen = minDist - d - PHYS.SLOP;
   if (pen > 0) { const corr = pen * PHYS.POS_CORR / invSum; a.x -= nx * corr * invA; a.y -= ny * corr * invA; b.x += nx * corr * invB; b.y += ny * corr * invB; }
@@ -3439,14 +3464,15 @@ function physSolvePair(a, b) {
   if (relN > 0) {
     const j = -(1 + PHYS.RESTITUTION) * relN / invSum;
     a.vx += j * nx * invA; a.vy += j * ny * invA; b.vx -= j * nx * invB; b.vy -= j * ny * invB;
+    if (anchored) return; // 때리는 중인 쪽이 있으면 옆으로 끄는 마찰 없음 (원주를 따라 미끄러지지 않게 · R2.12)
     const tx = -ny, ty = nx, relT = rvx * tx + rvy * ty, maxF = Math.abs(j) * 0.9;
     const jt = clamp(-relT * PHYS.FRICTION / invSum, -maxF, maxF);
     a.vx += jt * tx * invA; a.vy += jt * ty * invA; b.vx -= jt * tx * invB; b.vy -= jt * ty * invB;
   }
 }
-function resolveOverlaps() {
-  const L = S.units.filter(u => u.alive), n = L.length;
-  for (let it = 0; it < PHYS.SOLVER_ITERS; it++) for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) physSolvePair(L[i], L[j]);
+function resolveOverlaps() { // R2.12: 격자로 근처 쌍만 (예전엔 모든 쌍 × 8번)
+  gridBuild(); const L = GRID.list, r = GRID.cs;
+  for (let it = 0; it < PHYS.SOLVER_ITERS; it++) for (const a of L) gridNear(a.x, a.y, r, b => { if (b._gi > a._gi) physSolvePair(a, b); });
 }
 function physWalls(u) {
   const pad = Math.max(PHYS.WALL_PAD, unitRadius(u)), W = FW(), H = FH();
@@ -3460,15 +3486,14 @@ function physSnap(u, x, y) { // 순간이동: 속도 · 보간 초기화
 function physSyncDom(u, alpha) { // 물리 스텝 사이를 보간해서 그린다
   if (!u.el) return;
   const x = u.xPrev + (u.x - u.xPrev) * alpha, y = u.yPrev + (u.y - u.yPrev) * alpha;
-  const xs = x.toFixed(1) + 'px', ys = y.toFixed(1) + 'px';
-  if (u.el.style.left !== xs) u.el.style.left = xs;
-  if (u.el.style.top !== ys) u.el.style.top = ys;
+  const xs = x.toFixed(1) + 'px', ys = y.toFixed(1) + 'px', tr = xs + ' ' + ys;
+  if (u._tr !== tr) { u._tr = tr; u.el.style.translate = tr; } // R2.12: left/top 대신 translate (레이아웃 계산 없음)
   if (rangeRing && rangeRing.unit === u) { rangeRing.el.style.left = xs; rangeRing.el.style.top = ys; if (!u.alive) hideRangeRing(); }
 }
 
 // ── 공격 예고(텔레그래프): 공격 직전 최대 1초 동안 범위를 붉게 띄우고, 왼쪽부터 색이 차올라 가득 차면 공격 (전작 그대로) ──
 const TG_MAX = 1.0, TG_MIN_INTERVAL = 0.5; // 예고 최대 길이 · 이보다 짧은 연사형은 예고 없이
-function telegraphSpec(u) { return u.melee ? { shape: 'fan', half: Math.PI / 3, reach: Math.max(u.range, unitRadius(u) * 2 + 8) } : null; } // 모든 근접: 120° 부채꼴
+function telegraphSpec(u) { return u.melee ? { shape: 'fan', half: u.def.cleave ? Math.PI / 3 : Math.PI / 8, reach: Math.max(u.range, unitRadius(u) * 2 + 8) } : null; } // 근접: 대상 쪽 45° (낫 cleave 는 120° 부채꼴 · R2.12)
 function telegraphWindup(u, spec) { const iv = baseInterval(u); if (!spec || !(iv >= TG_MIN_INTERVAL)) return 0; return Math.min(TG_MAX, iv * 0.85); } // 공격 간격의 85% 까지
 function telegraphShape(spec, Sz, angle) {
   const c = Sz / 2, R = spec.reach, a1 = angle - spec.half, a2 = angle + spec.half;
@@ -3492,21 +3517,22 @@ function tickTelegraph(u, aim) {
     $('field').appendChild(el);
     tg = u.tg = { el, R, Sz, paths: el.querySelectorAll('path'), fill: el.querySelector('.tg-fill'), angle: null, minX: 0, maxX: Sz };
   }
-  tg.el.style.left = u.x + 'px'; tg.el.style.top = u.y + 'px';
+  const tp = u.x.toFixed(0) + 'px ' + u.y.toFixed(0) + 'px'; if (tg.pos !== tp) { tg.pos = tp; tg.el.style.left = 0; tg.el.style.top = 0; tg.el.style.translate = tp; }
   let angle = tg.angle == null ? 0 : tg.angle; // 부채꼴은 매 프레임 대상 쪽으로 다시 조준
   if (aim) { const dx = aim.x - u.x, dy = aim.y - u.y; if (dx || dy) angle = Math.atan2(dy, dx); }
   if (tg.angle == null || Math.abs(angle - tg.angle) > 0.002) { const sh = telegraphShape(spec, Sz, angle); tg.paths.forEach(pa => pa.setAttribute('d', sh.d)); tg.angle = angle; tg.minX = sh.minX; tg.maxX = sh.maxX; }
-  if (p >= 1) tg.fill.style.clipPath = 'none'; // 왼쪽 끝 → 오른쪽 끝으로 차오르는 와이프
-  else { const edge = tg.minX + p * (tg.maxX - tg.minX); tg.fill.style.clipPath = `inset(0 ${((Sz - edge) / Sz * 100).toFixed(2)}% 0 0)`; }
+  const q = Math.min(20, Math.floor(p * 20)); if (tg.q === q) return; tg.q = q; // 5% 단위로만 (R2.12)
+  if (q >= 20) tg.fill.style.clipPath = 'none'; // 왼쪽 끝 → 오른쪽 끝으로 차오르는 와이프
+  else { const edge = tg.minX + q / 20 * (tg.maxX - tg.minX); tg.fill.style.clipPath = `inset(0 ${((Sz - edge) / Sz * 100).toFixed(2)}% 0 0)`; }
 }
 function fireTelegraph(u) { const tg = u.tg; if (!tg) return; tg.fill.style.clipPath = 'none'; tg.el.classList.add('fired'); u.tg = null; setTimeout(() => tg.el.remove(), 220); } // 가득 찬 색이 번쩍이며 사라진다
 function clearTelegraph(u) { if (u.tg) { u.tg.el.remove(); u.tg = null; } }
 
 // ── 이펙트: 찌르기 · 베기 · 투사체 · 피해 숫자 · 피격 · 사망 (전작 그대로) ──
-function attackLunge(u, t) { // 공격 순간 대상 쪽으로 살짝 찌르는 모션 (개별 translate 속성이라 위치용 transform 과 충돌하지 않음)
+function attackLunge(u, t) { // 공격 순간 대상 쪽으로 살짝 찌르는 모션
   if (!u.el || !u.el.animate) return;
   const dx = t.x - u.x, dy = t.y - u.y, d = Math.hypot(dx, dy) || 1;
-  u.el.animate([{ translate: '0px 0px' }, { translate: `${dx / d * 7}px ${dy / d * 7}px`, offset: 0.4 }, { translate: '0px 0px' }], { duration: 200, easing: 'ease-out' });
+  const ic = u.el.querySelector('.unit-icon') || u.el; ic.animate([{ translate: '0px 0px' }, { translate: `${dx / d * 7}px ${dy / d * 7}px`, offset: 0.4 }, { translate: '0px 0px' }], { duration: 200, easing: 'ease-out' }); // 위치가 .unit 의 translate 라 초상화만 찌른다 (R2.12)
 }
 function spawnSlash(u, t) {
   const rad = Math.atan2(t.y - u.y, t.x - u.x), el = document.createElement('div');
@@ -3519,7 +3545,7 @@ function spawnSlash(u, t) {
 function launchProjectile(u, t, onHit, cls) { // 추적 투사체: 0.2초 안에 닿는 속도 (최소 900px/s)
   if (!u.alive || !t.alive) return;
   const el = document.createElement('div'); el.className = 'fx-projectile' + (cls ? ' ' + cls : '');
-  el.style.left = u.x + 'px'; el.style.top = u.y + 'px'; el.style.color = el.style.background = u.def.color || '#333';
+  el.style.translate = u.x + 'px ' + u.y + 'px'; el.style.color = el.style.background = u.def.color || '#333';
   $('field').appendChild(el);
   const sp = u.def.shotSpeed ? u.def.shotSpeed * CFG.CELL : Math.max(900, dist(u, t) / 0.2); // shotSpeed: 칸/초 (활 · 선인장)
   S.shots.push({ caster: u, target: t, x: u.x, y: u.y, sx: u.x, sy: u.y, speed: sp, remaining: u.def.shotSpeed ? 6 : 1.2, el, onHit });
@@ -3533,10 +3559,11 @@ function stepShots(dt) {
     if (S.barriers && S.barriers.length && barrierStop(p.caster.side, p.sx, p.sy, p.x + dx * k, p.y + dy * k)) { p.el.remove(); return false; } // 막히면 맞지 않는다 (SP 도 없다)
     p.remaining -= dt;
     if (d <= step + unitRadius(p.target) || p.remaining <= 0) { p.el.remove(); p.onHit(); return false; }
-    p.x += dx / d * step; p.y += dy / d * step; p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; if (p.caster.def.shotCls) p.el.style.transform = `translate(-50%,-50%) rotate(${Math.atan2(dy, dx)}rad)`;
+    p.x += dx / d * step; p.y += dy / d * step; p.ang = Math.atan2(dy, dx); // 그리기는 drawShots (프레임마다 한 번)
     return true;
   });
 }
+function drawShots() { for (const p of S.shots) { p.el.style.translate = p.x.toFixed(1) + 'px ' + p.y.toFixed(1) + 'px'; if (p.caster.def.shotCls && p.ang != null) p.el.style.transform = `translate(-50%,-50%) rotate(${p.ang.toFixed(2)}rad)`; } } // R2.12
 function stepLines(dt) {
   S.lines = S.lines.filter(p => {
     const step = p.speed * dt, x0 = p.x, y0 = p.y; p.went = Math.min(p.len, p.went + step); p.x += p.dx * step; p.y += p.dy * step;
@@ -3561,7 +3588,8 @@ function stepZones(dt) {
 const clearFieldFx = () => { (S.lines || []).forEach(p => p.el.remove()); (S.zones || []).forEach(z => z.el.remove()); (S.barriers || []).forEach(b => b.el && b.el.remove()); S.lines = []; S.zones = []; S.barriers = []; }; // 라운드가 끝나면
 // 숫자 색: 내가 넣은 피해 흰색 · 상대가 넣은 피해 빨강 · 스킬 주황 · 화상 연빨강 · 회복 초록 · 글자 노랑
 function dmgNum(t, amount, opts = {}) {
-  const el = document.createElement('div'), isNum = typeof amount === 'number';
+  const isNum = typeof amount === 'number'; if (isNum && !opts.stamp && !opts.critHit && !fxRoom()) return; // 평범한 숫자는 한도 안에서만 (R2.12)
+  fxHold(opts.stamp ? 1000 : 700); const el = document.createElement('div');
   let kind = '';
   if (isNum) kind = opts.heal ? ' num-heal' : opts.stamp ? ' crit-hit stamp' : opts.critHit ? ' crit-hit' : opts.dot ? ' num-burn' : t.side === ME() ? ' num-theirs' : ' num-mine';
   el.className = 'fx-damage-num' + (isNum ? ' num' : (opts.crit ? ' crit-like' : '') + (opts.heal ? ' heal-like' : '')) + kind;
@@ -3589,7 +3617,9 @@ function spawnDeathEffect(u) {
 function stepCombat(dt) {
   if (!S.started) { S.started = true; S.units.forEach(u => u.def.onStart && u.def.onStart(u, A)); } // 시작 효과는 [밴]이어도 (원자 · 데스노트 등 준비 상태) · 스킬은 castSkill 이 막는다
   const t0 = S.time; S.time += dt; evTick(t0);
-  for (const u of S.units) if (u.alive) { u.xPrev = u.x; u.yPrev = u.y; }
+  for (const u of S.units) if (u.alive) { u.xPrev = u.x; u.yPrev = u.y; u._sl = null; }
+  for (const u of S.units) if (u.alive && u.melee && u._engaged && u.slotT && u.slotT.alive) (u.slotT._sl || (u.slotT._sl = [])).push(u); // 때리는 중인 근접은 자리를 먼저 차지한다
+  gridBuild(); // R2.12: 이동 · 회피가 근처만 본다 (걷는 근접은 이번 스텝에 다시 예약)
   S.units.slice().forEach(u => stepUnit(u, dt));
   stepShots(dt); stepLines(dt); stepZones(dt);
   if (S.timed && S.timed.length) { const due = S.timed.filter(q => S.time >= q.at); S.timed = S.timed.filter(q => S.time < q.at); due.forEach(q => q.fn()); } // A.later (폭탄 · 핵미사일 · R2.9)
@@ -3626,32 +3656,28 @@ function loop(ts) {
   if (S.phase !== 'combat') return;
   const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts;
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
-  acc += real * S.speed;
-  let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 30) { acc -= CFG.STEP; stepCombat(CFG.STEP); }
-  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); if (reelsOn()) reelsTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
+  acc += real * S.speed; const simT0 = performance.now();
+  let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
+  const simMs = performance.now() - simT0;
+  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); drawShots(); if (reelsOn()) reelsTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
   setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME);
-  if (S.phase === 'combat') { const p = allyOdds(), mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; requestAnimationFrame(loop); }
+  if (S.phase === 'combat') { if (!S._oddsC || S.time - S._oddsC.t >= 0.2 || S.time < S._oddsC.t) S._oddsC = { t: S.time, p: allyOdds() }; const p = S._oddsC.p, mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; benchFrame(real * 1000, simMs); requestAnimationFrame(loop); }
 }
 
 // ── 유닛 그리기 (전작 .unit 구조: 초상화 · 레벨 · 상태 아이콘 · 체력/쿨/쉴드 바) ──
 function drawUnit(u) {
   if (!u.el) return;
   const el = u.el, sk = u.def.skill;
-  const b = u.bars || (u.bars = { hp: el.querySelector('.unit-hpbar'), tx: el.querySelector('.unit-hp-text'), sh: el.querySelector('.unit-shieldbar'), cd: el.querySelector('.unit-cdbar'), st: el.querySelector('.status-icons') });
-  const full = u.baseMaxHp || u.maxHp, pct = clamp(u.hp / full * 100, 0, 100), w = pct.toFixed(1) + '%';
-  if (!b.lag) { b.lag = el.querySelector('.unit-hpbar-lag'); b.tr = el.querySelector('.unit-hpbar-track'); b.p = pct; }
-  if (pct !== b.p) { // 깎이면 막대가 튀고 흰 잔상이 뒤따른다 · 차면 잔상도 바로
-    const down = pct < b.p, cls = down ? 'hit' : 'heal'; b.tr.classList.remove('hit', 'heal'); void b.tr.offsetWidth; if (!S.fast) b.tr.classList.add(cls);
-    if (!down) { b.lag.style.transition = 'none'; b.lag.style.width = w; void b.lag.offsetWidth; b.lag.style.transition = ''; } else b.lag.style.width = w;
-    b.p = pct;
-  }
-  b.hp.style.width = w;
-  if (!b.cut) b.cut = el.querySelector('.unit-hpbar-track .cut'); if (b.cut) b.cut.style.width = ((u.cutFrac || 0) * 100).toFixed(1) + '%';
-  b.tx.textContent = Math.max(0, Math.round(u.hp));
-  if (u.maxShield > 0) b.sh.style.width = clamp(u.shield / u.maxShield * 100, 0, 100).toFixed(1) + '%';
-  if (b.cd && (sk || u.def.gauge)) b.cd.style.width = clamp((u.def.gauge ? u.def.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / sk.need) * 100, 0, 100).toFixed(1) + '%';
-  el.classList.toggle('frozen', u.st.freeze > 0); el.classList.toggle('bubbled', u.st.bubble > 0); el.classList.toggle('stunned', u.st.stun > 0); el.classList.toggle('stealthed', u.st.stealth > 0); el.classList.toggle('diving', u.st.dive > 0); el.classList.toggle('dashing', !!u.ghost);
-  { let ck = 0; for (const k in u.buffs) if (k.startsWith('clock')) ck += u.buffs[k].aspd || 0; el.classList.toggle('clk-up', ck > 0); el.classList.toggle('clk-dn', ck < 0); } // 시계 지후: 버프 하늘색 · 디버프 빨간 시계 표식 (R2.10.2 build 4)
+  const b = u.bars || (u.bars = { hp: el.querySelector('.unit-hpbar'), cut: el.querySelector('.unit-hpbar-track .cut'), sh: el.querySelector('.unit-shieldbar'), cd: el.querySelector('.unit-cdbar'), st: el.querySelector('.status-icons'), v: {} });
+  const v = b.v, sx = (k, node, f) => { const s = clamp(f, 0, 1).toFixed(3); if (node && v[k] !== s) { v[k] = s; node.style.transform = `scaleX(${s})`; } }; // R2.12: 바뀐 것만 · scaleX 라 레이아웃 계산이 없다
+  sx('hp', b.hp, u.hp / (u.baseMaxHp || u.maxHp)); sx('cut', b.cut, u.cutFrac || 0);
+  if (u.maxShield > 0) sx('sh', b.sh, u.shield / u.maxShield);
+  if (b.cd && (sk || u.def.gauge)) sx('cd', b.cd, u.def.gauge ? u.def.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / sk.need);
+  let ck = 0; for (const k in u.buffs) if (k.startsWith('clock')) ck += u.buffs[k].aspd || 0; // 시계 지후: 버프 하늘색 · 디버프 빨간 시계 표식 (R2.10.2 build 4)
+  const fl = (u.st.freeze > 0) | (u.st.bubble > 0) << 1 | (u.st.stun > 0) << 2 | (u.st.stealth > 0) << 3 | (u.st.dive > 0) << 4 | !!u.ghost << 5 | (ck > 0) << 6 | (ck < 0) << 7;
+  if (v.fl !== fl) { v.fl = fl; ['frozen', 'bubbled', 'stunned', 'stealthed', 'diving', 'dashing', 'clk-up', 'clk-dn'].forEach((c, i) => el.classList.toggle(c, !!(fl >> i & 1))); }
+  if (S.phase === 'combat' && v.iconT != null && S.time >= v.iconT && S.time - v.iconT < 0.2) return; // 상태 아이콘은 0.2초에 한 번 (R2.12)
+  v.iconT = S.time;
   const icons = Object.keys(STATUS).filter(k => u.st[k] > 0 && u.st[k] < 900 || k === 'alone' && u.st[k] > 0).map(k => { const n = u.stk && u.stk[k] ? u.stk[k].length : 0; return `<span title="${STATUS[k].name}">${STATUS[k].icon}${k === 'dnote' || k === 'doom' ? Math.ceil(u.st[k]) : k === 'arcana' ? u.arcN || '' : k === 'feast' ? u.dv || '' : k === 'nbfly' ? u.nbN || '' : k === 'nbdead' ? u.nbD || '' : n > 1 ? n : ''}</span>`; }).join('')
     + (u.buffs && buffSum(u, 'aspd') > 0 ? '<span title="공격속도 증가">⏩</span>' : '') + (u.buffs && buffSum(u, 'atk') > 0 ? '<span title="공격력 증가">⚔️</span>' : '');
   if (b.st._v !== icons) { b.st._v = icons; b.st.innerHTML = icons; }
@@ -3660,10 +3686,9 @@ function unitEl(u) {
   const el = document.createElement('div'), sk = u.def.skill, gauge = sk || u.def.gauge;
   el.className = 'unit ' + (u.side === OPP() ? 'enemy' : 'ally') + (u.lv > 1 ? ' lvl' + Math.min(u.lv, 6) : '') + (gauge ? ' has-cd' : '') + (u.maxShield > 0 ? ' has-shield' : '');
   el.innerHTML = `<span class="unit-icon">${pic(u.id, u.picSrc)}</span><i class="bubfx"></i><span class="unit-level">${u.lv}</span><div class="status-icons"></div>`
-    + `<div class="unit-hpbar-wrap"><div class="unit-hpbar-track"><div class="unit-hpbar-lag"></div><div class="unit-hpbar"></div><i class="cut"></i><span class="unit-hp-text">${u.maxHp}</span></div></div>`
-    + (gauge ? `<div class="unit-cdbar-wrap"><div class="unit-cdbar ${u.def.gauge || sk.type === 'cooldown' ? 'cd' : 'sk'}"></div></div>` : '')
-    + '<div class="unit-shieldbar-wrap"><div class="unit-shieldbar"></div></div>';
-  el.style.left = u.x + 'px'; el.style.top = u.y + 'px';
+    + `<div class="unit-hpbar-wrap"><div class="unit-hpbar-track"><div class="unit-hpbar"></div><i class="cut"></i>${u.maxShield > 0 ? '<div class="unit-shieldbar"></div>' : ''}</div></div>` // R2.12: 간단한 체력바
+    + (gauge ? `<div class="unit-cdbar-wrap"><div class="unit-cdbar ${u.def.gauge || sk.type === 'cooldown' ? 'cd' : 'sk'}"></div></div>` : '');
+  el.style.translate = u.x + 'px ' + u.y + 'px';
   return el;
 }
 // ── 카메라 (전작 CAM: 확대 0.4~2.4 · 끌어서 이동 · 휠 · 두 손가락 확대 · 미니맵) ──
@@ -3680,7 +3705,7 @@ function clampCamera() {
 function applyCamera() {
   clampCamera();
   const { vw, vh } = viewSize();
-  $('field').style.transform = `translate(${vw / 2}px, ${vh / 2}px) scale(${CAM.z}) translate(${-CAM.x}px, ${-CAM.y}px)` + (flipView() ? ` translateX(${FW()}px) scaleX(-1)` : ''); // 참가자: 좌우 반전 (CAM 은 화면 좌표)
+  $('field').style.transform = `translate(${vw / 2}px, ${vh / 2}px) scale(${CAM.z}) translate(${-CAM.x}px, ${-CAM.y}px)` + (flipView() ? (isEW() ? ` translateX(${FW()}px) scaleX(-1)` : ` translateY(${FH()}px) scaleY(-1)`) : ''); // 참가자: 반전 (세로 전장은 위아래 · CAM 은 화면 좌표)
   $('field').classList.toggle('flip', flipView());
   $('zoomLab').textContent = Math.round(CAM.z * 100) + '%';
   drawMinimap(true);
@@ -3703,13 +3728,14 @@ let miniLast = -Infinity;
 function drawMinimap(force) {
   const c = $('miniMapCanvas'); if (!c) return;
   const now = performance.now(); if (!force && now - miniLast < 80) return; miniLast = now;
-  const box = $('miniMap'); if (box.style.width !== '154px') { box.style.width = '154px'; box.style.height = '98px'; }
+  const box = $('miniMap'), ew = isEW(), bw = Math.round(ew ? 154 : 154 * FW() / FH()), bh = Math.round(ew ? 98 : 154); // 세로 전장 (R2.12): 세로 미니맵
+  if (box.style.width !== bw + 'px' || box.style.height !== bh + 'px') { box.style.width = bw + 'px'; box.style.height = bh + 'px'; c.width = bw * 2; c.height = bh * 2; }
   const ctx = c.getContext('2d'), W = c.width, H = c.height, sx = W / FW(), sy = H / FH();
   ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#f8f8f6'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#ecece9'; ctx.fillRect(0, 0, W / 2, H); // 왼쪽 = 내 진영
-  ctx.strokeStyle = '#888'; ctx.setLineDash([6, 4]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke(); ctx.setLineDash([]);
-  (S.units && S.units.length ? S.units : []).forEach(u => { if (!u.alive) return; ctx.fillStyle = u.side === ME() ? '#111' : '#e5322d'; ctx.beginPath(); ctx.arc(mx(u.x) * sx, u.y * sy, 4.5, 0, Math.PI * 2); ctx.fill(); });
-  if (!(S.units && S.units.length) && S.place) ['a', 'e'].forEach(side => viewPlace(side).forEach((p, t) => { if (!p) return; const q = tileXY(side, t); ctx.fillStyle = side === ME() ? '#111' : '#e5322d'; ctx.beginPath(); ctx.arc(mx(q.x) * sx, q.y * sy, 4.5, 0, Math.PI * 2); ctx.fill(); }));
+  ctx.fillStyle = '#ecece9'; if (ew) ctx.fillRect(0, 0, W / 2, H); else ctx.fillRect(0, H / 2, W, H / 2); // 내 진영 (가로: 왼쪽 · 세로: 아래)
+  ctx.strokeStyle = '#888'; ctx.setLineDash([6, 4]); ctx.lineWidth = 2; ctx.beginPath(); if (ew) { ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); } else { ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); } ctx.stroke(); ctx.setLineDash([]);
+  (S.units && S.units.length ? S.units : []).forEach(u => { if (!u.alive) return; ctx.fillStyle = u.side === ME() ? '#111' : '#e5322d'; ctx.beginPath(); ctx.arc(mx(u.x) * sx, my(u.y) * sy, 4.5, 0, Math.PI * 2); ctx.fill(); });
+  if (!(S.units && S.units.length) && S.place) ['a', 'e'].forEach(side => viewPlace(side).forEach((p, t) => { if (!p) return; const q = tileXY(side, t); ctx.fillStyle = side === ME() ? '#111' : '#e5322d'; ctx.beginPath(); ctx.arc(mx(q.x) * sx, my(q.y) * sy, 4.5, 0, Math.PI * 2); ctx.fill(); }));
   const { vw, vh } = viewSize(); ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
   ctx.strokeRect((CAM.x - vw / (2 * CAM.z)) * sx, (CAM.y - vh / (2 * CAM.z)) * sy, (vw / CAM.z) * sx, (vh / CAM.z) * sy);
 }
@@ -3720,7 +3746,7 @@ function drawMinimap(force) {
   $('btnZoomFit').addEventListener('click', e => { e.stopPropagation(); fitCamera(); });
   wrap.addEventListener('wheel', e => { e.preventDefault(); setZoom(CAM.z * (e.deltaY > 0 ? 0.9 : 1.12), e.clientX, e.clientY); }, { passive: false });
   const mm = $('miniMap'); let mmDrag = false;
-  const jump = e => { const r = $('miniMapCanvas').getBoundingClientRect(); CAM.x = (e.clientX - r.left) / r.width * FW(); CAM.y = (e.clientY - r.top) / r.height * FH(); applyCamera(); };
+  const jump = e => { const r = $('miniMapCanvas').getBoundingClientRect(); CAM.x = (e.clientX - r.left) / r.width * FW(); CAM.y = (e.clientY - r.top) / r.height * FH(); applyCamera(); }; // CAM 은 화면 좌표라 반전과 상관없다
   mm.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); mmDrag = true; jump(e); });
   window.addEventListener('pointermove', e => { if (mmDrag) jump(e); });
   window.addEventListener('pointerup', () => { mmDrag = false; });
@@ -3808,8 +3834,8 @@ function trainSignals(u) {
   const t = u.tr; (t.signals || []).forEach(g => g.el.remove());
   const pad = CFG.CELL * 0.9, W = FW(), H = FH(), mine = u.side, pts = [];
   [OPPside(mine), OPPside(mine), mine, mine].forEach(side => { // 상대 쪽 2 · 내 쪽 2 (서로 5칸 이상 떨어지게 30번까지)
-    let best = null, gap = -1; const x0 = side === 'a' ? pad : W / 2, x1 = side === 'a' ? W / 2 : W - pad;
-    for (let i = 0; i < 30; i++) { const p = { x: x0 + rng() * (x1 - x0), y: pad + rng() * (H - pad * 2) }, g = pts.length ? Math.min(...pts.map(q => Math.hypot(q.x - p.x, q.y - p.y))) : Infinity; if (g > gap) { best = p; gap = g; } if (g >= 5 * CFG.CELL) break; }
+    let best = null, gap = -1; const ew = isEW(), lo = ew ? (side === 'a' ? pad : W / 2) : (side === 'a' ? H / 2 : pad), hi = ew ? (side === 'a' ? W / 2 : W - pad) : (side === 'a' ? H - pad : H / 2); // 세로 전장 (R2.12): 'a' 아래 절반
+    for (let i = 0; i < 30; i++) { const v = lo + rng() * (hi - lo), w = pad + rng() * ((ew ? H : W) - pad * 2), p = ew ? { x: v, y: w } : { x: w, y: v }, g = pts.length ? Math.min(...pts.map(q => Math.hypot(q.x - p.x, q.y - p.y))) : Infinity; if (g > gap) { best = p; gap = g; } if (g >= 5 * CFG.CELL) break; }
     pts.push(best);
   });
   t.signals = pts.map((p, i) => { const el = fxAt('fx-train-signal ' + (u.side === ME() ? 'mine' : 'theirs'), p.x, p.y, 0); el.innerHTML = `<i></i><b>${i + 1}</b>`; (u.fx || (u.fx = [])).push(el); return { x: p.x, y: p.y, el }; });
@@ -3855,7 +3881,7 @@ const emptyPlace = () => Array.from({ length: TILES }, () => null);
 function matchBase(extra) { // 봇전 · 친선전 공통 경기 상태
   Object.assign(S, { phase: 'intro', round: 1, rk: 0, maxLives: CFG.LIVES, lives: { a: CFG.LIVES, e: CFG.LIVES }, place: { a: emptyPlace(), e: emptyPlace() },
     units: [], shots: [], lines: [], zones: [], time: 0, pool: [], pick: null, moveSel: null, ops: [], speed: 1, speedManual: false, hist: [], stats: [], net: null, coinSlot: undefined, dmShown: false, fast: false, specWinner: null,
-    arc: null, quit: false, evOn: true, ev: { a: [], e: [] }, evc: { a: {}, e: {} }, evf: { a: { ban: [], fuse: 0 }, e: { ban: [], fuse: 0 } }, evRound: 0, evNew: [] }, extra); // ev: 얻은 랜덤 이벤트 · evc: 개수 · evf: 다음 이벤트 · 밴 · 합체 수
+    arc: null, quit: false, evOn: true, ev: { a: [], e: [] }, evc: { a: {}, e: {} }, evf: { a: { ban: [], fuse: 0 }, e: { ban: [], fuse: 0 } }, evRound: 0, evNew: [], bench: null }, extra); // ev: 얻은 랜덤 이벤트 · evc: 개수 · evf: 다음 이벤트 · 밴 · 합체 수
 }
 const deckNeedMsg = () => `덱에 지후 5기를 채워야 시작할 수 있어요 (지금 ${profile.deck.filter(owned).length} / 5)`;
 function newMatch(o) { // o: 아케이드 { arc, decks() } — 내 덱 대신 정해진 덱 · 랜덤 이벤트 없음 · 보상은 arcEnd
@@ -4271,6 +4297,7 @@ function beginCombat() {
     u.arcN = p.arc; u.st.arcana = 800; } else if (pr === 'buff') u.atk += 20; // 예언 (R2.7.1): 변신 (R2.8 +150% · 아르카나 하나당 +20%) · 다른 예언 지후는 공격력 +10
     evUnit(u, p);
     u.el = unitEl(u); f.appendChild(u.el); if (pr === 'on') { A.portrait(u, u.def.portraitOn); u.el.classList.add('prophet'); } drawUnit(u); S.units.push(u); if (pr === 'on' && !S.fast) dmgNum(u, `🔮 예언 성공 · 아르카나 ${p.arc}`, { crit: true }); }));
+  benchSpawnExtra(); // 벤치 (?bench=50)
   evCombat();
   if (!S.speedManual) S.speed = speedPref ? CFG.FAST_SPEED : 1; renderSpeedBtn();
   setPhase('전투 중'); banner('전투 시작!'); sfx('battle_start');
@@ -5805,8 +5832,11 @@ function deployFx(u, kind) {
     const p = fxAt('fx-dust' + (merge ? ' gold' : ''), u.x + Math.cos(a) * r * 0.6, u.y + Math.sin(a) * r * 0.4 + (merge ? 0 : r * 0.5), 640); p.style.setProperty('--dx', (Math.cos(a) * d).toFixed(1) + 'px'); p.style.setProperty('--dy', (Math.sin(a) * d * (merge ? 1 : 0.45)).toFixed(1) + 'px'); }
   if (merge) { const t = fxAt('fx-lvtext', u.x, u.y - r, 900); t.textContent = `Lv.${u.lv}!`; }
 }
+const FX_CAP = 36, fxLive = { n: 0 }; // 동시에 떠 있는 불꽃 · 피해 숫자 (R2.12: 유닛이 많아도 DOM 이 늘지 않게)
+const fxRoom = () => fxLive.n < FX_CAP, fxHold = ms => { fxLive.n++; setTimeout(() => fxLive.n--, ms); };
 function hitFx(src, t, big) {
   const a = Math.atan2(src.y - t.y, src.x - t.x), r = unitRadius(t) * 0.55;
+  if (!big && !fxRoom()) { sfxHit(big); return; } fxHold(260);
   const el = fxAt('fx-spark' + (big ? ' big' : ''), t.x + Math.cos(a) * r, t.y + Math.sin(a) * r, 260); el.style.setProperty('--c', src.def.color || '#111');
   sfxHit(big);
   if (big) shake(true);
@@ -5961,7 +5991,7 @@ function beginFinalMoment(w) {
   S.phase = 'final';
   S.shots.forEach(p => p.el.remove()); S.shots = []; S.units.forEach(clearTelegraph);
   const f = $('field'), focus = S.lastDeath;
-  if (focus) { f.classList.add('cinematic'); f.getBoundingClientRect(); CAM.x = mx(focus.x); CAM.y = focus.y; CAM.z = Math.min(ZOOM_MAX, Math.max(CAM.z * 1.6, 1.05)); applyCamera(); }
+  if (focus) { f.classList.add('cinematic'); f.getBoundingClientRect(); CAM.x = mx(focus.x); CAM.y = my(focus.y); CAM.z = Math.min(ZOOM_MAX, Math.max(CAM.z * 1.6, 1.05)); applyCamera(); }
   S.units.forEach(u => { if (!u.alive || !u.el) return; u.el.style.setProperty('--final-dx', clamp((u.vx || 0) * 0.16, -40, 40) + 'px'); u.el.style.setProperty('--final-dy', clamp((u.vy || 0) * 0.16, -40, 40) + 'px'); u.el.classList.add('final-drift'); });
   $('fieldWrap').classList.add('final-moment'); $('finalMoment').classList.add('show'); setRing(0, 1); setPhase('마지막 순간');
   $('deployTip').innerHTML = '✦ <b>마지막 순간</b> — 전투 결과를 확인하고 있습니다';
@@ -6887,6 +6917,30 @@ if (profile.nick) { renderLobby(); show('lobby'); } else show('welcome');
 runBoot(); // 접속 로딩 (인트로)
 accBoot(); // 남아 있는 로그인이면 서버 기록과 맞춘다 (처음이면 지후배틀 기록을 가져온다) · 친구 · 우편 · 점검
 startUpdateChecks(); // PWA 등록 + 5분마다 새 버전 확인
+// ── 벤치 (R2.12): ?bench=50 → 샌드박스로 양쪽 n/2 기씩 (칸 15 + 나머지는 진영 안 아무 데나) · 왼쪽 위에 FPS · 가장 느린 프레임 · 전투 계산 ms ──
+const BENCH_IDS = ['sword', 'fire', 'ice', 'assassin', 'shield', 'bow', 'heal', 'berserker', 'gun', 'rifle', 'slime', 'scythe', 'jaws', 'cactus', 'bat', 'titanium'];
+function benchStart(n = 50) {
+  const per = Math.max(1, Math.floor(n / 2)), r = mulberry32(1234), pickId = () => BENCH_IDS[Math.floor(r() * BENCH_IDS.length)].replace(/^(.*)$/, id => CHARS[id] ? id : 'sword');
+  if (!profile.nick) profile.nick = '벤치';
+  newMatch({ arc: { kind: 'sandbox' }, lives: 1, nick: '벤치', lvl: 1, decks: () => ({ a: BENCH_IDS.slice(0, 5), e: BENCH_IDS.slice(5, 10) }),
+    setup: () => { S.bench = { extra: { a: [], e: [] } }; ['a', 'e'].forEach(side => { for (let i = 0; i < per; i++) { const id = pickId(); if (i < TILES) S.place[side][i] = { id, lv: 1 }; else S.bench.extra[side].push({ id, t: Math.floor(r() * TILES), jx: r() - 0.5, jy: r() - 0.5 }); } }); } });
+  benchHud(true);
+}
+function benchSpawnExtra() { // beginCombat 끝에서: 칸에 못 들어간 지후를 그 칸 근처에
+  if (!S.bench) return; const f = $('field');
+  ['a', 'e'].forEach(side => S.bench.extra[side].forEach(o => { const q = tileXY(side, o.t), u = makeUnit(side, o.id, 1, q.x + o.jx * CFG.CELL * 0.8, q.y + o.jy * CFG.CELL * 0.8); u.el = unitEl(u); f.appendChild(u.el); drawUnit(u); S.units.push(u); }));
+}
+const BENCH = { frames: [], sim: [], last: 0 };
+function benchFrame(frameMs, simMs) {
+  if (!BENCH.on) return; BENCH.frames.push(frameMs); BENCH.sim.push(simMs);
+  const now = performance.now(); if (now - BENCH.last < 500) return; BENCH.last = now;
+  const F = BENCH.frames.splice(0), M = BENCH.sim.splice(0), avg = F.reduce((s, x) => s + x, 0) / F.length, worst = Math.max(...F), sim = M.reduce((s, x) => s + x, 0) / M.length;
+  const alive = (S.units || []).filter(u => u.alive).length, nodes = $('field').getElementsByTagName('*').length;
+  BENCH.log = { fps: +(1000 / avg).toFixed(1), worst: +worst.toFixed(1), sim: +sim.toFixed(2), alive, nodes }; (BENCH.hist || (BENCH.hist = [])).push(BENCH.log);
+  $('benchHud').textContent = `FPS ${BENCH.log.fps} · 최악 ${BENCH.log.worst}ms · 계산 ${BENCH.log.sim}ms · 유닛 ${alive} · DOM ${nodes}`;
+}
+function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
+{ const bn = new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); }
 window.__rejhbt = { S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
