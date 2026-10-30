@@ -9,7 +9,13 @@
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766`
 - 구역: CONFIG → CHARS(지후 데이터) → STATUS → 이모티콘 목록 → 시드 난수 → 저장 · 계정 → Firebase → 엔진(전투) → 라운드 · 배치 → 가차 → 이모티콘 → 봇 → 온라인(점검 · 접속 상태) → 친구 · 채팅 → 우편 · 쿠폰 → 업적 · 출석 → 꾸미기(프로필 테두리) → 친선전 → 운영 도구 → 배경음악 → 상점 → 일일 퀘스트 → 통계 → 효과음 → 메뉴 · 패치노트 · 도움말 · 환경설정 → 리더보드 → 업데이트 → 시작
 - `firestore.rules` = R2 전체 규칙 (R1 · JHBT2 규칙을 대체). 콘솔에는 **파일 전체**를 게시
-- 화면은 **글래스 UI** (R2.1 · iOS 풍 밝은 글래스모르피즘). R1 UI · 예전 흑백 다크 UI 는 쓰지 않는다
+- **R2.12 화면 (lobby-design)**: 로비 · 하위 화면 · 창은 **어두운 남색 디자인** (카드 `#2c3553` · 테두리 `#3b466b` · 안쪽 `#1a2034` · 글자 `#f2f4fa` / 흐림 `#9aa3bf` · 아래 그림자 입체 버튼 · 주 버튼 금색 `#ffc94a` · 민트 `#53d3c0` · 제목 · 숫자 **Do Hyeon**). 전투 화면은 **글래스 없이 화면 끝까지 흰 격자** (1칸 = `CFG.CELL` · `applyCamera` 가 배경 크기 · 위치를 맞춘다)
+  - 새 로비 `#ui2`: 디자인 템플릿 `<template id="ui2Tpl">` 을 작은 렌더러로 그린다 (`{{ 경로 }}` · `<sc-if value>` · `<sc-for list as>` · `onClick/onChange/onKeyDown` · `style-active` · `{ html }` 값은 그대로) — `u2Vals()` 가 값 · 동작, `u2Render()` → `u2Morph` (바뀐 곳만 · `data-screen-label` 이 다르면 통째로 = 탭 전환 애니메이션). 동작은 기존 함수 · 숨겨 둔 기존 버튼을 그대로 부른다 (`$('btnPlay').click()` 등)
+  - 탭 5개 (상점 · 지후 · 전투 · 아케이드 · 랭킹) = `U2_TAB` (기존 화면 이름 → 탭) · 하위 화면 `U2_PAGE` (가방 · 친구 · 꾸미기 · 탑 · 경쟁전 · 샌드박스 · 공지) 은 기존 `.screen` 을 페이지 칸 `[data-u2host]` 에 옮겨 담는다 (`u2Attach` · `u2Home`). `show()` 가 고른다 · **튜토리얼 중에는 기존 화면** (각본이 기존 버튼을 가리킨다)
+  - 기존 CSS 는 그대로 두고 덧씌운다: `u2DarkRules` (밝은 바탕 · 어두운 글자 · 흰 테두리 · `var(--ink)` 강조 → 새 색 · 같은 선택자로) · `u2MobileRules` (`max-width` 미디어 규칙을 `#ui2 .u2-host` 범위로 복제 — 440px 칼럼 안은 늘 모바일 배치) · `body.u2-theme` 토큰
+  - 전투 HUD (R2.12): 위 `.hud` = 상대 · 라운드 · 타이머 / 아래 `.tray` = 배치 카드(`.pool`) + `.tbar` (나 · 유닛 수 · 버튼) · 높이는 `--hudH` · `--trayH` (ResizeObserver) · `fitCamera` 는 둘 사이에 맞춘다 (`viewInsets` · `camMidY`)
+  - 덱 프리셋 1 · 2 · 3 (`profile.decks` · `profile.preset` · `profile.deck` = 지금 프리셋 배열) · 대표 지후 `profile.fav` (없으면 가장 많이 놓은 지후)
+- (R2.11 이전) 화면은 **글래스 UI** (R2.1 · iOS 풍 밝은 글래스모르피즘) — 지금은 기존 화면 DOM · CSS 의 바탕으로만 남아 있다
   - 토큰(`:root`): 바탕 `#e4e5e8` + 블롭 3개(파랑 · 보라 · 노랑) · 잉크 `#111318` · 글래스 3단계(필 `.g-pill` · 카드 `.g-card` · 시트 `.modal .box`) · 주 버튼 검정(`.k-btn` / `.btn.primary`) · 보조 버튼 `.g-btn` · 스위치 `.sw` · Pretendard 하나
   - 등급 링: 일반 `#c9c9c6` · 희귀 `#4f9dff` · 영웅 `#b26bff` · 전설 `#ffc21a` · 초상화는 원형 흰 바탕 + 링
   - 공통 상단 바(`.topbar`) · 하단 탭 바(`#tabbar`)는 `CHROME` 화면(로비 · 덱 · 뽑기 · 상점 · 가방 · 아케이드 · 탑 · 경쟁전 · 친구 · 리더보드 · 꾸미기)에서만 (드래프트 화면 `screen-draft` 은 아님) (`body[data-chrome]`, `show()` 가 정한다) · 탭 이동은 `openTab(name)` · 모바일(≤700px) 탭 7개(로비 · 덱 · 뽑기 · 상점 · 가방 · 아케이드 · 친구) · 리더보드는 메뉴
@@ -29,6 +35,10 @@
 - 아직 안 만든 지후 (그림만 `지후초상화/`): 팔라딘 · 행성 · 흡혈 · R1 초상화를 쓰는 지후는 `archive/v8.1` 의 PORTRAITS 에서 흰 배경 256 으로 (폭주족) (일부는 배경이 반만 투명 → 흰 배경에 합성하면 된다)
 - 랭크업 · 한계돌파 없음. 지후 레벨은 경기 안에서만: 새 카드는 전장의 같은 지후 위에 **레벨 상관없이** 겹쳐 +1 (`stackable` · 2렙 + 카드 = 3렙 · R2.2.1) · 전장의 내 지후를 같은 종류 · **같은 레벨** 위로 옮기면 합체 레벨 +1 (`moveTile` · 2렙 + 2렙 = 3렙 · 전장의 2렙 + 1렙은 안 된다) · **최대 Lv5** · 체력/공격력 ×1.2 · 효과 ×1.1 복리 · 레벨이 올라도 몸 크기는 그대로
 - **비공개 배치 (R2.6.2)**: 배치 시간(`HIDE_PHASES` deploy · deploy-resolve · deploy-wait · event)에는 상대 진영을 `S.roundStart` (이번 라운드 시작 때 = 이전 라운드 배치)로 반투명(`.unit.ghost`) 그린다 — `viewPlace(side)` · `oppHidden(side)` (renderField · 미니맵 · 상대 지후 누르기). 전투가 시작되면 공개 · 관전자는 다 본다
+- **세로 전장 · 물리 (R2.12)**: 모든 모드 세로 (`isEW()` false · 나 'a' 아래 · 상대 위 · 가로 분기는 남겨 둠) · `CFG.MAP_NS` **1275 × 1800 = 17 × 24칸** (정수 칸 · 격자와 맞게) · `CFG.UNIT_R` 22 (분열 14) · 친선전 참가자 화면은 위아래 반전 (`my()` · `#field.ns.flip` 은 `scale:1 -1`) · 자기 진영 뒤쪽 = `backDir(side)` (소환 · 분열 자리) · 진영 절반 = 신칸센 신호기처럼 `isEW()` 로 나눈다
+  - 이동: **사거리 안이면 멈춰서 때린다** (`aiSteerAndAttack` · 궤도 · 뒷걸음 · 유지 거리 없음 · `ENGAGE_HYST` 0.25칸 넘게 밀려야 다시 쫓는다) · 대상 유지 `pickFoe` (때리는 중이면 그대로 · 80% 더 가까운 적이 생기면 바꾼다) · 때리는 중(`_engaged`)인 지후는 충돌에서 무겁게 (×0.15) · 옆 마찰 없음
+  - 근접: **대상 하나** (`performAttack`) · 부채꼴 광역은 `cleave: true` (낫 지후만) · 대상 둘레 **자리 최대 6** (`meleeSlot` · 서로 56° · 꽉 차면 자리가 남은 적 · `slotsFull`) · 예고는 45° (cleave 는 120°)
+  - 최적화: 공간 격자 `GRID` (`gridBuild` 스텝마다 · `gridNear`) · 진영 목록 캐시 `sideIx()` (`killUnit` 이 `S.deaths` +1 · `foes/targets/friends` 가 쓴다) · 겹침 해소 격자 쌍만 × 4번 · 유닛 · 투사체 위치는 `translate` (left/top 아님) · 체력바는 `scaleX` 바뀐 것만 · 상태 아이콘 0.2초마다 · 이펙트 동시 `FX_CAP` 36 · 한 프레임 최대 4스텝 · 승률 0.2초마다. 벤치: `?bench=50` (25대25 · 왼쪽 위 FPS · 로그인 없이)
 - 배치: 진영 3 × 5 칸 · 배치 수 **제한 없음** (R2.7.2 · `CFG.MAX_UNITS` 15 = 칸 수) · 같은 지후 **3기**(R2.2.1 · 출격제한은 deployLimit) · 카드 3장 중 1장 · 15초 · 배치 기회 **첫 라운드 4번 · 그다음 2번 · 데스매치 3번** · 줄 고르기 `roleRow` (탱커 · 딜러 · 근접 · 체력 높으면 앞 / 어쌔신 · 서포터 · 사거리 길면 뒤) · **초보자 보호** (R2.7.1): 일반전 승 + 패 < `CFG.NEWBIE_GAMES` 5 이면 봇 덱 = 일반 4 + 희귀 1 (`botDeck(true)` · `newbieLeft`) · 봇은 유닛 수 먼저 (`botDeployOne` · 등급 높은 카드 · 꽉 찼을 때만 합치기 · R2.3)
 - 전투 화면: 양쪽 이름 · 레벨 (`S.lvl` · 봇은 내 레벨 ±3 · 친선전은 `lv` 메시지로 주고받는다) · 프로필 테두리 · 사진 (`S.pf` · `lv` 메시지의 `fr` · `ph`) · 양쪽 덱 (전장 위 모서리 `.fdeck`) · 봇 닉네임 = R1 `BOT_NAMES` 전부
 - 덱 5기 (**5기를 다 채워야** 일반전 · 친선전 시작 · R2.3) · 등급: 일반 / 희귀 / 영웅 / 전설 · 뽑기 일반 64.5 · 희귀 30 · 영웅 4 · 전설 1.5 (R2.7.1 build 2) · 중복은 조각
@@ -109,7 +119,7 @@
 - 친선전 배치 동기화 `packPlace` = `[지후, 레벨, 아르카나, 조커, 이벤트 표시 f, 선물 SP sp, 포식 dv, 핵 다씀 nk, 와인 wn, 소믈리에 sm]` — 배치 기록에 새 필드를 넣으면 여기도 같이 (안 넣으면 두 화면이 갈라진다)
 - 상태 `charm`(매혹 · `foes()` 가 자기 아군을 돌려준다) · `foxguard` · `bubble` · `dnote` · 소환체 같은 '덱에 없는 유닛'은 `SUMMONS` 에 (`makeUnit` · `pic` 이 같이 본다)
 - 엔진 도우미 (R2.2): `A.knock` 넉백 · `A.line` 맵 끝까지 직진 관통탄 (`S.lines`) · `A.zone` 바닥 지대 (`S.zones`) · 훅 `steer`(스스로 이동) · `customAttack` · `onDamaged` · `atkMult` · `reflect` · `shotSpeed`(칸/초) · `ghost`(돌진 중 물리 없음) · 상태 `frost`(동상) · `dive`(잠수)
-- 전투 화면: 체력바 안에 체력 숫자 · 아군 연두 / 적 빨강 · 깎이면 흰 잔상 (`.unit-hpbar-lag`) · 치명타 숫자 도장 (`.stamp`) · 승률 예측 게이지 (`#hudOdds` 전장 위)
+- 전투 화면: 체력바는 얇은 막대 하나 (R2.12 · 숫자 · 잔상 없음 · 아군 연두 / 적 빨강 · 쉴드는 위에 겹친 하늘색 줄 · `scaleX`) · 치명타 숫자 도장 (`.stamp`) · 승률 예측 게이지 (`#hudOdds` 전장 위)
 - 아직 안 만든 지후 그림 원본은 `지후초상화/` (투명 배경 원본 · 게임에 넣을 때는 흰 배경 256×256 으로 바꿔 PORTRAITS 에)
 
 ### 현재 밸런스 (R2.4)
@@ -123,6 +133,10 @@
 - 신규 지후 수치는 패치노트 R2.2 · `CHARS` 그대로
 
 ## 계정 · 저장
+- **로그인 필수 (R2.12)**: 게스트 플레이 없음 — 시작 화면 `#screen-welcome` = `renderGate` (로그인 · 회원가입(닉네임 · 비밀번호) · Google). `AUTH.ok` 전에는 `show()` 가 시작 화면만 · `accBoot` 가 로그인을 확인하면 `gateDone` → 로비 (`?bench=` 만 예외). 이 기기 게스트 기록은 가입하면 이어진다 (`signUp` 이 지금 profile 을 붙인다)
+  - **이 기기 계정 원터치 전환**: `localStorage rejhbt.accounts` (`accList`) + 계정마다 이름 붙인 Firebase 앱 `acc_<UID>` 에 로그인 세션을 복사해 둔다 (`accRemember` → `updateCurrentUser`) · 전환 `accSwitch` = 그 세션을 기본 앱으로 복사 → `syncAfterLogin`. **비밀번호는 기기에 저장하지 않는다** · 로그아웃은 목록에서도 지운다 (`accForget`)
+  - 계정 창은 **환경설정 안** (`#setAcc` · `renderAccount` · UID · Google · 비밀번호 · 계정 전환 · 다른 계정 추가 · 로그아웃) · 메뉴의 '계정' 없음
+  - **프로필 (R2.12)**: 로비 프로필 배지 · 연필 → 프로필 시트 (`u2ProfileVals`: 테두리 · 대표 지후 · 닉네임). 닉네임 변경 `changeNick` = **첫 번째 무료 · 그다음 ● 100 (`NICK_GOLD`) · 24시간에 한 번 (`NICK_CD` · `profile.nickN` · `profile.nickAt`)** · 다른 계정 닉네임 · 욕설 불가. 꾸미기 화면 대신 이 시트 (`openCustom` 이 연다)
 - 같은 Firebase 프로젝트 `jihoobattle` · 같은 계정 (UID 8자리 + 비밀번호 `<UID>@jihoo-battle.invalid` · Google 은 그 계정에 연결) · 게스트는 익명 인증
 - 기록: `r2_backups/<uid>` (프로필 JSON) · 이 기기: localStorage `rejhbt.profile.v1`
 - **R1 가져오기 (처음 한 번)**: R1 `backups/<uid>`(또는 이 기기의 `jihooBattle2.profile.v2`)에서 골드 · 다이아 · 이모티콘 · 사용한 쿠폰 · 받은 운영 우편 번호. **R1 지후 보유는 넘기지 않는다** (R2.2 공정성 · 기본 지후만). 모집권은 다이아로 환산 (`R1_TICKETS`). R1 레벨 · 전적은 `profile.legacy` (관상용)
