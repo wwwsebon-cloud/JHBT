@@ -11,12 +11,67 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"><!-- 새 로비 제목 · 숫자 (R2.12) -->
 <!-- PWA · 업데이트 시스템 -->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#e4e5e8">
 <style>
+/* ═════════ 새 로비 UI (R2.12 · lobby-design): 어두운 남색 · 입체 버튼 · Do Hyeon — 전투 화면은 그대로 밝은 글래스 ═════════ */
+body.ui2-on { background:#10141f; }
+body.ui2-on .blobs, body.ui2-on .topbar, body.ui2-on .tabbar { display:none !important; }
+#ui2 { position:fixed; inset:0; z-index:40; background:#10141f; color:#f2f4fa; font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif; font-variant-numeric:normal; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent; user-select:none; overflow:hidden; }
+#ui2 *, #ui2 *::before, #ui2 *::after { box-sizing:border-box; }
+#ui2 img { -webkit-user-drag:none; }
+#ui2 ::-webkit-scrollbar { width:0; height:0; }
+#ui2 [data-u2click] { transition:transform .12s ease, box-shadow .12s ease, filter .18s ease, background-color .2s ease; }
+@media (hover:hover) { #ui2 [data-u2click]:hover { filter:brightness(1.07); } }
+/* 탭 전환: 새 화면이 아래에서 떠오른다 · 안의 카드는 차례로 */
+#ui2 .u2-app > div > [data-screen-label] { animation:u2page .42s cubic-bezier(.2,.8,.2,1) both; }
+#ui2 .u2-app > div > [data-screen-label] > * { animation:u2rise .5s cubic-bezier(.2,.8,.2,1) both; }
+#ui2 .u2-app > div > [data-screen-label] > :nth-child(2) { animation-delay:.05s; } #ui2 .u2-app > div > [data-screen-label] > :nth-child(3) { animation-delay:.1s; }
+#ui2 .u2-app > div > [data-screen-label] > :nth-child(4) { animation-delay:.15s; } #ui2 .u2-app > div > [data-screen-label] > :nth-child(5) { animation-delay:.2s; }
+#ui2 .u2-app > div > [data-screen-label] > :nth-child(n+6) { animation-delay:.24s; }
+@keyframes u2page { from { opacity:0; transform:translateY(16px) scale(.985); } }
+@keyframes u2rise { from { opacity:0; transform:translateY(12px); } }
+/* 카드 그리드 (지후 · 상점 · 덱 · 아케이드 · 랭킹): 하나씩 톡톡 */
+#ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div { animation:u2pop .42s cubic-bezier(.2,1.3,.4,1) both; }
+#ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(2) { animation-delay:.03s; } #ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(3) { animation-delay:.06s; }
+#ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(4) { animation-delay:.09s; } #ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(5) { animation-delay:.12s; }
+#ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(6) { animation-delay:.15s; } #ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(7) { animation-delay:.18s; }
+#ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(8) { animation-delay:.21s; } #ui2 [data-screen-label] [style*="grid-template-columns:repeat("] > div:nth-child(n+9) { animation-delay:.24s; }
+#ui2 [data-screen-label] [data-u2click][style*="grid-template-columns:76px"], #ui2 [data-screen-label] [style*="grid-template-columns:72px"] { animation:u2slide .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes u2pop { from { opacity:0; transform:translateY(10px) scale(.9); } }
+@keyframes u2slide { from { opacity:0; transform:translateX(-18px); } }
+/* 대표 지후: 둥실 · 뒤의 빛이 천천히 돈다 */
+#ui2 .u2-hero { animation:u2bob 3.4s ease-in-out infinite; }
+#ui2 .u2-glow { animation:u2glow 3.4s ease-in-out infinite; }
+#ui2 .u2-glow::before { content:''; position:absolute; inset:-10%; border-radius:50%; background:repeating-conic-gradient(rgba(255,214,90,.11) 0 10deg, transparent 10deg 30deg); -webkit-mask:radial-gradient(circle, #000 20%, transparent 66%); mask:radial-gradient(circle, #000 20%, transparent 66%); animation:u2spin 26s linear infinite; }
+@keyframes u2bob { 0%, 100% { transform:translateY(0) rotate(-1.5deg); } 50% { transform:translateY(-9px) rotate(1.5deg); } }
+@keyframes u2glow { 0%, 100% { opacity:.75; transform:scale(.94); } 50% { opacity:1; transform:scale(1.06); } }
+@keyframes u2spin { to { transform:rotate(360deg); } }
+/* 큰 버튼 (일반전 · 친선전): 빛이 지나간다 */
+#ui2 .u2-cta { position:relative; overflow:hidden; }
+#ui2 .u2-cta::after { content:''; position:absolute; top:0; bottom:0; left:-60%; width:40%; background:linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent); transform:skewX(-18deg); animation:u2shine 3.6s ease-in-out infinite; pointer-events:none; }
+#ui2 .u2-cta + .u2-cta::after { animation-delay:1.8s; }
+@keyframes u2shine { 0%, 62% { left:-60%; } 100% { left:130%; } }
+/* 하단 탭: 고른 탭이 통통 솟는다 */
+#ui2 .u2-navi { transition:height .34s cubic-bezier(.3,1.6,.5,1), background .2s; }
+#ui2 .u2-navi > div:first-child { transition:width .34s cubic-bezier(.3,1.6,.5,1), height .34s cubic-bezier(.3,1.6,.5,1), border-color .2s, filter .2s; }
+#ui2 .u2-navi > div:nth-child(2) { transition:font-size .25s, color .2s; }
+/* 창 · 메뉴 · 토스트 */
+#ui2 .u2-fade { animation:u2fade .2s ease both; }
+#ui2 .u2-pop { animation:u2modal .36s cubic-bezier(.2,1.3,.4,1) both; }
+#ui2 .u2-drop { transform-origin:top right; animation:u2drop .24s cubic-bezier(.2,1.3,.4,1) both; }
+#ui2 .u2-drop > div { animation:u2rise .3s cubic-bezier(.2,.8,.2,1) both; } #ui2 .u2-drop > div:nth-child(2) { animation-delay:.03s; } #ui2 .u2-drop > div:nth-child(3) { animation-delay:.06s; } #ui2 .u2-drop > div:nth-child(4) { animation-delay:.09s; } #ui2 .u2-drop > div:nth-child(n+5) { animation-delay:.12s; }
+#ui2 .u2-toast { animation:u2toast .34s cubic-bezier(.2,1.3,.4,1) both; }
+@keyframes u2fade { from { opacity:0; } }
+@keyframes u2modal { from { opacity:0; transform:translateY(24px) scale(.92); } }
+@keyframes u2drop { from { opacity:0; transform:scale(.85) translateY(-8px); } }
+@keyframes u2toast { from { opacity:0; transform:translate(-50%, 18px) scale(.9); } }
+@media (prefers-reduced-motion:reduce) { #ui2 *, #ui2 *::before, #ui2 *::after { animation:none !important; transition:none !important; } }
+
 /* ═════════ RE:JHBT 글래스 테마 (R2.1) — iOS 풍 글래스모르피즘 라이트 ═════════
    토큰: 바탕 #e4e5e8 + 블롭 3개 · 잉크 #111318 · 글래스 3단계(필 · 카드 · 시트) · 주 버튼 검정 · 초상화는 흰 바탕 + 링 */
 :root { --bg:#e4e5e8; --ink:#111318; --ink2:#3c3e44; --mute:rgba(60,60,67,.6); --line:rgba(60,60,67,.12); --blue:#2a7de1; --blue2:#4f9dff; --red:#e5322d; --redt:#c22a25; --gold:#ffc21a; --goldt:#a87900; --green:#34c759;
@@ -1299,6 +1354,449 @@ body.reels-on .banner, body.reels-on #emoLayer, body.reels-on #lifeFx { display:
   <button data-tab="social"><b><span class="l">친구 · 채팅</span><span class="m">친구</span></b><small id="tabSocialSub">오프라인</small><span class="dot" id="socialDot" hidden></span></button>
   <button data-tab="lb" class="wide-only"><b>리더보드</b><small>시즌 R2</small></button>
 </nav>
+<!-- 새 로비 (R2.12 · lobby-design): 전투 · 지후 · 상점 · 아케이드 · 랭킹 탭은 여기서 그린다 (아래 기존 화면은 숨겨 두고 상태 · 버튼만 쓴다) -->
+<div id="ui2" hidden></div>
+<template id="ui2Tpl">
+<div data-screen-label="App" class="u2-app" style="position:relative; height:100dvh; max-width:440px; margin:0 auto; display:flex; flex-direction:column; overflow:hidden; background:linear-gradient(180deg,#252e4a 0%,#1c2238 55%,#191e31 100%); user-select:none;">
+
+  <!-- TOP BAR -->
+  <div style="display:flex; align-items:center; gap:8px; padding:10px 12px 8px; flex-shrink:0;">
+    <div onClick="{{ openMyProfile }}" style="flex:1; min-width:0; display:flex; align-items:center; gap:8px; background:#2c3553; border:1px solid #3b466b; border-radius:14px; padding:4px 10px 4px 4px; cursor:pointer;">
+      <div style="width:42px; height:42px; flex-shrink:0; border-radius:11px; background:{{ myFrameBg }}; padding:3px; display:flex;">
+        <div style="flex:1; border-radius:8px; background:#fff; overflow:hidden; display:flex;"><img src="{{ favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+      </div>
+      <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+        <div style="display:flex; align-items:center; gap:6px; min-width:0;">
+          <div style="flex-shrink:0; background:#53d3c0; color:#08342e; font-family:'Do Hyeon'; font-size:13px; line-height:1; padding:3px 5px 2px; border-radius:6px;">Lv.{{ level }}</div>
+          <div style="font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ nickname }}</div>
+        </div>
+        <div style="height:7px; background:#1a2034; border-radius:4px; overflow:hidden;">
+          <div style="height:100%; width:{{ xpPct }}; background:linear-gradient(90deg,#53d3c0,#8ff0df); border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px; width:108px; flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border-radius:9px; padding:3px 8px 3px 5px; height:22px;">
+        <div style="width:14px; height:14px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#fff2a8,#ffc21a 60%,#d18e00); border:1.5px solid #9c6a00; flex-shrink:0;"></div>
+        <div style="flex:1; text-align:right; font-family:'Do Hyeon'; font-size:15px;">{{ goldTxt }}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border-radius:9px; padding:3px 8px 3px 6px; height:22px;">
+        <div style="width:10px; height:10px; margin:0 1px; transform:rotate(45deg); background:linear-gradient(135deg,#c9f4ff,#5fd0ff); border:1.5px solid #2a8fc0; flex-shrink:0;"></div>
+        <div style="flex:1; text-align:right; font-family:'Do Hyeon'; font-size:15px;">{{ diaTxt }}</div>
+      </div>
+    </div>
+    <div onClick="{{ toggleMenu }}" style="width:48px; height:48px; flex-shrink:0; border-radius:14px; background:#3b466b; box-shadow:0 3px 0 #252d48; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; position:relative;">
+      <div style="width:20px; height:3px; border-radius:2px; background:#f2f4fa;"></div>
+      <div style="width:20px; height:3px; border-radius:2px; background:#f2f4fa;"></div>
+      <div style="width:20px; height:3px; border-radius:2px; background:#f2f4fa;"></div>
+      <sc-if value="{{ menuDot }}"><div style="position:absolute; top:-3px; right:-3px; width:12px; height:12px; border-radius:50%; background:#ff5d6c; border:2px solid #252e4a;"></div></sc-if>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div style="flex:1; min-height:0; position:relative; display:flex; flex-direction:column;">
+
+    <!-- ===== BATTLE ===== -->
+    <sc-if value="{{ isBattle }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="전투" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom:12px;">
+        <sc-if value="{{ annOn }}"><div style="flex-shrink:0; margin:0 12px; background:rgba(255,201,74,.12); border:1px solid #ffc94a; color:#ffe7a8; border-radius:12px; padding:8px 12px; font-size:13px; font-weight:700;">{{ annText }}</div></sc-if>
+        <div style="flex:1 0 auto; min-height:250px; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:4px 0 6px;">
+          <sc-if value="{{ showQuests }}" hint-placeholder-val="{{ true }}">
+            <div style="align-self:stretch; display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 12px 10px; position:relative; z-index:2;">
+              <div onClick="{{ tapMainQuest }}" style="position:relative; display:flex; flex-direction:column; gap:4px; background:rgba(16,20,34,.6); border:1px solid {{ lq.mainLine }}; border-radius:12px; padding:7px 10px; min-width:0; cursor:pointer;">
+                <div style="font-size:11px; color:#9aa3bf; font-weight:600;">메인 퀘스트 {{ lq.mainNo }}</div>
+                <div style="display:flex; justify-content:space-between; gap:6px; font-size:13px; font-weight:700; min-width:0;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ lq.mainLabel }}</span><span style="flex-shrink:0; color:#53d3c0;">{{ lq.mainProg }}</span></div>
+                <div style="height:5px; background:#1a2034; border-radius:3px; overflow:hidden;"><div style="width:{{ lq.mainPct }}; height:100%; background:#53d3c0;"></div></div>
+              </div>
+              <div onClick="{{ tapDailyQuest }}" style="position:relative; display:flex; flex-direction:column; gap:4px; background:rgba(16,20,34,.6); border:1px solid {{ lq.dailyLine }}; border-radius:12px; padding:7px 10px; min-width:0; cursor:pointer;">
+                <div style="font-size:11px; color:#9aa3bf; font-weight:600;">일일 퀘스트</div>
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span>{{ lq.dailyLabel }}</span><span style="color:#ffc94a;">{{ lq.dailyProg }}</span></div>
+                <div style="height:5px; background:#1a2034; border-radius:3px; overflow:hidden;"><div style="width:{{ lq.dailyPct }}; height:100%; background:#ffc94a;"></div></div>
+                <sc-if value="{{ lq.dailyDot }}"><div style="position:absolute; top:-4px; right:-4px; width:11px; height:11px; border-radius:50%; background:#ff5d6c; border:2px solid #252e4a;"></div></sc-if>
+              </div>
+            </div>
+          </sc-if>
+          <div class="u2-glow" style="position:absolute; top:40%; left:50%; margin:-150px 0 0 -150px; width:300px; height:300px; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(255,194,26,.16) 0%,rgba(255,194,26,0) 65%);"></div>
+          <div onClick="{{ openFav }}" style="position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; cursor:pointer;">
+            <div class="u2-hero" style="width:min(46vw,22vh,188px); aspect-ratio:1; border-radius:50%; background:#fff; border:6px solid {{ favColor }}; box-shadow:0 0 0 6px {{ favGlow }}, 0 18px 30px rgba(0,0,0,.35); overflow:hidden; display:flex;">
+              <img src="{{ favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border:1px solid #3b466b; border-radius:999px; padding:5px 12px 5px 6px;">
+              <div style="background:{{ favColor }}; color:#141826; font-size:11px; font-weight:800; padding:2px 6px; border-radius:999px;">대표</div>
+              <div style="font-family:'Do Hyeon'; font-size:17px;">{{ favName }} 지후</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0; margin:0 12px; background:#2c3553; border:1px solid #3b466b; border-radius:18px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
+            <div style="font-family:'Do Hyeon'; font-size:16px; color:#c9d0e6;">현재 덱</div>
+            <div onClick="{{ goUnits }}" style="font-size:12px; font-weight:700; color:#7fe3d3; cursor:pointer; padding:2px 4px;">덱 편집 ›</div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px;">
+            <sc-for list="{{ deckSlots }}" as="s" hint-placeholder-count="0">
+              <div onClick="{{ s.onClick }}" style="cursor:pointer; border-radius:12px; padding:3px; background:{{ s.color }}; box-shadow:0 3px 0 {{ s.dark }};">
+                <div style="aspect-ratio:1; border-radius:9px; background:#fff url({{ s.img }}) center/contain no-repeat;"></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; gap:8px;">
+          <sc-for list="{{ presets }}" as="p" hint-placeholder-count="3">
+            <div onClick="{{ p.onClick }}" style="width:42px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:17px; cursor:pointer; background:{{ p.bg }}; color:{{ p.fc }}; box-shadow:0 3px 0 {{ p.edge }};">{{ p.n }}</div>
+          </sc-for>
+        </div>
+
+        <div style="flex-shrink:0; display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 12px;">
+          <div onClick="{{ startNormal }}" class="u2-cta" style="height:86px; border-radius:20px; background:linear-gradient(180deg,#ffd76a,#ffc23d); box-shadow:0 5px 0 #c98a1c, inset 0 2px 0 rgba(255,255,255,.5); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; color:#3b2600;" style-active="transform:translateY(3px); box-shadow:0 2px 0 #c98a1c;">
+            <div style="font-family:'Do Hyeon'; font-size:30px; line-height:1;">일반전</div>
+            <div style="font-size:12px; font-weight:700; opacity:.8;">봇 대전 · 라이프 3</div>
+          </div>
+          <div onClick="{{ startFriendly }}" class="u2-cta" style="height:86px; border-radius:20px; background:linear-gradient(180deg,#78e4d3,#4ccbb7); box-shadow:0 5px 0 #2a9483, inset 0 2px 0 rgba(255,255,255,.45); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; color:#08342e;" style-active="transform:translateY(3px); box-shadow:0 2px 0 #2a9483;">
+            <div style="font-family:'Do Hyeon'; font-size:30px; line-height:1;">친선전</div>
+            <div style="font-size:12px; font-weight:700; opacity:.8;">친구와 1:1 · 관전</div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center;">
+          <div style="display:flex; gap:4px; background:#1a2034; border-radius:999px; padding:4px;">
+            <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
+              <div onClick="{{ m.onClick }}" style="padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; cursor:pointer; background:{{ m.bg }}; color:{{ m.fc }}; transition:background .2s, color .2s;">{{ m.label }}</div>
+            </sc-for>
+          </div>
+          <div onClick="{{ boostTap }}" style="display:flex; align-items:center; gap:5px; margin-left:8px; padding:0 14px; border-radius:999px; background:{{ boostBg }}; color:{{ boostFc }}; box-shadow:0 3px 0 {{ boostEdge }}; font-size:13px; font-weight:800; cursor:pointer;" style-active="transform:translateY(2px); box-shadow:0 1px 0 {{ boostEdge }};">⚡ {{ boostTxt }}</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== UNITS ===== -->
+    <sc-if value="{{ isUnits }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="지후" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+        <div style="flex-shrink:0; display:flex; flex-direction:column; gap:8px; padding-bottom:10px; border-bottom:1px solid #2c3553;">
+          <sc-if value="{{ equipping }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 12px; display:flex; align-items:center; gap:10px; background:#ffc94a; color:#3b2600; border-radius:12px; padding:8px 8px 8px 12px;">
+              <div style="width:30px; height:30px; border-radius:8px; flex-shrink:0; background:#fff url({{ equipImg }}) center/contain no-repeat;"></div>
+              <div style="flex:1; font-size:13px; font-weight:700;">{{ equipName }} 지후를 넣을 자리를 누르세요</div>
+              <div onClick="{{ cancelEquip }}" style="background:#3b2600; color:#ffe7a8; font-size:12px; font-weight:700; padding:7px 10px; border-radius:8px; cursor:pointer;">취소</div>
+            </div>
+          </sc-if>
+          <div style="margin:0 12px; background:#2c3553; border:1px solid #3b466b; border-radius:18px; padding:10px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px;">
+            <sc-for list="{{ deckSlots }}" as="s" hint-placeholder-count="0">
+              <div onClick="{{ s.onClick }}" style="cursor:pointer; border-radius:12px; padding:3px; background:{{ s.color }}; box-shadow:0 3px 0 {{ s.dark }}; outline:{{ s.outline }}; outline-offset:2px;">
+                <div style="aspect-ratio:1; border-radius:9px; background:#fff url({{ s.img }}) center/contain no-repeat;"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; justify-content:center; gap:8px;">
+            <sc-for list="{{ presets }}" as="p" hint-placeholder-count="3">
+              <div onClick="{{ p.onClick }}" style="width:42px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:17px; cursor:pointer; background:{{ p.bg }}; color:{{ p.fc }}; box-shadow:0 3px 0 {{ p.edge }};">{{ p.n }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1; min-height:0; overflow-y:auto; padding:12px 12px 20px; display:flex; flex-direction:column; gap:12px;">
+          <div style="flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <div style="display:flex; align-items:baseline; gap:6px;">
+              <div style="font-family:'Do Hyeon'; font-size:19px;">보유 중인 지후</div>
+              <div style="font-size:13px; color:#9aa3bf; font-weight:600;">{{ ownedCount }}/{{ totalCount }}</div>
+            </div>
+            <div onClick="{{ cycleSort }}" style="display:flex; align-items:center; gap:6px; background:#3b466b; box-shadow:0 3px 0 #252d48; border-radius:10px; padding:7px 12px; font-size:13px; font-weight:700; cursor:pointer;">{{ sortLabel }} <span style="font-size:10px; opacity:.8;">▼</span></div>
+          </div>
+          <div style="flex-shrink:0; display:grid; grid-template-columns:{{ gridTpl }}; gap:14px 8px;">
+            <sc-for list="{{ unitCards }}" as="u" hint-placeholder-count="12">
+              <div onClick="{{ u.onClick }}" style="position:relative; display:flex; flex-direction:column; gap:5px; cursor:pointer; opacity:{{ u.op }};" style-active="transform:scale(.96);">
+                <div style="border-radius:14px; padding:3px 3px 0; background:{{ u.color }}; box-shadow:0 3px 0 {{ u.dark }}; filter:{{ u.filter }};">
+                  <div style="aspect-ratio:1; background:#fff; border-radius:11px; overflow:hidden; display:flex;"><img src="{{ u.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div>
+                  <div style="font-family:'Do Hyeon'; font-size:14px; color:#141826; text-align:center; padding:3px 2px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ u.name }}</div>
+                </div>
+                <div style="text-align:center; font-size:11px; font-weight:600; color:#9aa3bf; height:14px;">{{ u.sub }}</div>
+                <sc-if value="{{ u.inDeck }}">
+                  <div style="position:absolute; top:-6px; right:-5px; width:22px; height:22px; border-radius:50%; background:#53d3c0; border:2px solid #1c2238; color:#08342e; font-size:12px; font-weight:900; display:flex; align-items:center; justify-content:center;">✓</div>
+                </sc-if>
+                <sc-if value="{{ u.isNew }}">
+                  <div style="position:absolute; top:-7px; left:-4px; background:#ff5d6c; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; border:2px solid #1c2238;">NEW</div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== RANK ===== -->
+    <sc-if value="{{ isRank }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="랭킹" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+        <div style="flex-shrink:0; padding:0 12px 10px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; background:#1a2034; border-radius:14px; padding:4px;">
+            <sc-for list="{{ lbTabs }}" as="t" hint-placeholder-count="4">
+              <div onClick="{{ t.onClick }}" style="text-align:center; padding:8px 2px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; background:{{ t.bg }}; color:{{ t.fc }};">{{ t.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:#9aa3bf; font-weight:600; padding:0 4px;">
+            <span>{{ lbCaption }}</span><span>{{ lbNote }}</span>
+          </div>
+        </div>
+        <div style="flex:1; min-height:0; overflow-y:auto; padding:0 12px; display:flex; flex-direction:column; gap:10px;">
+          <sc-if value="{{ lbMsg }}"><div style="flex-shrink:0; text-align:center; padding:28px 0; color:#9aa3bf; font-size:13px; font-weight:600;">{{ lbMsg }}</div></sc-if>
+          <sc-for list="{{ lbRows }}" as="r" hint-placeholder-count="5">
+            <div style="display:grid; grid-template-columns:72px minmax(0,1fr); gap:8px; background:#2c3553; border:1px solid {{ r.border }}; border-radius:16px; padding:8px; flex-shrink:0;">
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div style="height:38px; background:#1a2034; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:26px; color:{{ r.rankColor }};">{{ r.rank }}</div>
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;">
+                  <div style="font-family:'Do Hyeon'; font-size:19px; line-height:1.05;">{{ r.main }}</div>
+                  <div style="font-size:10px; color:#9aa3bf; font-weight:600;">{{ r.sub }}</div>
+                </div>
+              </div>
+              <div style="min-width:0; display:flex; flex-direction:column; gap:6px;">
+                <div style="display:flex; align-items:center; gap:6px; min-width:0; height:22px;">
+                  <div style="flex-shrink:0; background:{{ r.frame }}; color:#141826; font-family:'Do Hyeon'; font-size:13px; line-height:1; padding:4px 6px 3px; border-radius:7px;">{{ r.lv }}</div>
+                  <div style="font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border-radius:12px; padding:6px;">
+                  <div style="width:46px; height:46px; flex-shrink:0; border-radius:10px; background:#fff; border:3px solid {{ r.frame }}; overflow:hidden; display:flex;"><img src="{{ r.favImg }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div>
+                  <div style="width:1px; align-self:stretch; background:#3b466b; margin:2px 1px;"></div>
+                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:3px; padding-left:4px;"><div style="font-size:13px; font-weight:700; color:#f2f4fa;">{{ r.stat1 }}</div><div style="font-size:11px; font-weight:600; color:#9aa3bf;">{{ r.stat2 }}</div></div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="position:sticky; bottom:0; margin:0 -12px; padding:8px 12px 10px; background:linear-gradient(180deg,rgba(25,30,49,0),#191e31 30%); flex-shrink:0;">
+            <div style="display:grid; grid-template-columns:72px minmax(0,1fr); gap:8px; background:#24405a; border:2px solid #53d3c0; border-radius:16px; padding:8px;">
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+                <div style="font-size:10px; color:#8ff0df; font-weight:700;">내 순위</div>
+                <div style="font-family:'Do Hyeon'; font-size:24px; line-height:1;">{{ myRank }}</div>
+                <div style="font-size:11px; color:#c9d0e6; font-weight:600;">{{ myMain }}</div>
+              </div>
+              <div style="min-width:0; display:flex; align-items:center; gap:6px;">
+                <div style="width:46px; height:46px; flex-shrink:0; border-radius:10px; background:{{ myFrameBg }}; padding:3px; display:flex;"><div style="flex:1; border-radius:7px; background:#fff; overflow:hidden; display:flex;"><img src="{{ favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div></div>
+                <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:3px; padding-left:4px;"><div style="font-size:14px; font-weight:800;">{{ nickname }}</div><div style="font-size:11px; font-weight:600; color:#c9d0e6;">{{ myStat }}</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== SHOP ===== -->
+    <sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="상점" style="flex:1; min-height:0; overflow-y:auto; padding:2px 12px 20px; display:flex; flex-direction:column; gap:18px;">
+        <div style="flex-shrink:0; position:relative; background:linear-gradient(160deg,#34406a 0%,#2a3354 100%); border:1px solid #46527a; border-radius:20px; padding:14px; display:flex; flex-direction:column; gap:12px; overflow:hidden;">
+          <div style="position:absolute; top:10px; right:8px; display:flex;">
+            <div style="width:62px; height:62px; border-radius:50%; background:#fff; border:4px solid #ffc21a; overflow:hidden; display:flex; transform:translateX(24px) rotate(-8deg);"><img src="{{ hero1 }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+            <div style="width:72px; height:72px; border-radius:50%; background:#fff; border:4px solid #ffc21a; overflow:hidden; display:flex; position:relative; z-index:1; margin-top:-4px;"><img src="{{ hero2 }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+            <div style="width:62px; height:62px; border-radius:50%; background:#fff; border:4px solid #b26bff; overflow:hidden; display:flex; transform:translateX(-24px) rotate(8deg);"><img src="{{ hero3 }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px; padding-right:150px;">
+            <div style="font-family:'Do Hyeon'; font-size:26px; line-height:1.1;">지후 모집</div>
+            <div style="font-size:12px; color:#c9d0e6; font-weight:600; text-wrap:pretty;">중복은 조각이 됩니다</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;">
+            <div style="display:flex; align-items:center; gap:4px; background:#1a2034; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:700;"><div style="width:8px; height:8px; border-radius:50%; background:#c9c9c6;"></div>일반 64.5%</div>
+            <div style="display:flex; align-items:center; gap:4px; background:#1a2034; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:700;"><div style="width:8px; height:8px; border-radius:50%; background:#4f9dff;"></div>희귀 30%</div>
+            <div style="display:flex; align-items:center; gap:4px; background:#1a2034; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:700;"><div style="width:8px; height:8px; border-radius:50%; background:#b26bff;"></div>영웅 4%</div>
+            <div style="display:flex; align-items:center; gap:4px; background:#1a2034; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:700;"><div style="width:8px; height:8px; border-radius:50%; background:#ffc21a;"></div>전설 1.5%</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span style="color:#c9d0e6;">천장</span><span style="color:#ffc94a;">전설 확정까지 {{ pityLeft }}회</span></div>
+            <div style="height:8px; background:#1a2034; border-radius:4px; overflow:hidden;"><div style="height:100%; width:{{ pityPct }}; background:linear-gradient(90deg,#ffb020,#ffd76a); border-radius:4px;"></div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div onClick="{{ pull1 }}" style="height:56px; border-radius:16px; background:linear-gradient(180deg,#78e4d3,#4ccbb7); box-shadow:0 4px 0 #2a9483; color:#08342e; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;" style-active="transform:translateY(3px); box-shadow:0 1px 0 #2a9483;">
+              <div style="font-family:'Do Hyeon'; font-size:20px; line-height:1;">1회 모집</div>
+              <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:800;"><div style="width:8px; height:8px; transform:rotate(45deg); background:#0b4f8a;"></div>{{ pull1Cost }}</div>
+            </div>
+            <div onClick="{{ pull10 }}" style="height:56px; border-radius:16px; background:linear-gradient(180deg,#ffd76a,#ffc23d); box-shadow:0 4px 0 #c98a1c; color:#3b2600; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;" style-active="transform:translateY(3px); box-shadow:0 1px 0 #c98a1c;">
+              <div style="font-family:'Do Hyeon'; font-size:20px; line-height:1;">10회 모집</div>
+              <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:800;"><div style="width:8px; height:8px; transform:rotate(45deg); background:#0b4f8a;"></div>{{ pull10Cost }}</div>
+            </div>
+          </div>
+          <sc-if value="{{ hasTickets }}"><div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;"><div style="font-size:12px; color:#c9d0e6; font-weight:700;">내 모집권</div><sc-for list="{{ tickets2 }}" as="tk"><div onClick="{{ tk.onClick }}" style="display:flex; align-items:center; gap:5px; background:#1a2034; border:1px solid #46527a; border-radius:999px; padding:4px 10px 4px 4px; font-size:12px; font-weight:700; cursor:pointer;" style-active="transform:scale(.95);"><img src="{{ tk.icon }}" alt="" style="width:20px; height:20px;"><span>{{ tk.label }}</span></div></sc-for></div></sc-if>
+        </div>
+
+        <div style="flex-shrink:0; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <div style="font-family:'Do Hyeon'; font-size:20px;">오늘의 상품</div>
+            <div style="font-size:12px; color:#9aa3bf; font-weight:600;">초기화까지 <span style="color:#f2f4fa; font-variant-numeric:tabular-nums;">{{ resetIn }}</span></div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;">
+            <sc-for list="{{ offers }}" as="it">
+              <div style="position:relative; background:#2c3553; border:1px solid {{ it.line }}; border-radius:16px; padding:10px 8px 8px; display:flex; flex-direction:column; align-items:center; gap:6px; opacity:{{ it.op }};">
+                <div style="height:58px; width:58px; border-radius:50%; background:#fff; border:3px solid {{ it.color }}; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:28px; color:{{ it.glyphFc }};">
+                  <sc-if value="{{ it.img }}"><img src="{{ it.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></sc-if>
+                  <sc-if value="{{ it.glyph }}"><span>{{ it.glyph }}</span></sc-if>
+                </div>
+                <div style="font-size:12px; font-weight:700; text-align:center; line-height:1.25; min-height:30px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span>{{ it.name }}</span><span style="font-size:10px; color:#9aa3bf; font-weight:600;">{{ it.sub }}</span></div>
+                <div onClick="{{ it.onClick }}" style="width:100%; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; font-family:'Do Hyeon'; font-size:16px; background:{{ it.btnBg }}; color:{{ it.btnFc }}; box-shadow:0 3px 0 {{ it.btnEdge }};" style-active="transform:translateY(2px); box-shadow:0 1px 0 {{ it.btnEdge }};"><span>{{ it.priceTxt }}</span></div>
+                <sc-if value="{{ it.onDia }}"><div onClick="{{ it.onDia }}" style="width:100%; height:26px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:'Do Hyeon'; font-size:14px; background:#7cc8ff; color:#0b2a45; box-shadow:0 3px 0 #3f8fcf;" style-active="transform:translateY(2px); box-shadow:0 1px 0 #3f8fcf;">{{ it.diaTxt }}</div></sc-if>
+                <sc-if value="{{ it.tag }}"><div style="position:absolute; top:6px; right:6px; background:#ff5d6c; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px;">{{ it.tag }}</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div onClick="{{ reroll }}" style="align-self:center; display:flex; align-items:center; gap:6px; background:{{ rerollBg }}; color:{{ rerollFc }}; box-shadow:0 3px 0 #252d48; border-radius:12px; padding:9px 16px; font-size:13px; font-weight:800; cursor:pointer;" style-active="transform:translateY(2px); box-shadow:0 1px 0 #252d48;">{{ rerollTxt }}</div>
+        </div>
+
+        <div style="flex-shrink:0; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <div style="font-family:'Do Hyeon'; font-size:20px;">이모티콘</div>
+            <div style="font-size:12px; color:#9aa3bf; font-weight:600;">{{ emoNote }}</div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;">
+            <sc-for list="{{ emoItems }}" as="e" hint-placeholder-count="8">
+              <div onClick="{{ e.onClick }}" style="background:#2c3553; border:1px solid #3b466b; border-radius:14px; padding:6px; display:flex; flex-direction:column; gap:6px; cursor:pointer;">
+                <div style="aspect-ratio:1; background:#fff; border-radius:10px; overflow:hidden; display:flex;"><img src="{{ e.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div>
+                <div style="height:24px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:4px; font-family:'Do Hyeon'; font-size:14px; background:{{ e.btnBg }}; color:{{ e.btnFc }};">
+                  <sc-if value="{{ e.showDia }}"><div style="width:7px; height:7px; transform:rotate(45deg); background:#0b4f8a;"></div></sc-if>
+                  <span>{{ e.label }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== ARCADE ===== -->
+    <sc-if value="{{ isArcade }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="아케이드" style="flex:1; min-height:0; overflow-y:auto; padding:2px 12px 20px; display:flex; flex-direction:column; gap:12px;">
+        <div style="flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-family:'Do Hyeon'; font-size:24px;">아케이드</div>
+          <div style="display:flex; gap:6px;">
+            <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border-radius:999px; padding:5px 10px; font-family:'Do Hyeon'; font-size:15px;"><div style="width:16px; height:11px; border-radius:3px; background:#ff7fa6; border:1.5px solid #b8406a;"></div>{{ tickets }}</div>
+            <div style="display:flex; align-items:center; gap:6px; background:#1a2034; border-radius:999px; padding:5px 10px; font-family:'Do Hyeon'; font-size:15px;"><div style="width:14px; height:14px; border-radius:4px; background:#53d3c0; color:#08342e; font-size:10px; font-weight:900; display:flex; align-items:center; justify-content:center; font-family:'Pretendard Variable',sans-serif;">P</div>{{ points }}</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:#9aa3bf; font-weight:600;">매일 티켓 1장 무료 · ●10,000으로 하루 3장까지 · 승리 5P / 패배 1P</div>
+        <sc-for list="{{ arcadeModes }}" as="a" hint-placeholder-count="4">
+          <div onClick="{{ a.onClick }}" style="flex-shrink:0; display:grid; grid-template-columns:76px minmax(0,1fr) auto; align-items:center; gap:12px; background:#2c3553; border:1px solid #3b466b; border-radius:18px; padding:10px; cursor:pointer;" style-active="transform:scale(.98);">
+            <div style="width:76px; height:76px; border-radius:14px; background:#fff; border:3px solid {{ a.color }}; overflow:hidden; display:flex;"><img src="{{ a.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+            <div style="min-width:0; display:flex; flex-direction:column; gap:3px;">
+              <div style="font-family:'Do Hyeon'; font-size:21px; line-height:1.1;">{{ a.name }}</div>
+              <div style="font-size:12px; color:#c9d0e6; line-height:1.4; text-wrap:pretty;">{{ a.desc }}</div>
+              <div style="font-size:11px; color:#9aa3bf; font-weight:600;">{{ a.meta }}</div>
+            </div>
+            <div style="min-width:58px; height:36px; padding:0 10px; border-radius:11px; display:flex; align-items:center; justify-content:center; gap:5px; font-family:'Do Hyeon'; font-size:16px; background:{{ a.btnBg }}; color:{{ a.btnFc }}; box-shadow:0 3px 0 {{ a.btnEdge }};">
+              <sc-if value="{{ a.needsTicket }}"><div style="width:14px; height:10px; border-radius:2px; background:#ff7fa6; border:1.5px solid #b8406a;"></div></sc-if>
+              <span>{{ a.cost }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- MENU DROPDOWN -->
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ toggleMenu }}" style="position:absolute; inset:0; z-index:30;">
+        <div class="u2-drop" style="position:absolute; top:-2px; right:12px; width:156px; background:#2c3553; border:1px solid #46527a; border-radius:16px; padding:8px; display:flex; flex-direction:column; gap:6px; box-shadow:0 16px 40px rgba(0,0,0,.45);">
+          <sc-for list="{{ menuItems }}" as="mi" hint-placeholder-count="7">
+            <div onClick="{{ mi.onClick }}" style="position:relative; display:flex; align-items:center; gap:10px; background:#3b466b; box-shadow:0 3px 0 #252d48; border-radius:11px; padding:9px 12px; font-size:14px; font-weight:700; cursor:pointer;">
+              <div style="width:8px; height:8px; border-radius:2px; transform:rotate(45deg); background:{{ mi.color }};"></div>
+              <span>{{ mi.label }}</span>
+              <sc-if value="{{ mi.dot }}"><div style="margin-left:auto; width:9px; height:9px; border-radius:50%; background:#ff5d6c;"></div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="u2-nav" style="flex-shrink:0; display:flex; align-items:flex-end; background:#141929; border-top:1px solid #2c3553; padding:0 6px env(safe-area-inset-bottom); height:76px;">
+    <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="0">
+      <div onClick="{{ n.go }}" class="u2-navi" style="flex:1; height:{{ n.h }}; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; position:relative; border-radius:16px 16px 0 0; background:{{ n.bg }}; border:1px solid {{ n.line }}; border-bottom:none;">
+        <div style="width:{{ n.size }}; height:{{ n.size }}; border-radius:12px; background:#fff; border:2px solid {{ n.ring }}; overflow:hidden; display:flex; filter:{{ n.filter }};"><img src="{{ n.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+        <div style="font-family:'Do Hyeon'; font-size:{{ n.fs }}; line-height:1; color:{{ n.fc }};">{{ n.label }}</div>
+        <sc-if value="{{ n.dot }}"><div style="position:absolute; top:6px; right:calc(50% - 26px); width:11px; height:11px; border-radius:50%; background:#ff5d6c; border:2px solid #141929;"></div></sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- DETAIL MODAL -->
+  <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" class="u2-fade" style="position:absolute; inset:0; z-index:50; background:rgba(8,11,22,.74); display:flex; align-items:center; justify-content:center; padding:14px;">
+      <div onClick="{{ stop }}" class="u2-pop" style="width:100%; max-width:400px; max-height:100%; border-radius:22px; overflow:hidden; background:#eef0f6; color:#161a28; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,.5);">
+        <div style="flex-shrink:0; display:flex; align-items:center; gap:8px; padding:10px 10px 10px 16px; background:{{ d.color }};">
+          <div style="font-family:'Do Hyeon'; font-size:25px; line-height:1;">{{ d.name }} 지후</div>
+          <div style="background:rgba(20,24,38,.82); color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px;">{{ d.rarName }}</div>
+          <div style="flex:1;"></div>
+          <div onClick="{{ closeDetail }}" style="width:38px; height:38px; border-radius:11px; background:#161a28; color:#fff; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+        </div>
+        <div style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column;">
+          <div style="position:relative; height:200px; flex-shrink:0; background:{{ d.tint }}; display:flex; align-items:center; justify-content:center;">
+            <div style="width:176px; height:176px; border-radius:50%; background:#fff; box-shadow:0 0 0 5px {{ d.color }}, 0 10px 24px rgba(0,0,0,.15); overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div>
+            <div style="position:absolute; left:12px; top:12px; display:flex; flex-direction:column; gap:5px; align-items:flex-start;">
+              <div style="background:#161a28; color:#fff; font-size:12px; font-weight:700; padding:4px 9px; border-radius:8px;">{{ d.role }}</div>
+              <sc-if value="{{ d.inDeck }}"><div style="background:#53d3c0; color:#08342e; font-size:12px; font-weight:800; padding:4px 9px; border-radius:8px;">장착 중</div></sc-if>
+            </div>
+            <div style="position:absolute; right:12px; top:12px; background:rgba(255,255,255,.85); font-size:12px; font-weight:700; padding:4px 9px; border-radius:8px;">{{ d.ownTxt }}</div>
+            <div onClick="{{ prevDetail }}" style="position:absolute; left:10px; top:50%; margin-top:-20px; width:40px; height:40px; border-radius:50%; background:rgba(22,26,40,.78); color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding-bottom:3px;">‹</div>
+            <div onClick="{{ nextDetail }}" style="position:absolute; right:10px; top:50%; margin-top:-20px; width:40px; height:40px; border-radius:50%; background:rgba(22,26,40,.78); color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding-bottom:3px;">›</div>
+          </div>
+          <div style="padding:12px; display:flex; flex-direction:column; gap:10px;">
+            <sc-if value="{{ d.showStory }}">
+              <div style="background:#fff; border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:6px;">
+                <div style="font-size:12px; font-weight:800; color:#7c3ed1;">서사</div>
+                <div style="font-size:14px; line-height:1.6; text-wrap:pretty;">{{ d.story }}</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ d.showInfo }}">
+              <div style="background:#fff; border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <div style="font-size:12px; font-weight:800; color:#5b6480;">패시브</div>
+                  <div style="font-size:14px; line-height:1.55; text-wrap:pretty;">{{ d.pas }}</div>
+                </div>
+                <sc-if value="{{ d.hasSkill }}">
+                  <div style="display:flex; flex-direction:column; gap:4px; border-top:1px solid #e3e6ef; padding-top:10px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <div style="font-size:12px; font-weight:800; color:#c98a00;">[스킬] {{ d.skN }}</div>
+                      <div style="background:#fff1c2; color:#8a5d00; font-size:11px; font-weight:800; padding:1px 6px; border-radius:6px;">{{ d.spTxt }}</div>
+                    </div>
+                    <div style="font-size:14px; line-height:1.55; text-wrap:pretty;">{{ d.skD }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+              <sc-for list="{{ d.stats }}" as="st" hint-placeholder-count="6">
+                <div style="background:#fff; border-radius:12px; padding:8px 10px; display:flex; align-items:center; gap:9px;">
+                  <div style="width:26px; height:26px; flex-shrink:0; border-radius:8px; background:{{ st.color }}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:900;">{{ st.ic }}</div>
+                  <div style="display:flex; flex-direction:column; min-width:0;">
+                    <div style="font-size:11px; color:#6b7390; font-weight:700;">{{ st.label }}</div>
+                    <div style="font-family:'Do Hyeon'; font-size:19px; line-height:1.1;">{{ st.val }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="flex-shrink:0; display:grid; grid-template-columns:1fr 1.4fr; gap:10px; padding:4px 12px 14px;">
+          <div onClick="{{ toggleStory }}" style="height:52px; border-radius:15px; background:#d5d9e6; box-shadow:0 4px 0 #a9afc2; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:20px; cursor:pointer;">{{ d.storyBtn }}</div>
+          <div onClick="{{ d.onEquip }}" style="height:52px; border-radius:15px; background:{{ d.eqBg }}; box-shadow:0 4px 0 {{ d.eqEdge }}; color:{{ d.eqFc }}; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:22px; cursor:pointer;">{{ d.eqLabel }}</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- CONFIRM -->
+  <sc-if value="{{ hasConfirm }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeConfirm }}" class="u2-fade" style="position:absolute; inset:0; z-index:60; background:rgba(8,11,22,.7); display:flex; align-items:center; justify-content:center; padding:24px;">
+      <div onClick="{{ stop }}" class="u2-pop" style="width:100%; max-width:320px; background:#2c3553; border:1px solid #46527a; border-radius:20px; padding:18px; display:flex; flex-direction:column; gap:14px; text-align:center;">
+        <div style="font-family:'Do Hyeon'; font-size:22px;">구매할까요?</div>
+        <div style="background:#1a2034; border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:4px;">
+          <div style="font-size:15px; font-weight:700;">{{ cf.name }}</div>
+          <div style="font-size:13px; color:#ffc94a; font-weight:700;">{{ cf.priceTxt }}</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div onClick="{{ closeConfirm }}" style="height:46px; border-radius:13px; background:#3b466b; box-shadow:0 3px 0 #252d48; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:18px; cursor:pointer;">취소</div>
+          <div onClick="{{ confirmYes }}" style="height:46px; border-radius:13px; background:#ffc94a; box-shadow:0 3px 0 #c98a1c; color:#3b2600; display:flex; align-items:center; justify-content:center; font-family:'Do Hyeon'; font-size:18px; cursor:pointer;">구매</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- TOAST -->
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div class="u2-toast" style="position:absolute; left:50%; bottom:96px; transform:translateX(-50%); z-index:90; background:rgba(16,20,34,.94); border:1px solid #46527a; color:#f2f4fa; font-size:14px; font-weight:700; padding:11px 18px; border-radius:999px; white-space:nowrap; box-shadow:0 10px 30px rgba(0,0,0,.4); pointer-events:none;">{{ toast }}</div>
+  </sc-if>
+</div>
+</template>
 <!-- 로비 -->
 <div id="screen-lobby" class="screen">
   <div class="lobby">
@@ -2564,7 +3062,8 @@ function normProfile(p) {
   p = Object.assign(freshProfile(), p);
   p.owned = Object.fromEntries(Object.entries(p.owned || {}).filter(([id]) => CHARS[id])); STARTERS().forEach(id => { if (!p.owned[id]) p.owned[id] = 1; }); // 기본 지급
   p.shards = Object.fromEntries(Object.entries(p.shards || {}).filter(([id]) => CHARS[id]));
-  p.deck = (p.deck || []).filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5); STARTERS().forEach(id => { if (p.deck.length < 5 && !p.deck.includes(id)) p.deck.push(id); }); // 빠진 자리는 기본 지후로
+  p.deck = (p.deck || []).filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5); STARTERS().forEach(id => { if (p.deck.length < 5 && !p.deck.includes(id)) p.deck.push(id); }); // 빠진 자리는 기본 지후
+  p.preset = [1, 2, 3].includes(p.preset) ? p.preset : 1; p.decks = p.decks && typeof p.decks === 'object' ? p.decks : {}; [1, 2, 3].forEach(n => { p.decks[n] = Array.isArray(p.decks[n]) ? p.decks[n].filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5) : []; }); p.decks[p.preset] = p.deck; // 덱 프리셋 (R2.12): deck = 지금 프리셋의 배열로
   p.level = Math.max(1, nat(p.level)); p.xp = nat(p.xp); /* R2.10: Lv1 부터 (예전 Lv0 은 Lv1 로) */ p.dia = nat(p.dia); p.gold = nat(p.gold);
   p.ach = Object.assign(freshAch(), p.ach || {}); p.ach.claimed = p.ach.claimed && typeof p.ach.claimed === 'object' ? p.ach.claimed : {};
   p.newbie = Object.assign({ on: false, days: 0, last: '' }, p.newbie || {});
@@ -2873,6 +3372,8 @@ function openAccount(tab) { if (tab) ACC.tab = tab; ACC.msg = ''; if (!isMember(
 // ═════════ 화면 ═════════
 const CHROME = ['lobby', 'deck', 'gacha', 'shop', 'inv', 'arcade', 'tower', 'comp', 'sandbox', 'social', 'lb', 'custom']; // 상단 바 · 하단 탭 바가 보이는 화면
 function show(name) {
+  if (window.__u2 && !TUT.on && U2_TAB[name]) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); u2Show(U2_TAB[name]); bgmTick(); dmClose(); return; } // R2.12 새 로비
+  if (window.__u2) u2Hide();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $('screen-' + name).classList.add('active'); window.scrollTo(0, 0);
   document.body.dataset.chrome = CHROME.includes(name) ? '1' : '0'; $('tabbar').querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === (name === 'tower' || name === 'comp' || name === 'sandbox' ? 'arcade' : name)));
   if (name !== 'battle') { document.body.classList.remove('reels-on'); $('screen-battle').classList.remove('reels'); } // 릴스 모드 해제 (R2.10.5)
@@ -2881,7 +3382,7 @@ function show(name) {
 function openTab(name) { // 하단 탭 바 · 로비 버튼
   if (name === 'lobby') renderLobby(); else if (name === 'deck') renderDeck(); else if (name === 'gacha') renderGacha(); else if (name === 'shop') { shopMsg(''); renderShop(); } else if (name === 'inv') renderInv(); else if (name === 'arcade') renderArcade();
   if (name === 'social') return openSocial();
-  show(name); if (name === 'lb') lbLoad();
+  show(name); if (name === 'lb') (window.__u2 && UI2.on ? u2LbLoad() : lbLoad());
 }
 $('tabbar').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b && !b.classList.contains('on')) openTab(b.dataset.tab); });
 function pic(id, src) { const c = CHARS[id] || SUMMONS[id]; const p = src || c.portrait; return p ? `<img src="${p}" alt="">` : (c.emoji || '?'); }
@@ -6657,6 +7158,7 @@ async function lbLoad() {
   }
 }
 function lbShow(rows, me, hall) { // 정렬된 [{ uid, data }] 를 행 카드로 · 내가 없으면 맨 아래에 내 줄
+  if (window.__u2) { UI2.st.lb = { tab: lbTab, rows, me }; setTimeout(u2Render); } // 새 로비 랭킹 탭
   $('lbList').innerHTML = (rows.length ? rows.map((r, i) => lbRow(i, r.data, r.uid === me)).join('') : '<div class="lbrow msg">아직 기록이 없어요 — 첫 승리를 달성해 주세요!</div>') + (rows.some(r => r.uid === me) ? '' : lbMine(hall));
 }
 $('lbTabs').addEventListener('click', e => { const b = e.target.closest('[data-lb]'); if (!b || b.dataset.lb === lbTab) return; lbTab = b.dataset.lb; lbLoad(); });
@@ -6909,6 +7411,193 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
   document.addEventListener('keydown', e => { if (TUT.on && TUT.adv && !$('dlg').classList.contains('show') && (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight')) adv(e); });
   $('btnMenuTut').addEventListener('click', () => { closeModal('menuModal'); setTimeout(() => TUT.start(), 150); });
 })();
+
+// ═════════ 새 로비 UI (R2.12 · lobby-design): 전투 · 지후 · 상점 · 아케이드 · 랭킹 ═════════
+// 디자인 템플릿(<template id="ui2Tpl">)을 그대로 그린다: {{ 경로 }} · <sc-if value> · <sc-for list as> · onClick/onChange/onKeyDown · style-active (누르는 동안)
+// 그리기는 문자열 → 지금 화면과 비교해서 바뀐 곳만 고친다 (u2Morph · 스크롤 · 입력 · 애니메이션 유지). 동작은 기존 함수 · 버튼을 그대로 부른다
+const U2_TAB = { lobby: 'battle', deck: 'units', gacha: 'shop', shop: 'shop', arcade: 'arcade', lb: 'rank' }; // 기존 화면 → 새 로비 탭
+const U2_RAR = { common: { c: '#c9c9c6', d: '#8f8f8b', t: '#f0f0ee' }, rare: { c: '#4f9dff', d: '#2d6ccc', t: '#e1edff' }, epic: { c: '#b26bff', d: '#7c3ed1', t: '#f0e5ff' }, legend: { c: '#ffc21a', d: '#c98a00', t: '#fff3cc' } };
+const UI2 = { st: { tab: 'battle', menuOpen: false, detail: null, story: false, equipId: null, confirm: null, toast: null, lb: null }, h: [], on: false, img: {} };
+const U2_VOID = new Set(['img', 'input', 'br', 'hr', 'meta', 'link']), U2_RE = /\{\{\s*([\w.$]+)\s*\}\}/g;
+function u2Img(id) { // 초상화 data URI → blob URL (화면 문자열이 가벼워진다)
+  if (UI2.img[id]) return UI2.img[id];
+  const p = (CHARS[id] || SUMMONS[id] || {}).portrait || ''; if (!p.startsWith('data:')) return (UI2.img[id] = p);
+  try { const i = p.indexOf(','), bin = atob(p.slice(i + 1)), u = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k); return (UI2.img[id] = URL.createObjectURL(new Blob([u], { type: p.slice(5, p.indexOf(';')) }))); } catch (e) { return (UI2.img[id] = p); }
+}
+const u2Get = (sc, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), sc);
+const u2Str = (s, sc) => s.replace(U2_RE, (_, p) => { const v = u2Get(sc, p); return v == null || v === false ? '' : String(v && v.html != null ? v.html : v); });
+function u2Walk(n, sc, out) {
+  if (n.nodeType === 3) { const m = n.nodeValue.match(/^\s*\{\{\s*([\w.$]+)\s*\}\}\s*$/), v = m && u2Get(sc, m[1]); out.push(v && v.html != null ? v.html : esc(u2Str(n.nodeValue, sc))); return; } // { html } 은 그대로 (설명의 <b>)
+  if (n.nodeType !== 1) return;
+  const tag = n.tagName.toLowerCase(), bind = a => (n.getAttribute(a) || '').replace(U2_RE, '$1').trim();
+  if (tag === 'sc-if') { const v = u2Get(sc, bind('value')); if (v && !(Array.isArray(v) && !v.length)) for (const c of n.childNodes) u2Walk(c, sc, out); return; }
+  if (tag === 'sc-for') { const L = u2Get(sc, bind('list')) || [], as = n.getAttribute('as'); L.forEach((it, i) => { const s2 = Object.create(sc); s2[as] = it; s2.$i = i; for (const c of n.childNodes) u2Walk(c, s2, out); }); return; }
+  out.push('<' + tag);
+  for (const a of n.attributes) {
+    const nm = a.name;
+    if (nm.startsWith('hint-')) continue;
+    if (/^on[a-z]+$/.test(nm)) { const fn = u2Get(sc, a.value.replace(U2_RE, '$1').trim()); if (typeof fn === 'function') out.push(` data-u2${nm.slice(2)}="${UI2.h.push(fn) - 1}"`); continue; }
+    if (nm === 'style-active') { out.push(` data-act="${esc(u2Str(a.value, sc))}"`); continue; }
+    out.push(` ${nm}="${esc(u2Str(a.value, sc))}"`);
+  }
+  out.push('>'); if (U2_VOID.has(tag)) return;
+  for (const c of n.childNodes) u2Walk(c, sc, out);
+  out.push(`</${tag}>`);
+}
+function u2Morph(from, to) { // 바뀐 곳만 (화면 이름 data-screen-label 이 다르면 통째로 → 탭 전환 애니메이션)
+  if (from.nodeType !== to.nodeType || from.nodeName !== to.nodeName || from.nodeType === 1 && from.getAttribute('data-screen-label') !== to.getAttribute('data-screen-label')) { from.replaceWith(to); return; }
+  if (from.nodeType !== 1) { if (from.nodeValue !== to.nodeValue) from.nodeValue = to.nodeValue; return; }
+  for (const a of [...from.attributes]) if (!to.hasAttribute(a.name) && a.name !== 'data-pressed') from.removeAttribute(a.name);
+  for (const a of to.attributes) if (from.getAttribute(a.name) !== a.value && !(a.name === 'style' && from.hasAttribute('data-pressed'))) from.setAttribute(a.name, a.value);
+  if (from.tagName === 'INPUT' && document.activeElement !== from) from.value = to.getAttribute('value') || '';
+  const fc = [...from.childNodes], tc = [...to.childNodes];
+  tc.forEach((c, i) => (i < fc.length ? u2Morph(fc[i], c) : from.appendChild(c)));
+  for (let i = tc.length; i < fc.length; i++) fc[i].remove();
+}
+function u2Render() {
+  if (!UI2.on) return;
+  UI2.h = []; const out = [], tpl = $('ui2Tpl').content, sc = u2Vals();
+  for (const c of tpl.childNodes) u2Walk(c, sc, out);
+  const box = $('ui2'), nu = document.createElement('div'); nu.innerHTML = out.join('');
+  if (!box.firstElementChild) { box.append(...nu.childNodes); return; }
+  const a = [...box.childNodes], b = [...nu.childNodes];
+  b.forEach((c, i) => (i < a.length ? u2Morph(a[i], c) : box.appendChild(c))); for (let i = b.length; i < a.length; i++) a[i].remove();
+}
+function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
+function u2Toast(t) { clearTimeout(UI2.tt); u2Set({ toast: t }); UI2.tt = setTimeout(() => u2Set({ toast: null }), 1700); }
+function u2Show(tab) { // show() 가 부른다: 새 로비를 켜고 탭을 고른다
+  UI2.on = true; document.body.classList.add('ui2-on'); $('ui2').hidden = false;
+  renderLobby(); // 기존 화면의 점 · 공지 · 메인 퀘스트 상태를 최신으로 (숨겨진 DOM 을 읽는다)
+  if (tab === 'rank' && (!UI2.st.lb || UI2.st.lb.tab !== lbTab)) u2LbLoad();
+  if (tab !== UI2.st.tab) UI2.st.equipId = null;
+  u2Set({ tab, menuOpen: false });
+}
+function u2Hide() { if (!UI2.on) return; UI2.on = false; document.body.classList.remove('ui2-on'); $('ui2').hidden = true; UI2.st.detail = null; UI2.st.confirm = null; }
+function u2Go(tab) { const back = Object.keys(U2_TAB).find(k => U2_TAB[k] === tab && k !== 'gacha'); openTab(back); }
+function u2LbLoad() { UI2.st.lb = { tab: lbTab, loading: true }; const tab = lbTab; lbLoad().finally(() => { if (UI2.st.lb && UI2.st.lb.tab === tab && UI2.st.lb.loading) UI2.st.lb = { tab, msg: $('lbList').textContent.trim() || '기록을 불러오지 못했어요' }; u2Render(); }); }
+function u2Sorted() { // 지후 탭 정렬: 보유 먼저 → 기본순(등급 → 출시) · 역할군순 · 이름순 (기존 덱 정렬과 같은 기억)
+  const sort = deckSortGet(), R = RARITY_ORDER, ids = Object.keys(CHARS), idx = Object.fromEntries(ids.map((id, i) => [id, i])), own = id => (owned(id) ? 0 : 1);
+  return ids.sort((a, b) => own(a) - own(b) || (sort === 'role' ? DECK_ROLES.indexOf(CHARS[a].role) - DECK_ROLES.indexOf(CHARS[b].role) : 0) || (sort === 'name' ? CHARS[a].name.localeCompare(CHARS[b].name, 'ko') : R[CHARS[b].rarity] - R[CHARS[a].rarity] || idx[a] - idx[b]));
+}
+function u2Equip(id) { // 상세 창 '장착': 빈 칸이 있으면 바로 · 꽉 찼으면 지후 탭에서 바꿀 자리를 고른다
+  if (!owned(id)) return u2Toast('아직 없는 지후예요');
+  if (profile.deck.includes(id)) return;
+  if (profile.deck.length < 5) { profile.deck.push(id); save(); mqCheck(); u2Set({ detail: null }); return u2Toast(shortName(id) + ' 지후를 장착했어요'); }
+  UI2.st.detail = null; UI2.st.equipId = id; if (UI2.st.tab !== 'units') u2Go('units'); else u2Render();
+}
+function u2SlotTap(i) {
+  const id = profile.deck[i], eq = UI2.st.equipId;
+  if (eq) { if (id) profile.deck[i] = eq; else profile.deck.push(eq); save(); mqCheck(); u2Set({ equipId: null }); return u2Toast(shortName(eq) + ' 지후를 장착했어요'); }
+  if (id) u2Set({ detail: id, story: false }); else u2Go('units');
+}
+function u2Decks() { if (![1, 2, 3].includes(profile.preset)) profile.preset = 1; if (!profile.decks || typeof profile.decks !== 'object') profile.decks = { 1: [], 2: [], 3: [] }; profile.decks[profile.preset] = profile.deck; } // 새 계정은 프리셋이 없다
+function u2Preset(n) { // 덱 프리셋 1 · 2 · 3 (R2.12): profile.deck 은 지금 프리셋 배열
+  u2Decks(); if (n === profile.preset) return; profile.decks[profile.preset] = profile.deck; profile.preset = n; profile.deck = profile.decks[n] || (profile.decks[n] = []); save(); mqCheck(); u2Toast(`덱 ${n} · ${profile.deck.length} / 5`);
+}
+const u2Btn = kind => ({ gold: ['#ffc94a', '#3b2600', '#c98a1c'], mint: ['#53d3c0', '#08342e', '#2a9483'], dia: ['#7cc8ff', '#0b2a45', '#3f8fcf'], off: ['#3b466b', '#9aa3bf', '#252d48'] })[kind];
+const U2_TIX = { pull10: ['#ffc94a', '10회'], epicTicket: ['#b26bff', '영웅'], legendPick: ['#ffc21a', '전설'], testKit: ['#9aa3bf', '임테기'], boxLow: ['#4f9dff', '하급'], boxMid: ['#b26bff', '중급'], boxHigh: ['#ffc21a', '상급'] };
+const u2Svg = (c, t) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g transform="rotate(-12 32 32)"><path d="M6 18h52v9a5 5 0 0 0 0 10v9H6v-9a5 5 0 0 0 0-10z" fill="${c}" stroke="rgba(0,0,0,.35)" stroke-width="3" stroke-linejoin="round"/><text x="34" y="38" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="900" fill="#141826">${t}</text></g></svg>`);
+async function u2After(fn) { await fn(); const m = ($('shopMsg') || {}).textContent; if (m) { u2Toast(m); shopMsg(''); } else u2Render(); } // 상점 동작 뒤 메시지는 토스트로
+
+function u2Vals() {
+  u2Decks(); const s = UI2.st, tab = s.tab, fav = myPhoto(), favC = CHARS[fav] || CHARS.fire, favR = U2_RAR[favC.rarity], fmt = n => (Number(n) || 0).toLocaleString('ko-KR');
+  const deck = profile.deck, need = xpNeed(profile.level);
+  const deckSlots = Array.from({ length: 5 }, (_, i) => { const id = deck[i], r = id && U2_RAR[CHARS[id].rarity];
+    return { img: id ? u2Img(id) : '', color: r ? r.c : '#3b466b', dark: r ? r.d : '#252d48', outline: s.equipId ? '2px dashed #ffc94a' : 'none', onClick: () => u2SlotTap(i) }; });
+  const presets = [1, 2, 3].map(n => { const on = profile.preset === n; return { n, bg: on ? '#ffc94a' : '#3b466b', fc: on ? '#3b2600' : '#c9d0e6', edge: on ? '#c98a1c' : '#252d48', onClick: () => u2Preset(n) }; });
+  const modes = [['event', '랜덤 이벤트'], ['classic', '클래식']].map(([k, label]) => ({ label, bg: profile.mode === k ? '#3b466b' : 'transparent', fc: profile.mode === k ? '#f2f4fa' : '#9aa3bf', onClick: () => { profile.mode = k; save(); u2Render(); } }));
+  // 퀘스트 (메인 · 일일)
+  const m = profile.mq, q = MQ[m.i], mqDone = mqReady(), d = dq(), tierReady = DAILY_TIERS.some(t => d.points >= t.p && !d.tiers.includes(t.p)), nextTier = DAILY_TIERS.find(t => !d.tiers.includes(t.p));
+  const lq = { mainNo: Math.min(m.i + 1, MQ.length), mainLabel: q ? q.label : '추가 예정이에요', mainProg: !q ? '완료' : mqDone ? '받기!' : q.need ? `${Math.min(m.n, q.need)}/${q.need}` : '진행 중', mainPct: (!q || mqDone ? 100 : q.need ? Math.min(100, m.n / q.need * 100) : 0) + '%', mainLine: mqDone ? '#53d3c0' : '#3b466b',
+    dailyLabel: tierReady ? '보상 받기!' : nextTier ? '다음 보상' : '오늘 완료', dailyProg: nextTier ? `${d.points}/${nextTier.p}P` : `${DAILY_GOAL}P`, dailyPct: (nextTier ? Math.min(100, d.points / nextTier.p * 100) : 100) + '%', dailyLine: tierReady ? '#ffc94a' : '#3b466b', dailyDot: tierReady };
+  // 지후 탭 카드 · 상세
+  const sortLabel = { base: '기본순', role: '역할군순', name: '이름순' }[deckSortGet()];
+  const unitCards = u2Sorted().map(id => { const c = CHARS[id], r = U2_RAR[c.rarity], have = owned(id), sh = profile.shards[id] || 0;
+    return { img: u2Img(id), name: shortName(id), color: r.c, dark: r.d, sub: have ? (sh ? '조각 ' + sh : RARITY[c.rarity]) : '미보유', inDeck: deck.includes(id), isNew: false, op: have ? 1 : 0.5, filter: have ? 'none' : 'grayscale(1)',
+      onClick: () => (s.equipId ? (have && !deck.includes(id) ? u2Set({ equipId: id }) : null) : u2Set({ detail: id, story: false })) }; });
+  let dv = {};
+  if (s.detail && CHARS[s.detail]) {
+    const c = CHARS[s.detail], r = U2_RAR[c.rarity], have = owned(c.id || s.detail), inDeck = deck.includes(s.detail), sk = c.skill, list = u2Sorted(), at = list.indexOf(s.detail);
+    const rng = c.range === 'melee' ? '근접' : c.melee ? `근접 ${c.range}칸` : c.range >= 99 ? '맵 전체' : c.range ? c.range + '칸' : '—';
+    dv = { name: shortName(s.detail), rarName: RARITY[c.rarity], color: r.c, tint: r.t, img: u2Img(s.detail), role: c.role, inDeck, ownTxt: have ? (profile.shards[s.detail] ? '보유 · 조각 ' + profile.shards[s.detail] : '보유') : '미보유',
+      pas: { html: c.passive || '특수 능력 없음 · 기본기에 충실하다' }, hasSkill: !!sk, skN: sk ? ((sk.desc || '').replace(/<[^>]+>/g, '').match(/\[([^\]]+)\]/) || [])[1] || '스킬' : '', skD: { html: sk ? sk.desc : '' }, spTxt: !sk ? '' : sk.type === 'cooldown' ? `쿨타임 ${sk.cd}초` : sk.need ? `SP ${sk.need}` : '',
+      story: c.story || '서사는 준비 중이에요.', showStory: s.story, showInfo: !s.story, storyBtn: s.story ? '능력' : '서사',
+      stats: [['체력', fmt(c.hp), '#ff6b7a', 'HP'], ['공격력', c.atk ? fmt(c.atk) : '—', '#ff9f43', 'AT'], ['공격 간격', c.atkSpeed ? c.atkSpeed + '초' : '—', '#3fb7f0', 'IV'], ['사거리', rng, '#8b7bff', 'RG'], ['이동속도', String(c.speed || 1.6), '#36c98a', 'MV'], ['역할군', c.role, '#5b6480', 'RL']].map(([label, val, color, ic]) => ({ label, val, color, ic })),
+      eqLabel: !have ? '미보유' : inDeck ? '장착 중' : '장착', eqBg: !have || inDeck ? '#c4c9d8' : '#ffc94a', eqEdge: !have || inDeck ? '#9aa1b6' : '#c98a1c', eqFc: !have || inDeck ? '#5b6480' : '#3b2600', onEquip: () => u2Equip(s.detail),
+      prev: list[(at - 1 + list.length) % list.length], next: list[(at + 1) % list.length] };
+  }
+  // 랭킹 (리더보드 기록: 닉네임 · 레벨 · 대표 지후 · 테두리 · 승패 · 탑 · TP)
+  const L = s.lb && s.lb.tab === lbTab ? s.lb : null, rankC = ['#ffc21a', '#dfe4ee', '#e8a06a'], frameBg = fr => (hasKey(FRAME, fr) ? FRAME[fr] : FRAME.none).bg;
+  const lbVal = d => { const w = Number(d.wins) || 0, l = Number(d.losses) || 0; return lbTab === 'comp' ? [fmt(d.tp) + ' TP', compTierInfo(d.tp).name, `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'tower' ? [fmt(d.best) + '층', '최고 층', `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'wins' ? [fmt(w) + '승', `${fmt(l)}패`, `Lv.${clamp(Number(d.level) || 0, 0, 999)}`] : ['Lv.' + clamp(Number(d.level) || 0, 0, 999), lbTab === 'hall' ? 'R1 기록' : `${fmt(w)}승`, `${fmt(w)}승 ${fmt(l)}패`]; };
+  const lbRows = L && L.rows ? L.rows.map((r, i) => { const d = r.data, v = lbVal(d); return { rank: i + 1, rankColor: rankC[i] || '#f2f4fa', border: r.uid === L.me ? '#53d3c0' : i < 3 ? rankC[i] : '#3b466b', main: v[0], sub: v[1], lv: clamp(Number(d.level) || 0, 0, 999), name: String(d.nickname || '?').slice(0, 12) + (r.uid === L.me ? ' (나)' : ''), frame: frameBg(d.frame), favImg: CHARS[d.fav] ? u2Img(d.fav) : u2Img('fire'), stat1: v[2], stat2: lbTab === 'comp' ? compTierInfo(d.tp).name : lbTab === 'tower' ? '지후의 탑' : '시즌 R2' }; }) : [];
+  const myAt = L && L.rows ? L.rows.findIndex(r => r.uid === L.me) : -1, myD = { wins: profile.wins, losses: profile.losses, level: profile.level, best: profile.tower.best, tp: profile.comp.tp, ...(lbTab === 'comp' ? { wins: profile.comp.wins, losses: profile.comp.losses } : {}) }, myV = lbVal(myD);
+  const lbTabs = [['level', '레벨'], ['wins', '승리'], ['tower', '탑'], ['comp', '경쟁전'], ['hall', '명예']].map(([k, label]) => ({ label, bg: lbTab === k ? '#3b466b' : 'transparent', fc: lbTab === k ? '#fff' : '#9aa3bf', onClick: () => { if (lbTab === k) return; lbTab = k; u2LbLoad(); u2Render(); } }));
+  // 상점
+  const shop = ensureDaily(), free = shop.freeType === 'gold' ? { ic: '●', n: 500, label: '골드' } : { ic: '◆', n: 100, label: '다이아' }, ms = Math.max(0, new Date().setHours(24, 0, 0, 0) - Date.now()), pad = v => String(v).padStart(2, '0');
+  const offers = [(() => { const b = u2Btn(shop.freeClaimed ? 'off' : 'mint'); return { name: '무료 보상', sub: `${free.ic} ${fmt(free.n)} · 하루 한 번`, glyph: free.ic, glyphFc: free.ic === '●' ? '#d18e00' : '#2a8fc0', color: '#53d3c0', line: shop.freeClaimed ? '#3b466b' : '#53d3c0', op: shop.freeClaimed ? 0.6 : 1, priceTxt: shop.freeClaimed ? '받음' : '받기', btnBg: b[0], btnFc: b[1], btnEdge: b[2], onClick: () => shop.freeClaimed ? null : u2After(claimFree) }; })(),
+    ...shop.offers.filter(o => (o.charId && CHARS[o.charId]) || o.random).map(o => { const r = U2_RAR[o.rarity], b = u2Btn(o.sold ? 'off' : 'gold'), price = offerPrice(o), dia = offerDia(o), nm = offerName(o);
+      return { name: o.charId ? shortName(o.charId) : nm, sub: `${RARITY[o.rarity]} · ${o.charId ? (owned(o.charId) ? '조각 +1' : '해금') : '랜덤'}`, img: o.charId ? u2Img(o.charId) : '', glyph: o.charId ? '' : '?', glyphFc: r.c, color: r.c, line: '#3b466b', op: o.sold ? 0.6 : 1, tag: o.disc && !o.sold ? `-${o.disc}%` : '',
+        priceTxt: o.sold ? '구매 완료' : '● ' + fmt(price), btnBg: b[0], btnFc: b[1], btnEdge: b[2], diaTxt: '◆ ' + fmt(dia),
+        onClick: () => o.sold ? null : u2Set({ confirm: { name: nm, priceTxt: '● ' + fmt(price), go: () => u2After(() => buyOffer(o.id, false)) } }),
+        onDia: o.sold ? null : () => u2Set({ confirm: { name: nm, priceTxt: '◆ ' + fmt(dia), go: () => u2After(() => buyOffer(o.id, true)) } }) }; })];
+  if (!Array.isArray(shop.emo) || shop.emo.some(o => !emoDef(o.k))) { shop.emo = emoOffers(); save(); }
+  const emoItems = shop.emo.map(o => { const have = o.sold || emoOwned(o.k); return { img: emoSrc(o.k), label: have ? '보유' : String(EMO_PRICE), showDia: !have, btnBg: have ? '#1a2034' : '#7cc8ff', btnFc: have ? '#9aa3bf' : '#0b2a45', onClick: () => have ? null : u2Set({ confirm: { name: '이모티콘 · ' + emoDef(o.k).name, priceTxt: '◆ ' + EMO_PRICE, go: () => u2After(() => buyEmo(o.k)) } }) }; });
+  const tickets2 = Object.keys(U2_TIX).filter(k => profile.items[k] > 0 && ITEMS[k] && ITEMS[k].use).map(k => ({ icon: u2Svg(...U2_TIX[k]), label: `${ITEMS[k].name.replace(/ \(.*\)/, '')} ×${profile.items[k]}`, onClick: () => { useItem(k); u2Render(); } }));
+  // 아케이드
+  const a = arcDay(), tw = profile.tower, ti = compTierInfo(profile.comp.tp), ART = { mirror: ['joker', '#b26bff'], tower: ['titanium', '#ffc21a'], comp: ['bat', '#ff7a5c'], sandbox: ['slime', '#53d3c0'] };
+  const arcadeModes = ARC_MODES.filter(x => ART[x.k]).map(x => { const fee = x.fee(), tix = fee > 0 && !(x.k === 'tower' && tw.on), b = u2Btn(tix ? 'gold' : 'mint');
+    return { name: x.name, img: u2Img(ART[x.k][0]), color: ART[x.k][1], desc: x.desc.replace(/<[^>]+>/g, ''), meta: x.k === 'tower' ? (tw.on ? `${tw.floor}층 도전 중 · 남은 목숨 ${TOWER_LIVES - tw.lose}` : `최고 ${fmt(tw.best)}층`) : x.k === 'comp' ? `${ti.name} · ${fmt(profile.comp.tp)} TP` : x.q, cost: x.k === 'tower' && tw.on ? '이어서' : fee ? String(fee) : '무료', needsTicket: tix,
+      btnBg: b[0], btnFc: b[1], btnEdge: b[2], onClick: () => { renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${x.k}"]`); if (el) el.click(); } }; });
+  // 메뉴 · 하단 탭 (점은 기존 화면 상태를 그대로)
+  const dot = id => !!$(id) && !$(id).hidden, mailN = dot('mailDot'), questN = dot('questDot'), socN = dot('socialDot'), frameN = framesReady() > 0;
+  const menuItems = [['공지', '#ffc94a', false, () => $('btnMenuPatch').click()], ['우편함', '#7cc8ff', mailN, () => $('btnMail').click()], ['퀘스트 · 출석', '#53d3c0', questN, openQs], ['친구', '#ff8fb1', socN, () => openSocial()], ['꾸미기', '#b26bff', frameN, () => openTab('custom')], ['가방', '#ff9f43', dot('invDot'), () => openTab('inv')], ['설정', '#c9d0e6', false, () => $('btnMenu').click()]]
+    .map(([label, color, d2, fn]) => ({ label, color, dot: d2, onClick: e => { e.stopPropagation(); u2Set({ menuOpen: false }); fn(); } }));
+  const navItems = [['shop', '상점', 'gift', !shop.freeClaimed], ['units', '지후', 'fire', false], ['battle', '전투', 'sword', false], ['arcade', '아케이드', 'slot', dot('arcDot')], ['rank', '랭킹', 'guardian', false]].map(([k, label, im, d2]) => { const on = tab === k;
+    return { label, img: u2Img(im), dot: d2, h: on ? '86px' : '72px', size: on ? '46px' : '34px', fs: on ? '16px' : '13px', fc: on ? '#ffffff' : '#9aa3bf', bg: on ? 'linear-gradient(180deg,#3b466b,#2c3553)' : 'transparent', line: on ? '#4a5680' : 'transparent', ring: on ? '#ffc94a' : '#3b466b', filter: on ? 'none' : 'saturate(.7)', go: () => u2Go(k) }; });
+  const bOn = boostActive(), bLeft = boostLeft();
+  return {
+    // 상단 바
+    myFrameBg: (hasKey(FRAME, profile.frame) ? FRAME[profile.frame] : FRAME.none).bg, favImg: u2Img(fav), level: profile.level, nickname: profile.nick || '닉네임', xpPct: Math.min(100, profile.xp / need * 100) + '%', goldTxt: fmt(profile.gold), diaTxt: fmt(profile.dia),
+    openMyProfile: () => $('btnAcc').click(), toggleMenu: () => u2Set({ menuOpen: !s.menuOpen }), menuOpen: s.menuOpen, menuItems, menuDot: mailN || questN || socN || frameN,
+    // 전투
+    isBattle: tab === 'battle', showQuests: true, lq, tapMainQuest: () => { $('btnMQ').click(); u2Render(); }, tapDailyQuest: openQs, annOn: dot('lobbyAnn'), annText: ON.ann || '',
+    favColor: favR.c, favGlow: favR.c + '55', favName: shortName(fav), openFav: () => u2Set({ detail: fav, story: false }),
+    deckSlots, presets, modes, goUnits: () => u2Go('units'), startNormal: () => $('btnPlay').click(), startFriendly: () => openSocial(),
+    boostTxt: bOn ? $('boostChip').textContent : bLeft > 0 ? `부스트 ${bLeft}` : '부스트 내일', boostBg: bOn ? '#ffc94a' : '#3b466b', boostFc: bOn ? '#3b2600' : '#f2f4fa', boostEdge: bOn ? '#c98a1c' : '#252d48', boostTap: () => { $('btnBoost').click(); u2Render(); },
+    // 지후
+    isUnits: tab === 'units', equipping: !!s.equipId, equipImg: s.equipId ? u2Img(s.equipId) : '', equipName: s.equipId ? shortName(s.equipId) : '', cancelEquip: () => u2Set({ equipId: null }),
+    ownedCount: Object.keys(CHARS).filter(owned).length, totalCount: Object.keys(CHARS).length, sortLabel, cycleSort: () => { const o = ['base', 'role', 'name'], k = o[(o.indexOf(deckSortGet()) + 1) % 3]; try { localStorage.setItem('rejhbt-deck-sort', k); } catch (e) {} u2Render(); },
+    gridTpl: 'repeat(4,minmax(0,1fr))', unitCards,
+    hasDetail: !!s.detail && !!CHARS[s.detail], d: dv, closeDetail: () => u2Set({ detail: null }), stop: e => e.stopPropagation(), toggleStory: () => u2Set({ story: !s.story }), prevDetail: e => { e.stopPropagation(); u2Set({ detail: dv.prev }); }, nextDetail: e => { e.stopPropagation(); u2Set({ detail: dv.next }); },
+    // 랭킹
+    isRank: tab === 'rank', lbTabs, lbRows, lbMsg: !L || L.loading ? '불러오는 중…' : L.msg || (L.rows && !L.rows.length ? '아직 기록이 없어요' : ''), lbCaption: ($('lbSub') || {}).textContent || '', lbNote: L && L.rows ? `상위 ${L.rows.length}명` : '',
+    myRank: myAt >= 0 ? myAt + 1 : lbTab === 'hall' && !profile.legacy ? '—' : `${LB_TOP}+`, myMain: myV[0], myStat: myV[2],
+    // 상점
+    isShop: tab === 'shop', hero1: u2Img('moon'), hero2: u2Img('lightning'), hero3: u2Img('lantern'), pityLeft: Math.max(1, CFG.PITY - (profile.pity || 0)), pityPct: Math.min(100, (profile.pity || 0) / CFG.PITY * 100) + '%',
+    pull1Cost: fmt(CFG.PULL1), pull10Cost: fmt(CFG.PULL10), pull1: () => (profile.dia < CFG.PULL1 ? u2Toast('다이아가 부족해요') : (pull(1), u2Render())), pull10: () => (profile.dia < CFG.PULL10 ? u2Toast('다이아가 부족해요') : (pull(10), u2Render())),
+    hasTickets: tickets2.length > 0, tickets2, resetIn: pad(Math.floor(ms / 3600000)) + ':' + pad(Math.floor(ms / 60000) % 60) + ':' + pad(Math.floor(ms / 1000) % 60), offers,
+    rerollTxt: $('btnShopReroll').textContent, rerollBg: shop.rerolls >= SHOP_REROLL_MAX ? '#1a2034' : '#3b466b', rerollFc: shop.rerolls >= SHOP_REROLL_MAX ? '#6b7493' : '#f2f4fa', reroll: () => { if (!$('btnShopReroll').disabled) u2After(() => $('btnShopReroll').click()); },
+    emoItems, emoNote: shop.emo.length ? `하나에 ◆${EMO_PRICE} · 리롤하면 바뀌어요` : '모든 이모티콘을 모았어요!',
+    hasConfirm: !!s.confirm, cf: s.confirm || {}, closeConfirm: () => u2Set({ confirm: null }), confirmYes: () => { const c = s.confirm; u2Set({ confirm: null }); if (c && c.go) c.go(); },
+    // 아케이드
+    isArcade: tab === 'arcade', tickets: fmt(a.t), points: fmt(a.p), arcadeModes,
+    navItems, hasToast: !!s.toast, toast: s.toast,
+  };
+}
+// 이벤트: 클릭 · 입력 · 키 (data-u2click 등) · 누르는 동안 style-active
+(function bindUi2() {
+  const box = $('ui2');
+  const fire = (type, e) => { let stopped = false; const ev = new Proxy(e, { get: (t, k) => (k === 'stopPropagation' ? () => { stopped = true; } : typeof t[k] === 'function' ? t[k].bind(t) : t[k]) });
+    for (let el = e.target; el && el !== box; el = el.parentElement) { const id = el.dataset && el.dataset['u2' + type]; if (id != null && UI2.h[id]) { try { UI2.h[id](ev); } catch (err) { console.error('[ui2]', err); } if (stopped) break; if (type !== 'click') break; } }
+    if (type === 'click' && !stopped && UI2.st.menuOpen && !e.target.closest('[data-u2click]')) u2Set({ menuOpen: false }); };
+  box.addEventListener('click', e => { fire('click', e); if (UI2.on) u2Render(); });
+  box.addEventListener('input', e => fire('change', e)); box.addEventListener('keydown', e => fire('keydown', e));
+  const up = () => { const el = UI2.pressed; if (!el) return; UI2.pressed = null; el.removeAttribute('data-pressed'); el.setAttribute('style', el._u2s || ''); };
+  box.addEventListener('pointerdown', e => { const el = e.target.closest('[data-act]'); if (!el) return; up(); UI2.pressed = el; el._u2s = el.getAttribute('style') || ''; el.setAttribute('data-pressed', ''); el.setAttribute('style', el._u2s + ';' + el.dataset.act); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.addEventListener(t, up, true));
+  setInterval(() => { if (UI2.on && !document.hidden && !(document.activeElement && document.activeElement.tagName === 'INPUT' && box.contains(document.activeElement))) u2Render(); }, 1000); // 시계 · 부스트 · 점 갱신
+})();
+window.__u2 = true; // 새 로비 준비 끝 (그 전에 부른 show 는 기존 화면)
 
 $('btnStart').addEventListener('click', () => { const n = $('nickInput').value.trim(); if (!n) return banner('닉네임을 넣어 주세요'); profile.nick = n.slice(0, 12); save(); renderLobby(); show('lobby'); setTimeout(updCheck, 400); }); // 처음 시작: 인트로 만화 → 업데이트 보상 (updCheck 가 본다)
 attend(); questAdd('login', 1); // 오늘 접속 · 출석
