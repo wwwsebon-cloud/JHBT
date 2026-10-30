@@ -135,6 +135,7 @@
 - 신규 지후 수치는 패치노트 R2.2 · `CHARS` 그대로
 
 ## 계정 · 저장
+- **핵 방지 (R2.12)**: 서버가 계산하지 않는 구조라 완전히 막을 수는 없다 → 여러 겹 + 흔적 + 운영자 정지. ① 다이아 · 골드는 프로필 접근자 `guardProfile` (닫힌 금고 `CUR` + 서명 · 밖에서 고치면 되돌리고 `profile.cheat` 에 기록 · 한 번에 ◆30,000 / ●300,000 넘게 늘면 `big-*` 기록) — 프로필을 새로 만들면 꼭 `normProfile` 또는 `guardProfile(freshProfile())` ② 이 기기 기록은 `writeLocal` 이 서명 (`SAVE_KEY + '.s'`) · 서명이 틀리면 로그인 계정은 서버 기록 (`LOCAL_OK` · `syncAfterLogin` · `local-edit` 기록) ③ `window.__rejhbt` · `?bench` 는 개발 주소에서만 (`DEV_HOST`) ④ 리더보드 `r2lb` 에 dia · gold · pulls · own · cheat · 운영 도구 '의심 계정' (`susScore` 순) · 닉네임으로 서버 기록 보기 (`r2_backups` 운영자 읽기) · 7일 / 영구 정지 (`bans`). **규칙(firestore.rules)을 콘솔에 다시 게시해야 동작** · 진짜로 막으려면 재화 · 뽑기를 서버(Cloud Functions)에서 계산해야 한다
 - **로그인 필수 (R2.12)**: 게스트 플레이 없음 — 시작 화면 `#screen-welcome` = `renderGate` (로그인 · 회원가입(닉네임 · 비밀번호) · Google). `AUTH.ok` 전에는 `show()` 가 시작 화면만 · `accBoot` 가 로그인을 확인하면 `gateDone` → 로비 (`?bench=` 만 예외). 이 기기 게스트 기록은 가입하면 이어진다 (`signUp` 이 지금 profile 을 붙인다)
   - **이 기기 계정 원터치 전환**: `localStorage rejhbt.accounts` (`accList`) + 계정마다 이름 붙인 Firebase 앱 `acc_<UID>` 에 로그인 세션을 복사해 둔다 (`accRemember` → `updateCurrentUser`) · 전환 `accSwitch` = 그 세션을 기본 앱으로 복사 → `syncAfterLogin`. **비밀번호는 기기에 저장하지 않는다** · 로그아웃은 목록에서도 지운다 (`accForget`)
   - 계정 창은 **환경설정 안** (`#setAcc` · `renderAccount` · UID · Google · 비밀번호 · 계정 전환 · 다른 계정 추가 · 로그아웃) · 메뉴의 '계정' 없음

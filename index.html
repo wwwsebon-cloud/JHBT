@@ -3203,8 +3203,30 @@ const botFrame = lv => (FRAMES.filter(f => f.kind === 'lv' && lv >= f.need).pop(
 const freshAch = () => ({ days: 0, lastDay: '', wins: 0, kills: 0, dailyAll: 0, epic: 0, legend: 0, flawless: 0, claimed: {} });
 function freshProfile() { const st = STARTERS(); return { v: 1, nick: '', xp: 0, level: 1, dia: CFG.START_DIA, gold: 0, emos: EMO_START.slice(), emoSlots: [...EMO_START, null, null, null, null], daily: null, owned: Object.fromEntries(st.map(id => [id, 1])), shards: {}, deck: st.slice(0, 5), wins: 0, losses: 0, pulls: 0,
   codes: [], mail: [], giftSeen: [], ach: freshAch(), newbie: { on: true, days: 0, last: '', v: 2 }, fr: { w: 0, l: 0 }, spec: true, legacy: null, items: {}, frames: ['none'], frame: 'none', streak: 0, bestStreak: 0, pity: 0, boost: { day: '', used: 0, until: 0 }, mq: { i: 0, n: 0, done: false, day: '' } }; }
+// ═════════ 핵 방지 (R2.12) ═════════
+// 이 게임은 서버가 계산하지 않아 브라우저에서 고치는 것을 완전히 막을 수는 없다 → 여러 겹으로 어렵게 하고, 흔적을 남겨 운영자가 잡는다
+// ① 다이아 · 골드는 프로필 안의 '금고' (닫힌 변수 + 서명) 로만 바뀐다 · 금고 밖에서 바꾸면 되돌리고 profile.cheat 에 남긴다
+// ② 이 기기 기록(localStorage)은 서명해서 저장 · 서명이 맞지 않으면 로그인 계정은 서버 기록을 쓴다 (syncAfterLogin)
+// ③ 한 번에 너무 많이 늘면 (CUR_STEP) 흔적만 남긴다 (운영 우편 등 정상일 수도) · ④ 리더보드에 재화 · 흔적을 같이 올려 운영 도구 '의심 계정'에서 본다
+// ⑤ 콘솔용 window.__rejhbt · ?bench 는 개발 주소 (localhost · 내부망) 에서만 (DEV_HOST)
+const DEV_HOST = /^(localhost|127\.0\.0\.1|\[::1\]|192\.168\.|10\.)/.test(location.hostname);
+const AC_SALT = 'rejhbt:' + [82, 50, 46, 49, 50].map(c => String.fromCharCode(c)).join('') + ':jihoo', CUR_STEP = { dia: 30000, gold: 300000 };
+const acHash = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return (h >>> 0).toString(36); };
+const CUR = new WeakMap(), curSig = v => acHash(AC_SALT + '|' + v.dia + '|' + v.gold);
+function acFlag(p, kind, n) { const c = p.cheat && typeof p.cheat === 'object' ? p.cheat : (p.cheat = { n: 0, kinds: {}, at: 0 }); c.n = (c.n | 0) + 1; c.kinds = c.kinds || {}; c.kinds[kind] = (c.kinds[kind] || 0) + 1; c.at = Date.now(); if (n != null) c.last = { kind, n: Math.round(n) }; }
+function curCheck(p, v) { if (v.sig === curSig(v)) return; acFlag(p, 'vault'); v.dia = v.good.dia; v.gold = v.good.gold; v.sig = curSig(v); } // 금고를 직접 고쳤다 → 마지막 정상 값으로
+function guardProfile(p) { // 프로필의 dia · gold 를 금고 접근자로 (JSON 저장 · 불러오기는 그대로)
+  if (!p || CUR.has(p)) return p;
+  const v = { dia: Math.max(0, Math.floor(Number(p.dia) || 0)), gold: Math.max(0, Math.floor(Number(p.gold) || 0)) }; v.good = { dia: v.dia, gold: v.gold }; v.sig = curSig(v); CUR.set(p, v);
+  for (const k of ['dia', 'gold']) { delete p[k]; Object.defineProperty(p, k, { enumerable: true, configurable: false,
+    get() { const w = CUR.get(p); curCheck(p, w); return w[k]; },
+    set(x) { const w = CUR.get(p); curCheck(p, w); x = Math.max(0, Math.floor(Number(x) || 0)); if (x - w[k] > CUR_STEP[k]) acFlag(p, 'big-' + k, x - w[k]); w[k] = x; w.good[k] = x; w.sig = curSig(w); } }); }
+  return p;
+}
+let LOCAL_OK = false; // 이 기기 기록의 서명이 맞는가 (loadProfile · writeLocal)
+function writeLocal() { try { const j = JSON.stringify(profile); localStorage.setItem(SAVE_KEY, j); localStorage.setItem(SAVE_KEY + '.s', acHash(AC_SALT + j)); LOCAL_OK = true; } catch (e) {} }
 function loadProfile() {
-  let p = null; try { p = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
+  let p = null; try { const j = localStorage.getItem(SAVE_KEY); p = JSON.parse(j || 'null'); LOCAL_OK = !!j && localStorage.getItem(SAVE_KEY + '.s') === acHash(AC_SALT + j); } catch (e) {}
   if (!p) { try { const r1 = JSON.parse(localStorage.getItem(R1_SAVE_KEY) || 'null'); if (r1 && typeof r1 === 'object' && r1.nickname) { p = importR1(r1); if (r1.ownerUid) p.ownerUid = r1.ownerUid; } } catch (e) {} } // 처음 켰을 때: 이 기기의 R1 기록
   return normProfile(p);
 }
@@ -3238,7 +3260,8 @@ function normProfile(p) {
   p.streak = nat(p.streak); p.bestStreak = Math.max(nat(p.bestStreak), p.streak);
   p.pity = nat(p.pity); p.boost = Object.assign({ day: '', used: 0, until: 0 }, p.boost || {}); // 천장 · 부스트
   p.mq = Object.assign({ i: 0, n: 0, done: false, day: '' }, p.mq || {}); p.mq.i = Math.min(nat(p.mq.i), MQ.length); p.mq.n = nat(p.mq.n); // 메인 퀘스트
-  return p;
+  p.cheat = p.cheat && typeof p.cheat === 'object' ? p.cheat : { n: 0, kinds: {}, at: 0 }; // 핵 흔적 (R2.12 · 지우지 않는다)
+  return guardProfile(p);
 }
 function r1Level(totalXp) { let lv = 1, r = nat(totalXp); while (lv < 150) { const need = Math.ceil(100 * Math.pow(1.03, lv - 1)); if (r < need) break; r -= need; lv++; } return lv; } // R1 레벨 공식
 const hofMail = lv => ({ id: 'r2-hof', icon: '🏆', title: '명예의 전당 보상', at: Date.now(), claimed: false, rewards: [{ kind: 'diamonds', amount: nat(lv) * 50 }], body: `지후배틀(R1) 마지막 레벨 Lv.${nat(lv)} × ◆50` }); // 오버홀 이전 레벨 × 50
@@ -3275,7 +3298,7 @@ function importR1(raw) { // R1 기록 → R2 프로필 (처음 한 번)
   return p;
 }
 let profile = loadProfile();
-function save() { profile.savedAt = Date.now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch (e) {} queueBackup(); } // 로그인했으면 서버에도 (1.5초 모아서)
+function save() { profile.savedAt = Date.now(); writeLocal(); queueBackup(); } // 로그인했으면 서버에도 (1.5초 모아서)
 function xpNeed(lv) { return Math.round(100 * Math.pow(1.15, Math.max(1, lv) - 1)); } // R2.10: Lv1 부터 · Lv1→2 100 XP · 그 뒤 15% 씩 복리
 function addXp(n) { profile.xp += n; let up = 0; while (profile.xp >= xpNeed(profile.level)) { profile.xp -= xpNeed(profile.level); profile.level++; up++; } if (up) { postEvent('level', String(profile.level), ''); discordNotify({ type: 'level', level: profile.level }); } return up; }
 function owned(id) { return devOn() || (profile.owned[id] || 0) > 0; }
@@ -3333,8 +3356,9 @@ async function lbPush() { // 전적 갱신 후 호출 (실패해도 게임은 �
     const doc = { nickname: (profile.nick || '이름없음').slice(0, 12), level: Math.min(999, profile.level | 0), wins: Math.min(99999, profile.wins | 0), losses: Math.min(99999, profile.losses | 0),
       deck, fav: favChar(), xp: Math.min(1000000, Math.max(0, profile.xp | 0)), updatedAt: FB.sdk.serverTimestamp() };
     if (!FB.noFrame) doc.frame = profile.frame; // 테두리 (R2.2 규칙)
+    if (!FB.noEcon) Object.assign(doc, { dia: Math.min(99999999, profile.dia), gold: Math.min(999999999, profile.gold), pulls: Math.min(999999, profile.pulls | 0), own: Object.keys(profile.owned || {}).length, cheat: Math.min(9999, (profile.cheat && profile.cheat.n) | 0) }); // R2.12 핵 방지: 운영 도구에서 본다
     await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2lb', FB.uid), doc);
-  } catch (e) { if (!FB.noFrame && e && e.code === 'permission-denied') { FB.noFrame = true; return lbPush(); } console.warn('[rejhbt] 전적 업로드 실패', e); }
+  } catch (e) { if (e && e.code === 'permission-denied') { if (!FB.noEcon) { FB.noEcon = true; return lbPush(); } if (!FB.noFrame) { FB.noFrame = true; return lbPush(); } } console.warn('[rejhbt] 전적 업로드 실패', e); } // 규칙을 아직 게시하지 않았으면 재화 칸 없이
 }
 
 // ═════════ 계정: 로그인 · 회원가입 · Google (지후배틀과 같은 계정 · UID 8자리 + 비밀번호) ═════════
@@ -3392,16 +3416,16 @@ async function fetchBackup() { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db
 async function fetchR1() { try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'backups', myUid())); if (!snap.exists()) return null; const p = JSON.parse(snap.data().payload); return p && typeof p === 'object' && !Array.isArray(p) ? p : null; } catch (e) { return null; } }
 function useProfile(p) { // 서버 기록으로 바꾼다
   ACC.restoring = true; profile = normProfile(p); profile.ownerUid = myUid();
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch (e) {}
+  writeLocal();
   ACC.restoring = false; renderLobby();
 }
 async function syncAfterLogin(fromStart) { // R2 기록이 있으면 불러오고, 없으면 R1 기록을 처음 한 번 가져오고, 그것도 없으면 이 기기 기록을 계정에 붙인다
   const uid = myUid(), b = await fetchBackup();
-  if (b) { if (fromStart ? (profile.ownerUid !== uid || b.at > (profile.savedAt || 0) + 5000) : true) useProfile(b.p); }
+  if (b) { const bad = fromStart && !LOCAL_OK && profile.ownerUid === uid; if (fromStart ? (bad || profile.ownerUid !== uid || b.at > (profile.savedAt || 0) + 5000) : true) { useProfile(b.p); if (bad) { acFlag(profile, 'local-edit'); save(); } } } // R2.12: 서명이 틀린 이 기기 기록은 버린다
   else {
     const r1 = await fetchR1();
     if (r1) { useProfile(importR1(r1)); banner('지후배틀 기록을 가져왔어요'); }
-    else if (profile.ownerUid && profile.ownerUid !== uid) profile = freshProfile();
+    else if (profile.ownerUid && profile.ownerUid !== uid) profile = guardProfile(freshProfile());
     profile.ownerUid = uid; save(); await backupNow();
   }
   const nick = await claimNick(); if (nick === 'taken') banner('닉네임이 다른 계정에 등록돼 있어요 · 환경설정에서 바꿔 주세요');
@@ -3479,7 +3503,7 @@ async function logOut() {
   await backupNow().catch(() => {});
   onlineStop();
   await FB.sdk.signOut(FB.auth); await FB.sdk.signInAnonymously(FB.auth); FB.uid = myUid();
-  ACC.restoring = true; profile = freshProfile(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch (e) {} ACC.restoring = false; // 이 기기 기록은 비운다 (계정 기록은 서버에 있다)
+  ACC.restoring = true; profile = guardProfile(freshProfile()); writeLocal(); ACC.restoring = false; // 이 기기 기록은 비운다 (계정 기록은 서버에 있다)
   await accForget(code); // R2.12: 이 기기의 계정 목록에서도
 }
 // ── 계정 창 ──
@@ -6329,10 +6353,20 @@ function renderAdmin(msg = '') {
     <button class="btn primary" id="admSend">우편 보내기</button>
     <input class="accin" id="admAnn" maxlength="200" placeholder="로비 공지 (비우면 내림)" value="${esc(ON.ann || '')}"><button class="btn" id="admAnnGo">공지 올리기 · 내리기</button>
     <button class="btn" id="admMaint">${ON.maint && ON.maint.on ? '점검 끝내기' : '점검 시작 (운영자 말고 모두 막힘)'}</button>
+    <b style="margin-top:6px">의심 계정 (핵 방지)</b><div style="display:flex;gap:8px"><button class="btn" id="admSus">의심 계정 불러오기</button><input class="accin" id="admWho" placeholder="닉네임으로 기록 보기" style="margin:0;flex:1"><button class="btn" id="admLook">보기</button></div>
+    <div id="admSusList" style="display:flex;flex-direction:column;gap:6px"></div>
     <div class="note" id="admMsg">${esc(msg)}</div></div>`;
 }
+// 의심 점수 (R2.12): 레벨 · 뽑기 수로 설명되지 않는 재화 + 핵 흔적. 정확한 판정이 아니라 운영자가 볼 순서
+function susScore(d) { const lv = Math.max(1, Number(d.level) || 1), dia = Number(d.dia) || 0, gold = Number(d.gold) || 0, cheat = Number(d.cheat) || 0; const okDia = 8000 + lv * 1200, okGold = 30000 + lv * 8000; return Math.round(Math.max(0, dia / okDia - 1) * 40 + Math.max(0, gold / okGold - 1) * 15 + cheat * 25); }
+function admSusRow(uid, d, extra = '') { const sc = susScore(d); return `<div class="accrow" style="flex-wrap:wrap"><b style="min-width:110px">${esc(String(d.nickname || '?'))}</b><span class="mono" style="font-size:11px">${esc(uid.slice(0, 8))}</span><span>Lv.${d.level | 0} · ◆${(Number(d.dia) || 0).toLocaleString()} · ●${(Number(d.gold) || 0).toLocaleString()} · 뽑기 ${d.pulls | 0} · 지후 ${d.own | 0} · 흔적 ${d.cheat | 0}${extra}</span><b style="color:${sc >= 60 ? 'var(--red)' : sc >= 20 ? 'var(--gold)' : 'var(--mute)'}">의심 ${sc}</b><button class="btn" data-ban="${uid}" data-nick="${esc(String(d.nickname || ''))}">7일 정지</button><button class="btn" data-ban="${uid}" data-nick="${esc(String(d.nickname || ''))}" data-perm="1">영구 정지</button></div>`; }
 function bindAdmin() {
   const say = t => { $('admMsg').textContent = t; };
+  $('admSus').onclick = async () => { say('불러오는 중…'); try { const snap = await FB.sdk.getDocs(FB.sdk.query(FB.sdk.collection(FB.db, 'r2lb'), FB.sdk.orderBy('dia', 'desc'), FB.sdk.limit(40))); const L = []; snap.forEach(d => L.push([d.id, d.data()])); L.sort((a, b) => susScore(b[1]) - susScore(a[1])); $('admSusList').innerHTML = L.map(([u, d]) => admSusRow(u, d)).join('') || '<div class="note">기록이 없어요</div>'; say(`재화가 많은 ${L.length}명 · 의심 점수 순`); } catch (e) { say('불러오지 못했어요: ' + (e.code || e.message) + ' (규칙을 게시했는지 확인)'); } };
+  $('admLook').onclick = async () => { const n = $('admWho').value.trim(); if (!n) return; const d = await nickDoc(n); if (!d || !d.owner) return say('그 닉네임의 계정이 없어요.'); try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2_backups', d.owner)); if (!snap.exists()) return say('서버 기록이 없어요.'); const p = JSON.parse(snap.data().payload), c = p.cheat || {}; $('admSusList').innerHTML = admSusRow(d.owner, { nickname: p.nick, level: p.level, dia: p.dia, gold: p.gold, pulls: p.pulls, own: Object.keys(p.owned || {}).length, cheat: c.n | 0 }, c.kinds ? ' · ' + Object.entries(c.kinds).map(([k, v]) => k + ' ' + v).join(', ') : ''); say('서버 기록 (백업)'); } catch (e) { say('읽지 못했어요: ' + (e.code || e.message) + ' (규칙을 게시했는지 확인)'); } };
+  $('admSusList').onclick = async e => { const b = e.target.closest('[data-ban]'); if (!b) return; const perm = !!b.dataset.perm, nick = b.dataset.nick || '';
+    if (!(await dlg({ icon: '⛔', title: `${esc(nick)} 이용 정지`, html: perm ? '영구 정지할까요?' : '7일 동안 정지할까요?', ok: '정지', cancel: '취소' }))) return;
+    try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'bans', b.dataset.ban), { n: nick.slice(0, 12), r: '재화 조작 (핵)', until: perm ? 0 : Date.now() + 7 * 86400000, by: myUid(), at: FB.sdk.serverTimestamp() }); say(`${nick} 정지했어요`); } catch (err) { say('정지하지 못했어요: ' + (err.code || err.message)); } };
   $('admSend').onclick = async () => {
     const to = $('admTo').value.trim(), title = $('admTitle').value.trim(), body = $('admBody').value.trim(), dia = nat($('admDia').value), gold = nat($('admGold').value);
     if (!to || !title) return say('받는 사람과 제목을 넣어 주세요.');
@@ -6814,6 +6848,7 @@ const PATCH_NOTES = [
       { icon: '🏠', name: '새 로비', tag: 'new', desc: '<b>상점 · 지후 · 전투 · 아케이드 · 랭킹</b> 다섯 탭 · 대표 지후 · 덱 <b>프리셋 3개</b> · 지후 상세 창 · 애니메이션 · 친구 · 가방 · 탑 등은 메뉴와 아케이드에서.' },
       { icon: '🔐', name: '로그인 필수', tag: 'system', desc: '이제 <b>로그인 / 회원가입</b>을 해야 게임이 시작돼요 (게스트 플레이 없음) · 이 기기에서 하던 게스트 기록은 가입하면 그대로 이어져요.' },
       { icon: '🔁', name: '계정 전환', tag: 'new', desc: '이 기기에 로그인했던 계정은 시작 화면 · 환경설정에서 <b>한 번 눌러 전환</b> · 계정 메뉴는 <b>환경설정</b> 안으로 옮겼어요.' },
+      { icon: '🛡️', name: '핵 방지', tag: 'system', desc: '다이아 · 골드를 조작하면 되돌리고 기록을 남겨요 · 조작된 기기 기록은 무시하고 서버 기록을 써요 · 운영자가 의심 계정을 찾아 <b>이용 정지</b>할 수 있어요.' },
       { icon: '✏️', name: '프로필', tag: 'new', desc: '로비 프로필 사진의 <b>연필</b> → 테두리 · 대표 지후 · <b>닉네임 변경</b> (첫 번째 무료 · 그다음 ● 100 · 24시간에 한 번).' },
     ] },
   ] },
@@ -7843,7 +7878,7 @@ function u2Vals() {
 // ═════════ 로그인 필수 (R2.12): 게스트 플레이 없음 · 시작 화면 = 로그인 / 회원가입 · 이 기기에 저장된 계정은 원터치 전환 ═════════
 // 저장된 계정: localStorage rejhbt.accounts = [{ code, nick, fav, lv, frame, at }] · 계정마다 이름 붙인 Firebase 앱(acc_<UID>)에 로그인 세션을 복사해 두고 (updateCurrentUser)
 // 전환할 때 그 세션을 기본 앱으로 다시 복사한다 — 비밀번호는 기기에 저장하지 않는다
-const AUTH = { ok: /[?&]bench=/.test(location.search), tab: 'login', msg: '', busy: false, vault: {} }; // ?bench= (개발 벤치) 는 로그인 없이
+const AUTH = { ok: DEV_HOST && /[?&]bench=/.test(location.search), tab: 'login', msg: '', busy: false, vault: {} }; // ?bench= (개발 벤치) 는 로그인 없이
 const ACCS_KEY = 'rejhbt.accounts';
 function accList() { try { const v = JSON.parse(localStorage.getItem(ACCS_KEY) || '[]'); return Array.isArray(v) ? v.filter(a => a && UID_RE.test(String(a.code))) : []; } catch (e) { return []; } }
 function accListSave(L) { try { localStorage.setItem(ACCS_KEY, JSON.stringify(L.slice(0, 8))); } catch (e) {} }
@@ -7888,13 +7923,13 @@ function renderGate(state) { // 시작 화면 (#screen-welcome): 로그인 · �
   const go = () => { const id = $('gtId') ? $('gtId').value : '', pw = $('gtPw').value, pw2 = $('gtPw2') ? $('gtPw2').value : '', nick = $('gtNick') ? $('gtNick').value.trim().slice(0, 12) : ''; gateRun(async () => {
     if (t === 'login') { await logIn(id, pw); gateDone(); return; }
     if (!nick) throw new Error('닉네임을 넣어 주세요.');
-    if (profile.ownerUid) { profile = freshProfile(); } // 다른 계정의 기록이 남아 있으면 새로 시작
+    if (profile.ownerUid) { profile = guardProfile(freshProfile()); } // 다른 계정의 기록이 남아 있으면 새로 시작
     profile.nick = nick; profile.nickN = 0; save();
     const code = await signUp(pw, pw2); gateDone(); dlg({ icon: '🎉', title: '가입 완료!', html: `내 UID <b style="font-size:20px">${code}</b><br>로그인할 때 필요해요. 꼭 적어 두세요!`, ok: '확인', cancel: '' });
   }); };
   $('gtGo').onclick = go; box.querySelectorAll('.gt-in').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') go(); }));
   $('gtG').onclick = () => { const nick = $('gtNick') ? $('gtNick').value.trim().slice(0, 12) : ''; gateRun(async () => {
-    if (t === 'join') { if (!nick) throw new Error('닉네임을 넣어 주세요.'); if (profile.ownerUid) profile = freshProfile(); profile.nick = nick; save(); }
+    if (t === 'join') { if (!nick) throw new Error('닉네임을 넣어 주세요.'); if (profile.ownerUid) profile = guardProfile(freshProfile()); profile.nick = nick; save(); }
     const r = await signInGoogle(t === 'join'); gateDone(); if (!r.existing) dlg({ icon: '🎉', title: '가입 완료!', html: `내 UID <b style="font-size:20px">${r.code}</b><br>Google 로 로그인할 수 있어요.${r.warn ? '<br>' + esc(r.warn) : ''}`, ok: '확인', cancel: '' });
   }); };
 }
@@ -7977,8 +8012,8 @@ function benchFrame(frameMs, simMs) {
   $('benchHud').textContent = `FPS ${BENCH.log.fps} · 최악 ${BENCH.log.worst}ms · 계산 ${BENCH.log.sim}ms · 유닛 ${alive} · DOM ${nodes}`;
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
-{ const bn = new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); }
-window.__rejhbt = { setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+{ const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
+if (DEV_HOST) window.__rejhbt = { setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
