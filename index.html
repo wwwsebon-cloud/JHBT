@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="7"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4180,6 +4180,7 @@ function makeUnit(side, id, lv, x, y) {
     maxShield: Math.round((c.shield || 0) * effMult(lv)), cd: c.atkSpeed, dmgDealt: 0, sk: 0, st: {}, def: c,
     vx: 0, vy: 0, desVx: 0, desVy: 0, xPrev: x, yPrev: y, _sidestep: (uidSeq & 1) ? 1 : -1, _engaged: false, _outT: 0 };
   if (c.coin) u.atk = Math.round(c.atk * m * coinMult(S.coinSlot)); // 코인 지후: 지금 시세 (친선전은 판이 시작될 때 시세로 고정)
+  if (side === 'e' && S.arc && S.arc.kind === 'tutorial' && TUT_EBUFF[S.round]) { const k = TUT_EBUFF[S.round]; u.maxHp = Math.round(u.maxHp * k); u.atk = Math.round(u.atk * k); } // 튜토리얼: 져야 하는 라운드의 봇 (밸런스가 바뀌어도 각본대로)
   u.baseMaxHp = u.maxHp; u.hp = u.maxHp; u.shield = u.maxShield; u.mass = physMass(u); u.invMass = c.immobile ? 0 : 1 / u.mass; // 움직이지 않는 지후는 밀리지도 않는다
   return u;
 }
@@ -4838,14 +4839,15 @@ function applyCamera(light) {
 function fitCamera() { CAM.z = fitZoom(); CAM.x = FW() / 2; CAM.y = camMidY(CAM.z); applyCamera(); }
 if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const s = $('screen-battle'), { t, b } = viewInsets(); s.style.setProperty('--hudH', t + 'px'); s.style.setProperty('--trayH', b + 'px'); if (s.classList.contains('active') && !CAM.moved) fitCamera(); }); ro.observe($('screen-battle').querySelector('.hud')); ro.observe($('screen-battle').querySelector('.tray')); } // HUD 높이가 바뀌면 (배치 ↔ 전투) 다시 맞춘다
 // R2.12.2: 전투 중에는 살아 있는 유닛을 감싸게 부드럽게 확대 · 이동 (손으로 옮기거나 확대하면 그 라운드는 멈춘다)
+const TUT_EBUFF = { 2: 1.35, 3: 1.35 }; // R2.12.3 긴급: 튜토리얼 2 · 3라운드(플레이어가 져야 함) 봇 체력 · 공격력 배율 — R2.12.3 수치로 3라운드를 이기던 문제 (×1.2 는 아슬아슬)
 function camFollow(dt) {
   if (!CAM.follow || CAM.user || reelsOn() || S.phase !== 'combat') return;
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, n = 0;
   for (const u of S.units) { if (!u.alive || u.small || u.ghost) continue; n++; if (u.x < x0) x0 = u.x; if (u.x > x1) x1 = u.x; if (u.y < y0) y0 = u.y; if (u.y > y1) y1 = u.y; }
-  if (!n) return; const pad = CFG.CELL * 1.2, padX = CFG.CELL * 0.7, { vw, vh } = viewSize(), t = CAM.vi ? CAM.vi.t : 0, b = CAM.vi ? CAM.vi.b : 0;
-  const zt = clamp(Math.min((vw - 16) / (x1 - x0 + padX * 2), (vh - t - b - 16) / (y1 - y0 + pad * 2)), fitZoom(), 1.15);
-  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - (t - b) / 2 / zt, k = 1 - Math.exp(-dt * 2.6);
-  const nz = CAM.z + (zt - CAM.z) * k, nx = CAM.x + (cx - CAM.x) * k, ny = CAM.y + (cy - CAM.y) * k;
+  if (!n) return; const t = CAM.vi ? CAM.vi.t : 0, b = CAM.vi ? CAM.vi.b : 0;
+  if (CAM.fz == null) CAM.fz = Math.min(1, fitZoom() * 1.2); // R2.12.3: 계속 당겨 오던 확대 → 전투 시작에 한 번 · 살짝 (전장 맞춤의 1.2배 · 최대 100%)
+  const zt = CAM.fz, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - (t - b) / 2 / zt, k = 1 - Math.exp(-dt * 2.6), kz = 1 - Math.exp(-dt * 4);
+  const nz = CAM.z + (zt - CAM.z) * kz, nx = CAM.x + (cx - CAM.x) * k, ny = CAM.y + (cy - CAM.y) * k;
   if (Math.abs(nz - CAM.z) < 0.0005 && Math.abs(nx - CAM.x) < 0.3 && Math.abs(ny - CAM.y) < 0.3) return;
   CAM.z = nz; CAM.x = nx; CAM.y = ny; applyCamera(true); const zl = Math.round(nz * 100) + '%'; if (CAM.zl !== zl) { CAM.zl = zl; $('zoomLab').textContent = zl; }
 }
@@ -5487,7 +5489,7 @@ function beginCombat() {
     evUnit(u, p);
     u.el = unitEl(u); f.appendChild(u.el); if (pr === 'on') { A.portrait(u, u.def.portraitOn); u.el.classList.add('prophet'); } drawUnit(u); S.units.push(u); if (pr === 'on' && !S.fast) dmgNum(u, `🔮 예언 성공 · 아르카나 ${p.arc}`, { crit: true }); }));
   benchSpawnExtra(); // 벤치 (?bench=50)
-  evCombat(); CAM.user = false; CAM.follow = !S.fast; viewInsets(); // R2.12.2: 전투가 시작되면 카메라가 따라간다
+  evCombat(); CAM.user = false; CAM.follow = !S.fast; CAM.fz = null; viewInsets(); // R2.12.2: 전투가 시작되면 카메라가 따라간다 (R2.12.3: 확대는 시작할 때 한 번)
   if (!S.speedManual) S.speed = speedPref ? CFG.FAST_SPEED : 1; renderSpeedBtn();
   setPhase('전투 중'); banner('전투 시작!'); sfx('battle_start');
   botMind.combatStart();
@@ -7197,7 +7199,7 @@ function runBoot(acc) { // R2.12.3: 단계마다 실제 일을 기다린다 · �
   let hi = Math.floor(Math.random() * ids.length), ti = 0;
   const hero = () => { const id = ids[hi++ % ids.length], c = CHARS[id], r = $('bootRing'); B.style.setProperty('--bc', RAR_C[c.rarity] || '#ffc94a'); $('bootHero').innerHTML = pic(id); $('bootName').textContent = c.name; $('bootRar').textContent = RARITY[c.rarity]; r.classList.remove('swap'); void r.offsetWidth; r.classList.add('swap'); };
   const tip = () => { const p = $('bootTip'); p.innerHTML = tips[ti % tips.length]; p.classList.remove('fade'); void p.offsetWidth; p.classList.add('fade'); $('bootTipN').textContent = `${ti % tips.length + 1} / ${tips.length}`; ti++; };
-  hero(); tip(); const rot = setInterval(() => { hero(); tip(); }, 2800);
+  hero(); tip(); const rot = setInterval(() => { hero(); tip(); }, 2300); // R2.12.3: 2.8 → 2.3초 (로딩이 길어져 덜 심심하게)
   let pct = 0, cap = 0, k = -1;
   const draw = () => { $('bootBar').style.width = pct.toFixed(1) + '%'; $('bootPct').textContent = Math.floor(pct) + '%'; };
   const creep = setInterval(() => { if (pct < cap - 0.5) { pct += (cap - pct) * 0.06; draw(); } }, 60); // 단계 안에서는 끝 직전까지만 천천히
@@ -7206,10 +7208,10 @@ function runBoot(acc) { // R2.12.3: 단계마다 실제 일을 기다린다 · �
     const from = i ? BOOT_STEPS[i - 1][1] : 0; cap = from + (BOOT_STEPS[i][1] - from) * 0.85; await Promise.all([work, sleep(min)]); pct = BOOT_STEPS[i][1]; cap = pct; draw(); };
   const img = src => new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = src; });
   (async () => {
-    await phase(0, cap_(Promise.all(['fire', 'ice', 'shield', 'assassin', 'sword'].filter(id => CHARS[id]).map(id => img(CHARS[id].portrait))), 2500), 650); // 지후 깨우기: 첫 덱 초상화
-    await phase(1, cap_(Promise.all([document.fonts ? document.fonts.ready : null, ...EMO_START.map(k => img(`emo/thumb/${k}.png`))]), 3500), 600); // 데이터: 글꼴 · 이모티콘
-    await phase(2, cap_(acc, 7000), 550); // 유저: 로그인 확인 · 서버 기록 맞추기 (accBoot)
-    await phase(3, sleep(0), 520); // 대기열
+    await phase(0, cap_(Promise.all(['fire', 'ice', 'shield', 'assassin', 'sword'].filter(id => CHARS[id]).map(id => img(CHARS[id].portrait))), 2500), 2600); // 지후 깨우기: 첫 덱 초상화
+    await phase(1, cap_(Promise.all([document.fonts ? document.fonts.ready : null, ...EMO_START.map(k => img(`emo/thumb/${k}.png`))]), 3500), 2800); // 데이터: 글꼴 · 이모티콘
+    await phase(2, cap_(acc, 7000), 2800); // 유저: 로그인 확인 · 서버 기록 맞추기 (accBoot)
+    await phase(3, sleep(0), 2200); // 대기열 (R2.12.3: 단계마다 최소 시간을 늘려 전체 10초 남짓 · 팁을 볼 수 있게)
     clearInterval(creep); clearInterval(rot); setTimeout(() => { B.classList.add('out'); setTimeout(() => B.remove(), 520); }, 260);
   })();
 }
