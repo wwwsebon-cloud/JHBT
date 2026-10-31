@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="9"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -911,6 +911,8 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 #boot .ldmsg { font-size:12px; font-weight:700; color:#9aa3bf; } #boot .ldmsg::after { content:''; }
 #boot .ldpct { font-family:'Black Han Sans',var(--font); font-size:14px; color:#ffc94a; }
 @keyframes bootIn { from { opacity:0; transform:rotate(-3deg) scale(.85); } }
+#boot .b-skip { position:absolute; right:16px; top:calc(16px + env(safe-area-inset-top)); z-index:2; padding:8px 14px; border:1px solid rgba(255,255,255,.18); border-radius:999px; background:rgba(14,17,30,.55); color:#e6e9f4; font-family:'Black Han Sans',var(--font); font-size:13px; cursor:pointer; opacity:0; pointer-events:none; transform:translateY(6px); transition:opacity .3s, transform .3s; }
+#boot .b-skip.on { opacity:1; pointer-events:auto; transform:none; } #boot .b-skip:active { transform:scale(.95); }
 #boot .bver { text-align:center; font-size:10px; font-weight:700; letter-spacing:.3em; color:#6c769a; }
 @media (max-height:620px) { #boot { padding-top:calc(12px + env(safe-area-inset-top)); padding-bottom:12px; } #boot .b-hero { gap:12px; } #boot .logo b { font-size:min(19vw, 16vh); } #boot .b-tip { padding:12px 14px; } #boot .b-tip p { font-size:13px; } #boot .b-low { margin-top:12px; } }
 @media (prefers-reduced-motion: reduce) { #boot .bg-rays, #boot .logo { animation:none; } }
@@ -2553,7 +2555,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
 <div id="boot"><div class="bg-rays"></div>
   <div class="b-hero"><div class="logo"><small>RE :</small><b>지후배틀</b></div><div class="nm" id="bootRing"><span class="p" id="bootHero"></span><b id="bootName">지후</b><i id="bootRar">전설</i></div></div>
   <div class="b-tip"><span class="tg">TIP</span><p id="bootTip">지후를 깨우고 있어요</p><div class="tn" id="bootTipN"></div></div>
-  <div class="b-low"><div class="ldbar"><i id="bootBar"></i></div><div class="row"><span class="ldmsg" id="bootMsg">지후 깨우는 중</span><span class="ldpct" id="bootPct">0%</span></div><div class="bver" id="bootVer"></div></div>
+  <button class="b-skip" id="bootSkip" type="button">건너뛰기 ›</button><div class="b-low"><div class="ldbar"><i id="bootBar"></i></div><div class="row"><span class="ldmsg" id="bootMsg">지후 깨우는 중</span><span class="ldpct" id="bootPct">0%</span></div><div class="bver" id="bootVer"></div></div>
 </div>
 <div id="matchLoad"><div id="mlPf"></div><span class="eyebrow">NORMAL MATCH</span><h2>일반전 준비중</h2><div class="ldbar"><i id="mlBar"></i></div><div class="tip" id="mlTip"></div></div>
 <div class="modal" id="statsModal"><div class="box"><div class="ms-head"><h3>경기 통계</h3><span class="sp"></span><button class="x" id="btnStatsClose" aria-label="닫기">✕</button></div><div id="msTabs"></div><div id="msBody"></div></div></div>
@@ -7204,15 +7206,17 @@ function runBoot(acc) { // R2.12.3: 단계마다 실제 일을 기다린다 · �
   const draw = () => { $('bootBar').style.width = pct.toFixed(1) + '%'; $('bootPct').textContent = Math.floor(pct) + '%'; };
   const creep = setInterval(() => { if (pct < cap - 0.5) { pct += (cap - pct) * 0.06; draw(); } }, 60); // 단계 안에서는 끝 직전까지만 천천히
   const sleep = ms => new Promise(r => setTimeout(r, ms)), cap_ = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), sleep(ms)]);
-  const phase = async (i, work, min) => { k = i; $('bootMsg').textContent = BOOT_STEPS[i][0];
-    const from = i ? BOOT_STEPS[i - 1][1] : 0; cap = from + (BOOT_STEPS[i][1] - from) * 0.85; await Promise.all([work, sleep(min)]); pct = BOOT_STEPS[i][1]; cap = pct; draw(); };
+  const phase = async (i, work, min) => { if (over) return; k = i; $('bootMsg').textContent = BOOT_STEPS[i][0];
+    const from = i ? BOOT_STEPS[i - 1][1] : 0; cap = from + (BOOT_STEPS[i][1] - from) * 0.85; await Promise.all([work, sleep(min)]); if (over) return; pct = BOOT_STEPS[i][1]; cap = pct; draw(); };
   const img = src => new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = src; });
+  let over = false; const finish = () => { if (over) return; over = true; clearInterval(creep); clearInterval(rot); clearTimeout(skT); pct = 100; draw(); setTimeout(() => { B.classList.add('out'); setTimeout(() => B.remove(), 520); }, 260); };
+  const skT = setTimeout(() => $('bootSkip').classList.add('on'), 3000); $('bootSkip').onclick = finish; // R2.12.3: 3초 뒤 건너뛰기 → 바로 100% (accBoot 는 뒤에서 계속)
   (async () => {
     await phase(0, cap_(Promise.all(['fire', 'ice', 'shield', 'assassin', 'sword'].filter(id => CHARS[id]).map(id => img(CHARS[id].portrait))), 2500), 1700); // 지후 깨우기: 첫 덱 초상화
     await phase(1, cap_(Promise.all([document.fonts ? document.fonts.ready : null, ...EMO_START.map(k => img(`emo/thumb/${k}.png`))]), 3500), 1800); // 데이터: 글꼴 · 이모티콘
     await phase(2, cap_(acc, 7000), 1800); // 유저: 로그인 확인 · 서버 기록 맞추기 (accBoot)
     await phase(3, sleep(0), 1400); // 대기열 (R2.12.3: 단계마다 최소 시간 · 전체 약 7초 · 팁을 볼 수 있게)
-    clearInterval(creep); clearInterval(rot); setTimeout(() => { B.classList.add('out'); setTimeout(() => B.remove(), 520); }, 260);
+    finish();
   })();
 }
 // ═════════ 일반전 로딩 (TIP) ═════════
