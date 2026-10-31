@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2722,13 +2722,12 @@ const PORTRAITS = {
 // 패시브 훅 (선택): onHit(u, t, A) · onStart(u, A) · tick(u, dt, A) · immune(u) · takenMult(u) · onAttack(u) · bonus(u, t) 추가 피해 · onKill(u, v, A) · onLethal(u, A) 버티기 · gauge(u) 노란 게이지
 // skill.type 'hit' = SP: 일반 공격이 맞을 때마다 SP 1 → need 만큼 차면 발동 · melee: true + range 숫자 = 사거리를 정한 근접 · deployLimit: 출격제한
 const CHARS = {
-  fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1200, atk: 90, atkSpeed: 2, range: 4.8, speed: 1.6, splash: 1.2, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
+  fire: { name: '화염 지후', rarity: 'common', role: '딜러', hp: 1020, atk: 80, atkSpeed: 2, range: 4.8, speed: 1.6, splash: 1.2, portrait: PORTRAITS.fire, starter: true, sfx: 'fire', color: '#ff6b35',
     story: '지후왕국의 국왕, 화염 지후 1호입니다. 왕국에는 같은 종류의 지후가 1호, 2호, 3호… 수없이 살고 있지만, 왕관은 오직 1호의 것이에요. 왕자 시절 삼겹살을 구워 먹다가 부루스타가 폭주해 전신 화상을 입었고, 그때 물을 끼얹어 구해 준 것이 지금의 신하 물 지후입니다. 불타오르는 삶의 의지로 왕좌에 올랐지만, 서쪽 마을의 화염 지후 314호가 반란을 일으키자 사정이 달라졌어요. 반란군을 소탕하려 병력을 모았는데, 지원한 지후는 암살 · 쉴드 · 검 · 얼음 지후 넷뿐이었습니다. 특기는 가스라이팅. 그래도 이번만큼은 아무도 넘어오지 않았다고 해요.',
     passive: '일반 공격이 대상 주변 <b>1.2칸</b>에 퍼진다.',
-    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[소각]</b>. 대상을 소각해 공격력의 <b>200%</b> 피해를 입히고, 이후 <b>4초</b> 동안 1초마다 공격력의 <b>25%</b> [화상] 피해를 <b>4번</b> 입힌다. [화상]은 겹쳐 쌓인다.',
+    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[소각]</b>. 대상을 소각해 <b>4초</b> 동안 1초마다 공격력의 <b>25%</b> [화상] 피해를 <b>4번</b> 입힌다. [화상]은 겹쳐 쌓인다.',
       run(u, A) { const t = u.tgt && u.tgt.alive && targets(u).includes(u.tgt) ? u.tgt : nearestFoe(u); if (!t) return; // R2.12.3 리워크: 일반 공격 화상 → 스킬 [소각]
         dmgNum(u, '소각!', { crit: true }); sfx('fire'); if (!S.fast) A.ring(t.x, t.y, 0.9);
-        const done = dealDamage(u, t, effAtk(u) * 2, { skill: true }); if (done > 0) hitFx(u, t, true);
         if (t.alive) A.status(t, 'burn', 4.05, { dps: effAtk(u) * 0.25, stack: true, src: u }); } } }, // 4.05초: 1초마다 4번
   ice: { name: '얼음 지후', rarity: 'common', role: '컨트롤러', hp: 900, atk: 70, atkSpeed: 3.5, range: 6, speed: 1.6, portrait: PORTRAITS.ice, starter: true, sfx: 'ice', color: '#4fc3f7',
     story: '집에서 실수로 에어컨을 끄지 않고 잠을 자는 바람에 상시로 감기 상태입니다. 감기가 왕궁에 퍼질까 봐 국왕 화염 지후 1호의 명령으로 북쪽 성에 격리 처리 당했고, 결국 그도 세상에 등을 돌리고 냉정해졌습니다. 그런데 반란이 일어나 국왕이 병력을 모으자, 왕국 전체에서 단 넷뿐인 지원자 가운데 그가 있었어요. 이유를 묻자 「황사가 섞인 바람은 차갑지 않아서 싫다」고만 했다고 합니다. 유일한 펜팔은 블리자드 지후입니다.',
@@ -3330,7 +3329,7 @@ const SUMMONS = {
 };
 // 도감 상세 수치 (R2.4): 설명(passive · skill.desc)은 쉽게 · 숫자는 여기에 [항목, 값] — 수치를 바꾸면 같이 고친다
 const CHAR_INFO = {
-  fire: [['일반 공격', '광역 · 대상 주변 반경 1.2칸 · 화상 없음 (R2.12.3)'], ['[소각]', 'SP 3 · 대상 하나 · 공격력의 200%'], ['[화상]', '4초 · 1초마다 공격력의 25% (4번) · 중첩 가능']],
+  fire: [['일반 공격', '광역 · 대상 주변 반경 1.2칸 · 화상 없음 (R2.12.3)'], ['[소각]', 'SP 3 · 대상 하나 · 바로 주는 피해 없음 (R2.12.3 build 5)'], ['[화상]', '4초 · 1초마다 공격력의 25% (4번) · 중첩 가능']],
   ice: [['[빙결]', '1.6초']],
   assassin: [['순간이동', '시작 2초 뒤 · 가장 먼 적의 뒤'], ['[은신]', '1초'], ['첫 공격', '대상 하나 · 공격력의 600%']],
   shield: [['받는 피해', '-25% (쉴드가 있는 동안)'], ['상태이상', '면역 (쉴드가 있는 동안)']],
@@ -7455,7 +7454,7 @@ const PATCH_NOTES = [
       { icon: '📖', name: '도감', tag: 'fix', desc: '도감에서 사라졌던 <b>상세 수치</b>를 되살렸어요 · 솔렘라멘트 · 강령술사 · 빔 지후 <b>서사</b> 추가.' },
     ] },
     { title: '밸런스', items: [
-      { id: 'fire', name: '화염 지후', tag: 'rework', desc: '공격력 <b>45 → 90</b> · 공격 간격 <b>3 → 2초</b> · 사거리 <b>5.2 → 4.8</b> · 일반 공격이 더는 [화상]을 입히지 않아요 · 새 스킬 <b>[소각]</b> (SP 3): 공격력 200% 피해 + 4초 동안 1초마다 25% [화상].' },
+      { id: 'fire', name: '화염 지후', tag: 'rework', desc: '체력 <b>1,200 → 1,020</b> · 공격력 <b>45 → 80</b> · 공격 간격 <b>3 → 2초</b> · 사거리 <b>5.2 → 4.8</b> · 일반 공격이 더는 [화상]을 입히지 않아요 · 새 스킬 <b>[소각]</b> (SP 3): 4초 동안 1초마다 25% [화상].' },
       { id: 'cactus', name: '선인장 지후', tag: 'nerf', desc: '사거리 <b>4.8 → 3.8</b> · 공격력 <b>195 → 146</b> · 가시 사거리 <b>맵 끝 → 4칸</b>.' },
       { id: 'berserk', name: '광폭화 지후', tag: 'buff', desc: '공격력 <b>92 → 110</b>.' },
       { id: 'tentacle', name: '촉수 지후', tag: 'nerf', desc: '사거리 · 촉수 길이 <b>6.5 → 5.5칸</b>.' },
