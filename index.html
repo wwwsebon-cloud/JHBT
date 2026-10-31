@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1053,7 +1053,7 @@ input.text { font-size:20px; font-weight:800; }
 .unit .unit-hpbar-track { position:relative; width:60px; height:7px; border-radius:4px; background:rgba(17,19,24,.45); overflow:hidden; box-shadow:0 0 0 1.5px #fff; }
 .unit .unit-hpbar { position:absolute; inset:0; z-index:1; background:#6fcf3d; transform-origin:0 50%; }
 .unit.enemy .unit-hpbar { background:#e5322d; }
-.unit .unit-shieldbar { position:absolute; left:0; top:0; bottom:0; width:100%; z-index:2; background:#fff; box-shadow:inset 0 -2px 0 rgba(120,150,190,.35); transform-origin:0 50%; transform:scaleX(0); } /* R2.12.3: 현재 체력 끝을 흰색으로 덮는다 */
+.unit .unit-shieldbar { position:absolute; left:0; top:0; bottom:0; width:0; z-index:2; box-sizing:border-box; background:repeating-linear-gradient(135deg, #fff 0 3px, #cdd3df 3px 5px); border:1.5px solid #5b6480; border-radius:2px; } /* R2.12.3: 현재 체력 끝을 덮는다 · 흰색 + 연회색 빗금 + 테두리 (깎인 체력과 구분) · left/width (scaleX 면 빗금 · 테두리가 찌그러진다) */
 .unit .unit-hpbar-track .cut { position:absolute; inset:0; background:repeating-linear-gradient(135deg, #3c3e44 0 2px, #8b8d93 2px 4px); z-index:1; transform-origin:100% 50%; transform:scaleX(0); }
 .unit .unit-hp-text { position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; line-height:1; color:#fff; letter-spacing:.02em; -webkit-text-stroke:2.5px rgba(17,19,24,.75); paint-order:stroke fill; }
 .unit .unit-cdbar-wrap { position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); width:46px; height:3px; border-radius:3px; background:rgba(60,60,67,.15); overflow:hidden; display:none; }
@@ -1672,6 +1672,8 @@ body.u2-theme #screen-battle:not(.reels) .camzoom { top:calc(var(--hudH, 52px) +
 body.u2-theme #screen-battle:not(.reels) .pcard { border-radius:14px; background:#2a3150; border:1px solid #3b466b; box-shadow:0 3px 0 #141929; padding:6px 8px 6px 6px; }
 body.u2-theme #screen-battle:not(.reels) .pcard.on { box-shadow:0 0 0 2px #ffc94a, 0 3px 0 #141929; background:#36406a; }
 #screen-battle:not(.reels) .pcard .pp { width:40px; height:40px; } #screen-battle:not(.reels) .pcard b { font-size:15px; }
+#screen-battle .pcard b .jh { font-style:normal; }
+@media (max-width:700px) { #screen-battle:not(.reels) .pcard { gap:6px; padding:6px 6px 6px 5px; } #screen-battle:not(.reels) .pcard .pp { width:32px; height:32px; } #screen-battle:not(.reels) .pcard b { font-size:13px; line-height:1.1; white-space:normal; word-break:keep-all; overflow-wrap:anywhere; text-overflow:clip; } #screen-battle .pcard b .jh { display:none; } #screen-battle .pcard small { display:none; } } /* R2.12.3: 모바일 배치 카드 이름 … 잘림 */
 body.u2-theme #screen-battle:not(.reels) .tbar .hpill.a { background:transparent; border:0; box-shadow:none; padding:0 8px 0 0; }
 #screen-battle:not(.reels) .tbar .g-btn, #screen-battle:not(.reels) .tbar .k-btn { height:38px; padding:0 12px; border-radius:12px; font-size:13px; }
 body.u2-theme #screen-battle:not(.reels) .tbar .g-btn { background:#2c3553; border:1px solid #3b466b; color:#f2f4fa; box-shadow:0 3px 0 #141929; }
@@ -4790,7 +4792,7 @@ function drawUnit(u) {
   const v = b.v, sx = (k, node, f) => { const s = clamp(f, 0, 1).toFixed(3); if (node && v[k] !== s) { v[k] = s; node.style.transform = `scaleX(${s})`; } }; // R2.12: 바뀐 것만 · scaleX 라 레이아웃 계산이 없다
   sx('hp', b.hp, u.hp / (u.baseMaxHp || u.maxHp)); sx('cut', b.cut, u.cutFrac || 0);
   if (b.ht && BSET.hpnum && !(BSET.low && S.phase === 'combat' && v.htT != null && S.time - v.htT < 0.25 && S.time >= v.htT)) { const h = Math.max(0, Math.ceil(u.hp)), t = h >= 10000 ? (h / 1000).toFixed(1) + 'k' : String(h); if (v.ht !== t) { v.ht = t; v.htT = S.time; b.ht.textContent = t; } } // R2.12.1 체력 숫자 (바뀔 때만 · 저전력은 0.25초에 한 번)
-  if (b.sh) { const full = u.baseMaxHp || u.maxHp, f = clamp(u.hp / full, 0, 1), g = clamp(Math.min(u.shield || 0, Math.max(0, u.hp)) / full, 0, f), s = (f - g).toFixed(3) + ',' + g.toFixed(3); if (v.sh !== s) { v.sh = s; b.sh.style.transform = `translateX(${((f - g) * 100).toFixed(1)}%) scaleX(${g.toFixed(3)})`; } } // R2.12.3: 쉴드 = 체력 끝 [체력 − 쉴드, 체력] 흰색
+  if (b.sh) { const full = u.baseMaxHp || u.maxHp, f = clamp(u.hp / full, 0, 1), g = clamp(Math.min(u.shield || 0, Math.max(0, u.hp)) / full, 0, f), s = (f - g).toFixed(3) + ',' + g.toFixed(3); if (v.sh !== s) { v.sh = s; b.sh.style.left = ((f - g) * 100).toFixed(1) + '%'; b.sh.style.width = g > 0 ? (g * 100).toFixed(1) + '%' : '0'; b.sh.style.display = g > 0 ? '' : 'none'; } } // R2.12.3: 쉴드 = 체력 끝 [체력 − 쉴드, 체력] 흰색
   if (b.cd && (sk || u.def.gauge)) sx('cd', b.cd, u.def.gauge ? u.def.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / sk.need);
   let ck = 0; for (const k in u.buffs) if (k.startsWith('clock')) ck += u.buffs[k].aspd || 0; // 시계 지후: 버프 하늘색 · 디버프 빨간 시계 표식 (R2.10.2 build 4)
   const fl = (u.st.freeze > 0) | (u.st.bubble > 0) << 1 | (u.st.stun > 0) << 2 | (u.st.stealth > 0) << 3 | (u.st.dive > 0) << 4 | !!u.ghost << 5 | (ck > 0) << 6 | (ck < 0) << 7;
@@ -5396,7 +5398,7 @@ function setRing(left, total) { const t = Math.ceil(left), p = clamp(left / tota
 function renderPool() {
   const deploy = S.phase === 'deploy', me = ME();
   $('pool').innerHTML = (S.pool || []).map((id, i) => { const c = CHARS[id], m = mergeTile(me, id) != null;
-    return `<div class="pcard r-${c.rarity}${S.pick === i ? ' on' : ''}${playable(me, id) ? '' : ' dead'}${deploy ? '' : ' picked'}" data-i="${i}"><span class="pp" style="--rc:${c.color || '#fff'}">${pic(id)}</span><span class="tx"><b>${c.name}</b><small class="r">${RARITY[c.rarity]} · ${c.role}</small><small>HP ${c.hp.toLocaleString()} · ATK ${c.noAttack ? '—' : c.atk}</small></span>${m ? '<span class="mg">Lv↑</span>' : ''}<button class="pinfo" data-info="${id}" aria-label="설명">i</button></div>`; }).join('')
+    return `<div class="pcard r-${c.rarity}${S.pick === i ? ' on' : ''}${playable(me, id) ? '' : ' dead'}${deploy ? '' : ' picked'}" data-i="${i}"><span class="pp" style="--rc:${c.color || '#fff'}">${pic(id)}</span><span class="tx"><b>${shortName(id)}<i class="jh"> 지후</i></b><small class="r">${RARITY[c.rarity]} · ${c.role}</small><small>HP ${c.hp.toLocaleString()} · ATK ${c.noAttack ? '—' : c.atk}</small></span>${m ? '<span class="mg">Lv↑</span>' : ''}<button class="pinfo" data-info="${id}" aria-label="설명">i</button></div>`; }).join('')
     || `<span class="empty">${S.net && S.net.spec ? '👁 관전 중' : '배치 카드가 여기에 나와요'}</span>`;
 }
 function renderField() {
