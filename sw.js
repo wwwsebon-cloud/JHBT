@@ -24,7 +24,7 @@ self.addEventListener('fetch', event => {
   // 페이지는 쿼리(미리보기 등)와 상관없이 하나의 사본만 둔다
   const key = isPage ? new URL('./', self.registration.scope).href : request.url;
   event.respondWith(
-    fetch(request).then(response => {
+    (isPage ? fetch(request.url, { cache: 'no-cache', credentials: 'same-origin', redirect: 'manual' }) : fetch(request)).then(response => { // 페이지는 HTTP 캐시를 다시 확인 (GitHub Pages 10분 캐시 때문에 옛 버전이 뜨던 문제 · R2.12.3)
       if (response.ok && (isPage || SHELL.some(path => url.pathname.endsWith(path.replace('./', ''))))) {
         const copy = response.clone();
         caches.open(CACHE).then(cache => cache.put(key, copy)).catch(() => {});
