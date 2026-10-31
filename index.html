@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.12.1"><meta name="jihoo-build" content="2"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.12.1"><meta name="jihoo-build" content="3"><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -933,8 +933,9 @@ input.text { font-size:20px; font-weight:800; }
 .fieldwrap.final-moment .unit.final-drift { animation:final-drift 2s cubic-bezier(.15,.75,.25,1) both; }
 @keyframes final-drift { from { translate:0 0; } to { translate:var(--final-dx) var(--final-dy); } }
 .fieldwrap.final-moment .fx-death-fx .death-ring { animation-duration:1.85s; } .fieldwrap.final-moment .fx-death-fx .death-shard { animation-duration:1.9s; }
-.fieldwrap.shake { animation:fieldShake .26s linear; }
-@keyframes fieldShake { 20% { translate:-5px 3px; } 40% { translate:5px -3px; } 60% { translate:-3px 2px; } 80% { translate:2px -1px; } }
+#field.shk { animation:fieldShake .38s cubic-bezier(.25,.6,.35,1); } #field.shk.big { animation:fieldShakeB .5s cubic-bezier(.25,.6,.35,1); } /* R2.12.1 build 3: 전장만 살짝 · 줄어들며 멈춘다 (예전 화면 전체 ±5px) */
+@keyframes fieldShake { 0% { translate:0 0; } 20% { translate:-1.5px 1px; } 45% { translate:1.2px -.8px; } 70% { translate:-.6px .4px; } 100% { translate:0 0; } }
+@keyframes fieldShakeB { 0% { translate:0 0; } 15% { translate:-3px 2px; } 35% { translate:2.4px -1.6px; } 55% { translate:-1.4px 1px; } 75% { translate:.6px -.4px; } 100% { translate:0 0; } }
 /* 하단 트레이: 유닛 · 통계 / 카드 3장 / 속도 · 이모티콘 · 배치 완료 · 포기 */
 .tray { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:end; gap:14px; padding:0 0 22px; }
 .tray .tl { display:flex; flex-direction:column; align-items:flex-start; gap:10px; min-width:0; }
@@ -6815,7 +6816,10 @@ function hitFx(src, t, big) {
   if (big) shake(true);
 }
 function muzzleFx(u, t) { const a = Math.atan2(t.y - u.y, t.x - u.x), r = unitRadius(u) + 6; const el = fxAt('fx-muzzle', u.x + Math.cos(a) * r, u.y + Math.sin(a) * r, 180); el.style.setProperty('--c', u.def.color || '#111'); }
-function shake(strong) { const w = $('fieldWrap'); w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake'); if (strong) setTimeout(() => w.classList.remove('shake'), 280); }
+function shake(strong) { // R2.12.1 build 3: 약하게 · 부드럽게 · 자주 겹치지 않게 (약한 흔들림은 0.25초에 한 번 · 저전력은 큰 것만) · 강제 레이아웃 없음
+  const f = $('field'), now = performance.now(); if (!f || (!strong && (BSET.low || now - (shake.t || 0) < 250)) || (strong && now - (shake.t || 0) < 120)) return; shake.t = now;
+  f.classList.remove('shk', 'big'); requestAnimationFrame(() => { f.classList.add('shk'); if (strong) f.classList.add('big'); clearTimeout(shake.h); shake.h = setTimeout(() => f.classList.remove('shk', 'big'), strong ? 520 : 400); });
+}
 
 // ═════════ 접속 로딩 (인트로) ═════════
 const BOOT_STEPS = [
