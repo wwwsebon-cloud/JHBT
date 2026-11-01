@@ -115,6 +115,26 @@ service cloud.firestore {
         && request.resource.data.nwins is map && request.resource.data.nwins.size() <= 100
         && request.resource.data.updatedAt is timestamp;
     }
+    // R2.14 리플레이 공유: r2rp/{uid}_{at} = { by, nick, pn, on, win, kind, n(라운드), b(빌드), at, d(JSON 문자열: me · rounds), created } · 링크(문서 id)만 있으면 누구나 읽기 (로그인 없이 재생) · 목록은 못 본다
+    match /r2rp/{id} {
+      allow get: if true;
+      allow list: if false;
+      allow delete: if (request.auth != null && resource.data.by == request.auth.uid) || isAdmin();
+      allow create, update: if request.auth != null && !banned()
+        && id.matches(request.auth.uid + '_[0-9]{10,16}')
+        && request.resource.data.keys().hasOnly(['by', 'nick', 'pn', 'on', 'win', 'kind', 'n', 'b', 'at', 'd', 'created'])
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.nick is string && request.resource.data.nick.size() <= 12
+        && request.resource.data.pn is string && request.resource.data.pn.size() <= 12
+        && request.resource.data.on is string && request.resource.data.on.size() <= 12
+        && request.resource.data.win is bool
+        && request.resource.data.kind is string && request.resource.data.kind.size() <= 12
+        && request.resource.data.n is int && request.resource.data.n >= 1 && request.resource.data.n <= 60
+        && request.resource.data.b is string && request.resource.data.b.size() <= 24
+        && request.resource.data.at is int
+        && request.resource.data.d is string && request.resource.data.d.size() <= 400000
+        && request.resource.data.created == request.time;
+    }
     // R2.7.2 지후의 탑 리더보드: r2tower/{uid} = { nickname, best(최고 층), fav, frame(없어도 됨), updatedAt }
     match /r2tower/{userId} {
       allow get, list: if true;

@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.12.3"><meta name="jihoo-build" content="10"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.14"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -178,6 +178,65 @@ body.ui2-on .blobs, body.ui2-on .topbar, body.ui2-on .tabbar { display:none !imp
 #ui2 .u2-sprow.bonus .u2-spnode { border-style:dashed; }
 /* R2.12.2 리플레이 */
 body.replaying #screen-battle .pool, body.replaying #btnDeployDone, body.replaying #btnEmo, body.replaying #btnStatsHud { display:none !important; }
+/* R2.14 다시보기 컨트롤 (영상처럼) */
+.u2-rpc { display:none; }
+body.replaying .u2-rpc { display:flex; flex-direction:column; align-items:center; gap:6px; position:fixed; left:50%; bottom:calc(14px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:60; width:min(560px, calc(100vw - 24px)); font-family:'Black Han Sans',var(--font); color:#f2f4fa; pointer-events:none; }
+.u2-rpc > * { pointer-events:auto; }
+.u2-rpc .rpc-who { padding:5px 14px; border-radius:999px; background:rgba(14,17,30,.82); font-size:13px; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.u2-rpc .rpc-who i { font-style:normal; color:#ffc94a; margin:0 2px; }
+.u2-rpc .rpc-bar, .u2-rpc .rpc-end { width:100%; box-sizing:border-box; display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:18px; background:rgba(14,17,30,.92); border:1px solid rgba(255,255,255,.12); box-shadow:0 8px 24px rgba(0,0,0,.3); }
+.u2-rpc button { flex-shrink:0; height:38px; min-width:38px; padding:0 8px; border:0; border-radius:12px; background:#3b466b; color:#f2f4fa; font-family:inherit; font-size:17px; cursor:pointer; box-shadow:0 3px 0 #252d48; }
+.u2-rpc button:active { transform:translateY(2px); box-shadow:0 1px 0 #252d48; }
+.u2-rpc button:disabled { opacity:.35; cursor:default; }
+.u2-rpc button.pp { min-width:46px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 3px 0 #c98a1c; }
+.u2-rpc button.spd { font-size:15px; min-width:46px; }
+.u2-rpc .rpc-prog { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.u2-rpc .rpc-rd { display:flex; gap:3px; } .u2-rpc .rpc-rd i { flex:1; height:4px; border-radius:2px; background:#3b466b; } .u2-rpc .rpc-rd i.done { background:#53d3c0; } .u2-rpc .rpc-rd i.on { background:#ffc94a; }
+.u2-rpc .rpc-track { height:6px; border-radius:3px; background:#252d48; overflow:hidden; } .u2-rpc .rpc-track i { display:block; height:100%; width:0; background:#ff5d6c; }
+.u2-rpc .rpc-prog small { font-size:11px; color:#9aa3bf; font-family:var(--font); }
+.u2-rpc .rpc-end { flex-direction:column; gap:8px; padding:12px; } .u2-rpc .rpc-end > b { font-size:20px; }
+.u2-rpc .rpc-btns { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; } .u2-rpc .rpc-btns button { font-size:15px; padding:0 14px; }
+.u2-rpc .rpc-btns button.pri { background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 3px 0 #c98a1c; }
+body.replaying #screen-battle .hud::after, body.replaying #deployTip { display:none; }
+/* R2.14 리플레이 링크 창 · 채팅 버튼 */
+.u2-rps { display:flex; flex-direction:column; gap:10px; text-align:left; } .u2-rps p { margin:0; font-size:13px; line-height:1.5; }
+.u2-rps .rp-link { display:flex; gap:6px; } .u2-rps .rp-link input { flex:1; min-width:0; height:38px; border-radius:10px; border:1px solid #46527a; background:#1a2034; color:#f2f4fa; padding:0 10px; font-size:12px; }
+.u2-rps .rp-link button, .u2-rps .rp-frs button { height:38px; padding:0 12px; border:0; border-radius:10px; background:#3b466b; color:#f2f4fa; font-family:'Black Han Sans',var(--font); font-size:14px; cursor:pointer; }
+.u2-rps .rp-fh { font-weight:800; color:#9aa3bf; font-size:12px; } .u2-rps .rp-frs { display:flex; flex-wrap:wrap; gap:6px; max-height:132px; overflow-y:auto; }
+.u2-rps .rp-frs button { height:32px; font-size:13px; } .u2-rps .rp-frs button.sent { background:#2a9483; color:#eafff9; }
+.u2-rps .rp-st { min-height:18px; font-size:12px; color:#53d3c0; font-weight:700; }
+#chatList .cm .u2-cmrp { display:flex; margin-top:6px; height:30px; padding:0 12px; align-items:center; border:0; border-radius:9px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 2px 0 #c98a1c; font-family:'Black Han Sans',var(--font); font-size:13px; cursor:pointer; }
+/* R2.14 개인 전적 (프로필 '전적' 탭) */
+#ui2 .u2-pst { display:flex; flex-direction:column; gap:14px; }
+#ui2 .u2-pst-empty { text-align:center; padding:34px 0; font-family:'Black Han Sans'; font-size:18px; color:#c9d0e6; } #ui2 .u2-pst-empty small { font-size:12px; color:#9aa3bf; }
+#ui2 .u2-pst-hero { display:flex; gap:14px; align-items:center; padding:14px; border-radius:18px; background:radial-gradient(120% 140% at 0% 0%, #3a4a7a 0%, #232a48 60%); border:1px solid #46527a; }
+#ui2 .u2-pst-ring { flex-shrink:0; width:96px; height:96px; border-radius:50%; background:conic-gradient(#53d3c0 calc(var(--p) * 1%), #ff5d6c 0); display:grid; place-items:center; box-shadow:0 0 0 4px #1a2034; }
+#ui2 .u2-pst-ring > div { width:74px; height:74px; border-radius:50%; background:#1a2034; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#ui2 .u2-pst-ring b { font-family:'Black Han Sans'; font-size:24px; line-height:1; } #ui2 .u2-pst-ring small { font-size:10px; color:#9aa3bf; margin-top:3px; }
+#ui2 .u2-pst-hi { min-width:0; display:flex; flex-direction:column; gap:3px; } #ui2 .u2-pst-hi > b { font-family:'Black Han Sans'; font-size:19px; } #ui2 .u2-pst-hi span { font-size:12px; color:#c9d0e6; } #ui2 .u2-pst-hi span b { color:#ffc94a; }
+#ui2 .u2-pst-sec { display:flex; flex-direction:column; gap:8px; }
+#ui2 .u2-pst-h { display:flex; align-items:baseline; gap:8px; } #ui2 .u2-pst-h b { font-family:'Black Han Sans'; font-size:17px; } #ui2 .u2-pst-h small { font-size:11px; color:#9aa3bf; }
+#ui2 .u2-pst-modes { display:flex; flex-direction:column; gap:6px; background:#2c3553; border-radius:14px; padding:10px 12px; }
+#ui2 .u2-pst-mode { display:grid; grid-template-columns:62px 1fr 40px; gap:4px 8px; align-items:center; } #ui2 .u2-pst-mode > span { font-size:13px; font-weight:800; } #ui2 .u2-pst-mode > b { font-family:'Black Han Sans'; font-size:15px; text-align:right; } #ui2 .u2-pst-mode small { grid-column:2 / 4; font-size:11px; color:#9aa3bf; margin-top:-2px; }
+#ui2 .u2-pst-bar { height:10px; border-radius:5px; background:#ff5d6c; overflow:hidden; } #ui2 .u2-pst-bar i { display:block; height:100%; background:#53d3c0; border-right:2px solid #1a2034; } #ui2 .u2-pst-bar.sm { height:7px; }
+#ui2 .u2-pst-pic { flex-shrink:0; display:inline-flex; border-radius:28%; border:2.5px solid; background:#fff; overflow:hidden; box-sizing:border-box; } #ui2 .u2-pst-pic img { width:100%; height:100%; object-fit:contain; }
+#ui2 .u2-pst-fav { position:relative; display:flex; gap:12px; align-items:center; padding:16px 14px 14px; border-radius:18px; background:linear-gradient(135deg, color-mix(in srgb, var(--c) 32%, #232a48), #232a48 70%); border:1.5px solid var(--c); }
+#ui2 .u2-pst-fav .lb { position:absolute; top:-10px; left:12px; padding:2px 10px; border-radius:999px; background:#ff8fb1; color:#3a0a1c; font-family:'Black Han Sans'; font-size:12px; }
+#ui2 .u2-pst-fav .tx { min-width:0; display:flex; flex-direction:column; gap:3px; } #ui2 .u2-pst-fav .tx b { font-family:'Black Han Sans'; font-size:21px; } #ui2 .u2-pst-fav .tx span { font-size:12px; color:#c9d0e6; }
+#ui2 .u2-pst-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+#ui2 .u2-pst-tile { display:flex; gap:10px; align-items:center; min-width:0; padding:10px; border-radius:14px; background:#2c3553; }
+#ui2 .u2-pst-tile > i { flex-shrink:0; width:34px; height:34px; border-radius:11px; background:#1a2034; display:grid; place-items:center; font-style:normal; font-size:18px; }
+#ui2 .u2-pst-tile > div { min-width:0; display:flex; flex-direction:column; } #ui2 .u2-pst-tile small { font-size:11px; color:#9aa3bf; } #ui2 .u2-pst-tile b { font-family:'Black Han Sans'; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } #ui2 .u2-pst-tile span { font-size:10.5px; color:#c9d0e6; line-height:1.3; }
+#ui2 .u2-pst-chs { display:flex; flex-direction:column; gap:6px; }
+#ui2 .u2-pst-ch { display:grid; grid-template-columns:18px 36px minmax(0,1fr) minmax(0,1.1fr); gap:8px; align-items:center; padding:8px 10px; border-radius:12px; background:#2c3553; }
+#ui2 .u2-pst-ch em { font-style:normal; font-family:'Black Han Sans'; color:#9aa3bf; text-align:center; } #ui2 .u2-pst-ch:first-child em { color:#ffc94a; }
+#ui2 .u2-pst-ch .nm, #ui2 .u2-pst-ch .wr { min-width:0; display:flex; flex-direction:column; gap:3px; } #ui2 .u2-pst-ch .nm b { font-family:'Black Han Sans'; font-size:15px; } #ui2 .u2-pst-ch small { font-size:10.5px; color:#9aa3bf; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ui2 .u2-pst-more { text-align:center; padding:9px; border-radius:12px; background:#3b466b; font-size:13px; font-weight:800; cursor:pointer; }
+#ui2 .u2-pst-hours { display:flex; align-items:flex-end; gap:2px; height:70px; padding:8px 10px 0; border-radius:14px 14px 0 0; background:#2c3553; } #ui2 .u2-pst-hours i { flex:1; border-radius:3px 3px 0 0; background:#46527a; } #ui2 .u2-pst-hours i.top { background:#ffc94a; }
+#ui2 .u2-pst-hl { display:flex; justify-content:space-between; padding:4px 8px 8px; margin-top:-8px; border-radius:0 0 14px 14px; background:#2c3553; font-size:10px; color:#9aa3bf; }
+#ui2 .u2-pst-note { font-size:11px; color:#7c86a6; line-height:1.5; text-align:center; }
+@media (min-width:700px) { #ui2 .u2-pst-grid { grid-template-columns:repeat(3, minmax(0,1fr)); } }
+
 body.replaying #screen-battle .hud::after { content:'▶ REPLAY'; position:absolute; left:50%; top:calc(100% + 6px); transform:translateX(-50%); padding:3px 12px; border-radius:999px; background:#ff5d6c; color:#fff; font-size:11px; font-weight:900; letter-spacing:.12em; pointer-events:none; animation:u2attping 1.6s ease-out infinite; }
 /* R2.12.1 출석부 */
 #ui2 .u2-attbtn { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; animation:u2bob 3s ease-in-out infinite; } #ui2 .u2-attbtn:active { transform:scale(.92); }
@@ -2221,7 +2280,8 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
             <div style="display:flex; gap:8px;"><input value="{{ pfv.nickDraft }}" onChange="{{ pfv.onNick }}" onKeyDown="{{ pfv.onNickKey }}" maxlength="12" spellcheck="false" autocomplete="off" style="flex:1; min-width:0; height:42px; border-radius:12px; border:1px solid #3b466b; background:#1a2034; color:#f2f4fa; padding:0 12px; font-size:15px; font-weight:700; outline:none;"><div onClick="{{ pfv.nickGo }}" style="flex-shrink:0; min-width:86px; height:42px; padding:0 12px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'Black Han Sans'; font-size:16px; cursor:pointer; background:{{ pfv.nickBg }}; color:{{ pfv.nickFc }}; box-shadow:0 3px 0 {{ pfv.nickEdge }};" style-active="transform:translateY(2px); box-shadow:0 1px 0 {{ pfv.nickEdge }};">{{ pfv.nickBtn }}</div></div>
             <div style="font-size:11px; color:#9aa3bf; font-weight:600;">{{ pfv.nickNote }}</div>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#1a2034; border-radius:12px; padding:4px;"><sc-for list="{{ pfv.tabs }}" as="t"><div onClick="{{ t.onClick }}" style="position:relative; text-align:center; padding:8px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; background:{{ t.bg }}; color:{{ t.fc }};">{{ t.label }}<sc-if value="{{ t.dot }}"><span style="position:absolute; top:6px; margin-left:4px; width:7px; height:7px; border-radius:50%; background:#ff5d6c;"></span></sc-if></div></sc-for></div>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:4px; background:#1a2034; border-radius:12px; padding:4px;"><sc-for list="{{ pfv.tabs }}" as="t"><div onClick="{{ t.onClick }}" style="position:relative; text-align:center; padding:8px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; background:{{ t.bg }}; color:{{ t.fc }};">{{ t.label }}<sc-if value="{{ t.dot }}"><span style="position:absolute; top:6px; margin-left:4px; width:7px; height:7px; border-radius:50%; background:#ff5d6c;"></span></sc-if></div></sc-for></div>
+          <sc-if value="{{ pfv.isStat }}"><div onClick="{{ pfv.statClick }}">{{ pfv.stat }}</div></sc-if>
           <sc-if value="{{ pfv.isFrame }}"><div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;"><sc-for list="{{ pfv.frames }}" as="f"><div onClick="{{ f.onClick }}" style="position:relative; background:#2c3553; border:1.5px solid {{ f.line }}; border-radius:14px; padding:10px 6px 8px; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer;" style-active="transform:scale(.96);"><div>{{ f.pf }}</div><div style="font-size:12px; font-weight:800;">{{ f.name }}</div><div style="font-size:10px; color:#9aa3bf; font-weight:600; text-align:center; min-height:24px; line-height:1.2;">{{ f.cond }}</div><div style="width:100%; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; background:{{ f.btnBg }}; color:{{ f.btnFc }};">{{ f.btn }}</div><sc-if value="{{ f.dot }}"><div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:#ff5d6c; border:2px solid #232a48;"></div></sc-if></div></sc-for></div></sc-if>
           <sc-if value="{{ pfv.isFav }}"><div style="font-size:12px; color:#9aa3bf; font-weight:600;">대표 지후는 프로필 사진 · 로비 가운데 · 리더보드에 보여요</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px;"><sc-for list="{{ pfv.favs }}" as="c"><div onClick="{{ c.onClick }}" style="position:relative; border-radius:12px; padding:3px; background:{{ c.color }}; box-shadow:0 3px 0 {{ c.dark }}; outline:{{ c.outline }}; outline-offset:2px; cursor:pointer;" style-active="transform:scale(.94);"><div style="aspect-ratio:1; border-radius:9px; background:#fff; overflow:hidden; display:flex;"><img src="{{ c.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div><sc-if value="{{ c.on }}"><div style="position:absolute; top:-6px; right:-5px; background:#ffc94a; color:#3b2600; font-size:9px; font-weight:900; padding:2px 5px; border-radius:999px;">대표</div></sc-if></div></sc-for></div></sc-if>
         </div>
@@ -2294,7 +2354,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
           <div style="font-size:12px; color:#9aa3bf; font-weight:600;">{{ histNote }}</div>
           <sc-if value="{{ histEmpty }}"><div style="text-align:center; padding:30px 0; color:#9aa3bf; font-weight:600;">아직 전투기록이 없어요 · 한 판 해 보세요!</div></sc-if>
           <sc-for list="{{ hist }}" as="h"><div style="flex-shrink:0; background:#2c3553; border:1px solid {{ h.line }}; border-radius:16px; padding:10px; display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; align-items:center; gap:8px;"><div style="font-family:'Black Han Sans'; font-size:20px; color:{{ h.color }};">{{ h.res }}</div><div style="flex:1; min-width:0; font-size:12px; color:#c9d0e6; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ h.title }}</div><div style="font-size:11px; color:#9aa3bf; font-weight:600;">{{ h.when }}</div><sc-if value="{{ h.rp }}"><div onClick="{{ h.rpGo }}" style="flex-shrink:0; height:28px; padding:0 10px; border-radius:9px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 3px 0 #c98a1c; font-family:'Black Han Sans'; font-size:14px; display:flex; align-items:center; gap:4px; cursor:pointer;" style-active="transform:translateY(2px); box-shadow:0 1px 0 #c98a1c;">▶ 다시보기</div></sc-if></div>
+            <div style="display:flex; align-items:center; gap:8px;"><div style="font-family:'Black Han Sans'; font-size:20px; color:{{ h.color }};">{{ h.res }}</div><div style="flex:1; min-width:0; font-size:12px; color:#c9d0e6; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ h.title }}</div><div style="font-size:11px; color:#9aa3bf; font-weight:600;">{{ h.when }}</div><sc-if value="{{ h.rp }}"><div onClick="{{ h.rpGo }}" style="flex-shrink:0; height:28px; padding:0 10px; border-radius:9px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 3px 0 #c98a1c; font-family:'Black Han Sans'; font-size:14px; display:flex; align-items:center; gap:4px; cursor:pointer;" style-active="transform:translateY(2px); box-shadow:0 1px 0 #c98a1c;">▶ 다시보기</div><div onClick="{{ h.rpShare }}" title="링크 공유" style="flex-shrink:0; height:28px; width:32px; border-radius:9px; background:#3b466b; box-shadow:0 3px 0 #252d48; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" style-active="transform:translateY(2px); box-shadow:0 1px 0 #252d48;">🔗</div></sc-if></div>
             <div style="display:flex; gap:4px; flex-wrap:wrap;"><sc-for list="{{ h.rounds }}" as="r"><div style="min-width:30px; text-align:center; font-family:'Black Han Sans'; font-size:13px; padding:2px 6px; border-radius:7px; background:{{ r.bg }}; color:{{ r.fc }};">{{ r.t }}</div></sc-for><div style="margin-left:auto; font-size:12px; font-weight:800; color:#c9d0e6;">{{ h.score }}</div></div>
             <div style="display:grid; grid-template-columns:28px minmax(0,1fr); gap:6px; align-items:center;"><div style="font-size:11px; color:#53d3c0; font-weight:800;">나</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ h.me }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div><div style="font-size:11px; color:#ff7a85; font-weight:800;">상대</div><div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;"><sc-for list="{{ h.op }}" as="d"><div style="aspect-ratio:1; border-radius:8px; background:#fff; border:2.5px solid {{ d.color }}; overflow:hidden; display:flex;"><img src="{{ d.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></div></sc-for></div></div>
           </div></sc-for>
@@ -2501,7 +2561,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
       <div class="rdeck" id="resDeck"></div>
       <div class="rounds" id="resRounds"></div>
       <div class="res-box" id="resBody"></div>
-      <div class="rbtns"><button class="g-btn" id="btnResStats">📊 경기 통계</button><button class="k-btn" id="btnResOk">로비로</button></div>
+      <div class="rbtns"><button class="g-btn" id="btnResShare" hidden>🔗 리플레이 공유</button><button class="g-btn" id="btnResStats">📊 경기 통계</button><button class="k-btn" id="btnResOk">로비로</button></div>
     </div>
     <div class="g-card rcard2"><div class="ms-head"><h3>경기 통계</h3><div class="ms-seg" id="resSeg"></div></div><div id="resStats"></div></div>
   </div>
@@ -3684,6 +3744,7 @@ function normProfile(p) {
   p.cheat = p.cheat && typeof p.cheat === 'object' ? p.cheat : { n: 0, kinds: {}, at: 0 }; // 핵 흔적 (R2.12 · 지우지 않는다)
   { const s = p.sp && typeof p.sp === 'object' ? p.sp : {}; p.sp = { s: nat(s.s), xp: Math.min(1e6, nat(s.xp)), cl: Math.min(30, nat(s.cl)), bx: nat(s.bx), fd: typeof s.fd === 'string' ? s.fd.slice(0, 12) : '', fn: nat(s.fn) }; } // R2.12.2 시즌 패스
   p.mlog = Array.isArray(p.mlog) ? p.mlog.filter(m => m && Array.isArray(m.me)).slice(0, 30) : []; // 전투기록 (R2.12)
+  p.pst = pstNorm(p.pst, p); // R2.14 개인 전적
   return guardProfile(p);
 }
 function r1Level(totalXp) { let lv = 1, r = nat(totalXp); while (lv < 150) { const need = Math.ceil(100 * Math.pow(1.03, lv - 1)); if (r < need) break; r -= need; lv++; } return lv; } // R1 레벨 공식
@@ -3989,7 +4050,7 @@ function openAccountOld(tab) { if (tab) ACC.tab = tab; ACC.msg = ''; if (!isMemb
 // ═════════ 화면 ═════════
 const CHROME = ['lobby', 'deck', 'gacha', 'shop', 'inv', 'arcade', 'tower', 'comp', 'sandbox', 'social', 'lb', 'custom']; // 상단 바 · 하단 탭 바가 보이는 화면
 function show(name) {
-  if (window.__u2 && !AUTH.ok && name !== 'welcome') { renderGate(); name = 'welcome'; } // R2.12: 로그인 전에는 시작 화면만
+  if (window.__u2 && !AUTH.ok && name !== 'welcome' && !(name === 'battle' && S.replay)) { renderGate(); name = 'welcome'; } // R2.12: 로그인 전에는 시작 화면만 (R2.14: 공유 리플레이는 전투 화면)
   document.body.dataset.scr = name; // R2.12 테마: 전투 화면만 밝은 바탕
   if (window.__u2 && !TUT.on && (U2_TAB[name] || U2_PAGE[name])) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
   if (window.__u2) u2Hide();
@@ -4778,10 +4839,10 @@ function loop(ts) {
   if (lastTs && ts - lastTs < (BSET.low ? 31 : 15.5)) { requestAnimationFrame(loop); return; } // R2.12.1: 120Hz 화면에서도 초당 60번 (저전력 30번) · 발열
   const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts;
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
-  acc += real * S.speed; const simT0 = performance.now();
+  acc += real * (S.replay && S.replay.pause ? 0 : S.speed); const simT0 = performance.now(); // R2.14 다시보기 일시정지
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
   const simMs = performance.now() - simT0;
-  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); camFollow(real); drawShots(); if (reelsOn()) reelsTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
+  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); camFollow(real); drawShots(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
   setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME);
   if (S.phase === 'combat') { if (!S._oddsC || S.time - S._oddsC.t >= 0.2 || S.time < S._oddsC.t) S._oddsC = { t: S.time, p: allyOdds() }; const p = S._oddsC.p, mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); if (S._oddsW !== mine) { S._oddsW = mine; $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; } /* R2.12.1: 바뀔 때만 */ benchFrame(real * 1000, simMs); requestAnimationFrame(loop); }
 }
@@ -5468,7 +5529,7 @@ function prophecyResolve() { // 예언 지후: 이번 배치 동안 적 진영�
 }
 // ═════════ 리플레이 (R2.12.2) — 전투는 (시작 상태 + 시드) 로 정해진다 (친선전 lockstep 과 같은 원리) ═════════
 const RP_KEY = 'rejhbt-rp', RP_MAX = 10, RP_SKIP = new Set(['units', '_ix', 'shots', 'lines', 'zones', 'fx', 'barriers', 'timed', 'odds', '_oddsC', '_oddsW', 'stats', 'hist', 'net', 'timer', 'later', 'replay', 'specWinner', 'quit']);
-const RP = { rounds: [] }; // 지금 경기의 라운드 기록
+const RP = { rounds: [], last: null }; // 지금 경기의 라운드 기록 · last = 방금 끝난 판 (결과 화면 공유 버튼)
 function rpSnap() { const o = {}; for (const k of Object.keys(S)) if (!RP_SKIP.has(k) && typeof S[k] !== 'function') o[k] = S[k]; try { return structuredClone(o); } catch (e) { return null; } }
 function rpLoad() { try { const L = JSON.parse(localStorage.getItem(RP_KEY) || '[]'); return Array.isArray(L) ? L : []; } catch (e) { return []; } }
 function rpSave(rec) { let L = rpLoad().filter(r => r.at !== rec.at); L.unshift(rec); L = L.slice(0, RP_MAX); for (;;) { try { localStorage.setItem(RP_KEY, JSON.stringify(L)); return; } catch (e) { if (L.length <= 1) return; L.pop(); } } } // 저장 공간이 모자라면 오래된 것부터
@@ -5492,7 +5553,7 @@ function beginCombat() {
     u.el = unitEl(u); f.appendChild(u.el); if (pr === 'on') { A.portrait(u, u.def.portraitOn); u.el.classList.add('prophet'); } drawUnit(u); S.units.push(u); if (pr === 'on' && !S.fast) dmgNum(u, `🔮 예언 성공 · 아르카나 ${p.arc}`, { crit: true }); }));
   benchSpawnExtra(); // 벤치 (?bench=50)
   evCombat(); CAM.user = false; CAM.follow = !S.fast; CAM.fz = null; viewInsets(); // R2.12.2: 전투가 시작되면 카메라가 따라간다 (R2.12.3: 확대는 시작할 때 한 번)
-  if (!S.speedManual) S.speed = speedPref ? CFG.FAST_SPEED : 1; renderSpeedBtn();
+  if (!S.speedManual) S.speed = speedPref ? CFG.FAST_SPEED : 1; renderSpeedBtn(); if (S.replay && S.replay.i === 0 && S.replay.rec.shared && !S.replay.shown) { S.replay.shown = true; setTimeout(() => banner(`${esc(S.replay ? S.replay.rec.shared.pn || '?' : '')} VS ${esc(S.replay ? S.replay.rec.shared.on || '?' : '')}`), 900); } // R2.14 공유 리플레이 첫 화면
   setPhase('전투 중'); banner('전투 시작!'); sfx('battle_start');
   botMind.combatStart();
   requestAnimationFrame(loop);
@@ -5504,22 +5565,91 @@ $('speedSeg').addEventListener('click', e => { const b = e.target.closest('[data
   if (S.phase === 'combat') { S.speed = fast ? CFG.FAST_SPEED : 1; S.speedManual = true; } speedPref = fast; renderSpeedBtn(); try { localStorage.setItem('rejhbt-speed', speedPref ? '1' : '0'); } catch (err) {} });
 $('btnDeployDone').addEventListener('click', () => { if (S.phase === 'deploy' && !(S.net && S.net.spec)) autoPlace(); }); // 자동 배치: 시간 초과 때와 같이
 // ── 라운드 끝 (전작 endRoundCombat): 시간 종료 50:50 은 같은 라운드를 처음 배치로 다시 · 양쪽 전멸은 라이프 그대로 다음 라운드 ──
-function replayStart(at) {
-  const rec = rpLoad().find(r => r.at === at); if (!rec || !rec.rounds.length) return u2Toast('이 기기에 저장된 리플레이가 없어요');
+function replayStart(at) { // at = 이 기기 기록 시각 · 또는 기록 그대로 (R2.14 공유 링크)
+  const rec = typeof at === 'object' ? at : rpLoad().find(r => r.at === at); if (!rec || !rec.rounds.length) return u2Toast('이 기기에 저장된 리플레이가 없어요');
   clearTimeout(S.later); clearTimeout(newMatch.t); u2Set({ hist: false }); matchBase({ replay: true }); S.replay = { rec, i: 0, me: rec.me || 'a' }; replayRound();
   if (rec.b && rec.b !== rpBuild()) setTimeout(() => banner('다른 버전에서 기록한 판이라 전투가 조금 다를 수 있어요'), 600);
 }
-function replayRound() { const R = S.replay, r = R.rec.rounds[R.i]; clearTimeout(S.later); clearInterval(S.timer);
-  Object.assign(S, structuredClone(r.s)); S.net = null; S.fast = false; S.replay = R; S.speedManual = false; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.fx = []; S.barriers = []; S.timed = []; S.odds = [];
+function replayRound() { const R = S.replay, r = R.rec.rounds[R.i], tok = R.tok = (R.tok || 0) + 1; clearTimeout(S.later); clearInterval(S.timer);
+  Object.assign(S, structuredClone(r.s)); S.net = null; S.fast = false; S.replay = R; S.speedManual = !!R.spd; if (R.spd) S.speed = R.spd; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.fx = []; S.barriers = []; S.timed = []; S.odds = [];
   document.body.classList.add('replaying'); $('screen-battle').classList.remove('spec', 'reels'); document.body.classList.remove('reels-on');
-  show('battle'); renderIds(); renderLives(); renderField(); renderPool(); $('hudMode').textContent = `▶ 다시보기 · ${R.i + 1} / ${R.rec.rounds.length} 라운드`; $('btnQuit').textContent = '다시보기 끝';
-  setTimeout(() => { if (S.replay === R) beginCombat(); }, 500);
+  show('battle'); renderIds(); renderLives(); renderField(); renderPool(); $('hudMode').textContent = `▶ ${R.rec.shared ? (R.rec.shared.nick || '지후') + '님의 ' : ''}다시보기 · ${R.i + 1} / ${R.rec.rounds.length} 라운드`; $('btnQuit').textContent = '다시보기 끝'; rpCtlRender();
+  setTimeout(() => { if (S.replay === R && R.tok === tok) beginCombat(); }, 500); // R2.14: 라운드를 빠르게 넘겨도 전투는 하나만
 }
-function replayExit() { const R = S.replay; S.replay = null; clearTimeout(S.later); S.phase = 'idle'; document.body.classList.remove('replaying'); clearInterval(S.timer); renderLobby(); show('lobby'); if (R) u2Set({ hist: true }); }
+function replayExit() { const R = S.replay; S.replay = null; clearTimeout(S.later); S.phase = 'idle'; document.body.classList.remove('replaying'); clearInterval(S.timer); rpCtlRender();
+  if (!AUTH.ok) { renderGate(); show('welcome'); return; } // R2.14: 로그인 없이 링크로 본 사람은 시작 화면으로
+  renderLobby(); show('lobby'); if (R && !R.rec.shared) u2Set({ hist: true }); }
+// ═════════ 리플레이 공유 (R2.14) — r2rp/<uid>_<at> = { by, nick, pn(내 쪽 이름), on(상대), win, kind, n(라운드), b(빌드), at, d(JSON: me · rounds), created } ═════════
+// 링크 ?rp=<id> → 로그인 없이 바로 재생 (show 가 리플레이 중 전투 화면만 열어 준다) · 채팅 · 1:1 에 링크를 보내면 [▶ 리플레이 보기] 버튼
+const RPS_KEY = 'rejhbt-rps'; // 이 기기에서 이미 올린 판: at → 문서 id
+function rpsGet() { try { const o = JSON.parse(localStorage.getItem(RPS_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+function rpsSet(at, id) { const o = rpsGet(); o[at] = id; const ks = Object.keys(o); if (ks.length > 40) delete o[ks.sort((x, y) => x - y)[0]]; try { localStorage.setItem(RPS_KEY, JSON.stringify(o)); } catch (e) {} }
+const rpLinkUrl = id => location.origin + location.pathname.replace(/index\.html$/, '') + '?rp=' + encodeURIComponent(id);
+const RP_LINK_RE = /[?&]rp=([A-Za-z0-9_]{6,80})/;
+async function rpShare(at) {
+  const rec = rpLoad().find(r => r.at === at); if (!rec || !rec.rounds.length) return dlg({ icon: '🎞', title: '이 기기에 저장된 리플레이가 없어요', html: '리플레이는 이 기기에서 한 최근 10판만 남아요.' });
+  let id = rpsGet()[at];
+  if (!id) {
+    if (!isMember() || !(await fbInit())) return dlg({ icon: '📡', title: '공유하려면 로그인이 필요해요', html: '온라인에 연결된 계정으로 다시 시도해 주세요.' });
+    if (FB.noRp) return dlg({ icon: '🛠', title: '리플레이 공유 준비 중', html: '서버 설정이 끝나면 바로 쓸 수 있어요.' });
+    const s0 = (rec.rounds[0] && rec.rounds[0].s) || {}, me = rec.me || 'a', op = me === 'a' ? 'e' : 'a', m = (profile.mlog || []).find(x => x.at === at) || {};
+    const d = JSON.stringify({ me, rounds: rec.rounds }); if (d.length > 400000) return dlg({ icon: '🎞', title: '리플레이가 너무 커요', html: '이 판은 공유할 수 없어요.' });
+    id = FB.uid + '_' + at;
+    const doc = { by: FB.uid, nick: (profile.nick || '지후').slice(0, 12), pn: String((s0.nick && s0.nick[me]) || profile.nick || '').slice(0, 12), on: String((s0.nick && s0.nick[op]) || m.opp || '').slice(0, 12), win: !!m.win, kind: String(m.kind || 'normal').slice(0, 12), n: rec.rounds.length, b: String(rec.b || '').slice(0, 24), at, d, created: FB.sdk.serverTimestamp() };
+    try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2rp', id), doc); rpsSet(at, id); }
+    catch (e) { if (e && e.code === 'permission-denied') { FB.noRp = true; return dlg({ icon: '🛠', title: '리플레이 공유 준비 중', html: '서버 설정이 끝나면 바로 쓸 수 있어요.' }); } console.warn('[rejhbt] 리플레이 공유 실패', e); return dlg({ icon: '📡', title: '올리지 못했어요', html: '잠시 뒤에 다시 시도해 주세요.' }); }
+  }
+  rpShareSheet(id);
+}
+async function rpCopy(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { const i = document.createElement('textarea'); i.value = t; document.body.appendChild(i); i.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (er) {} i.remove(); return ok; } }
+function rpShareSheet(id) {
+  const url = rpLinkUrl(id), fr = (typeof ON !== 'undefined' && Array.isArray(ON.fr) ? ON.fr : []).filter(f => f.status === 'accepted');
+  dlg({ icon: '🔗', title: '리플레이 링크', ok: navigator.share ? '공유하기' : '링크 복사', cancel: '닫기', html: `<div class="u2-rps"><p>링크를 받은 사람은 <b>로그인 없이</b> 바로 이 판을 볼 수 있어요.</p><div class="rp-link"><input readonly value="${esc(url)}"><button type="button" data-rpcopy>복사</button></div>${fr.length ? `<p class="rp-fh">친구에게 1:1 로 보내기</p><div class="rp-frs">${fr.slice(0, 30).map(f => `<button type="button" data-rpf="${esc(f.id)}">${esc(f.nick)}</button>`).join('')}</div>` : ''}<p class="rp-st" id="rpSt"></p></div>` })
+    .then(async ok => { if (!ok) return; if (navigator.share) { try { await navigator.share({ title: 'RE : 지후배틀 리플레이', text: `${profile.nick || '지후'}님의 지후배틀 리플레이`, url }); } catch (e) {} } else if (await rpCopy(url)) banner('링크를 복사했어요'); });
+  const box = $('dlgBody'), st = () => $('rpSt');
+  box.querySelector('[data-rpcopy]').onclick = async () => { st().textContent = (await rpCopy(url)) ? '링크를 복사했어요 ✓' : '복사하지 못했어요 · 길게 눌러 복사해 주세요'; };
+  box.querySelector('input').onclick = e => e.target.select();
+  box.querySelectorAll('[data-rpf]').forEach(b => b.onclick = async () => { if (b.disabled) return; b.disabled = true;
+    try { await FB.sdk.addDoc(FB.sdk.collection(FB.db, 'dm', b.dataset.rpf, 'msgs'), { uid: myUid(), text: ('리플레이 봐 줘! ' + url).slice(0, 200), at: FB.sdk.serverTimestamp() }); b.classList.add('sent'); b.textContent = '✓ ' + b.textContent; }
+    catch (e) { b.disabled = false; st().textContent = '보내지 못했어요 · 잠시 뒤에 다시'; } });
+}
+async function rpOpenLink(id) { // 링크 · 채팅 버튼으로 연 리플레이
+  if (!/^[A-Za-z0-9_]{6,80}$/.test(id)) return;
+  if (['deploy', 'combat', 'roundEnd'].includes(S.phase) && !S.replay) return dlg({ icon: '🎞', title: '경기가 끝난 뒤에 볼 수 있어요' });
+  let d = null; if (await fbInit()) { try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2rp', id)); d = snap.exists() ? snap.data() : null; } catch (e) { d = null; } } else return dlg({ icon: '📡', title: '리플레이를 불러오지 못했어요', html: '인터넷 연결을 확인해 주세요.' });
+  let o = null; try { o = d && JSON.parse(d.d); } catch (e) { o = null; }
+  if (!o || !Array.isArray(o.rounds) || !o.rounds.length) return dlg({ icon: '🎞', title: '리플레이를 찾을 수 없어요', html: '링크가 잘못됐거나 지워진 리플레이예요.' });
+  replayStart({ at: Number(d.at) || 0, b: String(d.b || ''), me: o.me === 'e' ? 'e' : 'a', rounds: o.rounds, shared: { id, nick: String(d.nick || ''), pn: String(d.pn || ''), on: String(d.on || '') } });
+}
+// ── 다시보기 컨트롤 (R2.14 · 영상처럼): ⏮ 이전 라운드 · ⏯ 일시정지 · ⏭ 다음 라운드 · 배속 1× / 2× / 3× · 라운드 진행 바 · 끝나면 ↻ 처음부터 ──
+const RP_SPD = [1, 2, 3];
+function rpCtlEl() { let el = $('rpCtl'); if (!el) { el = document.createElement('div'); el.id = 'rpCtl'; el.className = 'u2-rpc'; document.body.appendChild(el);
+  el.addEventListener('click', e => { const b = e.target.closest('[data-rpa]'); if (!b || !S.replay) return; const R = S.replay, a = b.dataset.rpa;
+    if (a === 'pp') { if (R.done) return rpJump(0); R.pause = !R.pause; rpCtlRender(); }
+    else if (a === 'prev') rpJump(S.time > 3 || R.i === 0 ? R.i : R.i - 1);
+    else if (a === 'next') { if (R.i < R.rec.rounds.length - 1) rpJump(R.i + 1); }
+    else if (a === 'spd') { R.spd = RP_SPD[(RP_SPD.indexOf(R.spd || 1) + 1) % RP_SPD.length]; if (S.phase === 'combat') { S.speed = R.spd; S.speedManual = true; } rpCtlRender(); }
+    else if (a === 'again') rpJump(0);
+    else if (a === 'exit') replayExit();
+    else if (a === 'join') { replayExit(); }
+    else if (a === 'share' && R.rec.shared) rpShareSheet(R.rec.shared.id); }); }
+  return el; }
+function rpCtlRender() { const R = S.replay, el = rpCtlEl(); if (!R) { el.innerHTML = ''; return; } const n = R.rec.rounds.length, sh = R.rec.shared;
+  const tr = document.querySelector('#screen-battle .tray'), tb = tr && tr.getBoundingClientRect(); if (tb && tb.height) el.style.bottom = Math.max(14, Math.round(innerHeight - tb.top + 10)) + 'px'; // 아래 바 바로 위
+  const who = sh ? `<div class="rpc-who">🎞 <b>${esc(sh.nick || '지후')}</b>님의 리플레이 · ${esc(sh.pn || '?')} <i>VS</i> ${esc(sh.on || '?')}</div>` : '';
+  if (R.done) { const w = R.lastW, txt = w === 'draw' ? '무승부' : sh ? `${esc((S.nick && S.nick[w]) || '')} 승리` : w === ME() ? '승리' : '패배';
+    el.innerHTML = `${who}<div class="rpc-end"><b>다시보기 끝 · ${txt}</b><div class="rpc-btns"><button data-rpa="again">↻ 처음부터</button>${sh ? `<button data-rpa="share">🔗 링크</button>` : ''}<button data-rpa="exit" class="pri">${AUTH.ok ? '나가기' : '지후배틀 시작하기'}</button></div></div>`; return; }
+  el.innerHTML = `${who}<div class="rpc-bar"><button data-rpa="prev" title="이전 라운드 · 처음부터">⏮</button><button data-rpa="pp" class="pp" title="일시정지">${R.pause ? '▶' : '⏸'}</button><button data-rpa="next" title="다음 라운드" ${R.i >= n - 1 ? 'disabled' : ''}>⏭</button>
+    <div class="rpc-prog"><div class="rpc-rd">${Array.from({ length: n }, (_, i) => `<i class="${i < R.i ? 'done' : i === R.i ? 'on' : ''}"></i>`).join('')}</div><div class="rpc-track"><i id="rpcFill"></i></div><small>${R.i + 1} / ${n} 라운드</small></div>
+    <button data-rpa="spd" class="spd">${R.spd || 1}×</button></div>`; R._fw = null; }
+function rpTick() { const R = S.replay; if (!R) return; const f = $('rpcFill'); if (!f) return; const w = Math.min(100, (S.time || 0) / CFG.ROUND_TIME * 100).toFixed(1); if (R._fw !== w) { R._fw = w; f.style.width = w + '%'; } }
+function rpJump(i) { const R = S.replay; if (!R) return; S.phase = 'roundEnd'; clearTimeout(S.later); S.shots.forEach(s => s.el && s.el.remove()); S.shots = []; clearFieldFx(); S.units.forEach(clearTelegraph); S.units.forEach(u => { (u.fx || []).forEach(e => e.remove()); u.fx = []; });
+  R.i = clamp(i, 0, R.rec.rounds.length - 1); R.done = false; R.pause = false; replayRound(); }
+
 function endRound(w, timedOut) {
   if (S.replay) { botMind.roundEnd(w); hideRangeRing(); S.phase = 'roundEnd'; S.shots.forEach(s => s.el && s.el.remove()); S.shots = []; clearFieldFx(); S.units.forEach(clearTelegraph); S.units.forEach(u => { (u.fx || []).forEach(e => e.remove()); u.fx = []; }); $('hudOdds').hidden = true;
-    const R = S.replay, last = R.i >= R.rec.rounds.length - 1; setPhase(w === 'draw' ? '무승부' : w === ME() ? '라운드 승리' : '라운드 패배'); banner(w === 'draw' ? '무승부' : w === ME() ? '🏆 라운드 승리' : '라운드 패배');
-    S.later = setTimeout(() => { if (S.replay !== R) return; if (last) { banner('다시보기 끝'); S.later = setTimeout(replayExit, 1200); } else { R.i++; replayRound(); } }, 1800); return; } // R2.12.2 리플레이: 결과 · 보상 없이 다음 라운드
+    const R = S.replay, last = R.i >= R.rec.rounds.length - 1, who = w !== 'draw' && R.rec.shared ? esc((S.nick && S.nick[w]) || '') + ' ' : ''; R.lastW = w; setPhase(w === 'draw' ? '무승부' : who ? who + '라운드 승리' : w === ME() ? '라운드 승리' : '라운드 패배'); banner(w === 'draw' ? '무승부' : who ? '🏆 ' + who + '라운드 승리' : w === ME() ? '🏆 라운드 승리' : '라운드 패배');
+    S.later = setTimeout(() => { if (S.replay !== R) return; if (last) { R.done = true; rpCtlRender(); } else { R.i++; replayRound(); } }, 1800); return; } // R2.12.2 리플레이: 결과 · 보상 없이 다음 라운드 · R2.14 끝나면 컨트롤에 ↻ 처음부터 · 나가기
   botMind.roundEnd(w); recordRoundStats(w, timedOut); hideRangeRing();
   S.phase = 'roundEnd';
   S.shots.forEach(s => s.el.remove()); S.shots = []; clearFieldFx(); S.units.forEach(clearTelegraph); S.units.forEach(u => { (u.fx || []).forEach(e => e.remove()); u.fx = []; });
@@ -5565,15 +5695,17 @@ function endMatch(win, note) {
   S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); emoClear(); presencePing('lobby');
   const me = ME(), hist = (S.hist || []).map(h => h === 'D' ? 'D' : (h === 'A') === (me === 'a') ? 'W' : 'L');
   const side = spec ? S.specWinner || (S.lives.a > 0 ? 'a' : 'e') : me; // 결과 카드의 덱 · 통계: 내 쪽 (관전은 이긴 쪽)
+  RP.last = null;
   if (!spec && !TUT.on) { const op = me === 'a' ? 'e' : 'a', L = profile.mlog = Array.isArray(profile.mlog) ? profile.mlog : []; // 전투기록 (R2.12 · 최근 30판 · 햄버거 메뉴)
     spMatch(net ? 'friendly' : S.arc ? S.arc.kind : 'normal', !!win); // R2.12.2 시즌 패스
-    const at = Date.now(); if (RP.rounds.length && !sandboxLike()) rpSave({ at, b: rpBuild(), me, rounds: RP.rounds.splice(0) }); // R2.12.2 리플레이 (이 기기)
+    if (!sandboxLike()) pstMatch(win, net ? 'friendly' : S.arc ? S.arc.kind : 'normal', me, hist); // R2.14 개인 전적
+    const at = Date.now(); if (RP.rounds.length && !sandboxLike()) { rpSave({ at, b: rpBuild(), me, rounds: RP.rounds.splice(0) }); RP.last = rpHas(at) ? at : null; } // R2.12.2 리플레이 (이 기기) · R2.14 결과 화면 공유 버튼
     L.unshift({ at, win: !!win, kind: net ? 'friendly' : S.arc ? S.arc.kind : 'normal', opp: String((S.nick && S.nick[op]) || '').slice(0, 12), olv: (S.lvl && S.lvl[op]) | 0, me: (S.deck[me] || []).slice(0, 5), op: (S.deck[op] || []).slice(0, 5), r: hist.join('').slice(0, 12) }); L.length = Math.min(L.length, 30); }
   $('screen-result').classList.toggle('win', !!win || spec); // 패배만 빨간 제목
   $('resRounds').innerHTML = spec ? '' : hist.map((h, i) => `<span class="${h === 'W' ? 'on' : ''}" style="animation-delay:${(i * 0.06).toFixed(2)}s">${h}</span>`).join('');
   $('resDeck').innerHTML = (S.deck[side] || []).map((id, i) => `<span style="animation-delay:${(0.1 + i * 0.06).toFixed(2)}s" title="${CHARS[id].name}">${pic(id)}</span>`).join('');
   $('resSub').textContent = `ROUND ${S.round} · 라이프 ${Math.max(0, S.lives[side])} / ${S.maxLives || CFG.LIVES} 남음`;
-  resStats(side, 'dealt');
+  resStats(side, 'dealt'); $('btnResShare').hidden = !RP.last;
   if (net) { // 친선전 · 관전: 보상 없음
     netFinish();
     if (spec) { $('resTitle').textContent = '관전 종료'; $('resMeta').textContent = `SPECTATE · ${S.nick.a} VS ${S.nick.e}`; $('resSub').textContent = `ROUND ${S.round} · ${S.nick[side]} 승리 · 라이프 ${Math.max(0, S.lives.a)} : ${Math.max(0, S.lives.e)}`; $('resBody').innerHTML = note ? `<div class="r"><span>${esc(note)}</span></div>` : ''; show('result'); return; }
@@ -5604,6 +5736,7 @@ function endMatch(win, note) {
   if (up) setTimeout(() => showLevelUp(up), 900);
   setTimeout(() => { const i = $('resBody').querySelector('.lvbar i'); if (i) i.style.width = (profile.xp / xpNeed(profile.level) * 100).toFixed(1) + '%'; }, 80);
 }
+$('btnResShare').addEventListener('click', () => { if (RP.last) rpShare(RP.last); }); // R2.14
 $('btnQuit').addEventListener('click', async () => {
   if (S.replay) return replayExit(); // 리플레이: 바로 나가기
   const spec = S.net && S.net.spec;
@@ -6510,7 +6643,7 @@ function renderChat() {
   $('chatHead').innerHTML = dm ? `<span class="who2"><h2>${esc(SOC.dm.nick)}</h2><small>1:1 · ${presenceOf(SOC.dm.uid).label}</small></span><span class="sp"></span><button class="g-btn" id="dmBack">전체 채팅</button>`
     : `<h2>전체 채팅</h2><small>욕설 검열 · 도배 방지 3초</small><span class="sp"></span><span class="conn" id="socConn">${SOC.conn || '연결 중…'}</span>`;
   if ($('dmBack')) $('dmBack').onclick = () => { dmClose(); renderSocial(); };
-  const bubble = (m, name) => `<div class="cm${mine(m) ? ' me' : ''}">${mine(m) ? '' : `<b>${esc(name)}</b>`}<span class="tx">${esc(censorText(m.text))}</span><span class="t">${hhmm(m.at)}</span></div>`;
+  const bubble = (m, name) => { const rp = RP_LINK_RE.exec(String(m.text || '')); return `<div class="cm${mine(m) ? ' me' : ''}">${mine(m) ? '' : `<b>${esc(name)}</b>`}<span class="tx">${esc(censorText(m.text))}${rp ? `<button type="button" class="u2-cmrp" data-rpid="${esc(rp[1])}">▶ 리플레이 보기</button>` : ''}</span><span class="t">${hhmm(m.at)}</span></div>`; }; // R2.14 리플레이 링크는 버튼으로
   let lines;
   if (dm) {
     lines = SOC.dmMsgs === undefined ? '<div class="chat-empty">불러오는 중…</div>' : SOC.dmMsgs === null ? '<div class="chat-empty">대화를 불러오지 못했어요. (방금 친구가 됐다면 잠시 뒤에 다시)</div>'
@@ -6524,6 +6657,7 @@ function renderChat() {
   const list = $('chatList'), key = (dm ? 'dm:' + SOC.dm.id : 'chat') + (member ? ':m' : ''), foot = $('chatFoot'), fresh = foot.dataset.k !== key;
   const stick = fresh || list.scrollHeight - list.scrollTop - list.clientHeight < 40;
   list.innerHTML = lines; if (stick) list.scrollTop = list.scrollHeight;
+  list.querySelectorAll('[data-rpid]').forEach(b => b.onclick = () => rpOpenLink(b.dataset.rpid));
   if (fresh) { // 입력칸은 대화 상대가 바뀔 때만 다시 만든다 (쓰던 글이 지워지지 않게)
     foot.dataset.k = key;
     foot.innerHTML = member ? `<form class="chat-form" id="chatForm"><input id="chatIn" maxlength="${dm ? 200 : 120}" placeholder="${dm ? '메시지 보내기' : '메시지 보내기 · 욕설은 가려져요'}" autocomplete="off"><button class="k-btn">보내기</button></form><div class="chat-status" id="chatSt"></div>` : '<div class="note">채팅을 보내려면 <b>계정</b>으로 로그인하세요.</div>';
@@ -7401,6 +7535,105 @@ function renderQuest() {
 }
 $('qTiers').addEventListener('click', e => { const b = e.target.closest('[data-tier]'); if (b) claimTier(Number(b.dataset.tier)); });
 
+// ═════════ 개인 전적 (R2.14) — profile.pst · endMatch 가 pstMatch 로 쌓는다 (튜토리얼 · 관전 · 샌드박스 · 리플레이 제외) · 프로필 시트 '전적' 탭 ═════════
+// c[id] = [판, 승, 피해, 처치, MVP, 출전(라운드 × 기), 쓰러짐, 자세히 기록한 판] · vs[id] = 상대 덱에 있던 지후 [승, 패] · m[모드] = [승, 패] · h = 시간대 24칸 · wd = 요일 7칸 · op = 상대 닉네임 → 판
+function pstNorm(o, p) { // p = 정규화 중인 프로필 (pst 가 없으면 R2.14 전 기록으로 채운다)
+  const nat = v => Math.max(0, Math.floor(Number(v) || 0)), arr = (a, n) => Array.from({ length: n }, (_, i) => nat(Array.isArray(a) ? a[i] : 0));
+  const idm = (m, n) => Object.fromEntries(Object.entries(m && typeof m === 'object' ? m : {}).filter(([id]) => CHARS[id]).map(([id, v]) => [id, arr(v, n)]));
+  const best = b => b && CHARS[b.id] ? { id: b.id, v: nat(b.v), at: nat(b.at) } : null, fresh = !o || typeof o !== 'object'; if (fresh) o = {};
+  const s = { since: nat(o.since) || Date.now(), seed: !!o.seed, m: {}, rw: nat(o.rw), rl: nat(o.rl), rd: nat(o.rd), fl: nat(o.fl), cb: nat(o.cb), cl: nat(o.cl), q: nat(o.q), ws: nat(o.ws), bws: nat(o.bws), ls: nat(o.ls), bls: nat(o.bls),
+    gd: nat(o.gd), dmg: nat(o.dmg), tk: nat(o.tk), k: nat(o.k), d: nat(o.d), sec: nat(o.sec), rn: nat(o.rn), longR: nat(o.longR), fastR: nat(o.fastR), maxRn: nat(o.maxRn), bigM: nat(o.bigM), lv5: nat(o.lv5), last: nat(o.last),
+    hit: best(o.hit), kr: best(o.kr), c: idm(o.c, 8), vs: idm(o.vs, 2), h: arr(o.h, 24), wd: arr(o.wd, 7), op: {} };
+  Object.entries(o.m && typeof o.m === 'object' ? o.m : {}).forEach(([k, v]) => { if (/^[a-z]{1,12}$/.test(k)) s.m[k] = arr(v, 2); });
+  Object.entries(o.op && typeof o.op === 'object' ? o.op : {}).slice(0, 40).forEach(([n, v]) => { if (n) s.op[String(n).slice(0, 12)] = nat(v); });
+  if (fresh && p) { // R2.14 전 기록: 일반전 · 친선전 · 경쟁전 승패 · 일반전 덱 (cstat) · 최고 연승 · 전투기록 30판 (시간대 · 상대 · 라운드)
+    s.seed = !!(p.wins || p.losses || (Array.isArray(p.mlog) && p.mlog.length)); s.m.normal = [nat(p.wins), nat(p.losses)]; if (p.fr) s.m.friendly = [nat(p.fr.w), nat(p.fr.l)]; if (p.comp) s.m.comp = [nat(p.comp.wins), nat(p.comp.losses)]; s.bws = nat(p.bestStreak);
+    const cs = p.cstat || {}; Object.entries(cs.norm || {}).forEach(([id, n]) => { if (!CHARS[id]) return; const c = s.c[id] || (s.c[id] = arr(0, 8)); c[0] += nat(n); c[1] += nat((cs.nwins || {})[id]); });
+    (Array.isArray(p.mlog) ? p.mlog : []).forEach(m => { const t = new Date(nat(m.at)); if (!m.at) return; s.since = Math.min(s.since, nat(m.at)); s.h[t.getHours()]++; s.wd[t.getDay()]++;
+      String(m.r || '').split('').forEach(x => { if (x === 'W') s.rw++; else if (x === 'L') s.rl++; else if (x === 'D') s.rd++; });
+      if (m.opp) s.op[String(m.opp).slice(0, 12)] = (s.op[String(m.opp).slice(0, 12)] || 0) + 1;
+      (m.op || []).forEach(id => { if (!CHARS[id]) return; const v = s.vs[id] || (s.vs[id] = [0, 0]); v[m.win ? 0 : 1]++; }); });
+  }
+  return s;
+}
+function pstMatch(win, kind, me, hist) { // endMatch: 한 판 기록
+  const s = profile.pst, op = me === 'a' ? 'e' : 'a', W = !!win, now = new Date(), at = now.getTime();
+  const m = s.m[kind] || (s.m[kind] = [0, 0]); m[W ? 0 : 1]++; s.gd++;
+  hist.forEach(h => { if (h === 'W') s.rw++; else if (h === 'L') s.rl++; else s.rd++; });
+  const max = S.maxLives || CFG.LIVES; let a = max, b = max, low = false; hist.forEach(h => { if (h === 'W') b--; else if (h === 'L') a--; if (a === 1 && b >= 2) low = true; }); // 역전승: 라이프 1 까지 몰렸을 때 상대는 2 이상
+  if (W) { const left = Math.max(0, S.lives[me]); if (low) s.cb++; if (left === 1) s.cl++; if (left >= max) s.fl++; }
+  if (S.quit) s.q++;
+  if (W) { s.ws++; s.bws = Math.max(s.bws, s.ws); s.ls = 0; } else { s.ls++; s.bls = Math.max(s.bls, s.ls); s.ws = 0; }
+  s.h[now.getHours()]++; s.wd[now.getDay()]++; s.last = at;
+  const on = String((S.nick && S.nick[op]) || '').slice(0, 12); if (on) { s.op[on] = (s.op[on] || 0) + 1; const ks = Object.keys(s.op); if (ks.length > 40) delete s.op[ks.sort((x, y) => s.op[x] - s.op[y])[0]]; }
+  const per = new Map(), lv5 = new Set(); let tot = 0;
+  (S.stats || []).forEach(r => { s.rn++; s.sec += r.seconds | 0; s.longR = Math.max(s.longR, r.seconds | 0); if (r.winner === me && r.seconds > 0) s.fastR = s.fastR ? Math.min(s.fastR, r.seconds) : r.seconds;
+    r.rows.forEach(x => { if (x.side !== me || !CHARS[x.id]) return; const v = per.get(x.id) || { dmg: 0, k: 0, d: 0, n: 0 }; v.dmg += x.dealt; v.k += x.kills; v.n++; if (!x.alive) v.d++; per.set(x.id, v);
+      s.dmg += Math.round(x.dealt); s.tk += Math.round(x.taken); s.k += x.kills; if (!x.alive) s.d++; tot += x.dealt; if (x.lv >= 5) lv5.add(x.id);
+      if (x.kills > 0 && (!s.kr || x.kills > s.kr.v)) s.kr = { id: x.id, v: x.kills, at }; }); });
+  s.maxRn = Math.max(s.maxRn, (S.stats || []).length); s.bigM = Math.max(s.bigM, Math.round(tot)); s.lv5 += lv5.size;
+  let mvp = null; per.forEach((v, id) => { if (!mvp || v.dmg > per.get(mvp).dmg) mvp = id; if (!s.hit || v.dmg > s.hit.v) s.hit = { id, v: Math.round(v.dmg), at }; });
+  (S.deck[me] || []).forEach(id => { if (!CHARS[id]) return; const c = s.c[id] || (s.c[id] = [0, 0, 0, 0, 0, 0, 0, 0]), v = per.get(id); c[0]++; c[7]++; if (W) c[1]++; if (v) { c[2] += Math.round(v.dmg); c[3] += v.k; c[5] += v.n; c[6] += v.d; } if (id === mvp) c[4]++; });
+  (S.deck[op] || []).forEach(id => { if (!CHARS[id]) return; const v = s.vs[id] || (s.vs[id] = [0, 0]); v[W ? 0 : 1]++; });
+}
+const PST_KIND = { normal: '일반전', comp: '경쟁전', friendly: '친선전', mirror: '미러전', tower: '지후의 탑' };
+function pstHtml(all) { // 프로필 시트 '전적' 탭 (UI2 {html})
+  const s = profile.pst, f = n => (Math.round(Number(n) || 0)).toLocaleString('ko-KR'), pct = (w, n) => n ? Math.round(w / n * 100) : 0, nm = id => esc(shortName(id));
+  const im = (id, sz) => `<span class="u2-pst-pic" style="width:${sz}px;height:${sz}px;border-color:${U2_RAR[CHARS[id].rarity].c}"><img src="${u2Img(id)}" alt=""></span>`;
+  const modes = Object.entries(s.m).filter(([, v]) => v[0] + v[1] > 0), W = modes.reduce((n, [, v]) => n + v[0], 0), L = modes.reduce((n, [, v]) => n + v[1], 0), G = W + L;
+  const days = Math.max(1, Math.ceil((Date.now() - s.since) / 86400000));
+  if (!G) return `<div class="u2-pst"><div class="u2-pst-empty">아직 기록이 없어요<br><small>한 판 하면 여기에 쌓이기 시작해요</small></div></div>`;
+  const cs = Object.entries(s.c).filter(([, c]) => c[0] > 0).sort((x, y) => y[1][0] - x[1][0] || y[1][5] - x[1][5]);
+  const fav = cs[0], hrs = s.h.reduce((n, x) => n + x, 0), topH = s.h.indexOf(Math.max(...s.h)), topD = s.wd.indexOf(Math.max(...s.wd)), owl = hrs ? Math.round(s.h.slice(0, 6).reduce((n, x) => n + x, 0) / hrs * 100) : 0;
+  const vs = Object.entries(s.vs).filter(([, v]) => v[0] + v[1] >= 3), nem = vs.slice().sort((x, y) => (y[1][1] / (y[1][0] + y[1][1])) - (x[1][1] / (x[1][0] + x[1][1])) || y[1][1] - x[1][1])[0], prey = vs.slice().sort((x, y) => (y[1][0] / (y[1][0] + y[1][1])) - (x[1][0] / (x[1][0] + x[1][1])) || y[1][0] - x[1][0])[0];
+  const five = cs.filter(([, c]) => c[0] >= 5), lucky = five.slice().sort((x, y) => y[1][1] / y[1][0] - x[1][1] / x[1][0])[0], unlucky = five.slice().sort((x, y) => x[1][1] / x[1][0] - y[1][1] / y[1][0])[0];
+  const rival = Object.entries(s.op).sort((x, y) => y[1] - x[1])[0], dex = u2Sorted().length, used = cs.length, R = s.rw + s.rl + s.rd, mmss = t => t >= 60 ? `${Math.floor(t / 60)}분 ${t % 60}초` : `${t}초`;
+  const tile = (ic, label, val, sub, id) => `<div class="u2-pst-tile">${id ? im(id, 34) : `<i>${ic}</i>`}<div><small>${label}</small><b>${val}</b>${sub ? `<span>${sub}</span>` : ''}</div></div>`;
+  const sec = (t, note, body) => `<div class="u2-pst-sec"><div class="u2-pst-h"><b>${t}</b>${note ? `<small>${note}</small>` : ''}</div>${body}</div>`;
+  const modeRows = Object.keys(PST_KIND).concat(modes.map(([k]) => k).filter(k => !PST_KIND[k])).filter(k => s.m[k] && s.m[k][0] + s.m[k][1] > 0).map(k => { const [w, l] = s.m[k], p = pct(w, w + l);
+    return `<div class="u2-pst-mode"><span>${PST_KIND[k] || '아케이드'}</span><div class="u2-pst-bar"><i style="width:${p}%"></i></div><b>${p}%</b><small>${f(w)}승 ${f(l)}패</small></div>`; }).join('');
+  const shown = all ? cs : cs.slice(0, 8);
+  const charRows = shown.map(([id, c], i) => { const p = pct(c[1], c[0]); return `<div class="u2-pst-ch"><em>${i + 1}</em>${im(id, 36)}<div class="nm"><b>${nm(id)}</b><small>${f(c[0])}판 · MVP ${f(c[4])} · 처치 ${f(c[3])}</small></div><div class="wr"><div class="u2-pst-bar sm"><i style="width:${p}%"></i></div><small>승률 ${p}% · 판당 피해 ${f(c[7] ? c[2] / c[7] : 0)}</small></div></div>`; }).join('');
+  const hmax = Math.max(1, ...s.h), chart = `<div class="u2-pst-hours">${s.h.map((n, i) => `<i class="${i === topH && n ? 'top' : ''}" style="height:${Math.max(4, n / hmax * 100)}%" title="${i}시 · ${n}판"></i>`).join('')}</div><div class="u2-pst-hl"><span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>24시</span></div>`;
+  const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+  return `<div class="u2-pst">
+  <div class="u2-pst-hero"><div class="u2-pst-ring" style="--p:${pct(W, G)}"><div><b>${pct(W, G)}%</b><small>승률</small></div></div><div class="u2-pst-hi"><b>${f(G)}판 · ${f(W)}승 ${f(L)}패</b><span>라운드 ${f(s.rw)}승 ${f(s.rl)}패${s.rd ? ` ${f(s.rd)}무` : ''} · 라운드 승률 ${pct(s.rw, R)}%</span><span>최고 ${f(s.bws)}연승 · 지금 ${s.ws ? f(s.ws) + '연승' : s.ls ? f(s.ls) + '연패' : '—'}</span><span>지후배틀과 함께한 지 <b>${f(days)}일</b></span></div></div>
+  ${sec('모드별 승률', '', `<div class="u2-pst-modes">${modeRows}</div>`)}
+  ${fav ? `<div class="u2-pst-fav" style="--c:${U2_RAR[CHARS[fav[0]].rarity].c}"><div class="lb">💕 애착 지후</div>${im(fav[0], 74)}<div class="tx"><b>${nm(fav[0])} 지후</b><span>${f(fav[1][0])}판을 함께했어요 · 전체의 ${pct(fav[1][0], G)}%</span><span>승률 ${pct(fav[1][1], fav[1][0])}% · MVP ${f(fav[1][4])}번 · 피해 ${f(fav[1][2])}</span></div></div>` : ''}
+  ${sec('기록실', '', `<div class="u2-pst-grid">
+    ${s.hit ? tile('', '최고의 한 판', f(s.hit.v), `${nm(s.hit.id)} · 한 판 동안 준 피해`, s.hit.id) : ''}
+    ${s.kr ? tile('', '학살자', `${f(s.kr.v)}명`, `${nm(s.kr.id)} · 한 라운드 최다 처치`, s.kr.id) : ''}
+    ${tile('⚔️', '준 피해', f(s.dmg), `판당 ${f(s.gd ? s.dmg / s.gd : 0)}`)}
+    ${tile('🩸', '받은 피해', f(s.tk), '')}
+    ${tile('💀', '처치', f(s.k), `쓰러진 내 지후 ${f(s.d)}`)}
+    ${tile('🔥', '한 판 팀 최고 피해', f(s.bigM), '')}
+    ${tile('🔁', '역전승', `${f(s.cb)}번`, '라이프 1 까지 몰렸다가')}
+    ${tile('😅', '진땀승', `${f(s.cl)}번`, '라이프 1 남기고')}
+    ${tile('👑', '완승', `${f(s.fl)}번`, '라이프 하나도 안 잃고')}
+    ${tile('📉', '최장 연패', `${f(s.bls)}연패`, '')}
+    ${tile('⏱', '가장 빠른 라운드 승리', s.fastR ? mmss(s.fastR) : '—', '')}
+    ${tile('🐢', '가장 긴 라운드', s.longR ? mmss(s.longR) : '—', `한 판 최다 ${f(s.maxRn)}라운드`)}
+  </div>`)}
+  ${sec('지후별 전적', `써 본 지후 ${used} / ${dex}`, `<div class="u2-pst-chs">${charRows}</div>${cs.length > 8 ? `<div class="u2-pst-more" data-pst-all="${all ? 0 : 1}">${all ? '접기' : `전체 ${cs.length}종 보기`}</div>` : ''}`)}
+  ${nem || prey ? sec('상대 지후', '상대 덱에 있을 때 내 승률 · 3판 이상', `<div class="u2-pst-grid">${nem ? tile('', '😈 천적', nm(nem[0]), `만나면 승률 ${pct(nem[1][0], nem[1][0] + nem[1][1])}% · ${f(nem[1][1])}패`, nem[0]) : ''}${prey ? tile('', '🍗 먹잇감', nm(prey[0]), `만나면 승률 ${pct(prey[1][0], prey[1][0] + prey[1][1])}% · ${f(prey[1][0])}승`, prey[0]) : ''}</div>`) : ''}
+  ${sec('진짜 쓸데없는 통계', '', `<div class="u2-pst-grid">
+    ${tile('🔥', '내 피해를 화염 지후로', `${f(s.dmg / 1020)}마리`, '체력 1,020 짜리 화염 지후')}
+    ${tile('🍜', '총 전투 시간', mmss(s.sec), `라면 ${f(s.sec / 240)}개 끓일 시간`)}
+    ${tile('⚰️', '지후 묘지', `${f(s.d)}기 안장`, '쓰러진 내 지후 · 명복을 빌어요')}
+    ${tile('🦉', '올빼미 지수', `${owl}%`, '새벽 0~6시에 한 판 비율')}
+    ${tile('🕐', '자주 하는 시간', hrs ? `${topH}시` : '—', hrs ? `${DAYS[topD]}요일에 제일 많이` : '')}
+    ${tile('🤝', '가장 많이 만난 상대', rival ? esc(rival[0]) : '—', rival ? `${f(rival[1])}판` : '')}
+    ${lucky ? tile('', '🍀 행운의 지후', nm(lucky[0]), `승률 ${pct(lucky[1][1], lucky[1][0])}% · 5판 이상`, lucky[0]) : ''}
+    ${unlucky && unlucky !== lucky ? tile('', '🌧 불운의 지후', nm(unlucky[0]), `승률 ${pct(unlucky[1][1], unlucky[1][0])}% · 미안해…`, unlucky[0]) : ''}
+    ${tile('🏳️', '백기 든 횟수', `${f(s.q)}번`, '포기한 판')}
+    ${tile('🕊', '평화주의자', `${f(s.rd)}번`, '양쪽 전멸 무승부 라운드')}
+    ${tile('⭐', 'Lv.5 달성', `${f(s.lv5)}번`, '전장에서 Lv.5 를 만든 판 × 지후')}
+    ${tile('📅', '평균', `하루 ${(G / days).toFixed(1)}판`, `첫 기록 ${new Date(s.since).toLocaleDateString('ko-KR')}`)}
+  </div>`)}
+  ${sec('시간대별 판 수', '', chart)}
+  <div class="u2-pst-note">${s.seed ? 'R2.14 이전 기록은 승패 · 일반전 덱 · 최근 30판만 들어 있어요 · 피해 · 처치 같은 자세한 기록은 R2.14 부터' : '자세한 기록은 R2.14 부터 쌓여요'} · 튜토리얼 · 관전 · 샌드박스는 빼요</div>
+</div>`;
+}
 // ═════════ 경기 통계 (전작): 라운드별 · 합계 — 가한 피해 · 받은 피해 · 처치 · 기여도 · MVP ═════════
 function recordRoundStats(w, timedOut) {
   if (!S.stats) S.stats = [];
@@ -7567,6 +7800,15 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
+  { v: 'R2.14', date: '2026.11.01', title: '개인 전적 · 리플레이 공유', sections: [
+    { title: '새 기능', items: [
+      { icon: '📊', name: '개인 전적', tag: 'new', desc: '프로필 맨 앞 <b>전적</b> 탭 · 모드별 승률 · <b>애착 지후</b> · 지후별 전적 · 최고의 한 판 · 역전승 · 천적 지후 · 시간대별 판 수까지.' },
+      { icon: '🤪', name: '진짜 쓸데없는 통계', tag: 'new', desc: '내 피해를 화염 지후로 치면 몇 마리 · 라면 몇 개 끓일 시간 · 지후 묘지 · 올빼미 지수 · 백기 든 횟수…' },
+      { icon: '🔗', name: '리플레이 공유', tag: 'new', desc: '전투기록의 🔗 · 결과 화면 <b>리플레이 공유</b> → 링크를 받은 친구는 <b>로그인 없이</b> 바로 그 판을 볼 수 있어요. 친구에게 1:1 로 바로 보내기도.' },
+      { icon: '⏯', name: '다시보기 컨트롤', tag: 'new', desc: '영상처럼 일시정지 · 이전 / 다음 라운드 · 1× 2× 3× 배속 · 라운드 진행 바 · 끝나면 처음부터 다시.' },
+      { icon: '💬', name: '채팅 리플레이 버튼', tag: 'new', desc: '채팅 · 1:1 에 리플레이 링크가 오면 [▶ 리플레이 보기] 버튼이 붙어요.' },
+    ] },
+  ] },
   { v: 'R2.12.3', date: '2026.11.01', title: '새 로딩 화면 · 화염 지후 리워크', sections: [
     { title: '새 기능', items: [
       { icon: '⏳', name: '로딩 화면', tag: 'new', desc: '게임을 켜면 지후와 <b>팁</b>이 나오는 새 로딩 화면 · 지후 깨우는 중 → 데이터를 불러오는 중 → 유저 불러오는 중 → 게임 대기열에 진입 중.' },
@@ -8661,7 +8903,7 @@ const u2Svg = (c, t) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="
 async function u2After(fn) { await fn(); const m = ($('shopMsg') || {}).textContent; if (m) { u2Toast(m); shopMsg(''); } else u2Render(); } // 상점 동작 뒤 메시지는 토스트로
 
 function u2ProfileVals(s) { // 프로필 시트: 테두리 · 대표 지후 · 닉네임 (첫 번째 무료 · 그다음 ● 100 · 24시간에 한 번)
-  const ph = myPhoto(), free = !(profile.nickN > 0), left = nickLeft(), f0 = FRAME[profile.frame] || FRAME.none, tab = s.pfTab || 'frame', draft = s.nickDraft == null ? profile.nick || '' : s.nickDraft;
+  const ph = myPhoto(), free = !(profile.nickN > 0), left = nickLeft(), f0 = FRAME[profile.frame] || FRAME.none, tab = s.pfTab || 'stat', draft = s.nickDraft == null ? profile.nick || '' : s.nickDraft;
   const nk = left > 0 ? ['#3b466b', '#9aa3bf', '#252d48'] : free ? ['#53d3c0', '#08342e', '#2a9483'] : ['#ffc94a', '#3b2600', '#c98a1c'];
   const go = () => changeNick(UI2.st.nickDraft == null ? profile.nick : UI2.st.nickDraft).then(fr => { UI2.st.nickDraft = null; u2Toast(fr ? '닉네임을 바꿨어요 · 첫 변경 무료' : `닉네임을 바꿨어요 · ● ${NICK_GOLD}`); }).catch(e => u2Toast(e.message));
   return {
@@ -8669,7 +8911,8 @@ function u2ProfileVals(s) { // 프로필 시트: 테두리 · 대표 지후 · �
     nickDraft: draft, onNick: e => { UI2.st.nickDraft = e.target.value; }, onNickKey: e => { if (e.key === 'Enter') go(); }, nickGo: go,
     nickBtn: left > 0 ? Math.ceil(left / 3600000) + '시간 뒤' : free ? '무료 변경' : '● ' + NICK_GOLD, nickBg: nk[0], nickFc: nk[1], nickEdge: nk[2],
     nickNote: left > 0 ? '닉네임은 24시간에 한 번 바꿀 수 있어요' : free ? '첫 번째 변경은 무료 · 그다음부터 ● 100 · 24시간에 한 번' : `● ${NICK_GOLD} · 24시간에 한 번 · 1~12자`,
-    tabs: [['frame', '테두리', framesReady() > 0], ['fav', '대표 지후', false]].map(([k, label, dot]) => ({ label, dot, bg: tab === k ? '#3b466b' : 'transparent', fc: tab === k ? '#fff' : '#9aa3bf', onClick: () => u2Set({ pfTab: k }) })), isFrame: tab === 'frame', isFav: tab === 'fav',
+    stat: tab === 'stat' ? { html: pstHtml(!!s.pstAll) } : '', isStat: tab === 'stat', statClick: e => { const b = e.target.closest('[data-pst-all]'); if (b) u2Set({ pstAll: b.dataset.pstAll === '1' }); },
+    tabs: [['stat', '전적', false], ['frame', '테두리', framesReady() > 0], ['fav', '대표 지후', false]].map(([k, label, dot]) => ({ label, dot, bg: tab === k ? '#3b466b' : 'transparent', fc: tab === k ? '#fff' : '#9aa3bf', onClick: () => u2Set({ pfTab: k }) })), isFrame: tab === 'frame', isFav: tab === 'fav',
     frames: FRAMES.map(g => { const st = frameState(g); return { pf: { html: pfHtml(g.id, 56, ph, { lock: st === 'lock' }) }, name: g.name, cond: g.kind === 'free' ? '처음부터 보유' : g.kind === 'lv' ? `레벨 ${g.need} 달성` : `일반전 ${g.need}연승`, dot: st === 'claim',
       line: st === 'eq' ? '#53d3c0' : st === 'claim' ? '#ffc94a' : '#3b466b', btn: { eq: '장착 중', own: '장착', claim: '받기', lock: g.kind === 'lv' ? `Lv ${Math.min(frameHave(g), g.need)} / ${g.need}` : `${Math.min(frameHave(g), g.need)} / ${g.need}` }[st],
       btnBg: { eq: '#53d3c0', own: '#3b466b', claim: '#ffc94a', lock: '#1a2034' }[st], btnFc: { eq: '#08342e', own: '#f2f4fa', claim: '#3b2600', lock: '#9aa3bf' }[st],
@@ -8798,11 +9041,11 @@ function u2Vals() {
         go: b.ready ? claim : () => u2Set({ att: false, attGot: null }), goCls: b.ready ? 'on' : '', goLabel: b.ready ? `${b.days + 1}일차 보상 받기` : '오늘 출석 완료!',
         foot: b.ready ? '빠진 날이 있어도 다음 칸부터 이어서 받아요' : `다음 출석까지 ${left}`,
         burst: !!got, confetti: got ? Array.from({ length: 26 }, (_, k) => ({ x: (8 + (k * 37) % 84) + '%', c: ['#ffc94a', '#53d3c0', '#ff5d6c', '#7cc8ff', '#c89bff'][k % 5], d: ((k % 7) * 0.03).toFixed(2) + 's', dx: ((k % 2 ? 1 : -1) * (20 + (k * 13) % 60)) + 'px', r: ((k * 47) % 360) + 'deg' })) : [] }; })() : {},
-    hasHist: !!s.hist, histClose: () => u2Set({ hist: false }), histEmpty: !(profile.mlog || []).length, histNote: `최근 ${(profile.mlog || []).length}판 · 기록은 계정에 (최대 30판) · ▶ 다시보기는 이 기기의 최근 ${RP_MAX}판`,
+    hasHist: !!s.hist, histClose: () => u2Set({ hist: false }), histEmpty: !(profile.mlog || []).length, histNote: `최근 ${(profile.mlog || []).length}판 · 기록은 계정에 (최대 30판) · ▶ 다시보기는 이 기기의 최근 ${RP_MAX}판 · 🔗 를 누르면 친구가 바로 볼 수 있는 링크`,
     hist: s.hist ? (rpAt => (profile.mlog || []).map(m => { const W = (m.r || '').split('').filter(x => x === 'W').length, Lr = (m.r || '').split('').filter(x => x === 'L').length, kind = { normal: '일반전', friendly: '친선전', mirror: '미러전', comp: '경쟁전', tower: '지후의 탑', sandbox: '샌드박스', reels: '릴스' }[m.kind] || m.kind;
       const dk = L => (L || []).filter(id => CHARS[id]).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c }));
       const rpOk = rpAt.has(m.at);
-      return { rp: rpOk, rpGo: () => replayStart(m.at), res: m.win ? '승리' : '패배', color: m.win ? '#53d3c0' : '#ff7a85', line: m.win ? '#2a9483' : '#7a3a48', title: `${kind} · vs ${m.opp || '상대'}${m.olv ? ' Lv.' + m.olv : ''}`, when: agoTxt(m.at), score: `${W}승 ${Lr}패`, rounds: (m.r || '').split('').map((x, i) => ({ t: (i + 1) + 'R ' + (x === 'W' ? '승' : x === 'L' ? '패' : '무'), bg: x === 'W' ? '#53d3c0' : x === 'L' ? '#ff5d6c' : '#3b466b', fc: x === 'D' ? '#f2f4fa' : '#141826' })), me: dk(m.me), op: dk(m.op) }; }))(new Set(rpLoad().map(r => r.at))) : [],
+      return { rp: rpOk, rpGo: () => replayStart(m.at), rpShare: () => rpShare(m.at), res: m.win ? '승리' : '패배', color: m.win ? '#53d3c0' : '#ff7a85', line: m.win ? '#2a9483' : '#7a3a48', title: `${kind} · vs ${m.opp || '상대'}${m.olv ? ' Lv.' + m.olv : ''}`, when: agoTxt(m.at), score: `${W}승 ${Lr}패`, rounds: (m.r || '').split('').map((x, i) => ({ t: (i + 1) + 'R ' + (x === 'W' ? '승' : x === 'L' ? '패' : '무'), bg: x === 'W' ? '#53d3c0' : x === 'L' ? '#ff5d6c' : '#3b466b', fc: x === 'D' ? '#f2f4fa' : '#141826' })), me: dk(m.me), op: dk(m.op) }; }))(new Set(rpLoad().map(r => r.at))) : [],
     hasUinfo: !!s.uinfo, uinfoClose: () => u2Set({ uinfo: null }), ui: (() => { const u = s.uinfo; if (!u) return {}; const d = u.d || {}, w = Number(d.wins) || 0, l = Number(d.losses) || 0, fav = CHARS[d.fav] ? d.fav : 'fire';
       const seenAt = u.pr && u.pr.at ? ts(u.pr.at) : d.updatedAt ? ts(d.updatedAt) : 0, online = !!(u.pr && u.pr.at && Date.now() - ts(u.pr.at) < 150000); // 접속 신호(presence)가 2분 반 안이면 접속 중
       return { name: String(d.nickname || '유저'), loading: !!u.loading, err: u.err || '', ready: !u.loading && !u.err && !!u.d, lv: clamp(Number(d.level) || 1, 1, 999), pf: { html: pfHtml(d.frame, 84, fav, { letter: d.nickname }) }, favName: shortName(fav) + ' 지후', seen: online ? '🟢 지금 접속 중' : '최근 접속 · ' + agoTxt(seenAt),
@@ -8812,7 +9055,7 @@ function u2Vals() {
     recUse: () => { const L = (s.rec || []).slice(0, 5); if (!L.length) return; profile.deck.length = 0; L.forEach(id => profile.deck.push(id)); save(); mqCheck(); u2Set({ rec: null }); u2Toast(`덱 ${profile.preset}에 추천 덱을 넣었어요`); },
     rec: s.rec ? { preset: profile.preset, cards: s.rec.map(id => { const r = U2_RAR[CHARS[id].rarity]; return { img: u2Img(id), color: r.c, dark: r.d, name: shortName(id), role: CHARS[id].role }; }), // 티어는 보여 주지 않는다
       summary: [...new Set(s.rec.map(id => CHARS[id].role))].join(' · ') } : {},
-    openProfile: e => { e.stopPropagation(); u2Set({ profile: true, pfTab: s.pfTab || 'frame', nickDraft: null, menuOpen: false }); }, hasProfile: !!s.profile, closeProfile: () => u2Set({ profile: false, nickDraft: null }), pfv: s.profile ? u2ProfileVals(s) : {},
+    openProfile: e => { e.stopPropagation(); u2Set({ profile: true, pfTab: s.pfTab || 'stat', nickDraft: null, menuOpen: false, pstAll: false }); }, hasProfile: !!s.profile, closeProfile: () => u2Set({ profile: false, nickDraft: null }), pfv: s.profile ? u2ProfileVals(s) : {},
     isPage: !!pg, pageTitle: pg ? U2_PAGE[pg][0] : '', pageNote: pg === 'social' ? ($('tabSocialSub') || {}).textContent || '' : pg ? U2_PAGE[pg][1] : '', pageBack: () => u2Go(pg && U2_PAGE[pg][1] === '아케이드' ? 'arcade' : s.tab),
   };
 }
@@ -8941,6 +9184,9 @@ $('btnStart').addEventListener('click', () => { const n = $('nickInput').value.t
 attend(); questAdd('login', 1); // 오늘 접속 · 출석
 $('welcomeVer').textContent = gameVersion();
 if (AUTH.ok) { renderLobby(); show('lobby'); } else { renderGate('loading'); show('welcome'); } // R2.12: 로그인해야 시작 (accBoot 가 확인)
+const RP_OPEN = (RP_LINK_RE.exec(location.search) || [])[1]; // R2.14 공유 리플레이 링크
+if (RP_OPEN) { try { history.replaceState(null, '', location.pathname + location.search.replace(RP_LINK_RE, m => m[0] === '?' ? '?' : '').replace(/\?&/, '?').replace(/\?$/, '') + location.hash); } catch (e) {}
+  const t = setInterval(() => { if ($('boot')) return; clearInterval(t); rpOpenLink(RP_OPEN); }, 300); }
 runBoot(accBoot()); // 접속 로딩 (인트로 · R2.12.3: 유저 단계는 accBoot 를 기다린다) · accBoot: 남아 있는 로그인이면 서버 기록과 맞춘다 (처음이면 지후배틀 기록을 가져온다) · 친구 · 우편 · 점검
 startUpdateChecks(); // PWA 등록 + 5분마다 새 버전 확인
 // ── 벤치 (R2.12): ?bench=50 → 샌드박스로 양쪽 n/2 기씩 (칸 15 + 나머지는 진영 안 아무 데나) · 왼쪽 위에 FPS · 가장 느린 프레임 · 전투 계산 ms ──
@@ -8967,7 +9213,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { showReveal, lifeFx, openTower, renderTower, replayStart, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, u2Set, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
