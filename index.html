@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.14"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.14"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -205,7 +205,15 @@ body.replaying #screen-battle .hud::after, body.replaying #deployTip { display:n
 .u2-rps .rp-fh { font-weight:800; color:#9aa3bf; font-size:12px; } .u2-rps .rp-frs { display:flex; flex-wrap:wrap; gap:6px; max-height:132px; overflow-y:auto; }
 .u2-rps .rp-frs button { height:32px; font-size:13px; } .u2-rps .rp-frs button.sent { background:#2a9483; color:#eafff9; }
 .u2-rps .rp-st { min-height:18px; font-size:12px; color:#53d3c0; font-weight:700; }
-#chatList .cm .u2-cmrp { display:flex; margin-top:6px; height:30px; padding:0 12px; align-items:center; border:0; border-radius:9px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 2px 0 #c98a1c; font-family:'Black Han Sans',var(--font); font-size:13px; cursor:pointer; }
+#chatList .cm .u2-cmrp { display:flex; flex-direction:column; gap:4px; margin-top:4px; min-width:190px; padding:10px 12px; border-radius:12px; background:#1a2034; border:1.5px solid #ffc94a; color:#f2f4fa; text-align:left; }
+#chatList .cm .u2-cmrp .rp-t { font-family:'Black Han Sans',var(--font); font-size:14px; } #chatList .cm .u2-cmrp .rp-t b { font-weight:400; color:#ffc94a; }
+#chatList .cm .u2-cmrp .rp-v { font-size:11px; color:#9aa3bf; }
+#chatList .cm .u2-cmrp button { height:32px; margin-top:2px; border:0; border-radius:9px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 2px 0 #c98a1c; font-family:'Black Han Sans',var(--font); font-size:14px; cursor:pointer; } #chatList .cm .u2-cmrp button:disabled { opacity:.4; cursor:default; }
+.u2-rps .rp-card { display:flex; gap:10px; align-items:center; padding:10px 12px; border-radius:12px; background:#1a2034; border:1.5px solid #ffc94a; } .u2-rps .rp-card i { font-style:normal; font-size:22px; } .u2-rps .rp-card div { display:flex; flex-direction:column; } .u2-rps .rp-card b { font-family:'Black Han Sans',var(--font); font-weight:400; font-size:16px; color:#ffc94a; } .u2-rps .rp-card small { font-size:12px; color:#9aa3bf; }
+.u2-rps .rp-link textarea { flex:1; min-width:0; resize:none; border-radius:10px; border:1px solid #46527a; background:#1a2034; color:#f2f4fa; padding:8px 10px; font-size:12px; line-height:1.4; }
+.u2-rpl { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; } .u2-rpl .rp-side { display:flex; flex-direction:column; align-items:center; gap:5px; } .u2-rpl .rp-side b { font-family:'Black Han Sans',var(--font); font-weight:400; font-size:16px; color:#f2f4fa; }
+.u2-rpl .rp-dk { display:flex; gap:5px; } .u2-rpl .rp-dk span { width:38px; height:38px; box-sizing:border-box; border:2.5px solid; border-radius:10px; background:#fff; overflow:hidden; display:flex; } .u2-rpl .rp-dk img { width:100%; height:100%; object-fit:contain; }
+.u2-rpl .rp-vs { font-style:normal; font-family:'Black Han Sans',var(--font); font-size:20px; color:#ffc94a; } .u2-rpl small { font-size:12px; color:#9aa3bf; }
 /* R2.14 개인 전적 (프로필 '전적' 탭) */
 #ui2 .u2-pst { display:flex; flex-direction:column; gap:14px; }
 #ui2 .u2-pst-empty { text-align:center; padding:34px 0; font-family:'Black Han Sans'; font-size:18px; color:#c9d0e6; } #ui2 .u2-pst-empty small { font-size:12px; color:#9aa3bf; }
@@ -5679,11 +5687,14 @@ function replayExit() { const R = S.replay; S.replay = null; clearTimeout(S.late
 const RPS_KEY = 'rejhbt-rps'; // 이 기기에서 이미 올린 판: at → 문서 id
 function rpsGet() { try { const o = JSON.parse(localStorage.getItem(RPS_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
 function rpsSet(at, id) { const o = rpsGet(); o[at] = id; const ks = Object.keys(o); if (ks.length > 40) delete o[ks.sort((x, y) => x - y)[0]]; try { localStorage.setItem(RPS_KEY, JSON.stringify(o)); } catch (e) {} }
-const rpLinkUrl = id => location.origin + location.pathname.replace(/index\.html$/, '') + '?rp=' + encodeURIComponent(id);
+const rpLinkUrl = id => location.origin + location.pathname.replace(/index\.html$/, '') + 'replay/?rp=' + encodeURIComponent(id); // build 2: replay/ 페이지가 미리보기(og) 를 따로 갖고 게임(?rp=)으로 넘긴다
+const rpMsg = (nick, url) => `🎬 ${nick || '지후'}님의 지후배틀 리플레이 ${url}`; // 복사 · 1:1 문구 (전체 채팅 120자 안에 들어가게 짧게)
+const RPM = {}; // 공유 리플레이 문서 (id → 프로미스 · 채팅 카드 · 안내 카드)
+function rpGet(id) { if (!RPM[id]) RPM[id] = (async () => { if (!(await fbInit())) { delete RPM[id]; return null; } try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2rp', id)); return snap.exists() ? snap.data() : null; } catch (e) { return null; } })(); return RPM[id]; }
 const RP_LINK_RE = /[?&]rp=([A-Za-z0-9_]{6,80})/;
 async function rpShare(at) {
   const rec = rpLoad().find(r => r.at === at); if (!rec || !rec.rounds.length) return dlg({ icon: '🎬', title: '이 기기에 저장된 리플레이가 없어요', html: '리플레이는 이 기기에서 한 최근 10판만 남아요.' });
-  let id = rpsGet()[at];
+  let id = rpsGet()[at]; const s00 = (rec.rounds[0] && rec.rounds[0].s) || {}, me0 = rec.me || 'a', meta = { nick: (profile.nick || '지후').slice(0, 12), pn: String((s00.nick && s00.nick[me0]) || profile.nick || '').slice(0, 12), on: String((s00.nick && s00.nick[me0 === 'a' ? 'e' : 'a']) || '').slice(0, 12) };
   if (!id) {
     if (!(await fbInit()) || !FB.uid || ACC.banned) return dlg({ icon: '📡', title: '온라인에 연결할 수 없어요', html: '네트워크를 확인하고 다시 시도해 주세요.' }); // 게스트(익명 로그인)도 공유할 수 있다 (R2.13 로그인 선택)
     if (FB.noRp) return dlg({ icon: '🛠', title: '리플레이 공유 준비 중', html: '서버 설정이 끝나면 바로 쓸 수 있어요.' });
@@ -5694,29 +5705,35 @@ async function rpShare(at) {
     try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2rp', id), doc); rpsSet(at, id); }
     catch (e) { if (e && e.code === 'permission-denied') { FB.noRp = true; return dlg({ icon: '🛠', title: '리플레이 공유 준비 중', html: '서버 설정이 끝나면 바로 쓸 수 있어요.' }); } console.warn('[rejhbt] 리플레이 공유 실패', e); return dlg({ icon: '📡', title: '올리지 못했어요', html: '잠시 뒤에 다시 시도해 주세요.' }); }
   }
-  rpShareSheet(id);
+  rpShareSheet(id, meta);
 }
 async function rpCopy(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { const i = document.createElement('textarea'); i.value = t; document.body.appendChild(i); i.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (er) {} i.remove(); return ok; } }
-function rpShareSheet(id) {
-  const url = rpLinkUrl(id), fr = (typeof ON !== 'undefined' && Array.isArray(ON.fr) ? ON.fr : []).filter(f => f.status === 'accepted');
-  dlg({ icon: '🔗', title: '리플레이 링크', ok: navigator.share ? '공유하기' : '링크 복사', cancel: '닫기', html: `<div class="u2-rps"><p>링크를 받은 사람은 <b>로그인 없이</b> 바로 이 판을 볼 수 있어요.</p><div class="rp-link"><input readonly value="${esc(url)}"><button type="button" data-rpcopy>복사</button></div>${fr.length ? `<p class="rp-fh">친구에게 1:1 로 보내기</p><div class="rp-frs">${fr.slice(0, 30).map(f => `<button type="button" data-rpf="${esc(f.id)}">${esc(f.nick)}</button>`).join('')}</div>` : ''}<p class="rp-st" id="rpSt"></p></div>` })
-    .then(async ok => { if (!ok) return; if (navigator.share) { try { await navigator.share({ title: 'RE : 지후배틀 리플레이', text: `${profile.nick || '지후'}님의 지후배틀 리플레이`, url }); } catch (e) {} } else if (await rpCopy(url)) banner('링크를 복사했어요'); });
+function rpShareSheet(id, meta) {
+  const m = meta || {}, url = rpLinkUrl(id), msg = rpMsg(m.nick, url), fr = (typeof ON !== 'undefined' && Array.isArray(ON.fr) ? ON.fr : []).filter(f => f.status === 'accepted');
+  dlg({ icon: '🔗', title: '리플레이 링크', ok: navigator.share ? '공유하기' : '복사하기', cancel: '닫기', html: `<div class="u2-rps"><div class="rp-card"><i>🎬</i><div><b>${esc(m.nick || '지후')}님의 리플레이</b>${m.pn || m.on ? `<small>${esc(m.pn || '?')} VS ${esc(m.on || '?')}</small>` : ''}</div></div><p>링크와 함께 <b>누구의 리플레이인지</b> 같이 보내져요. 받은 사람은 링크를 열고 <b>[▶ 리플레이 보기]</b>를 누르면 돼요.</p><div class="rp-link"><textarea readonly rows="3">${esc(msg)}</textarea><button type="button" data-rpcopy>복사</button></div>${fr.length ? `<p class="rp-fh">친구에게 1:1 로 보내기</p><div class="rp-frs">${fr.slice(0, 30).map(f => `<button type="button" data-rpf="${esc(f.id)}">${esc(f.nick)}</button>`).join('')}</div>` : ''}<p class="rp-st" id="rpSt"></p></div>` })
+    .then(async ok => { if (!ok) return; if (navigator.share) { try { await navigator.share({ title: `${m.nick || '지후'}님의 지후배틀 리플레이`, text: `🎬 ${m.nick || '지후'}님의 지후배틀 리플레이${m.pn || m.on ? ` (${m.pn || '?'} VS ${m.on || '?'})` : ''}`, url }); } catch (e) {} } else if (await rpCopy(msg)) banner('링크를 복사했어요'); });
   const box = $('dlgBody'), st = () => $('rpSt');
-  box.querySelector('[data-rpcopy]').onclick = async () => { st().textContent = (await rpCopy(url)) ? '링크를 복사했어요 ✓' : '복사하지 못했어요 · 길게 눌러 복사해 주세요'; };
-  box.querySelector('input').onclick = e => e.target.select();
+  box.querySelector('[data-rpcopy]').onclick = async () => { st().textContent = (await rpCopy(msg)) ? '복사했어요 ✓ 메신저에 붙여 넣어 보내세요' : '복사하지 못했어요 · 길게 눌러 복사해 주세요'; };
+  box.querySelector('textarea').onclick = e => e.target.select();
   box.querySelectorAll('[data-rpf]').forEach(b => b.onclick = async () => { if (b.disabled) return; b.disabled = true;
-    try { await FB.sdk.addDoc(FB.sdk.collection(FB.db, 'dm', b.dataset.rpf, 'msgs'), { uid: myUid(), text: ('리플레이 봐 줘! ' + url).slice(0, 200), at: FB.sdk.serverTimestamp() }); b.classList.add('sent'); b.textContent = '✓ ' + b.textContent; }
+    try { await FB.sdk.addDoc(FB.sdk.collection(FB.db, 'dm', b.dataset.rpf, 'msgs'), { uid: myUid(), text: rpMsg(m.nick, url).slice(0, 200), at: FB.sdk.serverTimestamp() }); b.classList.add('sent'); b.textContent = '✓ ' + b.textContent; }
     catch (e) { b.disabled = false; st().textContent = '보내지 못했어요 · 잠시 뒤에 다시'; } });
 }
-async function rpOpenLink(id) { // 링크 · 채팅 버튼으로 연 리플레이
-  try { return await rpOpenLink2(id); } finally { if (RP.pend) { RP.pend = false; if (!S.replay) setTimeout(updCheck, 400); } } // 켤 때 링크: 못 열면 원래 순서대로 (만화 · 튜토리얼 · 업데이트 창)
+async function rpOpenLink(id, ask) { // 링크(ask: 안내 카드부터) · 채팅 버튼으로 연 리플레이
+  try { return await rpOpenLink2(id, ask); } finally { if (RP.pend) { RP.pend = false; if (!S.replay) setTimeout(updCheck, 400); } } // 켤 때 링크: 못 열면 원래 순서대로 (만화 · 튜토리얼 · 업데이트 창)
 }
-async function rpOpenLink2(id) {
+async function rpOpenLink2(id, ask) {
   if (!/^[A-Za-z0-9_]{6,80}$/.test(id)) return;
   if (['deploy', 'combat', 'roundEnd'].includes(S.phase) && !S.replay) return dlg({ icon: '🎬', title: '경기가 끝난 뒤에 볼 수 있어요' });
-  let d = null; if (await fbInit()) { try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2rp', id)); d = snap.exists() ? snap.data() : null; } catch (e) { d = null; } } else return dlg({ icon: '📡', title: '리플레이를 불러오지 못했어요', html: '인터넷 연결을 확인해 주세요.' });
-  let o = null; try { o = d && JSON.parse(d.d); } catch (e) { o = null; }
+  if (!(await fbInit())) return dlg({ icon: '📡', title: '리플레이를 불러오지 못했어요', html: '인터넷 연결을 확인해 주세요.' });
+  const d = await rpGet(id); let o = null; try { o = d && JSON.parse(d.d); } catch (e) { o = null; }
   if (!o || !Array.isArray(o.rounds) || !o.rounds.length) return dlg({ icon: '🎬', title: '리플레이를 찾을 수 없어요', html: '링크가 잘못됐거나 지워진 리플레이예요.' });
+  if (ask) { // build 2: 링크로 열면 누구의 리플레이인지 먼저 보여 주고 [▶ 리플레이 보기] 를 눌러서 (소리도 이때부터 난다)
+    const s0 = o.rounds[0].s || {}, me = o.me === 'e' ? 'e' : 'a', op = me === 'a' ? 'e' : 'a', kind = { normal: '일반전', friendly: '친선전', mirror: '미러전', comp: '경쟁전', tower: '지후의 탑' }[d.kind] || '아케이드';
+    const deck = side => `<div class="rp-dk">${((s0.deck && s0.deck[side]) || []).filter(x => CHARS[x]).slice(0, 5).map(x => `<span style="border-color:${U2_RAR[CHARS[x].rarity].c}"><img src="${u2Img(x)}" alt=""></span>`).join('')}</div>`;
+    const when = Number(d.at) ? new Date(Number(d.at)).toLocaleDateString('ko-KR') : '';
+    if (!(await dlg({ icon: '🎬', title: `${String(d.nick || '지후')}님의 리플레이`, ok: '▶ 리플레이 보기', cancel: '닫기', html: `<div class="u2-rpl"><div class="rp-side"><b>${esc(d.pn || '?')}</b>${deck(me)}</div><i class="rp-vs">VS</i><div class="rp-side"><b>${esc(d.on || '?')}</b>${deck(op)}</div><small>${kind} · ${o.rounds.length}라운드${when ? ' · ' + when : ''}</small></div>` }))) return;
+  }
   RP.pend = false; replayStart({ at: Number(d.at) || 0, b: String(d.b || ''), me: o.me === 'e' ? 'e' : 'a', rounds: o.rounds, shared: { id, nick: String(d.nick || ''), pn: String(d.pn || ''), on: String(d.on || '') } });
 }
 // ── 다시보기 컨트롤 (R2.14 · 영상처럼): ⏮ 이전 라운드 · ⏯ 일시정지 · ⏭ 다음 라운드 · 배속 1× / 2× / 3× · 라운드 진행 바 · 끝나면 ↻ 처음부터 ──
@@ -5730,7 +5747,7 @@ function rpCtlEl() { let el = $('rpCtl'); if (!el) { el = document.createElement
     else if (a === 'again') rpJump(0);
     else if (a === 'exit') replayExit();
     else if (a === 'join') { replayExit(); }
-    else if (a === 'share' && R.rec.shared) rpShareSheet(R.rec.shared.id); }); }
+    else if (a === 'share' && R.rec.shared) rpShareSheet(R.rec.shared.id, R.rec.shared); }); }
   return el; }
 function rpCtlRender() { const R = S.replay, el = rpCtlEl(); if (!R) { el.innerHTML = ''; return; } const n = R.rec.rounds.length, sh = R.rec.shared;
   const tr = document.querySelector('#screen-battle .tray'), tb = tr && tr.getBoundingClientRect(); if (tb && tb.height) el.style.bottom = Math.max(14, Math.round(innerHeight - tb.top + 10)) + 'px'; // 아래 바 바로 위
@@ -6756,13 +6773,20 @@ function renderFriends() {
 $('btnFriendAdd').addEventListener('click', () => { $('fAdd').hidden = !$('fAdd').hidden; if (!$('fAdd').hidden) $('fAddIn').focus(); });
 $('fAdd').addEventListener('submit', async e => { e.preventDefault(); const n = $('fAddIn').value.trim(); if (!n) return friendMsg('닉네임을 입력하세요.', 'err'); friendMsg('보내는 중…', ''); try { const r = await friendRequest(n); $('fAddIn').value = ''; friendMsg(r.accepted ? `${r.nick}님과 친구가 됐어요!` : `${r.nick}님에게 친구 요청을 보냈어요.`, 'ok'); } catch (err) { friendMsg(err.message || '요청하지 못했어요.', 'err'); } });
 $('fSpec').addEventListener('click', () => { profile.spec = profile.spec === false; save(); renderFriends(); });
+function rpCard(id, nm) { // 채팅 리플레이 카드 · 문서를 읽으면 rpCardFill 이 채운다
+  return `<span class="u2-cmrp" data-rpcard="${esc(id)}"><span class="rp-t">🎬 <b>${nm ? esc(nm) + '님의 리플레이' : '리플레이'}</b></span><small class="rp-v">불러오는 중…</small><button type="button" data-rpid="${esc(id)}">▶ 리플레이 보기</button></span>`;
+}
+function rpCardFill(root) { root.querySelectorAll('[data-rpcard]').forEach(c => rpGet(c.dataset.rpcard).then(d => { if (!c.isConnected) return; const v = c.querySelector('.rp-v');
+  if (!d) { v.textContent = '지워졌거나 볼 수 없는 리플레이'; c.querySelector('button').disabled = true; return; }
+  c.querySelector('.rp-t b').textContent = String(d.nick || '지후') + '님의 리플레이'; v.textContent = `${d.pn || '?'} VS ${d.on || '?'} · ${Number(d.n) || 1}라운드`; })); }
 function renderChat() {
   const member = isMember(); if (SOC.tab === 'dm' && (!SOC.dm || !member)) SOC.tab = 'chat';
   const dm = SOC.tab === 'dm' && SOC.dm, mine = m => m.uid === myUid();
   $('chatHead').innerHTML = dm ? `<span class="who2"><h2>${esc(SOC.dm.nick)}</h2><small>1:1 · ${presenceOf(SOC.dm.uid).label}</small></span><span class="sp"></span><button class="g-btn" id="dmBack">전체 채팅</button>`
     : `<h2>전체 채팅</h2><small>욕설 검열 · 도배 방지 3초</small><span class="sp"></span><span class="conn" id="socConn">${SOC.conn || '연결 중…'}</span>`;
   if ($('dmBack')) $('dmBack').onclick = () => { dmClose(); renderSocial(); };
-  const bubble = (m, name) => { const rp = RP_LINK_RE.exec(String(m.text || '')); return `<div class="cm${mine(m) ? ' me' : ''}">${mine(m) ? '' : `<b>${esc(name)}</b>`}<span class="tx">${esc(censorText(m.text))}${rp ? `<button type="button" class="u2-cmrp" data-rpid="${esc(rp[1])}">▶ 리플레이 보기</button>` : ''}</span><span class="t">${hhmm(m.at)}</span></div>`; }; // R2.14 리플레이 링크는 버튼으로
+  const bubble = (m, name) => { const raw = String(m.text || ''), rp = RP_LINK_RE.exec(raw), txt = rp ? raw.replace(/\S*[?&]rp=[A-Za-z0-9_]+\S*/g, '').replace(/🎬\s*\S.{0,11}님의 (지후배틀 )?리플레이/, '').trim() : raw;
+    return `<div class="cm${mine(m) ? ' me' : ''}">${mine(m) ? '' : `<b>${esc(name)}</b>`}<span class="tx">${txt ? esc(censorText(txt)) : ''}${rp ? rpCard(rp[1], (/🎬\s*(\S.{0,11}?)님의/.exec(raw) || [])[1]) : ''}</span><span class="t">${hhmm(m.at)}</span></div>`; }; // R2.14 리플레이 링크는 카드로 (build 2: 링크 글자는 숨기고 누구의 리플레이인지)
   let lines;
   if (dm) {
     lines = SOC.dmMsgs === undefined ? '<div class="chat-empty">불러오는 중…</div>' : SOC.dmMsgs === null ? '<div class="chat-empty">대화를 불러오지 못했어요. (방금 친구가 됐다면 잠시 뒤에 다시)</div>'
@@ -6776,7 +6800,7 @@ function renderChat() {
   const list = $('chatList'), key = (dm ? 'dm:' + SOC.dm.id : 'chat') + (member ? ':m' : ''), foot = $('chatFoot'), fresh = foot.dataset.k !== key;
   const stick = fresh || list.scrollHeight - list.scrollTop - list.clientHeight < 40;
   list.innerHTML = lines; if (stick) list.scrollTop = list.scrollHeight;
-  list.querySelectorAll('[data-rpid]').forEach(b => b.onclick = () => rpOpenLink(b.dataset.rpid));
+  list.querySelectorAll('[data-rpid]').forEach(b => b.onclick = () => rpOpenLink(b.dataset.rpid)); rpCardFill(list);
   if (fresh) { // 입력칸은 대화 상대가 바뀔 때만 다시 만든다 (쓰던 글이 지워지지 않게)
     foot.dataset.k = key;
     foot.innerHTML = member ? `<form class="chat-form" id="chatForm"><input id="chatIn" maxlength="${dm ? 200 : 120}" placeholder="${dm ? '메시지 보내기' : '메시지 보내기 · 욕설은 가려져요'}" autocomplete="off"><button class="k-btn">보내기</button></form><div class="chat-status" id="chatSt"></div>` : '<div class="note">채팅을 보내려면 <b>계정</b>으로 로그인하세요.</div>';
@@ -7990,9 +8014,9 @@ const PATCH_NOTES = [
     { title: '새 기능', items: [
       { icon: '📊', name: '개인 전적', tag: 'new', desc: '프로필 맨 앞 <b>전적</b> 탭 · 모드별 승률 · <b>애착 지후</b> · 지후별 전적 · 최고의 한 판 · 역전승 · 천적 지후 · 시간대별 판 수까지.' },
       { icon: '🤪', name: '진짜 쓸데없는 통계', tag: 'new', desc: '내 피해를 화염 지후로 치면 몇 마리 · 라면 몇 개 끓일 시간 · 지후 묘지 · 올빼미 지수 · 백기 든 횟수…' },
-      { icon: '🔗', name: '리플레이 공유', tag: 'new', desc: '전투기록의 🔗 · 결과 화면 <b>리플레이 공유</b> → 링크를 받은 친구는 <b>로그인 없이</b> 바로 그 판을 볼 수 있어요. 친구에게 1:1 로 바로 보내기도.' },
+      { icon: '🔗', name: '리플레이 공유', tag: 'new', desc: '전투기록의 🔗 · 결과 화면 <b>리플레이 공유</b> → <b>「OO님의 지후배틀 리플레이」</b> 와 링크가 같이 보내져요. 받은 친구는 링크를 열고 <b>[▶ 리플레이 보기]</b> 를 누르면 끝. 친구에게 1:1 로 바로 보내기도.' },
       { icon: '⏯', name: '다시보기 컨트롤', tag: 'new', desc: '영상처럼 일시정지 · 이전 / 다음 라운드 · 1× 2× 3× 배속 · 라운드 진행 바 · 끝나면 처음부터 다시.' },
-      { icon: '💬', name: '채팅 리플레이 버튼', tag: 'new', desc: '채팅 · 1:1 에 리플레이 링크가 오면 [▶ 리플레이 보기] 버튼이 붙어요.' },
+      { icon: '💬', name: '채팅 리플레이 카드', tag: 'new', desc: '채팅 · 1:1 에 리플레이 링크가 오면 <b>누구의 리플레이 · 누구 VS 누구</b> 카드와 [▶ 리플레이 보기] 버튼으로 보여요.' },
     ] },
   ] },
   { v: 'R2.13.2', date: '2026.11.01', title: '크레딧 · 배경음악 · 봇', sections: [
@@ -9444,7 +9468,7 @@ $('welcomeVer').textContent = gameVersion();
 if (AUTH.ok) { renderLobby(); show('lobby'); } else { renderGate('loading'); show('welcome'); } // R2.12: 로그인해야 시작 (accBoot 가 확인)
 const RP_OPEN = (RP_LINK_RE.exec(location.search) || [])[1]; // R2.14 공유 리플레이 링크
 if (RP_OPEN) { RP.pend = true; try { history.replaceState(null, '', location.pathname + location.search.replace(RP_LINK_RE, m => m[0] === '?' ? '?' : '').replace(/\?&/, '?').replace(/\?$/, '') + location.hash); } catch (e) {}
-  const t = setInterval(() => { if ($('boot')) return; clearInterval(t); rpOpenLink(RP_OPEN); }, 300); }
+  const t = setInterval(() => { if ($('boot')) return; clearInterval(t); rpOpenLink(RP_OPEN, true); }, 300); } // 안내 카드 → [▶ 리플레이 보기]
 runBoot(accBoot()); // 접속 로딩 (인트로 · R2.12.3: 유저 단계는 accBoot 를 기다린다) · accBoot: 남아 있는 로그인이면 서버 기록과 맞춘다 (처음이면 지후배틀 기록을 가져온다) · 친구 · 우편 · 점검
 startUpdateChecks(); // PWA 등록 + 5분마다 새 버전 확인
 // ── 벤치 (R2.12): ?bench=50 → 샌드박스로 양쪽 n/2 기씩 (칸 15 + 나머지는 진영 안 아무 데나) · 왼쪽 위에 FPS · 가장 느린 프레임 · 전투 계산 ms ──
@@ -9471,7 +9495,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, u2Set, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
