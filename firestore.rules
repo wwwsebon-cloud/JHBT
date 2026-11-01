@@ -116,6 +116,15 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
     }
     // R2.7.2 지후의 탑 리더보드: r2tower/{uid} = { nickname, best(최고 층), fav, frame(없어도 됨), updatedAt }
+    // R2.13.2 크레딧 USERS: 한 판이라도 한 모든 닉네임 (게스트 익명 로그인 포함) · uid 마다 한 문서
+    match /r2users/{userId} {
+      allow get, list: if true;
+      allow delete: if owner(userId) || isAdmin();
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['nickname', 'at'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12
+        && request.resource.data.at == request.time;
+    }
     match /r2tower/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
