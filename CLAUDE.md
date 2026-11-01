@@ -175,6 +175,7 @@
 
 ## 소셜 · 우편 · 보상
 - **디스코드 알림 (R2.13 build 4)**: `discordNotify` 는 게스트(익명 로그인)도 보낸다 (중계 worker 는 익명 토큰도 검증 통과) · 가입 알림은 한 번만 (`profile.joinPosted` · 게스트는 닉네임을 정할 때 · 계정 가입 때는 아직 안 보냈으면)
+- **나간 판 = 패배 (R2.13.1 build 2)**: `newMatch` 끝 `liveMark()` 가 `profile.live` (arc · 덱 · 이름 · 레벨 · 라이프 · hist) 를 바로 저장 · 라운드 결과마다 갱신 · `endMatch` 맨 앞에서 지운다 → 남아 있으면 다음 접속 `updCheck` 에서 `liveForfeit()` = 그 상태로 `S.quit` + `endMatch(false)` (항복과 같은 정산 · 결과 화면). 제외: 친선전 · 튜토리얼 · 샌드박스 · 릴스 · 다시보기 (`LIVE_SKIP`). 판을 끝내는 새 경로를 만들면 `endMatch` 를 거치게 (안 그러면 다음 접속 때 패배가 된다)
 - **욕설 검사는 `hasBad(t)`** (`BAD_RE` 는 g 플래그라 `BAD_RE.test` 를 연달아 쓰면 lastIndex 때문에 번갈아 틀린다 · 닉네임 · 닉네임 변경) · 닉네임에 `/` 불가 (`nickKey`)
 - 친구 `friendships` (pending → accepted) · 접속 상태 `presence` (sp = 관전 가능한 판 번호) · 전체 채팅 `chat` · 공지 이벤트 `events` (join · level · gacha) · 1:1 `dm/<pair>/msgs` · 욕설 검열 · 도배 방지 3초
 - 운영 우편 `giftMail` (to = uid 또는 'all' · rewards: diamonds · gold · epicChar · legendChar) · R2_EPOCH 이전 우편은 받지 않는다
