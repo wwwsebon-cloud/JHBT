@@ -1,22 +1,23 @@
-"""RE : 지후배틀 업데이트 인포그래픽 (디스코드 공지용) — JSON → HTML. (R2.11 리워크: 모던 심플 · 밸런스는 연두 상향 / 빨강 하향 2단)
+"""RE : 지후배틀 업데이트 인포그래픽 (디스코드 공지용) — JSON → HTML. (R2.13 리워크: 상단 요약 패널 없음 · 한 줄 목록 · 간략하게)
 
 사용법:  python infographics/make.py infographics/R2.0.json   →  infographics/R2.0.html
          python infographics/shot.py infographics/R2.0.html   →  infographics/R2.0.png
 
 JSON 형식
 {
-  "version": "R2.0", "date": "2026.10.22", "title": "손맛 업데이트", "subtitle": "한 줄 설명",
+  "version": "R2.0", "date": "2026.10.22", "title": "손맛 업데이트", "subtitle": "한 줄 설명 (없어도 됨)",
   "width": 1600, "cols": 2,                                                    ← 없으면 1080 · 1단 (항목이 많으면 넓게 2단으로 · 너무 길쭉하지 않게)
-  "headline": [ { "icon": "✦", "title": "...", "desc": "..." }, ... ]          ← 크게 보여 줄 3개
+  "chars": ["fire", "ice"],                                                    ← 제목 옆 초상화 (없으면 기본 지후 5)
   "sections": [
     { "kind": "new" | "balance" | "change" | "fix", "label": "새 기능",
-      "items": [ { "icon": "✦" | "id": "fire", "title": "...", "lines": ["...", ...] } ] },
+      "items": [ { "icon": "✦" | "id": "fire", "title": "...", "lines": ["...", ...] } ] },   ← lines 는 「 · 」로 이어 한 줄 설명이 된다 (짧게)
     { "kind": "balance", "label": "밸런스",
       "stats": [ { "id": "ice", "stat": "공격력", "from": 33, "to": 70, "unit": "" },
                 { "id": "moon", "stat": "공격 간격", "from": 2.4, "to": 2, "unit": "초", "lower": true },   ← lower: 작을수록 좋은 수치
                 { "id": "x", "stat": "상한", "from": "없음", "to": 4, "unit": "개", "dir": "nerf" } ] }   ← 글자 값은 "dir": "buff" | "nerf" 로 방향을 직접
   ]
 }
+"headline" (예전 상단 요약 카드) 는 더 이상 그리지 않는다 (있어도 무시).
 """
 import html
 import json
@@ -30,41 +31,32 @@ e = html.escape
 CSS = r"""
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
 * { box-sizing:border-box; margin:0; }
-:root { --ink:#121316; --mut:#8a8c93; --line:#e7e7e3; --card:#f6f6f3; --buff:#8be04e; --buffd:#2f6b0f; --nerf:#ff5650; }
-body { background:#fff; font-family:'Pretendard Variable', Pretendard, 'Noto Sans CJK KR', sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; padding:64px 72px 48px; }
-.sp { flex:1; }
-.top { display:flex; align-items:center; gap:12px; font-size:15px; font-weight:700; color:var(--mut); letter-spacing:.04em; }
-.top .pill { padding:3px 11px; border-radius:999px; background:var(--ink); color:#fff; font-size:12px; letter-spacing:.12em; }
-.hero { display:flex; align-items:flex-end; gap:32px; margin:40px 0 8px; }
-.hero .t { flex:1; min-width:0; }
-.ver { font-size:128px; line-height:.9; font-weight:900; letter-spacing:-.055em; }
-h1 { word-break:keep-all; margin-top:22px; font-size:44px; line-height:1.2; font-weight:800; letter-spacing:-.03em; }
-.hero p { margin-top:10px; font-size:19px; color:var(--mut); font-weight:500; }
-.chars { display:flex; padding-right:12px; } .chars span { width:84px; height:84px; margin-right:-18px; border-radius:50%; overflow:hidden; background:#fff; border:4px solid #fff; box-shadow:0 0 0 1px var(--line); } .chars img, .p img, .pic img { width:100%; height:100%; object-fit:cover; display:block; }
-.heads { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin:44px 0 0; }
-.head { background:var(--card); border-radius:22px; padding:22px 24px; display:flex; flex-direction:column; gap:6px; }
-.head .ic { width:52px; height:52px; border-radius:50%; margin-bottom:8px; } .head b { font-size:21px; font-weight:800; letter-spacing:-.02em; } .head small { font-size:14.5px; line-height:1.45; color:var(--mut); font-weight:500; word-break:keep-all; }
-.ic { display:flex; align-items:center; justify-content:center; flex:none; width:44px; height:44px; border-radius:50%; background:var(--ink); color:#fff; font-size:21px; overflow:hidden; } .ic.p { background:#fff; box-shadow:0 0 0 1px var(--line); }
-.sec { margin-top:52px; }
-.sh { display:flex; align-items:center; gap:12px; padding-bottom:16px; border-bottom:1px solid var(--ink); }
-.sh h2 { font-size:26px; font-weight:800; letter-spacing:-.025em; } .sh .k { padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.1em; background:var(--ink); color:#fff; } .sh .k.balance { background:linear-gradient(90deg, var(--buff) 50%, var(--nerf) 50%); color:var(--ink); } .sh .n { margin-left:auto; font:700 13px ui-monospace, Consolas, monospace; color:var(--mut); }
-.items { display:grid; grid-template-columns:repeat(var(--cols), 1fr); gap:14px; margin-top:20px; align-items:start; }
-.item { display:flex; gap:16px; background:var(--card); border-radius:20px; padding:20px 22px; } .item b { display:block; font-size:19px; font-weight:800; letter-spacing:-.02em; margin:2px 0 8px; }
-.item ul { list-style:none; padding:0; display:flex; flex-direction:column; gap:6px; } .item li { position:relative; padding-left:13px; font-size:14.5px; line-height:1.5; font-weight:500; color:#3b3d44; word-break:keep-all; } .item li::before { content:''; position:absolute; left:0; top:.62em; width:5px; height:5px; border-radius:50%; background:var(--ink); }
-.bal { display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:24px; }
-.col > h3 { display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:14px; font-weight:800; letter-spacing:.12em; } .col > h3 i { width:10px; height:10px; border-radius:50%; background:var(--buff); } .col.nerf > h3 i { background:var(--nerf); } .col > h3 span { color:var(--mut); font-weight:600; letter-spacing:0; }
-.row { position:relative; display:flex; align-items:center; margin-bottom:12px; padding-left:34px; }
-.row .pic { position:absolute; left:0; z-index:2; width:70px; height:70px; border-radius:50%; overflow:hidden; background:#fff; border:4px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.08); }
-.row .pl { flex:1; min-height:64px; border-radius:18px; padding:8px 20px 8px 52px; margin-left:0; background:var(--buff); color:var(--ink); display:flex; align-items:center; gap:14px; }
-.row.nerf .pl { background:var(--nerf); color:#fff; }
-.row .pl small { flex:1; min-width:0; font-size:14px; line-height:1.3; font-weight:700; opacity:.78; word-break:keep-all; } .row .pl small b { display:block; font-size:16px; opacity:1; font-weight:800; }
-.row .pl em { font-style:normal; font-size:26px; font-weight:900; letter-spacing:-.03em; white-space:nowrap; } .row .pl em s { font-size:.66em; font-weight:700; text-decoration:none; opacity:.6; } .row .pl em i { font-style:normal; margin:0 6px; font-weight:700; opacity:.7; }
-.none { padding:20px; border:1px dashed var(--line); border-radius:18px; color:var(--mut); font-size:14px; font-weight:600; text-align:center; }
-.wrap.wide { display:grid; grid-template-columns:500px 1fr; gap:64px; margin-top:36px; align-items:start; }
-.wide .hero { flex-direction:column; align-items:flex-start; gap:28px; margin:0; } .wide .chars { padding-right:0; margin-left:18px; } .wide .heads { grid-template-columns:1fr; gap:12px; margin:36px 0 0; }
-.wide .head { display:grid; grid-template-columns:52px 1fr; column-gap:16px; row-gap:2px; padding:16px 20px; } .wide .head .ic { grid-row:1 / 3; margin:0; align-self:center; } .wide .head small { grid-column:2; }
-.wide .sec:first-child { margin-top:0; }
-.foot { display:flex; align-items:center; gap:14px; margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:14px; font-weight:700; color:var(--mut); } .foot b { color:var(--ink); font-size:16px; }
+:root { --ink:#121316; --mut:#8a8c93; --sub:#484a52; --line:#ebebe7; --new:#2f6fed; --fix:#f08c00; --buff:#2f8a12; --buffbg:#e9f8df; --nerf:#d8352e; --nerfbg:#ffe9e7; }
+body { background:#fff; font-family:'Pretendard Variable', Pretendard, 'Noto Sans CJK KR', sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; padding:52px 64px 56px; }
+.meta { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; letter-spacing:.14em; color:var(--mut); }
+.meta i { width:4px; height:4px; border-radius:50%; background:var(--mut); } .meta .sp { flex:1; } .meta .d { letter-spacing:.04em; }
+.hd { display:flex; align-items:center; gap:28px; margin-top:18px; padding-bottom:26px; border-bottom:3px solid var(--ink); }
+.ver { font-size:76px; line-height:.92; font-weight:900; letter-spacing:-.05em; white-space:nowrap; }
+.tt { flex:1; min-width:0; } .tt h1 { font-size:32px; line-height:1.2; font-weight:800; letter-spacing:-.03em; word-break:keep-all; } .tt p { margin-top:6px; font-size:16px; line-height:1.45; color:var(--mut); font-weight:600; word-break:keep-all; }
+.chars { display:flex; flex:none; padding-right:10px; } .chars span { width:58px; height:58px; margin-right:-12px; border-radius:50%; overflow:hidden; background:#fff; border:3px solid #fff; box-shadow:0 0 0 1px var(--line); }
+img { width:100%; height:100%; object-fit:cover; display:block; }
+.sec { margin-top:30px; }
+.sh { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.sh .k { padding:3px 9px; border-radius:6px; font-size:11px; font-weight:900; letter-spacing:.12em; color:#fff; background:var(--ink); } .sh .k.new { background:var(--new); } .sh .k.fix { background:var(--fix); } .sh .k.balance { background:linear-gradient(90deg, var(--buff) 50%, var(--nerf) 50%); }
+.sh h2 { font-size:21px; font-weight:800; letter-spacing:-.02em; } .sh .n { font-size:14px; font-weight:800; color:var(--mut); }
+.list { display:grid; grid-template-columns:repeat(var(--cols), minmax(0, 1fr)); column-gap:44px; }
+.it { display:grid; grid-template-columns:30px var(--tw) minmax(0, 1fr); column-gap:14px; align-items:start; padding:12px 0; border-top:1px solid var(--line); }
+.ic { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:#f3f3f0; font-size:16px; overflow:hidden; } .ic.p { background:#fff; box-shadow:0 0 0 1px var(--line); }
+.it b { padding-top:4px; font-size:16.5px; line-height:1.35; font-weight:800; letter-spacing:-.02em; word-break:keep-all; }
+.it p { padding-top:5px; font-size:14.5px; line-height:1.5; font-weight:500; color:var(--sub); word-break:keep-all; }
+.bal { display:grid; grid-template-columns:repeat(var(--bc), minmax(0, 1fr)); column-gap:44px; }
+.bal h3 { display:flex; align-items:center; gap:6px; padding:10px 0 8px; font-size:13px; font-weight:900; letter-spacing:.08em; color:var(--buff); } .bal .down h3 { color:var(--nerf); } .bal h3 span { color:var(--mut); font-weight:700; letter-spacing:0; }
+.br { display:grid; grid-template-columns:40px var(--nw) minmax(0, 1fr); column-gap:12px; align-items:center; padding:8px 0; border-top:1px solid var(--line); }
+.br .pic { width:40px; height:40px; border-radius:50%; overflow:hidden; background:#fff; box-shadow:0 0 0 1px var(--line); }
+.br .nm { font-size:15.5px; font-weight:800; letter-spacing:-.02em; word-break:keep-all; }
+.br .cs { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+.ch { display:inline-flex; align-items:baseline; gap:7px; padding:5px 11px; border-radius:10px; white-space:nowrap; color:var(--buff); background:var(--buffbg); } .down .ch { color:var(--nerf); background:var(--nerfbg); }
+.ch small { font-size:12.5px; font-weight:700; opacity:.75; } .ch b { font-size:16px; font-weight:900; letter-spacing:-.02em; } .ch s { text-decoration:none; font-weight:700; opacity:.55; font-size:.84em; } .ch i { font-style:normal; margin:0 4px; opacity:.6; font-weight:700; }
 """
 
 
@@ -72,10 +64,10 @@ def pic(id_):
     return f'<img src="{PORTRAITS[id_]}" alt="">' if id_ in PORTRAITS else ''
 
 
-def icon(it, cls='ic'):
+def icon(it):
     if it.get('id'):
-        return f'<span class="{cls} p">{pic(it["id"])}</span>'
-    return f'<span class="{cls}">{e(it.get("icon", "✦"))}</span>'
+        return f'<span class="ic p">{pic(it["id"])}</span>'
+    return f'<span class="ic">{e(it.get("icon", "✦"))}</span>'
 
 
 def fmt(v):
@@ -91,42 +83,50 @@ def stat_dir(st):  # 'buff' | 'nerf' — 숫자는 자동 (lower: 작을수록 �
     return 'nerf' if (b < a) != bool(st.get('lower')) else 'buff'
 
 
-def stat_row(st):
-    d, unit = stat_dir(st), st.get('unit', '')
-    return (f'<div class="row {d}"><span class="pic">{pic(st["id"])}</span><div class="pl"><small><b>{e(NAMES.get(st["id"], st["id"]))}</b>{e(st["stat"])}</small>'
-            f'<em><s>{e(fmt(st["from"]))}{e(unit if isinstance(st["from"], (int, float)) else "")}</s><i>→</i>{e(fmt(st["to"]))}{e(unit)}</em></div></div>')
+def chip(st):
+    unit = st.get('unit', '')
+    fu = unit if isinstance(st['from'], (int, float)) else ''
+    return f'<span class="ch"><small>{e(st["stat"])}</small><b><s>{e(fmt(st["from"]))}{e(fu)}</s><i>→</i>{e(fmt(st["to"]))}{e(unit)}</b></span>'
 
 
-def section(sec, idx, cols):
-    kind = sec['kind']
-    label = {'new': 'NEW', 'balance': 'BALANCE', 'change': 'CHANGE', 'fix': 'FIX'}.get(kind, 'NEW')
-    body = ''
+def stat_rows(stats):  # 같은 지후는 한 줄로 묶는다 (처음 나온 순서)
+    order, by = [], {}
+    for st in stats:
+        if st['id'] not in by:
+            order.append(st['id']); by[st['id']] = []
+        by[st['id']].append(st)
+    return [f'<div class="br"><span class="pic">{pic(i)}</span><span class="nm">{e(NAMES.get(i, i))}</span><span class="cs">{"".join(chip(st) for st in by[i])}</span></div>' for i in order]
+
+
+def section(sec, cols):
+    kind = sec['kind'] if sec['kind'] in ('new', 'balance', 'change', 'fix') else 'new'
+    label = {'new': 'NEW', 'balance': 'BALANCE', 'change': 'CHANGE', 'fix': 'FIX'}[kind]
+    body, n = '', 0
     if sec.get('items'):
-        rows = []
-        for it in sec['items']:
-            lines = ''.join(f'<li>{e(l)}</li>' for l in it.get('lines', []))
-            rows.append(f'<div class="item">{icon(it)}<div><b>{e(it["title"])}</b><ul>{lines}</ul></div></div>')
-        body += f'<div class="items">{"".join(rows)}</div>'
+        rows = [f'<div class="it">{icon(it)}<b>{e(it["title"])}</b><p>{e(" · ".join(it.get("lines", [])))}</p></div>' for it in sec['items']]
+        body += f'<div class="list">{"".join(rows)}</div>'; n += len(rows)
     if sec.get('stats'):
-        buff = [stat_row(s) for s in sec['stats'] if stat_dir(s) == 'buff']
-        nerf = [stat_row(s) for s in sec['stats'] if stat_dir(s) == 'nerf']
-        none = '<div class="none">변경 없음</div>'
-        body += (f'<div class="bal"><div class="col buff"><h3><i></i>BUFF <span>상향 {len(buff)}</span></h3>{"".join(buff) or none}</div>'
-                 f'<div class="col nerf"><h3><i></i>NERF <span>하향 {len(nerf)}</span></h3>{"".join(nerf) or none}</div></div>')
-    return f'<div class="sec"><div class="sh"><span class="k {kind}">{label}</span><h2>{e(sec["label"])}</h2><span class="n">{idx:02d}</span></div>{body}</div>'
+        up = stat_rows([s for s in sec['stats'] if stat_dir(s) == 'buff'])
+        down = stat_rows([s for s in sec['stats'] if stat_dir(s) == 'nerf'])
+        n += len(sec['stats'])
+        if up and down:  # 상향 · 하향 두 칸
+            body += f'<div class="bal" style="--bc:2"><div class="up"><h3>▲ 상향 <span>{len(up)}</span></h3>{"".join(up)}</div><div class="down"><h3>▼ 하향 <span>{len(down)}</span></h3>{"".join(down)}</div></div>'
+        else:  # 한쪽만 있으면 그 목록을 단 수대로 나눈다
+            rows, cls, h = (up, 'up', '▲ 상향') if up else (down, 'down', '▼ 하향')
+            body += f'<div class="bal {cls}" style="--bc:1"><div class="{cls}"><h3>{h} <span>{len(rows)}</span></h3><div class="list">{"".join(rows)}</div></div></div>'
+    return f'<div class="sec"><div class="sh"><span class="k {kind}">{label}</span><h2>{e(sec["label"])}</h2><span class="n">{n}</span></div>{body}</div>'
 
 
 def build(d):
-    chars = ''.join(f'<span>{pic(i)}</span>' for i in d.get('chars', ['fire', 'ice', 'sword', 'assassin', 'shield']))
-    heads = ''.join(f'<div class="head">{icon(h)}<b>{e(h["title"])}</b><small>{e(h["desc"])}</small></div>' for h in d['headline'])
     w, cols = int(d.get('width', 1080)), int(d.get('cols', 1))
-    secs = ''.join(section(s, i + 1, cols) for i, s in enumerate(d['sections']))
-    hero = f'<div class="hero"><div class="t"><div class="ver">{e(d["version"])}</div><h1>{e(d["title"])}</h1><p>{e(d["subtitle"])}</p></div><div class="chars">{chars}</div></div><div class="heads">{heads}</div>'
-    body = f'<div class="wrap wide"><div class="left">{hero}</div><div class="right">{secs}</div></div>' if d.get('layout') == 'wide' else hero + secs  # layout "wide": 가로형 (왼쪽 소개 · 오른쪽 내용)
-    return f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="info-width" content="{w}"><style>{CSS}body {{ width:{w}px; --cols:{cols}; }}</style></head><body>
-  <div class="top"><span>RE:JHBT</span><span class="pill">UPDATE</span><span class="sp"></span><span>{e(d['date'])}</span></div>
-  {body}
-  <div class="foot"><b>RE : 지후배틀</b><span>RE:JHBT · {e(d['version'])}</span><span class="sp"></span><span>{e(d['date'])}</span></div>
+    tw = 168  # 제목 칸 너비
+    chars = ''.join(f'<span>{pic(i)}</span>' for i in d.get('chars', ['fire', 'ice', 'sword', 'assassin', 'shield']))
+    secs = ''.join(section(s, cols) for s in d['sections'])
+    sub = f'<p>{e(d["subtitle"])}</p>' if d.get('subtitle') else ''
+    return f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="info-width" content="{w}"><style>{CSS}body {{ width:{w}px; --cols:{cols}; --tw:{tw}px; --nw:{120 if cols == 1 else 140}px; }}</style></head><body>
+  <div class="meta"><span>RE : 지후배틀</span><i></i><span>UPDATE NOTE</span><span class="sp"></span><span class="d">{e(d['date'])}</span></div>
+  <div class="hd"><div class="ver">{e(d["version"])}</div><div class="tt"><h1>{e(d["title"])}</h1>{sub}</div><div class="chars">{chars}</div></div>
+  {secs}
 </body></html>"""
 
 
