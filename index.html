@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.13"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.13"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -235,7 +235,7 @@ body.replaying #screen-battle .hud::after { content:'▶ REPLAY'; position:absol
 .gt-in { width:100%; height:46px; border-radius:12px; border:1px solid #3b466b; background:#1a2034; color:#f2f4fa; padding:0 14px; font-size:15px; font-weight:700; outline:none; } .gt-in:focus { border-color:#53d3c0; } .gt-in::placeholder { color:#6b7493; }
 .gt-go { height:52px; border:0; border-radius:15px; background:linear-gradient(180deg,#ffd76a,#ffc23d); color:#3b2600; box-shadow:0 4px 0 #c98a1c; font-family:'Black Han Sans',var(--font); font-size:21px; } .gt-go:active { transform:translateY(3px); box-shadow:0 1px 0 #c98a1c; }
 .gt-sub { height:44px; border:0; border-radius:13px; background:#3b466b; color:#f2f4fa; box-shadow:0 3px 0 #252d48; font-weight:800; font-size:14px; } .gt-sub b { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background:#fff; color:#4285f4; margin-right:6px; font-size:12px; } .gt-sub:active { transform:translateY(2px); box-shadow:0 1px 0 #252d48; }
-.gt-msg[hidden] { display:none; } .gt-msg { background:#1a2034; border:1px solid #46527a; color:#ffd76a; border-radius:12px; padding:10px 12px; font-size:13px; font-weight:700; }
+.gt-msg[hidden] { display:none; } .nb-tag { font-style:normal; font-size:11px; padding:1px 6px; border-radius:999px; background:#2f6b45; color:#c9ffd9; margin-left:4px; } .gt-msg { background:#1a2034; border:1px solid #46527a; color:#ffd76a; border-radius:12px; padding:10px 12px; font-size:13px; font-weight:700; }
 .gt-note { margin:0; font-size:12px; line-height:1.5; color:#9aa3bf; } .gt-wait { text-align:center; padding:26px 0; font-weight:800; } .gt-wait small { font-weight:600; color:#9aa3bf; }
 .gt-h, .accsw .eyebrow { font-size:11px; font-weight:800; letter-spacing:.06em; color:#9aa3bf; margin-bottom:6px; }
 .gt-saved { display:flex; flex-direction:column; gap:8px; padding-bottom:6px; border-bottom:1px solid #3b466b; margin-bottom:4px; }
@@ -1847,6 +1847,12 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
             <div style="font-size:12px; font-weight:700; opacity:.8;">친구와 1:1 · 관전</div>
           </div>
         </div>
+        <sc-if value="{{ nbOn }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:0 12px; display:flex; align-items:center; gap:8px; background:#1a2034; border:1px solid #3e8f5a; border-radius:12px; padding:7px 7px 7px 12px; color:#a8f0bf; font-size:12px; font-weight:700;">
+            <span style="font-size:16px;">🐣</span><div style="flex:1; min-width:0;">{{ nbText }}</div>
+            <div onClick="{{ nbOff }}" style="flex-shrink:0; background:#3b466b; color:#f2f4fa; font-size:12px; font-weight:800; padding:6px 10px; border-radius:8px; cursor:pointer; box-shadow:0 2px 0 #252d48;">끄기</div>
+          </div>
+        </sc-if>
         <div style="display:flex; justify-content:center;">
           <div style="display:flex; gap:4px; background:#1a2034; border-radius:999px; padding:4px;">
             <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
@@ -2550,7 +2556,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
 <div class="modal" id="charModal"><div class="box cdp" id="charBox"></div></div>
 <div class="modal" id="updModal"><div class="box" id="updBox"></div></div>
 <!-- 인트로 만화 (R2.10.2 build 6): 처음 시작할 때 · 메뉴에서 다시 보기 -->
-<div class="comic" id="comic" hidden><div class="cm-top"><span class="eyebrow">RE:JHBT · PROLOGUE</span><span style="display:flex;gap:6px"><button class="cm-skip" id="comicLogin" hidden>이미 계정이 있어요</button><button class="cm-skip" id="comicSkip">건너뛰기 ⏭</button></span></div><div class="cm-stage"><div class="cm-frame" id="comicFrame"><img id="comicImg" alt="인트로 만화"><span class="cm-cap" id="comicCap" hidden></span></div><div class="cm-card" id="comicCard" hidden></div></div><div class="cm-bot"><div class="cm-dots" id="comicDots"></div><span class="cm-hint" id="comicHint">눌러서 넘기기 ▸</span></div></div>
+<div class="comic" id="comic" hidden><div class="cm-top"><span class="eyebrow">RE:JHBT · PROLOGUE</span><button class="cm-skip" id="comicSkip">건너뛰기 ⏭</button></div><div class="cm-stage"><div class="cm-frame" id="comicFrame"><img id="comicImg" alt="인트로 만화"><span class="cm-cap" id="comicCap" hidden></span></div><div class="cm-card" id="comicCard" hidden></div></div><div class="cm-bot"><div class="cm-dots" id="comicDots"></div><span class="cm-hint" id="comicHint">눌러서 넘기기 ▸</span></div></div>
 <div class="modal pane" id="pickModal"><div class="box"><h3>선택 전설 지후 모집권<button class="btn" data-close="pickModal">✕</button></h3><p class="note" style="margin-top:0">원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.</p><div class="pickgrid" id="pickGrid"></div></div></div>
 <div id="boot"><div class="bg-rays"></div>
   <div class="b-hero"><div class="logo"><small>RE :</small><b>지후배틀</b></div><div class="nm" id="bootRing"><span class="p" id="bootHero"></span><b id="bootName">지후</b><i id="bootRar">전설</i></div></div>
@@ -2625,7 +2631,7 @@ const CFG = {
   BOOST_PER_DAY: 2, BOOST_MIN: 15, BOOST_DIA: 300, // 부스트: 하루 2번 · 15분 동안 (R2.7.1 · 예전 10분) 일반전 승리마다 ◆1~300 (R2.3)
   START_DIA: 500,  // R2.13: 1,500 → 500 (신규 첫날 다이아 약 8,000 → 약 4,000 · 튜토리얼 우편 2,000 · 출석 1일차 1,000 · 퀘스트 · 업적)
   ARC_FREE: 1, ARC_BUY: 3, ARC_GOLD: 10000, ARC_WIN_P: 5, ARC_LOSE_P: 1, MIRROR_FEE: 1, TOWER_FEE: 2, // 아케이드 (R2.7.2): 티켓 매일 1장 무료 · ●10,000 으로 하루 3장 · 승리 5P · 패배 1P
-  EASY_GAMES: 3, EASY_MULT: 0.5, // R2.13: 일반전 처음 3판은 봇 유닛 체력 · 공격력 ×0.5 (S.weak)
+  EASY_MULT: 0.75, // R2.13 build 2: 초보자 보호 중 봇 유닛 체력 · 공격력 ×0.75 (S.weak · build 1 은 3판 ×0.5)
   NEWBIE_GAMES: 5, // 초보자 보호 (R2.7.1): 일반전 처음 5판은 봇 덱이 일반 4 + 희귀 1
   UPD_DIA: 500, UPD_ITEM: 'testKit', // 업데이트 보상 (R2.7): 버전마다 한 번 · 지금 버전 것만 (중첩 안 됨)
   LEVEL_REWARD: 250,                       // 계정 레벨업마다 ◆250 (R2.10 · 예전 1,000)
@@ -3869,7 +3875,7 @@ async function syncAfterLogin(fromStart) { // R2 기록이 있으면 불러오�
 async function accBoot() { // 켤 때: 남아 있는 로그인이면 서버 기록과 맞추고 로비로 · 없으면 게스트로 첫 실행 (R2.13: 만화 → 튜토리얼 → 닉네임)
   if (!(await fbInit())) { renderAccPill(); if (!AUTH.ok) { if (profile.ownerUid) renderGate('offline'); else gateDone(); } return; } // 계정 기록이 있으면 접속을 기다리고, 처음이면 오프라인으로도 만화 · 튜토리얼
   if (isMember()) { try { await syncAfterLogin(true); } catch (e) { console.warn('[rejhbt] 계정 동기화 실패', e); } migrateR22(); gateDone(); return; }
-  renderAccPill(); migrateR22(); if (!AUTH.ok) { if (profile.ownerUid) gateShow('login'); else gateDone(); return; } // 계정 기록이 남아 있는데 로그인이 풀렸으면 로그인 화면 · R2.13: 로그인 없이 게스트로 시작 (만화 → 튜토리얼 → 닉네임) · 로그인 · 가입은 환경설정 → 계정
+  renderAccPill(); migrateR22(); if (!AUTH.ok) { const was = !!profile.ownerUid; gateDone(); if (was) setTimeout(() => { ACC.tab = 'login'; ACC.msg = '로그인이 풀렸어요. 다시 로그인하면 계정 기록을 이어서 해요.'; openAccount(); }, 800); return; } // R2.13 build 2: 로그인 화면 없음 · 로그인이 풀린 계정은 환경설정 → 계정 창으로: 로그인 없이 게스트로 시작 (만화 → 튜토리얼 → 닉네임) · 로그인 · 가입은 환경설정 → 계정
   onlineStart(); updCheck(); // 벤치 (?bench=) 만
 }
 async function signUp(pw, pw2) {
@@ -3945,7 +3951,7 @@ async function logOut() {
 function renderAccPill() { const t = $('lobbyAcc'); if (t) t.textContent = `LV.${profile.level} · ${isMember() ? 'UID ' + accCode() : '게스트'}`; }
 function renderAccount() { // R2.12: 환경설정 창 안 (#setAcc)
   const box = $('setAcc') || $('accBody'), msg = ACC.msg ? `<div class="accmsg">${ACC.msg}</div>` : '';
-  if (isMember()) {
+  if (isMember() && !ACC.adding) {
     const g = googleInfo();
     box.innerHTML = `${ACC.newCode ? `<div class="accnew"><span class="eyebrow">가입 완료 · 내 UID</span><b>${ACC.newCode}</b><small>로그인할 때 필요해요. 꼭 적어 두세요!</small></div>` : ''}
       <div class="accrow"><span>UID</span><b class="mono">${accCode()}</b><button class="btn" id="accCopy">복사</button></div>
@@ -3959,22 +3965,24 @@ function renderAccount() { // R2.12: 환경설정 창 안 (#setAcc)
       <div class="accsw"><span class="eyebrow">이 기기의 계정 · 누르면 바로 전환</span>${accList().map(a => `<button class="accsw-row${a.code === accCode() ? ' on' : ''}" data-sw="${a.code}">${pfHtml(a.frame, 36, a.fav)}<span class="t"><b>${esc(a.nick || '이름 없음')}</b><small>Lv.${a.lv || 1} · UID ${a.code}</small></span><span class="go">${a.code === accCode() ? '사용 중' : '전환'}</span></button>`).join('')}<button class="btn wide" id="accAdd">＋ 다른 계정 추가 · 로그인</button></div>
       <button class="btn wide" id="accOut">로그아웃</button>`;
     box.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => { if (b.dataset.sw !== accCode()) accRun(() => accSwitch(b.dataset.sw)); });
-    $('accAdd').onclick = async () => { await backupNow().catch(() => {}); await accRemember(); closeModal('setModal'); gateShow('login'); };
+    $('accAdd').onclick = async () => { await backupNow().catch(() => {}); await accRemember(); ACC.adding = true; ACC.tab = 'login'; ACC.msg = ''; renderAccount(); }; // R2.13 build 2: 환경설정 안에서 로그인
     $('accCopy').onclick = () => { try { navigator.clipboard.writeText(accCode()); banner('UID 복사됨'); } catch (e) {} };
     $('accBackup').onclick = () => accRun(async () => { await backupNow(); ACC.msg = '백업했어요.'; });
     if ($('accGoogle')) $('accGoogle').onclick = () => accRun(async () => { await linkGoogle(); ACC.msg = 'Google 계정을 연결했어요.'; });
     $('accPwGo').onclick = () => { const a = $('accNewPw').value, b = $('accNewPw2').value; accRun(async () => { await setPassword(a, b); ACC.msg = '비밀번호를 바꿨어요.'; }); };
-    $('accOut').onclick = async () => { if (!(await dlg({ icon: '🔒', title: '로그아웃할까요?', html: '기록은 서버에 저장돼 있어요. 이 기기는 게스트로 처음부터 시작해요.', ok: '로그아웃', cancel: '취소' }))) return; accRun(async () => { await logOut(); ACC.newCode = ''; closeModal('accModal'); closeModal('setModal'); gateShow('login'); }); };
+    $('accOut').onclick = async () => { if (!(await dlg({ icon: '🔒', title: '로그아웃할까요?', html: '기록은 서버에 저장돼 있어요. 이 기기는 게스트로 처음부터 시작해요.', ok: '로그아웃', cancel: '취소' }))) return; accRun(async () => { await logOut(); ACC.newCode = ''; ACC.tab = 'login'; renderAccPill(); renderLobby(); ACC.msg = '로그아웃했어요. 다른 계정으로 로그인하거나, 창을 닫으면 처음부터 시작해요.'; }); };
     return;
   }
-  const t = ACC.tab;
-  box.innerHTML = `<p class="note" style="margin-top:0">로그인하면 기록이 서버에 저장돼서 다른 기기에서도 이어서 할 수 있어요. <b>지후배틀 계정</b>으로 로그인하면 골드 · 다이아 · 보유 지후를 그대로 가져와요.</p>
-    <div class="tabs"><button class="${t === 'login' ? 'on' : ''}" data-acc="login">로그인</button><button class="${t === 'join' ? 'on' : ''}" data-acc="join">회원가입</button></div>
+  const t = ACC.adding ? 'login' : ACC.tab, sv = accList().filter(a => a.code !== accCode());
+  box.innerHTML = `${ACC.adding ? '<div class="accrow"><span>다른 계정 추가</span><b>로그인할 계정</b><button class="btn" id="accAddX">취소</button></div>' : ''}${sv.length ? `<div class="accsw"><span class="eyebrow">이 기기의 계정 · 누르면 바로 전환</span>${sv.map(a => `<button class="accsw-row" data-sw="${a.code}">${pfHtml(a.frame, 36, a.fav)}<span class="t"><b>${esc(a.nick || '이름 없음')}</b><small>Lv.${a.lv || 1} · UID ${a.code}</small></span><span class="go">전환</span></button>`).join('')}</div>` : ''}<p class="note" style="margin-top:0">로그인하면 기록이 서버에 저장돼서 다른 기기에서도 이어서 할 수 있어요. <b>지후배틀 계정</b>으로 로그인하면 골드 · 다이아 · 보유 지후를 그대로 가져와요.</p>
+    ${ACC.adding ? '' : `<div class="tabs"><button class="${t === 'login' ? 'on' : ''}" data-acc="login">로그인</button><button class="${t === 'join' ? 'on' : ''}" data-acc="join">회원가입</button></div>`}
     ${t === 'login' ? `<input class="accin" id="accId" placeholder="UID 8자리 또는 닉네임" autocomplete="username"><input class="accin" id="accPw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn primary wide" id="accGo">로그인</button><button class="btn wide" id="accG" style="margin-top:8px">Google 로 로그인</button>`
       : `<div class="accrow"><span>닉네임</span><b>${esc(profile.nick || '먼저 닉네임을 정해 주세요')}</b></div><input class="accin" id="accPw" type="password" placeholder="비밀번호 (${PW_MIN}~${PW_MAX}자)" autocomplete="new-password"><input class="accin" id="accPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password"><button class="btn primary wide" id="accGo" ${profile.nick ? '' : 'disabled'}>회원가입 · UID 받기</button><button class="btn wide" id="accG" style="margin-top:8px" ${profile.nick ? '' : 'disabled'}>Google 로 시작</button><p class="note">가입하면 <b>8자리 UID</b>를 드려요. 지금까지의 기록이 그대로 계정에 저장돼요.</p>`}
     ${msg}`;
   box.querySelectorAll('[data-acc]').forEach(b => b.onclick = () => { ACC.tab = b.dataset.acc; ACC.msg = ''; renderAccount(); });
-  const done = () => { ACC.msg = ''; closeModal('accModal'); banner('로그인했어요'); gateDone(); }; // R2.13: 게스트도 시작하므로 로그인 · 가입은 여기 (환경설정 → 계정)
+  box.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => accRun(async () => { await accSwitch(b.dataset.sw); ACC.adding = false; }));
+  if ($('accAddX')) $('accAddX').onclick = () => { ACC.adding = false; ACC.msg = ''; renderAccount(); };
+  const done = () => { ACC.msg = ''; ACC.adding = false; closeModal('accModal'); banner('로그인했어요'); gateDone(); }; // R2.13: 게스트도 시작하므로 로그인 · 가입은 여기 (환경설정 → 계정)
   const go = () => { const id = $('accId') ? $('accId').value : '', pw = $('accPw').value, pw2 = $('accPw2') ? $('accPw2').value : ''; accRun(async () => { // 입력값은 다시 그리기 전에 읽는다
     if (t === 'login') { await logIn(id, pw); done(); }
     else { const code = await signUp(pw, pw2); ACC.newCode = code; ACC.msg = ''; accRemember(); renderAccPill(); onlineStart(); }
@@ -3990,7 +3998,7 @@ function openAccountOld(tab) { if (tab) ACC.tab = tab; ACC.msg = ''; if (!isMemb
 // ═════════ 화면 ═════════
 const CHROME = ['lobby', 'deck', 'gacha', 'shop', 'inv', 'arcade', 'tower', 'comp', 'sandbox', 'social', 'lb', 'custom']; // 상단 바 · 하단 탭 바가 보이는 화면
 function show(name) {
-  if (window.__u2 && !AUTH.ok && name !== 'welcome') { renderGate(); name = 'welcome'; } // R2.12: 로그인 전에는 시작 화면만
+  if (window.__u2 && !AUTH.ok && name !== 'welcome') { renderGate('loading'); name = 'welcome'; } // accBoot 전에는 연결 중 화면만 (R2.13 build 2: 로그인 화면 없음)
   document.body.dataset.scr = name; // R2.12 테마: 전투 화면만 밝은 바탕
   if (window.__u2 && !TUT.on && (U2_TAB[name] || U2_PAGE[name])) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
   if (window.__u2) u2Hide();
@@ -4184,7 +4192,7 @@ function makeUnit(side, id, lv, x, y) {
     vx: 0, vy: 0, desVx: 0, desVy: 0, xPrev: x, yPrev: y, _sidestep: (uidSeq & 1) ? 1 : -1, _engaged: false, _outT: 0 };
   if (c.coin) u.atk = Math.round(c.atk * m * coinMult(S.coinSlot)); // 코인 지후: 지금 시세 (친선전은 판이 시작될 때 시세로 고정)
   if (side === 'e' && S.arc && S.arc.kind === 'tutorial' && TUT_EBUFF[S.round]) { const k = TUT_EBUFF[S.round]; u.maxHp = Math.round(u.maxHp * k); u.atk = Math.round(u.atk * k); } // 튜토리얼: 져야 하는 라운드의 봇 (밸런스가 바뀌어도 각본대로)
-  if (side === 'e' && S.weak) { u.maxHp = Math.max(1, Math.round(u.maxHp * CFG.EASY_MULT)); u.atk = Math.round(u.atk * CFG.EASY_MULT); } // R2.13: 일반전 처음 3판 봇 약화 (소환체 포함)
+  if (side === 'e' && S.weak) { u.maxHp = Math.max(1, Math.round(u.maxHp * CFG.EASY_MULT)); u.atk = Math.round(u.atk * CFG.EASY_MULT); } // 초보자 보호 중 봇 약화 (소환체 포함)
   u.baseMaxHp = u.maxHp; u.hp = u.maxHp; u.shield = u.maxShield; u.mass = physMass(u); u.invMass = c.immobile ? 0 : 1 / u.mass; // 움직이지 않는 지후는 밀리지도 않는다
   return u;
 }
@@ -5035,7 +5043,7 @@ function newMatch(o) { // o: 아케이드 { arc, decks() } — 내 덱 대신 �
   if (!o && deck.length < 5) { banner(deckNeedMsg()); show('deck'); renderDeck(); return; } // 덱 5기를 채워야 시작 (R2.3 build 2)
   rng = mulberry32((Date.now() ^ 0x9e3779b9) >>> 0);
   const nb = o ? 0 : newbieLeft(), persona = o && o.arc && o.arc.kind === 'tutorial' ? 'std' : botPersonaPick(nb > 0); // R2.12.2 봇 페르소나 (비공개)
-  matchBase(o ? { deck: o.decks(), evOn: false, arc: o.arc, persona, ...(o.lives ? { maxLives: o.lives, lives: { a: o.lives, e: o.lives } } : {}) } : { deck: { a: deck.slice(0, 5), e: botPersonaDeck(persona, nb > 0) }, evOn: profile.mode !== 'classic', persona, weak: (profile.wins | 0) + (profile.losses | 0) < CFG.EASY_GAMES });
+  matchBase(o ? { deck: o.decks(), evOn: false, arc: o.arc, persona, ...(o.lives ? { maxLives: o.lives, lives: { a: o.lives, e: o.lives } } : {}) } : { deck: { a: deck.slice(0, 5), e: botPersonaDeck(persona, nb > 0) }, evOn: profile.mode !== 'classic', persona, weak: nb > 0 });
   if (DEV_HOST) console.info('[bot] persona', persona, BOT_P[persona] && BOT_P[persona].name);
   if (o && o.setup) o.setup(); // 샌드박스: 배치를 미리 채운다
   S.nick = { a: profile.nick || '나', e: (o && o.nick) || BOT_NAMES[Math.floor(rng() * BOT_NAMES.length)] };
@@ -5046,14 +5054,14 @@ function newMatch(o) { // o: 아케이드 { arc, decks() } — 내 덱 대신 �
   const rv = !!(o && o.arc && o.arc.kind === 'reels'); // 릴스 모드 (R2.10.5): 화면 · 전장을 show 보다 먼저 바꿔야 크기가 맞다
   document.body.classList.toggle('reels-on', rv); $('screen-battle').classList.toggle('reels', rv);
   if (rv) { $('rlWin').className = 'rl-win'; $('rlAgain').classList.add('off'); $('rlIntro').classList.remove('show'); }
-  show('battle'); renderIds(); renderLives(); renderField(); renderPool(); if (rv) reelsIntro(); else showIntro(); presencePing('battle'); if (nb > 0) setTimeout(() => banner(`🐣 초보자 보호 · ${CFG.NEWBIE_GAMES - nb + 1} / ${CFG.NEWBIE_GAMES}판${S.weak ? ' · 봇 능력치 50%' : ''}`), 300); // 봇이 일반 4 + 희귀 1
+  show('battle'); renderIds(); renderLives(); renderField(); renderPool(); if (rv) reelsIntro(); else showIntro(); presencePing('battle'); if (nb > 0) setTimeout(() => banner(`🐣 초보자 보호 · ${CFG.NEWBIE_GAMES - nb + 1} / ${CFG.NEWBIE_GAMES}판 · 봇 능력치 ${Math.round(CFG.EASY_MULT * 100)}%`), 300); // 봇이 일반 4 + 희귀 1
   clearTimeout(newMatch.t); if (!rv) newMatch.t = setTimeout(() => { if (S.phase === 'intro') startRound(); }, 3000); // 릴스: 인트로가 직접 (또는 자동으로) 시작한다
 }
 // HUD: 양쪽 닉네임 · 라이프 · 모드
 function renderIds() { // 왼쪽(A) = 나 · 오른쪽(E) = 상대
   [[ME(), 'A'], [OPP(), 'E']].forEach(([s, U]) => {
     const lv = S.lvl && S.lvl[s] != null ? S.lvl[s] : null;
-    $('hudNick' + U).innerHTML = `${esc(S.nick[s])}${lv != null ? ` <em>Lv.${lv}</em>` : ''}`; const pf = S.pf && S.pf[s] || {}; $('hudAv' + U).innerHTML = pfHtml(pf.fr, 40, pf.ph, { letter: S.nick[s], fc: s === ME() ? 'var(--ink)' : 'var(--red)' });
+    $('hudNick' + U).innerHTML = `${esc(S.nick[s])}${lv != null ? ` <em>Lv.${lv}</em>` : ''}${s === 'e' && S.weak && !S.net ? ` <em class="nb-tag" title="초보자 보호 · 봇 왕초보 · 능력치 ${Math.round(CFG.EASY_MULT * 100)}%">🐣 보호</em>` : ''}`; // R2.13: 초보자 보호 표시 const pf = S.pf && S.pf[s] || {}; $('hudAv' + U).innerHTML = pfHtml(pf.fr, 40, pf.ph, { letter: S.nick[s], fc: s === ME() ? 'var(--ink)' : 'var(--red)' });
     const bn = (S.evf && S.evf[s] && S.evf[s].ban) || []; $('fdeck' + U).innerHTML = S.deck[s].map(id => `<span class="${bn.includes(id) ? 'banned' : ''}" style="--rc:${CHARS[id].color || '#fff'}" title="${CHARS[id].name}${bn.includes(id) ? ' · 밴' : ''}" data-cid="${id}">${pic(id)}</span>`).join(''); /* [밴] 이벤트로 막힌 지후는 회색 + 금지 (R2.10) */ }); // 양쪽 덱 (전장 위 모서리) · 테두리는 지후 고유 색 (R2.6.1)
   const spec = S.net && S.net.spec;
   $('hudMode').textContent = !S.net ? (S.arc ? ({ sandbox: '아케이드 · 샌드박스', reels: '아케이드 · 릴스 모드', mirror: '아케이드 · 미러전', tower: `지후의 탑 · ${S.arc.floor}층`, comp: '경쟁전 · 3판 2선승', tutorial: '튜토리얼' })[S.arc.kind] || '아케이드' : '일반전 · 봇') : spec ? '친선전 · 보상 없음' : '친선전 · 1:1';
@@ -5066,7 +5074,8 @@ function showIntro() {
   el.innerHTML = side(ME(), 'a') + side(OPP(), 'e') + `<div class="vs">${S.net ? (spec ? '👁 관전' : '🤝 친선전') : 'VS'}</div><div class="ibar"></div>`;
   el.classList.add('show'); clearTimeout(showIntro.t); showIntro.t = setTimeout(() => { el.classList.remove('show'); el.innerHTML = ''; }, 3000);
 }
-const newbieLeft = () => Math.max(0, CFG.NEWBIE_GAMES - ((profile.wins | 0) + (profile.losses | 0))); // 초보자 보호: 남은 판 (일반전 승 + 패로 센다)
+const newbieLeft = () => profile.nbOff ? 0 : Math.max(0, CFG.NEWBIE_GAMES - ((profile.wins | 0) + (profile.losses | 0))); // 초보자 보호: 남은 판 (일반전 승 + 패로 센다) · 끄면(profile.nbOff · R2.13) 다시 못 켠다
+async function newbieOff() { if (!newbieLeft()) return; if (!(await dlg({ icon: '🐣', title: '초보자 보호를 끌까요?', html: `남은 <b>${newbieLeft()}판</b> 동안 봇이 <b>왕초보</b> · 능력치 <b>${Math.round(CFG.EASY_MULT * 100)}%</b> · 일반 4 + 희귀 1 덱이에요.<br><b style="color:#ff8a80">한 번 끄면 다시 켤 수 없어요.</b>`, ok: '끄기', cancel: '그대로 두기' }))) return; profile.nbOff = 1; save(); banner('초보자 보호를 껐어요'); renderLobby(); if (window.__u2 && UI2.on) u2Render(); }
 function botDeck(newbie) { const ids = Object.keys(CHARS); if (newbie) return [...A.pick(byRarity('common'), 4), ...A.pick(byRarity('rare'), 1)]; return A.pick(ids, Math.min(5, ids.length)); } // 초보자 보호: 일반 4 + 희귀 1
 // ── 배치 판정 (전작 canPlaceNew · mergeTargetFor · poolCardPlayable) ──
 // R2.6.2: 배치 시간에는 상대의 배치 · 자리 옮기기를 숨긴다 — 상대 진영은 이번 라운드 시작 때 배치(roundStart)를 반투명으로 · 전투가 시작되면 공개 (관전자는 다 본다)
@@ -5361,6 +5370,7 @@ const botRarest = ids => ids.map(id => ({ id, k: RARITY_ORDER[CHARS[id].rarity] 
 const BOT_P = {
   std: { name: '전형적인', pick: botBest, row: roleRow, fuse: 0.6, miss: 0.08 },
   rookie: { name: '초보', pick: botRand, row: () => null, fuse: 0, miss: 0.35, mf: 0.1 },
+  noob: { name: '왕초보', pick: ids => ids.map(id => ({ id, k: RARITY_ORDER[CHARS[id].rarity] * 10 + (TIER_SC[id] ?? 50) / 10 + rng() })).sort((x, y) => x.k - y.k)[0].id, row: id => 2 - (roleRow(id) ?? 1), fuse: 0, mf: 0, mv: 0.5, noob: 0.35 }, // R2.13: 초보자 보호 전용 · 모든 판단이 실수 (가장 약한 카드 · 줄 거꾸로 · 합체 안 함 · 엉뚱한 자리 바꾸기 · 35% 멍때림)
   pro: { name: '초고수', pick: botTier, row: roleRow, fuse: 1, miss: 0, mf: 0.25, deck: id => Math.pow(((TIER_SC[id] ?? 50) + 10) / 60, 3), pro: true },
   swarm: { name: '물량', pick: ids => ids.map(id => ({ id, k: (roleIs(id, '소환형') ? 3 : 0) + (4 - RARITY_ORDER[CHARS[id].rarity]) * 0.5 + rng() })).sort((x, y) => y.k - x.k)[0].id, row: roleRow, fuse: 0, miss: 0.1, mf: 0, deck: id => (roleIs(id, '소환형') ? 4 : 1) * (CHARS[id].rarity === 'common' ? 2 : 1) },
   merger: { name: '합체', pick: botBest, row: roleRow, fuse: 1, fuseAny: 0.7, miss: 0.1, mf: 0.9 },
@@ -5372,7 +5382,7 @@ const BOT_P = {
   gambler: { name: '도박사', pick: botRarest, row: () => null, fuse: 0.8, miss: 0.15, deck: id => ({ legend: 4, epic: 2, rare: 1, common: 0.5 })[CHARS[id].rarity] || 1 },
   copycat: { name: '따라쟁이', pick: botBest, row: roleRow, fuse: 0.6, miss: 0.1, copy: true },
 };
-function botPersonaPick(newbie) { // 레벨이 낮으면 초보가 많고 · 연승 중이면 초고수가 나온다 · 같은 성격 연속은 피한다
+function botPersonaPick(newbie) { if (newbie) return 'noob'; // 초보자 보호 중엔 늘 왕초보 (R2.13) · 레벨이 낮으면 초보가 많고 · 연승 중이면 초고수가 나온다 · 같은 성격 연속은 피한다
   const L = profile.level | 0, st = profile.streak | 0, w = { std: 18, rookie: newbie ? 60 : L < 5 ? 30 : L < 10 ? 16 : 7, pro: st >= 5 ? 16 : st >= 3 ? 8 : L >= 15 ? 4 : L >= 8 ? 2 : 0.5,
     swarm: 8, merger: 8, shuffler: 7, aggro: 8, back: 8, front: 8, defense: 8, gambler: newbie ? 0 : 6, copycat: newbie ? 0 : 5 };
   if (botPersonaPick.last) w[botPersonaPick.last] *= 0.15; const ks = Object.keys(w), tot = ks.reduce((s, k) => s + w[k], 0); let r = Math.random() * tot;
@@ -5386,6 +5396,7 @@ function botDeployOne() { // R2.12.2: 페르소나대로 (예전 규칙 = std)
   const Pp = BOT_P[S.persona] || BOT_P.std, pool = rollPool('e'); if (!pool.length) return;
   if (Pp.mv && rng() < Pp.mv) { const own = S.place.e.map((p, t) => p ? t : -1).filter(t => t >= 0); if (own.length) { const a = botRand(own), b = Math.floor(rng() * TILES); if (a !== b) moveTile('e', a, b); } } // 자리 바꾸기
   if (Pp.miss && rng() < Pp.miss * 0.5) return; // 멍때림 (아무것도 안 함)
+  if (Pp.noob) { if (rng() < Pp.noob) return; const pl = pool.filter(id => canPlaceNew('e', id)); if (!pl.length) return; const id = Pp.pick(pl), t = pickTile('e', Pp.row(id)); if (t != null) placeAt('e', t, id); return; } // 왕초보: 놓기만 (합체 · 레벨업 안 함)
   const placeable = pool.filter(id => canPlaceNew('e', id)), merges = pool.filter(id => mergeTile('e', id) != null);
   const wantMerge = merges.length && (!placeable.length || (Pp.mf && rng() < Pp.mf) || (Pp.pro && merges.some(id => (TIER_SC[id] ?? 50) >= 65 && S.place.e[mergeTile('e', id)].lv < 3)));
   if (!wantMerge && placeable.length) { const id = Pp.miss && rng() < Pp.miss * 0.5 ? botRand(placeable) : Pp.pick(placeable), row = Pp.row(id), t = pickTile('e', row == null ? null : row); if (t != null) { placeAt('e', t, id); return; } }
@@ -6059,7 +6070,8 @@ $('invGrid').addEventListener('click', e => { const b = e.target.closest('[data-
 // 업데이트 안내 (R2.7): 새 버전으로 처음 켜면 간단한 패치노트 + 업데이트 보상 (◆500 · 임테기) — 지금 버전 것만 받는다 (놓친 예전 버전 보상은 사라진다 · 중첩 안 됨)
 const lobbyOn = () => window.__u2 && UI2.on ? UI2.st.tab === 'battle' && !UI2.st.page : $('screen-lobby').classList.contains('active'); // R2.12.1: 새 로비는 screen-lobby 가 active 가 아니다 (업데이트 창이 안 뜨던 원인)
 function updCheck() {
-  if (!profile.comic && $('comic').hidden && lobbyOn()) { showComic(updCheck); return; } // 첫 실행 (R2.13): 인트로 만화 → 튜토리얼 → 닉네임 (예전엔 screen-lobby 를 봐서 새 로비에선 안 떴다)
+  if (!$('comic').hidden) return; // 만화를 보는 중이면 끝나고 다시 (두 번 불려 만화 · 튜토리얼이 겹치던 문제)
+  if (!profile.comic && lobbyOn()) { showComic(updCheck); return; } // 첫 실행 (R2.13): 인트로 만화 → 튜토리얼 → 닉네임 (예전엔 screen-lobby 를 봐서 새 로비에선 안 떴다)
   if (TUT.auto && TUT.auto()) return; // 처음 하는 사람은 튜토리얼
   if (!profile.nick && lobbyOn() && !TUT.on) { nickStep(); return; } // 튜토리얼이 끝나면 (건너뛰어도) 닉네임만 정하고 시작
   const v = gameVersion(); if (!profile.nick || profile.updRw === v || $('updModal').classList.contains('show') || !lobbyOn()) return;
@@ -7537,6 +7549,7 @@ function sfxSetVolume(v) { sfxState.vol = clamp(Math.round(Number(v) || 0), 0, 1
 
 // ═════════ 햄버거 메뉴 (전작 메뉴 서랍): 코드 입력 · 패치노트 · 도움말 · 환경설정 ═════════
 const openModal = id => $(id).classList.add('show'), closeModal = id => $(id).classList.remove('show');
+let setWasOpen = false; new MutationObserver(() => { const open = $('setModal').classList.contains('show'), closed = setWasOpen && !open; setWasOpen = open; if (closed && AUTH.ok && !profile.nick && !TUT.on && $('comic').hidden) { ACC.adding = false; setTimeout(updCheck, 300); } }).observe($('setModal'), { attributes: true, attributeFilter: ['class'] }); // R2.13 build 2: 로그아웃 뒤 환경설정을 닫으면 처음부터 (만화 → 튜토리얼 → 닉네임)
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
 ['menuModal', 'codeModal', 'helpModal', 'setModal', 'levelUp', 'accModal', 'mailModal', 'qsModal', 'pickModal'].forEach(id => $(id).addEventListener('click', e => { if (e.target.id === id) closeModal(id); }));
 $('btnMenu').addEventListener('click', () => { $('menuVer').textContent = gameVersion() + (gameBuild() > 1 ? '.' + gameBuild() : ''); openModal('menuModal'); });
@@ -7548,8 +7561,7 @@ $('btnMenuHelp').addEventListener('click', () => { renderHelp('rule'); fromMenu(
 const COMIC_CAP = { 2: '그리고 국왕 화염 지후 1호가 살고 있었습니다', 3: '그런데 큰일 났습니다.', 4: '서쪽 마을 화염 지후 314호가 반란을 일으켰군요', 8: '물 지후는 화가 났습니다', 11: '마을 외곽' }; // 컷 번호: 캡션 (build 7)
 const COMIC = []; for (let k = 1; k <= 20; k++) { if (k === 11) COMIC.push({ text: '한편..' }); COMIC.push({ img: k, cap: COMIC_CAP[k] }); } // 10 → 11 사이: 글자만 있는 장
 const CM = { i: 0, done: null };
-function showComic(done) { CM.i = 0; CM.done = done || null; $('comic').hidden = false; $('comicLogin').hidden = isMember() || !!profile.nick; // 첫 실행 게스트: 기존 계정 로그인 (R2.13)
-  $('comicDots').innerHTML = COMIC.map(() => '<i></i>').join(''); comicDraw(); }
+function showComic(done) { CM.i = 0; CM.done = done || null; $('comic').hidden = false; $('comicDots').innerHTML = COMIC.map(() => '<i></i>').join(''); comicDraw(); }
 function comicDraw() { const c = COMIC[CM.i], fr = $('comicFrame'), card = $('comicCard'), el = c.text ? card : fr;
   fr.hidden = !!c.text; card.hidden = !c.text;
   if (c.text) card.textContent = c.text; else { $('comicImg').src = `comic/${c.img}.png`; const cap = $('comicCap'); cap.hidden = !c.cap; cap.textContent = c.cap || ''; }
@@ -7558,7 +7570,7 @@ function comicDraw() { const c = COMIC[CM.i], fr = $('comicFrame'), card = $('co
   const nx = COMIC.slice(CM.i + 1).find(x => x.img); if (nx) new Image().src = `comic/${nx.img}.png`; } // 다음 그림 미리 받기
 function comicGo(d) { const n = CM.i + d; if (n < 0) return; if (n >= COMIC.length) return comicEnd(); CM.i = n; comicDraw(); sfx('place'); }
 function comicEnd() { if ($('comic').hidden) return; $('comic').hidden = true; if (!profile.comic) { profile.comic = 1; save(); } const d = CM.done; CM.done = null; if (d) d(); }
-$('comic').addEventListener('click', e => { if (e.target.closest('#comicLogin')) { CM.done = null; $('comic').hidden = true; gateShow('login'); return; } if (e.target.closest('#comicSkip')) return comicEnd(); comicGo(1); });
+$('comic').addEventListener('click', e => { if (e.target.closest('#comicSkip')) return comicEnd(); comicGo(1); });
 document.addEventListener('keydown', e => { if ($('comic').hidden) return; if (e.key === 'ArrowLeft') comicGo(-1); else if (e.key === 'Escape') comicEnd(); else if (['ArrowRight', ' ', 'Enter'].includes(e.key)) comicGo(1); else return; e.preventDefault(); });
 $('btnMenuComic').addEventListener('click', () => { closeModal('menuModal'); showComic(); });
 $('btnMenuSettings').addEventListener('click', () => { renderSettings(); fromMenu('setModal')(); });
@@ -7574,8 +7586,8 @@ const PATCH_NOTES = [
   { v: 'R2.13', date: '2026.11.01', title: '처음 오신 분 환영 업데이트', sections: [
     { title: '시스템', items: [
       { icon: '📖', name: '첫 실행 순서', tag: 'system', desc: '처음 켜면 로그인 없이 바로 <b>인트로 만화 → 튜토리얼 → 닉네임</b> 순서로 시작해요.' },
-      { icon: '🔑', name: '로그인 · 회원가입', tag: 'system', desc: '시작 화면에서 <b>환경설정 → 계정</b>으로 옮겼어요. 기존 계정이 있으면 만화나 닉네임 화면의 <b>「이미 계정이 있어요」</b>로 로그인할 수 있어요.' },
-      { icon: '🐣', name: '초보자 보호', tag: 'adjust', desc: '일반전 <b>처음 3판</b>은 봇 지후의 체력 · 공격력이 <b>50%</b>예요.' },
+      { icon: '🔑', name: '로그인 · 회원가입', tag: 'system', desc: '로그인 화면을 없앴어요. 로그인 · 회원가입 · 계정 전환 · 로그아웃은 <b>환경설정 → 계정</b>에서만 해요.' },
+      { icon: '🐣', name: '초보자 보호', tag: 'adjust', desc: '일반전 <b>처음 5판</b>은 봇이 새 성격 <b>왕초보</b> (실수투성이) · 봇 지후의 체력 · 공격력 <b>75%</b> · 일반 4 + 희귀 1 덱. 로비 · 전투 화면에 <b>🐣 표시</b> · 로비에서 <b>끌 수 있어요</b> (한 번 끄면 다시 못 켜요).' },
       { icon: '✉', name: '튜토리얼 보상', tag: 'adjust', desc: '이제 <b>우편함</b>으로 보내요 · ◆ <b>3,500 → 2,000</b> (● 5,000 그대로).' },
       { icon: '◆', name: '처음 지급 다이아', tag: 'adjust', desc: '<b>1,500 → 500</b>.' },
       { icon: '🛠', name: '수정', tag: 'fix', desc: '새 로비에서 처음 오신 분에게 <b>인트로 만화 · 튜토리얼이 자동으로 안 뜨던</b> 문제를 고쳤어요.' },
@@ -8759,6 +8771,7 @@ function u2Vals() {
     isBattle: tab === 'battle', showQuests: true, lq, tapMainQuest: () => { $('btnMQ').click(); u2Render(); }, tapDailyQuest: openQs, annOn: dot('lobbyAnn'), annText: ON.ann || '',
     favColor: favR.c, favGlow: favR.c + '55', favName: shortName(fav), openFav: () => u2Set({ detail: fav, dtab: 'ab' }),
     deckSlots, presets, modes, goUnits: () => u2Go('units'), startNormal: () => $('btnPlay').click(), startFriendly: () => openSocial(),
+    nbOn: newbieLeft() > 0, nbText: `초보자 보호 중 · ${newbieLeft()}판 남음 · 봇 왕초보 · 능력치 ${Math.round(CFG.EASY_MULT * 100)}%`, nbOff: () => newbieOff(),
     boostTxt: bOn ? $('boostChip').textContent : bLeft > 0 ? `부스트 ${bLeft}` : '부스트 내일', boostBg: bOn ? '#ffc94a' : '#3b466b', boostFc: bOn ? '#3b2600' : '#f2f4fa', boostEdge: bOn ? '#c98a1c' : '#252d48', boostTap: () => { $('btnBoost').click(); u2Render(); },
     // 지후
     isUnits: tab === 'units', equipping: !!s.equipId, equipImg: s.equipId ? u2Img(s.equipId) : '', equipName: s.equipId ? shortName(s.equipId) : '', cancelEquip: () => u2Set({ equipId: null }),
@@ -8876,31 +8889,16 @@ function gateDone() { // 로그인 끝 → 로비
   if (!profile.nick && isMember()) profile.nick = '지후' + (accCode() || '').slice(-4); // 게스트는 튜토리얼 뒤 닉네임 단계 (nickStep)
   closeModal('setModal'); renderLobby(); show('lobby'); setTimeout(updCheck, 400);
 }
-function renderGate(state) { // 시작 화면 (#screen-welcome): 로그인 · 회원가입 · 저장된 계정
-  const box = $('screen-welcome'), t = AUTH.tab, L = accList(), msg = AUTH.msg ? `<div class="gt-msg">${AUTH.msg}</div>` : '';
+function renderGate(state) { // 시작 화면 (#screen-welcome): 연결 중 · 오프라인만 (R2.13 build 2: 로그인은 환경설정 → 계정에서만)
+  const box = $('screen-welcome');
   if (state === 'loading') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">서버에 연결하는 중…</div></div></div>`; return; }
-  if (state === 'offline') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">온라인에 연결할 수 없어요<br><small>게임을 하려면 로그인이 필요해요. 네트워크를 확인해 주세요.</small></div><button class="gt-go" id="gtRetry">다시 연결</button></div></div>`; $('gtRetry').onclick = () => location.reload(); return; }
-  const saved = L.length ? `<div class="gt-saved"><div class="gt-h">이 기기의 계정 · 누르면 바로 시작</div>${L.map(a => `<button class="gt-acc" data-sw="${a.code}">${pfHtml(a.frame, 44, a.fav)}<span class="t"><b>${esc(a.nick || '이름 없음')}</b><small>Lv.${a.lv || 1} · UID ${a.code}</small></span><span class="go">▶</span></button>`).join('')}</div>` : '';
-  box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div>
-    <div class="gt-card">${saved}<div class="gt-h">계정으로 로그인</div>
-      <input class="gt-in" id="gtId" placeholder="UID 8자리 또는 닉네임" autocomplete="username"><input class="gt-in" id="gtPw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="gt-go" id="gtGo">로그인</button><button class="gt-sub" id="gtG"><b>G</b> Google 로 로그인</button>
-      ${msg}<button class="gt-sub" id="gtNew">처음부터 새로 시작하기 ›</button><p class="gt-note">지후배틀(R1) 계정으로 로그인하면 골드 · 다이아를 가져와요. 새로 시작하면 게스트로 플레이하고, 계정은 나중에 환경설정 → 계정에서 만들 수 있어요.</p></div></div>`;
-  box.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => gateRun(() => accSwitch(b.dataset.sw)));
-  const go = () => { const id = $('gtId').value, pw = $('gtPw').value; gateRun(async () => { await logIn(id, pw); gateDone(); }); };
-  $('gtGo').onclick = go; box.querySelectorAll('.gt-in').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') go(); }));
-  $('gtG').onclick = () => gateRun(async () => { await signInGoogle(false); gateDone(); });
-  $('gtNew').onclick = () => gateRun(guestNew);
-}
-async function guestNew() { // R2.13 '처음부터 새로 시작': 게스트로 만화 → 튜토리얼 → 닉네임 (로그인한 계정은 이 기기 목록에 남겨 둔다)
-  if (isMember()) { await backupNow().catch(() => {}); await accRemember(); onlineStop(); await FB.sdk.signOut(FB.auth); await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); }
-  if (profile.ownerUid || profile.nick) { ACC.restoring = true; profile = normProfile(null); writeLocal(); ACC.restoring = false; }
-  gateDone();
+  if (state === 'offline') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">온라인에 연결할 수 없어요<br><small>계정 기록을 불러오려면 연결이 필요해요. 네트워크를 확인해 주세요.</small></div><button class="gt-go" id="gtRetry">다시 연결</button></div></div>`; $('gtRetry').onclick = () => location.reload(); return; }
 }
 function nickStep() { // R2.13 첫 실행 마지막 단계: 닉네임만 정하고 시작 (#screen-welcome 을 다시 쓴다)
   const box = $('screen-welcome');
   box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div>
     <div class="gt-card"><div class="gt-h">닉네임을 정해 주세요 · 1~12자</div><input class="gt-in" id="nsNick" maxlength="12" placeholder="지후왕" autocomplete="off"><div class="gt-msg" id="nsMsg" hidden></div><button class="gt-go" id="nsGo">시작하기 →</button>
-      <button class="gt-sub" id="nsLogin">이미 계정이 있어요 · 로그인</button><p class="gt-note">닉네임은 나중에 프로필에서 한 번 무료로 바꿀 수 있어요.</p></div></div>`;
+      <p class="gt-note">닉네임은 나중에 프로필에서 한 번 무료로 바꿀 수 있어요. 기존 계정은 환경설정 → 계정에서 로그인해요.</p></div></div>`;
   show('welcome'); setTimeout(() => $('nsNick') && $('nsNick').focus(), 80);
   let busy = false;
   const go = async () => {
@@ -8912,10 +8910,7 @@ function nickStep() { // R2.13 첫 실행 마지막 단계: 닉네임만 정하�
     save(); renderLobby(); show('lobby'); banner(`환영해요, ${n} 님!`); setTimeout(updCheck, 400);
   };
   $('nsGo').onclick = go; $('nsNick').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
-  $('nsLogin').onclick = () => gateShow('login');
 }
-async function gateRun(fn) { if (AUTH.busy) return; AUTH.busy = true; AUTH.msg = '처리 중…'; renderGate(); try { await fn(); } catch (e) { AUTH.msg = esc(e && e.message || String(e)); } AUTH.busy = false; if (!AUTH.ok) renderGate(); }
-function gateShow(tab) { AUTH.ok = false; if (tab) AUTH.tab = tab; AUTH.msg = ''; renderGate(); show('welcome'); }
 
 // ═════════ 프로필 (R2.12): 로비 프로필 배지 → 꾸미기 (테두리 · 대표 지후) + 닉네임 변경 (첫 번째 무료 · 그다음 ● 100 · 24시간에 한 번) ═════════
 const NICK_GOLD = 100, NICK_CD = 24 * 3600 * 1000;
