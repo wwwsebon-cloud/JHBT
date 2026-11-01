@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.16.1"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.16.1"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1293,7 +1293,7 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 @keyframes hit-shake { 0% { transform:translate(0,0); } 25% { transform:translate(-3px,1px); } 50% { transform:translate(3px,-1px); } 75% { transform:translate(-2px,0); } 100% { transform:translate(0,0); } }
 .unit.hit-flash-big .unit-icon { animation:hit-shake-big .22s ease-out; }
 @keyframes hit-shake-big { 0% { transform:translate(0,0) scale(1); } 20% { transform:translate(-5px,2px) scale(1.05); } 45% { transform:translate(5px,-2px) scale(1.05); } 70% { transform:translate(-3px,1px) scale(1.02); } 100% { transform:translate(0,0) scale(1); } }
-.unit.stealthed { opacity:.4; filter:saturate(.6); }
+.unit.stealthed { opacity:.4; } /* R2.16.1: filter 빼기 (전장 안 filter 는 다시 그리기가 무겁다) */
 .unit.frozen .unit-icon { filter:hue-rotate(180deg) saturate(2) brightness(1.1); }
 .unit.stunned .unit-icon { animation:wobble .5s linear infinite; }
 @keyframes wobble { 50% { transform:rotate(8deg); } }
@@ -3807,7 +3807,7 @@ function emoImgFix(img) { // 움직이는 gif 를 못 받으면 정적 썸네일
 document.addEventListener('error', e => { const t = e.target; if (t && t.tagName === 'IMG' && t.closest && t.closest('.offer.emo, .emo-card, .emo-owned, .emo-slots, .emo-sheet')) emoImgFix(t); }, true);
 function emoSound() { // 짧은 '뽁'
   try {
-    const ctx = emoUi.audio = emoUi.audio || new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = emoUi.audio = emoUi.audio || sfxCtx(); if (!ctx) return; // R2.16.1: 효과음과 같은 AudioContext (따로 만들면 처음 한 번 100ms 넘게 멈췄다)
     if (ctx.state === 'suspended') ctx.resume();
     const t = ctx.currentTime, osc = ctx.createOscillator(), gain = ctx.createGain();
     osc.type = 'triangle';
@@ -5096,8 +5096,11 @@ function unitEl(u) {
 // ── 카메라 (전작 CAM: 확대 0.4~2.4 · 끌어서 이동 · 휠 · 두 손가락 확대 · 미니맵) ──
 const CAM = { x: 0, y: 0, z: 1, moved: false };
 const ZOOM_MAX = 2.4;
-function viewSize() { const w = $('fieldWrap'); return { vw: w.clientWidth || 1, vh: w.clientHeight || 1 }; }
-function viewInsets() { const s = $('screen-battle'), h = s.querySelector('.hud'), t = s.querySelector('.tray'); return (CAM.vi = { t: h ? h.getBoundingClientRect().height : 0, b: t ? t.getBoundingClientRect().height : 0 }); } // R2.12: 전장 위에 떠 있는 HUD (위) · 트레이 (아래)
+// R2.16.1: 전장 크기 · HUD 높이는 크기가 바뀔 때만 읽는다 — 매 프레임(camFollow → applyCamera) 읽으면 피해 숫자 · 죽음 · 순간이동 효과 DOM 이 붙은 프레임마다 화면 전체 강제 레이아웃 (모바일 수백 ms 렉)
+const VIEW = { s: null, i: null }, viewDirty = () => { VIEW.s = VIEW.i = null; };
+function viewSize() { if (VIEW.s) return VIEW.s; const w = $('fieldWrap'), vw = w.clientWidth, vh = w.clientHeight; if (!vw || !vh) return { vw: vw || 1, vh: vh || 1 }; return (VIEW.s = { vw, vh }); } // 숨겨져 있으면 캐시하지 않는다
+function viewInsets() { if (VIEW.i) return (CAM.vi = VIEW.i); const s = $('screen-battle'), h = s.querySelector('.hud'), t = s.querySelector('.tray'), v = { t: h ? h.getBoundingClientRect().height : 0, b: t ? t.getBoundingClientRect().height : 0 }; if (s.classList.contains('active') && (v.t || v.b)) VIEW.i = v; return (CAM.vi = v); }
+addEventListener('resize', viewDirty); addEventListener('orientationchange', viewDirty); // R2.12: 전장 위에 떠 있는 HUD (위) · 트레이 (아래)
 function fitZoom() { const { vw, vh } = viewSize(), { t, b } = viewInsets(); return Math.max(0.05, Math.min((vw - 16) / FW(), (vh - t - b - 16) / FH())); }
 const camMidY = z => { const { t, b } = viewInsets(); return FH() / 2 - (t - b) / 2 / z; }; // 맵 가운데가 HUD 사이 가운데에 오게
 function zoomMin() { return Math.min(0.4, fitZoom()); } // 전작 ZOOM_MIN 0.4 · 화면이 작으면 전체가 보이는 배율까지
@@ -5115,7 +5118,7 @@ function applyCamera(light) {
   if (!light) { $('zoomLab').textContent = Math.round(CAM.z * 100) + '%'; drawMinimap(true); } // 따라가기는 매 프레임이라 가볍게 (미니맵은 loop 가 그린다)
 }
 function fitCamera() { CAM.z = fitZoom(); CAM.x = FW() / 2; CAM.y = camMidY(CAM.z); applyCamera(); }
-if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const s = $('screen-battle'), { t, b } = viewInsets(); s.style.setProperty('--hudH', t + 'px'); s.style.setProperty('--trayH', b + 'px'); if (s.classList.contains('active') && !CAM.moved) fitCamera(); }); ro.observe($('screen-battle').querySelector('.hud')); ro.observe($('screen-battle').querySelector('.tray')); } // HUD 높이가 바뀌면 (배치 ↔ 전투) 다시 맞춘다
+if (window.ResizeObserver) { const ro = new ResizeObserver(() => { viewDirty(); const s = $('screen-battle'), { t, b } = viewInsets(); s.style.setProperty('--hudH', t + 'px'); s.style.setProperty('--trayH', b + 'px'); if (s.classList.contains('active') && !CAM.moved) fitCamera(); }); ro.observe($('screen-battle').querySelector('.hud')); ro.observe($('screen-battle').querySelector('.tray')); ro.observe($('fieldWrap')); } // HUD 높이가 바뀌면 (배치 ↔ 전투) 다시 맞춘다
 // R2.12.2: 전투 중에는 살아 있는 유닛을 감싸게 부드럽게 확대 · 이동 (손으로 옮기거나 확대하면 그 라운드는 멈춘다)
 const TUT_EBUFF = { 2: 1.35, 3: 1.35 }; // R2.12.3 긴급: 튜토리얼 2 · 3라운드(플레이어가 져야 함) 봇 체력 · 공격력 배율 — R2.12.3 수치로 3라운드를 이기던 문제 (×1.2 는 아슬아슬)
 function camFollow(dt) {
