@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.13"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.13"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -7629,7 +7629,7 @@ const PATCH_NOTES = [
       { icon: '🎲', name: '랜덤 이벤트 모드', tag: 'system', desc: '개편을 위해 <b>잠시 쉬어요</b> · 지금은 모든 판이 클래식 (이벤트 없음).' },
       { icon: '🔑', name: '로그인 · 회원가입', tag: 'system', desc: '로그인 화면을 없앴어요. 로그인 · 회원가입 · 계정 전환 · 로그아웃은 <b>환경설정 → 계정</b>에서만 해요.' },
       { icon: '🐣', name: '초보자 보호', tag: 'adjust', desc: '일반전 <b>처음 5판</b>은 봇이 새 성격 <b>왕초보</b> (실수투성이) · 봇 지후의 체력 · 공격력 <b>75%</b> · 일반 4 + 희귀 1 덱. 로비 · 전투 화면에 <b>🐣 표시</b> · 로비에서 <b>끌 수 있어요</b> (한 번 끄면 다시 못 켜요).' },
-      { icon: '✉', name: '튜토리얼 보상', tag: 'adjust', desc: '이제 <b>우편함</b>으로 보내요 · ◆ <b>3,500 → 2,000</b> (● 5,000 그대로).' },
+      { icon: '✉', name: '튜토리얼 보상', tag: 'adjust', desc: '이제 <b>우편함</b>으로 보내요 · ◆ <b>3,500 → 2,000</b> (● 5,000 그대로) · <b>건너뛰어도 받아요</b>.' },
       { icon: '◆', name: '처음 지급 다이아', tag: 'adjust', desc: '<b>1,500 → 500</b>.' },
       { icon: '🛠', name: '수정', tag: 'fix', desc: '새 로비에서 처음 오신 분에게 <b>인트로 만화 · 튜토리얼이 자동으로 안 뜨던</b> 문제를 고쳤어요.' },
       { icon: '🛠', name: '튜토리얼 수정', tag: 'fix', desc: '튜토리얼 <b>무료 10회 뽑기 버튼이 눌리지 않아 멈추던</b> 문제 · 만화가 로딩 화면 위로 덮이던 문제 · 튜토리얼이 끝나고 로비가 잠깐 비치던 문제 · 안내 말풍선이 뽑기 화면 제목을 가리던 문제 · 덱 장착 화면이 스크롤된 채 열려 <b>「덱에 넣기」가 가려지던</b> 문제.' },
@@ -8423,7 +8423,7 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
 // 처음 하는 사람(인트로 만화 다음) · 메뉴 08 튜토리얼에서 시작. 평소 아케이드 엔진(newMatch · arc.kind 'tutorial')을 그대로 쓰고,
 // 엔진 쪽은 TUT.on 일 때만 도는 훅(nextDeploy · choosePick · tapTile · commitAct · roundResult · arcEnd)으로 대본(아래 tutScript)에 넘긴다.
 // 전투는 진짜 시뮬 (화염 Lv1 > 물 / 화염 Lv2 < 물+쉴드 / 화염 Lv2+얼음 Lv2 < 물 Lv2+쉴드 Lv2 / +화염 Lv5 13기 > 상대 → 시뮬 100%) — 칸 자리는 대본이 고정.
-// 보상 ◆2,000 · ●5,000 (R2.13 우편) 은 처음 완료할 때 한 번만 (profile.tutRw) · 건너뛰면(profile.tutSkip) 못 받고 나중에 메뉴에서 다시 하면 받는다 · 10회 뽑기(전설 1 + 일반 9)도 한 번만 (profile.tutPull)
+// 보상 ◆2,000 · ●5,000 (R2.13 우편) 은 처음 완료할 때 한 번만 (profile.tutRw) · 건너뛰어도 받는다 (R2.13 build 5 · sendReward) · 10회 뽑기(전설 1 + 일반 9)도 한 번만 (profile.tutPull)
 (() => {
   const ABORT = { abort: true };
   const WHO = { fire: { name: '화염 지후', id: 'fire', c: '#ff6b35' }, water: { name: '물 지후', id: 'water', c: '#2f8fe8' }, shield: { name: '쉴드 지후', id: 'shield', c: '#4f7cff' }, f8: { name: '화염 지후 8호', id: 'fire', c: '#ff6b35' }, f12: { name: '화염 지후 12호', id: 'fire', c: '#ff6b35' } };
@@ -8522,7 +8522,7 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
     await talk([f('야르')]);
     if (rw) {
       await talk([f('수고했으니 보상을 줄게')]);
-      sfx('buy'); profile.tutRw = 1; addMail({ id: 'tut-reward', icon: '🎁', title: '튜토리얼 보상', body: '특훈을 끝까지 해낸 보상이에요. 앞으로의 활약을 기대할게요!', rewards: [{ kind: 'diamonds', amount: TUT_DIA }, { kind: 'gold', amount: TUT_GOLD }] }); save(); renderMailDot(); // R2.13: 우편으로
+      sfx('buy'); sendReward(); // R2.13: 우편으로
       $('tut').classList.remove('talk'); await dlg({ icon: '✉', title: '튜토리얼 보상', html: `<b>◆ ${TUT_DIA.toLocaleString()}</b> 다이아 + <b>● ${TUT_GOLD.toLocaleString()}</b> 골드를 <b>우편함</b>으로 보냈어요!<br><small>로비 우편함에서 받을 수 있어요</small>`, ok: '확인' }); chk();
     } else await talk([f('보상은 처음 한 번만 준다. 복습하느라 수고했다!')]);
     if (doPull) {
@@ -8548,11 +8548,15 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
     S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); clearTimeout(showIntro.t); S.units = [];
     $('intro').classList.remove('show'); $('lifeFx').className = ''; evHide(); dlgClose(false); if ($('reveal').className) grClose();
   }
+  function sendReward() { // 튜토리얼 보상 우편 (처음 한 번 · R2.13 build 5: 건너뛰어도 받는다)
+    if (profile.tutRw) return false; profile.tutRw = 1;
+    addMail({ id: 'tut-reward', icon: '🎁', title: '튜토리얼 보상', body: '지후왕국에 온 걸 환영해요! 앞으로의 활약을 기대할게요.', rewards: [{ kind: 'diamonds', amount: TUT_DIA }, { kind: 'gold', amount: TUT_GOLD }] }); save(); renderMailDot(); return true;
+  }
   async function skip() {
     if (!TUT.on || TUT.skipAsk) return; TUT.skipAsk = true;
-    const ok = await dlg({ icon: '⏭', title: '튜토리얼을 건너뛸까요?', html: `건너뛰면 <b>튜토리얼 보상(◆ ${TUT_DIA.toLocaleString()} · ● ${TUT_GOLD.toLocaleString()})</b>을 받을 수 없어요.<br>나중에 <b>메뉴 → 튜토리얼</b>에서 다시 하면 받을 수 있어요.`, ok: '건너뛰기', cancel: '계속하기' });
+    const ok = await dlg({ icon: '⏭', title: '튜토리얼을 건너뛸까요?', html: profile.tutRw ? '튜토리얼 보상은 이미 받았어요.' : `건너뛰어도 <b>튜토리얼 보상(◆ ${TUT_DIA.toLocaleString()} · ● ${TUT_GOLD.toLocaleString()})</b>은 <b>우편함</b>으로 보내 드려요.<br><small>규칙은 나중에 <b>메뉴 → 튜토리얼</b>에서 다시 볼 수 있어요.</small>`, ok: '건너뛰기', cancel: '계속하기' });
     TUT.skipAsk = false; if (!ok || !TUT.on) return;
-    if (!profile.tut) profile.tutSkip = 1; save(); leaveBattle(); finish();
+    if (!profile.tut) profile.tutSkip = 1; const got = sendReward(); save(); leaveBattle(); finish(); if (got && profile.nick) banner('✉ 튜토리얼 보상을 우편함으로 보냈어요'); // 첫 실행이면 닉네임 → 환영 카드가 우편으로 안내한다
   }
 
   // 정해진 카드 · 칸만 받는다 (틀린 곳을 누르면 안내 줄이 흔들린다)

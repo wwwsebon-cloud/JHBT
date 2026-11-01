@@ -27,7 +27,7 @@ def main():
     bottom = h
     for y in range(h - 1, 0, -1):
         if any(px[x, y] != bg for x in range(0, w, 3)):
-            bottom = y + 1
+            bottom = min(h, y + 1 + 52)  # R2.13: 아래 여백을 남긴다 (꼬리말이 없어졌다)
             break
     im.crop((0, 0, w, bottom)).save(png)
     print(png, w, bottom)
