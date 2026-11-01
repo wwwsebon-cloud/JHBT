@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.13"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.13"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3923,7 +3923,7 @@ async function signUp(pw, pw2) {
     try { await FB.sdk.createUserWithEmailAndPassword(FB.auth, codeEmail(code), pw); }
     catch (e) { if (e.code === 'auth/email-already-in-use') continue; throw new Error(authMsg(e)); }
     FB.uid = myUid(); profile.ownerUid = FB.uid; profile.newbie = { on: true, days: 0, last: '' }; save();
-    await backupNow().catch(() => {}); await claimNick(); lbPush(); postEvent('join', '', ''); discordNotify({ type: 'join' });
+    await backupNow().catch(() => {}); await claimNick(); lbPush(); postEvent('join', '', ''); if (!profile.joinPosted) { profile.joinPosted = 1; save(); discordNotify({ type: 'join' }); }
     return code;
   }
   throw new Error('사용 가능한 번호를 배정하지 못했어요. 잠시 후 다시 시도하세요.');
@@ -3956,7 +3956,7 @@ async function signInGoogle(start) { // start: 연결된 계정이 없으면 새
     catch (e) { if (e.code === 'auth/email-already-in-use') continue; throw new Error(authMsg(e)); }
     let warn = ''; try { if (credential) await FB.sdk.linkWithCredential(FB.auth.currentUser, credential); } catch (e) { warn = authMsg(e); }
     FB.uid = myUid(); profile.ownerUid = FB.uid; profile.noPw = true; profile.newbie = { on: true, days: 0, last: '' }; save();
-    await backupNow().catch(() => {}); await claimNick(); lbPush(); postEvent('join', '', ''); discordNotify({ type: 'join' });
+    await backupNow().catch(() => {}); await claimNick(); lbPush(); postEvent('join', '', ''); if (!profile.joinPosted) { profile.joinPosted = 1; save(); discordNotify({ type: 'join' }); }
     return { code, warn };
   }
   throw new Error('사용 가능한 번호를 배정하지 못했어요. 잠시 후 다시 시도하세요.');
@@ -6476,7 +6476,7 @@ function postEvent(type, a, b) {
 // 디스코드 알림: 웹후크 주소는 게임에 넣지 않는다 (tools/discord-webhook-worker 의 중계 주소만)
 const DISCORD_RELAY_URL = 'https://withered-salad-dbc6.www-sebon.workers.dev/';
 function discordNotify(payload) {
-  if (!DISCORD_RELAY_URL || devOn() || !isMember()) return;
+  if (!DISCORD_RELAY_URL || devOn() || !FB.on || !FB.auth || !FB.auth.currentUser) return; // R2.13 build 4: 게스트(익명 로그인)도 보낸다 — 중계 서버는 익명 토큰도 받는다
   FB.auth.currentUser.getIdToken().then(token => fetch(DISCORD_RELAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ ...payload, nickname: profile.nick || '' }) })).catch(() => {});
 }
 function discordMatch(win, hist, xp, up) { // 일반전 결과 · 연승 (3 · 5 · 7 · 10연승, 그 뒤로는 5연승마다)
@@ -7625,6 +7625,7 @@ const PATCH_NOTES = [
       { icon: '📖', name: '첫 실행 순서', tag: 'system', desc: '처음 켜면 로그인 없이 바로 <b>인트로 만화 → 튜토리얼 → 닉네임</b> 순서로 시작해요.' },
       { icon: '🪪', name: '지휘관 등록', tag: 'new', desc: '새 닉네임 화면 · 프로필 미리보기 · <b>🎲 무작위 이름</b> · 바로 검사 → <b>환영 카드</b>에서 튜토리얼 보상 우편으로 바로 가요.' },
       { icon: '⏩', name: '튜토리얼 배속', tag: 'adjust', desc: '튜토리얼 전투는 처음부터 늘 <b>1.5배속</b>이에요.' },
+      { icon: '📣', name: '디스코드 알림', tag: 'system', desc: '로그인하지 않은 <b>게스트</b>도 전적 · 연승 · 전설 뽑기 · 레벨업 · 새 지휘관 알림이 디스코드에 올라가요.' },
       { icon: '🎲', name: '랜덤 이벤트 모드', tag: 'system', desc: '개편을 위해 <b>잠시 쉬어요</b> · 지금은 모든 판이 클래식 (이벤트 없음).' },
       { icon: '🔑', name: '로그인 · 회원가입', tag: 'system', desc: '로그인 화면을 없앴어요. 로그인 · 회원가입 · 계정 전환 · 로그아웃은 <b>환경설정 → 계정</b>에서만 해요.' },
       { icon: '🐣', name: '초보자 보호', tag: 'adjust', desc: '일반전 <b>처음 5판</b>은 봇이 새 성격 <b>왕초보</b> (실수투성이) · 봇 지후의 체력 · 공격력 <b>75%</b> · 일반 4 + 희귀 1 덱. 로비 · 전투 화면에 <b>🐣 표시</b> · 로비에서 <b>끌 수 있어요</b> (한 번 끄면 다시 못 켜요).' },
@@ -8968,6 +8969,7 @@ function nickStep() { // R2.13 첫 실행 마지막 단계 (build 3 새 화면):
     const d = FB.on ? await nickDoc(n) : null; busy = false; go.textContent = '지후왕국 입장 →';
     if (d && d.owner !== myUid()) { msg.textContent = '다른 계정이 쓰는 닉네임이에요'; msg.className = 'bad'; go.disabled = false; return; }
     sent = true; profile.nick = n; profile.nickN = 0; if (!profile.updRw) profile.updRw = gameVersion(); // 새로 온 사람은 이번 버전 업데이트 보상 없음 (첫 지급은 튜토리얼 우편)
+    if (!profile.joinPosted) { profile.joinPosted = 1; discordNotify({ type: 'join' }); } // R2.13 build 4: 게스트도 디스코드 가입 알림
     save(); renderLobby(); show('lobby'); sfx('buy'); setTimeout(() => nuWelcome(n), 200);
   };
   inp.addEventListener('input', check); go.onclick = submit;
