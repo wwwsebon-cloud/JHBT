@@ -1,7 +1,7 @@
 # RE : 지후배틀 (RE:JHBT) — 작업 규칙 · 게임 핵심 정리
 
 ## 이름 · 버전
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT**. 버전은 **R2.0** 부터 (지금 R2.13.2) (`<meta name="jihoo-version">` · 잠수함 패치는 `<meta name="jihoo-build">` +1)
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT**. 버전은 **R2.0** 부터 (지금 R2.17) (`<meta name="jihoo-version">` · 잠수함 패치는 `<meta name="jihoo-build">` +1)
 - 지후배틀(R1, v8.1) · 지후배틀 2(JHBT2) 는 서비스 종료. R1 전체 코드는 `archive/v8.1` 브랜치에 백업
 - 버전 태그 이름은 R1 과 같은 `jihoo-version` 이어야 한다 (예전 화면이 새 버전을 알아보고 새로고침 안내를 띄운다)
 
@@ -221,3 +221,10 @@
 - **R2.16.1**: 커뮤니티 링크 첫 방문 ◆300 씩 (`commGo` · `profile.commRw[key]` · `COMM_RW` · 메뉴 태그 = 남은 보상) · 채팅 시스템 줄 (`.cm.sys` 환영 · 전설 · 레벨) 은 작은 한 줄 (R2.16 의 `.cm b` flex 규칙이 여러 줄 큰 말풍선으로 만들었다) · 인포그래픽은 `%TEMP%/ld/pnget.js` (게임에서 PATCH_NOTES 뽑기) → `pn2info.js . <버전>` → make.py · shot.py
 - **R2.16.1 build 2 (잠수함)**: 지후 설명(CHARS · SUMMONS 의 passive · skill desc · info 값)은 **존댓말 ~니다** (`%TEMP%/ld/polite.js` 로 일괄 · '~마다' · '~보다' 는 문장 끝이 아니라 제외) · 새 지후 설명도 ~니다 로 쓴다 · story 는 그대로
 - **R2.16.1 build 3 (잠수함 · 렉)**: 죽을 때 · 암살 순간이동 프레임 드랍 — 원인 ① `viewSize` · `viewInsets` 가 매 프레임(camFollow → applyCamera · 미니맵) clientWidth · getBoundingClientRect 를 읽어, 효과 DOM(피해 숫자 · 죽음 · 순간이동)이 붙은 프레임마다 화면 전체 강제 레이아웃 (프로파일 201ms) → `VIEW` 캐시 · `viewDirty()` (resize · orientationchange · ResizeObserver: hud · tray · fieldWrap) ② 이모티콘 소리가 AudioContext 를 따로 만들었다 (118ms) → `sfxCtx()` 재사용 ③ `.unit.stealthed` filter 제거. **전투 중 매 프레임 레이아웃 값을 읽지 말 것** (읽어야 하면 VIEW 처럼 캐시 · 측정은 %TEMP%/ld/perf5.js CPU 프로파일 · perf6.js long-animation-frame)
+- **R2.17 신규 지후 8종** (CHARS 끝 · 도우미는 `reapFx` 바로 앞 `// ── R2.17 신규 지후 도우미 ──`): 갓 `god` (전설 · `maxLv: 6` — 레벨 상한은 `maxLv(id)` 로 본다 (stackable · canFuse · levelUp · 이벤트 · 샌드박스 · unpackPlace) · Lv6 이면 `makeUnit` 이 `CHARS.god.trueForm` 을 쓴다 (`u.picSrc` 초월 그림 · `godAwake` 배너) · 트루폼 SP 4 [심판의 빛] `godRay` 3초 · 0.25초마다 420% · 폭 = 몸 지름 1.5배) / 고고학자 `archaeo` (영웅 · 시작 5초 `u.dig` → `relicDig`) / 돌격 `rush` (영웅 · 1초 차징 `.fx-rush-lane` → 초당 6칸 `ghost` 돌진 · 처음 부딪힌 적 320% · `rushEnd`) / 괴도 `thief` (전설 · SP 3 `thiefCard` → `A.later(15)` `thiefSteal`: **배치 기록 `S.place` 의 lv** 를 −1 / 내 진영 무작위 칸 (자신 제외) +1 · 싸우는 중이면 `lvShift`) / 탄환 `bullet` (전설 · **커뮤니티 제작 · METAL** = `community: 'METAL'` → 상세 창 배지 · 크레딧 '커뮤니티 지후 제작자' · `u.bl` 6발 · `onKill` 재장전 · 다 쓰고 날아가는 탄(`u.fly`)도 끝나면 `bulletLast` 5초) / 성검 `holy` (전설 · `A.later(0.22)` 낙하 · 15% 현재 체력 50%) / 러시안룰렛 `roulette` (전설 탱커 · `takenMult` 0.15 · `u.rr` 6칸 실린더 rng · self ↔ foe 2.7초 · 실탄 `instaKill` · 겨눈 적 `st.lock`) / 폭군 `tyrant` (전설 탱커 · 40% 미만 한 번 `tyrantRage` (아군 · 적 모두 현재 체력 70%) · SP 3 버프 `tyrant<uid>` atk −0.2)
+  - **관통** = `pierceShot(u, t, o)` (A.line · 대상 뒤 2칸 · SP 는 처음 맞은 적 하나로)
+  - **유물** `RELICS` · `RELIC_TIER` → `S.rel[진영]` (atk · spd · vuln · dr · regen · sp · t15 · t25 · gaho · 고고학자가 여럿이면 더한다 · `beginCombat` 이 비운다) · 훅: `effAtk` · `dealDamage` (dr · 상대 진영 vuln · 쓰러질 때 `relSave`) · `moveToward` · `stepCombat` → `relTick` (1초마다 조용한 회복 · `spGive`) · 네잎클로버만 `S.clover` (matchBase) 로 다음 라운드 · 팝업 `.fx-relic`
+  - 초상화 `지후초상화/newjihu22/` → 흰 바탕 256 (`%TEMP%/ld/r217p.json`) · 인포그래픽 `portraits.json` 에도 추가. 새 지후 서사(story)는 아직 없다 (사용자가 줄 때) · 랭크 6 고유능력도 없음
+  - `shortName` 은 `/ ?지후$/` (갓지후 → 갓)
+- **R2.17 UI**: 지후 탭 `unitGroups` (보유 = 등급별 칸막이 · 역할군순은 역할군별 · 미보유 맨 아래) · 랭크업 연출 `rankUpFx` (`.u2-rkup` · body 에 붙는다) · 퀘스트 시트 `UI2.st.qs` 'quest' | 'ach' (`qsHtml` · `qsClick` · `achClaim` · 새 로비의 `openQs` 가 연다 · 예전 `#qsModal` 은 튜토리얼 · 예전 화면용) · 로비 가운데 아레나 `.u2-arena` (u2Vals `arena` · 누르면 프로필 전적) · 탑 층 보상 `data-twbox` → `towerBoxInfo` (`TOWER_BOX_INFO`) · 뽑기 카드 중복 표시 '조각 +10' · `.gr-table` safe center (카드가 많을 때 위로 넘치지 않게)
+- **R2.17 상점 패키지 · VIP**: `PACKS` (upm ◆3,500 · lite ◆750 · starter1 ◆600 계정당 1회 `profile.packs` · vip ◆8,900) → `buyPack` (바로 열어서 `showReveal`) · VIP `profile.vip = { until, day }` · `vipOn()` 이면 body `vip-on` → 전투 `#speedSeg` 보임 (1× · 1.5× · `speedPref && vipOn()`) · 매일 첫 로비 `vipDaily` 우편 ● 3,000 + ◆ 100 (`addMail` id `vip-<날짜>`)
