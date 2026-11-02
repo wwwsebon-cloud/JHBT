@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.17.1"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.17.1"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -6866,6 +6866,7 @@ function updCheck() {
   if (RP.pend || S.replay) return; // R2.14: 공유 리플레이를 여는 중 · 보는 중 (끝나면 replayExit 가 다시 부른다)
   if ($('boot')) { clearTimeout(updCheck.t); updCheck.t = setTimeout(updCheck, 400); return; } // 접속 로딩이 끝난 뒤에 (R2.13 build 3)
   if (!$('comic').hidden) return; // 만화를 보는 중이면 끝나고 다시
+  if (profile.nick && nickBad(profile.nick)) { nickPurge(); } // R2.17.2: 검열에 걸린 닉네임 → 지후님N
   if (profile.live && profile.nick && lobbyOn() && !TUT.on && S.phase === 'idle') { liveForfeit(); return; } // 지난 판을 새로고침 · 강제 종료로 나갔으면 패배 (R2.13.1 build 2) (두 번 불려 만화 · 튜토리얼이 겹치던 문제)
   if (!profile.comic && lobbyOn()) { showComic(updCheck); return; } // 첫 실행 (R2.13): 인트로 만화 → 튜토리얼 → 닉네임 (예전엔 screen-lobby 를 봐서 새 로비에선 안 떴다)
   if (TUT.auto && TUT.auto()) return; // 처음 하는 사람은 튜토리얼
@@ -7328,7 +7329,7 @@ function presencePing(where) {
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') presencePing(); });
 function presenceOf(uid) {
   const p = ON.presence[uid], on = !!p && Date.now() - ts(p.at) < 150000;
-  return { on, where: on ? p.where : 'off', sp: on ? String(p.sp || '') : '', nick: p && p.nickname, frame: p && p.frame, fav: p && p.fav, label: !on ? '오프라인' : p.where === 'battle' ? (p.sp ? '친선전 중 · 관전 가능' : '게임 중') : '온라인' };
+  return { on, where: on ? p.where : 'off', sp: on ? String(p.sp || '') : '', nick: p && safeNick(p.nickname), frame: p && p.frame, fav: p && p.fav, label: !on ? '오프라인' : p.where === 'battle' ? (p.sp ? '친선전 중 · 관전 가능' : '게임 중') : '온라인' };
 }
 // 공지 이벤트 (전체 채팅에 한 줄): 가입 · 레벨업 · 전설 획득
 function postEvent(type, a, b) {
@@ -7339,7 +7340,7 @@ function postEvent(type, a, b) {
 const DISCORD_RELAY_URL = 'https://withered-salad-dbc6.www-sebon.workers.dev/';
 function discordNotify(payload) {
   if (!DISCORD_RELAY_URL || devOn() || !FB.on || !FB.auth || !FB.auth.currentUser) return; // R2.13 build 4: 게스트(익명 로그인)도 보낸다 — 중계 서버는 익명 토큰도 받는다
-  FB.auth.currentUser.getIdToken().then(token => fetch(DISCORD_RELAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ ...payload, nickname: profile.nick || '' }) })).catch(() => {});
+  FB.auth.currentUser.getIdToken().then(token => fetch(DISCORD_RELAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ ...payload, nickname: safeNick(profile.nick) || '' }) })).catch(() => {});
 }
 function discordMatch(win, hist, xp, up) { // 일반전 결과 · 연승 (3 · 5 · 7 · 10연승, 그 뒤로는 5연승마다)
   const me = ME(), rows = new Map();
@@ -7352,10 +7353,31 @@ function discordMatch(win, hist, xp, up) { // 일반전 결과 · 연승 (3 · 5
 
 // ═════════ 친구 · 전체 채팅 · 1:1 채팅 (전작 4.1.4 · 5.0) ═════════
 // 욕설 검열: 글자 사이의 공백 · 기호를 무시하고 찾아서 *로 가린다 (보낼 때와 보여 줄 때 모두) · 도배 방지: 3초 간격 · 30초에 5개 · 같은 말 연속 금지
-const BAD_WORDS = ['씨발', '시발', '씨팔', '시팔', '씹', '병신', '븅신', '지랄', '좆', '존나', '개새끼', '새끼', '새키', '섹스', '니미', '니애미', '느금', '엠창', '창녀', '걸레', '보지', '자지', '꺼져', '닥쳐', '멍청이', '등신', 'ㅅㅂ', 'ㅆㅂ', 'ㅂㅅ', 'ㅈㄹ', 'ㅈㄴ', 'ㄴㅇㅁ', 'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'nigger', 'faggot', 'retard'];
-const hasBad = t => { BAD_RE.lastIndex = 0; const r = BAD_RE.test(String(t || '')); BAD_RE.lastIndex = 0; return r; }; // R2.13 build 3: g 정규식 test 는 lastIndex 가 남아 번갈아 틀린다
-const BAD_RE = new RegExp(BAD_WORDS.map(w => [...w].map(ch => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\W_]{0,2}')).join('|'), 'gi');
-const censorText = text => String(text || '').replace(BAD_RE, m => '*'.repeat(Math.max(2, m.replace(/[\s\W_]/g, '').length)));
+const BAD_WORDS = [ // R2.17.2 확장: 욕설 · 패드립 · 성적 · 혐오 · 극우 (고 노무현 대통령 비하) · 영어
+  '씨발', '시발', '씨팔', '시팔', '씨빨', '씨바', '씨벌', '시벌', '쓰벌', '씹', '병신', '븅신', '빙신', '병싄', '지랄', '좆', '존나', '존내', '졸라', '개새끼', '개새', '개색', '개세끼', '개쉐', '새끼', '새키', '쉐끼', '섀끼', '썅', '쌍놈', '쌍년', '염병', '엿먹', '미친놈', '미친년', '미친새', '또라이', '호로', '후레자식', '육시랄', '꺼져', '닥쳐', '멍청이', '등신', '애자',
+  '니미', '니애미', '니애비', '니어미', '니엄', '느금', '느검', '느그엄', '느그애', '느그어', '느개비', '니기미', '애미', '애비', '에미', '에비', '엠창', '엄창', '앰창', '고아새', '부모없', '애미없', '애비없',
+  '창녀', '걸레', '보지', '자지', '섹스', '강간', '자위', '야동', '딸딸이',
+  '운지', '노알라', '노시계', '노무노무', '엠씨무현', 'mc무현', '무현이', '응디', '부엉이바위', '이기야', '일베', '일간베스트', '홍어', '전라디언', '김치녀', '된장녀', '한남충', '삼일한', '틀딱', '급식충', '맘충', '짱깨', '쪽바리', '똥남아',
+  'ㅅㅂ', 'ㅆㅂ', 'ㅂㅅ', 'ㅄ', 'ㅈㄹ', 'ㅈㄴ', 'ㄴㅇㅁ', 'ㄴㄱㅁ', 'ㄲㅈ', 'ㄷㅊ',
+  'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'cunt', 'nigger', 'nigga', 'faggot', 'retard', 'porn'];
+const BAD_OK = ['시발점', '시발역', '새끼손', '새끼발', '새끼고양', '새끼강아', '새끼곰', '보지마', '보지말', '보지않', '보지도', '보지못', '보지는', '자지마', '자지말', '자지않', '자지도', '자지못', '애비뉴', '에미넴', '에미상', '한남동', '한남대', '홍어회', '홍어삼합', '운지천', '운지버섯', '이기야지']; // 멀쩡한 말 (검사 전에 지운다)
+const BAD_PAT = [/(느그|니|너네|너희|ㄴㄱ|늬|느)(어머|엄마|엄니|어미|애미|애비|에미|아빠|아버|부모|할매|할머)/, /(어머니|엄마|엄니|어미|애미|애비|아빠|아버지|부모|할머니|할매)(가|는|님)?(사망|죽|뒤졌|뒤짐|뒤지|돌아가|없|창녀|걸레)/]; // 패드립
+const NICK_BAN = /노무현|엠씨무현|mc무현|무현이|일베|운영자|운영진|관리자|개발자|admin|^gm|지후배틀공식/; // 닉네임만 (사칭 · 실존 인물)
+const JM_C = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ', JM_V = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ', JM_T = '_ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
+function jamoJoin(s) { // 「ㅆㅣㅂㅏㄹ」 → 「씨발」 (풀어 쓴 자모를 글자로)
+  const a = [...s]; let o = '';
+  for (let i = 0; i < a.length;) { const c = JM_C.indexOf(a[i]), v = c >= 0 ? JM_V.indexOf(a[i + 1] || '') : -1;
+    if (c < 0 || v < 0) { o += a[i++]; continue; }
+    const t = JM_T.indexOf(a[i + 2] || ''), keep = t > 0 && JM_V.indexOf(a[i + 3] || '') < 0; o += String.fromCharCode(0xAC00 + (c * 21 + v) * 28 + (keep ? t : 0)); i += keep ? 3 : 2; }
+  return o;
+}
+const badNorm = t => { let s = jamoJoin(String(t || '').normalize('NFC').toLowerCase().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-z]/g, '')).replace(/[씌쒸싀쓉]/g, '씨').replace(/(.)\1{2,}/g, '$1$1'); for (const w of BAD_OK) s = s.split(w).join(''); return s; }; // 공백 · 숫자 · 기호 빼고 · 닮은 글자 · 반복 줄이기 · 멀쩡한 말 지우기
+const badHit = s => BAD_WORDS.some(w => s.includes(w)) || BAD_PAT.some(r => r.test(s));
+const hasBad = t => badHit(badNorm(t)); // R2.17.2: 정리한 글자로 검사 (예전 정규식은 글자 사이 기호 2개까지만 · 숫자 · 자모 · 패드립 문장은 통과했다)
+const nickBad = n => hasBad(n) || NICK_BAN.test(badNorm(n)); // 닉네임은 더 엄격하게 (실존 인물 · 운영자 사칭)
+const BAD_RE = new RegExp(BAD_WORDS.map(w => [...w].map(ch => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\W_\\d]{0,2}')).join('|'), 'gi');
+const censorText = text => { const t = String(text || ''); if (!hasBad(t)) return t; if (BAD_PAT.some(r => r.test(badNorm(t)))) return '🚫 검열된 메시지예요'; const m = t.replace(BAD_RE, x => '*'.repeat(Math.max(2, x.replace(/[\s\W_\d]/g, '').length))); return hasBad(m) ? '🚫 검열된 메시지예요' : m; }; // 가릴 수 없게 쪼갠 욕설 · 패드립은 통째로
+const safeNick = n => (n && nickBad(n) ? '지후님' : n); // 아직 바뀌지 않은 다른 사람 닉네임은 가려서 보여 준다
 const chatTidy = text => String(text || '').replace(/\s+/g, ' ').trim().replace(/(.)\1{6,}/g, '$1$1$1$1$1$1').slice(0, 120);
 const SOC = { tab: 'chat', chat: undefined, events: [], sentAt: [], last: '', dm: null, dmMsgs: undefined, fmsg: '', fok: '', conn: '' }; // tab: 'chat' 전체 채팅 · 'dm' 1:1
 function chatProblem(text) {
@@ -7374,7 +7396,7 @@ function watchChat() {
   sdk.onSnapshot(sdk.query(sdk.collection(FB.db, 'events'), sdk.orderBy('at', 'desc'), sdk.limit(20)), snap => { SOC.events = snap.docs.map(d => d.data()); redraw(); }, () => {});
 }
 function eventLine(e) { // R1 기록의 이벤트(랭크 · 승급 등)는 보여 주지 않는다
-  const n = esc(String(e.nickname || '?'));
+  const n = esc(String(safeNick(e.nickname) || '?'));
   if (e.type === 'join') return `🎉 <b>${n}</b>님이 처음 왔어요`;
   if (e.type === 'level' && Number(e.a) > 0) return `⬆ <b>${n}</b>님 Lv.${Number(e.a)} 달성`;
   if (e.type === 'gacha' && e.b === 'legend' && CHARS[e.a]) return `🌟 <b>${n}</b>님이 전설 지후 <b>${CHARS[e.a].name}</b> 획득!`;
@@ -7455,7 +7477,7 @@ function renderChat() {
     lines = SOC.dmMsgs === undefined ? '<div class="chat-empty">불러오는 중…</div>' : SOC.dmMsgs === null ? '<div class="chat-empty">대화를 불러오지 못했어요. (방금 친구가 됐다면 잠시 뒤에 다시)</div>'
       : SOC.dmMsgs.length ? SOC.dmMsgs.map(m => bubble(m, SOC.dm.nick)).join('') : `<div class="chat-empty">${esc(SOC.dm.nick)}님과의 첫 대화를 시작해 보세요.</div>`;
   } else {
-    const items = (SOC.chat || []).map(m => ({ at: ts(m.at) || Date.now(), html: bubble(m, String(m.nickname || '?')) }))
+    const items = (SOC.chat || []).map(m => ({ at: ts(m.at) || Date.now(), html: bubble(m, String(safeNick(m.nickname) || '?')) }))
       .concat(SOC.events.map(e => ({ at: ts(e.at), line: eventLine(e) })).filter(e => e.line).map(e => ({ at: e.at, html: `<div class="cm sys"><span class="tx">${e.line}</span><span class="t">${hhmm(e.at)}</span></div>` })))
       .sort((x, y) => x.at - y.at).slice(-80);
     lines = SOC.chat === undefined ? '<div class="chat-empty">불러오는 중…</div>' : SOC.chat === null ? '<div class="chat-empty">채팅을 불러오지 못했어요.</div>' : items.length ? items.map(x => x.html).join('') : '<div class="chat-empty">아직 아무도 말하지 않았어요.</div>';
@@ -9557,7 +9579,7 @@ let lbTab = 'level';
 function favChar() { if (profile.fav && CHARS[profile.fav] && owned(profile.fav)) return profile.fav; const c = profile.useCount || {}, ids = Object.keys(c).filter(id => CHARS[id]); return ids.sort((a, b) => c[b] - c[a])[0] || (profile.deck || [])[0] || ''; }
 function lbRow(i, d, me) {
   const w = Number(d.wins) || 0, l = Number(d.losses) || 0;
-  return `<div class="lbrow${i < 3 ? ' top' : ''}${me ? ' me' : ''}" style="animation-delay:${Math.min(0.5, i * 0.03).toFixed(2)}s"><span class="rk">${i + 1}</span><span class="nm">${pfHtml(d.frame, 40, d.fav, { letter: d.nickname })}<b>${esc(String(d.nickname || '?').slice(0, 12))}${me ? ' (나)' : ''}</b><small>${lbTab === 'comp' ? `${compTierInfo(d.tp).name} · ${w.toLocaleString()}승 ${l.toLocaleString()}패` : lbTab === 'tower' ? `지후의 탑 최고 ${(Number(d.best) || 0).toLocaleString()}층` : `${w.toLocaleString()}승 ${l.toLocaleString()}패`}</small></span><span class="v">${lbTab === 'comp' ? (Number(d.tp) || 0).toLocaleString() + ' TP' : lbTab === 'tower' ? (Number(d.best) || 0).toLocaleString() + '층' : lbTab === 'wins' ? w.toLocaleString() + '승' : 'Lv.' + clamp(Number(d.level) || 0, 0, 999)}</span></div>`;
+  return `<div class="lbrow${i < 3 ? ' top' : ''}${me ? ' me' : ''}" style="animation-delay:${Math.min(0.5, i * 0.03).toFixed(2)}s"><span class="rk">${i + 1}</span><span class="nm">${pfHtml(d.frame, 40, d.fav, { letter: d.nickname })}<b>${esc(String(safeNick(d.nickname) || '?').slice(0, 12))}${me ? ' (나)' : ''}</b><small>${lbTab === 'comp' ? `${compTierInfo(d.tp).name} · ${w.toLocaleString()}승 ${l.toLocaleString()}패` : lbTab === 'tower' ? `지후의 탑 최고 ${(Number(d.best) || 0).toLocaleString()}층` : `${w.toLocaleString()}승 ${l.toLocaleString()}패`}</small></span><span class="v">${lbTab === 'comp' ? (Number(d.tp) || 0).toLocaleString() + ' TP' : lbTab === 'tower' ? (Number(d.best) || 0).toLocaleString() + '층' : lbTab === 'wins' ? w.toLocaleString() + '승' : 'Lv.' + clamp(Number(d.level) || 0, 0, 999)}</span></div>`;
 }
 function lbMine(hall) { // 상위권 밖이면 맨 아래에 내 줄 (명예의 전당은 R1 기록이 있을 때만)
   const lg = profile.legacy; if (hall && !lg) return '';
@@ -10071,7 +10093,7 @@ function u2Vals() {
   // 랭킹 (리더보드 기록: 닉네임 · 레벨 · 대표 지후 · 테두리 · 승패 · 탑 · TP)
   const L = s.lb && s.lb.tab === lbTab ? s.lb : null, rankC = ['#ffc21a', '#dfe4ee', '#e8a06a'], frameBg = fr => (hasKey(FRAME, fr) ? FRAME[fr] : FRAME.none).bg;
   const lbVal = d => { const w = Number(d.wins) || 0, l = Number(d.losses) || 0; return lbTab === 'comp' ? [fmt(d.tp) + ' TP', compTierInfo(d.tp).name, `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'tower' ? [fmt(d.best) + '층', '최고 층', `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'wins' ? [fmt(w) + '승', `${fmt(l)}패`, `Lv.${clamp(Number(d.level) || 0, 0, 999)}`] : ['Lv.' + clamp(Number(d.level) || 0, 0, 999), lbTab === 'hall' ? 'R1 기록' : `${fmt(w)}승`, `${fmt(w)}승 ${fmt(l)}패`]; };
-  const lbRows = L && L.rows ? L.rows.map((r, i) => { const d = r.data, v = lbVal(d); return { rank: i + 1, rankColor: rankC[i] || '#f2f4fa', border: r.uid === L.me ? '#53d3c0' : i < 3 ? rankC[i] : '#3b466b', main: v[0], sub: v[1], lv: clamp(Number(d.level) || 0, 0, 999), name: String(d.nickname || '?').slice(0, 12) + (r.uid === L.me ? ' (나)' : ''), frame: frameBg(d.frame), favImg: CHARS[d.fav] ? u2Img(d.fav) : u2Img('fire'), deck: ((Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS()).filter(id => CHARS[id]).slice(0, 5)).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })), open: () => u2UserInfo(r.uid, d), stat1: v[2], stat2: lbTab === 'comp' ? compTierInfo(d.tp).name : lbTab === 'tower' ? '지후의 탑' : '시즌 R2' }; }) : [];
+  const lbRows = L && L.rows ? L.rows.map((r, i) => { const d = r.data, v = lbVal(d); return { rank: i + 1, rankColor: rankC[i] || '#f2f4fa', border: r.uid === L.me ? '#53d3c0' : i < 3 ? rankC[i] : '#3b466b', main: v[0], sub: v[1], lv: clamp(Number(d.level) || 0, 0, 999), name: String(safeNick(d.nickname) || '?').slice(0, 12) + (r.uid === L.me ? ' (나)' : ''), frame: frameBg(d.frame), favImg: CHARS[d.fav] ? u2Img(d.fav) : u2Img('fire'), deck: ((Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS()).filter(id => CHARS[id]).slice(0, 5)).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })), open: () => u2UserInfo(r.uid, d), stat1: v[2], stat2: lbTab === 'comp' ? compTierInfo(d.tp).name : lbTab === 'tower' ? '지후의 탑' : '시즌 R2' }; }) : [];
   const myAt = L && L.rows ? L.rows.findIndex(r => r.uid === L.me) : -1, myD = { wins: profile.wins, losses: profile.losses, level: profile.level, best: profile.tower.best, tp: profile.comp.tp, ...(lbTab === 'comp' ? { wins: profile.comp.wins, losses: profile.comp.losses } : {}) }, myV = lbVal(myD);
   const lbTabs = [['level', '레벨'], ['wins', '승리'], ['tower', '탑'], ['comp', '경쟁전'], ['hall', '명예']].map(([k, label]) => ({ label, bg: lbTab === k ? '#3b466b' : 'transparent', fc: lbTab === k ? '#fff' : '#9aa3bf', onClick: () => { if (lbTab === k) return; lbTab = k; u2LbLoad(); u2Render(); } }));
   // 상점
@@ -10188,7 +10210,7 @@ function u2Vals() {
       return { rp: rpOk, rpGo: () => replayStart(m.at), rpShare: () => rpShare(m.at), res: m.win ? '승리' : '패배', color: m.win ? '#53d3c0' : '#ff7a85', line: m.win ? '#2a9483' : '#7a3a48', title: `${kind} · vs ${m.opp || '상대'}${m.olv ? ' Lv.' + m.olv : ''}`, when: agoTxt(m.at), score: `${W}승 ${Lr}패`, rounds: (m.r || '').split('').map((x, i) => ({ t: (i + 1) + 'R ' + (x === 'W' ? '승' : x === 'L' ? '패' : '무'), bg: x === 'W' ? '#53d3c0' : x === 'L' ? '#ff5d6c' : '#3b466b', fc: x === 'D' ? '#f2f4fa' : '#141826' })), me: dk(m.me), op: dk(m.op) }; }))(new Set(rpLoad().map(r => r.at))) : [],
     hasUinfo: !!s.uinfo, uinfoClose: () => u2Set({ uinfo: null }), ui: (() => { const u = s.uinfo; if (!u) return {}; const d = u.d || {}, w = Number(d.wins) || 0, l = Number(d.losses) || 0, fav = CHARS[d.fav] ? d.fav : 'fire';
       const seenAt = u.pr && u.pr.at ? ts(u.pr.at) : d.updatedAt ? ts(d.updatedAt) : 0, online = !!(u.pr && u.pr.at && Date.now() - ts(u.pr.at) < 150000); // 접속 신호(presence)가 2분 반 안이면 접속 중
-      return { name: String(d.nickname || '유저'), loading: !!u.loading, err: u.err || '', ready: !u.loading && !u.err && !!u.d, lv: clamp(Number(d.level) || 1, 1, 999), pf: { html: pfHtml(d.frame, 84, fav, { letter: d.nickname }) }, favName: shortName(fav) + ' 지후', seen: online ? '🟢 지금 접속 중' : '최근 접속 · ' + agoTxt(seenAt),
+      return { name: String(safeNick(d.nickname) || '유저'), loading: !!u.loading, err: u.err || '', ready: !u.loading && !u.err && !!u.d, lv: clamp(Number(d.level) || 1, 1, 999), pf: { html: pfHtml(d.frame, 84, fav, { letter: d.nickname }) }, favName: shortName(fav) + ' 지후', seen: online ? '🟢 지금 접속 중' : '최근 접속 · ' + agoTxt(seenAt),
         stats: [['승리', w.toLocaleString(), '#53d3c0'], ['패배', l.toLocaleString(), '#ff7a85'], ['승률', w + l ? Math.round(w / (w + l) * 100) + '%' : '—', '#ffc94a'], ['경험치', (Number(d.xp) || 0).toLocaleString(), '#7cc8ff'], ['탑 최고', u.tw ? (Number(u.tw.best) || 0) + '층' : '—', '#b26bff'], ['경쟁전', u.cp ? compTierInfo(u.cp.tp).name : '—', '#ff9f43']].map(([k, v, c]) => ({ k, v, c })),
         deck: ((Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS()).filter(id => CHARS[id]).slice(0, 5)).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })) }; })(),
     recShow: profile.level <= REC_MAX_LV, recOpen: () => profile.level <= REC_MAX_LV && u2Set({ rec: recDeck() }), hasRec: !!s.rec && profile.level <= REC_MAX_LV, recClose: () => u2Set({ rec: null }), recAgain: () => u2Set({ rec: recDeck() }),
@@ -10267,7 +10289,7 @@ function nickStep() { // R2.13 첫 실행 마지막 단계 (build 3 새 화면):
   const inp = $('nsNick'), go = $('nsGo'), msg = $('nsMsg');
   let busy = false, sent = false;
   const check = () => { const n = inp.value.trim(); $('nsCnt').textContent = `${[...inp.value].length} / 12`; const pv = $('nsPrev'); pv.textContent = n || '지휘관'; pv.classList.toggle('ph', !n);
-    const bad = !n ? '' : hasBad(n) ? '쓸 수 없는 말이 들어 있어요' : n.includes('/') ? '「/」는 쓸 수 없어요' : '';
+    const bad = !n ? '' : nickBad(n) ? '쓸 수 없는 말이 들어 있어요' : n.includes('/') ? '「/」는 쓸 수 없어요' : '';
     msg.textContent = bad || (n ? '좋은 이름이에요!' : '한글 · 영어 · 숫자 1~12자'); msg.className = bad ? 'bad' : n ? 'ok' : ''; go.disabled = busy || !n || !!bad; return n && !bad ? n : ''; };
   const submit = async () => {
     if (busy || sent) return; const n = check(); if (!n) { inp.focus(); return; }
@@ -10280,7 +10302,7 @@ function nickStep() { // R2.13 첫 실행 마지막 단계 (build 3 새 화면):
   };
   inp.addEventListener('input', check); go.onclick = submit;
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); submit(); } }); // 한글 입력 중 Enter 는 글자 확정 (두 번 넘어가지 않게)
-  $('nsDice').onclick = () => { const r = a => a[Math.floor(Math.random() * a.length)]; let n = ''; for (let k = 0; k < 8 && (!n || hasBad(n)); k++) n = (r(NS_A) + r(NS_B) + (Math.random() < 0.5 ? Math.floor(Math.random() * 90 + 10) : '')).slice(0, 12);
+  $('nsDice').onclick = () => { const r = a => a[Math.floor(Math.random() * a.length)]; let n = ''; for (let k = 0; k < 8 && (!n || nickBad(n)); k++) n = (r(NS_A) + r(NS_B) + (Math.random() < 0.5 ? Math.floor(Math.random() * 90 + 10) : '')).slice(0, 12);
     inp.value = n; check(); const d = $('nsDice'); d.classList.remove('roll'); void d.offsetWidth; d.classList.add('roll'); sfx('place'); };
 }
 function nuWelcome(n) { // R2.13 build 3: 닉네임을 정하면 환영 카드 → 튜토리얼 보상 우편 · 초보자 보호 · 출석부 안내
@@ -10297,11 +10319,24 @@ function nuWelcome(n) { // R2.13 build 3: 닉네임을 정하면 환영 카드 �
 // ═════════ 프로필 (R2.12): 로비 프로필 배지 → 꾸미기 (테두리 · 대표 지후) + 닉네임 변경 (첫 번째 무료 · 그다음 ● 100 · 24시간에 한 번) ═════════
 const NICK_GOLD = 100, NICK_CD = 24 * 3600 * 1000;
 function nickLeft() { return Math.max(0, (profile.nickAt || 0) + NICK_CD - Date.now()); }
+async function nextJihooNick() { // R2.17.2: 비어 있는 「지후님N」 (닉네임 등록부를 1부터 10개씩 본다 · 오프라인이면 무작위 번호)
+  if (!(await fbInit().catch(() => false))) return '지후님' + (1000 + Math.floor(Math.random() * 9000));
+  for (let s = 1; s < 2000; s += 10) { const names = Array.from({ length: 10 }, (_, i) => '지후님' + (s + i)), docs = await Promise.all(names.map(nickDoc)); const i = docs.findIndex(d => !d || d.owner === myUid()); if (i >= 0) return names[i]; }
+  return '지후님' + Date.now().toString().slice(-6);
+}
+let nickPurging = false;
+async function nickPurge() { // R2.17.2: 검열에 걸린 닉네임은 접속할 때 지후님N 으로 바꾸고 무료 변경 1번
+  if (nickPurging || !profile.nick || !nickBad(profile.nick)) return; nickPurging = true;
+  try { const old = profile.nick, n = await nextJihooNick(); if (!profile.nick || !nickBad(profile.nick)) return;
+    profile.nick = n; profile.nickN = 0; profile.nickAt = 0; save(); renderLobby(); if (isMember()) { await claimNick(); lbPush(); accRemember(); } if (window.__u2 && UI2.on) u2Render();
+    dlg({ icon: '🚫', title: '닉네임이 바뀌었어요', html: `「${esc(old)}」은(는) 쓸 수 없는 말이 들어 있어 <b>${esc(n)}</b>(으)로 바뀌었어요.<br><small>프로필에서 한 번 <b>무료</b>로 바꿀 수 있어요.</small>` });
+  } finally { nickPurging = false; }
+}
 async function changeNick(n) {
   n = String(n || '').trim().slice(0, 12); const free = !(profile.nickN > 0);
   if (!n) throw new Error('닉네임을 넣어 주세요.');
   if (n === profile.nick) throw new Error('지금 쓰는 닉네임이에요.');
-  if (hasBad(n)) throw new Error('쓸 수 없는 말이 들어 있어요.'); if (n.includes('/')) throw new Error('「/」는 쓸 수 없어요.');
+  if (nickBad(n)) throw new Error('쓸 수 없는 말이 들어 있어요.'); if (n.includes('/')) throw new Error('「/」는 쓸 수 없어요.');
   const left = nickLeft(); if (left > 0) throw new Error(`닉네임은 24시간에 한 번 바꿀 수 있어요 · ${Math.ceil(left / 3600000)}시간 뒤`);
   if (!free && (profile.gold || 0) < NICK_GOLD) throw new Error(`골드가 부족해요 · ● ${NICK_GOLD}`);
   if (isMember()) { const d = await nickDoc(n); if (d && d.owner !== myUid()) throw new Error('다른 계정이 쓰는 닉네임이에요.'); }
@@ -10373,7 +10408,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
