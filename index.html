@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="12"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="13"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3278,16 +3278,16 @@ const CHARS = {
     tick(u, dt, A) { const n = u.moonN || 0, m = effMult(u.lv), atk = Math.min(1, 0.08 * m + 0.01 * n), aspd = Math.min(1, 0.12 * m + 0.01 * n) /* build 8: 공격마다 2 → 1%p */, R = 4 * CFG.CELL; // R2.7.1: 반경 5 → 4칸
       if (u.moonRing) { u.moonRing.style.left = u.x.toFixed(1) + 'px'; u.moonRing.style.top = u.y.toFixed(1) + 'px'; } // 효과 범위(반경 4칸) 점선 원
       A.allies(u).forEach(a => { if (dist(a, u) <= R + unitRadius(a)) A.buff(a, 'moon', { atk, aspd }, 0.25); }); } },
-  levelup: { name: '레벨업 지후', rarity: 'epic', role: '딜러', hp: 1950, atk: 280, atkSpeed: 2, range: 'melee', speed: 1.6, portrait: PORTRAITS.levelup, sfx: 'swing', color: '#f12c32',
+  levelup: { name: '레벨업 지후', rarity: 'epic', role: '딜러', hp: 2150, atk: 280, atkSpeed: 2, range: 'melee', speed: 1.6, portrait: PORTRAITS.levelup, sfx: 'swing', color: '#f12c32',
     story: '어릴 적부터 남들보다 빠르게 성장하고 싶었던 지후입니다. 공부도 운동도 게임도 제대로 늘지 않던 어느 날, 궁 앞 길바닥에서 정체불명의 경험치 물약을 주워 마시게 됩니다. 사실 그 물약은 주사 지후가 왕궁 의원 시험에 가져가다 떨어뜨린 것이었어요. 그 순간 그의 온몸을 감싸는 빛과 함께 믿을 수 없는 성장이 시작되었습니다. 이제 그는 전투가 길어질수록 끊임없이 강해지지만, 경험치 2배 이벤트가 끝나면 상당히 우울해진다고 합니다.',
-    forms: [[1250, 160, 2], [1500, 210, 1.75], [1750, 260, 1.5]], portraitLv: [PORTRAITS.levelup, PORTRAITS.levelup2, PORTRAITS.levelup3],
-    passive: '적을 처치할 때마다 레벨이 올라 더 단단하고 강해집니다. 레벨이 오르면 최대 체력의 <b>30%</b>를 회복합니다.',
-    onStart(u, A) { u.form = 1; A.headLv(u, 1); },
+    forms: [[1, 1, 2], [1.2, 1.3125, 1.75], [1.4, 1.625, 1.5]], /* build 13: 기본 능력치의 배수 (체력 · 공격력) · 공격 간격 — 예전엔 R2.17.2 전 숫자 그대로라 레벨이 오르면 오히려 약해졌다 */ portraitLv: [PORTRAITS.levelup, PORTRAITS.levelup2, PORTRAITS.levelup3],
+    passive: '적을 처치할 때마다 레벨이 올라 더 단단하고 강해집니다. 레벨이 오르면 체력을 <b>최대치</b>로 회복합니다.',
+    onStart(u, A) { u.form = 1; u.lvB = { hp: u.baseMaxHp, atk: u.atk, as: u.atkSpeed }; A.headLv(u, 1); }, // 랭크 · 레벨 배율이 들어간 시작 능력치를 기준으로
     onKill(u, v, A) {
       if ((u.form || 1) >= 3) return;
-      u.form++; const [hp, atk, as] = u.def.forms[u.form - 1];
-      u.baseMaxHp = Math.round(hp * u.mult); u.atk = Math.round(atk * u.mult); u.atkSpeed = as; recut(u);
-      heal(u, u, u.maxHp * 0.3); A.portrait(u, u.def.portraitLv[u.form - 1]); A.headLv(u, u.form);
+      u.form++; const [kh, ka, as] = u.def.forms[u.form - 1], b = u.lvB || { hp: u.baseMaxHp, atk: u.atk, as: u.atkSpeed };
+      u.baseMaxHp = Math.round(b.hp * kh); u.atk = Math.round(b.atk * ka); u.atkSpeed = b.as * as / 2; recut(u);
+      const gain = Math.max(0, u.maxHp - u.hp); u.hp = u.maxHp; if (!S.fast && gain > 0) dmgNum(u, Math.round(gain), { heal: true }); drawUnit(u); // build 13: 체력 가득 (예전 30%) A.portrait(u, u.def.portraitLv[u.form - 1]); A.headLv(u, u.form);
       const t = fxAt('fx-lvtext', u.x, u.y - unitRadius(u), 900); t.textContent = `LEVEL ${u.form}!`; sfx('merge');
     } },
   magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 1200, atk: 160, atkSpeed: 2.4, /* R2.13.1: 2 → 2.4 */ range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad', magicChance: 0.1, magicPct: 750,
@@ -3537,13 +3537,13 @@ const CHARS = {
         friends(u).forEach(a => { if (a === u || a.hp >= a.maxHp || a.st.dive > 0 || dist(u, a) - unitRadius(a) > R) return; if (!best || a.hp / a.maxHp < best.hp / best.maxHp) best = a; });
         if ((u.hbeam && u.hbeam.t) !== best) D.beamOn(u, 'hbeam', best); }
       const h = u.hbeam; if (h) { if (!h.t.alive) D.beamOn(u, 'hbeam', null); else { if (!off) { h.acc += dt; while (h.acc >= 0.25) { h.acc -= 0.25; if (h.t.hp < h.t.maxHp) heal(u, h.t, effAtk(u) * 0.9); /* R2.12.2: 회복 빔 200 → 90% */ } } D.beamDraw(u, h); } } } },
-  lightning: { name: '번개 지후', rarity: 'legend', role: '딜러', hp: 640, atk: 60, atkSpeed: 0.85, range: 3.2, /* R2.18 build 12 */ speed: 1.6, portrait: PORTRAITS.lightning, sfx: 'shot', color: '#ffc21a',
+  lightning: { name: '번개 지후', rarity: 'legend', role: '딜러', hp: 640, atk: 60, atkSpeed: 0.85, range: 3.5, /* R2.18 build 12 · 13: 사거리 3.5 */ speed: 1.6, portrait: PORTRAITS.lightning, sfx: 'shot', color: '#ffc21a',
     story: '비 오는 날마다 옥상에 올라가 우산 대신 쇠막대기를 들고 서 있던 지후입니다. 부모님은 걱정했지만, 그는 언젠가 하늘과 대화할 수 있다고 믿었어요. 그리고 정말로 그날이 왔습니다. 번개를 맞은 그는 머리카락이 하늘로 솟은 채 웃으며 내려왔고, 그 뒤로 손가락만 튕기면 하늘에서 낙뢰가 떨어지게 되었어요. 그 때문에 이웃 마을은 늘 정전이고, 충전 지후는 그를 「발전소」라고 부르며 졸졸 따라다닙니다.',
     passive: '빠르게 공격해 SP 를 모읍니다.',
     bolt(u, t, A) { if (!S.fast) { fxAt('fx-bolt', t.x, t.y, 520); A.ring(t.x, t.y, 0.9); shake(true); dmgNum(u, '⚡ 낙뢰!', { crit: true }); }
-      if (A.dmg(u, t, 1000) > 0) hitFx(u, t, true); if (t.alive) A.status(t, 'stun', 1); else u.boltT = 0.5; }, // 쓰러뜨리면 0.5초 뒤 무작위 적에게 다시
+      if (A.dmg(u, t, 1350) > 0) /* build 13: 1000 → 1350% */ hitFx(u, t, true); if (t.alive) A.status(t, 'stun', 1); else u.boltT = 0.5; }, // 쓰러뜨리면 0.5초 뒤 무작위 적에게 다시
     tick(u, dt, A) { if (u.boltT == null) return; u.boltT -= dt; if (u.boltT > 0) return; u.boltT = null; if (blocked(u)) return; const L = targets(u); if (L.length) u.def.bolt(u, L[Math.floor(rng() * L.length)], A); },
-    skill: { type: 'hit', need: 9, desc: '<b>SP 9</b> · <b>[낙뢰]</b>. 대상에게 공격력의 <b>1000%</b> 피해를 주고 <b>1초</b> 동안 [기절]시키는 낙뢰를 떨어뜨립니다. 낙뢰로 적을 쓰러뜨리면 <b>0.5초</b> 뒤 무작위 적에게 다시 떨어뜨립니다.',
+    skill: { type: 'hit', need: 9, desc: '<b>SP 9</b> · <b>[낙뢰]</b>. 대상에게 공격력의 <b>1350%</b> 피해를 주고 <b>1초</b> 동안 [기절]시키는 낙뢰를 떨어뜨립니다. 낙뢰로 적을 쓰러뜨리면 <b>0.5초</b> 뒤 무작위 적에게 다시 떨어뜨립니다.',
       run(u, A) { const t = nearestFoe(u); if (t) u.def.bolt(u, t, A); } } },
   barrier: { name: '보호막 지후', rarity: 'rare', role: '서포터', hp: 2340, atk: 50, atkSpeed: 2.2, range: 4.5, speed: 1.6, portrait: PORTRAITS.barrier, sfx: 'shot', color: '#5b8fd6',
     story: '겁이 많아 늘 투명한 비닐우산을 쓰고 다니던 지후입니다. 공이 날아와도, 비둘기가 날아와도 우산 뒤에 숨었어요. 친구들은 그를 놀렸지만, 블리자드 지후 때문에 운동장에 우박이 쏟아진 날 그의 우산 아래로 반 친구들이 모두 모여들었습니다. 그날 이후 그는 친구들을 지키는 것이 자신의 일이라고 생각하게 되었어요. 지금 그의 우산은 투사체를 튕겨 내는 배리어가 되었고, 활 지후가 연습하는 날이면 왕궁 공원 사람들이 모두 그의 뒤로 숨는다고 합니다.',
@@ -3870,9 +3870,9 @@ const CHARS = {
     skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[공포 정치]</b>. 반경 <b>4칸</b> 안의 적과 아군 모두의 공격력을 <b>3.5초</b> 동안 <b>20%</b> 감소시킵니다.',
       run(u) { if (!S.fast) { tyrantFx(u, 'fear'); dmgNum(u, '👑 공포 정치', { crit: true, stamp: true }); } tyrantNear(u).forEach(o => { A.buff(o, 'tyrant' + u.uid, { atk: -0.2 }, 3.5); }); } } },
   // ── R2.18 신규 지후 4종 (도우미는 reapFx 바로 앞 '// ── R2.18 신규 지후 도우미 ──') ──
-  bbgun: { name: 'BB탄 지후', rarity: 'epic', role: '딜러', hp: 1300, atk: 160, atkSpeed: 3.2, range: 6, speed: 1.6, portrait: PORTRAITS.bbgun, sfx: 'shot', color: '#2d4fa3',
+  bbgun: { name: 'BB탄 지후', rarity: 'epic', role: '딜러', hp: 1300, atk: 200, atkSpeed: 2.3, range: 6, /* build 13 */ speed: 1.6, portrait: PORTRAITS.bbgun, sfx: 'shot', color: '#2d4fa3',
     story: '문방구 앞 뽑기 기계에서 BB탄 총을 뽑은 날부터 서바이벌 게임에 푹 빠진 지후입니다. 고글과 베레모를 쓰고 왕궁 뒷산을 누비던 그는, 한 발로 여러 적을 맞히는 「도탄 사격」을 혼자 익혔어요. 플라스틱 탄이라 튕길수록 힘이 빠지지만, 그는 그게 오히려 매력이라고 말합니다. 진짜 총을 든 총 지후와 라이플 지후를 동경해 훈련장 근처를 맴돌곤 했는데, 라이플 지후에게서 「너는 맞혀도 아무도 크게 안 다쳐서 부럽다」는 말을 듣고 한동안 생각에 잠겼다고 해요. 요즘은 동네 꼬마들에게 튕기는 각도를 가르쳐 주는 서바이벌 클럽 회장으로 지내고 있습니다.',
-    passive: '일반 공격이 맞으면 가장 가까운 다른 적에게 거리와 상관없이 최대 <b>2번</b> 튕깁니다. 튕길 때마다 탄의 공격력이 <b>15%</b> 줄어듭니다.',
+    passive: '일반 공격이 맞으면 가장 가까운 다른 적에게 거리와 상관없이 최대 <b>2번</b> 튕깁니다. 튕길 때마다 탄의 공격력이 <b>30%</b> 줄어듭니다.',
     customAttack(u, t) { muzzleFx(u, t); bbShot(u, u, t, 1, 0, new Set()); return true; } },
   hong: { name: '홍명보 지후', rarity: 'epic', role: '서포터', hp: 1410, atk: 320, atkSpeed: 5, range: 6, speed: 1.6, portrait: PORTRAITS.hong, sfx: 'bash', color: '#e53935',
     story: '왕국 축구계에서 가장 단단한 수비수로 이름난 지후입니다. 그는 공을 잡으면 앞으로 나가는 대신 늘 뒤로, 옆으로 돌리기만 했어요. 90분 내내 슛 한 번 없이 패스만 도는 경기가 이어지자 관중석에서는 야유가 쏟아졌고, 왕국 축구협회는 끝내 그를 축구계에서 내보내자는 회의까지 열었습니다. 하지만 그는 「지지 않으면 진 게 아니다」라는 말만 남기고 버텼고, 어떻게 된 일인지 얼마 뒤 슬그머니 다시 운동장에 돌아와 있었어요. 지금도 공을 받으면 동료에게 몇 번이고 패스부터 돌리는데, 신기하게도 그 공을 받은 동료는 상처가 조금씩 아문다고 합니다. 공만 받으면 앞으로 달려 나가 버리는 돌격 지후는 그에게 매번 혼나요.',
@@ -4006,7 +4006,7 @@ function relTick(dt) { // 유물: 1초마다 회복 · SP / 신의 가호가 끝
     if (r.sp) spGive(u, r.sp); }
 }
 // ── R2.18 신규 지후 도우미 ──
-// BB탄 지후: 맞으면 맞은 적에게서 가장 가까운 다른 적에게 튕긴다 (build 4: 거리 제한 없음) (최대 2번 · 튕길 때마다 ×0.85 · 이미 맞은 적 제외 · SP 는 처음 맞은 적 하나로)
+// BB탄 지후: 맞으면 맞은 적에게서 가장 가까운 다른 적에게 튕긴다 (build 4: 거리 제한 없음) (최대 2번 · 튕길 때마다 ×0.7 (build 13 · 예전 ×0.85) · 이미 맞은 적 제외 · SP 는 처음 맞은 적 하나로)
 function bbShot(u, from, t, mul, n, hit) {
   if (!u.alive || !t.alive) return; const x = from.x, y = from.y;
   const el = document.createElement('div'); el.className = 'fx-projectile bb'; el.style.translate = x + 'px ' + y + 'px'; $('field').appendChild(el);
@@ -4014,7 +4014,7 @@ function bbShot(u, from, t, mul, n, hit) {
     hit.add(t.uid); const done = dealDamage(u, t, effAtk(u) * mul, {}); if (done > 0 && !S.fast) hitFx(u, t, false); if (!n) afterHit(u, done);
     if (n >= 2 || !u.alive) return; let b = null, bd = Infinity;
     for (const e of targets(u)) { if (hit.has(e.uid)) continue; const d = dist(t, e); if (d < bd) { bd = d; b = e; } }
-    if (b) bbShot(u, { x: t.x, y: t.y }, b, mul * 0.85, n + 1, hit); } });
+    if (b) bbShot(u, { x: t.x, y: t.y }, b, mul * 0.7, n + 1, hit); } });
 }
 // 홍명보 지후: 공 u.ball = { n 패스할 횟수, done 한 횟수, x, y, from 공을 준 지후, to 받을 아군 | foe 슛 대상, wait 받고 기다리는 초 }
 function hongKick(u, t) {
@@ -4129,7 +4129,7 @@ const CHAR_INFO = {
   berserk: [['버티기', '체력 1로 2초'], ['[광폭화] 이동속도', '2배'], ['[광폭화] 공격력', '+50%'], ['[광폭화] 공격 속도', '+30%']],
   scythe: [['공격 범위', '근접 부채꼴 1.65칸 · 120°'], ['[힘줄 끊기] 쿨타임', '9초 (라운드 시작 5초 뒤부터)'], ['[힘줄 끊기] 범위', '반경 1.65칸'], ['[힘줄 끊기] 피해', '공격력의 70%'], ['[절상] · [침묵]', '4초'], ['[부상]', '1초'], ['시전', '0.5초 멈춤 → 순간이동 → 1.25초 뒤 귀환 (그동안 행동 불가)']],
   moon: [['출격제한', '1'], ['범위', '반경 4칸 (자신 포함)'], ['기본 버프', '공격력 +8% · 공격속도 +12%'], ['공격마다', '각각 +1%p (최대 100%)']],
-  levelup: [['최대 레벨', '3 (라운드가 끝나면 초기화)'], ['Lv1', 'HP 1,250 · ATK 160 · 2초'], ['Lv2', 'HP 1,500 · ATK 210 · 1.75초'], ['Lv3', 'HP 1,750 · ATK 260 · 1.5초'], ['레벨업 회복', '최대 체력의 30%']],
+  levelup: [['최대 레벨', '3 (라운드가 끝나면 초기화)'], ['Lv1', 'HP 2,150 · ATK 280 · 2초'], ['Lv2', 'HP 2,580 · ATK 368 · 1.75초 (기본의 ×1.2 · ×1.31)'], ['Lv3', 'HP 3,010 · ATK 455 · 1.5초 (기본의 ×1.4 · ×1.63)'], ['레벨업 회복', '체력 최대치까지 (build 13)'], ['배율', '지후 레벨 · 랭크가 오른 만큼 Lv2 · Lv3 도 같이 오른다']],
   magic: [['[마탄] 확률', '10%'], ['[마탄] 피해', '공격력의 750%'], ['[절상]', '최대 체력 30% · 4초'], ['[취약]', '받는 피해 +30% · 4초']],
   gift: [['SP', '초당 1 (라운드 시작부터)'], ['필요 SP', '24'], ['변신', '모든 지후 중 무작위 1기 · 자신의 레벨보다 1 높은 레벨 (최대 Lv5) · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다'], ['변신 전에 쓰러지면', '모은 SP가 다음 라운드로 이어진다 (R2.6.4)']],
   slime: [['분열', '2기 · 체력 · 공격력 절반'], ['최대', '2단계']],
@@ -4175,7 +4175,7 @@ const CHAR_INFO = {
   bomb: [['이동', '가장 가까운 적에게 굴러간다 · 이동속도 3.3 · 공격하지 않는다'], ['폭발', '닿으면 반경 2.5칸 · 자신의 최대 체력만큼 (레벨 반영) · 3칸 넉백'], ['쓰러지면', '1초 뒤 그 자리에서 같은 폭발']],
   nuke: [['[핵 발사]', '처음 출전한 라운드 시작 1초 뒤 · 경기에서 한 번'], ['핵', '30초 뒤 적진 · 반경 99칸 · 공격력 99999% · 떨어질 자리에 남은 초'], ['[핵 다씀]', '그 뒤로 영원히 스킬 없음 (레벨업 · 합체해도) · 근접 전사'], ['주의', '라운드가 30초 전에 끝나면 핵은 떨어지지 않는다']],
   lantern: [['공격 빔', '0.25초마다 공격력 100% · 5.5칸보다 멀면 희미해져 멈춤 · 2초 뒤 끊김'], ['회복 빔', '0.25초마다 공격력 90% · 사거리 안 체력 비율이 가장 낮은 아군 (자신 제외)'], ['동시에', '공격 빔 1 + 회복 빔 1']],
-  lightning: [['[낙뢰]', 'SP 9 · 공격력 1000% · [기절] 1초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
+  lightning: [['[낙뢰]', 'SP 9 · 공격력 1350% · [기절] 1초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
   barrier: [['시작 쉴드', '십자 범위 아군 · 공격력 250% · 남아 있는 동안 디버프 무효'], ['쉴드 중첩', '한 아군에게 보호막 지후 둘 이상이 닿아 있으면 쉴드가 합쳐진다 (R2.10.3)'], ['[배리어]', '반지름 2.2칸 · 3.5초 · 바깥에서 오는 투사체를 막는다'], ['못 막는 것', '근접 공격 · 투사체가 아닌 광역 공격']],
   revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 제외)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위']],
   reaper: [['SP (봉인)', '아군이 쓰러질 때마다 1'], ['[사신강림]', 'SP 6 · 체력 2,444 · 공격 간격 1.2초 · 이동속도 2.4'], ['[즉사] (강림)', 'SP 5 (일반 공격) · 가장 가까운 적 하나 · 즉사 (무적 · 버티기 등 어떤 효과로도 못 막는다 · R2.10.2)']],
@@ -4197,7 +4197,7 @@ const CHAR_INFO = {
   holy: [['일반 공격', '대상 머리 위로 성검 (0.22초 뒤 맞는다) · 대상 최대 체력의 3% (R2.18 build 8)'], ['천상의 성검', '15% · 대상 현재 체력의 50% (최소 1) · 치명타 없음']],
   roulette: [['받는 피해', '늘 −85%'], ['실린더', '6칸 · 실탄 1 (무작위 자리) · 공포탄 5'], ['순서', '자신 2.7초 조준 → 방아쇠 → 가장 가까운 적 2.7초 조준 → 방아쇠 → 반복'], ['실탄', '맞은 쪽 즉사 (어떤 효과로도 막을 수 없음)'], ['장전', '실린더를 다시 돌리지 않고 이어서 쏜다 · 6발을 다 쓰면 자동 재장전 (R2.17.1)'], ['조준 취소', '조준 중 대상이 쓰러지면 쏘지 않고 다시 자신 차례'], ['조준된 적', '움직일 수 없음 (공격은 가능)']],
   tyrant: [['[폭정]', '체력 40% 미만 · 라운드마다 1번 · 반경 4칸 아군 · 적 모두 현재 체력 70%'], ['[공포 정치]', 'SP 3 · 반경 4칸 아군 · 적 모두 공격력 −20% · 3.5초'], ['출격제한', '1 (R2.18)']],
-  bbgun: [['튕김', '최대 2번 · 거리 제한 없음 · 맞은 적에게서 가장 가까운 다른 적 (이미 맞은 적 제외)'], ['튕긴 탄 피해', '튕길 때마다 ×0.85 (100% → 85% → 72%)'], ['SP', '처음 맞은 적 하나로']],
+  bbgun: [['튕김', '최대 2번 · 거리 제한 없음 · 맞은 적에게서 가장 가까운 다른 적 (이미 맞은 적 제외)'], ['튕긴 탄 피해', '튕길 때마다 ×0.7 (100% → 70% → 49%)'], ['SP', '처음 맞은 적 하나로']],
   hong: [['패스', '무작위 3 ~ 6번 · 자신을 뺀 아군 (방금 공을 준 아군에게 다시 갈 수 있다)'], ['공을 받으면', '체력 회복 공격력의 50% (Lv1 160) · 0.4초 뒤 다음 패스'], ['슛', '공을 가진 아군에게서 가장 가까운 적 · 패스 횟수 × 공격력 25% (Lv1 × 80)'], ['아군이 없으면', '바로 가장 가까운 적에게 슛 (1번으로 계산)'], ['공', '홍명보가 쓰러지면 사라진다 · 공이 도는 동안은 다음 패스를 하지 않는다']],
   emp: [['일반 공격', '반경 6.5칸 파동 · 안의 적 모두 공격력 20%'], ['[EMP 자기장]', 'SP 8 · 그 자리 · 반경 7.2칸 · 4초'], ['자기장 안', '1초마다 공격력 100% (4번) · 이동속도 −35% · [침묵] · 들어올 때마다 SP −1'], ['빠져나가면', '몸이 완전히 빠져나가면 바로 풀린다'], ['자기장', 'EMP가 쓰러지면 사라진다']],
   dragon: [['일반 공격', '사거리 6 · 불덩이 · 대상 주변 반경 1.9칸 · 닿은 적 모두 공격력 100% · SP 는 공격마다 1'], ['[드래곤 브레스]', 'SP 11 · 다음 일반 공격 한 번 · 공격력 150% · 범위 3.2칸 · 맞은 적 [화상] 3초 (1초마다 공격력 150% · 3번 · 다시 맞으면 새로)'], ['[비행]', '일반 공격 때 8% · 1초 동안 그 자리에서 날아오른다 (공격 안 함 · 기절하면 취소) · 그때 대상 쪽으로 초당 9.5칸 · 13칸 · 모든 유닛을 뚫고 지나간다 (맵 끝이면 멈춘다)'], ['불길', '지나간 길 · 폭 1.2칸 · 내려앉은 뒤 5초 · 1초마다 안의 적 공격력 150% · 드래곤이 쓰러지면 사라진다']],
@@ -9011,10 +9011,10 @@ const PATCH_NOTES = [
       { icon: '🧪', name: '샌드박스', tag: 'system', desc: '갓지후를 <b>Lv6</b> (트루폼)으로 출전시킬 수 있어요.' },
       { icon: '🔢', name: '랭크 표시', tag: 'system', desc: '지후 카드의 랭크를 <b>동그라미 안 숫자</b>로 · 매치 인트로와 전투 중 양쪽 덱에도 <b>랭크</b>를 보여 줘요.' },
       { icon: '📱', name: '중복 로그인', tag: 'system', desc: '같은 계정을 다른 창 · 기기에서 켜면 <b>새로 연 쪽</b>이 우선이에요. 먼저 켠 창은 <b>새로고침</b>해야 다시 플레이할 수 있어요.' },
-      { icon: '⚖️', name: '밸런스 패치', tag: 'adjust', desc: '지후 <b>24종</b> 조정 · 충전 지후 리워크 — 솔렘라멘트 · 블리자드 · 회오리 등 너무 강했던 지후는 낮추고, 얼음 · 버블 · 포식 등 약했던 지후는 올렸어요.' },
+      { icon: '⚖️', name: '밸런스 패치', tag: 'adjust', desc: '지후 <b>25종</b> 조정 · 충전 지후 리워크 — 솔렘라멘트 · 블리자드 · 회오리 등 너무 강했던 지후는 낮추고, 얼음 · 버블 · 포식 등 약했던 지후는 올렸어요.' },
     ] },
     { title: '신규 지후', items: [
-      { id: 'bbgun', name: 'BB탄 지후', tag: 'new', desc: '영웅 · 딜러 · HP <b>1,300</b> · ATK <b>160</b> · <b>3.2초</b> · 사거리 <b>6</b> — 일반 공격이 맞은 적에게서 가장 가까운 적에게 (거리 제한 없이) 최대 <b>2번</b> 튕겨요 (튕길 때마다 공격력 <b>−15%</b>).' },
+      { id: 'bbgun', name: 'BB탄 지후', tag: 'new', desc: '영웅 · 딜러 · HP <b>1,300</b> · ATK <b>200</b> · <b>2.3초</b> · 사거리 <b>6</b> — 일반 공격이 맞은 적에게서 가장 가까운 적에게 (거리 제한 없이) 최대 <b>2번</b> 튕겨요 (튕길 때마다 공격력 <b>−30%</b>).' },
       { id: 'hong', name: '홍명보 지후', tag: 'new', desc: '영웅 · 서포터 · HP <b>1,410</b> · ATK <b>320</b> · <b>5초</b> · 사거리 <b>6</b> — 일반 공격으로 아군에게 무작위 <b>3~6번</b> 패스 (받은 아군 체력 <b>160</b> 회복 · <b>0.4초</b> 뒤 다음 패스 · 자신에게는 안 돌아와요) → 가장 가까운 적에게 슛 <b>패스 횟수 × 80</b>.' },
       { id: 'emp', name: 'EMP 지후', tag: 'new', desc: '전설 · 컨트롤러 · HP <b>1,490</b> · ATK <b>60</b> · <b>1초</b> · 사거리 <b>4</b> — 일반 공격 대신 반경 <b>6.5칸</b> 파동 (공격력 <b>20%</b>) · SP 8 <b>[EMP 자기장]</b>: 반경 <b>7.2칸</b> · <b>4초</b> · 안의 적은 1초마다 <b>100%</b> · 이동속도 <b>−35%</b> · [침묵] · 들어올 때마다 SP <b>−1</b>.' },
       { id: 'dragon', name: '드래곤 지후', tag: 'new', desc: '전설 · 탱커 · HP <b>2,200</b> · ATK <b>70</b> · <b>1.25초</b> · 사거리 <b>6</b> · 대상 주변 반경 <b>1.9칸</b> 광역 — SP 11 <b>[드래곤 브레스]</b>: 다음 일반 공격 한 번 <b>150%</b> · 범위 <b>3.2칸</b> + [화상] 3초 (<b>150%</b> × 3) · 일반 공격 때 <b>8%</b> [비행] (1초 날아오른 뒤 13칸을 뚫고 날아가며 <b>5초</b> 불길 · 1초마다 <b>150%</b>).' },
@@ -9034,7 +9034,8 @@ const PATCH_NOTES = [
       { id: 'thief', name: '괴도 지후', tag: 'adjust', desc: '스킬 SP <b>3 → 4</b> · 사거리 <b>5.3 → 5.5</b> · 공격 간격 <b>2 → 1.7초</b> · 예고장 <b>15 → 13초</b> · 괴도가 쓰러지면 예고장 취소 · 레벨이 <b>1</b>인 지후의 레벨도 훔칠 수 있어요 (그 라운드에서 사라지고 다음 라운드에 다시 나와요) · 서사 변경' },
       { id: 'nuke', name: '핵미사일 지후', tag: 'adjust', desc: '핵이 떨어지기까지 <b>27 → 30초</b> · 떨어질 자리에 남은 시간 표시' },
       { id: 'moon', name: '달 지후', tag: 'nerf', desc: '공격할 때마다 버프 증가량 <b>2% → 1%</b>' },
-      { id: 'lightning', name: '번개 지후', tag: 'nerf', desc: '체력 <b>1,240 → 640</b> · 공격력 <b>80 → 60</b> · 사거리 <b>5.2 → 3.2</b>' },
+      { id: 'lightning', name: '번개 지후', tag: 'adjust', desc: '체력 <b>1,240 → 640</b> · 공격력 <b>80 → 60</b> · 사거리 <b>5.2 → 3.5</b> · [낙뢰] 피해 <b>1000% → 1350%</b>' },
+      { id: 'levelup', name: '레벨업 지후', tag: 'buff', desc: '체력 <b>1,950 → 2,150</b> · 레벨이 오르면 체력을 <b>최대치</b>로 회복 (예전 30%) · Lv2 · Lv3 능력치를 지금 기본 능력치에 맞춤 (예전엔 레벨이 오르면 오히려 약해졌어요)' },
       { id: 'charge', name: '충전 지후', tag: 'rework', desc: '체력 <b>940 → 1,140</b> · <b>[패시브]</b> 반경 <b>5칸</b> 충전 범위 — 안의 아군 SP 를 <b>0.5초</b>마다 최대 SP 의 <b>8%</b> · <b>[스킬]</b> SP 11 <b>[급속 충전]</b>: 가장 가까운 아군 SP 를 바로 가득 (예전: SP 3 · 반경 6칸 SP +1)' },
       { id: 'god', name: '갓지후', tag: 'buff', desc: '공격력 <b>121 → 151</b>' },
       { id: 'bullet', name: '탄환 지후', tag: 'buff', desc: '공격 간격 <b>2.4 → 2초</b> · 공격력 <b>175 → 190</b>' },
