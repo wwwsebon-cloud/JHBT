@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3875,10 +3875,10 @@ const CHARS = {
   dragon: { name: '드래곤 지후', rarity: 'legend', role: '탱커', hp: 2200, atk: 65, atkSpeed: 0.9, range: 1.9, speed: 1.6, portrait: PORTRAITS.dragon, portraitSkill: PORTRAITS.dragon_skill, sfx: 'fire', color: '#e0301e',
     passive: '일반 공격이 자신 주변 반경 <b>1.9칸</b>의 적 모두에게 피해를 입힙니다. 일반 공격 때 <b>8%</b> 확률로 [비행]해 초당 <b>7칸</b> 속도로 <b>10칸</b>을 모든 유닛을 뚫고 날아가며, 지나간 길에 <b>4초</b> 동안 불길을 남깁니다. 불길 안의 적은 1초마다 공격력의 <b>120%</b> 피해를 입습니다.',
     customAttack(u, t) { dragonAtk(u, t); return true; },
-    skill: { type: 'hit', need: 11, desc: '<b>SP 11</b> · <b>[드래곤 브레스]</b>. 이번 라운드 동안 일반 공격이 강화되어 범위가 <b>3.2칸</b>이 되고, 맞은 적에게 <b>3초</b> 동안 [화상]을 입힙니다 (1초마다 공격력의 <b>150%</b> · <b>3번</b>).',
+    skill: { type: 'hit', need: 11, desc: '<b>SP 11</b> · <b>[드래곤 브레스]</b>. 다음 일반 공격 한 번이 강화되어 공격력의 <b>150%</b> 피해를 주고 범위가 <b>3.2칸</b>이 되며, 맞은 적에게 <b>3초</b> 동안 [화상]을 입힙니다 (1초마다 공격력의 <b>150%</b> · <b>3번</b>).',
       run(u) { if (u.breath) return; u.breath = true; A.portrait(u, u.def.portraitSkill); if (u.el) u.el.classList.add('dragon-on'); if (!S.fast) { dmgNum(u, '🔥 드래곤 브레스!', { crit: true, stamp: true }); shake(true); } } },
     steer(u) { if (!u.fl) return false; u.desVx = u.desVy = 0; return true; }, // [비행] 중에는 직접 날아간다 (공격도 안 한다)
-    tick(u, dt) { if (u.fl) dragonFly(u, dt); if (u.trails && u.trails.length) dragonTrails(u, dt); } },
+    tick(u, dt) { if (u.brPicT != null) { u.brPicT -= dt; if (u.brPicT <= 0) { u.brPicT = null; if (!u.breath) A.portrait(u, u.def.portrait); } } if (u.fl) dragonFly(u, dt); if (u.trails && u.trails.length) dragonTrails(u, dt); } },
 };
 // ── R2.17 신규 지후 도우미 ──
 function nukeCount(el, at) { if (!el || !el.isConnected) return; const s = Math.max(0, Math.ceil(at - S.time - 1e-6)); el.textContent = s; if (s > 0) A.later(Math.min(1, at - S.time - (s - 1)) || 1, () => nukeCount(el, at)); } // R2.18 핵미사일: 떨어질 자리에 남은 초 (전투 시간 기준)
@@ -4044,8 +4044,9 @@ function empTick(u, dt) {
 function empEnd(u) { const f = u.emp; u.emp = null; if (f && f.el) { f.el.remove(); if (u.fx) u.fx = u.fx.filter(e => e !== f.el); } }
 // 드래곤 지후
 function dragonAtk(u, t) { // 일반 공격: 자신 주변 반경 1.9칸 (브레스 3.2칸 · [화상]) · SP 는 한 번 · 8% [비행]
-  const br = !!u.breath, R = (br ? 3.2 : 1.9) * CFG.CELL; let d = 0; if (!S.fast) fxAt('fx-dragon-aoe' + (br ? ' br' : ''), u.x, u.y, 380, { width: R * 2 + 'px', height: R * 2 + 'px' });
-  foes(u).forEach(e => { if (dist(u, e) > R + unitRadius(e)) return; const done = dealDamage(u, e, effAtk(u), {}); if (!(done > 0)) return; d += done; if (!S.fast) hitFx(u, e, br);
+  const br = !!u.breath; if (br) { u.breath = false; u.brPicT = 0.6; if (u.el) u.el.classList.remove('dragon-on'); } // build 2: 브레스는 다음 공격 한 번만
+  const R = (br ? 3.2 : 1.9) * CFG.CELL; let d = 0; if (!S.fast) fxAt('fx-dragon-aoe' + (br ? ' br' : ''), u.x, u.y, 380, { width: R * 2 + 'px', height: R * 2 + 'px' });
+  foes(u).forEach(e => { if (dist(u, e) > R + unitRadius(e)) return; const done = dealDamage(u, e, effAtk(u) * (br ? 1.5 : 1), br ? { skill: true } : {}); /* 브레스: 150% */ if (!(done > 0)) return; d += done; if (!S.fast) hitFx(u, e, br);
     if (br && e.alive) { const L = e.stk && e.stk.burn; if (L) e.stk.burn = L.filter(x => x.src !== u); A.status(e, 'burn', 3.05, { dps: effAtk(u) * 1.5, stack: true, src: u }); } }); // 같은 드래곤의 [화상]은 새로 (다른 화상과는 겹친다)
   afterHit(u, d); if (u.alive && !u.fl && t && rng() < 0.08) dragonTakeoff(u, t);
 }
@@ -4170,7 +4171,7 @@ const CHAR_INFO = {
   bbgun: [['튕김', '최대 2번 · 맞은 적에게서 4칸 안 · 가장 가까운 다른 적 (이미 맞은 적 제외)'], ['튕긴 탄 피해', '튕길 때마다 ×0.85 (100% → 85% → 72%)'], ['SP', '처음 맞은 적 하나로']],
   hong: [['패스', '무작위 2 ~ 6번 · 자신을 뺀 아군 (방금 공을 준 아군에게 다시 갈 수 있다)'], ['공을 받으면', '체력 회복 공격력의 40% (Lv1 80) · 0.4초 뒤 다음 패스'], ['슛', '공을 가진 아군에게서 가장 가까운 적 · 패스 횟수 × 공격력 25% (Lv1 × 50)'], ['아군이 없으면', '바로 가장 가까운 적에게 슛 (1번으로 계산)'], ['공', '홍명보가 쓰러지면 사라진다 · 공이 도는 동안은 다음 패스를 하지 않는다']],
   emp: [['일반 공격', '반경 6.5칸 파동 · 안의 적 모두 공격력 20%'], ['[EMP 자기장]', 'SP 8 · 그 자리 · 반경 7.2칸 · 4초'], ['자기장 안', '1초마다 공격력 100% (4번) · 이동속도 −35% · [침묵] · 들어올 때마다 SP −1'], ['빠져나가면', '몸이 완전히 빠져나가면 바로 풀린다'], ['자기장', 'EMP가 쓰러지면 사라진다']],
-  dragon: [['일반 공격', '자신 주변 반경 1.9칸 · 닿은 적 모두 공격력 100% · SP 는 공격마다 1'], ['[드래곤 브레스]', 'SP 11 · 이번 라운드 내내 · 범위 3.2칸 · 맞은 적 [화상] 3초 (1초마다 공격력 150% · 3번 · 다시 맞으면 새로)'], ['[비행]', '일반 공격 때 8% · 맞은 적 쪽으로 초당 7칸 · 10칸 · 모든 유닛을 뚫고 지나간다 (맵 끝이면 멈춘다)'], ['불길', '지나간 길 · 폭 1.2칸 · 내려앉은 뒤 4초 · 1초마다 안의 적 공격력 120% · 드래곤이 쓰러지면 사라진다']],
+  dragon: [['일반 공격', '자신 주변 반경 1.9칸 · 닿은 적 모두 공격력 100% · SP 는 공격마다 1'], ['[드래곤 브레스]', 'SP 11 · 다음 일반 공격 한 번 · 공격력 150% · 범위 3.2칸 · 맞은 적 [화상] 3초 (1초마다 공격력 150% · 3번 · 다시 맞으면 새로)'], ['[비행]', '일반 공격 때 8% · 맞은 적 쪽으로 초당 7칸 · 10칸 · 모든 유닛을 뚫고 지나간다 (맵 끝이면 멈춘다)'], ['불길', '지나간 길 · 폭 1.2칸 · 내려앉은 뒤 4초 · 1초마다 안의 적 공격력 120% · 드래곤이 쓰러지면 사라진다']],
 };
 // 전설 컷신 대사 (R2.4 · 뽑기 연출) — 전설이 추가되면 대사도 함께
 Object.keys(CHAR_INFO).forEach(id => { if (CHARS[id]) Object.defineProperty(CHARS[id], 'info', { get: () => CHAR_INFO[id], enumerable: true, configurable: true }); }); // 읽을 때마다 (코인 지금 시세 · 시작할 때 계산하면 coinCache 가 아직 없어 로딩이 멈춘다)
@@ -8928,7 +8929,7 @@ const PATCH_NOTES = [
       { id: 'bbgun', name: 'BB탄 지후', tag: 'new', desc: '영웅 · 딜러 · HP <b>1,300</b> · ATK <b>160</b> · <b>2.2초</b> · 사거리 <b>6</b> — 일반 공격이 맞은 적에게서 <b>4칸</b> 안의 가장 가까운 적에게 최대 <b>2번</b> 튕겨요 (튕길 때마다 공격력 <b>−15%</b>).' },
       { id: 'hong', name: '홍명보 지후', tag: 'new', desc: '영웅 · 서포터 · HP <b>1,410</b> · ATK <b>200</b> · <b>7초</b> · 사거리 <b>6</b> — 일반 공격으로 아군에게 무작위 <b>2~6번</b> 패스 (받은 아군 체력 <b>80</b> 회복 · <b>0.4초</b> 뒤 다음 패스 · 자신에게는 안 돌아와요) → 가장 가까운 적에게 슛 <b>패스 횟수 × 50</b>.' },
       { id: 'emp', name: 'EMP 지후', tag: 'new', desc: '전설 · 컨트롤러 · HP <b>1,490</b> · ATK <b>60</b> · <b>1초</b> · 사거리 <b>6.5</b> — 일반 공격 대신 반경 <b>6.5칸</b> 파동 (공격력 <b>20%</b>) · SP 8 <b>[EMP 자기장]</b>: 반경 <b>7.2칸</b> · <b>4초</b> · 안의 적은 1초마다 <b>100%</b> · 이동속도 <b>−35%</b> · [침묵] · 들어올 때마다 SP <b>−1</b>.' },
-      { id: 'dragon', name: '드래곤 지후', tag: 'new', desc: '전설 · 탱커 · HP <b>2,200</b> · ATK <b>65</b> · <b>0.9초</b> · 주변 반경 <b>1.9칸</b> 광역 — SP 11 <b>[드래곤 브레스]</b>: 그 라운드 동안 범위 <b>3.2칸</b> + [화상] 3초 (<b>150%</b> × 3) · 일반 공격 때 <b>8%</b> [비행] (10칸을 뚫고 날아가며 <b>4초</b> 불길 · 1초마다 <b>120%</b>).' },
+      { id: 'dragon', name: '드래곤 지후', tag: 'new', desc: '전설 · 탱커 · HP <b>2,200</b> · ATK <b>65</b> · <b>0.9초</b> · 주변 반경 <b>1.9칸</b> 광역 — SP 11 <b>[드래곤 브레스]</b>: 다음 일반 공격 한 번 <b>150%</b> · 범위 <b>3.2칸</b> + [화상] 3초 (<b>150%</b> × 3) · 일반 공격 때 <b>8%</b> [비행] (10칸을 뚫고 날아가며 <b>4초</b> 불길 · 1초마다 <b>120%</b>).' },
     ] },
     { title: '밸런스', items: [
       { id: 'lament', name: '솔렘라멘트 지후', tag: 'nerf', desc: '체력 <b>1,544 → 1,344</b> · 공격력 <b>75 → 55</b> · [죽은나비] 피해 증가량 <b>40 → 30</b>' },
