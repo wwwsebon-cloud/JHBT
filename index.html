@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="10"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3066,7 +3066,7 @@ const CFG = {
   UNIT_R: 28,                              // 유닛 반지름 (45px 격자 기준 · R2.12: 28 → 22 · R2.12.2: 다시 28 · 화면 지름 93px)
   MAX_UNITS: 15, SAME_LIMIT: 3, POOL: 3, PICK_TIME: 15, // R2.7.2: 배치 수 제한 없음 (빈 칸 15칸까지) · 같은 지후 3기 (R2.2.1 · 출격제한 1 은 그대로) · 카드 3장 · 15초
   LIVES: 3,                                // R2.7.2: 4 → 3 (전작과 같은 3)
-  MAX_LV: 5, LEVEL_ADD: 0.5, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 레벨마다 기본의 +50% 선형 (R2.10.4 · 예전 ×1.2 복리) · 효과 ×1.1 (복리)
+  MAX_LV: 5, LEVEL_ADD: 0.8, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 레벨마다 기본의 +80% 선형 (R2.18 build 10 · R2.10.4 +50% · 예전 ×1.2 복리) · 효과 ×1.1 (복리)
   ROUND_TIME: 60, STALL: 15, FAST_AFTER: 25, FAST_SPEED: 1.5, DM_DEPLOYS: 3, // R2.9: 60초 (전작 45초) · 15초 무피해 판정 · 25초 뒤 1.5배속 · 데스매치 배치 3번
   STEP: 1 / 60,                            // 전작 PHYS.STEP
   MELEE: 1.6,
@@ -4051,11 +4051,12 @@ function empField(u) { // [EMP 자기장]: 그 자리 · 반경 7.2칸 · 4초 (
 }
 function empTick(u, dt) {
   const f = u.emp; f.left -= dt; f.acc += dt; const hit = f.acc >= 1 - 1e-6; if (hit) f.acc -= 1; const key = 'emp' + u.uid;
-  for (const e of foes(u)) { const inside = Math.hypot(e.x - f.x, e.y - f.y) <= f.r + unitRadius(e); // 몸이 조금이라도 걸치면 안 (완전히 빠져나가야 풀린다)
+  for (const e of sideIx()[u.side === 'a' ? 'e' : 'a']) { if (!e.alive) continue; const inside = Math.hypot(e.x - f.x, e.y - f.y) <= f.r + unitRadius(e); // 몸이 조금이라도 걸치면 안 (완전히 빠져나가야 풀린다) · build 10: [매혹]이어도 늘 상대 진영
     if (!inside) { if (f.in.has(e.uid)) { f.in.delete(e.uid); if (e.buffs[key]) { delete e.buffs[key]; drawUnit(e); } } continue; }
-    if (!f.in.has(e.uid)) { f.in.add(e.uid); const sk = e.def.skill; if (sk && e.sk > 0 && !immune(e)) { e.sk = Math.max(0, e.sk - 1); if (!S.fast && fxRoom()) dmgNum(e, '⚡ SP −1', { crit: true }); } } // 들어올 때마다 SP −1
-    if (e.st.silence > 0) e.st.silence = Math.max(e.st.silence, 0.15); else A.status(e, 'silence', 0.15); // build 5: 걸려 있으면 시간만 늘린다 (다시 걸면 drawUnit · 아이콘을 다시 그린다)
-    if (!immune(e)) { const b = e.buffs[key]; if (b) b.left = 0.15; else A.buff(e, key, { spd: -0.35 }, 0.15); }
+    const nou = e.st.nou > 0; // build 10: [NO U] 중이면 상태 효과는 걸지 않는다 (피해는 NO U 규칙대로 EMP 에게 돌아간다)
+    if (!f.in.has(e.uid)) { f.in.add(e.uid); const sk = e.def.skill; if (sk && e.sk > 0 && !immune(e) && !nou) { e.sk = Math.max(0, e.sk - 1); if (!S.fast && fxRoom()) dmgNum(e, '⚡ SP −1', { crit: true }); } } // 들어올 때마다 SP −1
+    if (!nou) { if (e.st.silence > 0) e.st.silence = Math.max(e.st.silence, 0.15); else A.status(e, 'silence', 0.15); } // build 5: 걸려 있으면 시간만 늘린다 (다시 걸면 drawUnit · 아이콘을 다시 그린다)
+    if (!immune(e) && !nou) { const b = e.buffs[key]; if (b) b.left = 0.15; else A.buff(e, key, { spd: -0.35 }, 0.15); }
     if (hit && dealDamage(u, e, effAtk(u), { skill: true, lite: true }) > 0 && !S.fast) hitFx(u, e, false); }
   if (f.left <= 1e-6) empEnd(u);
 }
@@ -4390,6 +4391,9 @@ const ITEMS = { // 가방 (profile.items · normProfile 이 보므로 프로필 
   epicTicket: { icon: '🎫', name: '랜덤 영웅 지후 모집권', desc: '영웅 지후 1기 (무작위 · 이미 있으면 조각)', use: true },
   legendPick: { icon: '★', name: '선택 전설 지후 모집권', desc: '원하는 전설 지후 1기 (이미 있으면 조각)', use: true },
   glowLegend: { icon: '✦', name: '빛나는 전설조각', desc: '1개 = 아무 전설 지후의 조각 1개 · 전설 지후 → 랭크 탭에서 넣어요' },
+  glowEpic: { icon: '✦', name: '빛나는 영웅조각', desc: '1개 = 아무 영웅 지후의 조각 1개 · 영웅 지후 → 랭크 탭에서 넣어요' }, // R2.18 build 9 상점
+  glowRare: { icon: '✦', name: '빛나는 희귀조각', desc: '1개 = 아무 희귀 지후의 조각 1개 · 희귀 지후 → 랭크 탭에서 넣어요' },
+  glowCommon: { icon: '✦', name: '빛나는 일반조각', desc: '1개 = 아무 일반 지후의 조각 1개 · 일반 지후 → 랭크 탭에서 넣어요' },
   resetTicket: { icon: '↺', name: '지후 초기화권', desc: '지후 랭크를 1로 되돌리고 랭크업에 쓴 조각 · 골드를 모두 돌려받아요 · 지후 → 랭크 탭' },
 };
 // 메인 퀘스트 (R2.3): 순서대로 하나씩 · 완료하면 받고 다음으로. ev 이벤트 · need 횟수 · ok 이벤트 때 조건 · state 지금 상태로 바로 완료 · rw 보상
@@ -5001,7 +5005,7 @@ function tileSize() { // 전작 v42BuildGrid 칸 크기
   const tw = (CFG.ACROSS[1] - CFG.ACROSS[0]) * (isEW() ? FH() : FW()) / CFG.COLS - 8, th = (isEW() || reelsOn() ? (CFG.DEPTH[1] - CFG.DEPTH[0]) * (isEW() ? FW() : FH()) : CFG.DEPTH_NS[0] - CFG.DEPTH_NS[1]) - 10;
   return isEW() ? { w: th, h: tw } : { w: tw, h: th };
 }
-function lvMult(lv) { return 1 + CFG.LEVEL_ADD * (lv - 1); }   // 체력 · 공격력: 레벨마다 기본의 +50% (선형 · Lv2 ×1.5 · Lv3 ×2 · Lv4 ×2.5 · Lv5 ×3 · R2.10.4)
+function lvMult(lv) { return 1 + CFG.LEVEL_ADD * (lv - 1); }   // 체력 · 공격력: 레벨마다 기본의 +80% (선형 · Lv2 ×1.8 · Lv3 ×2.6 · Lv4 ×3.4 · Lv5 ×4.2 · 갓지후 Lv6 ×5 · R2.18 build 10)
 function effMult(lv) { return Math.pow(CFG.EFFECT_MULT, lv - 1); } // 쉴드 등 효과 (전작 EFFECT_MULT)
 const PHYS = { STEP: 1 / 60, SKIN: 3.2, RESTITUTION: 0.045, FRICTION: 0.22, DRAG: 4.4, STEER: 16, WALL_PAD: 30, SOLVER_ITERS: 4, POS_CORR: 0.78, SLOP: 0.55 };
 function unitRadius(u) { return (u && u.small ? 17.5 : CFG.UNIT_R) * WS; } // small: 분열한 슬라임 · R2.2: 레벨이 올라도 몸 크기는 그대로
@@ -6833,7 +6837,7 @@ function openSandbox() { renderSandbox(); show('sandbox'); }
 function renderSandbox() {
   const reels = SB.mode === 'reels', cap = sbCap(), ready = k => (reels ? SB[k].length >= cap : SB[k].length > 0);
   const team = k => `<div class="g-card sb-team ${k}${SB.side === k ? ' on' : ''}" data-sbside="${k}"><div class="sb-th"><span class="eyebrow">${k === 'a' ? '내 팀 · 왼쪽' : '상대 팀 · 오른쪽'}</span><b>${Math.min(SB[k].length, cap)} / ${cap}</b>${SB.side === k ? '<em>여기에 넣는 중</em>' : '<em>눌러서 고르기</em>'}</div>
-    <div class="sb-slots${reels ? ' n' + cap : ''}">${Array.from({ length: cap }, (_, i) => { const x = SB[k][i]; return x ? `<div class="sb-slot r-${CHARS[x.id].rarity}"><span class="pic">${pic(x.id)}</span><small>${shortName(x.id)}</small><span class="sb-lv"><button data-sblv="-1" data-sbk="${k}" data-sbi="${i}" ${x.lv <= 1 ? 'disabled' : ''}>−</button><b>Lv.${x.lv}</b><button data-sblv="1" data-sbk="${k}" data-sbi="${i}" ${x.lv >= CFG.MAX_LV ? 'disabled' : ''}>＋</button></span><button class="sb-x" data-sbdel="${i}" data-sbk="${k}" aria-label="빼기">✕</button></div>` : '<div class="sb-slot empty">+</div>'; }).join('')}</div>
+    <div class="sb-slots${reels ? ' n' + cap : ''}">${Array.from({ length: cap }, (_, i) => { const x = SB[k][i]; return x ? `<div class="sb-slot r-${CHARS[x.id].rarity}"><span class="pic">${pic(x.id)}</span><small>${shortName(x.id)}</small><span class="sb-lv"><button data-sblv="-1" data-sbk="${k}" data-sbi="${i}" ${x.lv <= 1 ? 'disabled' : ''}>−</button><b>Lv.${x.lv}</b><button data-sblv="1" data-sbk="${k}" data-sbi="${i}" ${x.lv >= maxLv(x.id) ? 'disabled' : ''}>＋</button></span><button class="sb-x" data-sbdel="${i}" data-sbk="${k}" aria-label="빼기">✕</button></div>` : '<div class="sb-slot empty">+</div>'; }).join('')}</div>
     <div class="sb-tools"><button class="g-btn" data-sbrand="${k}">무작위</button><button class="g-btn" data-sbclear="${k}">비우기</button></div></div>`;
   const seg = (attr, opts, cur) => `<div class="seg">${opts.map(([v, t]) => `<button data-${attr}="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${t}</button>`).join('')}</div>`;
   $('sbBody').innerHTML = `<div class="sb-modes">${seg('sbmode', [['std', '🧪 일반'], ['reels', '🎬 릴스 모드']], SB.mode)}${reels ? seg('sbn', [[1, '1 VS 1'], [3, '3 VS 3']], SB.n) + seg('sbauto', [[1, '자동 시작'], [0, '직접 시작']], SB.auto ? 1 : 0) : ''}</div>
@@ -7134,10 +7138,11 @@ function rankUpFx(id, lv, nx) { // R2.17 랭크업 연출: 빛줄기 · 카드 �
   el.innerHTML = `<div class="rk-rays"></div><div class="rk-burst">${Array.from({ length: 16 }, (_, i) => `<i style="--a:${(i * 22.5).toFixed(1)}deg; --d:${(0.05 + (i % 4) * 0.04).toFixed(2)}s"></i>`).join('')}</div><div class="rk-card"><img src="${u2Img(id)}" alt=""></div><b class="rk-t">RANK UP!</b><div class="rk-lv"><span>랭크 ${lv}</span><em>➜</em><span class="n">랭크 ${nx}</span></div><div class="rk-nm">${shortName(id)} 지후</div>${gains ? `<div class="rk-g">${gains}</div>` : ''}${extra ? `<div class="rk-x">✨ ${extra}</div>` : ''}<small>눌러서 닫기</small>`;
   let done = false; const close = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 280); }; el.onclick = close; document.body.appendChild(el); setTimeout(close, mile ? 3800 : 2700);
 }
-function enhGlow(id) { // 빛나는 전설조각 → 이 전설 지후의 조각 (다음 강화에 모자란 만큼)
-  if (!CHARS[id] || CHARS[id].rarity !== 'legend' || !owned(id)) return; const c = enhCost(id, enhLv(id)), have = profile.items.glowLegend || 0; if (!c || !have) return;
+const GLOW_OF = { legend: 'glowLegend', epic: 'glowEpic', rare: 'glowRare', common: 'glowCommon' }; // 등급마다 빛나는 조각 (R2.18 build 9: 전설 외 3종 추가)
+function enhGlow(id) { // 빛나는 조각 → 같은 등급 지후의 조각 (다음 랭크에 모자란 만큼)
+  const gk = CHARS[id] && GLOW_OF[CHARS[id].rarity]; if (!gk || !owned(id)) return; const c = enhCost(id, enhLv(id)), have = profile.items[gk] || 0; if (!c || !have) return;
   const n = Math.min(have, Math.max(0, c.sh - (profile.shards[id] || 0))); if (!n) return u2Toast('조각이 이미 충분해요');
-  profile.items.glowLegend = have - n; profile.shards[id] = (profile.shards[id] || 0) + n; save(); sfx('buy'); u2Toast(`✦ 빛나는 전설조각 ${n}개 → ${shortName(id)} 조각 +${n}`); u2Render();
+  profile.items[gk] = have - n; profile.shards[id] = (profile.shards[id] || 0) + n; save(); sfx('buy'); u2Toast(`✦ ${ITEMS[gk].name} ${n}개 → ${shortName(id)} 조각 +${n}`); u2Render();
 }
 async function enhReset(id) { // 지후 초기화권: +1 로 되돌리고 강화에 쓴 조각 · 골드를 모두 돌려받는다
   const lv = enhLv(id); if (lv <= 1 || !(profile.items.resetTicket > 0)) return; let sh = 0, gold = 0; for (let l = 1; l < lv; l++) { const c = enhCost(id, l); sh += c.sh; gold += c.gold; }
@@ -7160,7 +7165,7 @@ function enhHtml(id, part) { // 지후 상세 '랭크' 탭 (part 'foot' = 창 �
   else if (!cost) foot = `<div class="u2-rk-bar max"><i style="width:100%"></i><b>MAX · 랭크 ${ENH_MAX}</b></div>`;
   else { const okS = sh >= cost.sh, okG = gold >= cost.gold, mile = ENH_MILE.find(m => m.lv === nx);
     const gain = mile ? rowTxt(mile) : [`체력 <b>+${f(nxt.hp - cur.hp)}</b>`, atk && nxt.atk > cur.atk ? `공격력 <b>+${f(nxt.atk - cur.atk)}</b>` : ''].filter(Boolean).join(' · ');
-    const glow = c.rarity === 'legend' && !okS && profile.items.glowLegend > 0 ? `<div class="u2-rk-glow" data-enh="glow">✦ 빛나는 전설조각 넣기 · 보유 ${f(profile.items.glowLegend)}</div>` : '';
+    const gk = GLOW_OF[c.rarity], glow = gk && !okS && profile.items[gk] > 0 ? `<div class="u2-rk-glow" data-enh="glow">✦ ${ITEMS[gk].name} 넣기 · 보유 ${f(profile.items[gk])}</div>` : '';
     foot = `<div class="u2-rk-next">다음 랭크 <b>${nx}</b> · ${gain}</div>
       <div class="u2-rk-bar${okS ? ' ok' : ''}"><span class="sh">🧩</span><i style="width:${Math.min(100, sh / cost.sh * 100).toFixed(1)}%"></i><b>${f(sh)} / ${f(cost.sh)}${okS ? ' ▲' : ''}</b></div>${glow}
       <div class="u2-rk-up${okS && okG ? '' : ' off'}" data-enh="up"><b>${okS && okG ? '랭크 업' : !okS ? `조각 ${f(cost.sh - sh)}개 더 필요해요` : '골드가 모자라요'}</b><span class="${okG ? '' : 'no'}">● ${f(cost.gold)}</span></div>`; }
@@ -8207,8 +8212,8 @@ $('dlgOk').addEventListener('click', () => dlgClose(true));
 $('dlgNo').addEventListener('click', () => dlgClose(false));
 
 // ═════════ 상점 (전작 일일 상점 · 팝업스토어 없음) ═════════
-// 매일 자정에 바뀐다: 무료 보상 1개(● 500 또는 ◆ 100) + 지후 매물 5개 (희귀 65 · 영웅 25 · 전설은 25% 확률로 1개).
-// 그중 1개는 같은 등급 랜덤 지후를 30% 할인 (어떤 지후인지는 살 때 정해짐) · 나머지는 0~10% 할인 · 다이아로도 산다 (골드 10 = 다이아 1).
+// 매일 자정에 바뀐다: 무료 보상 1개(● 500 또는 ◆ 100) + 매물 5개 — R2.18 build 9: 칸마다 지후 매물(희귀 68 · 영웅 26 · 전설 5) 또는 아이템 매물(SHOP_ITEMS 의 w)을 무게로 뽑는다 · 전설급(t ≥ 3)은 하루 1개까지 · 같은 아이템은 한 번 · 등급이 높은 매물일수록 뒤쪽 (t 순).
+// 지후 매물 1개는 같은 등급 랜덤 지후를 30% 할인 (어떤 지후인지는 살 때 정해짐) · 나머지는 0~10% 할인 · 지후 매물은 골드로만 (R2.18 build 9 · 예전엔 다이아로도).
 // 리롤 하루 4번 (첫 번째 무료 · 그다음 ● 2,000) · 이모티콘 매물 3개 (◆ 500 · R2.10.2) · 다이아 환전소. 매물 가격은 전작의 약 2배.
 // 이미 가진 지후를 사면 그 지후의 조각 10개 (뽑기와 같은 규칙 · R2.15). 그 등급에 지후가 없으면 한 단계 아래 등급에서 고른다.
 const SHOP_PRICE = { common: 1000, rare: 4000, epic: 15000, legend: 40000 }; // 전작의 약 2배
@@ -8216,14 +8221,46 @@ const SHOP_LEGEND_CHANCE = 0.25, SHOP_REROLL_MAX = 4, SHOP_REROLL_COST = 2000, S
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const byRarity = r => Object.keys(CHARS).filter(id => CHARS[id].rarity === r);
 function shopRarity(r) { while (r && !byRarity(r).length) r = ({ legend: 'epic', epic: 'rare', rare: 'common' })[r]; return r || 'common'; }
+// R2.18 build 9: 아이템 매물 · w = 한 칸에 나올 무게 (지후 매물과 같은 저울) · t = 줄 순서이자 등급 (1 희귀 · 2 영웅 · 3 전설 · 높을수록 뒤 · 1 미만은 일반 색)
+const SHOP_ITEMS = {
+  glowCommon: { name: '빛나는 일반조각 ×10', icon: '✦', dia: 200, w: 68, t: 0.9, sub: '일반 지후 조각 10', give: () => itemAdd('glowCommon', 10) },
+  glowRare: { name: '빛나는 희귀조각 ×10', icon: '✦', dia: 300, w: 68, t: 1.05, sub: '희귀 지후 조각 10', give: () => itemAdd('glowRare', 10) },
+  ticket: { name: '아케이드 티켓', icon: '🎟', gold: 7000, w: 50, t: 1.4, sub: '1장 · 아케이드', give: () => { profile.arc.t = (profile.arc.t | 0) + 1; }, where: '아케이드 티켓 +1' },
+  testKit: { name: '임테기', icon: '🧪', dia: 250, w: 26, t: 2, sub: '지후 1기 · 가방', give: () => itemAdd('testKit', 1) },
+  kitPro: { name: '고급 임테기', icon: '🔬', gold: 8000, w: 13, t: 2.5, sub: '등급마다 25% · 가방', give: () => itemAdd('kitPro', 1) },
+  legendRand: { name: '랜덤 전설 지후', icon: '🌟', dia: 1500, w: 5, t: 3, sub: '모집권 · 가방', give: () => itemAdd('legendRand', 1) },
+  starter1: { name: '초보자 지원 패키지 I', icon: '🌱', dia: 650, w: 5, t: 3, sub: '계정당 1회 · 바로 열기', pack: 'starter1' },
+  glowEpic: { name: '빛나는 영웅조각 ×10', icon: '✦', dia: 1000, w: 5, t: 3.05, sub: '영웅 지후 조각 10', give: () => itemAdd('glowEpic', 10) },
+  glowLegend: { name: '빛나는 전설조각 ×10', icon: '✦', dia: 2000, w: 3.5, t: 3.3, sub: '전설 지후 조각 10', give: () => itemAdd('glowLegend', 10) },
+  legendPick: { name: '선택 전설 지후', icon: '★', dia: 3000, w: 3.5, t: 3.4, sub: '모집권 · 가방', give: () => itemAdd('legendPick', 1) },
+  upm: { name: '지후 패키지 UltraProMax+', icon: '👑', dia: 6500, w: 1.5, t: 3.8, sub: '계정당 1회 · 바로 열기', pack: 'upm' },
+};
+const SHOP_CHAR_W = { rare: 68, epic: 26, legend: 5 }, SHOP_T = { common: 0, rare: 1, epic: 2, legend: 3 };
+const itemAdd = (k, n) => { profile.items[k] = (profile.items[k] || 0) + n; };
+const offerT = o => o.item ? (SHOP_ITEMS[o.item] || { t: 0 }).t : SHOP_T[o.rarity] || 0;
+const shopItemRar = it => it.t >= 3 ? 'legend' : it.t >= 2 ? 'epic' : it.t >= 1 ? 'rare' : 'common';
+const packDone = k => { const p = PACKS.find(x => x.k === k); return !!(p && p.once && profile.packs && profile.packs[k]); };
 function shopOffers(serial) {
-  const randomIndex = Math.floor(Math.random() * 5), legendIndex = Math.random() < SHOP_LEGEND_CHANCE ? Math.floor(Math.random() * 5) : -1; // 전설은 최대 1개
-  return Array.from({ length: 5 }, (_, i) => {
-    const rarity = shopRarity(i === legendIndex ? 'legend' : Math.random() * 90 < 65 ? 'rare' : 'epic');
-    if (i === randomIndex) return { id: `${serial}-${i}`, charId: null, random: true, rarity, disc: 30, sold: false };
-    const pool = byRarity(rarity);
-    return { id: `${serial}-${i}`, charId: pool[Math.floor(Math.random() * pool.length)], rarity, disc: [0, 0, 5, 10][Math.floor(Math.random() * 4)], sold: false }; // 할인 0 · 5 · 10%
-  });
+  const pool = [...Object.entries(SHOP_CHAR_W).map(([r, w]) => ['c:' + r, w, SHOP_T[r]]), ...Object.entries(SHOP_ITEMS).filter(([, it]) => !(it.pack && packDone(it.pack))).map(([k, it]) => ['i:' + k, it.w, it.t])];
+  const out = [], used = new Set(); let top = 0;
+  for (let i = 0; i < 5; i++) {
+    const L = pool.filter(([k, , t]) => !(k[0] === 'i' && used.has(k)) && !(top && t >= 3)), tot = L.reduce((s, x) => s + x[1], 0); let r = Math.random() * tot, pick = L[L.length - 1];
+    for (const x of L) { r -= x[1]; if (r <= 0) { pick = x; break; } }
+    used.add(pick[0]); if (pick[2] >= 3) top = 1;
+    if (pick[0][0] === 'i') { out.push({ item: pick[0].slice(2), sold: false }); continue; }
+    const rarity = shopRarity(pick[0].slice(2)), pl = byRarity(rarity);
+    out.push(!out.some(o => o.random) && Math.random() < 0.3 ? { charId: null, random: true, rarity, disc: 30, sold: false } : { charId: pl[Math.floor(Math.random() * pl.length)], rarity, disc: [0, 0, 5, 10][Math.floor(Math.random() * 4)], sold: false }); // 할인 0 · 5 · 10% · 랜덤 30% 는 하루 1개까지
+  }
+  return out.sort((a, b) => offerT(a) - offerT(b)).map((o, i) => ({ ...o, id: `${serial}-${i}` })); // 등급이 높은 매물일수록 뒤쪽
+}
+async function buyShopItem(offerId) { // 아이템 매물 (R2.18 build 9)
+  const shop = ensureDaily(), o = shop.offers.find(x => x.id === offerId), it = o && SHOP_ITEMS[o.item]; if (!it || o.sold) return;
+  const dia = !!it.dia, cost = it.dia || it.gold, have = dia ? profile.dia : profile.gold || 0;
+  if (it.pack && packDone(it.pack)) return u2Toast('이미 구매한 패키지예요 (계정당 1회)');
+  if (have < cost) return u2Toast(`${dia ? '다이아' : '골드'}가 ${dia ? '◆' : '●'} ${(cost - have).toLocaleString()} 모자라요`);
+  if (dia) profile.dia -= cost; else profile.gold -= cost; o.sold = true; questAdd('shopBuy', 1); mqEvent('shop'); sfx('buy');
+  if (it.pack) { const p = PACKS.find(x => x.k === it.pack); (profile.packs || (profile.packs = {}))[p.k] = (profile.packs[p.k] || 0) + 1; save(); renderMoney(); if (window.__u2 && UI2.on) u2Render(); return packOpen(p); }
+  it.give(); save(); renderMoney(); u2Toast(`${it.icon} ${it.name} · ${it.where || '가방에 넣었어요'}`); if (window.__u2 && UI2.on) u2Render();
 }
 function emoOffers() {
   const pool = EMOTICONS.map(e => e.k).filter(k => !emoOwned(k));
@@ -8232,8 +8269,9 @@ function emoOffers() {
 }
 function ensureDaily() {
   const key = todayKey();
-  if (!profile.daily || profile.daily.date !== key) { profile.daily = { date: key, q: { progress: {}, awarded: {}, points: 0, tiers: [] }, shop: { freeType: Math.random() < 0.5 ? 'gold' : 'dia', freeClaimed: false, rerolls: 0, serial: 0, offers: shopOffers(0), emo: emoOffers() } }; save(); }
+  if (!profile.daily || profile.daily.date !== key) { profile.daily = { date: key, q: { progress: {}, awarded: {}, points: 0, tiers: [] }, shop: { v: 2, freeType: Math.random() < 0.5 ? 'gold' : 'dia', freeClaimed: false, rerolls: 0, serial: 0, offers: shopOffers(0), emo: emoOffers() } }; save(); }
   if (!profile.daily.q) profile.daily.q = { progress: {}, awarded: {}, points: 0, tiers: [] };
+  { const sh = profile.daily.shop; if (sh && sh.v !== 2) { sh.v = 2; sh.offers = shopOffers(sh.serial || 0); save(); } } // R2.18 build 9: 오늘 매물도 새 상점으로 한 번 다시
   return profile.daily.shop;
 }
 const roundNice = (v, unit) => Math.max(unit, Math.round(v / unit) * unit); // 편한 숫자 (~00 · ~000)
@@ -8255,7 +8293,7 @@ function renderShop() {
     const base = SHOP_PRICE[o.rarity], price = offerPrice(o);
     cards.push(`<div class="offer r-${o.rarity}${o.sold ? ' sold' : ''}" style="animation-delay:${(0.05 + i * 0.05).toFixed(2)}s"><div class="oh"><span class="pic">${c ? pic(o.charId) : '?'}${o.disc ? `<span class="sale">-${o.disc}%</span>` : ''}</span>
       <span class="on2"><b>${offerName(o)}</b><small>${RARITY[o.rarity]} · ${c ? (owned(o.charId) ? '보유 중 → 조각 +10' : '해금') : '살 때 정해져요'}</small></span></div>
-      <div class="buy">${o.sold ? '<button class="btn" disabled>구매 완료</button>' : `<button class="btn primary" data-buy="${o.id}">${o.disc ? `<span class="was">${base.toLocaleString()}</span>` : ''}● ${price.toLocaleString()}</button><button class="btn" data-buy="${o.id}" data-dia="1">◆ ${offerDia(o).toLocaleString()}</button>`}</div></div>`);
+      <div class="buy">${o.sold ? '<button class="btn" disabled>구매 완료</button>' : `<button class="btn primary" data-buy="${o.id}">${o.disc ? `<span class="was">${base.toLocaleString()}</span>` : ''}● ${price.toLocaleString()}</button>`}</div></div>`);
   });
   $('shopOffers').innerHTML = cards.join('');
   if (!Array.isArray(shop.emo) || shop.emo.some(o => !emoDef(o.k))) { shop.emo = emoOffers(); save(); }
@@ -8278,7 +8316,7 @@ function claimFree() {
 }
 async function buyOffer(offerId, withDia) {
   const shop = ensureDaily(), o = shop.offers.find(x => x.id === offerId);
-  if (!o || o.sold) return;
+  if (!o || o.sold || o.item) return; if (withDia) return; // R2.18 build 9: 지후는 다이아로 살 수 없다
   const cost = withDia ? offerDia(o) : offerPrice(o), have = withDia ? profile.dia : profile.gold || 0, cur = withDia ? '◆' : '●';
   if (have < cost) { shopMsg(withDia ? '다이아가 부족합니다.' : '골드가 부족합니다.'); return; }
   if (!(await dlg({ icon: cur, title: '지후를 살까요?', html: `<b>${offerName(o)}</b> · ${cur} ${cost.toLocaleString()}<br><small>지금 ${withDia ? `다이아 ◆ ${profile.dia.toLocaleString()}` : `골드 ● ${(profile.gold || 0).toLocaleString()}`}</small>`, ok: '구매', cancel: '취소' }))) return;
@@ -8293,9 +8331,9 @@ async function buyOffer(offerId, withDia) {
 // ═════════ 패키지 · VIP (R2.17 · 상점) ═════════
 const PACK_REP = (r, n) => Array.from({ length: n }, () => r);
 const PACKS = [ // 다이아로 사면 바로 열린다 (중복은 조각 10) · once = 계정당 1회 (profile.packs[k])
-  { k: 'upm', name: '지후 패키지 UltraProMax+', dia: 4900, icon: '👑', c: '#ff5dd0', d: '#a8338a', tag: 'BEST · 계정당 1회', once: true, /* build 8: 계정당 1회 */ sub: '전설 1 · 영웅 5 · 희귀 15 · 일반 50 (무작위)', roll: () => [...PACK_REP('legend', 1), ...PACK_REP('epic', 5), ...PACK_REP('rare', 15), ...PACK_REP('common', 50)] },
+  { k: 'upm', shopOnly: true, /* R2.18 build 9: 오늘의 매물로만 (◆ 6,500 · SHOP_ITEMS) */ name: '지후 패키지 UltraProMax+', dia: 6500, icon: '👑', c: '#ff5dd0', d: '#a8338a', tag: 'BEST · 계정당 1회', once: true, /* build 8: 계정당 1회 */ sub: '전설 1 · 영웅 5 · 희귀 15 · 일반 50 (무작위)', roll: () => [...PACK_REP('legend', 1), ...PACK_REP('epic', 5), ...PACK_REP('rare', 15), ...PACK_REP('common', 50)] },
   { k: 'lite', name: '지후 패키지 Lite', dia: 750, icon: '🎒', c: '#53d3c0', d: '#2a9483', tag: '', sub: '일반 10 · 희귀 3 · 영웅 40% 확률 1 · 전설 10% 확률 1', roll: () => [...PACK_REP('common', 10), ...PACK_REP('rare', 3), ...(Math.random() < 0.4 ? ['epic'] : []), ...(Math.random() < 0.1 ? ['legend'] : [])] },
-  { k: 'starter1', name: '초보자 지원 패키지 I', dia: 600, icon: '🌱', c: '#7cc8ff', d: '#3f8fcf', tag: '계정당 1회', once: true, sub: '일반 10 · 희귀 5 · 영웅 1', roll: () => [...PACK_REP('common', 10), ...PACK_REP('rare', 5), 'epic'] },
+  { k: 'starter1', shopOnly: true, name: '초보자 지원 패키지 I', dia: 650, icon: '🌱', c: '#7cc8ff', d: '#3f8fcf', tag: '계정당 1회', once: true, sub: '일반 10 · 희귀 5 · 영웅 1', roll: () => [...PACK_REP('common', 10), ...PACK_REP('rare', 5), 'epic'] },
   { k: 'vip', name: 'VIP (30일)', dia: 8900, icon: '💎', c: '#ffc21a', d: '#c98a1c', tag: 'VIP', vip: true, sub: '전투 배속 1× · 1.5× 자유 조절 · 매일 접속하면 우편으로 ● 3,000 + ◆ 100' },
 ];
 const VIP_DAYS = 30, VIP_MAIL = { gold: 3000, dia: 100 };
@@ -8310,6 +8348,9 @@ async function buyPack(k) {
   if (profile.dia < p.dia) return u2Toast(`다이아가 ◆ ${(p.dia - profile.dia).toLocaleString()} 모자라요`);
   profile.dia -= p.dia; (profile.packs || (profile.packs = {}))[k] = (profile.packs[k] || 0) + 1; questAdd('shopBuy', 1); mqEvent('shop'); sfx('buy');
   if (p.vip) { const v = profile.vip || (profile.vip = { until: 0, day: '' }); v.until = Math.max(Date.now(), v.until || 0) + VIP_DAYS * 86400000; save(); vipDaily(); document.body.classList.add('vip-on'); renderMoney(); u2Render(); return dlg({ icon: '💎', title: 'VIP 시작!', html: `<b>${Math.ceil(vipLeft() / 86400000)}일</b> 동안 VIP 예요.<br>전투 화면 위쪽 <b>1× · 1.5×</b> 버튼으로 배속을 마음대로 바꿀 수 있고,<br>매일 접속하면 우편함으로 <b>● 3,000 + ◆ 100</b> 이 와요. (오늘 것은 지금 보냈어요)` }); }
+  packOpen(p);
+}
+function packOpen(p) { // 패키지 열기 (R2.18 build 9: 오늘의 매물에서 산 패키지도)
   const res = p.roll().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend' && isNew) postEvent('gacha', id, 'legend'); return { id, isNew, seenBefore: !isNew }; });
   res.sort((a, b) => RARITY_ORDER[CHARS[b.id].rarity] - RARITY_ORDER[CHARS[a.id].rarity]); save(); renderMoney(); gachaLast = res; showReveal(res);
 }
@@ -8329,7 +8370,7 @@ $('btnShopReroll').addEventListener('click', () => {
   const free = shop.rerolls === 0; // 매일 첫 리롤은 무료
   if (!free && (profile.gold || 0) < SHOP_REROLL_COST) return shopMsg('리롤에 필요한 골드가 부족합니다.');
   if (!free) profile.gold -= SHOP_REROLL_COST;
-  shop.rerolls++; shop.serial = (shop.serial || 0) + 1; shop.offers = shopOffers(shop.serial); shop.emo = emoOffers();
+  shop.rerolls++; shop.serial = (shop.serial || 0) + 1; shop.offers = shopOffers(shop.serial); shop.emo = emoOffers(); shop.freeClaimed = false; shop.freeType = Math.random() < 0.5 ? 'gold' : 'dia'; // R2.18 build 10: 리롤하면 무료 보상도 새로
   save(); shopMsg(`상점을 새로고침했습니다. (${shop.rerolls}/${SHOP_REROLL_MAX})${free ? ' · 오늘의 무료 리롤' : ''}`); renderShop();
 });
 async function exchange(dia, gold) {
@@ -8409,7 +8450,7 @@ const BOOT_TIPS = [ // R2.12.3: 접속 로딩 팁 (판마다 무작위 · 2.8초
 ];
 const TIPS_MORE = [ // R2.12.3 build 10: 팁 100종 추가 — 접속 로딩 (BOOT_TIPS) · 일반전 로딩 (TIPS) 둘 다 쓴다 · 수치가 바뀌면 같이 고칠 것
   // ── 배치 · 규칙 ──
-  '지후는 최대 <b>Lv.5</b>까지 올라가요. 레벨이 오르면 체력과 공격력이 1.2배씩 늘어나요.',
+  '지후는 최대 <b>Lv.5</b>까지 올라가요. 레벨이 오를 때마다 체력과 공격력이 기본의 80%씩 늘어나요.',
   '전장의 지후끼리는 <b>같은 종류 · 같은 레벨</b>일 때만 합칠 수 있어요.',
   '새 카드는 전장의 같은 지후 위에 레벨 상관없이 겹쳐서 레벨을 올릴 수 있어요.',
   '같은 지후는 전장에 최대 <b>3기</b>까지 놓을 수 있어요.',
@@ -8965,7 +9006,10 @@ const PATCH_NOTES = [
   { v: 'R2.18', date: '2026.11.03', title: '신규 지후 4종 · 밸런스 패치', sections: [
     { title: '주요 변경', items: [
       { icon: '🆕', name: '신규 지후 4종', tag: 'new', desc: '<b>BB탄 · 홍명보</b> (영웅) · <b>EMP · 드래곤</b> (전설) 지후가 들어왔어요.' },
-      { icon: '👑', name: '지후 패키지 UltraProMax+', tag: 'adjust', desc: '<b>계정당 1회</b>만 살 수 있어요.' },
+      { icon: '🛒', name: '상점 개편', tag: 'system', desc: '오늘의 상품에 <b>아이템</b>도 나와요 — 임테기 ◆250 · 고급 임테기 ●8,000 · 아케이드 티켓 ●7,000 · 랜덤 전설 지후 ◆1,500 · 선택 전설 지후 ◆3,000 · 빛나는 조각 ×10 (일반 ◆200 · 희귀 ◆300 · 영웅 ◆1,000 · 전설 ◆2,000) · 초보자 지원 패키지 I ◆650 · UltraProMax+ ◆6,500 (패키지는 <b>계정당 1회</b>). 등급이 높은 상품일수록 뒤쪽에 놓이고, 지후는 이제 <b>골드로만</b> 살 수 있어요.' },
+      { icon: '⬆️', name: '인게임 레벨업', tag: 'adjust', desc: '지후 레벨이 오를 때마다 체력 · 공격력 <b>+50% → +80%</b> (기본 대비 · Lv5 = <b>×4.2</b>).' },
+      { icon: '🔄', name: '상점 리롤', tag: 'system', desc: '리롤할 때마다 <b>무료 보상</b>도 새로 받을 수 있어요.' },
+      { icon: '🧪', name: '샌드박스', tag: 'system', desc: '갓지후를 <b>Lv6</b> (트루폼)으로 출전시킬 수 있어요.' },
       { icon: '🔢', name: '랭크 표시', tag: 'system', desc: '지후 카드의 랭크를 <b>동그라미 안 숫자</b>로 · 매치 인트로와 전투 중 양쪽 덱에도 <b>랭크</b>를 보여 줘요.' },
       { icon: '📱', name: '중복 로그인', tag: 'system', desc: '같은 계정을 다른 창 · 기기에서 켜면 <b>새로 연 쪽</b>이 우선이에요. 먼저 켠 창은 <b>새로고침</b>해야 다시 플레이할 수 있어요.' },
       { icon: '⚖️', name: '밸런스 패치', tag: 'adjust', desc: '지후 <b>23종</b> 조정 · 충전 지후 리워크 — 솔렘라멘트 · 블리자드 · 회오리 등 너무 강했던 지후는 낮추고, 얼음 · 버블 · 포식 등 약했던 지후는 올렸어요.' },
@@ -9003,6 +9047,7 @@ const PATCH_NOTES = [
     ] },
     { title: '버그 수정', items: [
       { id: 'teemo', name: '티모 지후', tag: 'fix', desc: '[강화 실명 다트]가 사라지지 않고 맵에 계속 남던 버그를 고쳤어요.' },
+      { id: 'emp', name: 'EMP 지후', tag: 'fix', desc: '[EMP 자기장]의 침묵 · 감속이 <b>아군</b>에게 걸리던 버그를 고쳤어요 ([매혹]됐을 때 · 적 NO U 를 통해).' },
       { icon: '💾', name: '계정 백업', tag: 'fix', desc: '다른 기기로 켰을 때 그 기기에 남아 있던 <b>예전 기록</b>(낮은 레벨 등)이 서버 기록을 덮어쓰던 버그를 고쳤어요.' },
       { icon: '🏷️', name: '효과 아이콘', tag: 'fix', desc: '쓰러진 지후의 효과 아이콘이 전장에 계속 남던 버그를 고쳤어요.' },
       { icon: '⚡', name: '전투 렉', tag: 'fix', desc: '신규 지후 이펙트 · 범위 피해 숫자 · 화면 다시 그리기를 줄여 유닛이 많을 때 렉을 줄였어요.' },
@@ -10414,12 +10459,15 @@ function u2Vals() {
   // 상점
   const shop = ensureDaily(), free = shop.freeType === 'gold' ? { ic: '●', n: 500, label: '골드' } : { ic: '◆', n: 100, label: '다이아' }, ms = Math.max(0, new Date().setHours(24, 0, 0, 0) - Date.now()), pad = v => String(v).padStart(2, '0');
   const offers = [(() => { const b = u2Btn(shop.freeClaimed ? 'off' : 'mint'); return { name: '무료 보상', sub: `${free.ic} ${fmt(free.n)} · 하루 한 번`, glyph: free.ic, glyphFc: free.ic === '●' ? '#d18e00' : '#2a8fc0', color: '#53d3c0', line: shop.freeClaimed ? '#3b466b' : '#53d3c0', op: shop.freeClaimed ? 0.6 : 1, priceTxt: shop.freeClaimed ? '받음' : '받기', btnBg: b[0], btnFc: b[1], btnEdge: b[2], onClick: () => shop.freeClaimed ? null : u2After(claimFree) }; })(),
-    ...shop.offers.filter(o => (o.charId && CHARS[o.charId]) || o.random).map(o => { const r = U2_RAR[o.rarity], b = u2Btn(o.sold ? 'off' : 'gold'), price = offerPrice(o), dia = offerDia(o), nm = offerName(o);
+    ...shop.offers.filter(o => (o.charId && CHARS[o.charId]) || o.random || (o.item && SHOP_ITEMS[o.item])).map(o => { if (o.item) { const it = SHOP_ITEMS[o.item], cur = it.dia ? '◆ ' : '● ', b = u2Btn(o.sold ? 'off' : it.dia ? 'dia' : 'gold'), rc = U2_RAR[shopItemRar(it)].c; // R2.18 build 9: 아이템 매물
+        return { name: it.name, sub: it.sub, img: '', glyph: it.icon, glyphFc: rc, color: rc, line: '#3b466b', op: o.sold ? 0.6 : 1, tag: '', priceTxt: o.sold ? '구매 완료' : cur + fmt(it.dia || it.gold), btnBg: b[0], btnFc: b[1], btnEdge: b[2], diaTxt: '', onDia: null,
+          onClick: () => o.sold ? null : u2Set({ confirm: { name: it.name, priceTxt: cur + fmt(it.dia || it.gold), go: () => u2After(() => buyShopItem(o.id)) } }) }; }
+      const r = U2_RAR[o.rarity], b = u2Btn(o.sold ? 'off' : 'gold'), price = offerPrice(o), dia = offerDia(o), nm = offerName(o);
       return { name: o.charId ? shortName(o.charId) : nm, sub: `${RARITY[o.rarity]} · ${o.charId ? (owned(o.charId) ? '조각 +10' : '해금') : '랜덤'}`, img: o.charId ? u2Img(o.charId) : '', glyph: o.charId ? '' : '?', glyphFc: r.c, color: r.c, line: '#3b466b', op: o.sold ? 0.6 : 1, tag: o.disc && !o.sold ? `-${o.disc}%` : '',
         priceTxt: o.sold ? '구매 완료' : '● ' + fmt(price), btnBg: b[0], btnFc: b[1], btnEdge: b[2], diaTxt: '◆ ' + fmt(dia),
         onClick: () => o.sold ? null : u2Set({ confirm: { name: nm, priceTxt: '● ' + fmt(price), go: () => u2After(() => buyOffer(o.id, false)) } }),
-        onDia: o.sold ? null : () => u2Set({ confirm: { name: nm, priceTxt: '◆ ' + fmt(dia), go: () => u2After(() => buyOffer(o.id, true)) } }) }; })];
-  const packs = PACKS.map(p => { const sold = p.once && profile.packs && profile.packs[p.k], vd = p.vip && vipOn() ? Math.ceil(vipLeft() / 86400000) : 0, b = u2Btn(sold ? 'off' : 'dia'); // R2.17 패키지
+        onDia: null /* R2.18 build 9: 지후는 골드로만 */ }; })];
+  const packs = PACKS.filter(p => !p.shopOnly).map(p => { const sold = p.once && profile.packs && profile.packs[p.k], vd = p.vip && vipOn() ? Math.ceil(vipLeft() / 86400000) : 0, b = u2Btn(sold ? 'off' : 'dia'); // R2.17 패키지
     const pics = p.k === 'upm' ? [['legend', '-8px', '-8px'], ['epic', '42px', '-8px'], ['rare', '42px', '42px']] : p.k === 'lite' ? [['rare', '42px', '42px']] : p.k === 'starter1' ? [['epic', '42px', '42px']] : [];
     return { ...p, op: sold ? 0.55 : 1, price: sold ? '구매 완료' : '◆ ' + fmt(p.dia), btnSub: sold ? '' : p.vip ? (vd ? `연장 · 남은 ${vd}일` : '30일') : p.once ? '1회' : '바로 열기', btnBg: b[0], btnFc: b[1], btnEdge: b[2],
       pics: pics.map(([r, x, y]) => { const L = byRarity(r); return { img: u2Img(L[(p.k.length * 7 + r.length) % L.length]), c: U2_RAR[r].c, x, y }; }),
@@ -10724,7 +10772,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { botDeckRamp, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { botDeckRamp, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
