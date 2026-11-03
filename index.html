@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="10"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="11"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4051,12 +4051,11 @@ function empField(u) { // [EMP 자기장]: 그 자리 · 반경 7.2칸 · 4초 (
 }
 function empTick(u, dt) {
   const f = u.emp; f.left -= dt; f.acc += dt; const hit = f.acc >= 1 - 1e-6; if (hit) f.acc -= 1; const key = 'emp' + u.uid;
-  for (const e of sideIx()[u.side === 'a' ? 'e' : 'a']) { if (!e.alive) continue; const inside = Math.hypot(e.x - f.x, e.y - f.y) <= f.r + unitRadius(e); // 몸이 조금이라도 걸치면 안 (완전히 빠져나가야 풀린다) · build 10: [매혹]이어도 늘 상대 진영
+  for (const e of foes(u)) { const inside = Math.hypot(e.x - f.x, e.y - f.y) <= f.r + unitRadius(e); // 몸이 조금이라도 걸치면 안 (완전히 빠져나가야 풀린다)
     if (!inside) { if (f.in.has(e.uid)) { f.in.delete(e.uid); if (e.buffs[key]) { delete e.buffs[key]; drawUnit(e); } } continue; }
-    const nou = e.st.nou > 0; // build 10: [NO U] 중이면 상태 효과는 걸지 않는다 (피해는 NO U 규칙대로 EMP 에게 돌아간다)
-    if (!f.in.has(e.uid)) { f.in.add(e.uid); const sk = e.def.skill; if (sk && e.sk > 0 && !immune(e) && !nou) { e.sk = Math.max(0, e.sk - 1); if (!S.fast && fxRoom()) dmgNum(e, '⚡ SP −1', { crit: true }); } } // 들어올 때마다 SP −1
-    if (!nou) { if (e.st.silence > 0) e.st.silence = Math.max(e.st.silence, 0.15); else A.status(e, 'silence', 0.15); } // build 5: 걸려 있으면 시간만 늘린다 (다시 걸면 drawUnit · 아이콘을 다시 그린다)
-    if (!immune(e) && !nou) { const b = e.buffs[key]; if (b) b.left = 0.15; else A.buff(e, key, { spd: -0.35 }, 0.15); }
+    if (!f.in.has(e.uid)) { f.in.add(e.uid); const sk = e.def.skill; if (sk && e.sk > 0 && !immune(e)) { e.sk = Math.max(0, e.sk - 1); if (!S.fast && fxRoom()) dmgNum(e, '⚡ SP −1', { crit: true }); } } // 들어올 때마다 SP −1
+    if (e.st.silence > 0) e.st.silence = Math.max(e.st.silence, 0.15); else A.status(e, 'silence', 0.15); // build 5: 걸려 있으면 시간만 늘린다 (다시 걸면 drawUnit · 아이콘을 다시 그린다)
+    if (!immune(e)) { const b = e.buffs[key]; if (b) b.left = 0.15; else A.buff(e, key, { spd: -0.35 }, 0.15); }
     if (hit && dealDamage(u, e, effAtk(u), { skill: true, lite: true }) > 0 && !S.fast) hitFx(u, e, false); }
   if (f.left <= 1e-6) empEnd(u);
 }
@@ -9047,7 +9046,6 @@ const PATCH_NOTES = [
     ] },
     { title: '버그 수정', items: [
       { id: 'teemo', name: '티모 지후', tag: 'fix', desc: '[강화 실명 다트]가 사라지지 않고 맵에 계속 남던 버그를 고쳤어요.' },
-      { id: 'emp', name: 'EMP 지후', tag: 'fix', desc: '[EMP 자기장]의 침묵 · 감속이 <b>아군</b>에게 걸리던 버그를 고쳤어요 ([매혹]됐을 때 · 적 NO U 를 통해).' },
       { icon: '💾', name: '계정 백업', tag: 'fix', desc: '다른 기기로 켰을 때 그 기기에 남아 있던 <b>예전 기록</b>(낮은 레벨 등)이 서버 기록을 덮어쓰던 버그를 고쳤어요.' },
       { icon: '🏷️', name: '효과 아이콘', tag: 'fix', desc: '쓰러진 지후의 효과 아이콘이 전장에 계속 남던 버그를 고쳤어요.' },
       { icon: '⚡', name: '전투 렉', tag: 'fix', desc: '신규 지후 이펙트 · 범위 피해 숫자 · 화면 다시 그리기를 줄여 유닛이 많을 때 렉을 줄였어요.' },
