@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.18** (build 5).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.18** (build 6).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -77,6 +77,7 @@
 
 ## 계정 · 서버 (짧게)
 - Firebase 프로젝트 `jihoobattle` · 게스트는 익명 인증 · 기록 `r2_backups/<uid>` · 이 기기 `rejhbt.profile.v1`.
+- **켤 때 서버 기록과 맞추기 (R2.18 build 6)**: 저장 시각(`savedAt`)은 켜는 동안 `save()` 가 바꿔 버리니 비교에 쓰지 않는다 — 백업마다 기록 안에 저장 번호 `profile.bkWid` 를 넣고, 이 기기는 마지막으로 맞춘 번호 `profile.syncWid` 를 기억 → `serverNewer(b)`: 번호가 다르면 서버 기록 · 번호가 없으면 진행도(레벨 → 경험치 → 판 수) 앞선 쪽. 서버 규칙(`r2_backups` 는 payload · savedAt · updatedAt 만)을 안 바꾸려고 번호는 payload 안에.
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 

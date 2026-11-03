@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4645,20 +4645,31 @@ async function backupNow() {
   if (!isMember() || ACC.kicked) return;
   clearTimeout(ACC.timer);
   const uid = myUid(); profile.ownerUid = uid;
+  const wid = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); profile.bkWid = wid; // R2.18 build 6: 저장 번호 (기록 안에 · 서버 규칙은 그대로) — 켤 때 이 기기 기록이 서버의 마지막 기록에서 이어진 것인지 본다
   const payload = JSON.stringify(profile); if (payload.length > 100000) throw new Error('기록이 너무 커서 백업하지 못했어요.');
   await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2_backups', uid), { payload, savedAt: Date.now(), updatedAt: FB.sdk.serverTimestamp() });
-  ACC.lastAt = Date.now(); if ($('setModal').classList.contains('show')) renderAccount();
+  profile.syncWid = wid; writeLocal(); ACC.lastAt = Date.now(); if ($('setModal').classList.contains('show')) renderAccount();
 }
-async function fetchBackup() { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2_backups', myUid())); if (!snap.exists()) return null; const d = snap.data(); return { p: JSON.parse(d.payload), at: Number(d.savedAt) || 0 }; }
+async function fetchBackup() { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2_backups', myUid())); if (!snap.exists()) return null; const d = snap.data(); const p = JSON.parse(d.payload); return { p, at: Number(d.savedAt) || 0, wid: (p && p.bkWid) || '' }; }
 async function fetchR1() { try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'backups', myUid())); if (!snap.exists()) return null; const p = JSON.parse(snap.data().payload); return p && typeof p === 'object' && !Array.isArray(p) ? p : null; } catch (e) { return null; } }
-function useProfile(p) { // 서버 기록으로 바꾼다
-  ACC.restoring = true; profile = normProfile(p); profile.ownerUid = myUid();
+function useProfile(p, wid) { // 서버 기록으로 바꾼다
+  ACC.restoring = true; profile = normProfile(p); profile.ownerUid = myUid(); profile.syncWid = wid || '';
   writeLocal();
   ACC.restoring = false; renderLobby();
 }
+// R2.18 build 6: 켤 때 서버 기록을 쓸지 — 예전엔 저장 시각(savedAt)을 비교했는데, 켜는 동안 출석 · 퀘스트 등이 save() 를 불러
+// 다른 기기의 오래된 기록이 새것처럼 보여 서버 기록(더 높은 레벨)을 덮어썼다. 이제 저장 번호(wid)로: 서버의 마지막 저장이 이 기기가 맞춘 것과 다르면 서버 기록.
+// 번호가 없는 예전 기록은 진행도(레벨 → 경험치 → 판 수)가 앞선 쪽 · 같으면 예전 규칙
+const progOf = p => [p.level | 0, p.xp | 0, (p.wins | 0) + (p.losses | 0)];
+const progCmp = (a, b) => { for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i] ? 1 : -1; return 0; };
+function serverNewer(b) {
+  if (b.wid && profile.syncWid) return b.wid !== profile.syncWid;
+  const c = progCmp(progOf(b.p || {}), progOf(profile)); if (c) return c > 0;
+  return b.at > (profile.savedAt || 0) + 5000;
+}
 async function syncAfterLogin(fromStart) { // R2 기록이 있으면 불러오고, 없으면 R1 기록을 처음 한 번 가져오고, 그것도 없으면 이 기기 기록을 계정에 붙인다
   const uid = myUid(), b = await fetchBackup();
-  if (b) { const bad = fromStart && !LOCAL_OK && profile.ownerUid === uid; if (fromStart ? (bad || profile.ownerUid !== uid || b.at > (profile.savedAt || 0) + 5000) : true) { useProfile(b.p); if (bad) { acFlag(profile, 'local-edit'); save(); } } } // R2.12: 서명이 틀린 이 기기 기록은 버린다
+  if (b) { const bad = fromStart && !LOCAL_OK && profile.ownerUid === uid; if (fromStart ? (bad || profile.ownerUid !== uid || serverNewer(b)) : true) { useProfile(b.p, b.wid); if (bad) { acFlag(profile, 'local-edit'); save(); } } } // R2.12: 서명이 틀린 이 기기 기록은 버린다
   else {
     const r1 = await fetchR1();
     if (r1) { useProfile(importR1(r1)); banner('지후배틀 기록을 가져왔어요'); }
@@ -8968,6 +8979,9 @@ const PATCH_NOTES = [
     ] },
     { title: '버그 수정', items: [
       { id: 'teemo', name: '티모 지후', tag: 'fix', desc: '[강화 실명 다트]가 사라지지 않고 맵에 계속 남던 버그를 고쳤어요.' },
+      { icon: '💾', name: '계정 백업', tag: 'fix', desc: '다른 기기로 켰을 때 그 기기에 남아 있던 <b>예전 기록</b>(낮은 레벨 등)이 서버 기록을 덮어쓰던 버그를 고쳤어요.' },
+      { icon: '🏷️', name: '효과 아이콘', tag: 'fix', desc: '쓰러진 지후의 효과 아이콘이 전장에 계속 남던 버그를 고쳤어요.' },
+      { icon: '⚡', name: '전투 렉', tag: 'fix', desc: '신규 지후 이펙트 · 범위 피해 숫자 · 화면 다시 그리기를 줄여 유닛이 많을 때 렉을 줄였어요.' },
     ] },
   ] },
   { v: 'R2.17.2', date: '2026.11.03', title: '대규모 공/체 보정 밸런스 패치', sections: [
@@ -10686,7 +10700,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { botDeckRamp, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { botDeckRamp, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
