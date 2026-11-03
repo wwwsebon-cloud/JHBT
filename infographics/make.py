@@ -24,6 +24,8 @@ JSON 형식
 }
 신규 지후 인포그래픽 (R2.17.2): { "type": "newchars", "version", "date", "title", "subtitle", "chars": [ { "id", "name", "rarity", "role", "hp", "atk", "atkText",
   "atkSpeed", "range", "noAttack", "community", "passive", "skill" } ] } — 설명의 ⟦..⟧ 는 강조 · 지후 수에 맞춰 1 · 2 · 3 · 4단 (8명 넘으면 여러 장)
+티어표 (R2.17.2): { "type": "tierlist", "version", "date", "title", "subtitle", "note": "아래 설명",
+  "tiers": [ { "t": "S", "ids": [ { "id": "fire", "wr": 64.5, "rarity": "common" } ] } ] } — 줄마다 티어 칸 + 초상화 (이름 · 표시 승률)
 "headline" (예전 상단 요약 카드) 는 더 이상 그리지 않는다 (있어도 무시).
 """
 import html
@@ -119,6 +121,17 @@ body.dark .it p { color:var(--sub); }
 .nc .ab p { font-size:var(--tf); line-height:1.55; font-weight:600; color:var(--sub); word-break:keep-all; } .nc .ab p b { color:var(--gold); font-weight:900; }
 .nc.one { flex-direction:row; align-items:flex-start; gap:30px; } .nc.one .side { flex:none; width:300px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; } .nc.one .main { flex:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
 .nc.one .tags { justify-content:center; }
+/* 티어표 */
+.tr { display:flex; align-items:stretch; margin-top:16px; border-radius:20px; overflow:hidden; background:var(--card); border:2px solid var(--edge); box-shadow:0 6px 0 #0f1424; }
+.tr .tl2 { flex:none; width:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#141a2b; background:var(--tc); }
+.tr .tl2 b { font-family:'Black Han Sans', sans-serif; font-weight:400; font-size:74px; line-height:1; } .tr .tl2 small { font-size:14px; font-weight:900; opacity:.75; }
+.tr.S { --tc:#ff5f5f; } .tr.A { --tc:#ffad33; } .tr.B { --tc:#ffd84a; } .tr.C { --tc:#7ee05a; } .tr.D { --tc:#6fb2ff; }
+.tr .ps { flex:1; display:flex; flex-wrap:wrap; gap:16px 10px; padding:18px 20px; align-content:center; }
+.tc { width:112px; display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; }
+.tc .pp { width:88px; height:88px; border-radius:50%; overflow:hidden; background:#fff; border:4px solid var(--rc, #c9c9c6); box-shadow:0 0 0 3px #0c1020; }
+.tc.r-rare { --rc:#4f9dff; } .tc.r-epic { --rc:#b26bff; } .tc.r-legend { --rc:#ffc21a; }
+.tc b { font-size:15px; font-weight:900; color:#fff; line-height:1.15; word-break:keep-all; } .tc small { font-size:13px; font-weight:800; color:var(--mut); }
+.tnote { margin-top:22px; font-size:15px; line-height:1.6; font-weight:600; color:var(--mut); }
 """
 
 
@@ -213,7 +226,7 @@ def head(d, page='', chars=None):
     chars = ''.join(f'<span>{pic(i)}</span>' for i in (chars or d.get('chars', ['fire', 'ice', 'sword', 'assassin', 'shield'])))
     sub = f'<p>{e(d["subtitle"])}</p>' if d.get('subtitle') else ''
     pg = f'<span class="pg">{e(page)}</span>' if page else ''
-    kind = 'NEW JIHOO' if d.get('type') == 'newchars' else 'UPDATE NOTE'
+    kind = {'newchars': 'NEW JIHOO', 'tierlist': 'TIER LIST'}.get(d.get('type'), 'UPDATE NOTE')
     return f"""<div class="meta"><span>RE : 지후배틀</span><i></i><span>{kind}</span><span class="sp"></span><span class="d">{e(d['date'])}</span></div>
   <div class="hd"><div class="ver">{e(d["version"])}</div><div class="tt"><h1>{e(d["title"])}</h1>{sub}</div>{pg}<div class="chars">{chars}</div></div>"""
 
@@ -229,6 +242,8 @@ def doc(d, w, body, extra_style='', cls=''):
 def build(d):  # → [html, ...] (장마다 하나)
     if d.get('type') == 'newchars':
         return build_new(d)
+    if d.get('type') == 'tierlist':
+        return build_tier(d)
     w, cols = int(d.get('width', 1080)), int(d.get('cols', 1))
     style = f'--cols:{cols}; --tw:168px; --nw:{120 if cols == 1 else 140}px;'
     tiles, other = [], []
@@ -294,6 +309,26 @@ def build_new(d):
         body = head(d, page, [c['id'] for c in pc[:5]]) + f'<div class="ncg">{cards}</div>'
         out.append(doc(d, w, body, f'--nc:{cols}; --pp:{pp}px; --nf:{nf}px; --tf:{tf}px;', 'dark'))
     return out
+
+
+# ── R2.17.2 티어표 ──
+def short(n):
+    return re.sub(r' ?지후$', '', n or '') or n
+
+
+def tier_card(c):  # 초상화 · 이름 · 표시 승률
+    wr = f'<small>{c["wr"]:.1f}%</small>' if c.get('wr') is not None else ''
+    return f'<div class="tc r-{c.get("rarity", "")}"><span class="pp">{pic(c["id"])}</span><b>{e(short(c.get("name") or NAMES.get(c["id"], c["id"])))}</b>{wr}</div>'
+
+
+def build_tier(d):
+    rows = []
+    for t in d['tiers']:
+        cards = ''.join(tier_card(c) for c in t['ids'])
+        rows.append(f'<div class="tr {e(t["t"])}"><div class="tl2"><b>{e(t["t"])}</b><small>{len(t["ids"])}기</small></div><div class="ps">{cards}</div></div>')
+    note = f'<p class="tnote">{e(d["note"])}</p>' if d.get('note') else ''
+    top = [c['id'] for c in d['tiers'][0]['ids'][:5]] if d['tiers'] else None
+    return [doc(d, int(d.get('width', 1920)), head(d, '', top) + ''.join(rows) + note, '', 'dark')]
 
 
 def main():
