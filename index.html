@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="15"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.18"><meta name="jihoo-build" content="16"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3693,10 +3693,10 @@ const CHARS = {
       S.zones.push({ side: u.side, foe: true, u, x: u.x, y: u.y, r, left: r6 ? 10 : 8, el, dps: 40 * u.mult, acc: 0, buff: { key: 'rad', v: { atk: -0.2 } } }); } },
   antigrav: { name: '반중력 지후', rarity: 'legend', role: '보조형', hp: 1260, atk: 20, atkSpeed: 2, range: 5.5, speed: 1.6, portrait: PORTRAITS.antigrav, sfx: 'shot', color: '#e48af0',
     story: '왕궁 천문대 지붕에서 거꾸로 매달려 사는 지후입니다. 별 지후가 망원경을 들여다보던 밤, 하늘에서 거꾸로 떨어졌다고 해요. 그는 땅이 위에 있는 것처럼 걸어 다니고, 그의 손이 닿은 물건은 둥실 떠오르다가 둘로 나뉘어 버립니다. 왕국에 같은 지후가 1호, 2호, 3호… 이렇게 많은 게 사실은 그 때문이라는 소문도 있지만, 본인은 고개를 갸웃할 뿐이에요. 화염 지후 314호도 혹시 그의 손을 탄 것이 아니냐는 이야기에 국왕은 몹시 언짢아했다고 합니다.',
-    passive: '일반 공격이 대상을 <b>0.5초</b> 동안 [잠금]합니다 (움직일 수 없습니다). 라운드가 시작하면 무작위 아군 하나(자신 제외)에게 [반중력]을 겁니다. [반중력]에 걸린 아군은 <b>4초</b> 뒤 체력이 절반인 <b>둘</b>로 나뉩니다 (그 라운드만).',
+    passive: '일반 공격이 대상을 <b>0.5초</b> 동안 [잠금]합니다 (움직일 수 없습니다). 라운드가 시작하면 무작위 아군 하나(자신 · 다른 반중력 지후 제외)에게 [반중력]을 겁니다. [반중력]에 걸린 아군은 <b>4초</b> 뒤 체력이 절반인 <b>둘</b>로 나뉩니다 (그 라운드만).',
     onHit(u, t, A) { if (t.alive) A.status(t, 'lock', 0.5); },
     tick(u, dt, A) { if (u.agDone) return; u.agDone = true; if (u.agSplit) return; // 라운드 시작 때 한 번 (분열체는 안 건다)
-      const L = friends(u).filter(a => a !== u && !a.summoner && !a.small && !(a.st.antigrav > 0)); if (!L.length) return;
+      const L = friends(u).filter(a => a !== u && a.id !== 'antigrav' && !a.summoner && !a.small && !(a.st.antigrav > 0)); if (!L.length) return; // build 16: 반중력 지후에게는 걸지 않는다
       const a = L[Math.floor(rng() * L.length)]; A.status(a, 'antigrav', 4); a.agBy = u; if (!S.fast) dmgNum(a, '🪐 반중력', { crit: true }); A.later(4, () => antigravSplit(a)); } },
   teemo: { name: '티모 지후', rarity: 'epic', role: '컨트롤러', hp: 1370, atk: 70, atkSpeed: 1, range: 6.4, speed: 1.6, shotCls: 'dart', portrait: PORTRAITS.teemo, sfx: 'shot', color: '#7cb342',
     story: '왕국 서쪽 숲의 정찰병 지후입니다. 고양이 귀 모자에 빨간 고글을 쓰고, 대나무 대롱으로 다트를 불어요. 황사 지후의 반란군이 숲을 지나갈 때 덤불 속에서 다트를 날려 절반을 길 잃게 만든 것도 그였습니다. 다트 끝에 바르는 독은 독 지후에게서 받아 오는데, 값을 묻자 「대장 지시라서요」라는 말만 남기고 사라졌다고 해요. 소탕군 모집 공고는 숲에 붙지 않아서 그는 아직 반란이 일어난 줄도 모릅니다.',
@@ -4167,7 +4167,7 @@ const CHAR_INFO = {
   chicken: [['달걀', '일반 공격 · 투사체'], ['부화', '맞으면 6% · 원본 체력의 40% · 공격력 그대로 · 라운드가 끝나면 사라진다 · 부화한 닭의 달걀은 부화하지 않는다']],
   pan: [['후라이팬', '반지름 = 몸 + 0.7칸 · 110° · 4.5초에 한 바퀴'], ['맞으면', '공격력 100% 피해 · 7칸 넉백 · 다시 치기까지 0.4초'], ['일반 공격', '없음 (적에게 다가가기만)']],
   radiation: [['방사능', '1초마다 · 반경 3칸 · 적 모두 · 공격력 100% (일반 공격 대신)'], ['방사능 지대', '쓰러진 자리 · 8초 · 반지름 2.2칸 · 적 초당 40 피해 (레벨 배율) · 공격력 −20%']],
-  antigrav: [['일반 공격', '[잠금] 0.5초 (움직일 수 없다)'], ['[반중력]', '라운드 시작 · 무작위 아군 하나 (자신 · 소환체 제외)'], ['분열', '4초 뒤 · 체력 · 최대 체력이 절반인 둘 · 그 라운드만 (둘째는 배치 기록에 없다)']],
+  antigrav: [['일반 공격', '[잠금] 0.5초 (움직일 수 없다)'], ['[반중력]', '라운드 시작 · 무작위 아군 하나 (자신 · 다른 반중력 지후 · 소환체 제외)'], ['분열', '4초 뒤 · 체력 · 최대 체력이 절반인 둘 · 그 라운드만 (둘째는 배치 기록에 없다)']],
   teemo: [['실명 다트', '25% · [눈가림] 3초 · 일반 공격 50% 빗나감'], ['[강화 실명 다트]', 'SP 9 · [눈가림] 3초 75% 확정 + [중독] 5초 · 1초마다 공격력 50%']],
   rain: [['[가랑비]', 'SP 8 · 모든 적 공격력 220% · 이동속도 −40% 3초'], ['회복', '모든 아군 · 3초 · 1초마다 공격력 100%'], ['패시브', '[가랑비] 뒤 1.5초 공격 불가']],
   nou: [['[NO U]', 'SP 6 · 2초 · 받는 피해 100% 반사 (자신은 0)'], ['디버프', '마지막으로 나를 공격한 상대에게 대신 걸린다'], ['그동안', '공격은 하지만 SP 는 차지 않는다'], ['NO U 끼리', '[NO U] 중 서로 치면 둘 다 튕겨 나가 즉사']],
@@ -9016,7 +9016,7 @@ const PATCH_NOTES = [
       { icon: '🧪', name: '샌드박스', tag: 'system', desc: '갓지후를 <b>Lv6</b> (트루폼)으로 출전시킬 수 있어요.' },
       { icon: '🔢', name: '랭크 표시', tag: 'system', desc: '지후 카드의 랭크를 <b>동그라미 안 숫자</b>로 · 매치 인트로와 전투 중 양쪽 덱에도 <b>랭크</b>를 보여 줘요.' },
       { icon: '📱', name: '중복 로그인', tag: 'system', desc: '같은 계정을 다른 창 · 기기에서 켜면 <b>새로 연 쪽</b>이 우선이에요. 먼저 켠 창은 <b>새로고침</b>해야 다시 플레이할 수 있어요.' },
-      { icon: '⚖️', name: '밸런스 패치', tag: 'adjust', desc: '지후 <b>25종</b> 조정 · 충전 지후 리워크 — 솔렘라멘트 · 블리자드 · 회오리 등 너무 강했던 지후는 낮추고, 얼음 · 버블 · 포식 등 약했던 지후는 올렸어요.' },
+      { icon: '⚖️', name: '밸런스 패치', tag: 'adjust', desc: '지후 <b>26종</b> 조정 · 충전 지후 리워크 — 솔렘라멘트 · 블리자드 · 회오리 등 너무 강했던 지후는 낮추고, 얼음 · 버블 · 포식 등 약했던 지후는 올렸어요.' },
     ] },
     { title: '신규 지후', items: [
       { id: 'bbgun', name: 'BB탄 지후', tag: 'new', desc: '영웅 · 딜러 · HP <b>1,300</b> · ATK <b>200</b> · <b>2.3초</b> · 사거리 <b>6</b> — 일반 공격이 맞은 적에게서 가장 가까운 적에게 (거리 제한 없이) 최대 <b>2번</b> 튕겨요 (튕길 때마다 공격력 <b>−30%</b>).' },
@@ -9042,6 +9042,7 @@ const PATCH_NOTES = [
       { id: 'lightning', name: '번개 지후', tag: 'adjust', desc: '체력 <b>1,240 → 640</b> · 공격력 <b>80 → 60</b> · 사거리 <b>5.2 → 3.5</b> · [낙뢰] 피해 <b>1000% → 1350%</b>' },
       { id: 'levelup', name: '레벨업 지후', tag: 'buff', desc: '체력 <b>1,950 → 2,150</b> · 레벨이 오르면 체력을 <b>최대치</b>로 회복 (예전 30%) · Lv2 · Lv3 능력치를 지금 기본 능력치에 맞춤 (예전엔 레벨이 오르면 오히려 약해졌어요)' },
       { id: 'charge', name: '충전 지후', tag: 'rework', desc: '체력 <b>940 → 1,140</b> · <b>[패시브]</b> 반경 <b>5칸</b> 충전 범위 — 안의 아군 SP 를 <b>0.5초</b>마다 최대 SP 의 <b>8%</b> · <b>[스킬]</b> SP 11 <b>[급속 충전]</b>: 가장 가까운 아군 SP 를 바로 가득 (예전: SP 3 · 반경 6칸 SP +1)' },
+      { id: 'antigrav', name: '반중력 지후', tag: 'adjust', desc: '[반중력]을 다른 <b>반중력 지후</b>에게는 걸지 않아요.' },
       { id: 'god', name: '갓지후', tag: 'buff', desc: '공격력 <b>121 → 151</b>' },
       { id: 'bullet', name: '탄환 지후', tag: 'buff', desc: '공격 간격 <b>2.4 → 2초</b> · 공격력 <b>175 → 190</b>' },
       { id: 'devour', name: '포식 지후', tag: 'buff', desc: '공격력 <b>100 → 160</b>' },
