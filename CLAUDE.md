@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 3).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 4).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -93,6 +93,7 @@
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
 ## 최근 변경 (R2.20)
+- build 4: 전투 배경음악 Sagöl (`bgm/battle.mp3`) 삭제 → `bgm/troll.mp3` · `bgm/lounge.mp3` 무작위 (`BGM_SRC.battle` 배열 · 판마다 새로 · 끝나면 다른 곡 · 들은 위치는 파일별 `bgm.pos`) · 곡 크기는 `BGM_GAIN` 으로 예전 곡 RMS −17.2dB 에 맞춤 (새 곡을 넣으면 RMS 를 재서 넣는다).
 - build 3: 백업 강화 · JHBT 계정 창 · 가입 보상 선택 전설 · DJ ATK 30 → 67.5 · 출격제한 1 · 모노리스 범위 밖 0.25 → 0.5% · DJ 파동 · 모노리스 레이저 캔버스 · 격자 transform (위 「계정」 · 「성능 규칙」).
 - 신규 지후 8종 (CHARS 끝 · 도우미는 `reapFx` 바로 앞 `// ── R2.20 신규 지후 도우미 ──`):
   - **개구리** `frog`: 레벨이 오르면 (`levelUp` · `moveTile` 합체 → `frogEvolve`) 35% 왕자 · 65% 배치 칸에서 지운다 · 다른 방법으로 오른 개구리는 전투 시작 `frogSweep` · 친선전은 `hashSeed(seed, 'frog', actKey() …)`.
