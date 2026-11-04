@@ -78,7 +78,7 @@
 - 지후마다 자세한 서사 연결은 `docs/CLAUDE-history.md` 의 「세계관 · 서사」와 각 버전 서사 항목.
 
 ## 시뮬 · 티어
-- `tools/tier-5v5.js` (무작위 10기 5:5 · Lv1 · 60초 판정 · Bradley-Terry 점수 · k-평균으로 S~D). 헤드리스: `%TEMP%/ld/bprun.js <tier-5v5.js> index.html <포트> <판수> <out.json>` (전투 시간도 기록 · R2.18 build 16 에서 1,000판 약 5분 · 판 시드가 고정이라 N 을 늘리면 앞 판은 그대로 두고 뒤에 더 붙는다). 지금 `TIER_SC` · `infographics/tier-R2.19` 은 R2.19 · 613판 (1,000판 중 사용자 요청으로 중단).
+- `tools/tier-5v5.js` (무작위 10기 5:5 · Lv1 · 60초 판정 · Bradley-Terry 점수 · k-평균으로 S~D). 헤드리스: `%TEMP%/ld/bprun.js <tier-5v5.js> index.html <포트> <판수> <out.json>` (전투 시간도 기록 · R2.18 build 16 에서 1,000판 약 5분 · 판 시드가 고정이라 N 을 늘리면 앞 판은 그대로 두고 뒤에 더 붙는다). 지금 `TIER_SC` · `infographics/tier-R2.21` 은 R2.21 · 778판 (1,000판 중 사용자 요청으로 중단 · R2.20 신규 지후 포함).
 - 결과로 `TIER_SC` (S 80~100 · A 65~79 · B 40~64 · C 20~39 · D 0~19) 를 갱신한다.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
@@ -116,6 +116,6 @@
   - **아케인** `arcane`: `def.lifesteal` 0.3 (dealDamage · 체력 피해만 · 넘친 피해 제외) · SP 4 `arcaneBlink`.
 - 밸런스: 탄환 ATK 190 → 160 · [최후의 탄환] 체력 손실 16 → 19%.
 - 테스트 훅에 `levelUp` · `moveTile` · `frogEvolve` · `djBlast` · `setRng` 추가. 인포그래픽 `make.py` 밸런스 머리 숫자는 지후 수로.
-- 신규 지후 `TIER_SC` 는 아직 없다 (50 = B 로 본다) · 랭크 6 고유능력도 아직.
+- 신규 지후 랭크 6 고유능력은 아직 (`TIER_SC` 는 R2.21 시뮬로 들어갔다).
 
 
