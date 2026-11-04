@@ -97,7 +97,7 @@ body.dark .it p { color:var(--sub); }
   color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.32); background:linear-gradient(180deg, #5fdc3a, #2fae1c); box-shadow:inset 0 2px 0 rgba(255,255,255,.28), 0 5px 0 #0c1020; }
 .tl.adjust .rb { background:linear-gradient(180deg, #ffad33, #e57a00); } .tl.nerf .rb { background:linear-gradient(180deg, #ff5a4e, #d8261c); }
 .tl .nm { font-size:13px; font-weight:900; letter-spacing:.01em; opacity:.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tl .ln { font-size:17px; font-weight:900; letter-spacing:-.02em; line-height:1.22; white-space:nowrap; }
+.tl .ln { font-size:17px; font-weight:900; letter-spacing:-.02em; line-height:1.22; word-break:keep-all; overflow-wrap:anywhere; } .tl .ln .v { white-space:nowrap; } /* R2.20: 긴 수치 줄은 줄바꿈 (값 「a → b」는 붙여서) */
 .tl .ln small { font-size:13px; font-weight:800; opacity:.88; margin-right:4px; } .tl .ln s { text-decoration:none; opacity:.72; font-size:.86em; } .tl .ln i { font-style:normal; margin:0 3px; opacity:.75; }
 .tl .tx { font-size:13.5px; font-weight:800; line-height:1.28; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .tl.dense .ln { font-size:15px; } .tl.dense .ln small { font-size:12px; } .tl.dense .tx { font-size:12.5px; }
@@ -200,7 +200,8 @@ TAG_ORDER = {'nerf': 0, 'adjust': 1, 'buff': 2}
 def tile_line(l):
     if 'stat' in l:
         fu = l.get('unit', '') if isinstance(l['from'], (int, float)) else ''
-        return f'<span class="ln"><small>{e(l["stat"])}</small><s>{e(fmt(l["from"]))}{e(fu)}</s><i>→</i>{e(fmt(l["to"]))}{e(l.get("unit", ""))}</span>'
+        v = ' class="v"' if len(f'{l["from"]}{l["to"]}') <= 16 else ''  # 값이 짧으면 「a → b」를 붙여서 · 길면 그대로 줄바꿈
+        return f'<span class="ln"><small>{e(l["stat"])}</small><span{v}><s>{e(fmt(l["from"]))}{e(fu)}</s><i>→</i>{e(fmt(l["to"]))}{e(l.get("unit", ""))}</span></span>'
     return f'<span class="tx">{e(l["text"])}</span>'
 
 
@@ -264,7 +265,7 @@ def build(d):  # → [html, ...] (장마다 하나)
     chunks, i = [tiles[:first]], first
     while i < len(tiles):
         chunks.append(tiles[i:i + TILE_COLS * TILE_ROWS]); i += TILE_COLS * TILE_ROWS
-    lab = next((s['label'] for s in d['sections'] if s.get('tiles')), '밸런스')
+    labs = list(dict.fromkeys(s['label'] for s in d['sections'] if s.get('tiles'))); lab = ' · '.join(sorted(labs, key=lambda x: x != '밸런스')) or '밸런스'  # R2.20: 리워크 · 밸런스 두 묶음이면 둘 다
     out = []
     for k, ch in enumerate(chunks):
         page = f'{k + 1} / {len(chunks)}' if len(chunks) > 1 else ''
