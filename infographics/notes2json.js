@@ -3,11 +3,11 @@
 //   node infographics/notes2json.js R2.17 --new        → infographics/R2.17-new.json (신규 지후 · 그 버전 패치노트의 tag 'new' 지후)
 //   node infographics/notes2json.js R2.17 --new god rush   (지후를 직접 고르기)
 //   먼저 node infographics/extract.js 로 _data/ 를 만든다
-// 밸런스 항목이 TILE_MIN(30)명 이상이면 "tiles" (5칸 타일 · 여러 장) · 그보다 적으면 예전처럼 "stats" 칩 목록
+// 밸런스 항목은 늘 "tiles" (5칸 타일 · 여러 장 · R2.20: 예전엔 30명 이상일 때만 · 적으면 흰 "stats" 칩 목록이었다) · 테마는 늘 남색 (dark)
 const fs = require('fs'), path = require('path');
 const DATA = path.join(__dirname, '_data'), args = process.argv.slice(2), ver = args[0], NEW = args.includes('--new'), pick = args.slice(1).filter(a => a !== '--new');
 const NOTES = JSON.parse(fs.readFileSync(path.join(DATA, 'patch_notes.json'), 'utf8')), INFO = JSON.parse(fs.readFileSync(path.join(DATA, 'chars_info.json'), 'utf8'));
-const TILE_MIN = 30;
+const TILE_MIN = 1; // R2.20: 30 → 1 (최신 남색 · 타일 레이아웃을 늘 쓴다)
 const strip = h => String(h || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 const num = s => { const t = String(s).replace(/,/g, '').trim(); const m = /^(-?\d+(?:\.\d+)?)\s*(%|초|칸|배)?$/.exec(t); return m ? { v: +m[1], u: m[2] || '' } : null; };
 const STAT_RE = /^(.*?)<b>\s*([^<→]+?)\s*→\s*([^<]+?)\s*<\/b>\.?\s*$/;
@@ -43,5 +43,5 @@ for (const sec of n.sections) { const kind = KIND(sec.title, sec.items), items =
     if (st) stats.push(...st); else items.push({ ...(it.id ? { id: it.id } : { icon: it.icon || '✦' }), title: it.name, lines: [strip(it.desc)] }); }
   const s = { kind, label: sec.title }; if (items.length) s.items = items; if (stats.length) s.stats = stats; if (tiles.length) s.tiles = tiles; secs.push(s); }
 const count = n.sections.reduce((k, s) => k + s.items.length, 0), tiled = secs.some(s => s.tiles);
-const d = { version: n.v, date: n.date, title: n.title, ...(tiled ? { width: 1920, cols: 2, theme: 'dark' } : count > 7 ? { width: 1600, cols: 2 } : {}), ...(chars.length ? { chars: chars.slice(0, 5) } : {}), sections: secs };
+const d = { version: n.v, date: n.date, title: n.title, ...(tiled ? { width: 1920, cols: 2 } : count > 7 ? { width: 1600, cols: 2 } : {}), theme: 'dark', ...(chars.length ? { chars: chars.slice(0, 5) } : {}), sections: secs };
 const out = path.join(__dirname, n.v + '.json'); fs.writeFileSync(out, JSON.stringify(d, null, 1)); console.log(out, count + ' items' + (tiled ? ' · tiles' : ''));
