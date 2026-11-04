@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.20"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.20"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -7924,8 +7924,9 @@ function dmClose() { if (SOC.dmUnsub) { SOC.dmUnsub(); SOC.dmUnsub = null; } SOC
 // 운영 우편: giftMail { from, to(uid | 'all'), title, body, icon, rewards: [{ kind, amount }], at, expiresAt } — 운영자만 쓴다 · 받으면 claims/<uid> 에 기록
 // R2_EPOCH 보다 먼저 보낸 우편은 R1 우편이라 받지 않는다 (R1 에서 받은 우편 번호는 giftSeen 으로 가져온다)
 const R2_EPOCH = Date.UTC(2026, 9, 21, 15); // 2026.10.22 00:00 (한국 시간)
-const GIFT_KINDS = { diamonds: '◆', gold: '●', epicChar: '랜덤 영웅 지후', legendChar: '랜덤 전설 지후' };
-const rewardText = rs => rs.map(r => r.kind === 'diamonds' ? `◆ ${r.amount.toLocaleString()}` : r.kind === 'gold' ? `● ${r.amount.toLocaleString()}` : `${GIFT_KINDS[r.kind]}${r.amount > 1 ? ' ×' + r.amount : ''}`).join(' · ');
+const GIFT_KINDS = { diamonds: '◆', gold: '●', epicChar: '랜덤 영웅 지후', legendChar: '랜덤 전설 지후', char: '지후' }; // char: 정해진 지후 하나 { kind: 'char', id, amount } (R2.20)
+const giftOk = r => !!(r && GIFT_KINDS[r.kind] && (r.kind !== 'char' || CHARS[r.id])); // 이 버전이 아는 보상인가
+const rewardText = rs => rs.map(r => r.kind === 'diamonds' ? `◆ ${r.amount.toLocaleString()}` : r.kind === 'gold' ? `● ${r.amount.toLocaleString()}` : `${r.kind === 'char' && CHARS[r.id] ? CHARS[r.id].name : GIFT_KINDS[r.kind]}${r.amount > 1 ? ' ×' + r.amount : ''}`).join(' · ');
 function addMail(m) { profile.mail = [...(profile.mail || []), { id: m.gid || 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: Date.now(), claimed: false, ...m }].slice(-60); }
 async function checkGiftMail() {
   if (!FB.on || !isMember() || ON.giftBusy) return; ON.giftBusy = true;
@@ -7933,9 +7934,10 @@ async function checkGiftMail() {
     const sdk = FB.sdk, q = to => sdk.getDocs(sdk.query(sdk.collection(FB.db, 'giftMail'), sdk.where('to', '==', to)));
     const [a, b] = await Promise.all([q(myUid()), q('all')]), seen = new Set(profile.giftSeen); let n = 0;
     [...a.docs, ...b.docs].map(d => ({ id: d.id, ...d.data() })).filter(g => !seen.has(g.id) && ts(g.at) >= R2_EPOCH).sort((x, y) => ts(x.at) - ts(y.at)).forEach(g => {
+      if ((Array.isArray(g.rewards) ? g.rewards : []).some(r => r && !giftOk(r))) return; // R2.20: 모르는 보상 (새 지후 등) 이 있으면 받은 것으로 치지 않고 남겨 둔다 (업데이트 뒤에 받는다)
       seen.add(g.id);
       if (Number(g.expiresAt) > 0 && Number(g.expiresAt) < Date.now()) return;
-      const rewards = (Array.isArray(g.rewards) ? g.rewards : []).filter(r => r && GIFT_KINDS[r.kind] && nat(r.amount) > 0).map(r => ({ kind: r.kind, amount: Math.min(1e7, nat(r.amount)) }));
+      const rewards = (Array.isArray(g.rewards) ? g.rewards : []).filter(r => giftOk(r) && nat(r.amount) > 0).map(r => ({ kind: r.kind, amount: Math.min(r.kind === 'char' ? 10 : 1e7, nat(r.amount)), ...(r.kind === 'char' ? { id: r.id } : {}) }));
       addMail({ icon: String(g.icon || '🎁').slice(0, 4), title: String(g.title || '운영 우편').slice(0, 40), body: String(g.body || '').slice(0, 300), rewards, gid: g.id, exp: Number(g.expiresAt) > 0 ? Number(g.expiresAt) : 0 }); n++;
     });
     profile.giftSeen = [...seen].slice(-300);
@@ -7950,6 +7952,7 @@ function claimMail(m) { // 받은 지후는 뽑기 연출로
   m.claimed = true; const got = [];
   (m.rewards || []).forEach(r => {
     if (r.kind === 'diamonds') profile.dia += r.amount; else if (r.kind === 'gold') profile.gold += r.amount;
+    else if (r.kind === 'char' && CHARS[r.id]) { for (let i = 0; i < r.amount; i++) { const isNew = grantChar(r.id); got.push({ id: r.id, isNew, seenBefore: !isNew }); } } // 정해진 지후 (이미 있으면 조각)
     else if (r.kind === 'epicChar' || r.kind === 'legendChar') { const pool = byRarity(r.kind === 'epicChar' ? 'epic' : 'legend'); for (let i = 0; i < r.amount && pool.length; i++) { const id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); got.push({ id, isNew, seenBefore: !isNew }); } }
   });
   if (m.gid && isMember()) FB.sdk.setDoc(FB.sdk.doc(FB.db, 'giftMail', String(m.gid), 'claims', myUid()), { name: (profile.nick || '?').slice(0, 12), at: FB.sdk.serverTimestamp() }).catch(() => {});
@@ -8341,6 +8344,7 @@ function renderAdmin(msg = '') {
   return `<div class="setrow" style="flex-direction:column;align-items:stretch;gap:8px"><b>운영 도구</b>
     <input class="accin" id="admTo" placeholder="받는 사람 닉네임 (모두에게는 all)"><input class="accin" id="admTitle" maxlength="40" placeholder="우편 제목"><input class="accin" id="admBody" maxlength="300" placeholder="내용">
     <div style="display:flex;gap:8px"><input class="accin" id="admDia" type="number" min="0" placeholder="◆"><input class="accin" id="admGold" type="number" min="0" placeholder="●"></div>
+    <input class="accin" id="admChar" maxlength="20" placeholder="지후 (이름 · 예: 탄환 · 비우면 없음)">
     <button class="btn primary" id="admSend">우편 보내기</button>
     <input class="accin" id="admAnn" maxlength="200" placeholder="로비 공지 (비우면 내림)" value="${esc(ON.ann || '')}"><button class="btn" id="admAnnGo">공지 올리기 · 내리기</button>
     <button class="btn" id="admMaint">${ON.maint && ON.maint.on ? '점검 끝내기' : '점검 시작 (운영자 말고 모두 막힘)'}</button>
@@ -8363,7 +8367,9 @@ function bindAdmin() {
     if (!to || !title) return say('받는 사람과 제목을 넣어 주세요.');
     let uid = 'all'; if (to.toLowerCase() !== 'all') { const d = await nickDoc(to); if (!d || !d.owner) return say('그 닉네임의 계정이 없어요.'); uid = d.owner; }
     const rewards = []; if (dia) rewards.push({ kind: 'diamonds', amount: dia }); if (gold) rewards.push({ kind: 'gold', amount: gold });
-    try { await FB.sdk.addDoc(FB.sdk.collection(FB.db, 'giftMail'), { from: myUid(), to: uid, title, body, icon: '🎁', rewards, at: FB.sdk.serverTimestamp() }); say(`보냈어요 → ${uid === 'all' ? '모두' : to}`); }
+    const cq = $('admChar').value.trim().replace(/\s*지후$/, ''), cid = cq && Object.keys(CHARS).find(id => id === cq || CHARS[id].name.replace(/\s*지후$/, '') === cq); // R2.20: 정해진 지후 하나
+    if (cq && !cid) return say('그 이름의 지후가 없어요.'); if (cid) rewards.push({ kind: 'char', id: cid, amount: 1 });
+    try { await FB.sdk.addDoc(FB.sdk.collection(FB.db, 'giftMail'), { from: myUid(), to: uid, title, body, icon: '🎁', rewards, at: FB.sdk.serverTimestamp() }); say(`보냈어요 → ${uid === 'all' ? '모두' : to}${cid ? ' · ' + CHARS[cid].name : ''}`); }
     catch (e) { say('보내지 못했어요: ' + (e.code || e.message)); }
   };
   $('admAnnGo').onclick = async () => { const msg = $('admAnn').value.trim(); try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'config', 'announce'), { on: !!msg, msg, by: myUid(), at: FB.sdk.serverTimestamp() }); say(msg ? '공지를 올렸어요.' : '공지를 내렸어요.'); } catch (e) { say('실패: ' + (e.code || e.message)); } };
@@ -11022,7 +11028,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
