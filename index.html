@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.20"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.20"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -8510,17 +8510,20 @@ function bindAdmin() {
   $('admMaint').onclick = async () => { const on = !(ON.maint && ON.maint.on); if (on && !(await dlg({ icon: '🛠', title: '서버 점검을 시작할까요?', html: '운영자를 뺀 모든 유저의 화면이 막혀요.', ok: '시작', cancel: '취소' }))) return; try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'config', 'maintenance'), { on, msg: on ? '서버 점검 중이에요. 잠시 후 다시 접속해 주세요.' : '', until: 0, by: myUid(), at: FB.sdk.serverTimestamp() }); renderSettings(); } catch (e) { say('실패: ' + (e.code || e.message)); } };
 }
 
-// ═════════ 배경음악 (R2.13.2: 로비 lobby · 전투 battle (Sagöl) · 크레딧 credits · 결과 화면은 조용히 — 곡마다 들은 위치를 기억한다) ═════════
+// ═════════ 배경음악 (R2.13.2: 로비 lobby · 전투 battle · 크레딧 credits · 결과 화면은 조용히 — 곡마다 들은 위치를 기억한다) ═════════
+// R2.20 build 4: 전투 곡 Sagöl 을 빼고 두 곡 (The Happy Troll · Lounge) 중 무작위 — 판마다 새로 고르고, 곡이 끝나면 다른 곡으로
 const BGM_KEY = 'rejhbt-bgm-vol';
-const BGM_SRC = { lobby: 'bgm/lobby.mp3', battle: 'bgm/battle.mp3', credits: 'bgm/credits.mp3' }; const BGM_MUL = { battle: 0.15 }; // R2.13.2: 인게임(전투) 배경음악은 기본으로 아주 작게 (로비 · 크레딧의 15%)
+const BGM_SRC = { lobby: 'bgm/lobby.mp3', battle: ['bgm/troll.mp3', 'bgm/lounge.mp3'], credits: 'bgm/credits.mp3' }; const BGM_MUL = { battle: 0.15 }; // R2.13.2: 인게임(전투) 배경음악은 기본으로 아주 작게 (로비 · 크레딧의 15%)
+const BGM_GAIN = { 'bgm/troll.mp3': 0.83, 'bgm/lounge.mp3': 0.4 }; // 곡 크기 맞춤: 예전 전투 곡 (RMS −17.2dB) 과 같게 — troll −15.6 · lounge −9.3dB
 const bgmWant = () => document.body.classList.contains('cr-on') ? 'credits' : $('screen-result').classList.contains('active') ? '' : $('screen-battle').classList.contains('active') ? 'battle' : 'lobby';
-const bgm = { el: null, fade: 0, cur: '', sw: 0, pos: {}, vol: (() => { try { const v = localStorage.getItem(BGM_KEY); return v == null ? 50 : clamp(Number(v) || 0, 0, 100); } catch (e) { return 50; } })() };
+const bgm = { el: null, fade: 0, cur: '', src: '', last: '', sw: 0, pos: {}, vol: (() => { try { const v = localStorage.getItem(BGM_KEY); return v == null ? 50 : clamp(Number(v) || 0, 0, 100); } catch (e) { return 50; } })() };
 function bgmTick() {
-  const k = bgm.vol > 0 ? bgmWant() : '', target = bgm.vol / 100 * 0.6 * (BGM_MUL[k] || 1); // 전투(인게임) 곡은 아주 작게
-  if (bgm.el && !bgm.el.paused && bgm.cur !== k) { if (!bgm.sw) { bgm.sw = 1; bgmFade(0, () => { bgm.pos[bgm.cur] = bgm.el.currentTime; bgm.el.pause(); bgm.sw = 0; bgmTick(); }); } return; } // 다른 곡 → 지금 곡을 줄이고 바꾼다
+  const k = bgm.vol > 0 ? bgmWant() : '';
+  if (bgm.el && !bgm.el.paused && bgm.cur !== k) { if (!bgm.sw) { bgm.sw = 1; bgmFade(0, () => { bgm.pos[bgm.src] = bgm.el.ended ? 0 : bgm.el.currentTime; bgm.el.pause(); bgm.sw = 0; bgmTick(); }); } return; } // 다른 곡 → 지금 곡을 줄이고 바꾼다
   if (!k || bgm.sw) return;
-  if (!bgm.el) { bgm.el = new Audio(); bgm.el.loop = true; bgm.el.volume = 0; }
-  if (bgm.cur !== k) { bgm.cur = k; bgm.el.src = BGM_SRC[k]; const t = bgm.pos[k] || 0; if (t) bgm.el.addEventListener('loadedmetadata', () => { try { bgm.el.currentTime = t; } catch (e) {} }, { once: true }); }
+  if (!bgm.el) { bgm.el = new Audio(); bgm.el.volume = 0; bgm.el.addEventListener('ended', () => { bgm.pos[bgm.src] = 0; bgm.last = bgm.src; bgm.cur = ''; bgmTick(); }); } // 여러 곡 (전투) 은 반복하지 않고 끝나면 다른 곡
+  if (bgm.cur !== k) { const L = [].concat(BGM_SRC[k]), pool = L.length > 1 ? L.filter(s => s !== bgm.last) : L; bgm.cur = k; bgm.src = pool[Math.floor(Math.random() * pool.length)]; bgm.last = ''; bgm.el.loop = L.length < 2; bgm.el.src = bgm.src; const t = bgm.pos[bgm.src] || 0; if (t) bgm.el.addEventListener('loadedmetadata', () => { try { bgm.el.currentTime = t; } catch (e) {} }, { once: true }); }
+  const target = bgm.vol / 100 * 0.6 * (BGM_MUL[k] || 1) * (BGM_GAIN[bgm.src] || 1); // 전투(인게임) 곡은 아주 작게
   if (bgm.el.paused) bgm.el.play().then(() => bgmFade(target)).catch(() => {}); else if (!bgm.fade) bgm.el.volume = target;
 }
 setInterval(() => { if (!document.hidden) bgmTick(); }, 1500); // 화면이 바뀌면 곡도 (누르지 않아도)
@@ -9342,6 +9345,7 @@ const PATCH_NOTES = [
       { icon: '💾', name: '계정 백업 강화', tag: 'fix', desc: '켜 두었던 <b>다른 창 · 기기</b>가 깨어나며 <b>옛 기록</b>을 서버에 덮어써 방금 뽑은 지후가 사라질 수 있던 문제를 고쳤어요. 이제 서버 기록이 그사이 바뀌었으면 덮어쓰지 않고, 두 기록이 엇갈리면 <b>어느 기록을 쓸지</b> 물어봐요.' },
       { icon: '🔑', name: 'JHBT 계정', tag: 'system', desc: '메뉴에 <b>JHBT 계정</b> 창이 생겼어요 — 서버 저장 상태 (마지막 저장 · 실패 이유) · UID · Google · 비밀번호 · 계정 전환. 튜토리얼 · 닉네임 화면에 <b>「이미 계정이 있나요?」</b> 버튼도 생겼어요.' },
       { icon: '🎁', name: '가입 보상', tag: 'buff', desc: '회원가입 보상이 <b>랜덤 → 선택 전설 지후 모집권</b>으로 바뀌었어요 (계정당 한 번).' },
+      { icon: '🎵', name: '전투 배경음악', tag: 'new', desc: '전투 배경음악 <b>Sagöl</b> 을 빼고, <b>The Happy Troll</b> (D1ofAquavibe) · <b>Lounge</b> 두 곡 중 하나가 <b>무작위</b>로 나와요 — 판마다 새로 고르고, 곡이 끝나면 다른 곡으로 넘어가요.' },
       { icon: '⚡', name: '성능', tag: 'fix', desc: '<b>DJ 지후</b> 스킬 파동 · <b>모노리스 지후</b> 레이저 때 화면이 끊기던 문제를 고쳤어요 · 전투 중 카메라가 움직일 때 바탕 격자를 다시 그리지 않아요.' },
     ] },
     { title: '신규 지후', items: [
@@ -11172,7 +11176,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { bgm, bgmTick, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>

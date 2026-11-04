@@ -12,7 +12,7 @@
 - `firestore.rules` — Firestore 규칙. 콘솔 → Firestore Database → 규칙에 **파일 전체**를 붙여넣어 게시
 - `infographics/` — 업데이트 인포그래픽 (`make.py` JSON → HTML · `shot.py` HTML → PNG) · R1 시절 인포그래픽은 `infographics/r1/`
 - `tools/discord-webhook-worker/` — 디스코드 알림 중계 (Cloudflare Worker)
-- `emo/` 이모티콘 · `sfx/attack.mp3` 타격음 · `bgm/lobby.mp3` 로비 음악 · `icons/` · `manifest.webmanifest` · `sw.js` (PWA)
+- `emo/` 이모티콘 · `sfx/attack.mp3` 타격음 · `bgm/` 배경음악 (로비 `lobby` · 전투 `troll` · `lounge` 무작위 · 크레딧 `credits`) · `icons/` · `manifest.webmanifest` · `sw.js` (PWA)
 
 ## 릴리스
 
