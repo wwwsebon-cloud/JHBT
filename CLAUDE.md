@@ -25,7 +25,7 @@
 
 ## 인포그래픽 (저장소 `infographics/`)
 - 로컬 서버를 켠 뒤: `node infographics/extract.js` → `node infographics/notes2json.js <버전>` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py "infographics/<버전>*.html"`.
-- 밸런스 지후가 30명 이상이면 자동으로 타일 모드 (여러 장 `<버전>-2.png` …) · 적으면 칩 목록.
+- 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …). 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
 - **신규 지후**: `node infographics/notes2json.js <버전> --new` (그 버전 패치노트의 tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make.py · shot.py.
 - 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로).
 - 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
