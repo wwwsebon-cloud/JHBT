@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.21** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.21.1** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -92,30 +92,14 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.21)
+## 최근 변경 (R2.21.1)
+- 밸런스 9종: DJ ATK 35 · 드래곤 [비행] 5% · 불길 50% · 모노리스 HP 2300 · 레이저 **최대 체력** × 레벨 × 12% (`monoFire`) · 왜곡 50% (`warpOn`) · ATK 50 · 저격 ATK 1000 · 7.5초 · 거리 감소 최대 50% (`sniperCut`) · 마탄 550% · 2.6초 · 탄환 ATK 135 · 슬라임 HP 1200 · 죠스 ATK 200.
+- 봇 조커 (모든 페르소나 · 왕초보 포함): `botDeployOne` 맨 앞에서 조커 카드가 나오면 무조건 합친다 · 변신 `botJoker` 는 배치마다 50% → **`beginCombat` 맨 앞에서 무조건** (등급 · 레벨 · TIER_SC 높은 지후로 · 친선전 · 리플레이 · 튜토리얼 · 샌드박스 제외).
+- 모바일 스크롤: 새 로비 세로 스크롤 칸 (`flex:1; min-height:0; overflow-y:auto` 인 칸) 에 `.u2-scroll` → 자식 `flex-shrink:0` — overflow:hidden 카드가 flex 안에서 줄어 글이 잘리고 스크롤이 안 됐다 (지후 상세). **새 스크롤 칸을 만들면 `class="u2-scroll"` 을 붙인다.**
+
+## 지난 변경 (R2.21)
 - **전투력** `cpParts(p)` · `cpTotal()` (lbPush 바로 앞): 보유 지후 (`profile.owned` 만 · 개발자 모드는 owned 를 안 바꾸니 자연히 빠진다) 등급 점수 `CP_RAR` 일반 100 · 희귀 200 · 영웅 400 · 전설 800 × (1 + 랭크당 10%) + 레벨 × 150 + 승리 (일반 + 친선 + 경쟁) × 10 + 경쟁전 티어 번호 × 1,000 + 탑 최고 층 × 50. 프로필 「전적」 탭 맨 위 `cpHtml` (`.u2-cp`) · 프로필 이름 아래 한 줄 · 유저 정보 (경험치 칸 → 전투력).
 - 리더보드 `cp` 탭 (`r2lb` 문서에 `cp` · 규칙 게시 전이면 `FB.noCp` 로 빼고 올린다 → 탭은 「규칙을 아직 게시하지 않았어요」) · 새 로비 랭킹 탭 6칸.
 - 밸런스 11종 (왜곡 영웅 · 블리자드 · 태양 · 티타늄 · 구미호 · 모노리스 스스로 충전 + 아군 절반 · 아케인 · 후라이팬 · 독 [약화] 40% · 돌격 · 저격).
 - 봇 인접 배치 (위 「게임 규칙 요약」) · 서사 92개 오버홀 (왕자 포함).
 - 길드는 사용자 요청으로 아직 만들지 않았다 (만들 때: 생성 ●20,000 · 탈퇴 뒤 24시간 재가입 · 생성 금지 · 최대 5명 · 길드마스터 / 부길드마스터 · 폭파 · 길드 랭킹은 길드원 전투력 합).
-
-## 지난 변경 (R2.20)
-- build 6: 아케이드 상점 `ARC_SHOP` — 임테기 1P (하루 3) · 고급 임테기 시즌 5 · `dia120` ◆120 1P 하루 3 (예전 `dia50` 한도 없음) · `gold6000` ●6,000 12P 시즌 10 (`arcBuy` 에 `give.gold`).
-- build 5: **초보자 모집** (`CFG.NB_GACHA` 전설 3% · `NB_PULL10` ◆950 · `NB_PULLS` 50 · `profile.nbPulls` · 50번째 `rollLegend` 확정 · 일반 천장 `pity` 는 건드리지 않음 · `pull(10, false, true)` · 결과 요약 `GR.again = 'nb'`) · 새 로비 상점 확률 칩은 `CFG.GACHA` 에서 (예전엔 1.5% 로 박혀 있었다) · 전투 곡 `BGM_MUL.battle` 0.9 (`BGM_GAIN` 삭제 · 원래 곡 크기).
-- build 4: 전투 배경음악 Sagöl (`bgm/battle.mp3`) 삭제 → `bgm/troll.mp3` · `bgm/lounge.mp3` 무작위 (`BGM_SRC.battle` 배열 · 판마다 새로 · 끝나면 다른 곡 · 들은 위치는 파일별 `bgm.pos`) · (build 5 에서 곡 크기 맞춤은 뺐다 — 원래 크기 × 0.9).
-- build 3: 백업 강화 · JHBT 계정 창 · 가입 보상 선택 전설 · DJ ATK 30 → 67.5 · 출격제한 1 · 모노리스 범위 밖 0.25 → 0.5% · DJ 파동 · 모노리스 레이저 캔버스 · 격자 transform (위 「계정」 · 「성능 규칙」).
-- 신규 지후 8종 (CHARS 끝 · 도우미는 `reapFx` 바로 앞 `// ── R2.20 신규 지후 도우미 ──`):
-  - **개구리** `frog`: 레벨이 오르면 (`levelUp` · `moveTile` 합체 → `frogEvolve`) 35% 왕자 · 65% 배치 칸에서 지운다 · 다른 방법으로 오른 개구리는 전투 시작 `frogSweep` · 친선전은 `hashSeed(seed, 'frog', actKey() …)`.
-  - **왕자** `prince` (숨은 항목): 근접 cleave · `onHit` 15% 미만 `instaKill` · `atkMult` 공격 한 번에 +5% · `onDeath` 아군 버프 `royal<uid>`.
-  - **모노리스** `monolith` (출격제한 1): `u.mn` 충전 (4.5칸 안 아군 초당 4% · 밖 2% · build 3) → 2초 차징 (`portraitCharge`) → 무작위 적 5기 현재 체력 × 레벨 × 10% · 빛줄기는 캔버스 `monoDraw` (loop · 초당 30번 · 전투가 끝나면 지운다) · 머리 위 % 는 `.xlv.mono`.
-  - **엑시노스** `exynos`: 십자 칸 아군 `u.gpu` · `gpuTick` 이 `buffs.gpu` 를 직접 고친다 (spd · atk · dodge · crit · critDmg 최대 0.5) · 치명타 계산이 `crit` · `critDmg` 버프를 본다 · 10초 뒤 근접 일반 공격한 적 `gpuBurn` (dealDamage 끝).
-  - **엔지니어** `engineer` + 소환체 **포탑** `turret` (SUMMONS · 움직이지 않음 · `invMass` 0): `engTick` 5초 설치 (steer 로 멈춤) → `engPlace` · 다음 설치 10초 뒤 (15초마다).
-  - **왜곡** `warp`: SP 7 · `warpCast` 반경 5.2칸 · `t.wp` (아군 +25% · 적 −25% · `warpSet` 이 최대 체력 `baseMaxHp` 와 현재 체력을 5초 동안 선형으로 되돌린다) · 상태 `warpUp` · `warpDn`.
-  - **저격** `sniper`: `bonus` 로 거리 비례 −80% (`sniperCut`).
-  - **DJ** `dj`: 일반 공격 `djWave` (5.7칸 · SP 1) · SP 12 `djBlast` × 4 (0.5초 · 15칸 · `DJ_WAVES` 8색 · 스킬 파동은 테두리 0.8칸) · 이펙트는 `fx-emp-wave` 재사용 (`fxRoom` 한도).
-  - **아케인** `arcane`: `def.lifesteal` 0.3 (dealDamage · 체력 피해만 · 넘친 피해 제외) · SP 4 `arcaneBlink`.
-- 밸런스: 탄환 ATK 190 → 160 · [최후의 탄환] 체력 손실 16 → 19%.
-- 테스트 훅에 `levelUp` · `moveTile` · `frogEvolve` · `djBlast` · `setRng` 추가. 인포그래픽 `make.py` 밸런스 머리 숫자는 지후 수로.
-- 신규 지후 랭크 6 고유능력은 아직 (`TIER_SC` 는 R2.21 시뮬로 들어갔다).
-
-
