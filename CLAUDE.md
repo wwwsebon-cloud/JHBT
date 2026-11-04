@@ -97,7 +97,7 @@
 - 신규 지후 8종 (CHARS 끝 · 도우미는 `reapFx` 바로 앞 `// ── R2.20 신규 지후 도우미 ──`):
   - **개구리** `frog`: 레벨이 오르면 (`levelUp` · `moveTile` 합체 → `frogEvolve`) 35% 왕자 · 65% 배치 칸에서 지운다 · 다른 방법으로 오른 개구리는 전투 시작 `frogSweep` · 친선전은 `hashSeed(seed, 'frog', actKey() …)`.
   - **왕자** `prince` (숨은 항목): 근접 cleave · `onHit` 15% 미만 `instaKill` · `atkMult` 공격 한 번에 +5% · `onDeath` 아군 버프 `royal<uid>`.
-  - **모노리스** `monolith` (출격제한 1): `u.mn` 충전 (4.5칸 안 아군 초당 4% · 밖 1%) → 2초 차징 (`portraitCharge`) → 무작위 적 5기 현재 체력 × 레벨 × 10% · 빛줄기는 캔버스 `monoDraw` (loop · 초당 30번 · 전투가 끝나면 지운다) · 머리 위 % 는 `.xlv.mono`.
+  - **모노리스** `monolith` (출격제한 1): `u.mn` 충전 (4.5칸 안 아군 초당 4% · 밖 2% · build 3) → 2초 차징 (`portraitCharge`) → 무작위 적 5기 현재 체력 × 레벨 × 10% · 빛줄기는 캔버스 `monoDraw` (loop · 초당 30번 · 전투가 끝나면 지운다) · 머리 위 % 는 `.xlv.mono`.
   - **엑시노스** `exynos`: 십자 칸 아군 `u.gpu` · `gpuTick` 이 `buffs.gpu` 를 직접 고친다 (spd · atk · dodge · crit · critDmg 최대 0.5) · 치명타 계산이 `crit` · `critDmg` 버프를 본다 · 10초 뒤 근접 일반 공격한 적 `gpuBurn` (dealDamage 끝).
   - **엔지니어** `engineer` + 소환체 **포탑** `turret` (SUMMONS · 움직이지 않음 · `invMass` 0): `engTick` 5초 설치 (steer 로 멈춤) → `engPlace` · 다음 설치 10초 뒤 (15초마다).
   - **왜곡** `warp`: SP 7 · `warpCast` 반경 5.2칸 · `t.wp` (아군 +25% · 적 −25% · `warpSet` 이 최대 체력 `baseMaxHp` 와 현재 체력을 5초 동안 선형으로 되돌린다) · 상태 `warpUp` · `warpDn`.
