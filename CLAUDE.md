@@ -93,7 +93,7 @@
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
 ## 최근 변경 (R2.21.1)
-- 밸런스 9종: DJ ATK 35 · 드래곤 [비행] 5% · 불길 50% · 모노리스 HP 2300 · 레이저 **최대 체력** × 레벨 × 12% (`monoFire`) · 왜곡 50% (`warpOn`) · ATK 50 · 저격 ATK 1000 · 7.5초 · 거리 감소 최대 50% (`sniperCut`) · 마탄 550% · 2.6초 · 탄환 ATK 135 · 슬라임 HP 1200 · 죠스 ATK 200.
+- 밸런스 12종: DJ ATK 25 · 드래곤 ATK 50 · [비행] 5% · 불길 50% · 태양 ATK 20 · 블리자드 [빙결] 2초 · BB탄 ATK 140 · 모노리스 HP 2300 · 레이저 **최대 체력** × 레벨 × 12% (`monoFire`) · 왜곡 50% (`warpOn`) · ATK 50 · 저격 ATK 1000 · 7.5초 · 거리 감소 최대 50% (`sniperCut`) · 마탄 550% · 2.6초 · 탄환 ATK 135 · 슬라임 HP 1200 · 죠스 ATK 200.
 - 봇 조커 (모든 페르소나 · 왕초보 포함): `botDeployOne` 맨 앞에서 조커 카드가 나오면 무조건 합친다 · 변신 `botJoker` 는 배치마다 50% → **`beginCombat` 맨 앞에서 무조건** (등급 · 레벨 · TIER_SC 높은 지후로 · 친선전 · 리플레이 · 튜토리얼 · 샌드박스 제외).
 - 모바일 스크롤: 새 로비 세로 스크롤 칸 (`flex:1; min-height:0; overflow-y:auto` 인 칸) 에 `.u2-scroll` → 자식 `flex-shrink:0` — overflow:hidden 카드가 flex 안에서 줄어 글이 잘리고 스크롤이 안 됐다 (지후 상세). **새 스크롤 칸을 만들면 `class="u2-scroll"` 을 붙인다.**
 
