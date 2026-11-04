@@ -36,6 +36,15 @@ service cloud.firestore {
         && request.resource.data.payload is string && request.resource.data.payload.size() <= 100000
         && request.resource.data.savedAt is int
         && request.resource.data.updatedAt is timestamp;
+      // R2.20 build 3 서버 이력: 3시간마다 한 칸 (t0~t7) · 기록을 고를 때 버린 쪽 (x0~x3) — 운영자가 사라진 지후를 찾는다
+      match /hist/{slot} {
+        allow get, list: if owner(userId) || isAdmin();
+        allow create, update: if owner(userId) && slot.matches('^[tx][0-7]$')
+          && request.resource.data.keys().hasOnly(['payload', 'savedAt', 'updatedAt'])
+          && request.resource.data.payload is string && request.resource.data.payload.size() <= 100000
+          && request.resource.data.savedAt is int
+          && request.resource.data.updatedAt is timestamp;
+      }
     }
     // R1 기록: 처음 로그인할 때 한 번 가져오기만 한다 (더 이상 쓰지 않는다)
     match /backups/{userId} {

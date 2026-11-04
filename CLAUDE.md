@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 2).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 3).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -50,6 +50,9 @@
 - 매 스텝 `A.status` · `A.buff` 를 다시 걸지 않는다 (걸 때마다 `drawUnit` → 상태 아이콘을 다시 그린다) — 이미 걸려 있으면 남은 시간만 늘린다.
 - 이펙트 DOM 은 `S.fast` 일 때 만들지 않고, 끝나면 꼭 지운다 (`u.fx` 에 넣으면 쓰러질 때 · 라운드 끝에 지워진다).
 - 여러 유닛을 잇는 선 · 빛줄기는 유닛마다 DOM 을 만들지 않는다 → 전장 캔버스 하나에 프레임마다 한 번 (모노리스 `monoDraw` · R2.20 · DOM 으로는 50기 벤치 FPS 46 → 36).
+- **큰 원 · 긴 빛줄기도 DOM 으로 만들지 않는다** — 반경 15칸 원 (지름 2,250px) · 대각선 레이저는 폰 GPU 에 거대한 레이어가 된다 (헤드리스로는 안 보인다) → `fxRing(x, y, R, 색, ms, 테두리)` · `FXC.beams` (monoDraw 캔버스 · R2.20 build 3 DJ · 모노리스).
+- 넓은 범위 스킬 피해 숫자는 `dealDamage(..., { skill: true, lite: true })` (처음 몇 개만 크게) — 스킬 피해 숫자는 원래 한도(FX_CAP)를 무시한다.
+- 전장 격자는 `#fieldGrid` 를 transform 으로만 옮긴다 (`applyCamera`) — fieldWrap 의 background-position 을 매 프레임 바꾸면 화면 전체를 다시 그린다.
 - 확인: `?bench=50&ids=<지후,…>` (왼쪽 위 FPS · 최악 프레임 · 계산 ms) · 헤드리스 `Performance.getMetrics` 의 RecalcStyle · Layout 횟수를 다른 지후와 비교.
 
 ## 전투 엔진 핵심
@@ -82,11 +85,15 @@
 ## 계정 · 서버 (짧게)
 - Firebase 프로젝트 `jihoobattle` · 게스트는 익명 인증 · 기록 `r2_backups/<uid>` · 이 기기 `rejhbt.profile.v1`.
 - **켤 때 서버 기록과 맞추기 (R2.18 build 6)**: 저장 시각(`savedAt`)은 켜는 동안 `save()` 가 바꿔 버리니 비교에 쓰지 않는다 — 백업마다 기록 안에 저장 번호 `profile.bkWid` 를 넣고, 이 기기는 마지막으로 맞춘 번호 `profile.syncWid` 를 기억 → `serverNewer(b)`: 번호가 다르면 서버 기록 · 번호가 없으면 진행도(레벨 → 경험치 → 판 수) 앞선 쪽. 서버 규칙(`r2_backups` 는 payload · savedAt · updatedAt 만)을 안 바꾸려고 번호는 payload 안에.
+- **백업 강화 (R2.20 build 3)**: `backupNow` 는 이 창이 BK_TRUST(60초) 안에 저장 · 확인하지 않았으면 `runTransaction` 으로 서버 `bkWid` 가 `profile.syncWid` 와 같을 때만 쓴다 (다르면 `bkConflict` → `bkPick`: 진행도 `bkSum` 이 한쪽이 모두 같거나 앞서면 그쪽 · 엇갈리면 묻는다). 숨었다 돌아옴 · 잠들었다 깸 · 다른 탭이 기록을 바꿈 → `ACC.vAt = 0`. 멈춘 창(`ACC.kicked`)은 `writeLocal` 도 안 한다. 다시 로그인해도 이 계정 기록이면 비교 (예전엔 서버로 무조건). 게스트 진행이 있으면 로그인 전에 `guestLoginOk`. 서버 이력 `r2_backups/<uid>/hist/{t0~t7 · x0~x3}` (3시간마다 · 버린 기록) → 운영 도구 「보기」가 지금 없는 지후를 보여 준다 (rules 게시 필요). 상태는 `bkState` · 메뉴 점 `bkWarn`.
+- 계정 창: 햄버거 → **JHBT 계정** (`#accModal` · `renderAccount` · `openAccount(tab)`) · 환경설정 맨 위는 요약 한 줄 (`renderSetAcc`) · 튜토리얼 `#tutAcc` · 닉네임 단계 `#nsAcc` 「이미 계정이 있나요?」 (로그인하면 `TUT.abort`). 가입 보상 `joinReward` = **선택 전설 모집권** (`signRw` 로 계정당 한 번).
+- `dlg` 가 다른 dlg 에 밀리면 `null` (예전 false) — 꼭 골라야 하는 창은 null 이면 다시 묻는다.
 - 운영 우편 `giftMail` 보상: ◆ · ● · 랜덤 영웅/전설 · **정해진 지후** `{ kind: 'char', id, amount }` (R2.20 build 2 · 운영 도구 「지후」 칸에 이름) · 이 버전이 모르는 보상이 든 우편은 받은 것으로 치지 않고 남겨 둔다 (`giftOk`).
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
 ## 최근 변경 (R2.20)
+- build 3: 백업 강화 · JHBT 계정 창 · 가입 보상 선택 전설 · DJ ATK 30 → 67.5 · 출격제한 1 · 모노리스 범위 밖 0.25 → 0.5% · DJ 파동 · 모노리스 레이저 캔버스 · 격자 transform (위 「계정」 · 「성능 규칙」).
 - 신규 지후 8종 (CHARS 끝 · 도우미는 `reapFx` 바로 앞 `// ── R2.20 신규 지후 도우미 ──`):
   - **개구리** `frog`: 레벨이 오르면 (`levelUp` · `moveTile` 합체 → `frogEvolve`) 35% 왕자 · 65% 배치 칸에서 지운다 · 다른 방법으로 오른 개구리는 전투 시작 `frogSweep` · 친선전은 `hashSeed(seed, 'frog', actKey() …)`.
   - **왕자** `prince` (숨은 항목): 근접 cleave · `onHit` 15% 미만 `instaKill` · `atkMult` 공격 한 번에 +5% · `onDeath` 아군 버프 `royal<uid>`.
