@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.20"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.20"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -6967,10 +6967,12 @@ function renderInv() { // 가방 (R2.7): 가진 아이템 전부 · 쓸 수 있�
 // ═════════ 아케이드 (R2.7.2): 티켓으로 입장 · 승리 5P · 패배 1P · 랜덤 이벤트 없음 ═════════
 function arcDay() { const a = profile.arc, d = todayKey(); if (a.day !== d) { a.day = d; a.free = 0; a.buy = 0; } return a; } // 날이 바뀌면 오늘 무료 · 구매 수 초기화
 // R2.12.1 아케이드 상점 (포인트 P) · day = 하루 한도 · season = 경쟁전 시즌(14일) 한도
+// R2.20 build 6: 임테기 3 → 1P · 고급 임테기 시즌 3 → 5개 · ◆50 (한도 없음) → ◆120 (하루 3개) · 골드 6,000 (12P · 시즌 10개) 추가
 const ARC_SHOP = [
-  { k: 'testKit', p: 3, day: 3, give: { item: 'testKit' } },
-  { k: 'kitPro', p: 10, season: 3, give: { item: 'kitPro' } },
-  { k: 'dia50', p: 1, give: { dia: 50 }, icon: '◆', name: '다이아 50개', desc: '◆ 50' },
+  { k: 'testKit', p: 1, day: 3, give: { item: 'testKit' } },
+  { k: 'kitPro', p: 10, season: 5, give: { item: 'kitPro' } },
+  { k: 'dia120', p: 1, day: 3, give: { dia: 120 }, icon: '◆', name: '다이아 120개', desc: '◆ 120' },
+  { k: 'gold6000', p: 12, season: 10, give: { gold: 6000 }, icon: '●', name: '골드 6,000개', desc: '● 6,000' },
   { k: 'pull10', p: 20, season: 10, give: { item: 'pull10' }, name: '지후 10회 모집권' },
   { k: 'legendRand', p: 30, season: 2, give: { item: 'legendRand' } },
   { k: 'legendPick', p: 60, season: 1, give: { item: 'legendPick' } },
@@ -6980,7 +6982,7 @@ const arcLeft = it => { const s = arcShop(); return it.day ? it.day - (s.d[it.k]
 async function arcBuy(k) { const it = ARC_SHOP.find(x => x.k === k), a = arcDay(); if (!it || arcLeft(it) <= 0) return; if (a.p < it.p) return u2Toast(`포인트가 모자라요 (${it.p}P 필요 · 보유 ${a.p}P)`);
   const nm = it.name || ITEMS[it.give.item].name; if (it.p >= 20 && !(await dlg({ icon: it.icon || ITEMS[it.give.item].icon, title: nm, html: `<b>${it.p}P</b>를 써요 (보유 ${a.p}P)${it.season ? `<br>이번 시즌 남은 구매 ${arcLeft(it)}회` : ''}`, ok: '구매', cancel: '취소' }))) return;
   if (a.p < it.p || arcLeft(it) <= 0) return; const s = arcShop(); a.p -= it.p; if (it.day) s.d[k] = (s.d[k] || 0) + 1; if (it.season) s.n[k] = (s.n[k] || 0) + 1;
-  if (it.give.dia) profile.dia += it.give.dia; if (it.give.item) profile.items[it.give.item] = (profile.items[it.give.item] || 0) + 1;
+  if (it.give.dia) profile.dia += it.give.dia; if (it.give.gold) profile.gold += it.give.gold; if (it.give.item) profile.items[it.give.item] = (profile.items[it.give.item] || 0) + 1;
   save(); sfx('buy'); renderMoney(); renderInv(); u2Toast(`${nm} 샀어요${it.give.item ? ' · 가방에 넣었어요' : ''}`); }
 function arcTicket(kind) { const a = arcDay(); if (kind === 'free') { if (a.free >= CFG.ARC_FREE) return; a.free++; a.t++; u2Toast('🎟 무료 티켓 받았어요'); } else { if (a.buy >= CFG.ARC_BUY) return; if (profile.gold < CFG.ARC_GOLD) return u2Toast('골드가 모자라요'); profile.gold -= CFG.ARC_GOLD; a.buy++; a.t++; u2Toast('🎟 티켓 1장 샀어요'); } save(); sfx('buy'); renderMoney(); renderArcade(); }
 const ARC_MODES = [
@@ -9371,6 +9373,7 @@ const PATCH_NOTES = [
       { icon: '🎁', name: '가입 보상', tag: 'buff', desc: '회원가입 보상이 <b>랜덤 → 선택 전설 지후 모집권</b>으로 바뀌었어요 (계정당 한 번).' },
       { icon: '🐣', name: '초보자 모집', tag: 'new', desc: '상점에 <b>초보자 모집</b>이 생겼어요 — <b>계정당 50회</b> · 10회 <b>◆950</b> · 전설 확률 <b>3%</b> · <b>50번째 모집은 전설 확정</b> · 다 쓰면 사라져요 (일반 뽑기 천장과는 따로 세요).' },
       { icon: '🎵', name: '전투 배경음악', tag: 'new', desc: '전투 배경음악 <b>Sagöl</b> 을 빼고, <b>The Happy Troll</b> (D1ofAquavibe) · <b>Lounge</b> 두 곡 중 하나가 <b>무작위</b>로 나와요 — 판마다 새로 고르고, 곡이 끝나면 다른 곡으로 넘어가요. 음량도 <b>원래 곡 크기</b>에 가깝게 키웠어요.' },
+      { icon: '🛍', name: '아케이드 상점', tag: 'adjust', desc: '임테기 <b>3P → 1P</b> (하루 3개) · 고급 임테기 시즌 <b>3개 → 5개</b> · 다이아 <b>◆50 → ◆120</b> (1P · 하루 <b>3개</b>까지) · 새 상품 <b>골드 6,000개</b> (<b>12P</b> · 시즌 10개).' },
       { icon: '🎰', name: '상점 뽑기 확률 표시', tag: 'fix', desc: '상점 탭 지후 모집 카드에 <b>예전 확률</b> (전설 1.5%) 이 나오던 문제를 고쳤어요. 실제 확률은 그대로예요 — 일반 62.5% · 희귀 30% · 영웅 5% · <b>전설 2.5%</b>.' },
       { icon: '⚡', name: '성능', tag: 'fix', desc: '<b>DJ 지후</b> 스킬 파동 · <b>모노리스 지후</b> 레이저 때 화면이 끊기던 문제를 고쳤어요 · 전투 중 카메라가 움직일 때 바탕 격자를 다시 그리지 않아요.' },
     ] },
@@ -10969,7 +10972,7 @@ function u2Vals() {
         card({ icon: '🎟', name: '티켓 1장', desc: '아케이드 모드 입장권', lim: `오늘 ${a.buy} / ${CFG.ARC_BUY}`, cost: buyLeft > 0 ? `● ${CFG.ARC_GOLD.toLocaleString()}` : '오늘 다 샀어요', onClick: () => { arcTicket('gold'); u2Render(); }, icC: '#ff7fa6' }, buyLeft > 0 && profile.gold >= CFG.ARC_GOLD, on),
         ...ARC_SHOP.map(it => { const left = arcLeft(it), I = it.give.item ? ITEMS[it.give.item] : null, ok = left > 0 && a.p >= it.p, rar = it.k === 'legendRand' || it.k === 'legendPick';
           return card({ icon: it.icon || I.icon, name: it.name || I.name, desc: it.desc || I.desc.replace(/ \(이미 있으면 조각\)/, ''), lim: it.day ? `오늘 ${it.day - left} / ${it.day}` : it.season ? `시즌 ${it.season - left} / ${it.season}` : '제한 없음', cost: left > 0 ? `${it.p} P` : (it.day ? '오늘 다 샀어요' : '시즌 다 샀어요'),
-            onClick: () => { arcBuy(it.k).then(() => u2Render()); }, tag: it.season ? 'SEASON' : it.day ? 'DAILY' : '', tagBg: it.season ? '#c89bff' : '#7cc8ff', icC: it.k === 'dia50' ? '#7cc8ff' : rar ? '#ffd34d' : '#f2f4fa', bg: rar ? 'linear-gradient(165deg,#4a3d1c,#2c3553 65%)' : '#2c3553', line: rar ? '#8a6b2a' : '#3b466b' }, ok, mint); })];
+            onClick: () => { arcBuy(it.k).then(() => u2Render()); }, tag: it.season ? 'SEASON' : it.day ? 'DAILY' : '', tagBg: it.season ? '#c89bff' : '#7cc8ff', icC: it.give.dia ? '#7cc8ff' : it.give.gold ? '#ffc94a' : rar ? '#ffd34d' : '#f2f4fa', bg: rar ? 'linear-gradient(165deg,#4a3d1c,#2c3553 65%)' : '#2c3553', line: rar ? '#8a6b2a' : '#3b466b' }, ok, mint); })];
     })(),
     navItems, hasToast: !!s.toast, toast: s.toast,
     floatDeck: deck.slice(0, 5).map((id, i) => ({ img: u2Clear(id), x: ['3%', '79%', '9%', '73%', '44%'][i], y: ['30%', '24%', '64%', '60%', '86%'][i], s: ['62px', '56px', '52px', '60px', '48px'][i], d: (-i * 1.7).toFixed(1) + 's', t: (7 + i * 1.3).toFixed(1) + 's' })),
@@ -11205,7 +11208,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evGrant, evRoll, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>

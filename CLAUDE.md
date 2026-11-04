@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 5).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 6).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -93,6 +93,7 @@
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
 ## 최근 변경 (R2.20)
+- build 6: 아케이드 상점 `ARC_SHOP` — 임테기 1P (하루 3) · 고급 임테기 시즌 5 · `dia120` ◆120 1P 하루 3 (예전 `dia50` 한도 없음) · `gold6000` ●6,000 12P 시즌 10 (`arcBuy` 에 `give.gold`).
 - build 5: **초보자 모집** (`CFG.NB_GACHA` 전설 3% · `NB_PULL10` ◆950 · `NB_PULLS` 50 · `profile.nbPulls` · 50번째 `rollLegend` 확정 · 일반 천장 `pity` 는 건드리지 않음 · `pull(10, false, true)` · 결과 요약 `GR.again = 'nb'`) · 새 로비 상점 확률 칩은 `CFG.GACHA` 에서 (예전엔 1.5% 로 박혀 있었다) · 전투 곡 `BGM_MUL.battle` 0.9 (`BGM_GAIN` 삭제 · 원래 곡 크기).
 - build 4: 전투 배경음악 Sagöl (`bgm/battle.mp3`) 삭제 → `bgm/troll.mp3` · `bgm/lounge.mp3` 무작위 (`BGM_SRC.battle` 배열 · 판마다 새로 · 끝나면 다른 곡 · 들은 위치는 파일별 `bgm.pos`) · (build 5 에서 곡 크기 맞춤은 뺐다 — 원래 크기 × 0.9).
 - build 3: 백업 강화 · JHBT 계정 창 · 가입 보상 선택 전설 · DJ ATK 30 → 67.5 · 출격제한 1 · 모노리스 범위 밖 0.25 → 0.5% · DJ 파동 · 모노리스 레이저 캔버스 · 격자 transform (위 「계정」 · 「성능 규칙」).
