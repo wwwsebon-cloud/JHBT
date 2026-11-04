@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.19** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.20** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -36,6 +36,7 @@
 - `CHARS` 끝에 추가 (도우미 함수는 `reapFx` 바로 앞 `// ── R2.xx 신규 지후 도우미 ──`). 사용자가 안 준 역할군 · 사거리 등은 정하고 알린다.
 - `passive` · `skill.desc` 는 **쉽게 · 존댓말 ~니다** (중요한 숫자만) · 자세한 숫자는 `CHAR_INFO[id]`.
 - **서사 `story`**: 「~입니다 · ~해요」 체 · 5~7문장 · 지후왕국 세계관과 다른 지후를 엮는다 (아래 「세계관」 · 기존 연결을 깨지 않게).
+- 뽑기 · 덱 · 도감에 안 나오는 변신 지후 (왕자 지후 `prince`) 는 `Object.defineProperty(CHARS, id, { enumerable: false })` — `Object.keys(CHARS)` 에는 없고 `CHARS[id]` 로는 찾는다 (배치 기록 · 친선전 · 이름 표시가 그대로 돈다).
 - 새 상태 · 버프는 `STATUS` · `FX_OF` / `fxList` (효과 아이콘) · `BUFF_SRC` (버프 출처 이름).
 - 배치 기록에 새 필드를 넣으면 친선전 `packPlace` 에도.
 - `TIER_SC` 에 없으면 50 (B) 으로 본다 → 티어 시뮬 뒤 넣는다.
@@ -48,6 +49,7 @@
 - DOM 위치 · 크기는 프레임마다 한 번 이하로 (`tick` 은 한 프레임에 여러 번 돈다 · 그리기는 바뀐 값만 · `translate` 로).
 - 매 스텝 `A.status` · `A.buff` 를 다시 걸지 않는다 (걸 때마다 `drawUnit` → 상태 아이콘을 다시 그린다) — 이미 걸려 있으면 남은 시간만 늘린다.
 - 이펙트 DOM 은 `S.fast` 일 때 만들지 않고, 끝나면 꼭 지운다 (`u.fx` 에 넣으면 쓰러질 때 · 라운드 끝에 지워진다).
+- 여러 유닛을 잇는 선 · 빛줄기는 유닛마다 DOM 을 만들지 않는다 → 전장 캔버스 하나에 프레임마다 한 번 (모노리스 `monoDraw` · R2.20 · DOM 으로는 50기 벤치 FPS 46 → 36).
 - 확인: `?bench=50&ids=<지후,…>` (왼쪽 위 FPS · 최악 프레임 · 계산 ms) · 헤드리스 `Performance.getMetrics` 의 RecalcStyle · Layout 횟수를 다른 지후와 비교.
 
 ## 전투 엔진 핵심
@@ -83,19 +85,22 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.19)
+## 최근 변경 (R2.20)
+- 신규 지후 8종 (CHARS 끝 · 도우미는 `reapFx` 바로 앞 `// ── R2.20 신규 지후 도우미 ──`):
+  - **개구리** `frog`: 레벨이 오르면 (`levelUp` · `moveTile` 합체 → `frogEvolve`) 35% 왕자 · 65% 배치 칸에서 지운다 · 다른 방법으로 오른 개구리는 전투 시작 `frogSweep` · 친선전은 `hashSeed(seed, 'frog', actKey() …)`.
+  - **왕자** `prince` (숨은 항목): 근접 cleave · `onHit` 15% 미만 `instaKill` · `atkMult` 공격 한 번에 +5% · `onDeath` 아군 버프 `royal<uid>`.
+  - **모노리스** `monolith` (출격제한 1): `u.mn` 충전 (4.5칸 안 아군 초당 4% · 밖 1%) → 2초 차징 (`portraitCharge`) → 무작위 적 5기 현재 체력 × 레벨 × 10% · 빛줄기는 캔버스 `monoDraw` (loop · 초당 30번 · 전투가 끝나면 지운다) · 머리 위 % 는 `.xlv.mono`.
+  - **엑시노스** `exynos`: 십자 칸 아군 `u.gpu` · `gpuTick` 이 `buffs.gpu` 를 직접 고친다 (spd · atk · dodge · crit · critDmg 최대 0.5) · 치명타 계산이 `crit` · `critDmg` 버프를 본다 · 10초 뒤 근접 일반 공격한 적 `gpuBurn` (dealDamage 끝).
+  - **엔지니어** `engineer` + 소환체 **포탑** `turret` (SUMMONS · 움직이지 않음 · `invMass` 0): `engTick` 5초 설치 (steer 로 멈춤) → `engPlace` · 다음 설치 10초 뒤 (15초마다).
+  - **왜곡** `warp`: SP 7 · `warpCast` 반경 5.2칸 · `t.wp` (아군 +25% · 적 −25% · `warpSet` 이 최대 체력 `baseMaxHp` 와 현재 체력을 5초 동안 선형으로 되돌린다) · 상태 `warpUp` · `warpDn`.
+  - **저격** `sniper`: `bonus` 로 거리 비례 −80% (`sniperCut`).
+  - **DJ** `dj`: 일반 공격 `djWave` (5.7칸 · SP 1) · SP 12 `djBlast` × 4 (0.5초 · 15칸 · `DJ_WAVES` 8색 · 스킬 파동은 테두리 0.8칸) · 이펙트는 `fx-emp-wave` 재사용 (`fxRoom` 한도).
+  - **아케인** `arcane`: `def.lifesteal` 0.3 (dealDamage · 체력 피해만 · 넘친 피해 제외) · SP 4 `arcaneBlink`.
+- 밸런스: 탄환 ATK 190 → 160 · [최후의 탄환] 체력 손실 16 → 19%.
+- 테스트 훅에 `levelUp` · `moveTile` · `frogEvolve` · `djBlast` · `setRng` 추가. 인포그래픽 `make.py` 밸런스 머리 숫자는 지후 수로.
+- 신규 지후 `TIER_SC` 는 아직 없다 (50 = B 로 본다) · 랭크 6 고유능력도 아직.
+
+## 지난 변경 (R2.19)
 - 밸런스 26종 · 리워크 3종: **예언** (`prophecyResolve`: 예언 지후 자신이 그 칸에 새로 왔거나 레벨이 바뀌었고 **그리고** 대칭 칸도 바뀌어야 성공) · **별** (돌진 = 초당 `STAR_DASH` 17칸으로 대상에게 부딪힌 뒤 제자리로 · `u.sd` · steer/tick · [졸음] 4초 −30% · [수면] 200) · **신칸센** (ATK 400 · 충돌 공격력 100% · 멈춰 있는 동안 일반 공격 10% · 1.4초 · 사거리 3.9 · 돌진 중엔 steer 로 공격 안 함).
 - 레벨업 지후: 레벨업 회복 최대 체력 50% · build 13 부터 주석에 묻혀 있던 그림 · 레벨 표시 (`A.portrait` · `A.headLv`) 를 되살림.
 - 테스트 훅 `window.__rejhbt` 에 `prophecyResolve` · `botDeployOne` 추가.
-
-## 지난 변경 (R2.18)
-- 신규 지후 4종: BB탄 `bbgun` (영웅 딜러 · ATK 200 · 2.3초 · 가장 가까운 다른 적에게 거리 제한 없이 최대 2번 튕김 ×0.7) · 홍명보 `hong` (영웅 서포터 · ATK 320 · 5초 · 3~6번 패스 · 받으면 공격력 50% 회복 · 패스 × 25% 슛 · 서사: 수비만 하다 축구계에서 쫓겨날 뻔했지만 돌아옴) · EMP `emp` (전설 컨트롤러 · 사거리 4 · 6.5칸 파동 · SP 8 자기장) · 드래곤 `dragon` (전설 탱커 · ATK 70 · 1.25초 · 사거리 6 불덩이 → 1.9칸 광역 · SP 11 브레스 = 다음 공격 한 번 150% · 3.2칸 · 화상 · 8% 비행 = 1초 승천 (`dragon-rise` · 공격 안 함) 뒤 초당 9.5칸 · 13칸 + 불길 5초 · 150% · build 14 착지 `dragonTouch`: 주위 3칸 [화상] 3초 120% · 3초 받는 피해 −20% `u.landDr` → `takenMult`).
-- 밸런스 21종 (솔렘라멘트 · 블리자드 · 회오리 하향 등) · 괴도는 레벨 1 도 훔친다 (그 라운드에서 사라지고 다음 라운드에 다시 나옴) · 핵은 30초 + 떨어질 자리에 남은 초 · 고독한 [고독] 공속 · 이속 + 검은 아우라.
-- build 5 렉 수정: EMP 자기장 · 드래곤 불길 · 고독 아우라를 합성 애니메이션 (transform · opacity) 으로 · 자주 들어가는 범위 피해는 `dealDamage` 의 `lite` (피해 숫자를 한도 안에서만) · EMP 는 걸려 있는 [침묵] · 감속의 시간만 늘린다 · 큰 이펙트는 `fxRoom` 한도 안에서만.
-- build 8: 빠따 ATK 190 · SP 6 / 성검 최대 체력 3% · 사거리 5 / 솔렘라멘트 ATK 66 · 0.7초 / 달 공격마다 +1%p / 괴도 사거리 5.5 · 1.7초 · 예고장 13초 · 괴도가 쓰러지면 취소 (`thiefCancel` · `onDeath`) / **충전 리워크** (HP 1140 · 반경 5칸 충전 범위 0.5초마다 최대 SP 8% `spGive` · SP 11 [급속 충전] 가장 가까운 아군 SP 가득 · 제외 `chExcl`) / UltraProMax+ 계정당 1회 (`once`) / 랭크 표시: 지후 카드 동그라미 숫자 · 매치 인트로 · 전투 덱 `rkDot` (`S.enh` 가 있는 판만 · 봇은 내 덱 평균) / **중복 로그인: 새로 연 창이 우선 · 먼저 켠 창은 [새로고침] 만** (`boBtn` → `location.reload`). 따라쟁이 봇은 R2.13.2 에 이미 삭제.
-- build 9 상점 개편: 오늘의 매물 5칸 = 지후 매물 (희귀 68 · 영웅 26 · 전설 5) 또는 아이템 `SHOP_ITEMS` (w 무게 · t 등급 · 전설급 t≥3 은 하루 1개 · 같은 아이템 한 번 · t 순으로 뒤로) · `buyShopItem` · 지후 매물은 골드로만 · 초보자 지원 패키지 I · UltraProMax+ 는 `shopOnly` (고정 패키지 칸에서 빠지고 매물로만 · 계정당 1회는 그대로 · 산 계정에는 안 나온다) · 빛나는 조각 4종 `GLOW_OF` (`enhGlow` 가 등급에 맞는 조각을 쓴다) · 오늘 매물은 `shop.v` 2 로 한 번 다시 뽑는다.
-- build 10: 인게임 레벨업 +50 → +80% / 샌드박스 레벨 [+] 는 `maxLv(id)` 까지 (갓지후 Lv6) / 상점 리롤마다 무료 보상 새로.
-- build 11: EMP 자기장 수정 (build 10 · [매혹] 무시 · [NO U] 제외) 은 사용자 요청으로 되돌림 — 예전 동작 (`foes(u)` · [매혹]되면 아군에게 · NO U 는 디버프를 마지막 공격자에게) 이 그대로 규칙이다.
-- build 12 · 13: 번개 HP 640 · ATK 60 · 사거리 3.5 · 낙뢰 1350% / 레벨업 HP 2150 · 레벨이 오르면 체력 가득 · `forms` 는 시작 능력치 `u.lvB` 의 배수 (체력 · 공격력 Lv2 ×1.15 · ×1.3125 · Lv3 ×1.3 · ×1.625 (build 15) · 예전엔 R2.17.2 전 숫자라 레벨이 오르면 약해졌다).
-- build 16: 반중력 지후는 다른 반중력 지후에게 [반중력]을 걸지 않는다.
-- 아직 남은 일: `firestore.rules` 콘솔 게시 (사용자) · 신규 지후 랭크 6 고유능력 (사용자가 줄 때).
