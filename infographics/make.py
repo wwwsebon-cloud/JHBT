@@ -89,21 +89,23 @@ body.dark .sh h2 { font-family:'Black Han Sans', sans-serif; font-weight:400; fo
 body.dark .shots { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:24px; margin-top:20px; } body.dark .shots figure { margin:0; border-radius:20px; overflow:hidden; background:var(--card); box-shadow:0 0 0 2px var(--edge); } body.dark .shots img { display:block; width:100%; height:auto; background:#fff; } body.dark .shots figcaption { padding:12px 16px; font-size:15px; font-weight:700; line-height:1.4; color:var(--sub); word-break:keep-all; } /* R2.22 build 3: 게임 스크린샷 */
 body.dark .it { border-top-color:var(--line); } body.dark .ic { background:var(--deep); } body.dark .ic.p { background:#fff; box-shadow:0 0 0 2px var(--edge); }
 body.dark .it p { color:var(--sub); }
-/* 밸런스 타일 (Brawl 패치 요약 그림처럼 · 초상화가 색 띠 왼쪽에 걸친다) */
-.lg { display:flex; gap:10px; margin:2px 0 14px; } .lg span { padding:4px 12px; border-radius:999px; font-size:14px; font-weight:900; color:#fff; }
-.lg .buff { background:#2fae1c; } .lg .adjust { background:#e57a00; } .lg .nerf { background:#d8261c; }
-.tg { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); grid-auto-flow:column; gap:14px 20px; }
-.tl { position:relative; display:flex; align-items:center; min-height:96px; }
-.tl .pp { position:absolute; left:0; top:50%; z-index:2; width:86px; height:86px; margin-top:-43px; border-radius:50%; overflow:hidden; background:#fff; border:4px solid var(--rc, #c9c9c6); box-shadow:0 0 0 3px #0c1020, 0 6px 12px rgba(0,0,0,.4); }
-.tl.r-rare { --rc:#4f9dff; } .tl.r-epic { --rc:#b26bff; } .tl.r-legend { --rc:#ffc21a; }
-.tl .rb { flex:1; min-width:0; margin-left:40px; min-height:82px; padding:8px 12px 8px 58px; border-radius:16px; border:3px solid #0c1020; display:flex; flex-direction:column; justify-content:center; gap:1px;
-  color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.32); background:linear-gradient(180deg, #5fdc3a, #2fae1c); box-shadow:inset 0 2px 0 rgba(255,255,255,.28), 0 5px 0 #0c1020; }
-.tl.adjust .rb { background:linear-gradient(180deg, #ffad33, #e57a00); } .tl.nerf .rb { background:linear-gradient(180deg, #ff5a4e, #d8261c); }
-.tl .nm { font-size:13px; font-weight:900; letter-spacing:.01em; opacity:.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tl .ln { font-size:17px; font-weight:900; letter-spacing:-.02em; line-height:1.22; word-break:keep-all; overflow-wrap:anywhere; } .tl .ln .v { white-space:nowrap; } /* R2.20: 긴 수치 줄은 줄바꿈 (값 「a → b」는 붙여서) */
-.tl .ln small { font-size:13px; font-weight:800; opacity:.88; margin-right:4px; } .tl .ln s { text-decoration:none; opacity:.72; font-size:.86em; } .tl .ln i { font-style:normal; margin:0 3px; opacity:.75; }
-.tl .tx { font-size:13.5px; font-weight:800; line-height:1.28; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.tl.dense .ln { font-size:15px; } .tl.dense .ln small { font-size:12px; } .tl.dense .tx { font-size:12.5px; }
+/* 밸런스 타일 (R2.22.1 개편: 단색 타일 · 굵은 검은 테두리 · Black Han Sans · 글자마다 검은 외곽선 · 수치는 가운데 크게 · 초상화가 왼쪽에 걸친다) */
+.lg { display:flex; gap:10px; margin:2px 0 16px; } .lg span { padding:5px 14px 4px; border-radius:10px; border:3px solid #0c1020; font-family:'Black Han Sans', sans-serif; font-weight:400; font-size:17px; color:#fff; -webkit-text-stroke:3px #0c1020; paint-order:stroke fill; box-shadow:0 3px 0 #0c1020; }
+.lg .buff { background:var(--tb); } .lg .adjust { background:var(--ta); } .lg .nerf { background:var(--tn); }
+:root { --tb:#3cc23a; --ta:#f59a1b; --tn:#e8392f; --ol:#0c1020; } /* 타일 색: 상향 · 조정 · 하향 (단색) */
+.tg { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); grid-auto-flow:column; grid-auto-rows:128px; gap:18px 20px; } /* 타일 높이는 모두 같게 */
+.tl { position:relative; display:flex; align-items:center; height:128px; }
+.tl .pp { position:absolute; left:0; top:50%; z-index:2; width:88px; height:88px; margin-top:-44px; border-radius:22px; overflow:hidden; background:#fff; border:4px solid var(--ol); box-shadow:0 4px 0 var(--ol); }
+.tl .rb { flex:1; min-width:0; margin-left:44px; height:116px; box-sizing:border-box; padding:6px 10px 6px 54px; border-radius:14px; border:4px solid var(--ol); box-shadow:0 5px 0 var(--ol); background:var(--tb);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:3px; color:#fff;
+  font-family:'Black Han Sans', 'Pretendard Variable', sans-serif; font-weight:400; letter-spacing:.01em; paint-order:stroke fill; }
+.tl.adjust .rb { background:var(--ta); } .tl.nerf .rb { background:var(--tn); }
+.tl .nm { font-size:17px; line-height:1.1; -webkit-text-stroke:2.6px var(--ol); paint-order:stroke fill; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; color:#ffe27a; margin-bottom:1px; }
+.tl .ln { display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:0 6px; font-size:22px; line-height:1.12; -webkit-text-stroke:3.4px var(--ol); paint-order:stroke fill; word-break:keep-all; } .tl .ln .v { white-space:nowrap; }
+.tl .ln small { font-size:16px; -webkit-text-stroke:2.6px var(--ol); paint-order:stroke fill; } .tl .ln s { text-decoration:none; } .tl .ln i { font-style:normal; margin:0 4px; }
+.tl .tx { font-size:16px; line-height:1.2; -webkit-text-stroke:2.6px var(--ol); paint-order:stroke fill; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.tl.one.lv .ln { font-size:20px; -webkit-text-stroke:3.2px var(--ol); } .tl.one .ln { flex-direction:column; align-items:center; gap:2px; font-size:27px; -webkit-text-stroke:4px var(--ol); } .tl.one .ln small { font-size:17px; -webkit-text-stroke:2.8px var(--ol); } .tl.one .tx { font-size:18px; -webkit-text-stroke:2.8px var(--ol); } /* 변경 하나 타일 */
+.tl.dense .ln { font-size:18px; -webkit-text-stroke:3px var(--ol); } .tl.dense .ln small { font-size:14.5px; -webkit-text-stroke:2.4px var(--ol); } .tl.dense .tx { font-size:14.5px; -webkit-text-stroke:2.4px var(--ol); } .tl.dense .nm { font-size:15px; }
 /* 신규 지후 카드 */
 .ncg { display:flex; flex-wrap:wrap; justify-content:center; gap:26px; margin-top:34px; }
 .nc { --rc:#c9c9c6; position:relative; width:calc((100% - 26px * (var(--nc) - 1)) / var(--nc)); display:flex; flex-direction:column; gap:14px; padding:24px 24px 22px; border-radius:26px; background:var(--card); border:2px solid var(--edge); box-shadow:0 7px 0 #0f1424; overflow:hidden; }
@@ -222,8 +224,32 @@ def tile_line(l):
 def tile(t):
     lines = t.get('lines', [])
     dense = ' dense' if len(lines) >= 3 or any(len(str(l.get('text', ''))) > 26 for l in lines) else ''
+    if t.get('one'): dense = ' one' + (' lv' if any('stat' in l and len(f"{fmt(l['from'])}{fmt(l['to'])}{l.get('unit', '')}") > 11 for l in lines) else '')  # 변경 하나: 이름 · 수치 이름 · 값 세 줄 (값을 크게 · 값이 길면 조금 작게)
     r = f' r-{t["rarity"]}' if t.get('rarity') else ''
     return f'<div class="tl {t.get("tag", "buff")}{r}{dense}"><span class="pp">{pic(t["id"])}</span><div class="rb"><span class="nm">{e(t.get("name") or NAMES.get(t["id"], t["id"]))}</span>{"".join(tile_line(l) for l in lines[:4])}</div></div>'
+
+
+LOWER_BETTER = re.compile(r'간격|쿨|대기|손실|(^|\s|\])SP$')  # 낮을수록 좋은 수치 (「SP 충전」 같은 충전량은 높을수록 좋다)
+
+
+def line_dir(l, tag):  # 타일 하나 색: 지후 전체가 상향 · 하향이면 그대로 · 조정이면 수치 방향으로 (문장 · 글자 값은 조정)
+    if tag in ('buff', 'nerf'):
+        return tag
+    if 'stat' in l and isinstance(l['from'], (int, float)) and isinstance(l['to'], (int, float)) and l['from'] != l['to']:
+        up = l['to'] > l['from']
+        return 'buff' if up != bool(LOWER_BETTER.search(l['stat'].strip())) else 'nerf'
+    return 'adjust'
+
+
+def split_tiles(tiles):  # R2.22.1: 한 지후의 변경이 여러 개면 타일을 나눈다 (참고: 브롤스타즈 밸런스 요약 그림)
+    out = []
+    for t in tiles:
+        L = t.get('lines', [])
+        if len(L) <= 1:
+            out.append({**t, 'one': True}); continue
+        for l in L:
+            out.append({**t, 'tag': line_dir(l, t.get('tag')), 'lines': [l], 'one': True})
+    return out
 
 
 def tile_grid(tiles):
@@ -275,6 +301,7 @@ def build(d):  # → [html, ...] (장마다 하나)
         return [doc(d, w, head(d) + ''.join(section(s, cols) for s in other), style, dark)]
     w = max(w, 1920)
     tiles = sorted(tiles, key=lambda t: TAG_ORDER.get(t.get('tag'), 2))  # 하향 → 조정 → 상향 (같은 묶음 안은 패치노트 순서)
+    tiles = split_tiles(tiles)  # R2.22.1: 변경 하나 = 타일 하나 (같은 지후는 연달아)
     first = TILE_COLS * (TILE_ROWS_FIRST if other else TILE_ROWS)
     chunks, i = [tiles[:first]], first
     while i < len(tiles):
@@ -283,7 +310,7 @@ def build(d):  # → [html, ...] (장마다 하나)
     out = []
     for k, ch in enumerate(chunks):
         page = f'{k + 1} / {len(chunks)}' if len(chunks) > 1 else ''
-        sh = f'<div class="sec"><div class="sh"><span class="k balance">BALANCE</span><h2>{e(lab)}{" (계속)" if k else ""}</h2><span class="n">{len(tiles)}</span></div>{legend(tiles) if k == 0 else ""}{tile_grid(ch)}</div>'
+        sh = f'<div class="sec"><div class="sh"><span class="k balance">BALANCE</span><h2>{e(lab)}{" (계속)" if k else ""}</h2><span class="n">{len({t["id"] for t in tiles})}</span></div>{legend(tiles) if k == 0 else ""}{tile_grid(ch)}</div>'
         body = head(d, page, [t['id'] for t in ch[:5]] if k else None) + (''.join(section(s, 2) for s in other) if k == 0 else '') + sh
         out.append(doc(d, w, body, style, 'dark'))
     return out

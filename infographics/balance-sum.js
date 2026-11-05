@@ -11,9 +11,13 @@ const num = s => { const t = String(s).replace(/,/g, '').trim(); const m = /^(-?
 const STAT_RE = /^(.*?)<b>\s*([^<→]+?)\s*→\s*([^<]+?)\s*<\/b>\.?\s*$/;
 const BAL = ['buff', 'nerf', 'adjust', 'rework'];
 const OVERRIDE = { // 지후 id → 줄 (수치 { stat, from, to, unit } 또는 { text }) · tag
-  monolith: { tag: 'adjust', lines: [{ stat: '체력', from: 1800, to: 2300, unit: '' }, { text: '레이저 현재 체력 × 레벨 × 10%' }, { text: '충전 0.25초마다 스스로 1% · 아군마다 1%' }] },
+  monolith: { tag: 'adjust', lines: [{ stat: '체력', from: 1800, to: 2300, unit: '' }, { text: '레이저 현재 체력 × 레벨 × 10%' }, { text: '충전 스스로 · 아군마다 1%' }] },
   sniper: { tag: 'adjust', lines: [{ stat: '공격력', from: 1000, to: 800, unit: '' }, { stat: '공격 간격', from: 8.5, to: 7.5, unit: '초' }, { text: '가까울수록 피해 감소 (바로 앞 −50%)' }] },
-  coin: { tag: 'adjust', lines: [{ stat: '시세', from: '−50 ~ +50%', to: '0.3 ~ 4배', unit: '' }, { text: '장세가 몇 시간씩 · 가끔 펌핑 / 떡락' }] },
+  reaper: { tag: 'adjust', lines: [{ text: '소환체 · 분열체도 SP 충전' }, { text: '[봉인] 중 이동 불가' }] },
+  revive: { tag: 'buff', lines: [{ text: '소환체 · 분열체도 SP 충전 · 부활' }] },
+  biker: { tag: 'buff', lines: [{ stat: '돌진 피해 (체력 비례)', from: '현재 50%', to: '최대 75%', unit: '' }] },
+  archaeo: { tag: 'buff', lines: [{ stat: '낡은', from: 52.5, to: 45, unit: '%' }, { stat: '전설', from: 13, to: 20, unit: '%' }, { stat: '개쩌는', from: 2, to: 5, unit: '%' }] },
+  coin: { tag: 'adjust', lines: [{ stat: '시세', from: '±50%', to: '0.3 ~ 4배', unit: '' }, { text: '장세 · 펌핑 / 떡락' }] },
 };
 const vi = v => NOTES.findIndex(n => n.v === v), i0 = vi(to), i1 = vi(from); // NOTES 는 최신이 앞
 if (i0 < 0 || i1 < 0) { console.error('패치노트에 없는 버전'); process.exit(1); }

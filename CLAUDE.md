@@ -25,7 +25,7 @@
 
 ## 인포그래픽 (저장소 `infographics/`)
 - 로컬 서버를 켠 뒤: `node infographics/extract.js` → `node infographics/notes2json.js <버전>` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py "infographics/<버전>*.html"`.
-- 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …). 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
+- 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …) · **R2.22.1 타일 개편**: 변경 하나 = 타일 하나 (같은 지후는 연달아 · `split_tiles`) · 단색 (상향 `--tb` · 조정 `--ta` · 하향 `--tn`) · Black Han Sans + 검은 외곽선 · 높이 모두 같게 · 색은 지후 태그 (조정 지후만 수치 방향 `line_dir`). 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
 - **신규 지후**: `node infographics/notes2json.js <버전> --new` (그 버전 패치노트의 tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make.py · shot.py.
 - 눈으로 보이는 변화는 구역에 게임 스크린샷 `"shots": [{ "src": "shots/<파일>.png", "cap": … }]` (infographics/ 기준 · R2.22 build 3 · 하나만 따로 낼 때는 JSON 을 직접 · 예: `R2.22-b3.json`). 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 를 붙인 래퍼를 준다 (extract.js).
 - 여러 버전 밸런스 총정리: `node infographics/balance-sum.js <처음 버전> <마지막 버전>` (지후별 처음 → 지금 · 랭크 6 제외 · 지저분하게 합쳐지는 지후는 파일 안 `OVERRIDE`) → `balance-<처음>-<마지막>.json` → make.py · shot.py.
