@@ -28,6 +28,7 @@
 - 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …). 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
 - **신규 지후**: `node infographics/notes2json.js <버전> --new` (그 버전 패치노트의 tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make.py · shot.py.
 - 눈으로 보이는 변화는 구역에 게임 스크린샷 `"shots": [{ "src": "shots/<파일>.png", "cap": … }]` (infographics/ 기준 · R2.22 build 3 · 하나만 따로 낼 때는 JSON 을 직접 · 예: `R2.22-b3.json`). 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 를 붙인 래퍼를 준다 (extract.js).
+- 여러 버전 밸런스 총정리: `node infographics/balance-sum.js <처음 버전> <마지막 버전>` (지후별 처음 → 지금 · 랭크 6 제외 · 지저분하게 합쳐지는 지후는 파일 안 `OVERRIDE`) → `balance-<처음>-<마지막>.json` → make.py · shot.py.
 - 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로).
 - 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
 - 만든 PNG 는 커밋하고 사용자에게 보낸다.
