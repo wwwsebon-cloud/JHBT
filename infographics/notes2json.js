@@ -25,7 +25,7 @@ function toTile(it) { // 타일: 수치는 칩 · 나머지 문장은 글 줄 (�
   const lines = String(it.desc).split(/\s·\s/).map(p => { const st = statOf(it, p); return st ? { stat: st.stat, from: st.from, to: st.to, unit: st.unit } : { text: strip(p).replace(/\.$/, '') }; }).filter(l => l.stat || l.text);
   return { id: it.id, name: (INFO[it.id] || {}).name || it.name, rarity: (INFO[it.id] || {}).rarity || '', tag: ['buff', 'nerf'].includes(it.tag) ? it.tag : 'adjust', lines };
 }
-const KIND = (title, items) => { const tags = items.map(i => i.tag); if (/수정|버그/.test(title) || tags.every(t => t === 'fix')) return 'fix'; if (/밸런스|랭크 6|하향|상향/.test(title) || tags.every(t => ['buff', 'nerf', 'adjust', 'rework'].includes(t))) return 'balance'; if (tags.every(t => t === 'system' || t === 'adjust')) return 'change'; return 'new'; };
+const KIND = (title, items) => { const tags = items.map(i => i.tag); if (/추가 패치/.test(title)) return 'change'; /* R2.22 build 3: 표시 · 밸런스가 섞인 추가 패치 */ if (/수정|버그/.test(title) || tags.every(t => t === 'fix')) return 'fix'; if (/밸런스|랭크 6|하향|상향/.test(title) || tags.every(t => ['buff', 'nerf', 'adjust', 'rework'].includes(t))) return 'balance'; if (tags.every(t => t === 'system' || t === 'adjust')) return 'change'; return 'new'; };
 const n = NOTES.find(x => x.v === ver); if (!n) { console.error('패치노트에 없는 버전: ' + ver); process.exit(1); }
 if (NEW) { // 신규 지후 인포그래픽
   const ids = pick.length ? pick : [...new Set(n.sections.flatMap(s => s.items).filter(it => it.tag === 'new' && it.id && INFO[it.id]).map(it => it.id))];
