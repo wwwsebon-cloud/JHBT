@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22.2** (build 6).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22.3** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -94,7 +94,10 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.22.2)
+## 최근 변경 (R2.22.3)
+- 밸런스 8종: 모노리스 아군 충전 1.5% (`monoTick` 아군마다 초당 6) · DJ HP 1600 · EMP ATK 75 · 파동 50% · 달 2.2초 · 순풍 ATK 15 · 카우보이 골드 8% · 40~199 · 마피아 4.1초 · 랜턴 회복 빔 60% + `lifesteal: 0.3` (아케인과 같은 흡혈).
+
+## 그 전 변경 (R2.22.2)
 - 도둑 지후 리워크: HP 1200 · ATK 100 · 0.75초 · 이동 3 · 첫 공격만 [절도] (`customAttack` 은 `u.bg.done` 이면 false → 일반 공격) · 훔친 뒤 제자리 고정 (`steer`) 과 시간 SP (`burglarTick`) 삭제 · 훔친 스킬은 `type: 'hit'` 사본 (`need` = 주인 `t.need || sk.need` · 쿨타임 스킬은 `cd` 초 · SP 없는 핵미사일은 그대로) → `afterHit` 이 공격마다 SP +1.
 - build 2: 도둑 이동 3.3 · 스파이 변장한 뒤에도 치명타마다 또 변장 (`spyCrit` 이 스킬이 spy 가 아니면 `spyMorph` 를 바로 · 변장한 지후의 스킬도 그대로 = 이중 스킬) · C4 폭발 35% · 수은 1.5초 · 부하 지후 `goon` 1.25초.
 - build 3: 마피아 역할군 딜러 → 소환형 (배치 줄 `roleRow` · 봇 칸 고르기도 역할군을 본다).
