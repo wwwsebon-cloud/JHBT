@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.23** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.23** (build 2).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -99,7 +99,10 @@
 - 짝수 라운드 `evRoll`: 등급 `EV_GRADE` [50, 35, 15] (양쪽 같다) → `evDeal` 카드 3장씩 (따로) → 봇은 `evBotPick` 바로 · 나는 `evShow` (#evPop · 15초 `EV_PICK_SEC` · 시간 초과 무작위 · S.fast / 리플레이는 바로 무작위).
 - 고른 이벤트 `S.ev[진영] = [{ id, g, c }]` → `evRecount` → `evN(진영, id)` = 수치 합 (%) · 덱 강화는 `'deckA:<id>'` · `'deckS:<id>'`. 이벤트 데이터 `EVENTS[id].v` = [브론즈, 실버, 골드] (0 = 그 등급엔 없음).
 - 적용: 체력 · 공격력 `evUnit` (전투 시작 · 하드코어는 `S.lives` 가 `S.maxLives` 일 때 · 소수정예는 배치 4기 이하) · 공격속도 `u.evAspd` → `evCombat` 버프 'ev' · 피의 갈증 `dealDamage` · 마력의 힘 `evSp(u)` (SP 를 채우는 곳마다 곱한다 · hit SP 가 소수가 될 수 있다) · 합체 / 합성마스터 `evMerge` (`levelUp` · 합체 뒤 · 소환은 `f: 'b'`).
-- 새 이벤트를 만들면 `EVENTS` · `evUnit` / `evCombat` 등 적용 · `evBotPick` 의 W · 패치노트.
+- build 2: 카드 화면 = 슬롯머신 (`evShow` · `.evx` · 등급 릴 → 카드 릴 3개를 WAAPI `strip.animate` 로 위에서 아래로 · 차례로 멈춤 · 효과음 `ev_tick` · `ev_land` · 도는 중 누르면 `a.finish()` · 카드 앞면 `evFaceHtml` · 상대 선택 `evMiniHtml`) · 설명 줄은 사용자 요청으로 없음.
+- build 2 이벤트 13종 추가 (fast as f boi · 속전속결 · 레벨업 · 스피드 콤보 · 중앙 Good · 선봉대 · 천살성 · 단체 레벨업 · 모 아니면 도 · 지원요청 · 베테랑 · 평준화 · 자힐 · 약점공략) · 마력의 힘 실버 12 · 골드 25%. 고르는 순간 효과 (`ins`) 는 `evInstant` → `evSnap` (S.roundStart 다시) · 레벨업 `evRoundWin` (roundResult) · 자힐 `evTick` · 받는 피해 `evTaken` (약점공략 · 천살성) · 스피드 콤보 스택 `S.evf[진영].combo` (`evMerge`) · 베테랑 칸 `S.evf[진영].vet` (renderField `.tile.ev-vet`).
+- **배치 기회 (모든 게임 · build 2)**: 라운드마다 `CFG.DEPLOYS` 3 · 데스매치 `CFG.DM_DEPLOYS` 4.
+- 새 이벤트를 만들면 `EVENTS` · `evUnit` / `evCombat` / `evInstant` 등 적용 · `evBotPick` 의 W · 패치노트.
 
 ## 그 전 변경 (R2.22.3)
 - 밸런스 8종: 모노리스 아군 충전 1.5% (`monoTick` 아군마다 초당 6) · DJ HP 1600 · EMP ATK 75 · 파동 50% · 달 2.2초 · 순풍 ATK 15 · 카우보이 골드 8% · 40~199 · 마피아 4.1초 · 랜턴 회복 빔 60% + `lifesteal: 0.3` (아케인과 같은 흡혈).
