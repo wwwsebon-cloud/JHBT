@@ -203,7 +203,7 @@ def section(sec, cols):
         else:  # 한쪽만 있으면 그 목록을 단 수대로 나눈다
             rows, cls, h = (up, 'up', '▲ 상향') if up else (down, 'down', '▼ 하향')
             body += f'<div class="bal {cls}" style="--bc:1"><div class="{cls}"><h3>{h} <span>{len(rows)}</span></h3><div class="list">{"".join(rows)}</div></div></div>'
-    return f'<div class="sec"><div class="sh"><span class="k {kind}">{label}</span><h2>{e(sec["label"])}</h2><span class="n">{n}</span></div>{body}</div>'
+    return f'<div class="sec"><div class="sh"><span class="k {kind}">{label}</span><h2>{e(sec["label"])}</h2>{f'<span class="n">{n}</span>' if n else ''}</div>{body}</div>'
 
 
 # ── R2.17.2 밸런스 타일 ──
