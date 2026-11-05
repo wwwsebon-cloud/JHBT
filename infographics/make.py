@@ -13,6 +13,7 @@ JSON 형식
   "sections": [
     { "kind": "new" | "balance" | "change" | "fix", "label": "새 기능",
       "items": [ { "icon": "✦" | "id": "fire", "title": "...", "lines": ["...", ...] } ] },   ← lines 는 「 · 」로 이어 한 줄 설명이 된다 (짧게)
+    { "kind": "change", "label": "전투 표시", "items": [...], "shots": [ { "src": "shots/R2.22-b3-spy.png", "cap": "설명" } ] },   ← (R2.22 build 3) 게임 스크린샷 (infographics/ 기준 경로 · 한 줄에 나란히)
     { "kind": "balance", "label": "밸런스",
       "stats": [ { "id": "ice", "stat": "공격력", "from": 33, "to": 70, "unit": "" },
                 { "id": "moon", "stat": "공격 간격", "from": 2.4, "to": 2, "unit": "초", "lower": true },   ← lower: 작을수록 좋은 수치
@@ -28,6 +29,7 @@ JSON 형식
   "tiers": [ { "t": "S", "ids": [ { "id": "fire", "wr": 64.5, "rarity": "common" } ] } ] } — 줄마다 티어 칸 + 초상화 (이름 · 표시 승률)
 "headline" (예전 상단 요약 카드) 는 더 이상 그리지 않는다 (있어도 무시).
 """
+import base64
 import html
 import json
 import math
@@ -37,7 +39,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PORTRAITS = json.load(open(os.path.join(HERE, 'portraits.json'), encoding='utf-8'))
-NAMES = {'fire': '화염 지후', 'ice': '얼음 지후', 'sword': '검 지후', 'assassin': '암살 지후', 'shield': '쉴드 지후', 'accel': '가속 지후', 'lonely': '고독한 지후', 'berserk': '광폭화 지후', 'scythe': '낫 지후', 'moon': '달 지후', 'levelup': '레벨업 지후', 'magic': '마탄 지후', 'gift': '선물 지후', 'slime': '슬라임 지후', 'atom': '원자 지후', 'dice': '주사위 지후', 'gun': '총 지후', 'coin': '코인 지후', 'combo': '콤보 지후', 'heal': '힐 지후', 'water': '물 지후', 'berserker': '버서커 지후', 'slot': '슬롯머신 지후', 'bow': '활 지후', 'dust': '황사 지후', 'cactus': '선인장 지후', 'jaws': '죠스 지후', 'blizzard': '블리자드 지후', 'bat': '빠따 지후', 'train': '신칸센 지후', 'titanium': '티타늄 지후', 'sun': '태양 지후', 'whirl': '회오리 지후', 'gumiho': '구미호 지후', 'necro': '네크로맨서 지후', 'deathnote': '데스노트 지후', 'rifle': '라이플 지후', 'bubble': '버블 지후', 'prophecy': '예언 지후', 'joker': '조커 지후', 'syringe': '주사 지후', 'tentacle': '촉수 지후', 'lantern': '랜턴 지후', 'lightning': '번개 지후', 'barrier': '보호막 지후', 'revive': '부활 지후', 'reaper': '사신 지후', 'guardian': '수호자 지후', 'clock': '시계 지후', 'charge': '충전 지후', 'devour': '포식 지후', 'bomb': '폭탄 지후', 'nuke': '핵미사일 지후', 'star': '별 지후', 'sommelier': '소믈리에 지후', 'chicken': '닭 지후', 'pan': '후라이팬 지후', 'growth': '성장 지후', 'melody': '선율 지후', 'tailwind': '순풍 지후', 'lock': '자물쇠 지후', 'radiation': '방사능 지후', 'antigrav': '반중력 지후', 'teemo': '티모 지후', 'rain': '비 지후', 'nou': 'NO U 지후', 'venom': '독 지후', 'biker': '폭주족 지후', 'lament': '솔렘라멘트 지후', 'soulcaller': '강령술사 지후', 'laser': '빔 지후', 'god': '갓지후', 'archaeo': '고고학자 지후', 'rush': '돌격 지후', 'thief': '괴도 지후', 'bullet': '탄환 지후', 'holy': '성검 지후', 'roulette': '러시안룰렛 지후', 'tyrant': '폭군 지후', 'bbgun': 'BB탄 지후', 'hong': '홍명보 지후', 'emp': 'EMP 지후', 'dragon': '드래곤 지후', 'frog': '개구리 지후', 'monolith': '모노리스 지후', 'exynos': '엑시노스 지후', 'engineer': '엔지니어 지후', 'warp': '왜곡 지후', 'sniper': '저격 지후', 'dj': 'DJ 지후', 'arcane': '아케인 지후', 'prince': '왕자 지후'}
+NAMES = {'fire': '화염 지후', 'ice': '얼음 지후', 'sword': '검 지후', 'assassin': '암살 지후', 'shield': '쉴드 지후', 'accel': '가속 지후', 'lonely': '고독한 지후', 'berserk': '광폭화 지후', 'scythe': '낫 지후', 'moon': '달 지후', 'levelup': '레벨업 지후', 'magic': '마탄 지후', 'gift': '선물 지후', 'slime': '슬라임 지후', 'atom': '원자 지후', 'dice': '주사위 지후', 'gun': '총 지후', 'coin': '코인 지후', 'combo': '콤보 지후', 'heal': '힐 지후', 'water': '물 지후', 'berserker': '버서커 지후', 'slot': '슬롯머신 지후', 'bow': '활 지후', 'dust': '황사 지후', 'cactus': '선인장 지후', 'jaws': '죠스 지후', 'blizzard': '블리자드 지후', 'bat': '빠따 지후', 'train': '신칸센 지후', 'titanium': '티타늄 지후', 'sun': '태양 지후', 'whirl': '회오리 지후', 'gumiho': '구미호 지후', 'necro': '네크로맨서 지후', 'deathnote': '데스노트 지후', 'rifle': '라이플 지후', 'bubble': '버블 지후', 'prophecy': '예언 지후', 'joker': '조커 지후', 'syringe': '주사 지후', 'tentacle': '촉수 지후', 'lantern': '랜턴 지후', 'lightning': '번개 지후', 'barrier': '보호막 지후', 'revive': '부활 지후', 'reaper': '사신 지후', 'guardian': '수호자 지후', 'clock': '시계 지후', 'charge': '충전 지후', 'devour': '포식 지후', 'bomb': '폭탄 지후', 'nuke': '핵미사일 지후', 'star': '별 지후', 'sommelier': '소믈리에 지후', 'chicken': '닭 지후', 'pan': '후라이팬 지후', 'growth': '성장 지후', 'melody': '선율 지후', 'tailwind': '순풍 지후', 'lock': '자물쇠 지후', 'radiation': '방사능 지후', 'antigrav': '반중력 지후', 'teemo': '티모 지후', 'rain': '비 지후', 'nou': 'NO U 지후', 'venom': '독 지후', 'biker': '폭주족 지후', 'lament': '솔렘라멘트 지후', 'soulcaller': '강령술사 지후', 'laser': '빔 지후', 'god': '갓지후', 'archaeo': '고고학자 지후', 'rush': '돌격 지후', 'thief': '괴도 지후', 'bullet': '탄환 지후', 'holy': '성검 지후', 'roulette': '러시안룰렛 지후', 'tyrant': '폭군 지후', 'bbgun': 'BB탄 지후', 'hong': '홍명보 지후', 'emp': 'EMP 지후', 'dragon': '드래곤 지후', 'frog': '개구리 지후', 'monolith': '모노리스 지후', 'exynos': '엑시노스 지후', 'engineer': '엔지니어 지후', 'warp': '왜곡 지후', 'sniper': '저격 지후', 'dj': 'DJ 지후', 'arcane': '아케인 지후', 'prince': '왕자 지후', 'mafia': '마피아 지후', 'c4': 'C4 지후', 'burglar': '도둑 지후', 'blackhole': '블랙홀 지후', 'mercury': '수은 지후', 'spy': '스파이 지후', 'cowboy': '카우보이 지후'}
 RARITY = {'common': '일반', 'rare': '희귀', 'epic': '영웅', 'legend': '전설'}
 e = html.escape
 FONTS = "@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'); @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap');"
@@ -84,6 +86,7 @@ body.dark .chars span { border-color:var(--card); box-shadow:0 0 0 2px var(--edg
 body.dark .pg { flex:none; padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--edge); font-size:15px; font-weight:900; color:var(--gold); letter-spacing:.06em; }
 body.dark .sh .k { background:var(--edge); } body.dark .sh .k.new { background:var(--new); } body.dark .sh .k.change { background:#53d3c0; color:#10202a; }
 body.dark .sh h2 { font-family:'Black Han Sans', sans-serif; font-weight:400; font-size:26px; }
+body.dark .shots { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:24px; margin-top:20px; } body.dark .shots figure { margin:0; border-radius:20px; overflow:hidden; background:var(--card); box-shadow:0 0 0 2px var(--edge); } body.dark .shots img { display:block; width:100%; height:auto; background:#fff; } body.dark .shots figcaption { padding:12px 16px; font-size:15px; font-weight:700; line-height:1.4; color:var(--sub); word-break:keep-all; } /* R2.22 build 3: 게임 스크린샷 */
 body.dark .it { border-top-color:var(--line); } body.dark .ic { background:var(--deep); } body.dark .ic.p { background:#fff; box-shadow:0 0 0 2px var(--edge); }
 body.dark .it p { color:var(--sub); }
 /* 밸런스 타일 (Brawl 패치 요약 그림처럼 · 초상화가 색 띠 왼쪽에 걸친다) */
@@ -139,6 +142,15 @@ def pic(id_):
     return f'<img src="{PORTRAITS[id_]}" alt="">' if id_ in PORTRAITS else ''
 
 
+def shot_img(src):  # R2.22 build 3: 스크린샷을 HTML 안에 (infographics/ 기준 경로)
+    with open(os.path.join(HERE, src), 'rb') as f:
+        return 'data:image/png;base64,' + base64.b64encode(f.read()).decode()
+
+
+def shots(L):
+    return '<div class="shots">' + ''.join(f'<figure><img src="{shot_img(s["src"])}" alt=""><figcaption>{e(s.get("cap", ""))}</figcaption></figure>' for s in L) + '</div>'
+
+
 def icon(it):
     if it.get('id'):
         return f'<span class="ic p">{pic(it["id"])}</span>'
@@ -180,6 +192,8 @@ def section(sec, cols):
     if sec.get('items'):
         rows = [f'<div class="it">{icon(it)}<b>{e(it["title"])}</b><p>{e(" · ".join(it.get("lines", [])))}</p></div>' for it in sec['items']]
         body += f'<div class="list">{"".join(rows)}</div>'; n += len(rows)
+    if sec.get('shots'):
+        body += shots(sec['shots'])
     if sec.get('stats'):
         up = stat_rows([s for s in sec['stats'] if stat_dir(s) == 'buff'])
         down = stat_rows([s for s in sec['stats'] if stat_dir(s) == 'nerf'])

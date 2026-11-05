@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22** (build 3).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -27,6 +27,7 @@
 - 로컬 서버를 켠 뒤: `node infographics/extract.js` → `node infographics/notes2json.js <버전>` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py "infographics/<버전>*.html"`.
 - 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …). 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
 - **신규 지후**: `node infographics/notes2json.js <버전> --new` (그 버전 패치노트의 tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make.py · shot.py.
+- 눈으로 보이는 변화는 구역에 게임 스크린샷 `"shots": [{ "src": "shots/<파일>.png", "cap": … }]` (infographics/ 기준 · R2.22 build 3 · 하나만 따로 낼 때는 JSON 을 직접 · 예: `R2.22-b3.json`). 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 를 붙인 래퍼를 준다 (extract.js).
 - 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로).
 - 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
 - 만든 PNG 는 커밋하고 사용자에게 보낸다.
@@ -95,6 +96,7 @@
 ## 최근 변경 (R2.22)
 - 밸런스: 비 ATK 35 → 25 · 콤보 공격마다 10 → 7% · 저격 ATK 1000 → 800 · 거리 감소를 **반대로** (`sniperCut` = 가까울수록 · 바로 앞 50% · 사거리 끝 0% · 서사: 근시 → 원시).
 - 랭크 6 고유능력 32종 추가 (`ENH_SKILL` · 도우미는 `reapFx` 앞 `// ── R2.22 랭크 6 고유능력 도우미 ──`): 비 SP 7 (유닛별 SP `u.need` → **`skNeed(u)`** · SP 를 읽는 곳은 `sk.need` 대신 이것) · 주사 새 상태 **`noheal` [회복 불가]** (`heal` · 유물 회복이 막는다 · 아이콘은 healDown) · 독 [신경독] `u.vAtk` (venom 중독 X 의 `v6` · 틱마다 +1 · 공격력 −0.5% · 중독이 끝나면 0) · 소믈리에 와인 랭크 6 분은 `wn6` (배치 기록 · 합체 · 반중력 분열에도) · 고고학자 `S.arch6[진영]` (낡은 → 다음 전설 · 클로버보다 먼저) · 홍명보 `t.ballBy` + `hongHold` · 랜턴 `lanAura` (buff `lanUp` · `lanDn` 0.5초씩 늘림) · 죠스 `jawsStack` (buff `jaws6`) · 개구리는 배치 단계라 `enhOf(side, 'frog')`.
+- build 3 (추가 패치 · 표시만): 도둑 지후 [절도] 뒤 머리 위에 스킬 주인 초상화 — `u.bgOwn = { id, src }` (도둑에게서 훔치면 원래 주인) · `bgPic(u)` 가 효과 아이콘 줄 레이어 `u.ufxEl` 안에 `.bg-pic` (아이콘이 있으면 `.status-icons:not(:empty) + .bg-pic` 로 그 위 · `ufxOf` 가 레이어를 새로 만들 때도) · 스파이 [변장] 뒤 `u.spyDis` → `unitEl` 이 `spy-dis` (보라 테두리 #5b2a6e · 진영은 체력바 색).
 - 남은 일: 바뀐 수치로 티어 시뮬 · `TIER_SC` 갱신 (이번에는 안 돌렸다).
 
 ## 지난 변경 (R2.21.2)
