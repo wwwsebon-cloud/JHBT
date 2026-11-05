@@ -4103,9 +4103,9 @@ const RELICS = { // [이름, 아이콘, 효과, 설명] · atk 아군 공격력 
 };
 const relV = (side, k) => (S.rel && S.rel[side] && S.rel[side][k]) || 0; // 유물 효과 합 (전투 계산이 매번 부른다)
 function relicDig(u) {
-  const side = u.side, a6 = S.arch6 && S.arch6[side], cl = !a6 && S.clover && S.clover[side]; if (a6) S.arch6[side] = 0; if (cl) S.clover[side] = 0; // 평범한 네잎클로버: 이번 발굴은 전설 · 개쩌는 중에서 · 랭크 6 [발굴 감각]: 평범한 유물 다음은 무조건 전설 (클로버는 아껴 둔다)
+  const side = u.side, a6 = S.arch6 && S.arch6[side], cl = !a6 && S.clover && S.clover[side]; if (a6) S.arch6[side] = 0; if (cl) S.clover[side] = 0; // 평범한 네잎클로버: 이번 발굴은 전설 · 개쩌는 중에서 · 랭크 6 [발굴 감각]: 낡은 유물 다음은 무조건 전설 (클로버는 아껴 둔다)
   let r = rng() * RELIC_TIER.reduce((s, [k, , w]) => s + (cl && (k === 'old' || k === 'plain') ? 0 : w), 0), tier = 'wow'; /* 클로버면 전설 + 개쩌는 합 안에서 */ for (const [k, , w] of RELIC_TIER) { if (cl && (k === 'old' || k === 'plain')) continue; if (r < w) { tier = k; break; } r -= w; }
-  if (a6) tier = 'legend'; else if (tier === 'plain' && enh6(u)) (S.arch6 || (S.arch6 = { a: 0, e: 0 }))[side] = 1;
+  if (a6) tier = 'legend'; else if (tier === 'old' && enh6(u)) (S.arch6 || (S.arch6 = { a: 0, e: 0 }))[side] = 1;
   const L = RELICS[tier], it = L[Math.floor(rng() * L.length)], f = it[2], R = S.rel || (S.rel = { a: {}, e: {} }), me = R[side] || (R[side] = {});
   ['atk', 'spd', 'vuln', 'dr', 'regen', 'sp', 't15', 't25', 'gaho'].forEach(k => { if (f[k]) me[k] = (me[k] || 0) + f[k]; });
   if (f.shield) friends(u).forEach(a => A.shield(a, f.shield * effMult(1)));
@@ -7527,7 +7527,7 @@ const ENH_SKILL = { // 랭크 6 고유능력 · 랭크 12 필살기 (사용자�
   teemo: { 6: { name: '맹독 다트', desc: '[강화 실명 다트]의 중독 시간이 3초 늘어납니다 (8초).' } },
   venom: { 6: { name: '신경독', desc: '[중독] 피해가 들어갈 때마다 대상의 공격력이 0.5%씩 줄어듭니다. [중독]이 풀리면 돌아옵니다.' } },
   laser: { 6: { name: '급속 충전기', desc: '차징 시간이 1초 줄어듭니다 (2초).' } },
-  archaeo: { 6: { name: '발굴 감각', desc: '평범한 유물을 뽑으면 바로 다음에 뽑는 유물은 무조건 전설 유물입니다.' } },
+  archaeo: { 6: { name: '발굴 감각', desc: '낡은 유물을 뽑으면 바로 다음에 뽑는 유물은 무조건 전설 유물입니다.' } },
   rush: { 6: { name: '정면충돌', desc: '돌진에 부딪힌 적을 2초 동안 기절시킵니다.' } },
   bbgun: { 6: { name: '도탄', desc: '다 튕긴 뒤에도 20% 확률로 한 번 더 튕깁니다 (연쇄 제한 없음).' } },
   hong: { 6: { name: '볼 키핑', desc: '공을 가지고 있는 아군의 받는 피해가 15% 줄어듭니다.' } },
@@ -9486,7 +9486,7 @@ const PATCH_NOTES = [
       { id: 'teemo', name: '티모 · 맹독 다트', tag: 'new', desc: '[맹독 다트] [강화 실명 다트] 중독 <b>5 → 8초</b>' },
       { id: 'venom', name: '독 · 신경독', tag: 'new', desc: '[신경독] [중독] 틱마다 대상 공격력 <b>−0.5%</b> (풀리면 복구)' },
       { id: 'laser', name: '빔 · 급속 충전기', tag: 'new', desc: '[급속 충전기] 차징 <b>3 → 2초</b>' },
-      { id: 'archaeo', name: '고고학자 · 발굴 감각', tag: 'new', desc: '[발굴 감각] 평범한 유물 다음은 <b>무조건 전설</b>' },
+      { id: 'archaeo', name: '고고학자 · 발굴 감각', tag: 'new', desc: '[발굴 감각] 낡은 유물 다음은 <b>무조건 전설</b>' },
       { id: 'rush', name: '돌격 · 정면충돌', tag: 'new', desc: '[정면충돌] 돌진이 <b>2초</b> 기절' },
       { id: 'bbgun', name: 'BB탄 · 도탄', tag: 'new', desc: '[도탄] 다 튕긴 뒤에도 <b>20%</b> 한 번 더 (제한 없음)' },
       { id: 'hong', name: '홍명보 · 볼 키핑', tag: 'new', desc: '[볼 키핑] 공을 가진 아군 받는 피해 <b>−15%</b>' },
