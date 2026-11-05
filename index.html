@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.21.2"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.22"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -727,6 +727,7 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 .fx-projectile.egg { width:12px; height:15px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:#fffaf0 !important; box-shadow:0 0 0 2px #e8c99a; }
 .fp-pan { position:absolute; left:50%; top:50%; width:0; height:0; z-index:6; pointer-events:none; }
 .fp-pan .w { position:absolute; left:calc(var(--fr) * -1); top:calc(var(--fr) * -1); width:calc(var(--fr) * 2); height:calc(var(--fr) * 2); border-radius:50%; background:conic-gradient(from 35deg, rgba(255,150,40,.22) 0 110deg, transparent 110deg); }
+.fp-pan.r6 .w { background:conic-gradient(from 30deg, rgba(255,150,40,.22) 0 120deg, transparent 120deg); }
 .fp-pan b { position:absolute; left:calc(var(--fr) * .35); top:-3px; width:calc(var(--fr) * .4); height:6px; border-radius:3px; background:linear-gradient(#a06a35, #5a3515); }
 .fp-pan i { position:absolute; left:calc(var(--fr) * .7); top:-15px; width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 40% 35%, #777, #2b2b2b 60%, #111); box-shadow:0 0 0 3px #111, inset 0 0 0 4px #444; }
 .fp-pan.swing i { animation:fpSwing .2s ease-out; } @keyframes fpSwing { 50% { transform:scale(1.25); } }
@@ -3316,8 +3317,8 @@ const CHARS = {
   scythe: { name: '낫 지후', cleave: true, rarity: 'epic', role: '어쌔신', hp: 2020, atk: 410, atkSpeed: 4.5, range: 1.65, melee: true, speed: 1.15, portrait: PORTRAITS.scythe, sfx: 'swing', color: '#5b4b8a',
     story: '마트 원예 코너에서 50% 할인하던 낫을 산 지후입니다. 잡초를 베려고 산 건데, 첫 휘두름에 잡초와 함께 옆집 울타리, 가로등, 허수아비 셋이 한꺼번에 베어졌어요. 그날 그는 자기가 원예에 재능이 없다는 걸 깨닫고 전장으로 진로를 틀었습니다. 가끔 사신 지후가 찾아와 그 낫이 원래 자기 할머니 것이라고 주장하지만, 그는 매번 영수증을 꺼내 보여 줘요. 영수증은 코팅까지 해 두었습니다. 교환 · 환불 기간은 이미 지났대요.',
     passive: '주기적으로 <b>[힘줄 끊기]</b>: 무작위 적 곁으로 순간이동해 주변 모든 적에게 공격력의 <b>70%</b> 피해를 주고 [절상] · [침묵] · [부상]을 건 뒤 제자리로 돌아옵니다.',
-    gauge(u) { const s = u.sc; if (!s) return 0; return s.phase === 'cd' ? clamp(1 - s.t / (s.first ? 5 : 9), 0, 1) : 1; },
-    onStart(u) { u.sc = { phase: 'cd', t: 5, first: true }; },
+    gauge(u) { const s = u.sc; if (!s) return 0; return s.phase === 'cd' ? clamp(1 - s.t / scCd(u, s.first), 0, 1) : 1; },
+    onStart(u) { u.sc = { phase: 'cd', t: scCd(u, true), first: true }; },
     tick(u, dt, A) {
       const s = u.sc; if (!s) return;
       if (s.phase === 'cd') {
@@ -3328,14 +3329,14 @@ const CHARS = {
       if (s.phase === 'wind') {
         s.t -= dt; if (s.t > 0) return;
         const list = A.enemies(u);
-        if (!list.length) { s.phase = 'cd'; s.t = 9; s.first = false; u.locked = false; return; }
+        if (!list.length) { s.phase = 'cd'; s.t = scCd(u); s.first = false; u.locked = false; return; }
         const e = list[Math.floor(rng() * list.length)], ang = rng() * Math.PI * 2, off = bodySeparation(u, e) + 2;
         A.ring(u.x, u.y, 0.6); physSnap(u, e.x + Math.cos(ang) * off, e.y + Math.sin(ang) * off); A.ring(u.x, u.y, 1.65); shake(true);
         const R = 1.65 * CFG.CELL, sp = (R + unitRadius(u)) * 2; if (!S.fast) fxAt('fx-scythe-spin', u.x, u.y, 480, { width: sp + 'px', height: sp + 'px' }); // 전작 7.4.7: 회전하며 낫으로 베는 이펙트
-        foes(u).forEach(t => { if (dist(u, t) > R + unitRadius(t)) return; const done = A.dmg(u, t, 70); /* R2.10.2: 80 → 70% */ if (done > 0) { hitFx(u, t, true); A.cut(t, 0.25, 4); A.status(t, 'silence', 4); A.status(t, 'wound', 1); } });
+        foes(u).forEach(t => { if (dist(u, t) > R + unitRadius(t)) return; const done = A.dmg(u, t, 70); /* R2.10.2: 80 → 70% */ if (done > 0) { const r6 = enh6(u) ? 1 : 0; /* 랭크 6 [숙련된 낫질]: +1초 */ hitFx(u, t, true); A.cut(t, 0.25, 4 + r6); A.status(t, 'silence', 4 + r6); A.status(t, 'wound', 1); } });
         s.phase = 'stay'; s.t = 1.25; return;
       }
-      if (s.phase === 'stay') { s.t -= dt; if (s.t > 0) return; physSnap(u, s.home.x, s.home.y); A.ring(u.x, u.y, 0.6); s.phase = 'cd'; s.t = 9; s.first = false; u.locked = false; } // R2.7.2: 쿨타임 12 → 9초
+      if (s.phase === 'stay') { s.t -= dt; if (s.t > 0) return; physSnap(u, s.home.x, s.home.y); A.ring(u.x, u.y, 0.6); s.phase = 'cd'; s.t = scCd(u); s.first = false; u.locked = false; } // R2.7.2: 쿨타임 12 → 9초
     } },
   moon: { name: '달 지후', rarity: 'legend', role: '서포터', hp: 2300, atk: 70, atkSpeed: 2.8, range: 5, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.moon, sfx: 'ice', color: '#5aa9ff',
     story: '팽이가 되고 싶었던 달팽이입니다. 100일 동안 밤낮으로 기도했는데, 신이 「팽」은 못 듣고 「달」만 들어주는 바람에 달이 되어 버렸어요. 그 충격으로 그는 인생을 내려놓고 하루 23시간을 잡니다. 남은 1시간은 다시 잠들기 위해 눕는 데 써요. 국왕이 반란군 소탕대를 모집하던 날에도 자고 있었고, 눈을 떴을 때는 이미 다음 계절이었습니다. 하루 종일 일하는 태양 지후는 그를 볼 때마다 「같은 하늘인데 왜 나만」이라며 이를 갈아요.',
@@ -3354,7 +3355,7 @@ const CHARS = {
       if ((u.form || 1) >= 3) return;
       u.form++; const [kh, ka, as] = u.def.forms[u.form - 1], b = u.lvB || { hp: u.baseMaxHp, atk: u.atk, as: u.atkSpeed };
       u.baseMaxHp = Math.round(b.hp * kh); u.atk = Math.round(b.atk * ka); u.atkSpeed = b.as * as / 2; recut(u);
-      const gain = clamp(u.maxHp * 0.5, 0, u.maxHp - u.hp); u.hp += gain; if (!S.fast && gain > 0) dmgNum(u, Math.round(gain), { heal: true }); drawUnit(u); A.portrait(u, u.def.portraitLv[u.form - 1]); A.headLv(u, u.form); // R2.19: 최대 체력의 50% (build 13 가득 · 예전 30%) · build 13 때 주석에 묻혀 그림 · 레벨 표시가 안 바뀌던 것 수정
+      const gain = clamp(u.maxHp * (enh6(u) ? 0.625 : 0.5) /* 랭크 6 [만렙 보너스]: +25% */, 0, u.maxHp - u.hp); u.hp += gain; if (!S.fast && gain > 0) dmgNum(u, Math.round(gain), { heal: true }); drawUnit(u); A.portrait(u, u.def.portraitLv[u.form - 1]); A.headLv(u, u.form); // R2.19: 최대 체력의 50% (build 13 가득 · 예전 30%) · build 13 때 주석에 묻혀 그림 · 레벨 표시가 안 바뀌던 것 수정
       const t = fxAt('fx-lvtext', u.x, u.y - unitRadius(u), 900); t.textContent = `LEVEL ${u.form}!`; sfx('merge');
     } },
   magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 1200, atk: 160, atkSpeed: 2.6, /* R2.13.1: 2 → 2.4 · R2.21.1: 2.4 → 2.6 */ range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad', magicChance: 0.1, magicPct: 550, /* R2.21.1: 750 → 550% */
@@ -3386,20 +3387,21 @@ const CHARS = {
     passive: '공격할 때마다 <b>1 ~ 300</b> 사이 무작위 피해를 입힙니다.' },
   gun: { name: '총 지후', rarity: 'epic', role: '딜러', hp: 1310, atk: 140, atkSpeed: 2.1, range: 6, speed: 1.6, multiShot: true, portrait: PORTRAITS.gun, sfx: 'shot', color: '#555555',
     story: '딱지치기에 목숨을 거는 지후입니다. 정말로 목숨을 걸어요. 상대가 딱지를 대충 치면 자존심이 상해서 러시안룰렛 대결을 신청하거든요. 라이플 지후는 어릴 적 그와 딱지를 쳤다가 대결을 신청받은 뒤로 방아쇠만 보면 손이 떨립니다. 왕국 딱지 협회는 그를 위해 「딱지판 총기 반입 금지」 조항을 새로 만들었어요. 그러자 그는 딱지를 총으로 접기 시작했습니다. 어때요, 이제 딱지 칠 생각이 사라지셨나요?',
-    passive: '자신의 레벨만큼의 적을 한꺼번에 쏩니다.' },
+    passive: '자신의 레벨만큼의 적을 한꺼번에 쏩니다.',
+    atkMult(u) { return enh6(u) && u.lv === 1 ? 1.15 : 1; } }, // 랭크 6 [첫발의 긴장감]
   coin: { name: '코인 지후', rarity: 'rare', role: '딜러', hp: 1000, atk: 100, atkSpeed: 1, range: 5, speed: 1.6, coin: true, portrait: PORTRAITS.coin, sfx: 'shot', color: '#f2c94c',
     story: '길에서 주운 500원을 국왕이 발행한 「지후코인」에 몽땅 넣은 지후입니다. 국왕은 「불처럼 타오를 것」이라고 했고, 코인은 정말로 불타서 재가 되었어요. 그는 지금도 그 재를 유리병에 담아 두고 「장기 보유 중」이라는 라벨을 붙여 두었습니다. 매일 아침 차트를 보며 「지금이 바닥」이라고 외치는데, 바닥 밑에 지하 3층이 있다는 건 아직 몰라요. 겉으로는 「존버는 승리한다」며 뻐기지만, 사실은 방에서 한 발짝도 안 나가는 내향형 미소녀랍니다. 동전 던지기를 하면 늘 옆면이 나와요.',
     passive: '기본 공격력이 10분마다 <b>-50% ~ +50%</b> 사이에서 시세처럼 오르내립니다 (오를지 내릴지는 반반).',
     takenMult(u) { return enh6(u) ? Math.min(1, coinMult(S.coinSlot)) : 1; } }, // 랭크 6 [존버 정신]: 시세가 떨어진 비율만큼 받는 피해 감소
   combo: { name: '콤보 지후', rarity: 'epic', role: '딜러', hp: 1210, atk: 67, atkSpeed: 1.4, range: 6.2, speed: 1.6, portrait: PORTRAITS.combo, sfx: 'shot', color: '#ff6b6b',
     story: '수학만 빼고 전 과목 1등급인, 올해로 9수째 왕국 과거 시험을 보는 지후입니다. 수학이 9등급이라 매년 떨어지는데, 그는 그게 채점 오류라고 굳게 믿고 있어요. 최근에는 6과 7 중 어느 쪽이 더 큰지를 두고 깊은 고민에 빠졌습니다. 옆자리 원자 지후가 세 시간 동안 설명해 줬는데, 듣고 나니 8까지 헷갈리기 시작했다고 해요. 그래도 때린 횟수만큼은 정확히 세서 때릴수록 세지는데, 손가락으로 세는 탓에 열 번이 넘어가면 처음부터 다시 셉니다.',
-    passive: '공격할 때마다 공격력이 <b>10%</b>씩 늘어납니다.',
-    onAttack(u) { u.comboMult = (u.comboMult || 1) * 1.1; /* R2.19: 7 → 10% */ u.comboN = (u.comboN || 0) + 1; } },
+    passive: '공격할 때마다 공격력이 <b>7%</b>씩 늘어납니다.',
+    onAttack(u) { u.comboMult = (u.comboMult || 1) * (enh6(u) ? 1.08 : 1.07); /* R2.19: 7 → 10% · R2.22: 10 → 7% · 랭크 6 [연타 장인] +1% */ u.comboN = (u.comboN || 0) + 1; } },
   // ── R2.2 신규 지후 ──
   water: { name: '물 지후', rarity: 'epic', role: '컨트롤러', hp: 1760, atk: 70, atkSpeed: 2.5, range: 4.5, speed: 1.6, portrait: PORTRAITS.water, sfx: 'ice', color: '#2f8fe8',
     story: '지후왕국의 신하이자 국왕 화염 지후 1호의 오른팔입니다. 왕자 시절 불이 붙은 국왕에게 물을 끼얹어 구한 공으로 궁에 들어왔는데, 그 뒤로 국왕이 화를 낼 때마다 실제로 불이 나서 하루도 쉬지 못해요. 그의 업무 일지는 「09:00 소화, 10:30 소화, 11:00 또 소화」로 가득합니다. 반란이 터지자 왕국 곳곳에 지원병 모집 공고를 붙였는데, 비 지후가 공고를 다 적셔 놓는 바람에 지원자가 넷뿐이었어요. 국왕의 가스라이팅이 통하지 않는 유일한 지후입니다. 가장 좋아하는 음료가 콜라라는 건 왕국 3대 기밀이에요.',
     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[해일]</b>. 맵 끝까지 나아가는 해일로 적에게 공격력의 <b>120%</b> 피해를 주고 밀어냅니다.',
-      run(u, A) { const t = nearestFoe(u); if (!t) return; const ang = Math.atan2(t.y - u.y, t.x - u.x), hw = unitRadius(u), dx = Math.cos(ang), dy = Math.sin(ang);
+      run(u, A) { const t = nearestFoe(u); if (!t) return; const ang = Math.atan2(t.y - u.y, t.x - u.x), hw = unitRadius(u) * (enh6(u) ? 2 : 1) /* 랭크 6 [대해일] */, dx = Math.cos(ang), dy = Math.sin(ang);
         dmgNum(u, '해일!', { crit: true }); sfx('ice');
         A.line(u, u.x, u.y, ang, { speed: 9, hw, h: hw * 2, cls: 'fx-wave', onHit: (e, frac) => { const done = dealDamage(u, e, effAtk(u) * 1.2 + Math.max(0, e.maxHp - e.hp) * 0.12, { skill: true }); if (done > 0) hitFx(u, e, true); A.knock(u, e, 4 * (1 - frac), dx, dy); } }); } } },
   berserker: { name: '버서커 지후', rarity: 'rare', role: '딜러', hp: 1790, atk: 100, atkSpeed: 1.25, range: 'melee', speed: 1.6, portrait: PORTRAITS.berserker, portraitSkill: PORTRAITS.berserker_skill, sfx: 'swing', color: '#f08a00',
@@ -3431,11 +3433,11 @@ const CHARS = {
   dust: { name: '황사 지후', rarity: 'epic', role: '서포터', hp: 1670, atk: 25, atkSpeed: 0.5, range: 6.2, speed: 1.6, portrait: PORTRAITS.dust, sfx: 'shot', color: '#c9a227',
     story: '「황사회주의」를 꿈꾸는 서쪽의 혁명가 지후입니다. 모든 지후가 똑같이 황사를 마셔야 진정한 평등이 온다고 믿어요. 그래서 봄마다 국경을 넘어와 왕국 전체에 황사를 골고루 나눠 줍니다. 서쪽 마을의 화염 지후 314호에게 몰래 지령을 내려 반란을 일으킨 장본인인데, 지령서가 모래투성이라 314호는 절반쯤 잘못 읽었다고 해요. 물 지후는 그를 막으려고 왕국 곳곳에 물을 뿌리고, 비 지후는 그의 천적입니다. 마스크 회사들은 해마다 그에게 몰래 감사패를 보내요.',
     passive: '공격할 때 <b>7.5%</b> 확률로 자기 자리에 황사 지대를 만듭니다. 황사 지대 안의 아군은 회피율이 <b>35%</b> 증가합니다.',
-    onAttack(u) { if (rng() < 0.075) { /* R2.19: 6 → 7.5% */ A.zone(u, 3.5, 4, 'fx-dust-zone', { key: 'dust', v: { dodge: 0.35 } }); dmgNum(u, '황사!', { crit: true }); } } },
+    onAttack(u) { if (rng() < 0.075) { /* R2.19: 6 → 7.5% */ A.zone(u, 3.5, 4, 'fx-dust-zone', { key: 'dust', v: { dodge: enh6(u) ? 0.4 : 0.35 } } /* 랭크 6 [모래 장막] */); dmgNum(u, '황사!', { crit: true }); } } },
   cactus: { name: '선인장 지후', rarity: 'epic', role: '탱커', hp: 2510, /* R2.13.1: 1510 → 1310 */ atk: 166, atkSpeed: 4, range: 3.8, speed: 1.6, shotSpeed: 6, shotCls: 'needle', reflect: 0.35, portrait: PORTRAITS.cactus, sfx: 'shot', color: '#2e8b3a',
     story: '선인장에게 물 주는 걸 3년 동안 까먹은 지후입니다. 그런데 선인장은 멀쩡했고, 그는 자기가 식물보다 약하다는 사실에 큰 충격을 받았어요. 그래서 선인장을 이기려고 온몸에 가시를 달았습니다. 이제 그를 때리는 지후는 모두 손이 따끔해져요. 문제는 안아 주는 지후도 따끔하다는 겁니다. 물 지후가 보다 못해 물을 주러 와도 3미터 밖에서 물총으로 쏴 줘요. 그 선인장은 아직도 그보다 건강합니다.',
     passive: '근접 공격을 받으면 피해의 <b>35%</b>를 되돌려줍니다. 일반 공격이 맞으면 네 방향으로 <b>4칸</b>까지 관통하는 가시를 쏴 공격력의 <b>50%</b> 피해를 입힙니다.',
-    onHit(u, t, A) { const x = t.x, y = t.y; [0, 0.5, 1, 1.5].forEach(k => A.line(u, x, y, Math.PI * k, { speed: 11, hw: 6, len: 4 * CFG.CELL, cls: 'fx-spike', skip: [t], /* R2.12.3: 맵 끝 → 4칸 */ onHit: e => { if (dealDamage(u, e, effAtk(u) * 0.5, {}) > 0) hitFx(u, e, false); } })); } },
+    onHit(u, t, A) { const x = t.x, y = t.y; (enh6(u) ? [0, 0.4, 0.8, 1.2, 1.6] /* 랭크 6 [오방 가시] */ : [0, 0.5, 1, 1.5]).forEach(k => A.line(u, x, y, Math.PI * k, { speed: 11, hw: 6, len: 4 * CFG.CELL, cls: 'fx-spike', skip: [t], /* R2.12.3: 맵 끝 → 4칸 */ onHit: e => { if (dealDamage(u, e, effAtk(u) * 0.5, {}) > 0) hitFx(u, e, false); } })); } },
   jaws: { name: '죠스 지후', rarity: 'epic', role: '어쌔신', hp: 1000, atk: 200, /* R2.13.1: 200 → 100 · R2.21.1: 130 → 200 */ atkSpeed: 1.3, range: 'melee', speed: 2.5, portrait: PORTRAITS.jaws, sfx: 'swing', color: '#3a6ea5',
     story: '바다에서 상어에게 물릴 뻔하고 그 상어에게 반해 버린 지후입니다. 「나를 물려고 한 존재가 이렇게 멋있을 수가」라며 그 길로 상어가 되려고 바다로 떠났어요. 수년 뒤 그는 날카로운 이빨을 달고 돌아왔는데, 알고 보니 문방구에서 산 상어 이빨 장난감이었습니다. 그래도 무는 힘만큼은 진짜라서 아무도 따지지 못해요. 깊은 바다에서 촉수 지후와 이웃으로 지냈는데, 촉수 지후의 먹물 때문에 3년 동안 서로 얼굴을 본 적이 없다고 합니다. 꿈은 태평양을 누비는 백상아리지만, 아직은 동네 수영장에서 연습 중이에요.',
     passive: '라운드가 시작되면 <b>[잠수]</b>해 무작위 적에게 헤엄쳐 가서 덮칩니다. 떠오를 때 주변 적에게 공격력의 <b>50%</b> 피해를 주고, 공격할 때마다 체력을 회복합니다.',
@@ -3449,7 +3451,7 @@ const CHARS = {
       A.around(u, u.x, u.y, 2, e => { if (A.dmg(u, e, 50) > 0) hitFx(u, e, true); });
       return false;
     },
-    onAttack(u) { heal(u, u, effAtk(u) * 0.3); } },
+    onAttack(u, t) { heal(u, u, effAtk(u) * 0.3); if (enh6(u)) jawsStack(u, t); } },
   blizzard: { name: '블리자드 지후', rarity: 'legend', role: '컨트롤러', hp: 1244, /* R2.21: 1144 → 1244 */ atk: 80, atkSpeed: 1.1, range: 4.8, speed: 1.6, portrait: PORTRAITS.blizzard, sfx: 'ice', color: '#7fc8f8',
     story: '봄이 오면 눈사람이 녹는 걸 받아들일 수 없었던 지후입니다. 그래서 그는 봄이 아예 오지 못하게 막기로 했어요. 눈보라를 부르는 법을 익힌 뒤로 그의 동네는 5월에도 패딩을 입고 다닙니다. 난방비가 세 배로 뛰자 반상회에서 퇴출당했고, 봄을 기다리는 태양 지후와는 원수가 되었어요. 요즘은 눈보라를 더 오래 부는 법을 익혀서, 그의 눈보라에 갇힌 적은 녹는 데 한참 걸립니다. 북쪽 성의 얼음 지후와는 유일한 펜팔인데, 그는 편지가 꽁꽁 얼어서 도착하는 걸 정성이라고 생각해요.',
     skill: { type: 'hit', need: 9, desc: '<b>SP 9</b> · <b>[눈보라]</b>. 모든 적에게 현재 체력의 <b>6%</b> 피해를 주고 <b>2초</b> 동안 얼립니다. 얼음이 녹은 적은 [동상]에 걸립니다.',
@@ -3532,6 +3534,7 @@ const CHARS = {
         if (!S.fast) { A.ring(u.x, u.y, 1.2); dmgNum(u, '소환!', { crit: true }); }
         const nSum = u.lv >= 4 ? 3 : u.lv >= 2 ? 2 : 1; // R2.10.3: Lv1 1기 · Lv2~3 2기 · Lv4~5 3기
         (nSum === 1 ? [0] : nSum === 2 ? [-1, 1] : [-1, 0, 1]).forEach(k => { const c = A.spawnChild(u, 'minion', { hp: u.maxHp * 0.2, atk: SUMMONS.minion.atk * u.mult, dx: k * unitRadius(u) * 1.2, dy: k === 0 ? unitRadius(u) * 1.4 : unitRadius(u) * 0.6 * k }); c.summoner = u; c.small = true; c.el.classList.add('small'); });
+        if (enh6(u) && rng() < 0.25) { const c = A.spawnChild(u, 'minion', { hp: u.maxHp * 0.2, atk: SUMMONS.minion.atk * u.mult, dx: 0, dy: -unitRadius(u) * 1.4 }); c.summoner = u; c.small = true; c.el.classList.add('small'); if (!S.fast) dmgNum(u, '+1 소환!', { crit: true }); } // 랭크 6 [덤 소환]
       } } },
   deathnote: { name: '데스노트 지후', rarity: 'legend', role: '딜러', hp: 1100, atk: 0, atkSpeed: 1, range: 1, speed: 1.6, noAttack: true, deployLimit: 1, portrait: PORTRAITS.deathnote, sfx: 'shot', color: '#222222',
     story: '하굣길에 까만 공책을 주운 지후입니다. 첫 장에는 「이 노트에 이름이 적힌 사람은…」까지만 쓰여 있고, 뒤는 커피 얼룩에 번져 읽을 수 없었어요. 그는 장난삼아 「숙제 검사」라고 적었는데, 15초 뒤 정말로 숙제 검사가 사라졌습니다. 그날 그는 반에서 신이 되었어요. 이어서 「월요일」 「수학」 「시금치」를 적어 봤지만, 아무 일도 일어나지 않았다고 합니다. 예언 지후는 그 일을 하루 전에 맞혔다며 지금도 자랑하고 다녀요. 그는 이제 전장에서만, 그것도 16초에 한 번씩만 펜을 듭니다.',
@@ -3546,7 +3549,7 @@ const CHARS = {
   rifle: { name: '라이플 지후', rarity: 'epic', role: '딜러', hp: 930, atk: 34, atkSpeed: 2.7, range: 5, speed: 1.6, portrait: PORTRAITS.rifle, sfx: 'shot', color: '#55606e',
     story: '어릴 적 총 지후와 딱지를 쳤다가 러시안룰렛 대결을 신청받은 뒤로 방아쇠가 무서워진 지후입니다. 그래서 그는 첫 발을 쏘기 전에 심호흡을 하고, 기도를 하고, 유서를 써요. 그런데 한 발 한 발 쏠수록 자신감이 붙어서, 열 발째엔 콧노래를 부르고 마흔 발째엔 손이 보이지 않습니다. 전투가 끝나면 다시 소심해져서 다음 판엔 또 유서부터 써요. 그의 서랍에는 유서가 2,400장 쌓여 있습니다. 내용은 전부 「엄마 사랑해」예요.',
     passive: '한 번에 <b>3연발</b>로 쏩니다. 공격할 때마다 공격속도가 <b>10%</b>씩 빨라집니다. 레벨이 오를 때마다 기본 공격 간격이 <b>0.25초</b> 줄어듭니다.',
-    onStart(u) { u.atkSpeed = Math.max(0.05, u.def.atkSpeed - 0.25 * (u.lv - 1)); u.cd = Math.min(u.cd, u.atkSpeed); }, // R2.6.3: 레벨마다 기본 공격 간격 -0.25초
+    onStart(u) { u.atkSpeed = Math.max(0.05, u.def.atkSpeed - 0.25 * (u.lv - 1) - (enh6(u) ? 0.2 : 0) /* 랭크 6 [방아쇠 손가락] */); u.cd = Math.min(u.cd, u.atkSpeed); }, // R2.6.3: 레벨마다 기본 공격 간격 -0.25초
     onAttack(u) { u.atkSpeed = Math.max(0.05, u.atkSpeed / 1.1); }, // 복리 · 최대 0.05초 · 라운드마다 새 유닛이라 초기화
     shot(u, t) { sfxAttack(u); muzzleFx(u, t); launchProjectile(u, t, () => { const d = dealDamage(u, t, effAtk(u)); if (d > 0) hitFx(u, t, false); afterHit(u, d); }); },
     customAttack(u, t) { u.def.shot(u, t); u.burst = { t, n: 2, left: u.atkSpeed / 10 }; return true; }, // R2.6.3: 3연발 · 연발 간격 = 공격 간격의 1/10 (공격속도가 오르면 같이 줄어든다)
@@ -3555,10 +3558,10 @@ const CHARS = {
   bubble: { name: '버블 지후', rarity: 'epic', role: '서포터', hp: 1380, atk: 50, atkSpeed: 1, range: 5, speed: 1.6, portrait: PORTRAITS.bubble, sfx: 'shot', color: '#4fc3f7',
     story: '비누 거품 놀이가 너무 좋아서 하루에 목욕을 일곱 번 하는 지후입니다. 어느 날 너무 큰 거품을 불다가 그 안에 쏙 들어갔는데, 거품 안에서는 아무것도 아프지 않다는 걸 알게 되었어요. 그 뒤로 친구가 다칠 것 같으면 재빨리 거품을 씌워 줍니다. 한 번 맞으면 톡 터지지만, 그 한 번이면 충분하대요. 요즘 고민은 샴푸 값이 월급보다 많이 나온다는 거예요. 대신 피부는 왕국에서 제일 좋습니다.',
     passive: '라운드를 [버블]을 쓴 채로 시작합니다. [버블]은 처음 받는 피해 한 번을 막아 줍니다.',
-    onStart(u, A) { A.status(u, 'bubble', 600); },
+    onStart(u, A) { A.status(u, 'bubble', 600); u.bub6 = enh6(u); },
     skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[버블]</b>. 가장 가까운 아군에게 [버블]을 씌웁니다.',
       run(u, A) { let b = null, bd = Infinity; friends(u).forEach(a => { if (a === u || a.st.bubble > 0) return; const d = dist(u, a); if (d < bd) { bd = d; b = a; } }); // 이미 버블이 있으면 다음으로 · 없으면 무산
-        if (!b) return; A.status(b, 'bubble', 600); if (!S.fast) dmgNum(b, '🫧 버블', { heal: true }); } } },
+        if (!b) return; A.status(b, 'bubble', 600); b.bub6 = enh6(u); /* 랭크 6 [질긴 비눗방울] */ if (!S.fast) dmgNum(b, '🫧 버블', { heal: true }); } } },
   prophecy: { name: '예언 지후', rarity: 'legend', role: '딜러', hp: 1310, atk: 140, atkSpeed: 1.5, range: 4.8, speed: 1.6, portrait: PORTRAITS.prophecy, portraitOn: PORTRAITS.prophecy_on, sfx: 'shot', color: '#b26bff',
     story: '「내일 급식에 돈가스가 나온다」는 예언을 맞혀 왕궁 점술가가 된 지후입니다. 다만 그 돈가스는 포식 지후가 혼자 다 먹어 치워서 아무도 맛을 못 봤고, 그래서 증거가 남지 않았어요. 그는 상대가 무엇을 할지 미리 내다보는 데 재미를 붙였는데, 정작 자기 시험 점수만큼은 아무리 점쳐도 「보이지 않음」이 나옵니다. 사실은 점수가 너무 처참해서 카드가 보여 주기를 거부하는 거예요. 예언이 맞을 때마다 카드 속 아르카나가 하나씩 깨어나 힘을 보태고, 틀리면 아르카나들이 단체로 한숨을 쉰다고 해요.',
     passive: '배치하는 동안 예언 지후를 새로 놓거나 · 옮기거나 · 레벨을 올렸을 때, 그 칸과 대칭인 적 진영 칸도 바뀌었다면 예언에 성공해 [아르카나]를 얻고, 그 라운드 동안 변신해 공격력이 <b>150%</b> 증가합니다. [아르카나] 하나당 공격력이 <b>20%</b> 더 오릅니다.',
@@ -3572,7 +3575,7 @@ const CHARS = {
     pickTarget(u) { const reach = attackDist(u); let b = null; friends(u).forEach(a => { if (a === u || a.st.dive > 0 || a.hp >= a.maxHp * 0.4 || dist(u, a) > reach + unitRadius(a)) return; if (!b || a.hp / a.maxHp < b.hp / b.maxHp) b = a; }); return b; }, // R2.7: 위험한 아군 먼저 (체력 비율이 가장 낮은)
     customAttack(u, t) { const atk = effAtk(u); // 관통 주사: 적 = 공격력 피해 + [독] · 아군 = 3초 회복 (자신은 맞지 않는다)
       A.line(u, u.x, u.y, Math.atan2(t.y - u.y, t.x - u.x), { speed: 14, hw: 0.16 * CFG.CELL, cls: 'fx-syringe', both: true, onHit: e => {
-        if (e.side !== u.side) { if (dealDamage(u, e, atk, {}) > 0 && e.alive) A.status(e, 'poison', 2, { stack: true, dps: atk, src: u }); } /* R2.10.2: 중첩형 [독] */
+        if (e.side !== u.side) { if (dealDamage(u, e, atk, {}) > 0 && e.alive) { A.status(e, 'poison', 2, { stack: true, dps: atk, src: u }); if (enh6(u)) A.status(e, 'noheal', 4); /* 랭크 6 [금지 처방] */ } } /* R2.10.2: 중첩형 [독] */
         else { (e.hots || (e.hots = [])).push({ left: 3, acc: 0, amt: atk * 1.5, src: u }); if (!S.fast) dmgNum(e, '💉', { heal: true }); } } });
       return true; } },
   tentacle: { name: '촉수 지후', rarity: 'epic', role: '컨트롤러', hp: 1700, atk: 180, atkSpeed: 3.3, range: 5.5, speed: 1.6, portrait: PORTRAITS.tentacle, portraitAtk: PORTRAITS.tentacle_atk, sfx: 'bash', color: '#3ec5e0',
@@ -3587,7 +3590,7 @@ const CHARS = {
     customAttack(u, t) { A.portrait(u, u.def.portraitAtk); u.atkPicT = 0.5; afterHit(u, u.def.slam(u, t)); return true; },
     tick(u, dt, A) { if (u.atkPicT == null) return; u.atkPicT -= dt; if (u.atkPicT <= 0) { u.atkPicT = null; A.portrait(u, u.def.portrait); } }, // 공격 그림 0.5초
     skill: { type: 'hit', need: 5, desc: '<b>SP 5</b> · <b>[촉수 내려치기]</b>. 사거리와 상관없이 가장 가까운 적 최대 <b>5기</b>를 공격력의 <b>120%</b>로 한꺼번에 내리치고 [눈가림]을 겁니다.',
-      run(u, A) { const L = A.enemies(u).sort((x, y) => dist(u, x) - dist(u, y)).slice(0, 5); dmgNum(u, '촉수 내려치기!', { crit: true }); A.portrait(u, u.def.portraitAtk); u.atkPicT = 0.8;
+      run(u, A) { const L = A.enemies(u).sort((x, y) => dist(u, x) - dist(u, y)).slice(0, enh6(u) ? 7 : 5); /* 랭크 6 [여분의 촉수] */ dmgNum(u, '촉수 내려치기!', { crit: true }); A.portrait(u, u.def.portraitAtk); u.atkPicT = 0.8;
         L.forEach(e => { if (A.dmg(u, e, 120) > 0) { hitFx(u, e, true); if (!S.fast) A.ring(e.x, e.y, 0.7); } if (e.alive) A.status(e, 'blind', 2.5); }); } } },
   // ── R2.8 신규 지후 9종 ──
   lantern: { name: '랜턴 지후', rarity: 'epic', role: '하이브리드', hp: 1280, atk: 16, atkSpeed: 1, range: 5.2, speed: 1.6, portrait: PORTRAITS.lantern, sfx: 'shot', color: '#ff9f1c',
@@ -3598,7 +3601,7 @@ const CHARS = {
       if (!S.fast) { el = document.createElement('div'); el.className = 'fx-beam' + (k === 'hbeam' ? ' heal' : ''); $('field').appendChild(el); (u.fx || (u.fx = [])).push(el); }
       u[k] = { t, el, acc: 0, faint: 0 }; },
     beamDraw(u, b) { if (!b.el) return; const dx = b.t.x - u.x, dy = b.t.y - u.y; b.el.style.left = u.x.toFixed(1) + 'px'; b.el.style.top = u.y.toFixed(1) + 'px'; b.el.style.width = Math.hypot(dx, dy).toFixed(1) + 'px'; b.el.style.transform = `translate(0,-50%) rotate(${Math.atan2(dy, dx)}rad)`; b.el.classList.toggle('faint', b.faint > 0); },
-    tick(u, dt) { const D = u.def, off = blocked(u), b = u.beam;
+    tick(u, dt) { if (enh6(u)) lanAura(u); const D = u.def, off = blocked(u), b = u.beam;
       if (b) { if (!b.t.alive) D.beamOn(u, 'beam', null); else { // 공격 빔: 5.5칸보다 멀면 희미해져 공격하지 않고, 2초가 지나면 끊긴다
         const far = dist(u, b.t) - unitRadius(b.t) > 5.5 * CFG.CELL; b.faint = far ? b.faint + dt : 0;
         if (b.faint >= 2) D.beamOn(u, 'beam', null); else { if (!far && !off) { b.acc += dt; while (b.acc >= 0.25 && b.t.alive) { b.acc -= 0.25; if (dealDamage(u, b.t, effAtk(u), {}) > 0 && !S.fast) hitFx(u, b.t, false); } } D.beamDraw(u, b); } } }
@@ -3668,14 +3671,14 @@ const CHARS = {
     onStart(u, A) { const p = u.tile != null && S.place[u.side][u.tile]; u.dv = (p && p.id === 'devour' && p.dv) || 0; u.dvBase = u.atk; if (u.dv) { u.atk += Math.round(u.dvBase * 0.25 * u.dv); u.baseMaxHp += 20 * u.dv; u.maxHp += 20 * u.dv; /* build 4: 50 → 20 */ u.hp = u.maxHp; A.status(u, 'feast', 800); } }, // 레벨이 오르면 오른 공격력 기준 · 중첩마다 최대 체력 +50 (R2.8 build 3)
     onHit(u, t) { (u.bit || (u.bit = new Set())).add(t.uid); heal(u, u, effAtk(u) * 0.05); },
     onUnitDeath(u, d, A) { if (d.side === u.side || d.killer !== u || dist(u, d) > 5.1 * CFG.CELL + unitRadius(d)) return; // R2.17.2: 직접 처치해야 (예전: 한 번이라도 공격한 적)
-      u.dv++; u.atk += Math.round((u.dvBase || u.atk) * 0.25); /* R2.17.2: 15 → 30% · R2.21.2: 30 → 25% */ u.baseMaxHp += 20; u.maxHp += 20; heal(u, u, 50); /* build 4: 최대 체력 50 → 20 · 회복 50 그대로 */ A.status(u, 'feast', 800); const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'devour') p.dv = u.dv; // 배치 기록에 남겨 경기 내내
+      const k = enh6(u) && rng() < 0.2 ? 2 : 1; /* 랭크 6 [폭식]: 20% 하나 더 */ u.dv += k; u.atk += Math.round((u.dvBase || u.atk) * 0.25) * k; /* R2.17.2: 15 → 30% · R2.21.2: 30 → 25% */ u.baseMaxHp += 20 * k; u.maxHp += 20 * k; heal(u, u, 50 * k); /* build 4: 최대 체력 50 → 20 · 회복 50 그대로 */ A.status(u, 'feast', 800); const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'devour') p.dv = u.dv; // 배치 기록에 남겨 경기 내내
       if (!S.fast) dmgNum(u, `🍖 포식 ${u.dv}`, { crit: true }); drawUnit(u); } },
 
   // ── R2.9 신규 지후 ──
   bomb: { name: '폭탄 지후', rarity: 'epic', role: '폭발형', hp: 750, atk: 0, atkSpeed: 1, range: 1, speed: 3.3, noAttack: true, portrait: PORTRAITS.bomb, sfx: 'bash', color: '#3a3a3a',
     story: '서쪽 반란군 무기 창고에서 태어난 지후입니다. 화염 지후 314호가 왕궁으로 굴려 보내려고 만들었는데, 도화선에 불이 붙자마자 방향을 잃고 반란군 막사부터 들이받을 뻔했어요. 그 뒤로 그는 어느 편도 들지 않고 가장 가까운 상대에게 무작정 굴러갑니다. 쓰러져도 1초 뒤에 꼭 터진다는 걸 다들 알아서, 근위대장 수호자 지후도 그만은 받아 내지 않아요. 생일 케이크에 초를 꽂으면 큰일이 나서, 그의 생일 파티는 늘 모래사장에서 열립니다.',
     passive: '공격하지 않고 가장 가까운 적을 향해 굴러갑니다. 적에게 닿으면 폭발해 반경 <b>2.5칸</b>의 적에게 <b>자신의 최대 체력</b>만큼 피해를 주고 <b>3칸</b> 밀어냅니다. 닿기 전에 쓰러지면 <b>1초</b> 뒤 그 자리에서 폭발합니다.',
-    onStart(u) { if (u.el) u.el.classList.add('rolling'); },
+    onStart(u) { if (u.el) u.el.classList.add('rolling'); if (enh6(u)) u.speed *= 1.2; /* 랭크 6 [내리막길] */ },
     steer(u) { const t = nearestFoe(u); if (!t) { u.desVx = u.desVy = 0; return true; } // 굴러간다
       if (dist(u, t) <= unitRadius(u) + unitRadius(t) + 6) { u.def.blast(u, u.x, u.y); u.boomed = true; u.hp = 0; killUnit(u); drawUnit(u); return true; } // 닿으면 그 자리에서 폭발 (자신도 사라진다)
       const ang = Math.atan2(t.y - u.y, t.x - u.x); const v = u.speed * Math.max(0.2, 1 + buffSum(u, 'spd')); u.desVx = Math.cos(ang) * v; u.desVy = Math.sin(ang) * v; return true; },
@@ -3715,21 +3718,21 @@ const CHARS = {
     passive: '라운드가 시작하면 십자 범위(앞뒤좌우 칸)의 아군이 <b>2명 이상</b>일 때 와인을 나눠 줍니다. 마신 아군은 체력이 <b>10%</b> 줄지만, 공격력 <b>+8%</b> · 치명타 확률 <b>+4%</b> · 치명타 피해 <b>+30%</b>를 얻고 이 효과는 경기 내내 쌓입니다. 와인을 마신 아군 하나마다 자신의 공격력이 <b>5</b>씩 영구히 오릅니다.',
     onStart(u, A) { const me = u.tile != null && S.place[u.side][u.tile], my = me && me.id === 'sommelier' ? me : null; u.atk += 5 * ((my && my.sm) || 0); // 지난 라운드까지 와인을 준 만큼
       const L = A.cross(u); if (L.length < 2) return; let n = 0;
-      L.forEach(a => { const pa = a.tile != null && S.place[a.side][a.tile]; if (!pa) return; pa.wn = (pa.wn || 0) + 1; a.wn = pa.wn; a.hp = Math.max(1, a.hp - Math.round(a.maxHp * 0.1)); n++; if (!S.fast) dmgNum(a, '🍷', { crit: true }); drawUnit(a); });
+      L.forEach(a => { const pa = a.tile != null && S.place[a.side][a.tile]; if (!pa) return; pa.wn = (pa.wn || 0) + 1; a.wn = pa.wn; if (enh6(u)) { pa.wn6 = (pa.wn6 || 0) + 1; a.wn6 = pa.wn6; } /* 랭크 6 [빈티지 와인] */ a.hp = Math.max(1, a.hp - Math.round(a.maxHp * 0.1)); n++; if (!S.fast) dmgNum(a, '🍷', { crit: true }); drawUnit(a); });
       if (my) my.sm = (my.sm || 0) + n; u.atk += 5 * n; } },
   chicken: { name: '닭 지후', rarity: 'epic', role: '소환형', hp: 1260, atk: 135, atkSpeed: 1.5, range: 5.5, speed: 1.6, shotCls: 'egg', portrait: PORTRAITS.chicken, sfx: 'shot', color: '#ff8a80',
     story: '서쪽 농장에서 반란군의 식량으로 길러지던 지후입니다. 화염 지후 314호가 「오늘 저녁은 치킨」이라고 말하는 걸 듣고, 그날 밤 철망을 넘어 왕궁으로 망명했어요. 망명 신청서의 사유 칸에는 「저녁 메뉴」라고 적었습니다. 겁이 나면 달걀을 던지는 버릇이 있는데, 아주 가끔 그 달걀에서 또 다른 닭 지후가 태어나요. 그래서 그는 「닭이 먼저냐 달걀이 먼저냐」는 질문에 평생 시달립니다. 포식 지후가 반경 100미터 안에 들어오면 자동으로 달걀이 날아가요.',
     passive: '일반 공격으로 달걀을 던집니다. 달걀이 맞으면 <b>6%</b> 확률로 닭 지후가 부화합니다 (원본 체력의 <b>40%</b> · 라운드가 끝나면 사라집니다). 부화한 닭의 달걀에서는 닭이 부화하지 않습니다.',
-    onHit(u, t, A) { if (u.summoner || rng() >= 0.06) return; /* R2.10.3: 부화한 닭은 부화시키지 않는다 · 5% → 7.5% */ const base = u.origHp || u.maxHp, c = A.spawnChild(u, 'chicken', { hp: base * 0.4, atk: u.atk, dx: (t.x - u.x) * 0.4, dy: (t.y - u.y) * 0.4 }); c.summoner = u.summoner || u; c.origHp = base; if (!S.fast) dmgNum(c, '🐣 부화!', { crit: true }); } },
+    onHit(u, t, A) { if (u.summoner || rng() >= (enh6(u) ? 0.07 : 0.06) /* 랭크 6 [쌍란] */) return; /* R2.10.3: 부화한 닭은 부화시키지 않는다 · 5% → 7.5% */ const base = u.origHp || u.maxHp, c = A.spawnChild(u, 'chicken', { hp: base * 0.4, atk: u.atk, dx: (t.x - u.x) * 0.4, dy: (t.y - u.y) * 0.4 }); c.summoner = u.summoner || u; c.origHp = base; if (!S.fast) dmgNum(c, '🐣 부화!', { crit: true }); } },
   pan: { name: '후라이팬 지후', rarity: 'epic', role: '탱커', hp: 2520, atk: 290, /* R2.21: 320 → 290 · 넉백 7 → 5칸 */ atkSpeed: 1, range: 'melee', speed: 1.6, portrait: PORTRAITS.pan, sfx: 'bash', color: '#444444',
     story: '왕궁 주방의 수석 요리사였던 지후입니다. 국왕의 부루스타가 폭발한 그날, 그 위에 올라가 있던 후라이팬의 주인이 바로 그였어요. 그 일로 주방에서 쫓겨났지만, 그는 그게 부루스타 탓이지 팬 탓이 아니라고 지금도 주장합니다. 억울함을 풀려고 후라이팬을 빙빙 돌리며 전장을 누비는데, 맞은 적은 계란 프라이처럼 뒤집히며 날아가요. 다만 요즘은 손목이 시큰해서 예전만큼 멀리 날리지는 못합니다. 의사는 「팬을 하루 8시간씩 돌리지 마세요」라고 했지만 그는 듣지 않아요.',
     passive: '일반 공격 대신 반지름이 자기 몸보다 <b>0.7칸</b> 큰 <b>110°</b> 부채꼴 후라이팬이 <b>4.5초</b>에 한 바퀴씩 자기 주위를 돕니다. 적이 닿으면 공격력의 <b>100%</b> 피해와 함께 <b>5칸</b> 날려 버립니다 (한 번 친 뒤 <b>0.4초</b> 동안은 치지 않습니다). 일반 공격은 하지 않습니다.',
     customAttack() { return true; }, // 일반 공격 없음 (다가가기만)
     tick(u, dt) { const p = u.fp || (u.fp = { a: rng() * Math.PI * 2, cd: 0, el: null }); p.a = (p.a + Math.PI * 2 / 4.5 * dt) % (Math.PI * 2); p.cd = Math.max(0, p.cd - dt); // R1 후라이팬 그대로
       const R = unitRadius(u) + 0.7 * CFG.CELL;
-      if (!p.el && u.el && !S.fast) { p.el = document.createElement('div'); p.el.className = 'fp-pan'; p.el.innerHTML = '<span class="w"></span><b></b><i></i>'; u.el.appendChild(p.el); }
+      if (!p.el && u.el && !S.fast) { p.el = document.createElement('div'); p.el.className = 'fp-pan' + (enh6(u) ? ' r6' : ''); p.el.innerHTML = '<span class="w"></span><b></b><i></i>'; u.el.appendChild(p.el); }
       if (p.el) { p.el.style.setProperty('--fr', R.toFixed(1) + 'px'); p.el.style.transform = `rotate(${p.a.toFixed(3)}rad)`; }
-      if (p.cd > 0 || blocked(u)) return; const half = 55 * Math.PI / 180;
+      if (p.cd > 0 || blocked(u)) return; const half = (enh6(u) ? 60 : 55) * Math.PI / 180; /* 랭크 6 [큰 프라이팬]: 110 → 120° */
       const hits = foes(u).filter(e => { const d = Math.hypot(e.x - u.x, e.y - u.y); if (d > R + unitRadius(e)) return false; let da = Math.atan2(e.y - u.y, e.x - u.x) - p.a; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; return Math.abs(da) <= half || d <= unitRadius(u) + unitRadius(e) * 0.5; });
       if (!hits.length) return; p.cd = 0.4; if (p.el) { p.el.classList.remove('swing'); void p.el.offsetWidth; p.el.classList.add('swing'); } sfx('bash');
       hits.forEach(e => { if (dealDamage(u, e, effAtk(u), { skill: true, noCrit: true }) > 0) hitFx(u, e, true); if (!e.alive) return; if (!S.fast) dmgNum(e, '팡!', { crit: true }); A.knock(u, e, 5); }); } },
@@ -3755,7 +3758,7 @@ const CHARS = {
   lock: { name: '자물쇠 지후', rarity: 'epic', role: '컨트롤러', hp: 1810, atk: 120, atkSpeed: 1.5, range: 5, speed: 1.6, portrait: PORTRAITS.lock, sfx: 'shot', color: '#f0a020',
     story: '왕궁 보물 창고의 열쇠 관리인 지후입니다. 금고 안에서 떨고 있던 티타늄 지후를 처음 발견한 것도, 그 옆 칸의 핵미사일 지후를 깨운 것도 그였어요. 그는 무엇이든 잠그는 걸 좋아해서 반란군의 발목에도 슬쩍 자물쇠를 채워 둡니다. 문제는 열쇠를 어디 뒀는지 자주 까먹는다는 거예요. 지난주에는 자기 집 현관을 잠그고 열쇠를 집 안에 둔 채 나와서, 사흘 동안 왕궁 금고에서 잤습니다. 괴도 지후는 그가 채운 자물쇠를 수집하는 게 취미예요.',
     passive: '일반 공격이 <b>27%</b> 확률로 대상을 [잠금]합니다 (<b>2초</b> · 움직일 수 없지만 공격은 할 수 있습니다).',
-    onHit(u, t, A) { if (t.alive && rng() < 0.27) { /* R2.18: 25 → 27% */ A.status(t, 'lock', 2); if (!S.fast) dmgNum(t, '⛓ 잠금', { crit: true }); } } },
+    onHit(u, t, A) { if (t.alive && rng() < 0.27) { /* R2.18: 25 → 27% */ A.status(t, 'lock', 2); if (enh6(u)) A.status(t, 'stun', 0.7); /* 랭크 6 [이중 잠금] */ if (!S.fast) dmgNum(t, '⛓ 잠금', { crit: true }); } } },
   // ── R2.10.2 신규 지후 7종 ──
   radiation: { name: '방사능 지후', rarity: 'rare', role: '딜러', hp: 920, atk: 50, atkSpeed: 1, range: 2.5, speed: 1.6, portrait: PORTRAITS.radiation, sfx: 'shot', color: '#7ed321', atkText: () => '50 · 범위',
     story: '왕궁 보물 창고 깊은 곳, 핵미사일 지후가 잠든 칸을 30년 동안 닦던 청소부 지후입니다. 너무 오래 그 곁에 있었던 탓에 몸에서 은은한 초록빛이 새어 나오게 되었어요. 덕분에 밤길에는 손전등이 필요 없지만, 그가 다가가면 다들 어지러워하며 한 발짝씩 물러섭니다. 곁에 오래 서 있을 수 있는 건 티타늄 지후뿐이라, 둘은 금고 앞에서 말없이 도시락을 나눠 먹어요. 그가 쓰러진 자리에는 한동안 아무도 못 가서, 왕궁은 그 자리에 「출입 금지」 팻말부터 꽂습니다. 퇴직금은 납으로 받았대요.',
@@ -3780,14 +3783,14 @@ const CHARS = {
     onHit(u, t) { if (t.alive && rng() < 0.25) blindOn(t, 3, 0.5); },
     skill: { type: 'hit', need: 9, desc: '<b>SP 9</b> · <b>[강화 실명 다트]</b>. 대상을 확정으로 <b>3초</b> 동안 [눈가림]합니다 (<b>75%</b> 빗나감). 또 [중독]시켜 <b>5초</b> 동안 1초마다 공격력의 <b>50%</b> 독 피해를 줍니다.',
       run(u, A) { const t = nearestFoe(u); if (!t) return; const atk = effAtk(u); if (!S.fast) dmgNum(u, '강화 실명 다트!', { crit: true });
-        launchProjectile(u, t, () => { if (!t.alive) return; blindOn(t, 3, 0.75); A.status(t, 'poison', 5, { stack: true, dps: atk * 0.5, src: u }); if (!S.fast) dmgNum(t, '☠ 중독', { crit: true }); }, 'dart big'); } } },
-  rain: { name: '비 지후', rarity: 'rare', role: '서포터', hp: 1550, atk: 35, atkSpeed: 0.7, range: 8, speed: 1.6, portrait: PORTRAITS.rain, sfx: 'shot', color: '#4f9dff',
+        launchProjectile(u, t, () => { if (!t.alive) return; blindOn(t, 3, 0.75); A.status(t, 'poison', enh6(u) ? 8 : 5 /* 랭크 6 [맹독 다트] */, { stack: true, dps: atk * 0.5, src: u }); if (!S.fast) dmgNum(t, '☠ 중독', { crit: true }); }, 'dart big'); } } },
+  rain: { name: '비 지후', rarity: 'rare', role: '서포터', hp: 1550, atk: 25, /* R2.22: 35 → 25 */ atkSpeed: 0.7, range: 8, speed: 1.6, portrait: PORTRAITS.rain, sfx: 'shot', color: '#4f9dff',
     story: '커다란 잎사귀 하나를 우산 삼아 들고 다니는 지후입니다. 그가 시무룩해지면 왕국에 비가 내려요. 그래서 왕국 기상청의 일기 예보는 그의 기분 예보로 바뀌었습니다. 그의 비는 다친 친구들의 상처를 씻어 주고, 서쪽에서 넘어오는 황사를 땅에 가라앉혀요. 그래서 황사 지후는 그를 가장 싫어하고, 물 지후는 그를 가장 아낍니다. 국왕 생일마다 왕궁은 그를 웃기려고 개그 공연을 여는데, 웃음 포인트가 독특해서 대부분 폭우로 끝나요.',
-    passive: '[가랑비]를 쓴 뒤 <b>1.5초</b> 동안 공격하지 못합니다.',
+    passive: '[가랑비]를 쓴 뒤 <b>1.5초</b> 동안 공격하지 못합니다.', onStart(u) { if (enh6(u)) u.need = 7; }, /* 랭크 6 [장마전선]: SP 8 → 7 */
     skill: { type: 'hit', need: 8, desc: '<b>SP 8</b> · <b>[가랑비]</b>. 모든 적에게 공격력의 <b>220%</b> 피해를 주고 <b>3초</b> 동안 이동속도를 <b>40%</b> 줄입니다. 모든 아군은 <b>3초</b> 동안 1초마다 공격력의 <b>100%</b>를 회복합니다.',
       run(u, A) { const atk = effAtk(u); if (!S.fast) { fxAt('fx-rain', FW() / 2, FH() / 2, 900, { width: FW() * 0.6 + 'px', height: FH() * 0.6 + 'px' }); /* R2.10.3: 이펙트 축소 (렉) */ dmgNum(u, '☔ 가랑비!', { crit: true }); }
         foes(u).forEach(e => { if (A.dmg(u, e, 220) > 0 && !S.fast) hitFx(u, e, true); if (e.alive && !immune(e) && !(e.st.pure > 0) && !(e.st.inv > 0) && !(e.st.nou > 0)) A.buff(e, 'rain' + u.uid, { spd: -0.4 }, 3); });
-        friends(u).forEach(a => (a.hots || (a.hots = [])).push({ left: 3, acc: 0, amt: atk, src: u }));
+        const hl = enh6(u) ? 4 : 3; /* 랭크 6 [장마전선]: 회복 +1초 */ friends(u).forEach(a => (a.hots || (a.hots = [])).push({ left: hl, acc: 0, amt: atk, src: u }));
         u.cd = Math.max(u.cd, 1.5); } } }, // 1.5초 동안 공격하지 못한다
   nou: { name: 'NO U 지후', rarity: 'legend', role: '탱커', hp: 2520, atk: 20, atkSpeed: 1, range: 4, speed: 1.6, portrait: PORTRAITS.nou, sfx: 'shot', color: '#ffc21a',
     story: '왕궁 앞 카지노의 카드 딜러 지후입니다. 소매 속에는 단 한 장의 카드, 「NO U」가 들어 있어요. 어느 밤 웃는 얼굴의 손님이 슬롯머신 지후를 털어 가려 할 때, 그는 조용히 그 카드를 내밀었습니다. 손님이 걸어 둔 「아무도 기억하지 못하는 장난」이 그대로 손님에게 되돌아갔고, 그날 이후 조커 지후는 그 밤을 기억하지 못해요. 그는 무슨 말을 들어도 「NO U」라고만 대답합니다. 면접도, 소개팅도, 건강 검진 문진표도 전부 그걸로 통과했어요. 같은 카드를 든 상대를 만나면 둘 다 멀리 날아가 버린다는 게 딜러들의 오래된 속설입니다.',
@@ -3799,7 +3802,7 @@ const CHARS = {
     story: '왕궁 약초원의 가장 어두운 구석에서 해골 무늬 화분만 키우는 지후입니다. 주사 지후의 약이 착한 지후에게는 약, 나쁜 지후에게는 독이 되는 비결은 사실 그가 몰래 섞는 한 방울 덕분이에요. 주사 지후는 그걸 모르고, 그는 굳이 말하지 않습니다. 티모 지후가 말하는 「대장」이 바로 그인데, 티모 지후는 대장 얼굴을 본 적이 없어요. 그의 독은 천천히 퍼지지만, 한번 퍼지면 상처가 잘 아물지 않습니다. 요즘은 독이 더 일찍 듣도록 레시피를 바꿨다며 해골 화분마다 하트 스티커를 붙였어요.',
     passive: '한 번에 최대 <b>3기</b>의 적을 공격합니다 (대상 + 사거리 안의 다른 적 · [중독]되지 않은 적 먼저). [중독]되지 않은 적을 먼저 노립니다. 일반 공격이 대상을 [중독]시킵니다 (<b>12초</b> 동안 1초마다 공격력의 <b>30%</b> · 중첩되지 않습니다). 독 지후에게 맞은 적이 아무 [중독]에 걸려 있고 체력이 <b>40%</b> 이하면 [약화]된다: 받는 피해 <b>+20%</b> · 회복량 <b>−60%</b> · 이동속도 <b>−20%</b> · 공격력 <b>−15%</b>.',
     pickTarget(u) { let b = null, bd = Infinity; targets(u).forEach(e => { if (e.st.poison > 0) return; const d = dist(u, e); if (d < bd) { bd = d; b = e; } }); return b; }, // 중독되지 않은 적 먼저
-    onHit(u, t, A) { if (!t.alive) return; A.status(t, 'poison', 12, { stack: false, dps: effAtk(u) * 0.3, src: u }); if (t.st.poison > 0) t.vmark = S.time + 12; } },
+    onHit(u, t, A) { if (!t.alive) return; A.status(t, 'poison', 12, { stack: false, dps: effAtk(u) * 0.3, src: u, v6: enh6(u) }); /* 랭크 6 [신경독]: v6 */ if (t.st.poison > 0) t.vmark = S.time + 12; } },
   biker: { name: '폭주족 지후', rarity: 'legend', role: '어쌔신', hp: 9999, atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.biker, sfx: 'bash', color: '#f07a1a',
     story: '왕국에서 가장 빠른 배달부 지후입니다. 주황색 스포츠카에 시동을 걸면 아무도 그를 멈출 수 없어요. 본인도 멈출 수 없습니다. 브레이크 밟는 법을 배운 적이 없어서, 매번 맵 끝 벽에 처박히며 배달을 마치거든요. 신칸센 지후의 선로를 가로지르다 몇 번이나 부딪힐 뻔해서 둘은 원수지간입니다. 배달 앱 리뷰는 대부분 「음식은 빨리 왔는데 집 벽이 없어졌어요」예요. 그래도 국왕의 삼겹살 배달만은 단 한 번도 늦은 적이 없습니다.',
     passive: '전투가 시작되면 <b>2초</b> 동안 시동을 겁니다 (받는 피해 <b>−90%</b>). 그 뒤 적 진영 쪽 <b>−35° ~ 35°</b> 무작위 방향으로 초당 <b>50칸</b> 속도로 모든 유닛을 뚫고 맵 끝까지 돌진한 뒤 <b>즉사</b>합니다. 부딪힌 적은 최대 체력의 <b>75%</b> 피해를 입고 <b>3칸</b> 밀려나며 <b>3초</b> 동안 기절합니다. 돌진 중에는 모든 상태이상에 걸리지 않습니다.',
@@ -3866,11 +3869,11 @@ const CHARS = {
     lzOff(u) { const L = u.lz; u.lz = null; if (L && L.el) { L.el.remove(); if (u.fx) u.fx = u.fx.filter(e => e !== L.el); } drawUnit(u); },
     lzDraw(u, L) { const el = L.el; if (!el) return; const dx = L.t.x - u.x, dy = L.t.y - u.y;
       el.style.left = u.x.toFixed(1) + 'px'; el.style.top = u.y.toFixed(1) + 'px'; el.style.width = Math.hypot(dx, dy).toFixed(1) + 'px'; el.style.transform = `translate(0,-50%) rotate(${Math.atan2(dy, dx)}rad)`;
-      el.style.height = (L.on ? 6 + Math.min(L.age, 6) * 1.6 : 1 + L.ch * 1.2).toFixed(1) + 'px'; el.style.opacity = L.on ? 1 : (0.25 + L.ch / 3 * 0.5).toFixed(2); },
-    gauge(u) { const L = u.lz; return !L ? 0 : L.on ? 1 : clamp(L.ch / 3, 0, 1); }, // 차징 진행도
+      el.style.height = (L.on ? 6 + Math.min(L.age, 6) * 1.6 : 1 + L.ch * 1.2).toFixed(1) + 'px'; el.style.opacity = L.on ? 1 : (0.25 + L.ch / lzCh(u) * 0.5).toFixed(2); },
+    gauge(u) { const L = u.lz; return !L ? 0 : L.on ? 1 : clamp(L.ch / lzCh(u), 0, 1); }, // 차징 진행도
     tick(u, dt) { const L = u.lz; if (!L) return; const t = L.t, D = u.def;
       if (!t.alive || blocked(u) || u.locked || !targets(u).includes(t) || dist(u, t) - unitRadius(t) > 6 * CFG.CELL) { D.lzOff(u); return; } // 대상이 죽거나 6칸 밖 · 행동 불능 → 끊긴다 (다시 차징 · 증가 초기화)
-      if (!L.on) { L.ch += dt; if (L.ch >= 3) { L.on = true; L.age = 0; L.acc = 0; if (L.el) L.el.classList.remove('charging'); if (!S.fast) dmgNum(u, '⚡ 발사!', { crit: true }); } }
+      if (!L.on) { L.ch += dt; if (L.ch >= lzCh(u)) { L.on = true; L.age = 0; L.acc = 0; if (L.el) L.el.classList.remove('charging'); if (!S.fast) dmgNum(u, '⚡ 발사!', { crit: true }); } }
       else { L.age += dt; L.acc += dt * aspdRate(u);
         while (L.acc >= 0.2 && t.alive) { L.acc -= 0.2; const done = dealDamage(u, t, effAtk(u) * (1 + 0.35 * L.age), { noCrit: true }); if (done > 0 && !S.fast) hitFx(u, t, false); } // 1초마다 +35% (선형)
         if (!t.alive) { D.lzOff(u); return; } }
@@ -3901,7 +3904,7 @@ const CHARS = {
       while (travel > 0 && u.alive && r.ph === 'dash') { const st = Math.min(rad * 0.5, travel); travel -= st; u.x = clamp(u.x + r.dx * st, pad, FW() - pad); u.y = clamp(u.y + r.dy * st, pad, FH() - pad);
         if (friends(u).some(o => o !== u && !o.ghost && Math.hypot(o.x - u.x, o.y - u.y) < rad + unitRadius(o) - 2 && (o.x - u.x) * r.dx + (o.y - u.y) * r.dy > 0)) { if (!S.fast) dmgNum(u, '돌진 취소', { crit: true }); return rushEnd(u); } // R2.17.1: 앞을 가로막은 아군
         const e = foes(u).find(o => Math.hypot(o.x - u.x, o.y - u.y) <= rad + unitRadius(o) + 2); // 처음 부딪힌 적
-        if (e) { if (dealDamage(u, e, effAtk(u) * 3, { skill: true }) > 0 && !S.fast) { hitFx(u, e, true); shake(true); } return rushEnd(u); }
+        if (e) { if (dealDamage(u, e, effAtk(u) * 3, { skill: true }) > 0 && !S.fast) { hitFx(u, e, true); shake(true); } if (e.alive && enh6(u)) A.status(e, 'stun', 2); /* 랭크 6 [정면충돌] */ return rushEnd(u); }
         if (u.x <= pad || u.x >= FW() - pad || u.y <= pad || u.y >= FH() - pad) return rushEnd(u); } } },
   thief: { name: '괴도 지후', rarity: 'legend', role: '보조형', hp: 1210, atk: 60, atkSpeed: 1.7, range: 5.5, speed: 1.6, portrait: PORTRAITS.thief, sfx: 'shot', color: '#5b3fa8',
     story: '달밤에 예고장을 남기고 사라지는 신사 도둑 지후입니다. 금이나 보석엔 관심이 없고, 오직 남들이 힘들게 쌓은 「레벨」만 훔쳐 가요. 자물쇠 지후가 보물 창고에 자물쇠를 아무리 많이 채워도, 다음 날 아침이면 그 자물쇠들이 전부 그의 실크해트 안에 들어가 있습니다. 그는 훔친 레벨을 혼자 갖지 않고 늘 친구에게 나눠 줘요. 레벨을 모두 잃은 지후는 하루 자취를 감추지만, 다음 날이면 레벨 1로 멀쩡히 돌아옵니다. 예고장 맞춤법이 자주 틀려서, 경찰은 그 오타로 그를 쫓고 있어요.',
@@ -3989,18 +3992,19 @@ const CHARS = {
     story: '렌치와 공구 상자를 들고 왕국 곳곳을 고치러 다니는 수리공 지후입니다. 티타늄 지후가 지키는 금고 경첩도, 신칸센 지후의 선로도 모두 그의 손을 거쳤어요. 서쪽 반란이 터지자 그는 고장 난 기계를 뜯어 즉석에서 포탑을 조립했는데, 그 기계가 왕궁 커피 머신이었다는 건 아직 아무도 몰라요. 포탑을 세우는 동안에는 나사 조이는 것 말고는 아무것도 신경 쓰지 않아서, 옆에서 누가 싸우든 「잠깐만요, 이것만」이라고 합니다. 수리비 견적은 언제나 「일단 뜯어 봐야 알아요」예요.',
     passive: '<b>15초</b>마다 자기 바로 앞에 <b>포탑 지후</b>를 설치합니다. 설치하는 <b>5초</b> 동안은 그 자리에 멈춰 공격하지 않습니다. 포탑은 움직이지 않고 밀려나지도 않으며, <b>0.3초</b>마다 사거리 <b>6.5칸</b> 안의 적을 쏩니다.',
     onStart(u) { u.eg = { t: 0, build: 0, site: null }; },
-    gauge(u) { const g = u.eg; return !g ? 0 : g.build > 0 ? clamp(1 - g.build / 5, 0, 1) : clamp(1 - g.t / 10, 0, 1); },
+    gauge(u) { const g = u.eg; return !g ? 0 : g.build > 0 ? clamp(1 - g.build / (g.bt || 5), 0, 1) : clamp(1 - g.t / 10, 0, 1); },
     steer(u) { if (!(u.eg && u.eg.build > 0)) return false; u.desVx = u.desVy = 0; return true; }, // 설치하는 동안 멈춘다 (공격도 안 한다)
     tick(u, dt) { if (u.eg) engTick(u, dt); } },
   warp: { name: '왜곡 지후', rarity: 'epic', /* R2.21: 전설 → 영웅 */ role: '컨트롤러', hp: 1650, atk: 50, /* R2.21.1: 20 → 50 · 왜곡 25 → 50% */ atkSpeed: 1, range: 4.5, speed: 1.6, portrait: PORTRAITS.warp, sfx: 'ice', color: '#5d6b78',
     story: '반중력 지후와 같은 연구소에서 실험을 돕다가, 폭발 사고 한가운데 서 있었던 지후입니다. 그날 이후 그의 주변에서는 공간이 이리저리 뒤틀려요. 곁에 선 동료는 잠깐 몸이 부풀어 단단해지고, 마주 선 적은 쪼그라들어 휘청거리지만, 몇 초 뒤면 모두 원래대로 돌아옵니다. 본인도 자기 몸이 어디까지인지 몰라서 문을 지날 때마다 머리를 부딪혀요. 최근 연구소 등급 심사에서 「전설」이 「영웅」으로 내려갔는데, 그는 공간이 뒤틀려서 서류가 잘못 나온 거라고 믿고 있습니다. 반중력 지후는 미안해서 그에게 몰래 간식을 챙겨 줘요.',
     passive: '일반 공격으로 SP 를 모아 <b>[왜곡]</b>을 씁니다.',
+    onDeath(u) { if (enh6(u)) warpCast(u); }, // 랭크 6 [최후의 일그러짐]: 쓰러질 때 한 번 더
     skill: { type: 'hit', need: 7, desc: '<b>SP 7</b> · <b>[왜곡]</b>. 반경 <b>5.2칸</b> 안의 아군 · 적 모두에게 [왜곡]을 겁니다. 아군은 최대 체력과 현재 체력이 <b>50%</b> 늘고, 적은 <b>50%</b> 줄어듭니다. 둘 다 <b>5초</b>에 걸쳐 원래대로 돌아옵니다.',
       run(u) { warpCast(u); } } },
-  sniper: { name: '저격 지후', rarity: 'epic', role: '딜러', hp: 750, atk: 1000, /* R2.21: 1000 → 800 · R2.21.1: 800 → 1000 */ atkSpeed: 7.5, /* R2.21.1: 8.5 → 7.5초 */ range: 8.8, speed: 1.6, portrait: PORTRAITS.sniper, sfx: 'shot', color: '#3f5a2c',
-    story: '왕궁 근위대에서 가장 먼 곳을 쏘는 저격수 지후입니다. 한 발의 위력만큼은 왕국 최고지만, 사실 그는 지독한 근시예요. 그래서 멀리 있는 적일수록 총알이 엉뚱한 데를 스치고, 코앞의 적만 제대로 맞힙니다. 근위대장 수호자 지후가 안경을 맞추라고 몇 번이나 권했지만, 그는 「저격수는 감으로 쏜다」며 끝까지 거절했어요. 최근에는 근위대 예산이 깎여서 총알도 싼 걸로 바꿨습니다. 활 지후와는 누가 더 멀리 맞히는지 매주 내기를 하는데, 아직 한 번도 이긴 적이 없어요.',
-    passive: '대상과의 거리가 멀수록 피해가 줄어듭니다 (사거리 끝에서 최대 <b>50%</b>).',
-    bonus(u, e) { return -effAtk(u) * sniperCut(u, e); } },
+  sniper: { name: '저격 지후', rarity: 'epic', role: '딜러', hp: 750, atk: 800, /* R2.21: 1000 → 800 · R2.21.1: 800 → 1000 · R2.22: 1000 → 800 · 거리 감소 반대로 */ atkSpeed: 7.5, /* R2.21.1: 8.5 → 7.5초 */ range: 8.8, speed: 1.6, portrait: PORTRAITS.sniper, sfx: 'shot', color: '#3f5a2c',
+    story: '왕궁 근위대에서 가장 먼 곳을 쏘는 저격수 지후입니다. 한 발의 위력만큼은 왕국 최고지만, 그는 평생 자기가 근시인 줄 알았는데, 근위대장 수호자 지후에게 끌려간 안경점에서 지독한 원시 판정을 받았어요. 그래서 코앞의 적일수록 흐릿해 총알이 엉뚱한 데를 스치고, 멀리 있는 적만 제대로 맞힙니다. 안경점 주인이 돋보기를 권했지만, 그는 「저격수는 감으로 쏜다」며 끝까지 거절했어요. 최근에는 근위대 예산이 깎여서 총알도 싼 걸로 바꿨습니다. 활 지후와는 누가 더 멀리 맞히는지 매주 내기를 하는데, 아직 한 번도 이긴 적이 없어요.',
+    passive: '대상과 가까울수록 피해가 줄어듭니다 (바로 앞에서 최대 <b>50%</b>).',
+    bonus(u, e) { return -effAtk(u) * sniperCut(u, e); }, onStart(u) { if (enh6(u)) u.range += 2 * CFG.CELL; } }, // 랭크 6 [장거리 조준경]: 사거리 +2칸
   dj: { name: 'DJ 지후', rarity: 'legend', role: '서포터', hp: 2000, atk: 25, /* R2.20 build 3: 30 → 67.5 (×2.25) · 출격제한 1 · R2.21.1: 67.5 → 25 */ atkSpeed: 0.7, range: 5.7, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.dj, sfx: 'ice', color: '#e94fc0',
     story: '왕궁 축제의 무대를 책임지는 DJ 지후입니다. 헤드폰을 쓰고 턴테이블 앞에 서면 그 누구보다 진지해져요. 그가 판을 돌리면 음파가 퍼져 나가는데, 적에게는 귀를 찢는 소음이고 아군에게는 흥겨운 리듬입니다. 분위기가 끝까지 달아오르면 여덟 빛깔 파동을 무대 전체에 쏟아 내는데, 어떤 색이 나올지는 본인도 몰라요. 너무 신나서 무대를 혼자 독차지하는 바람에, 축제 위원회는 「DJ는 한 무대에 한 명만」이라는 규칙을 새로 만들었습니다. 이웃 시계 지후는 밤마다 울리는 베이스에 시곗바늘이 떨린다며 민원을 넣었어요.',
     passive: '일반 공격 대신 반경 <b>5.7칸</b>에 파동을 내보내 안의 적 모두에게 공격력의 <b>100%</b> 피해를 입힙니다. 파동에 맞은 적이 하나라도 있으면 SP 가 <b>1</b> 찹니다.',
@@ -4099,8 +4103,9 @@ const RELICS = { // [이름, 아이콘, 효과, 설명] · atk 아군 공격력 
 };
 const relV = (side, k) => (S.rel && S.rel[side] && S.rel[side][k]) || 0; // 유물 효과 합 (전투 계산이 매번 부른다)
 function relicDig(u) {
-  const side = u.side, cl = S.clover && S.clover[side]; if (cl) S.clover[side] = 0; // 평범한 네잎클로버: 이번 발굴은 전설 · 개쩌는 중에서
+  const side = u.side, a6 = S.arch6 && S.arch6[side], cl = !a6 && S.clover && S.clover[side]; if (a6) S.arch6[side] = 0; if (cl) S.clover[side] = 0; // 평범한 네잎클로버: 이번 발굴은 전설 · 개쩌는 중에서 · 랭크 6 [발굴 감각]: 평범한 유물 다음은 무조건 전설 (클로버는 아껴 둔다)
   let r = rng() * RELIC_TIER.reduce((s, [k, , w]) => s + (cl && (k === 'old' || k === 'plain') ? 0 : w), 0), tier = 'wow'; /* 클로버면 전설 + 개쩌는 합 안에서 */ for (const [k, , w] of RELIC_TIER) { if (cl && (k === 'old' || k === 'plain')) continue; if (r < w) { tier = k; break; } r -= w; }
+  if (a6) tier = 'legend'; else if (tier === 'plain' && enh6(u)) (S.arch6 || (S.arch6 = { a: 0, e: 0 }))[side] = 1;
   const L = RELICS[tier], it = L[Math.floor(rng() * L.length)], f = it[2], R = S.rel || (S.rel = { a: {}, e: {} }), me = R[side] || (R[side] = {});
   ['atk', 'spd', 'vuln', 'dr', 'regen', 'sp', 't15', 't25', 'gaho'].forEach(k => { if (f[k]) me[k] = (me[k] || 0) + f[k]; });
   if (f.shield) friends(u).forEach(a => A.shield(a, f.shield * effMult(1)));
@@ -4120,7 +4125,7 @@ function relTick(dt) { // 유물: 1초마다 회복 · SP / 신의 가호가 끝
   for (const u of S.units.slice()) { if (!u.alive) continue;
     if (u.gahoEnd && S.time >= u.gahoEnd) { u.gahoEnd = 0; if (!relSave(u, true)) instaKill(null, u, false); continue; }
     if (!sec) continue; const r = S.rel[u.side]; if (!r) continue;
-    if (r.regen && u.hp < u.maxHp && !evN(u.side, 'noheal')) { u.hp = Math.min(u.maxHp, u.hp + r.regen * (u.st.vweak > 0 ? 0.4 : 1)); drawUnit(u); } // 숫자 없이 조용히
+    if (r.regen && u.hp < u.maxHp && !evN(u.side, 'noheal') && !(u.st.noheal > 0)) { u.hp = Math.min(u.maxHp, u.hp + r.regen * (u.st.vweak > 0 ? 0.4 : 1)); drawUnit(u); } // 숫자 없이 조용히
     if (r.sp) spGive(u, r.sp); }
 }
 // ── R2.18 신규 지후 도우미 ──
@@ -4130,7 +4135,7 @@ function bbShot(u, from, t, mul, n, hit) {
   const el = document.createElement('div'); el.className = 'fx-projectile bb'; el.style.translate = x + 'px ' + y + 'px'; $('field').appendChild(el);
   S.shots.push({ caster: u, target: t, x, y, sx: x, sy: y, speed: Math.max(900, Math.hypot(t.x - x, t.y - y) / 0.2), remaining: 1.2, el, onHit: () => {
     hit.add(t.uid); const done = dealDamage(u, t, effAtk(u) * mul, {}); if (done > 0 && !S.fast) hitFx(u, t, false); if (!n) afterHit(u, done);
-    if (n >= 2 || !u.alive) return; let b = null, bd = Infinity;
+    if (!u.alive || (n >= 2 && !(enh6(u) && rng() < 0.2))) return; /* 랭크 6 [도탄]: 다 튕긴 뒤에도 20% 한 번 더 (한도 없음) */ let b = null, bd = Infinity;
     for (const e of targets(u)) { if (hit.has(e.uid)) continue; const d = dist(t, e); if (d < bd && d <= 5 * CFG.CELL) { bd = d; b = e; } } // R2.19: 5칸 안에서만
     if (b) bbShot(u, { x: t.x, y: t.y }, b, mul * 0.78 /* R2.19: −30 → −22% */, n + 1, hit); } });
 }
@@ -4152,7 +4157,7 @@ function hongTick(u, dt) {
   const dx = g.x - b.x, dy = g.y - b.y, d = Math.hypot(dx, dy), step = 14 * CFG.CELL * dt;
   if (d > step + unitRadius(g) * 0.6) { b.x += dx / d * step; b.y += dy / d * step; hongDraw(b); return; }
   b.x = g.x; b.y = g.y; hongDraw(b);
-  if (b.to) { b.done++; heal(u, g, effAtk(u) * 0.5); /* build 5: 공격력 50% (ATK 320 → Lv1 160) */ if (!S.fast) dmgNum(g, '⚽ 패스 ' + b.done, { heal: true }); b.from = g; b.to = null; b.wait = 0.4; return; } // 받고 0.4초 뒤 다음 패스
+  if (b.to) { b.done++; heal(u, g, effAtk(u) * 0.5); /* build 5: 공격력 50% (ATK 320 → Lv1 160) */ if (!S.fast) dmgNum(g, '⚽ 패스 ' + b.done, { heal: true }); b.from = g; b.to = null; b.wait = 0.4; if (enh6(u)) g.ballBy = u; /* 랭크 6 [볼 키핑] */ return; } // 받고 0.4초 뒤 다음 패스
   const n = Math.max(1, b.done), done = dealDamage(u, g, effAtk(u) * 0.25 * n, {}); if (done > 0 && !S.fast) { hitFx(u, g, n >= 4); dmgNum(g, '⚽ 슛! ×' + n, { crit: true }); } // 패스 횟수 × 공격력 25% (아군이 없어 바로 차면 1번)
   hongEnd(u);
 }
@@ -4227,7 +4232,7 @@ function dragonTrails(u, dt) { // 불길: 1초마다 닿아 있는 적 공격력
 function frogEvolve(side, t, key) {
   const L = S.place[side], p = L[t]; if (!p || p.id !== 'frog' || p.lv <= 1) return;
   const r = S.net ? mulberry32(hashSeed(S.net.seed, 'frog', key || actKey(), side, t, p.lv))() : rng(), me = side === ME() && !S.fast;
-  if (r < 0.35) { L[t] = { ...p, id: 'prince' }; if (me) { banner('👑 개구리 지후가 왕자 지후가 되었어요!'); sfx('gacha_legend'); } }
+  if (r < (S.enh && enhOf(side, 'frog') >= 6 ? 0.375 : 0.35) /* 랭크 6 [개굴 기도] */) { L[t] = { ...p, id: 'prince' }; if (me) { banner('👑 개구리 지후가 왕자 지후가 되었어요!'); sfx('gacha_legend'); } }
   else { L[t] = null; if (me) banner('🐸 개굴… 개구리 지후가 사라졌어요'); }
   (S.fx || (S.fx = [])).push({ side, t, kind: 'merge' });
 }
@@ -4287,8 +4292,8 @@ function engFwd(u) { const bd = backDir(u.side), r = unitRadius(u) * 2.2, pad = 
 function engTick(u, dt) {
   const g = u.eg; if (blocked(u)) return; // 기절 · 빙결이면 멈췄다가 이어 간다
   if (g.build > 0) { g.build -= dt; if (g.build > 0) return; engPlace(u); g.t = 10; return; } // 다음 설치는 10초 뒤 시작 (15초마다 하나)
-  if ((g.t -= dt) > 0) return; g.build = 5;
-  if (!S.fast) { const p = engFwd(u); g.site = fxAt('fx-eng-site', p.x, p.y, 5200); (u.fx || (u.fx = [])).push(g.site); dmgNum(u, '🔧 포탑 설치', { crit: true }); }
+  if ((g.t -= dt) > 0) return; g.build = g.bt = enh6(u) ? 3 : 5; /* 랭크 6 [숙련 조립]: −2초 */
+  if (!S.fast) { const p = engFwd(u); g.site = fxAt('fx-eng-site', p.x, p.y, g.bt * 1000 + 200); (u.fx || (u.fx = [])).push(g.site); dmgNum(u, '🔧 포탑 설치', { crit: true }); }
 }
 function engPlace(u) {
   const g = u.eg; if (g.site) { g.site.remove(); if (u.fx) u.fx = u.fx.filter(e => e !== g.site); g.site = null; }
@@ -4308,7 +4313,7 @@ function warpSet(t, frac) {
   if (dm >= 0) { mx(); hp(); } else { hp(); mx(); } // 늘 때는 최대 체력 먼저 · 줄 때는 현재 체력 먼저 (두 번 깎이지 않게)
 }
 function warpTick(t, dt) { const w = t.wp; w.left -= dt; warpSet(t, Math.max(0, w.left / 5)); if (w.left <= 0) t.wp = null; }
-// 저격 지후: 대상과의 거리 (몸 바깥끼리) 가 사거리에 가까울수록 피해 −80% 까지 (선형)
+// 저격 지후: 대상과의 거리 (몸 바깥끼리) 가 가까울수록 피해 −50% 까지 (선형 · R2.22 반대로)
 // DJ 지후: 일반 공격 = 반경 5.7칸 파동 (SP 는 맞은 적이 있으면 1) · 스킬 = 반경 15칸 무작위 색 파동 (0.5초마다 4번)
 const DJ_WAVES = [['blue', '#3f8cff'], ['red', '#ff3b3b'], ['green', '#3fd46a'], ['yellow', '#ffd21f'], ['orange', '#ff8a1f'], ['purple', '#a54dff'], ['pink', '#ff6fc8'], ['black', '#222222']];
 function djRing(u, cells, c, ms, bw) { fxRing(u.x, u.y, cells * CFG.CELL, c, ms, bw); } // bw: 테두리 두께 (스킬 파동은 두껍게) · R2.20 build 3: 전장 캔버스 (예전 DOM 원은 지름 2,250px 레이어)
@@ -4333,7 +4338,18 @@ function arcaneBlink(u) {
   if (!S.fast) A.ring(u.x, u.y, 0.6); physSnap(u, clamp(t.x + dx / d * off, pad, FW() - pad), clamp(t.y + dy / d * off, pad, FH() - pad)); u.tgt = t; u._engaged = false;
   if (!S.fast) { A.ring(u.x, u.y, 0.6); dmgNum(u, '✦ 순간이동', { crit: true }); }
 }
-function sniperCut(u, e) { return 0.5 * clamp( /* R2.21.1: 최대 80 → 50% */ (dist(u, e) - unitRadius(u) - unitRadius(e)) / Math.max(1, u.range), 0, 1); }
+function sniperCut(u, e) { return (enh6(u) ? 0.4 : 0.5) * (1 - clamp((dist(u, e) - unitRadius(u) - unitRadius(e)) / Math.max(1, u.range), 0, 1)); } // R2.22: 가까울수록 감소 (바로 앞 50% · 사거리 끝 0%) · 랭크 6 최대 40%
+// ── R2.22 랭크 6 고유능력 도우미 ──
+function scCd(u, first) { return (first ? 5 : 9) - (enh6(u) ? 0.5 : 0); } // 낫 [숙련된 낫질]: 쿨타임 −0.5초
+function lzCh(u) { return enh6(u) ? 2 : 3; } // 빔 [급속 충전기]: 차징 3 → 2초
+function jawsStack(u, t) { // 죠스 [피 냄새]: 같은 적을 연달아 치면 공격력 +10% · 공격속도 +5% 씩 (대상이 바뀌면 처음부터 · 공격 직전에 불린다)
+  if (u.j6t !== t) { u.j6t = t; u.j6n = 0; if (u.buffs.jaws6) { delete u.buffs.jaws6; drawUnit(u); } return; }
+  u.j6n++; A.buff(u, 'jaws6', { atk: 0.1 * u.j6n, aspd: 0.05 * u.j6n }, 999); }
+function lanAura(u) { // 랜턴 [등불 아래]: 빔이 이어진 아군 공격력 +10% · 빔이 꽂힌 적 −10% (0.5초씩 늘린다 · 매 스텝 다시 걸지 않는다 · 겹치지 않는다)
+  if (blocked(u)) return; const b = u.beam, h = u.hbeam, put = (t, k, v) => { const o = t.buffs[k]; if (o) o.left = Math.max(o.left, 0.5); else A.buff(t, k, v, 0.5); };
+  if (b && b.t.alive && !(b.faint > 0) && !immune(b.t) && !(b.t.st.pure > 0) && !(b.t.st.inv > 0) && !(b.t.st.nou > 0)) put(b.t, 'lanDn', { atk: -0.1 });
+  if (h && h.t.alive) put(h.t, 'lanUp', { atk: 0.1 }); }
+function hongHold(t) { const b = t.ballBy && t.ballBy.ball; return !!(b && b.from === t && b.wait > 0); } // 홍명보 [볼 키핑]: 공을 받아 들고 있는 동안 (다음 패스 전까지)
 function reapFx(u, t) { // 사신 [즉사]: 대상 위로 붉은 낫이 크게 휘둘러 베고, 베인 자리에 사선 섬광 (build 5)
   const ang = Math.atan2(t.y - u.y, t.x - u.x) * 180 / Math.PI, el = fxAt('fx-reap', t.x, t.y, 900); el.style.setProperty('--a', ang.toFixed(1) + 'deg'); el.innerHTML = '<i class="arc"></i><i class="blade"></i><i class="cut"></i><i class="cut c2"></i>';
 }
@@ -4381,7 +4397,7 @@ const CHAR_INFO = {
   dice: [['피해', '1 ~ 300 (레벨 · 버프 적용)']],
   gun: [['동시 공격', '레벨 수만큼 (Lv3 = 3명)'], ['적이 적으면', '사거리 안에 있는 만큼']],
   get coin() { const m = coinMult(), left = 10 - Math.floor(Date.now() / 60000) % 10; return [['지금 시세', `${m >= 1 ? '+' : '−'}${Math.round(Math.abs(m - 1) * 100)}% (공격력 ${Math.round(CHARS.coin.atk * m)})`], ['다음 변동', `약 ${left}분 뒤`], ['변동 폭', '-50% ~ +50% · 한 번에 최소 15%p'], ['주기', '10분 (모두 같은 시세)'], ['반전 확률', '55% (올랐으면 다음엔 내릴 확률)'], ['친선전', '판 시작 시세로 고정']]; }, // R2.10.2: 지금 시세를 보여 준다
-  combo: [['공격마다', '공격력 +10% (복리)'], ['초기화', '라운드마다']],
+  combo: [['공격마다', '공격력 +7% (복리 · 랭크 6 +8%)'], ['초기화', '라운드마다']],
   water: [['방향', '가장 가까운 적 쪽으로 맵 끝까지'], ['폭', '몸 지름'], ['피해', '공격력의 120% + 잃은 체력의 12%'], ['넉백', '최대 4칸 (멀수록 덜 밀림)']],
   berserker: [['공격력', '체력이 낮을수록 최대 350%'], ['위기', '체력 15% 미만: 공격속도 +20%']],
   slot: [['출격제한', '1 (R2.7.2)'], ['돌리기', '3초마다 (레벨마다 -0.2초) · 세 자리 0~9'], ['7 하나', '모든 적에게 7 피해'], ['7 둘 [럭키독]', '모든 적에게 현재 체력의 77% 피해'], ['7 셋 [잭팟]', '상대 라이프를 모두 깎고 즉시 승리 (확률 0.1%)'], ['특징', '움직이지도 공격하지도 않는다']],
@@ -4452,7 +4468,7 @@ const CHAR_INFO = {
   warp: [['[왜곡]', 'SP 7 · 반경 5.2칸 · 자신 포함 아군 · 적 모두'], ['아군', '최대 체력 · 현재 체력 +50% → 5초 동안 선형으로 원래대로 (줄어들 때 쓰러지지는 않는다)'], ['적', '최대 체력 · 현재 체력 −50% → 5초 동안 선형으로 원래대로 · 면역 · 무적 · 잠수는 막는다'], ['다시 걸리면', '남은 왜곡을 되돌리고 새로']],
   dj: [['출격제한', '1'], ['일반 공격', '반경 5.7칸 파동 · 안의 적 모두 공격력 100% · 맞은 적이 하나라도 있으면 SP +1 (맞은 수와 상관없이)'], ['스킬', 'SP 12 · 0.5초마다 4번 (곧바로 · 0.5 · 1 · 1.5초) · 반경 15칸 · 색은 8가지 중 무작위 (같은 색이 또 나올 수 있다) · DJ 가 쓰러지면 남은 파동은 없다'], ['파랑', '적 200% · 파동 끝 (15칸) 까지 넉백'], ['빨강', '적 400% · 아군 공격력 +15% 5초'], ['초록', '아군 공격력의 300% 회복'], ['노랑', '적 150% · 3칸 넉백 · [기절] 1.5초'], ['주황', '적 100% · 아군 공격속도 +15% 5초'], ['보라', '적 100% · [매혹] 1초'], ['분홍', '아군을 적진 쪽으로 4칸 밀고 이동속도 +10% 5초'], ['검정', '적 50% · DJ 쪽으로 2칸 끌어온다'], ['아군', 'DJ 자신 포함 · 같은 색 버프는 새로 (겹치지 않는다)']],
   arcane: [['흡혈', '체력에 입힌 피해의 30% (쉴드에 막힌 피해 · 체력보다 넘친 피해는 세지 않는다)'], ['[순간이동]', 'SP 4 · 지금 대상 (없으면 가장 가까운 적) 의 뒤 · 피해는 없다']],
-  sniper: [['피해 감소', '대상과의 거리 (몸 바깥끼리) ÷ 사거리 × 50% · 바로 앞 0% · 사거리 끝 50%'], ['첫 공격', '라운드 시작 7.5초 뒤']],
+  sniper: [['피해 감소', '(1 − 대상과의 거리 (몸 바깥끼리) ÷ 사거리) × 50% · 바로 앞 50% · 사거리 끝 0%'], ['첫 공격', '라운드 시작 7.5초 뒤']],
 };
 // 전설 컷신 대사 (R2.4 · 뽑기 연출) — 전설이 추가되면 대사도 함께
 Object.keys(CHAR_INFO).forEach(id => { if (CHARS[id]) Object.defineProperty(CHARS[id], 'info', { get: () => CHAR_INFO[id], enumerable: true, configurable: true }); }); // 읽을 때마다 (코인 지금 시세 · 시작할 때 계산하면 coinCache 가 아직 없어 로딩이 멈춘다)
@@ -4491,6 +4507,7 @@ const STATUS = {
   pure: { name: '디버프 면역', icon: '🎵', buff: true }, // 선율 지후 종  // 포식 지후: 중첩 (숫자)     // 랜덤 이벤트 (R2.6.1): 이번 라운드 아무것도 못 한다
   antigrav: { name: '반중력', icon: '🪐', buff: true }, // 반중력 지후: 4초 뒤 체력이 절반인 둘로 (R2.10.2)
   nou: { name: 'NO U', icon: '🟨', buff: true },     // NO U 지후: 받는 피해 · 디버프를 공격자에게 돌려준다
+  noheal: { name: '회복 불가', icon: '🚱' },     // 주사 지후 랭크 6 [금지 처방] (R2.22): 회복을 받지 못한다
   vweak: { name: '약화', icon: '🧪' },           // 독 지후: 받는 피해 +40% · 회복 −60% · 이동속도 −20% · 공격력 −15%
   card: { name: '예고장', icon: '📨', buff: true }, // 괴도 지후: 13초 뒤 레벨을 훔친다 (남은 초)
   warpUp: { name: '왜곡', icon: '🌀', buff: true }, // R2.20 왜곡 지후: 아군 최대 · 현재 체력 +25% (5초 동안 원래대로)
@@ -4508,12 +4525,12 @@ function fxList(u) { // 유닛에 걸린 효과 → [{ k 아이콘, n 숫자, t 
   for (const k in STATUS) { if (!(u.st[k] > 0) || !(u.st[k] < 900 || k === 'alone') || !FX_OF[k]) continue; const n = u.stk && u.stk[k] ? u.stk[k].length : 0;
     push(FX_OF[k], STATUS[k].name, k === 'dnote' || k === 'doom' || k === 'card' ? Math.ceil(u.st[k]) : k === 'arcana' ? u.arcN : k === 'feast' ? u.dv : k === 'nbfly' ? u.nbN : k === 'nbdead' ? u.nbD : n > 1 ? n : ''); }
   const vw = u.st.vweak > 0, am = u.def.atkMult ? u.def.atkMult(u) : 1;
-  const atk = buffSum(u, 'atk') + relV(side, 'atk') + 0.08 * (u.wn || 0) - (vw ? 0.15 : 0) + (u.bl ? 0 : am - 1), aspd = buffSum(u, 'aspd'), spd = buffSum(u, 'spd') + relV(side, 'spd') - (vw ? 0.2 : 0);
-  const taken = (u.st.vuln > 0 ? (u.st.vulnX && u.st.vulnX.amt) || 0.3 : 0) + (vw ? 0.4 : 0) + relV(foe, 'vuln') - (u.st.foxguard > 0 ? 0.4 : 0) - (u.landDr > S.time ? 0.2 : 0) /* 드래곤 착지 */ - relV(side, 'dr');
+  const atk = buffSum(u, 'atk') + relV(side, 'atk') + 0.08 * (u.wn || 0) + 0.02 * (u.wn6 || 0) - 0.005 * (u.vAtk || 0) - (vw ? 0.15 : 0) + (u.bl ? 0 : am - 1), aspd = buffSum(u, 'aspd'), spd = buffSum(u, 'spd') + relV(side, 'spd') - (vw ? 0.2 : 0);
+  const taken = (u.st.vuln > 0 ? (u.st.vulnX && u.st.vulnX.amt) || 0.3 : 0) + (vw ? 0.4 : 0) + relV(foe, 'vuln') - (u.st.foxguard > 0 ? 0.4 : 0) - (u.landDr > S.time ? 0.2 : 0) /* 드래곤 착지 */ - (u.ballBy && hongHold(u) ? 0.15 : 0) - relV(side, 'dr');
   const ar = (v, up, dn) => { if (v > 1e-3) push(up, FX_NAME[up]); else if (v < -1e-3) push(dn, FX_NAME[dn]); };
   ar(atk, 'atkUp', 'atkDown'); ar(aspd, 'aspdUp', 'aspdDown'); ar(spd, 'spdUp', 'spdDown'); ar(taken, 'takenUp', 'takenDown');
   if (u.wn || u.gpu) { push('critUp', FX_NAME.critUp); push('critDmgUp', FX_NAME.critDmgUp); } // 소믈리에 와인 · 엑시노스 [GPU 칩] if (buffSum(u, 'dodge') > 0) push('dodgeUp', FX_NAME.dodgeUp);
-  if (vw || evN(side, 'noheal')) push('healDown', FX_NAME.healDown); if ((u.hots && u.hots.length) || relV(side, 'regen')) push('regen', FX_NAME.regen);
+  if (vw || evN(side, 'noheal') || u.st.noheal > 0) push('healDown', u.st.noheal > 0 ? '회복 불가' : FX_NAME.healDown); if ((u.hots && u.hots.length) || relV(side, 'regen')) push('regen', FX_NAME.regen);
   return L;
 }
 const fxTile = (x, cls) => `<i class="${cls || 'fx'}" style="background-image:url(${fxSrc(x.k)})" title="${x.t}">${x.n !== '' && x.n != null ? `<b>${x.n}</b>` : ''}</i>`;
@@ -5405,7 +5422,7 @@ function pickFoe(u) {
 }
 function blocked(u) { return u.st.stun > 0 || u.st.freeze > 0 || u.st.ban > 0 || u.st.sleep > 0; } // [수면] (R2.10) // [밴] (랜덤 이벤트): 아무것도 못 한다
 function buffSum(u, k) { let n = 0; for (const key in u.buffs) n += u.buffs[key][k] || 0; return n; }
-function effAtk(u) { return u.atk * Math.max(0.05, Math.max(0, 1 + buffSum(u, 'atk')) * (u.st.frost > 0 ? 0.9 : 1) * (u.st.drowsy > 0 ? 0.7 : 1) * (u.st.vweak > 0 ? 0.85 : 1)) * (1 + 0.08 * (u.wn || 0)) * (u.st.rage > 0 ? 1.5 : 1) * (u.def.atkMult ? u.def.atkMult(u) : 1) * (u.comboMult || 1) * (1 + relV(u.side, 'atk')); } // R2.8: 공격력 감소는 최대 95% · R2.17 유물
+function effAtk(u) { return u.atk * Math.max(0.05, Math.max(0, 1 + buffSum(u, 'atk')) * (u.st.frost > 0 ? 0.9 : 1) * (u.st.drowsy > 0 ? 0.7 : 1) * (u.st.vweak > 0 ? 0.85 : 1) * (u.vAtk ? 1 - 0.005 * u.vAtk : 1)) * (1 + 0.08 * (u.wn || 0) + 0.02 * (u.wn6 || 0)) * (u.st.rage > 0 ? 1.5 : 1) * (u.def.atkMult ? u.def.atkMult(u) : 1) * (u.comboMult || 1) * (1 + relV(u.side, 'atk')); } // R2.8: 공격력 감소는 최대 95% · R2.17 유물
 function aspdRate(u) { return Math.max(0.1, 1 + buffSum(u, 'aspd')); } // 공격속도 버프: 쿨이 그만큼 빨리 준다
 function baseInterval(u) { return u.st.rage > 0 ? u.atkSpeed / 1.3 : u.atkSpeed; } // [광폭화] 공격 속도 +30% (R2.11.4 · 예전 간격 0.65초)
 // 코인 지후 시세: 10분 칸마다 -50% ~ +50% · 오를지 내릴지는 반반 (R2.17.2: 지난 칸 반대로 갈 확률 55% 삭제) (기준 시각부터 시드로 이어서 · 모두 같은 값)
@@ -5434,10 +5451,10 @@ function dealDamage(src, t, amount, opts = {}) {
     if (src && src !== t && src.alive) { if (src.st.nou > 0 && !opts.dot) { nouClash(src, t); return 0; } t.nouFrom = src; if (!S.fast && !opts.dot) dmgNum(t, 'NO U', { crit: true }); dealDamage(t, src, amount, { reflect: true, noCrit: true, skill: true, dot: opts.dot }); }
     return 0;
   }
-  if (t.st.bubble > 0) { t.st.bubble = 0; if (!S.fast) dmgNum(t, '🫧 톡!', { crit: true }); drawUnit(t); return 0; } // [버블]: 처음 받는 피해 한 번 무효
+  if (t.st.bubble > 0) { if (t.bub6 && rng() < 0.2) { if (!S.fast) dmgNum(t, '🫧 탱탱!', { crit: true }); return 0; } /* 랭크 6 [질긴 비눗방울]: 20% 안 터진다 */ t.st.bubble = 0; if (!S.fast) dmgNum(t, '🫧 톡!', { crit: true }); drawUnit(t); return 0; } // [버블]: 처음 받는 피해 한 번 무효
   let crit = false;
-  if (src && !opts.dot && !opts.noCrit && rng() < (t.st.wound > 0 ? 0.5 : CFG.CRIT + 0.04 * (src.wn || 0) + (src.gpu ? buffSum(src, 'crit') : 0))) { crit = true; amount *= 2 + 0.3 * (src.wn || 0) + (src.gpu ? buffSum(src, 'critDmg') : 0); } // R2.20 [GPU 칩]: 확률 · 피해 (+) // 치명타: 피해 ×2 (소믈리에 와인: 확률 +3% (R2.10.2) · 피해 +30% 씩)
-  let d = amount * evDmgMult(src, t) * (t.def.takenMult ? t.def.takenMult(t) : 1) * (t.st.vuln > 0 ? 1 + ((t.st.vulnX && t.st.vulnX.amt) || 0.3) : 1) * (t.st.frost > 0 ? 1.1 : 1) * (t.st.vweak > 0 ? 1.2 : 1) * (1 - Math.min(0.9, relV(t.side, 'dr'))) * (1 + relV(t.side === 'a' ? 'e' : 'a', 'vuln')); // R2.17 유물: 방탄조끼 · 방패(였던 것)
+  if (src && !opts.dot && !opts.noCrit && rng() < (t.st.wound > 0 ? 0.5 : CFG.CRIT + 0.04 * (src.wn || 0) + 0.02 * (src.wn6 || 0) + (src.gpu ? buffSum(src, 'crit') : 0))) { crit = true; amount *= 2 + 0.3 * (src.wn || 0) + (src.gpu ? buffSum(src, 'critDmg') : 0); } // R2.20 [GPU 칩]: 확률 · 피해 (+) // 치명타: 피해 ×2 (소믈리에 와인: 확률 +3% (R2.10.2) · 피해 +30% 씩)
+  let d = amount * evDmgMult(src, t) * (t.def.takenMult ? t.def.takenMult(t) : 1) * (t.ballBy && hongHold(t) ? 0.85 : 1) * (t.st.vuln > 0 ? 1 + ((t.st.vulnX && t.st.vulnX.amt) || 0.3) : 1) * (t.st.frost > 0 ? 1.1 : 1) * (t.st.vweak > 0 ? 1.2 : 1) * (1 - Math.min(0.9, relV(t.side, 'dr'))) * (1 + relV(t.side === 'a' ? 'e' : 'a', 'vuln')); // R2.17 유물: 방탄조끼 · 방패(였던 것)
   let refl = 0; if (t.def.reflect && src && src !== t && src.melee && !opts.skill && !opts.dot && !opts.reflect) { refl = d * t.def.reflect; d *= 1 - t.def.reflect; } // 선인장: 근접 공격의 일부를 돌려준다
   d = Math.max(1, Math.round(Math.max(d, amount * 0.1))); // R2.8: 받는 피해 감소는 최대 90% · 최소 1 피해
   if (t.nbD > 0) { t.nbD--; d += 30; if (t.nbD <= 0) t.st.nbdead = 0; if (!S.fast) dmgNum(t, '🖤 +30', { crit: true }); } // 솔렘라멘트 [죽은나비]: 처음 받는 피해 +30 (R2.18 · 중첩 하나마다 한 번)
@@ -5487,7 +5504,7 @@ function antigravSplit(a) { // 반중력 지후 (R2.10.2): 체력이 절반인 �
   const hm = Math.max(1, Math.round(a.baseMaxHp / 2)); a.baseMaxHp = hm; a.maxHp = Math.max(1, Math.round(a.maxHp / 2)); a.hp = Math.max(1, Math.min(a.maxHp, Math.round(a.hp / 2)));
   const bd = backDir(a.side), c = makeUnit(a.side, a.id, a.lv, a.x + unitRadius(a) * (bd.x * 1.4 + bd.y * 0.6), a.y + unitRadius(a) * (bd.y * 1.4 + bd.x * 0.6)); // c.tile 없음 → 배치 기록을 건드리지 않는다
   if (c.def.onStart) try { c.def.onStart(c, A); } catch (e) { console.error(e); }
-  c.def = a.def; c.atkSpeed = a.atkSpeed; c.speed = a.speed; c.range = a.range; c.atk = a.atk; c.wn = a.wn; c.baseMaxHp = hm; c.maxHp = a.maxHp; c.hp = a.hp; c.summoner = a.agBy || a; c.agSplit = true;
+  c.def = a.def; c.atkSpeed = a.atkSpeed; c.speed = a.speed; c.range = a.range; c.atk = a.atk; c.wn = a.wn; c.wn6 = a.wn6; c.baseMaxHp = hm; c.maxHp = a.maxHp; c.hp = a.hp; c.summoner = a.agBy || a; c.agSplit = true;
   if (a.nkUsed || c.id === 'nuke') { c.nkUsed = true; } c.mass = physMass(c); c.invMass = c.def.immobile ? 0 : 1 / c.mass; // 핵은 한 번만
   physSnap(c, c.x, c.y); c.el = unitEl(c); $('field').appendChild(c.el); if (c.nkUsed && c.def.portraitUsed) A.portrait(c, c.def.portraitUsed); S.units.push(c); drawUnit(c); drawUnit(a);
   if (!S.fast) { deployFx(c, 'merge'); dmgNum(a, '🪐 분열!', { crit: true }); }
@@ -5505,7 +5522,7 @@ function bikerRush(u, dt) { // 폭주족 지후 (R2.10.2): 초당 50칸 · 모�
       u.ghost = false; u.xPrev = u.x; u.yPrev = u.y; if (!S.fast) { fxAt('fx-boom', u.x, u.y, 650, { width: 2 * CFG.CELL + 'px', height: 2 * CFG.CELL + 'px' }); shake(true); } instaKill(null, u, '💥 쾅!'); return; }
   }
 }
-function heal(src, t, amount) { if (!t.alive || evN(t.side, 'noheal')) return; // 회복 불가 (랜덤 이벤트)
+function heal(src, t, amount) { if (!t.alive || evN(t.side, 'noheal') || t.st.noheal > 0) return; // 회복 불가 (랜덤 이벤트)
   const h = Math.min(t.maxHp - t.hp, Math.round(amount * (t.st.vweak > 0 ? 0.4 : 1))); t.hp += h; /* 약화 (독): 회복 −60% */ dmgNum(t, h, { heal: true }); drawUnit(t); }
 function immune(t) { return !!(t.def.immune && t.def.immune(t)); }
 // 전작 7.6.4 규칙: 빙결 · 기절은 걸려 있는 동안 새로 걸리지 않고, 풀린 뒤 0.5초 동안 다시 걸리지 않는다
@@ -5532,8 +5549,8 @@ function killUnit(u) {
 }
 function spGive(a, n, show) { // SP 를 바로 채운다 (충전 · 아군이 쓰러질 때 · R2.8)
   const sk = a.def.skill; if (!sk || !a.alive || a.skillDone || !['hit', 'sec', 'ally', 'cooldown'].includes(sk.type)) return; // 핵미사일 등 SP 가 없는 스킬은 제외
-  a.sk = Math.min(sk.type === 'cooldown' ? sk.cd : sk.need, a.sk + n); if (show && !S.fast) dmgNum(a, '⚡ SP +' + n, { heal: true }); drawUnit(a);
-  if ((sk.type === 'hit' || sk.type === 'ally') && a.sk >= sk.need && !a.st.silence && !blocked(a) && !a.revQ) castSkill(a);
+  a.sk = Math.min(sk.type === 'cooldown' ? sk.cd : skNeed(a), a.sk + n); if (show && !S.fast) dmgNum(a, '⚡ SP +' + n, { heal: true }); drawUnit(a);
+  if ((sk.type === 'hit' || sk.type === 'ally') && a.sk >= skNeed(a) && !a.st.silence && !blocked(a) && !a.revQ) castSkill(a);
 }
 // 스킬 도우미: 스킬 피해는 '일반 공격력의 %'
 const A = {
@@ -5599,6 +5616,7 @@ const A = {
   portrait: (u, src) => { const img = u.el && u.el.querySelector('.unit-icon img'); if (img && src) img.src = src; },
   headLv: (u, n) => { if (!u.el) return; let b = u.el.querySelector('.xlv'); if (!b) { b = document.createElement('span'); b.className = 'xlv'; u.el.appendChild(b); } b.textContent = 'LV.' + n; b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); },
 };
+function skNeed(u) { return u.need || u.def.skill.need; } // 랭크 6 등 유닛별 SP (R2.22 비 지후)
 function castSkill(u) {
   if (!u.def.skill || u.st.ban > 0) return; // [밴]: 스킬도 못 쓴다 (네크로맨서 시작 소환 등)
   u.sk = 0; u.el && (u.el.classList.remove('cast'), void u.el.offsetWidth, u.el.classList.add('cast'));
@@ -5606,8 +5624,8 @@ function castSkill(u) {
 }
 function afterHit(u, done) { // 일반 공격이 맞으면 스킬 게이지
   const sk = u.def.skill; if (!sk || !(done > 0) || u.st.silence || !u.alive || u.st.nou > 0) return; // [NO U] 중에는 SP 가 차지 않는다
-  if (sk.type === 'hit') u.sk++; if (sk.type === 'mana') u.sk = Math.min(sk.need, u.sk + 20);
-  if ((sk.type === 'hit' || sk.type === 'mana') && u.sk >= sk.need) castSkill(u);
+  if (sk.type === 'hit') u.sk++; if (sk.type === 'mana') u.sk = Math.min(skNeed(u), u.sk + 20);
+  if ((sk.type === 'hit' || sk.type === 'mana') && u.sk >= skNeed(u)) castSkill(u);
 }
 
 // ── 한 걸음: 상태이상 · 패시브 · 쿨타임 스킬 → 조향 · 공격 (전작 aiSteerAndAttack 일반 경로) ──
@@ -5622,8 +5640,8 @@ function stepUnit(u, dt) {
     if (L && L.length) { // 중첩된 도트: 하나하나 1초마다
       for (const d of L) { d.left -= dt; d.acc += dt; if (d.acc >= 1 - 1e-6) { d.acc -= 1; dealDamage(d.src && d.src.side !== u.side ? d.src : null, u, d.dps, { dot: true }); if (!u.alive) return; } }
       u.stk[k] = L.filter(d => d.left > 1e-6); u.st[k] = u.stk[k].reduce((m, d) => Math.max(m, d.left), 0);
-    } else if (STATUS[k].dot) { u.st[k + 'A'] = (u.st[k + 'A'] || 0) + dt; if (u.st[k + 'A'] >= 1) { u.st[k + 'A'] -= 1; dealDamage(null, u, (u.st[k + 'X'] && u.st[k + 'X'].dps) || 20, { dot: true }); if (!u.alive) return; } }
-    if (u.st[k] <= 0) { delete u.st[k + 'X']; drawUnit(u); } // 끝나면 세기도 지운다 (눈가림 등)
+    } else if (STATUS[k].dot) { u.st[k + 'A'] = (u.st[k + 'A'] || 0) + dt; if (u.st[k + 'A'] >= 1) { u.st[k + 'A'] -= 1; dealDamage(null, u, (u.st[k + 'X'] && u.st[k + 'X'].dps) || 20, { dot: true }); if (!u.alive) return; if (u.st[k + 'X'] && u.st[k + 'X'].v6) u.vAtk = (u.vAtk || 0) + 1; /* 독 지후 랭크 6 [신경독]: 틱마다 공격력 −0.5% */ } }
+    if (u.st[k] <= 0) { delete u.st[k + 'X']; if (k === 'poison') u.vAtk = 0; drawUnit(u); } // 끝나면 세기도 지운다 (눈가림 등)
   }
   { const vw = u.vmark > S.time && u.st.poison > 0 && u.hp <= u.maxHp * 0.4 && !immune(u); if (vw !== (u.st.vweak > 0)) { u.st.vweak = vw ? 0.5 : 0; drawUnit(u); } else if (vw) u.st.vweak = 0.5; } // 독 지후 [약화]: 독 지후에게 맞은 적 · 아무 [중독] · 체력 40% 이하 (R2.21: 30 → 40%)
   if (u.doomed && !(u.st.doom > 0)) { doomKill(u); return; } // 천살성
@@ -6002,7 +6020,7 @@ function drawUnit(u) {
   sx('hp', b.hp, u.hp / (u.baseMaxHp || u.maxHp)); sx('cut', b.cut, u.cutFrac || 0);
   if (b.ht && BSET.hpnum && !(BSET.low && S.phase === 'combat' && v.htT != null && S.time - v.htT < 0.25 && S.time >= v.htT)) { const h = Math.max(0, Math.ceil(u.hp)), t = h >= 10000 ? (h / 1000).toFixed(1) + 'k' : String(h); if (v.ht !== t) { v.ht = t; v.htT = S.time; b.ht.textContent = t; } } // R2.12.1 체력 숫자 (바뀔 때만 · 저전력은 0.25초에 한 번)
   if (b.sh) { const full = u.baseMaxHp || u.maxHp, f = clamp(u.hp / full, 0, 1), g = clamp(Math.min(u.shield || 0, Math.max(0, u.hp)) / full, 0, f), s = (f - g).toFixed(3) + ',' + g.toFixed(3); if (v.sh !== s) { v.sh = s; b.sh.style.left = ((f - g) * 100).toFixed(1) + '%'; b.sh.style.width = g > 0 ? (g * 100).toFixed(1) + '%' : '0'; b.sh.style.display = g > 0 ? '' : 'none'; } } // R2.12.3: 쉴드 = 체력 끝 [체력 − 쉴드, 체력] 흰색
-  if (b.cd && (sk || u.def.gauge)) sx('cd', b.cd, u.def.gauge ? u.def.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / sk.need);
+  if (b.cd && (sk || u.def.gauge)) sx('cd', b.cd, u.def.gauge ? u.def.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / skNeed(u));
   let ck = 0; for (const k in u.buffs) if (k.startsWith('clock')) ck += u.buffs[k].aspd || 0; // 시계 지후: 버프 하늘색 · 디버프 빨간 시계 표식 (R2.10.2 build 4)
   const fl = (u.st.freeze > 0) | (u.st.bubble > 0) << 1 | (u.st.stun > 0) << 2 | (u.st.stealth > 0) << 3 | (u.st.dive > 0) << 4 | !!u.ghost << 5 | (ck > 0) << 6 | (ck < 0) << 7;
   if (v.fl !== fl) { v.fl = fl; ['frozen', 'bubbled', 'stunned', 'stealthed', 'diving', 'dashing', 'clk-up', 'clk-dn'].forEach((c, i) => el.classList.toggle(c, !!(fl >> i & 1))); }
@@ -6133,7 +6151,7 @@ function showRangeRing(u) {
 }
 function hideRangeRing() { if (rangeRing) rangeRing.el.remove(); rangeRing = null; const b = $('uInfo'); if (b) b.hidden = true; }
 // ── 전투 중 지후 정보 (R2.10.2 build 5): 누른 지후의 체력 · 공격력 · 공격 간격 · 이동속도 · SP · 효과 (바뀐 만큼은 연두 · 줄면 빨강) ──
-const BUFF_SRC = { tyrant: '폭군', lonely: '고독', emp: 'EMP 자기장', clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', ev: '이벤트', moon: '달', accel: '가속', gpu: 'GPU 칩', royal: '왕의 유산', dj: 'DJ 파동' };
+const BUFF_SRC = { tyrant: '폭군', lonely: '고독', emp: 'EMP 자기장', clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', lan: '랜턴', jaws: '죠스', ev: '이벤트', moon: '달', accel: '가속', gpu: 'GPU 칩', royal: '왕의 유산', dj: 'DJ 파동' };
 function buffSrcName(k) { const m = k.match(/^[a-z]+/); return (m && BUFF_SRC[m[0]]) || '효과'; }
 function uInfoHtml(u) {
   const c = u.def, pct = x => `${x > 0 ? '+' : ''}${Math.round(x * 100)}%`, f1 = x => (Math.round(x * 100) / 100).toString();
@@ -6143,7 +6161,7 @@ function uInfoHtml(u) {
   if (u.st.rage > 0) why.push('공격력 +50% · 공격 속도 +30% (광폭화)'); if (u.st.vweak > 0) why.push('공격력 −15% · 이동속도 −20% · 받는 피해 +40% · 회복 −60% (약화)'); if (u.st.frost > 0) why.push('공격력 −10% · 이동속도 −40% (동상)'); if (u.st.drowsy > 0) why.push('공격력 −30% (졸음)'); if (u.wn) why.push(`공격력 +${5 * u.wn}% (와인 ${u.wn}잔)`);
   if (c.atkMult) { const m = c.atkMult(u); if (Math.abs(m - 1) > 1e-3) why.push(`공격력 ×${f1(m)} (패시브)`); } if (u.comboMult && u.comboMult !== 1) why.push(`공격력 ×${f1(u.comboMult)} (콤보)`);
   const sts = fxList(u).filter(x => !Object.values(FX_OF).includes(x.k)).map(x => `<span class="st">${fxTile(x, 'fxs')} ${x.t}</span>`).join('') + Object.keys(STATUS).filter(k => u.st[k] > 0).map(k => `<span class="st">${FX_OF[k] ? fxTile({ k: FX_OF[k], t: STATUS[k].name, n: '' }, 'fxs') : STATUS[k].icon} ${STATUS[k].name}${u.st[k] < 900 && k !== 'vweak' ? ` ${u.st[k].toFixed(1)}초` : ''}${u.stk && u.stk[k] && u.stk[k].length > 1 ? ` ×${u.stk[k].length}` : ''}</span>`).join('');
-  const sk = c.skill, spTxt = sk && (sk.type === 'cooldown' ? `${f1(u.sk)} / ${sk.cd}초` : sk.need ? `${Math.floor(u.sk)} / ${sk.need}` : '');
+  const sk = c.skill, spTxt = sk && (sk.type === 'cooldown' ? `${f1(u.sk)} / ${sk.cd}초` : sk.need ? `${Math.floor(u.sk)} / ${skNeed(u)}` : '');
   return `<div class="uh">${pic(u.id, u.picSrc)}<div><b>${esc(c.name)}</b> <span class="lv">Lv.${u.lv}</span><small>${u.side === ME() ? '아군' : '적'} · ${c.role}${u.alive ? '' : ' · 쓰러짐'}</small></div><button class="x" aria-label="닫기">✕</button></div>
     <div class="ur"><span>체력</span><b>${Math.max(0, Math.round(u.hp)).toLocaleString()} / ${Math.round(u.maxHp).toLocaleString()}${u.shield > 0 ? ` <span class="sh">+🛡${Math.round(u.shield)}</span>` : ''}</b></div>
     <div class="ur"><span>공격력</span><b>${c.noAttack ? '—' : Math.round(atk1).toLocaleString()}${c.noAttack ? '' : chg(atk1 - atk0, atk1 > atk0, `${atk1 > atk0 ? '+' : '−'}${Math.round(Math.abs(atk1 - atk0))}`)}</b></div>
@@ -6326,7 +6344,7 @@ function moveTile(side, a, b) { // 자리 옮기기: 같은 종류 · 같은 레
   const L = S.place[side];
   if (evN(side, 'seal')) return false; // 봉인 (랜덤 이벤트): 자리를 옮길 수 없다
   if (jokerCan(L[a], L[b])) { L[a] = { id: L[b].id, lv: L[a].lv, jk: 1, f: L[a].f }; (S.fx || (S.fx = [])).push({ side, t: a, kind: 'merge' }); if (side === ME()) sfx('merge'); return 'joker'; } // 조커 레벨 그대로 · 출격제한 무시
-  if (canFuse(L[a], L[b])) { L[b] = { ...L[b], arc: Math.max(L[a].arc || 0, L[b].arc || 0) || undefined, sp: Math.max(L[a].sp || 0, L[b].sp || 0) || undefined, dv: Math.max(L[a].dv || 0, L[b].dv || 0) || undefined, nk: (L[a].nk || L[b].nk) || undefined, hb: Math.max(L[a].hb || 0, L[b].hb || 0) || undefined, wn: Math.max(L[a].wn || 0, L[b].wn || 0) || undefined, sm: Math.max(L[a].sm || 0, L[b].sm || 0) || undefined, f: normF((L[a].f || '') + (L[b].f || '')), lv: L[b].lv + 1 }; L[a] = null; godAwake(side, L[b]); S.evf[side].fuse += evN(side, 'fusemaster'); evLuck(side, b); frogEvolve(side, b); (S.fx || (S.fx = [])).push({ side, t: b, kind: 'merge' }); if (side === ME()) sfx('merge'); return true; }
+  if (canFuse(L[a], L[b])) { L[b] = { ...L[b], arc: Math.max(L[a].arc || 0, L[b].arc || 0) || undefined, sp: Math.max(L[a].sp || 0, L[b].sp || 0) || undefined, dv: Math.max(L[a].dv || 0, L[b].dv || 0) || undefined, nk: (L[a].nk || L[b].nk) || undefined, hb: Math.max(L[a].hb || 0, L[b].hb || 0) || undefined, wn: Math.max(L[a].wn || 0, L[b].wn || 0) || undefined, wn6: Math.max(L[a].wn6 || 0, L[b].wn6 || 0) || undefined, sm: Math.max(L[a].sm || 0, L[b].sm || 0) || undefined, f: normF((L[a].f || '') + (L[b].f || '')), lv: L[b].lv + 1 }; L[a] = null; godAwake(side, L[b]); S.evf[side].fuse += evN(side, 'fusemaster'); evLuck(side, b); frogEvolve(side, b); (S.fx || (S.fx = [])).push({ side, t: b, kind: 'merge' }); if (side === ME()) sfx('merge'); return true; }
   swapTiles(side, a, b); return false;
 }
 // 행동 적용: 자리 바꾸기 → 놓기/합치기. 상대가 보낸 행동도 같은 판정으로 (놓을 수 없으면 같은 지후에 합치고, 그것도 안 되면 건너뛴다)
@@ -6739,7 +6757,7 @@ function beginCombat() {
   $('deployTip').innerHTML = '⚔️ <b>전투 진행중</b>';
   const f = $('field'); renderField(); f.querySelectorAll('.unit, .ufx').forEach(el => el.remove()); f.querySelectorAll('.tile').forEach(t => t.style.opacity = '.35');
   uidSeq = 0; S.units = []; S.timed = []; S.rel = { a: {}, e: {} }; S.relAcc = 0; S.relLog = []; prophecyResolve(); frogSweep(); // R2.17 유물은 라운드마다 새로
-  ['a', 'e'].forEach(side => S.place[side].forEach((p, t) => { if (!p) return; const { x, y } = tileXY(side, t); const u = makeUnit(side, p.id, p.lv, x, y); u.tile = t; if (p.wn) u.wn = p.wn; // 소믈리에 와인 (경기 내내)
+  ['a', 'e'].forEach(side => S.place[side].forEach((p, t) => { if (!p) return; const { x, y } = tileXY(side, t); const u = makeUnit(side, p.id, p.lv, x, y); u.tile = t; if (p.wn) u.wn = p.wn; if (p.wn6) u.wn6 = p.wn6; // 소믈리에 와인 (경기 내내)
     if (p.hb) { u.baseMaxHp = u.maxHp = u.hp = u.maxHp + p.hb; } // 힐 지후 랭크 6 [튼튼 처방] (경기 내내)
     if (p.jk) { u.baseMaxHp = u.maxHp = u.hp = Math.round(u.maxHp * 1.1); u.atk = Math.round(u.atk * 1.1); } // 조커가 변한 지후: 체력 · 공격력 +10%
     const pr = S.prop[side][t]; if (pr === 'on') { u.propMult = 2.5 + 0.2 * (p.arc || 0); // R2.8: +150%
@@ -7305,7 +7323,7 @@ function reelsTick() { // 매 프레임 (loop): 바뀐 칸만 다시 쓴다
     const ic = dead || !u.st ? '' : Object.keys(STATUS).filter(k => u.st[k] > 0 && u.st[k] < 900).map(k => STATUS[k].icon).join(''); if (L.ic !== ic) { L.ic = ic; q.ic.textContent = ic; }
     if (L.hp !== hp || L.full !== full) { L.hp = hp; L.full = full; q.hp.style.width = (hp / full * 100).toFixed(1) + '%'; q.tx.textContent = `${hp.toLocaleString()} / ${full.toLocaleString()}`; }
     const shp = clamp(sh / full * 100, 0, 100).toFixed(1); if (L.shp !== shp) { L.shp = shp; q.sh.style.width = shp + '%'; }
-    let g = 0; const sk = c.skill; if (!dead && (sk || c.gauge)) { try { g = c.gauge ? c.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / sk.need; } catch (e) { g = 0; } } // 스킬 게이지 (drawUnit 과 같은 식)
+    let g = 0; const sk = c.skill; if (!dead && (sk || c.gauge)) { try { g = c.gauge ? c.gauge(u) : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / skNeed(u); } catch (e) { g = 0; } } // 스킬 게이지 (drawUnit 과 같은 식)
     const gp = (clamp(Number(g) || 0, 0, 1) * 100).toFixed(0); if (L.gp !== gp) { L.gp = gp; q.sk.style.width = gp + '%'; }
     let atk = '—'; if (!c.noAttack || c.atkText) { try { atk = c.atkText ? c.atkText() : Math.round(effAtk(u)); } catch (e) { atk = Math.round(u.atk); } }
     const asp = c.noAttack ? '—' : `${Number((u.atkSpeed || c.atkSpeed).toFixed(2))}초`;
@@ -7484,6 +7502,39 @@ const ENH_SKILL = { // 랭크 6 고유능력 · 랭크 12 필살기 (사용자�
   bow: { 6: { name: '금빛 행운', desc: '황금 화살 발사 확률 +1%.' } },
   melody: { 6: { name: '메아리', desc: '효과 범위 반경 +1칸.' } },
   radiation: { 6: { name: '낙진', desc: '방사능 지대 지속 시간 +2초, 반지름 +1칸.' } },
+  // ── R2.22 ──
+  rain: { 6: { name: '장마전선', desc: '스킬에 필요한 SP 가 1 줄어들고 (SP 7), [가랑비]의 아군 회복 시간이 1초 늘어납니다.' } },
+  scythe: { 6: { name: '숙련된 낫질', desc: '[힘줄 끊기] 쿨타임이 0.5초 줄고, [절상] · [침묵] 시간이 1초 늘어납니다.' } },
+  levelup: { 6: { name: '만렙 보너스', desc: '레벨업할 때 회복량이 25% 늘어납니다 (최대 체력의 62.5%).' } },
+  gun: { 6: { name: '첫발의 긴장감', desc: '레벨 1일 때만 공격력이 15% 증가합니다.' } },
+  combo: { 6: { name: '연타 장인', desc: '공격할 때마다 늘어나는 공격력이 1% 더 커집니다 (8%).' } },
+  water: { 6: { name: '대해일', desc: '[해일]의 폭이 2배가 됩니다.' } },
+  dust: { 6: { name: '모래 장막', desc: '황사 지대 안 아군의 회피율이 5% 더 증가합니다 (40%).' } },
+  cactus: { 6: { name: '오방 가시', desc: '가시가 5방향으로 나갑니다.' } },
+  jaws: { 6: { name: '피 냄새', desc: '같은 적을 연달아 공격할 때마다 공격력이 10%, 공격속도가 5%씩 늘어납니다 (대상이 바뀌면 처음부터).' } },
+  necro: { 6: { name: '덤 소환', desc: '[소환]을 쓸 때 25% 확률로 소환체를 1기 더 불러냅니다.' } },
+  rifle: { 6: { name: '방아쇠 손가락', desc: '기본 공격 간격이 0.2초 줄어듭니다.' } },
+  bubble: { 6: { name: '질긴 비눗방울', desc: '씌운 [버블]이 피해를 막을 때 20% 확률로 터지지 않습니다 (횟수 제한 없음).' } },
+  syringe: { 6: { name: '금지 처방', desc: '일반 공격이 적에게 4초 동안 [회복 불가]를 겁니다.' } },
+  tentacle: { 6: { name: '여분의 촉수', desc: '[촉수 내려치기] 대상이 2기 늘어납니다 (최대 7기).' } },
+  lantern: { 6: { name: '등불 아래', desc: '회복 빔이 이어진 아군은 공격력이 10% 늘고, 공격 빔이 꽂힌 적은 공격력이 10% 줄어듭니다.' } },
+  devour: { 6: { name: '폭식', desc: '[포식]을 얻을 때 20% 확률로 하나 더 얻습니다.' } },
+  bomb: { 6: { name: '내리막길', desc: '이동속도가 20% 증가합니다.' } },
+  sommelier: { 6: { name: '빈티지 와인', desc: '와인의 공격력 버프가 2%, 치명타 확률 버프가 2% 늘어납니다 (공격력 +10% · 치명타 확률 +6%).' } },
+  chicken: { 6: { name: '쌍란', desc: '달걀 부화 확률이 1% 늘어납니다 (7%).' } },
+  pan: { 6: { name: '큰 프라이팬', desc: '후라이팬 범위가 10° 넓어집니다 (120°).' } },
+  lock: { 6: { name: '이중 잠금', desc: '[잠금]에 걸린 적이 0.7초 동안 행동 불능이 됩니다.' } },
+  teemo: { 6: { name: '맹독 다트', desc: '[강화 실명 다트]의 중독 시간이 3초 늘어납니다 (8초).' } },
+  venom: { 6: { name: '신경독', desc: '[중독] 피해가 들어갈 때마다 대상의 공격력이 0.5%씩 줄어듭니다. [중독]이 풀리면 돌아옵니다.' } },
+  laser: { 6: { name: '급속 충전기', desc: '차징 시간이 1초 줄어듭니다 (2초).' } },
+  archaeo: { 6: { name: '발굴 감각', desc: '평범한 유물을 뽑으면 바로 다음에 뽑는 유물은 무조건 전설 유물입니다.' } },
+  rush: { 6: { name: '정면충돌', desc: '돌진에 부딪힌 적을 2초 동안 기절시킵니다.' } },
+  bbgun: { 6: { name: '도탄', desc: '다 튕긴 뒤에도 20% 확률로 한 번 더 튕깁니다 (연쇄 제한 없음).' } },
+  hong: { 6: { name: '볼 키핑', desc: '공을 가지고 있는 아군의 받는 피해가 15% 줄어듭니다.' } },
+  frog: { 6: { name: '개굴 기도', desc: '왕자 지후가 될 확률이 2.5% 늘어납니다 (37.5%).' } },
+  engineer: { 6: { name: '숙련 조립', desc: '포탑 지후를 설치하는 시간이 2초 줄어듭니다 (3초).' } },
+  warp: { 6: { name: '최후의 일그러짐', desc: '쓰러질 때 [왜곡]을 한 번 더 씁니다.' } },
+  sniper: { 6: { name: '장거리 조준경', desc: '사거리가 2칸 늘고, 바로 앞에서 줄어드는 피해가 10% 줄어듭니다 (최대 50 → 40%).' } },
 };
 const enh6 = u => (u.enh || 1) >= 6; // 랭크 6 고유능력 (친선전 · 미러전 · 샌드박스는 u.enh 가 없어 꺼진다)
 function shieldBurst(u) { const R = 2 * CFG.CELL, atk = effAtk(u) * 0.25; if (!S.fast) { A.ring(u.x, u.y, 2); dmgNum(u, '파편 폭발!', { crit: true }); } foes(u).forEach(e => { if (dist(u, e) <= R + unitRadius(e) && dealDamage(u, e, atk, { skill: true }) > 0 && !S.fast) hitFx(u, e, false); }); } // 쉴드 [파편 폭발]
@@ -9404,6 +9455,47 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
+  { v: 'R2.22', date: '2026.11.05', title: '랭크 6 고유능력 32종 · 밸런스', sections: [
+    { title: '밸런스', items: [
+      { id: 'rain', name: '비 지후', tag: 'nerf', desc: '공격력 <b>35 → 25</b>' },
+      { id: 'combo', name: '콤보 지후', tag: 'nerf', desc: '공격마다 공격력 <b>10 → 7%</b>' },
+      { id: 'sniper', name: '저격 지후', tag: 'rework', desc: '이제 <b>가까울수록</b> 피해가 줄어요 (바로 앞 <b>−50%</b> · 사거리 끝 0%) · 공격력 <b>1,000 → 800</b>' },
+    ] },
+    { title: '랭크 6 고유능력', items: [
+      { id: 'rain', name: '비 · 장마전선', tag: 'new', desc: '[장마전선] SP <b>8 → 7</b> · [가랑비] 회복 <b>3 → 4초</b>' },
+      { id: 'scythe', name: '낫 · 숙련된 낫질', tag: 'new', desc: '[숙련된 낫질] [힘줄 끊기] 쿨 <b>−0.5초</b> · [절상] · [침묵] <b>+1초</b>' },
+      { id: 'levelup', name: '레벨업 · 만렙 보너스', tag: 'new', desc: '[만렙 보너스] 레벨업 회복 <b>50 → 62.5%</b> (+25%)' },
+      { id: 'gun', name: '총 · 첫발의 긴장감', tag: 'new', desc: '[첫발의 긴장감] <b>Lv1</b> 일 때만 공격력 <b>+15%</b>' },
+      { id: 'combo', name: '콤보 · 연타 장인', tag: 'new', desc: '[연타 장인] 공격마다 공격력 <b>7 → 8%</b>' },
+      { id: 'water', name: '물 · 대해일', tag: 'new', desc: '[대해일] [해일] 폭 <b>2배</b>' },
+      { id: 'dust', name: '황사 · 모래 장막', tag: 'new', desc: '[모래 장막] 황사 지대 회피율 <b>35 → 40%</b>' },
+      { id: 'cactus', name: '선인장 · 오방 가시', tag: 'new', desc: '[오방 가시] 가시 <b>4 → 5방향</b>' },
+      { id: 'jaws', name: '죠스 · 피 냄새', tag: 'new', desc: '[피 냄새] 같은 적을 연달아 치면 공격력 <b>+10%</b> · 공격속도 <b>+5%</b>씩' },
+      { id: 'necro', name: '네크로맨서 · 덤 소환', tag: 'new', desc: '[덤 소환] [소환] <b>25%</b> 확률로 <b>1기</b> 더' },
+      { id: 'rifle', name: '라이플 · 방아쇠 손가락', tag: 'new', desc: '[방아쇠 손가락] 기본 공격 간격 <b>−0.2초</b>' },
+      { id: 'bubble', name: '버블 · 질긴 비눗방울', tag: 'new', desc: '[질긴 비눗방울] [버블]이 <b>20%</b> 확률로 안 터져요 (제한 없음)' },
+      { id: 'syringe', name: '주사 · 금지 처방', tag: 'new', desc: '[금지 처방] 일반 공격이 <b>4초</b> [회복 불가]' },
+      { id: 'tentacle', name: '촉수 · 여분의 촉수', tag: 'new', desc: '[여분의 촉수] [촉수 내려치기] 대상 <b>5 → 7기</b>' },
+      { id: 'lantern', name: '랜턴 · 등불 아래', tag: 'new', desc: '[등불 아래] 빔 아군 공격력 <b>+10%</b> · 빔 적 공격력 <b>−10%</b>' },
+      { id: 'devour', name: '포식 · 폭식', tag: 'new', desc: '[폭식] <b>20%</b> 확률로 [포식] <b>하나 더</b>' },
+      { id: 'bomb', name: '폭탄 · 내리막길', tag: 'new', desc: '[내리막길] 이동속도 <b>+20%</b>' },
+      { id: 'sommelier', name: '소믈리에 · 빈티지 와인', tag: 'new', desc: '[빈티지 와인] 와인 공격력 <b>8 → 10%</b> · 치명타 확률 <b>4 → 6%</b>' },
+      { id: 'chicken', name: '닭 · 쌍란', tag: 'new', desc: '[쌍란] 부화 확률 <b>6 → 7%</b>' },
+      { id: 'pan', name: '후라이팬 · 큰 프라이팬', tag: 'new', desc: '[큰 프라이팬] 후라이팬 범위 <b>110 → 120°</b>' },
+      { id: 'lock', name: '잠금 · 이중 잠금', tag: 'new', desc: '[이중 잠금] [잠금] 때 <b>0.7초</b> 행동 불능' },
+      { id: 'teemo', name: '티모 · 맹독 다트', tag: 'new', desc: '[맹독 다트] [강화 실명 다트] 중독 <b>5 → 8초</b>' },
+      { id: 'venom', name: '독 · 신경독', tag: 'new', desc: '[신경독] [중독] 틱마다 대상 공격력 <b>−0.5%</b> (풀리면 복구)' },
+      { id: 'laser', name: '빔 · 급속 충전기', tag: 'new', desc: '[급속 충전기] 차징 <b>3 → 2초</b>' },
+      { id: 'archaeo', name: '고고학자 · 발굴 감각', tag: 'new', desc: '[발굴 감각] 평범한 유물 다음은 <b>무조건 전설</b>' },
+      { id: 'rush', name: '돌격 · 정면충돌', tag: 'new', desc: '[정면충돌] 돌진이 <b>2초</b> 기절' },
+      { id: 'bbgun', name: 'BB탄 · 도탄', tag: 'new', desc: '[도탄] 다 튕긴 뒤에도 <b>20%</b> 한 번 더 (제한 없음)' },
+      { id: 'hong', name: '홍명보 · 볼 키핑', tag: 'new', desc: '[볼 키핑] 공을 가진 아군 받는 피해 <b>−15%</b>' },
+      { id: 'frog', name: '개구리 · 개굴 기도', tag: 'new', desc: '[개굴 기도] 왕자 확률 <b>35 → 37.5%</b>' },
+      { id: 'engineer', name: '엔지니어 · 숙련 조립', tag: 'new', desc: '[숙련 조립] 포탑 설치 <b>5 → 3초</b>' },
+      { id: 'warp', name: '왜곡 · 최후의 일그러짐', tag: 'new', desc: '[최후의 일그러짐] 쓰러질 때 [왜곡] <b>한 번 더</b>' },
+      { id: 'sniper', name: '저격 · 장거리 조준경', tag: 'new', desc: '[장거리 조준경] 사거리 <b>+2칸</b> · 바로 앞 감소 <b>50 → 40%</b>' },
+    ] },
+  ] },
   { v: 'R2.21.2', date: '2026.11.05', title: '밸런스 패치', sections: [
     { title: '밸런스', items: [
       { id: 'monolith', name: '모노리스 지후', tag: 'buff', desc: '아군 충전 <b>3배</b> · 안 <b>0.5 → 1.5%</b> · 밖 <b>0.25 → 0.75%</b>' },
