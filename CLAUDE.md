@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22.1** (build 2).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22.2** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -94,7 +94,10 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.22.1)
+## 최근 변경 (R2.22.2)
+- 도둑 지후 리워크: HP 1200 · ATK 100 · 0.75초 · 이동 3 · 첫 공격만 [절도] (`customAttack` 은 `u.bg.done` 이면 false → 일반 공격) · 훔친 뒤 제자리 고정 (`steer`) 과 시간 SP (`burglarTick`) 삭제 · 훔친 스킬은 `type: 'hit'` 사본 (`need` = 주인 `t.need || sk.need` · 쿨타임 스킬은 `cd` 초 · SP 없는 핵미사일은 그대로) → `afterHit` 이 공격마다 SP +1.
+
+## 그 전 변경 (R2.22.1)
 - 코인 지후 시세 리워크 (`coinState` · `coinStep` · `COIN_RG` · `COIN`): 10분 칸 · 배율 **0.3 ~ 4배** · 장세 4개 (상승 · 하락 · 횡보 · 광기 · 몇 시간씩 · 바뀔 확률 `stay`) · 비율로 오르내림 (복리) · 칸마다 1% 펌핑 +30~80% / 떡락 −30~60% · 기준 0.85 쪽으로 약하게 끌림 (5년 시뮬 평균 1.00배) · 친선전 두 화면이 같아야 해서 **덧셈 · 곱셈 · 나눗셈만** (Math.log · exp 금지) · 마지막 칸 상태 `coinSt` 에서 이어서 계산 · 배너는 없음 (사용자 요청 · 수치만).
 - 도감 · 덱 공격력 칸 = 지금 시세 (`dexAtk(c)` · `enhStat` 이 코인이면 `coinMult()` 를 곱한다) · 랭크 6 [존버 정신] 피해 감소 최대 50%.
 - build 2 밸런스: 화염 HP 1440 · ATK 140 · 검 HP 1530 · 암살 HP 580 · ATK 156 (튜토리얼은 `TUT_STATS` 라 그대로).
