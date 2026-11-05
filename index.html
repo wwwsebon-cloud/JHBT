@@ -5549,9 +5549,10 @@ const ENGAGE_HYST = 0.25 * CFG.CELL; // 공격 상태를 놓는 여유 (R2.12): 
 function physMass(u) { return Math.max(0.65, u.maxHp / 2400) * (u.def.role === '탱커' ? 1.4 : 1) * (1 + (u.lv - 1) * 0.16); }
 function makeUnit(side, id, lv, x, y) {
   const c0 = CHARS[id] || SUMMONS[id], c = c0.trueForm && lv >= 6 ? c0.trueForm : c0, m = lvMult(lv); // R2.17: 갓지후 Lv6 = 트루폼
-  const melee = !!c.melee || c.range === 'melee';
-  const u = { uid: ++uidSeq, side, id, lv, x, y, alive: true, mult: m, melee, maxHp: Math.round(c.hp * m), atk: Math.round(c.atk * m), atkSpeed: c.atkSpeed, range: (c.range === 'melee' ? CFG.MELEE : c.range) * CFG.CELL, speed: (c.speed || 1.6) * CFG.CELL, buffs: {}, cuts: [],
-    maxShield: Math.round((c.shield || 0) * effMult(lv)), cd: c.atkSpeed, dmgDealt: 0, sk: 0, st: {}, def: c,
+  const b = (S.arc && S.arc.kind === 'tutorial' && TUT_STATS[id]) || c; // R2.22 build 3: 튜토리얼은 고정 수치 (밸런스가 바뀌어도 대본 승패 그대로)
+  const melee = !!c.melee || b.range === 'melee';
+  const u = { uid: ++uidSeq, side, id, lv, x, y, alive: true, mult: m, melee, maxHp: Math.round(b.hp * m), atk: Math.round(b.atk * m), atkSpeed: b.atkSpeed, range: (b.range === 'melee' ? CFG.MELEE : b.range) * CFG.CELL, speed: (b.speed || 1.6) * CFG.CELL, buffs: {}, cuts: [],
+    maxShield: Math.round((b.shield || 0) * effMult(lv)), cd: b.atkSpeed, dmgDealt: 0, sk: 0, st: {}, def: c,
     vx: 0, vy: 0, desVx: 0, desVy: 0, xPrev: x, yPrev: y, _sidestep: (uidSeq & 1) ? 1 : -1, _engaged: false, _outT: 0 };
   if (c.coin) u.atk = Math.round(c.atk * m * coinMult(S.coinSlot)); // 코인 지후: 지금 시세 (친선전은 판이 시작될 때 시세로 고정)
   if (CHARS[id] && S.enh) { const el = enhOf(side, id), m = enhMod(el); if (m.hp) u.maxHp = Math.round(u.maxHp * (1 + m.hp)); if (m.atk) u.atk = Math.round(u.atk * (1 + m.atk)); if (m.aspd) u.atkSpeed = u.atkSpeed / (1 + m.aspd); u.enh = el; } // R2.15.2 랭크: 체력 · 공격력 · 공격속도 (enhMod) · 고유능력은 enh6(u)
@@ -6243,7 +6244,10 @@ function applyCamera(light) {
 function fitCamera() { CAM.z = fitZoom(); CAM.x = FW() / 2; CAM.y = camMidY(CAM.z); applyCamera(); }
 if (window.ResizeObserver) { const ro = new ResizeObserver(() => { viewDirty(); const s = $('screen-battle'), { t, b } = viewInsets(); s.style.setProperty('--hudH', t + 'px'); s.style.setProperty('--trayH', b + 'px'); if (s.classList.contains('active') && !CAM.moved) fitCamera(); }); ro.observe($('screen-battle').querySelector('.hud')); ro.observe($('screen-battle').querySelector('.tray')); ro.observe($('fieldWrap')); } // HUD 높이가 바뀌면 (배치 ↔ 전투) 다시 맞춘다
 // R2.12.2: 전투 중에는 살아 있는 유닛을 감싸게 부드럽게 확대 · 이동 (손으로 옮기거나 확대하면 그 라운드는 멈춘다)
-const TUT_EBUFF = { 2: 1.35, 3: 1.35 }; // R2.12.3 긴급: 튜토리얼 2 · 3라운드(플레이어가 져야 함) 봇 체력 · 공격력 배율 — R2.12.3 수치로 3라운드를 이기던 문제 (×1.2 는 아슬아슬)
+const TUT_STATS = { // R2.22 build 3: 튜토리얼 전용 고정 수치 (R2.22 값 · CHARS 를 바꿔도 튜토리얼은 이것만 쓴다 · makeUnit) — 시뮬 200판: 1라운드 승 · 2 · 3라운드 패 · 4라운드 승 모두 100%
+  fire: { hp: 1840, atk: 150, atkSpeed: 2, range: 4.8, speed: 1.6 }, ice: { hp: 1400, atk: 120, atkSpeed: 3.5, range: 6, speed: 1.6 },
+  water: { hp: 1760, atk: 70, atkSpeed: 2.5, range: 4.5, speed: 1.6 }, shield: { hp: 1950, shield: 500, atk: 150, atkSpeed: 3, range: 'melee', speed: 1.6 } };
+const TUT_EBUFF = { 2: 1.35, 3: 1.8 }; // R2.22 build 3: 3라운드 1.35 → 1.8 (시뮬 200판: 1.35 는 플레이어가 94% 이김 · 1.6 부터 0%) · R2.12.3 긴급: 튜토리얼 2 · 3라운드(플레이어가 져야 함) 봇 체력 · 공격력 배율 — R2.12.3 수치로 3라운드를 이기던 문제 (×1.2 는 아슬아슬)
 function camFollow(dt) {
   if (!CAM.follow || CAM.user || reelsOn() || S.phase !== 'combat') return;
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, n = 0;
@@ -9681,6 +9685,7 @@ const PATCH_NOTES = [
       { id: 'burglar', name: '도둑 지후', tag: 'system', desc: '[절도]한 뒤 머리 위에 <b>훔친 스킬 주인의 초상화</b>가 떠요' },
       { id: 'spy', name: '스파이 지후', tag: 'system', desc: '[변장]하면 유닛 테두리가 <b>보라색</b>이 돼요 (변장한 걸 알 수 있어요)' },
       { id: 'c4', name: 'C4 지후', tag: 'buff', desc: '공격 간격 <b>6.2 → 4초</b>' },
+      { icon: '🎓', name: '튜토리얼', tag: 'fix', desc: '져야 하는 <b>3라운드</b>를 이기던 문제를 고쳤어요 · 이제 튜토리얼은 <b>고정 수치</b>를 써서 밸런스가 바뀌어도 그대로예요' },
     ] },
   ] },
   { v: 'R2.21.2', date: '2026.11.05', title: '밸런스 패치', sections: [
