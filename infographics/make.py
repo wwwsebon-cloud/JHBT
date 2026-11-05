@@ -42,7 +42,7 @@ PORTRAITS = json.load(open(os.path.join(HERE, 'portraits.json'), encoding='utf-8
 NAMES = {'fire': '화염 지후', 'ice': '얼음 지후', 'sword': '검 지후', 'assassin': '암살 지후', 'shield': '쉴드 지후', 'accel': '가속 지후', 'lonely': '고독한 지후', 'berserk': '광폭화 지후', 'scythe': '낫 지후', 'moon': '달 지후', 'levelup': '레벨업 지후', 'magic': '마탄 지후', 'gift': '선물 지후', 'slime': '슬라임 지후', 'atom': '원자 지후', 'dice': '주사위 지후', 'gun': '총 지후', 'coin': '코인 지후', 'combo': '콤보 지후', 'heal': '힐 지후', 'water': '물 지후', 'berserker': '버서커 지후', 'slot': '슬롯머신 지후', 'bow': '활 지후', 'dust': '황사 지후', 'cactus': '선인장 지후', 'jaws': '죠스 지후', 'blizzard': '블리자드 지후', 'bat': '빠따 지후', 'train': '신칸센 지후', 'titanium': '티타늄 지후', 'sun': '태양 지후', 'whirl': '회오리 지후', 'gumiho': '구미호 지후', 'necro': '네크로맨서 지후', 'deathnote': '데스노트 지후', 'rifle': '라이플 지후', 'bubble': '버블 지후', 'prophecy': '예언 지후', 'joker': '조커 지후', 'syringe': '주사 지후', 'tentacle': '촉수 지후', 'lantern': '랜턴 지후', 'lightning': '번개 지후', 'barrier': '보호막 지후', 'revive': '부활 지후', 'reaper': '사신 지후', 'guardian': '수호자 지후', 'clock': '시계 지후', 'charge': '충전 지후', 'devour': '포식 지후', 'bomb': '폭탄 지후', 'nuke': '핵미사일 지후', 'star': '별 지후', 'sommelier': '소믈리에 지후', 'chicken': '닭 지후', 'pan': '후라이팬 지후', 'growth': '성장 지후', 'melody': '선율 지후', 'tailwind': '순풍 지후', 'lock': '자물쇠 지후', 'radiation': '방사능 지후', 'antigrav': '반중력 지후', 'teemo': '티모 지후', 'rain': '비 지후', 'nou': 'NO U 지후', 'venom': '독 지후', 'biker': '폭주족 지후', 'lament': '솔렘라멘트 지후', 'soulcaller': '강령술사 지후', 'laser': '빔 지후', 'god': '갓지후', 'archaeo': '고고학자 지후', 'rush': '돌격 지후', 'thief': '괴도 지후', 'bullet': '탄환 지후', 'holy': '성검 지후', 'roulette': '러시안룰렛 지후', 'tyrant': '폭군 지후', 'bbgun': 'BB탄 지후', 'hong': '홍명보 지후', 'emp': 'EMP 지후', 'dragon': '드래곤 지후', 'frog': '개구리 지후', 'monolith': '모노리스 지후', 'exynos': '엑시노스 지후', 'engineer': '엔지니어 지후', 'warp': '왜곡 지후', 'sniper': '저격 지후', 'dj': 'DJ 지후', 'arcane': '아케인 지후', 'prince': '왕자 지후', 'mafia': '마피아 지후', 'c4': 'C4 지후', 'burglar': '도둑 지후', 'blackhole': '블랙홀 지후', 'mercury': '수은 지후', 'spy': '스파이 지후', 'cowboy': '카우보이 지후'}
 RARITY = {'common': '일반', 'rare': '희귀', 'epic': '영웅', 'legend': '전설'}
 e = html.escape
-FONTS = "@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'); @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap');"
+FONTS = "@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'); @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Lilita+One&family=Do+Hyeon&display=swap');"
 CSS = r"""
 * { box-sizing:border-box; margin:0; }
 :root { --ink:#121316; --mut:#8a8c93; --sub:#484a52; --line:#ebebe7; --new:#2f6fed; --fix:#f08c00; --buff:#2f8a12; --buffbg:#e9f8df; --nerf:#d8352e; --nerfbg:#ffe9e7; }
@@ -93,19 +93,19 @@ body.dark .it p { color:var(--sub); }
 .lg { display:flex; gap:10px; margin:2px 0 16px; } .lg span { padding:5px 14px 4px; border-radius:10px; border:3px solid #0c1020; font-family:'Black Han Sans', sans-serif; font-weight:400; font-size:17px; color:#fff; -webkit-text-stroke:3px #0c1020; paint-order:stroke fill; box-shadow:0 3px 0 #0c1020; }
 .lg .buff { background:var(--tb); } .lg .adjust { background:var(--ta); } .lg .nerf { background:var(--tn); }
 :root { --tb:#3cc23a; --ta:#f59a1b; --tn:#e8392f; --ol:#0c1020; } /* 타일 색: 상향 · 조정 · 하향 (단색) */
-.tg { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); grid-auto-flow:column; grid-auto-rows:128px; gap:18px 20px; } /* 타일 높이는 모두 같게 */
-.tl { position:relative; display:flex; align-items:center; height:128px; }
-.tl .pp { position:absolute; left:0; top:50%; z-index:2; width:88px; height:88px; margin-top:-44px; border-radius:22px; overflow:hidden; background:#fff; border:4px solid var(--ol); box-shadow:0 4px 0 var(--ol); }
-.tl .rb { flex:1; min-width:0; margin-left:44px; height:116px; box-sizing:border-box; padding:6px 10px 6px 54px; border-radius:14px; border:4px solid var(--ol); box-shadow:0 5px 0 var(--ol); background:var(--tb);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:3px; color:#fff;
-  font-family:'Black Han Sans', 'Pretendard Variable', sans-serif; font-weight:400; letter-spacing:.01em; paint-order:stroke fill; }
+.tg { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); grid-auto-flow:column; grid-auto-rows:142px; gap:18px 24px; } /* R2.22.1: 한 줄 4칸 · 높이 모두 같게 */
+.tl { position:relative; display:flex; align-items:center; height:142px; }
+.tl .pp { position:absolute; left:0; top:50%; z-index:2; width:106px; height:106px; margin-top:-53px; box-sizing:border-box; border-radius:24px; overflow:hidden; background:#fff; border:5px solid var(--ol); box-shadow:0 5px 0 var(--ol); }
+.tl .rb { flex:1; min-width:0; margin-left:52px; height:130px; box-sizing:border-box; padding:6px 10px 6px 62px; border-radius:16px; border:5px solid var(--ol); box-shadow:0 6px 0 var(--ol); background:var(--tb);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:2px; color:#fff;
+  font-family:'Lilita One', 'Do Hyeon', sans-serif; font-weight:400; letter-spacing:.01em; paint-order:stroke fill; } /* 숫자 · 영문 Lilita One · 한글 Do Hyeon (사용자가 고름) */
 .tl.adjust .rb { background:var(--ta); } .tl.nerf .rb { background:var(--tn); }
-.tl .nm { font-size:17px; line-height:1.1; -webkit-text-stroke:2.6px var(--ol); paint-order:stroke fill; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; color:#ffe27a; margin-bottom:1px; }
-.tl .ln { display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:0 6px; font-size:22px; line-height:1.12; -webkit-text-stroke:3.4px var(--ol); paint-order:stroke fill; word-break:keep-all; } .tl .ln .v { white-space:nowrap; }
-.tl .ln small { font-size:16px; -webkit-text-stroke:2.6px var(--ol); paint-order:stroke fill; } .tl .ln s { text-decoration:none; } .tl .ln i { font-style:normal; margin:0 4px; }
-.tl .tx { font-size:16px; line-height:1.2; -webkit-text-stroke:2.6px var(--ol); paint-order:stroke fill; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.tl.one.lv .ln { font-size:20px; -webkit-text-stroke:3.2px var(--ol); } .tl.one .ln { flex-direction:column; align-items:center; gap:2px; font-size:27px; -webkit-text-stroke:4px var(--ol); } .tl.one .ln small { font-size:17px; -webkit-text-stroke:2.8px var(--ol); } .tl.one .tx { font-size:18px; -webkit-text-stroke:2.8px var(--ol); } /* 변경 하나 타일 */
-.tl.dense .ln { font-size:18px; -webkit-text-stroke:3px var(--ol); } .tl.dense .ln small { font-size:14.5px; -webkit-text-stroke:2.4px var(--ol); } .tl.dense .tx { font-size:14.5px; -webkit-text-stroke:2.4px var(--ol); } .tl.dense .nm { font-size:15px; }
+.tl .nm { font-size:20px; line-height:1.1; -webkit-text-stroke:4px var(--ol); paint-order:stroke fill; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; color:#ffe27a; }
+.tl .ln { display:flex; flex-direction:column; align-items:center; gap:0; font-size:36px; line-height:1.05; -webkit-text-stroke:6px var(--ol); paint-order:stroke fill; word-break:keep-all; } .tl .ln .v { white-space:nowrap; }
+.tl .ln small { font-size:23px; line-height:1.15; -webkit-text-stroke:4.5px var(--ol); paint-order:stroke fill; } .tl .ln s { text-decoration:none; } .tl .ln i { font-style:normal; margin:0 6px; }
+.tl .tx { font-size:23px; line-height:1.18; -webkit-text-stroke:4.5px var(--ol); paint-order:stroke fill; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.tl.one.lv .ln { font-size:27px; -webkit-text-stroke:5px var(--ol); } /* 값이 길면 조금 작게 */
+.tl.dense .ln { flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:0 6px; font-size:22px; -webkit-text-stroke:4px var(--ol); } .tl.dense .ln small { font-size:17px; -webkit-text-stroke:3px var(--ol); } .tl.dense .tx { font-size:17px; -webkit-text-stroke:3px var(--ol); }
 /* 신규 지후 카드 */
 .ncg { display:flex; flex-wrap:wrap; justify-content:center; gap:26px; margin-top:34px; }
 .nc { --rc:#c9c9c6; position:relative; width:calc((100% - 26px * (var(--nc) - 1)) / var(--nc)); display:flex; flex-direction:column; gap:14px; padding:24px 24px 22px; border-radius:26px; background:var(--card); border:2px solid var(--edge); box-shadow:0 7px 0 #0f1424; overflow:hidden; }
@@ -209,7 +209,7 @@ def section(sec, cols):
 
 
 # ── R2.17.2 밸런스 타일 ──
-TILE_COLS, TILE_ROWS_FIRST, TILE_ROWS = 5, 6, 9  # 첫 장은 다른 항목 아래라 6줄 · 다음 장부터 9줄 (1920 × 약 1080)
+TILE_COLS, TILE_ROWS_FIRST, TILE_ROWS = 4, 6, 9  # 첫 장은 다른 항목 아래라 6줄 · 다음 장부터 9줄 (1920 × 약 1080)
 TAG_ORDER = {'nerf': 0, 'adjust': 1, 'buff': 2}
 
 
