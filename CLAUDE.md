@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.21.2** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -92,10 +92,15 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.21.2)
+## 최근 변경 (R2.22)
+- 밸런스: 비 ATK 35 → 25 · 콤보 공격마다 10 → 7% · 저격 ATK 1000 → 800 · 거리 감소를 **반대로** (`sniperCut` = 가까울수록 · 바로 앞 50% · 사거리 끝 0% · 서사: 근시 → 원시).
+- 랭크 6 고유능력 32종 추가 (`ENH_SKILL` · 도우미는 `reapFx` 앞 `// ── R2.22 랭크 6 고유능력 도우미 ──`): 비 SP 7 (유닛별 SP `u.need` → **`skNeed(u)`** · SP 를 읽는 곳은 `sk.need` 대신 이것) · 주사 새 상태 **`noheal` [회복 불가]** (`heal` · 유물 회복이 막는다 · 아이콘은 healDown) · 독 [신경독] `u.vAtk` (venom 중독 X 의 `v6` · 틱마다 +1 · 공격력 −0.5% · 중독이 끝나면 0) · 소믈리에 와인 랭크 6 분은 `wn6` (배치 기록 · 합체 · 반중력 분열에도) · 고고학자 `S.arch6[진영]` (평범한 → 다음 전설 · 클로버보다 먼저) · 홍명보 `t.ballBy` + `hongHold` · 랜턴 `lanAura` (buff `lanUp` · `lanDn` 0.5초씩 늘림) · 죠스 `jawsStack` (buff `jaws6`) · 개구리는 배치 단계라 `enhOf(side, 'frog')`.
+- 남은 일: 바뀐 수치로 티어 시뮬 · `TIER_SC` 갱신 (이번에는 안 돌렸다).
+
+## 지난 변경 (R2.21.2)
 - 밸런스 11종: 충전 SP 2.5% · 반경 3.6칸 · [급속 충전] SP 13 · 태양 HP 2200 · 모노리스 아군 충전 3배 (`monoTick` 안 6 · 밖 3 %/초) · 사신 · 부활 SP 와 부활 대상에 소환체 · 분열체 포함 (부활은 `revL` 에 `ch` = 쓰러질 때 체력 · 공격력 · 분열 깊이 · 소환자로 되살린다) · 최후의 탄환 쓰러질 때까지 (`bulletLastEnd` 안 부름) · 24% · 고고학자 유물 45 · 30 · 20 · 5 (`RELIC_TIER` · 클로버는 전설 + 개쩌는 합 안에서) · 폭주족 최대 체력 75% · 소믈리에 ATK 115 · 포식 **전설** · ATK 100 · [포식]당 25% · 광폭화 ATK 170 · 3초.
 
-## 지난 변경 (R2.21.1)
+## 그 전 변경 (R2.21.1)
 - 밸런스 12종: DJ ATK 25 · 드래곤 ATK 50 · [비행] 5% · 불길 50% · 태양 ATK 20 · 블리자드 [빙결] 2초 · BB탄 ATK 140 · 모노리스 HP 2300 · 레이저 **최대 체력** × 레벨 × 12% (`monoFire`) · 왜곡 50% (`warpOn`) · ATK 50 · 저격 ATK 1000 · 7.5초 · 거리 감소 최대 50% (`sniperCut`) · 마탄 550% · 2.6초 · 탄환 ATK 135 · 슬라임 HP 1200 · 죠스 ATK 200.
 - 봇 조커 (모든 페르소나 · 왕초보 포함): `botDeployOne` 맨 앞에서 조커 카드가 나오면 무조건 합친다 · 변신 `botJoker` 는 배치마다 50% → **`beginCombat` 맨 앞에서 무조건** (등급 · 레벨 · TIER_SC 높은 지후로 · 친선전 · 리플레이 · 튜토리얼 · 샌드박스 제외).
 - 모바일 스크롤: 새 로비 세로 스크롤 칸 (`flex:1; min-height:0; overflow-y:auto` 인 칸) 에 `.u2-scroll` → 자식 `flex-shrink:0` — overflow:hidden 카드가 flex 안에서 줄어 글이 잘리고 스크롤이 안 됐다 (지후 상세). **새 스크롤 칸을 만들면 `class="u2-scroll"` 을 붙인다.**
