@@ -78,7 +78,7 @@
 - 지후마다 자세한 서사 연결은 `docs/CLAUDE-history.md` 의 「세계관 · 서사」와 각 버전 서사 항목.
 
 ## 시뮬 · 티어
-- `tools/tier-5v5.js` (무작위 10기 5:5 · Lv1 · 60초 판정 · Bradley-Terry 점수 · k-평균으로 S~D). 헤드리스: `%TEMP%/ld/bprun.js <tier-5v5.js> index.html <포트> <판수> <out.json>` (전투 시간도 기록 · R2.18 build 16 에서 1,000판 약 5분 · 판 시드가 고정이라 N 을 늘리면 앞 판은 그대로 두고 뒤에 더 붙는다). 지금 `TIER_SC` · `infographics/tier-R2.21.1` 은 R2.21.1 · 1,000판.
+- `tools/tier-5v5.js` (무작위 10기 5:5 · Lv1 · 60초 판정 · Bradley-Terry 점수 · k-평균으로 S~D). 헤드리스: `%TEMP%/ld/bprun.js <tier-5v5.js> index.html <포트> <판수> <out.json>` (전투 시간도 기록 · R2.18 build 16 에서 1,000판 약 5분 · 판 시드가 고정이라 N 을 늘리면 앞 판은 그대로 두고 뒤에 더 붙는다). 지금 `TIER_SC` · `infographics/tier-R2.21.2` 는 R2.21.2 · 679판 (사용자 요청으로 1,000판 중간에 멈춤).
 - 결과로 `TIER_SC` (S 80~100 · A 65~79 · B 40~64 · C 20~39 · D 0~19) 를 갱신한다.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
