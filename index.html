@@ -1708,27 +1708,71 @@ body.replaying #speedSeg, #screen-battle.reels #speedSeg { display:none !importa
 .evlist { display:flex; flex-direction:column; gap:6px; width:100%; max-height:52vh; overflow:auto; } .evlist h5 { margin:6px 0 0; font-size:12px; font-weight:900; color:var(--mute); text-align:left; }
 /* R2.23 이벤트 모드: 카드 고르기 (#evPop) · 아이콘 등급 색 */
 .evlist .evrow { background:#232b45; color:#eef1f8; } .evlist .evrow b { color:#fff; } .evlist .evrow b em { color:#9aa3bf; } .evlist .evrow small { color:#b9c1d6; } .evlist .evrow small b { font-size:inherit; color:#ffcf4a; }
-.evpick h3 { color:var(--gc); text-shadow:0 2px 0 rgba(0,0,0,.35); } .evsub { font-size:13px; font-weight:600; color:rgba(255,255,255,.62); text-align:center; line-height:1.5; }
-.evc-row { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; width:100%; }
-.evc { --ec:#d08a4e; position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; min-height:236px; padding:24px 14px 16px; border:0; border-radius:22px; background:#fff; color:#161b2b; font:inherit; text-align:center; cursor:pointer; box-shadow:0 0 0 4px var(--ec), 0 12px 30px rgba(0,0,0,.4); transition:transform .15s ease, opacity .2s ease; animation:evcIn .35s cubic-bezier(.2,1.4,.4,1) backwards; }
-.evc:nth-child(2) { animation-delay:.08s; } .evc:nth-child(3) { animation-delay:.16s; } @keyframes evcIn { from { transform:translateY(24px) scale(.9); opacity:0; } }
-.evc.g1 { --ec:#c3ccd8; } .evc.g2 { --ec:#ffc83d; }
-.evc:hover { transform:translateY(-5px); } .evc.on { transform:scale(1.05); box-shadow:0 0 0 6px var(--ec), 0 0 44px var(--ec); } .evc.off { opacity:.3; transform:scale(.94); pointer-events:none; }
-.evc-ic { font-size:54px; line-height:1; } .evc img { width:66px; height:66px; border-radius:18px; object-fit:cover; background:#fff; box-shadow:0 0 0 3px var(--ec); }
-.evc .evc-sub { position:absolute; top:14px; right:14px; font-style:normal; font-size:22px; }
-.evc b { font-size:19px; font-weight:900; letter-spacing:-.02em; color:#161b2b; } .evc small { font-size:14px; font-weight:600; line-height:1.5; color:#4a5268; } .evc small b { font-size:inherit; color:#d0392b; }
-.evc em { margin-top:auto; padding:3px 10px; border-radius:999px; background:var(--ec); color:#2a1d05; font-style:normal; font-size:11px; font-weight:900; }
-.evc-op { min-height:22px; font-size:14px; font-weight:700; color:rgba(255,255,255,.82); text-align:center; } .evc-op b { color:#fff; }
-.evc-time { display:flex; align-items:center; gap:10px; width:min(420px, 100%); } .evc-time i { position:relative; flex:1; height:8px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.15); }
-.evc-time i::after { content:''; position:absolute; inset:0; background:var(--gc); transform-origin:left; animation:evcT linear forwards; animation-duration:inherit; } @keyframes evcT { to { transform:scaleX(0); } }
-.evc-time b { min-width:26px; color:#fff; font:900 18px/1 ui-monospace, monospace; text-align:right; }
-.fev i.g0, .evrow.g0 { --ec:#d08a4e; border-color:#d08a4e; } .fev i.g1, .evrow.g1 { --ec:#9aa6b8; border-color:#9aa6b8; } .fev i.g2, .evrow.g2 { --ec:#f2b200; border-color:#f2b200; }
+/* R2.23 이벤트 모드: 슬롯머신 카드 (#evPop .evx) · 등급 색 · 연출은 transform · opacity 만 */
+:is(.evx, .evf, .evx-gstrip b, .evx-mini).g0 { --f1:#ffd9b3; --f2:#9a5422; --gc:#ef9d5c; --gl:rgba(239,157,92,.5); --t1:#ffe6cc; --t2:#d9783a; }
+:is(.evx, .evf, .evx-gstrip b, .evx-mini).g1 { --f1:#ffffff; --f2:#7d8ba3; --gc:#d6e0ee; --gl:rgba(200,214,236,.45); --t1:#ffffff; --t2:#a3b4cc; }
+:is(.evx, .evf, .evx-gstrip b, .evx-mini).g2 { --f1:#fff4b8; --f2:#c48a00; --gc:#ffc83d; --gl:rgba(255,200,61,.55); --t1:#fff7cf; --t2:#f5a800; }
+#evPop:has(.evx) { background:radial-gradient(ellipse at 50% 38%, rgba(30,38,70,.9), rgba(5,7,14,.96) 70%); }
+.evx { position:relative; width:100%; min-height:100%; display:grid; place-items:center; overflow:hidden; color:#fff; }
+.evx-rays { position:absolute; left:50%; top:38%; width:1600px; height:1600px; margin:-800px 0 0 -800px; background:repeating-conic-gradient(from 0deg, var(--gl) 0 7deg, transparent 7deg 22deg); -webkit-mask-image:radial-gradient(circle, #000 8%, transparent 52%); mask-image:radial-gradient(circle, #000 8%, transparent 52%); opacity:.32; animation:evxSpin 30s linear infinite; pointer-events:none; }
+@keyframes evxSpin { to { transform:rotate(360deg); } }
+.evx-sp { position:absolute; inset:0; pointer-events:none; } .evx-sp i { position:absolute; bottom:-12px; width:6px; height:6px; border-radius:50%; background:var(--gc); box-shadow:0 0 10px var(--gc); opacity:0; animation:evxSp 3s linear infinite; }
+@keyframes evxSp { 0% { transform:translateY(0) scale(.5); opacity:0; } 15% { opacity:.9; } 100% { transform:translateY(-92vh) scale(1.1); opacity:0; } }
+.evx-box { position:relative; width:min(900px, 100%); display:flex; flex-direction:column; align-items:center; gap:12px; padding:8px 0; }
+.evx-eh { font:900 12px/1 ui-monospace, monospace; letter-spacing:.42em; color:rgba(255,255,255,.5); }
+.evx-gwin { height:66px; overflow:hidden; } .evx-gstrip { display:flex; flex-direction:column; }
+.evx-gstrip b { display:flex; align-items:center; justify-content:center; gap:12px; height:66px; white-space:nowrap; } .evx-gstrip b i { font-style:normal; font-size:44px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)); }
+.evx-gstrip b span { font:400 54px/66px 'Black Han Sans', sans-serif; background:linear-gradient(180deg, var(--t1) 25%, var(--t2) 80%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.evx-gwin.land { animation:evxPop .5s cubic-bezier(.2,1.7,.4,1); } @keyframes evxPop { from { transform:scale(1.35); } }
+.evx-row { --ch:300px; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px; width:100%; margin-top:6px; }
+.evs { position:relative; height:var(--ch); border-radius:24px; transition:transform .2s ease, opacity .25s ease; }
+.evs-win { position:relative; height:100%; overflow:hidden; border-radius:24px; background:linear-gradient(180deg, #060912, #131a32 50%, #060912); box-shadow:inset 0 0 0 2px rgba(255,255,255,.07), inset 0 14px 30px rgba(0,0,0,.7); }
+.evs-win::after { content:''; position:absolute; inset:0; pointer-events:none; border-radius:24px; background:linear-gradient(180deg, rgba(4,6,12,.92), transparent 24%, transparent 76%, rgba(4,6,12,.92)); transition:opacity .35s ease; }
+.evs.land .evs-win::after { opacity:0; }
+.evs-strip { display:flex; flex-direction:column; gap:16px; will-change:transform; } .evs-strip > .evf { height:var(--ch); flex-shrink:0; }
+.evs-flash { position:absolute; inset:0; border-radius:24px; pointer-events:none; background:radial-gradient(circle at 50% 40%, #fff, var(--gc) 45%, transparent 75%); opacity:0; }
+.evs.land { animation:evsLand .5s cubic-bezier(.2,1.6,.4,1); } @keyframes evsLand { 0% { transform:scale(.95); } 45% { transform:scale(1.04); } }
+.evs.land .evs-flash { animation:evsFlash .55s ease-out; } @keyframes evsFlash { from { opacity:.85; } to { opacity:0; } }
+.evs-pick { position:absolute; left:50%; top:-14px; z-index:3; padding:5px 16px; border-radius:999px; background:linear-gradient(180deg, var(--f1), var(--f2)); color:#1b1405; font:400 18px/1.1 'Black Han Sans', sans-serif; box-shadow:0 6px 16px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7); opacity:0; transform:translate(-50%, 0) scale(.4); pointer-events:none; }
+.evx.ready .evs { cursor:pointer; } .evx.ready:not(.picked) .evs:hover { transform:translateY(-8px); }
+.evx.picked .evs.on { transform:translateY(-6px) scale(1.05); box-shadow:0 0 0 4px var(--gc), 0 0 70px var(--gl); } .evx.picked .evs.on .evs-pick { animation:evsStamp .45s cubic-bezier(.2,1.7,.4,1) forwards; }
+@keyframes evsStamp { to { opacity:1; transform:translate(-50%, 0) scale(1) rotate(-4deg); } }
+.evx.picked .evs.off { opacity:.2; transform:translateY(18px) scale(.92); }
+/* 카드 앞면 */
+.evf { position:relative; padding:3px; border-radius:24px; background:linear-gradient(150deg, var(--f1), var(--f2) 40%, var(--f1) 62%, var(--f2)); box-shadow:0 16px 36px rgba(0,0,0,.5); }
+.evf-in { position:relative; height:100%; display:flex; flex-direction:column; overflow:hidden; border-radius:21px; background:linear-gradient(180deg, #252f55, #151b34 55%, #0e1326); }
+.evf-art { position:relative; flex:0 0 47%; display:grid; place-items:center; overflow:hidden; background:radial-gradient(ellipse at 50% 75%, var(--gl), transparent 70%), linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0)); border-bottom:1px solid rgba(255,255,255,.09); }
+.evf-burst { position:absolute; left:50%; top:60%; width:340px; height:340px; margin:-170px 0 0 -170px; background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.09) 0 6deg, transparent 6deg 18deg); -webkit-mask-image:radial-gradient(circle, #000 10%, transparent 62%); mask-image:radial-gradient(circle, #000 10%, transparent 62%); }
+.evf-ic { position:relative; font-size:66px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)); }
+.evf-pt { position:relative; width:84px; height:84px; border-radius:22px; object-fit:cover; background:#fff; box-shadow:0 0 0 3px var(--gc), 0 10px 20px rgba(0,0,0,.45); }
+.evf-badge { position:absolute; left:calc(50% + 26px); top:calc(50% + 14px); font-size:30px; filter:drop-shadow(0 3px 4px rgba(0,0,0,.5)); }
+.evf-tag { position:absolute; left:10px; top:10px; padding:3px 9px; border-radius:999px; border:1px solid var(--gc); background:rgba(0,0,0,.45); color:var(--t1); font-size:10px; font-weight:900; letter-spacing:.02em; }
+.evf-tx { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 14px 14px; text-align:center; }
+.evf-name { font:400 25px/1.1 'Black Han Sans', sans-serif; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.45); letter-spacing:-.01em; }
+.evf-desc { font-size:13.5px; font-weight:600; line-height:1.5; color:#c3cbe2; } .evf-desc b { color:var(--gc); font-weight:900; }
+.evf-gem { margin-top:auto; padding:4px 13px; border-radius:999px; background:linear-gradient(180deg, var(--f1), var(--f2)); color:#1b1405; font-size:12px; font-weight:900; box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 3px 8px rgba(0,0,0,.35); }
+.evf-shine { position:absolute; top:-20%; bottom:-20%; left:-60%; width:45%; pointer-events:none; background:linear-gradient(105deg, transparent, rgba(255,255,255,.28), transparent); transform:translateX(-120%) skewX(-12deg); }
+.evs.land .evs-strip > .evf:first-child .evf-shine { animation:evfShine 1.1s ease .1s both; } .evx.g2 .evs.land .evs-strip > .evf:first-child .evf-shine { animation:evfShine 3s ease .1s infinite; }
+@keyframes evfShine { 0% { transform:translateX(-120%) skewX(-12deg); } 35%, 100% { transform:translateX(420%) skewX(-12deg); } }
+/* 아래: 시간 · 상대 선택 */
+.evx-foot { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; min-height:76px; margin-top:8px; }
+.evx-time { display:flex; align-items:center; gap:12px; width:min(440px, 92%); opacity:0; transition:opacity .3s; } .evx.ready .evx-time { opacity:1; } .evx.picked .evx-time { opacity:0; }
+.evx-time i { position:relative; flex:1; height:10px; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.12); box-shadow:inset 0 1px 2px rgba(0,0,0,.5); }
+.evx-time u { position:absolute; inset:0; border-radius:99px; background:linear-gradient(90deg, var(--f2), var(--f1)); transform-origin:left; } @keyframes evxT { to { transform:scaleX(0); } }
+.evx-time b { min-width:30px; font:400 26px/1 'Black Han Sans', sans-serif; color:#fff; text-align:right; } .evx.hurry .evx-time b { color:#ff6a5c; animation:evxHurry .5s ease infinite alternate; } @keyframes evxHurry { to { transform:scale(1.2); } }
+.evx-op { display:flex; align-items:center; gap:10px; opacity:0; transform:translateY(16px); transition:opacity .35s ease, transform .35s cubic-bezier(.2,1.4,.4,1); font-size:13px; font-weight:800; color:rgba(255,255,255,.65); } .evx-op.show { opacity:1; transform:none; }
+.evx-mini { display:flex; align-items:center; gap:8px; padding:6px 14px 6px 6px; border-radius:999px; border:2px solid var(--gc); background:#151b34; color:#fff; } .evx-mini img, .evx-mini span { width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:rgba(255,255,255,.1); font-size:18px; object-fit:cover; } .evx-mini img { background:#fff; } .evx-mini b { font-size:15px; } .evx-mini em { font-style:normal; font-size:11px; font-weight:900; color:var(--gc); }
 @media (max-width:640px) {
-  .evbox h3 { font-size:26px; } .evc-row { grid-template-columns:1fr; gap:10px; }
-  .evc { display:grid; grid-template-columns:52px 1fr; column-gap:12px; row-gap:2px; justify-items:start; align-items:center; min-height:0; padding:12px 14px; text-align:left; }
-  .evc > :first-child { grid-row:1 / span 3; justify-self:center; } .evc-ic { font-size:40px; } .evc img { width:48px; height:48px; border-radius:14px; } .evc .evc-sub { top:8px; right:10px; font-size:16px; }
-  .evc b { font-size:16px; } .evc small { font-size:12px; } .evc em { margin-top:2px; }
+  .evx-gwin { height:48px; } .evx-gstrip b { height:48px; } .evx-gstrip b span { font-size:38px; line-height:48px; } .evx-gstrip b i { font-size:32px; }
+  .evx-row { --ch:118px; grid-template-columns:1fr; gap:12px; }
+  .evf-in { flex-direction:row; } .evf-art { flex:0 0 96px; border-bottom:0; border-right:1px solid rgba(255,255,255,.09); }
+  .evf-ic { font-size:44px; } .evf-pt { width:58px; height:58px; border-radius:16px; } .evf-badge { left:calc(50% + 14px); top:calc(50% + 8px); font-size:22px; }
+  .evf-tag { left:6px; top:6px; padding:2px 6px; font-size:9px; }
+  .evf-tx { align-items:flex-start; gap:3px; padding:10px 12px; text-align:left; } .evf-name { font-size:19px; } .evf-desc { font-size:12px; line-height:1.4; } .evf-gem { margin-top:auto; padding:2px 9px; font-size:10px; }
+  .evs-pick { top:-10px; font-size:15px; }
 }
+.fev i.g0, .evrow.g0 { --ec:#d08a4e; border-color:#d08a4e; } .fev i.g1, .evrow.g1 { --ec:#9aa6b8; border-color:#9aa6b8; } .fev i.g2, .evrow.g2 { --ec:#f2b200; border-color:#f2b200; }
+.tile.ev-vet { background:rgba(255,200,61,.22) !important; box-shadow:inset 0 0 0 3px #ffc83d; } .tile.ev-vet::after { content:'🎖️'; position:absolute; right:4px; top:2px; font-size:16px; } /* 베테랑 칸 */
 #lifeFx { position:fixed; inset:0; z-index:75; display:none; place-items:center; pointer-events:none; }
 #lifeFx.show { display:grid; animation:lfIn 1.5s ease forwards; }
 @keyframes lfIn { 0% { opacity:0; } 10% { opacity:1; } 80% { opacity:1; } 100% { opacity:0; } }
@@ -3154,7 +3198,7 @@ const CFG = {
   MAX_UNITS: 15, SAME_LIMIT: 3, POOL: 3, PICK_TIME: 15, // R2.7.2: 배치 수 제한 없음 (빈 칸 15칸까지) · 같은 지후 3기 (R2.2.1 · 출격제한 1 은 그대로) · 카드 3장 · 15초
   LIVES: 3,                                // R2.7.2: 4 → 3 (전작과 같은 3)
   MAX_LV: 5, LEVEL_ADD: 0.6, EFFECT_MULT: 1.1, // 같은 종류 · 같은 레벨을 합치면 레벨 +1 (R2.2 · 최대 Lv5) · 체력/공격력 레벨마다 기본의 +80% 선형 (R2.18 build 10 · R2.10.4 +50% · 예전 ×1.2 복리) · 효과 ×1.1 (복리)
-  ROUND_TIME: 60, STALL: 15, FAST_AFTER: 25, FAST_SPEED: 1.5, DM_DEPLOYS: 3, // R2.9: 60초 (전작 45초) · 15초 무피해 판정 · 25초 뒤 1.5배속 · 데스매치 배치 3번
+  ROUND_TIME: 60, STALL: 15, FAST_AFTER: 25, FAST_SPEED: 1.5, DEPLOYS: 3, DM_DEPLOYS: 4, // R2.9: 60초 (전작 45초) · 15초 무피해 판정 · 25초 뒤 1.5배속 · R2.23: 배치 기회 라운드마다 3번 · 데스매치 4번
   STEP: 1 / 60,                            // 전작 PHYS.STEP
   MELEE: 1.6,
   CRIT: 0.02,                              // 모든 지후: 공격이 2% 확률로 치명타 (피해 ×2) · [부상]이면 50%                              // 근접 사거리 1.6칸 (전작 72px/45px)
@@ -4718,7 +4762,7 @@ function fxList(u) { // 유닛에 걸린 효과 → [{ k 아이콘, n 숫자, t 
   const ar = (v, up, dn) => { if (v > 1e-3) push(up, FX_NAME[up]); else if (v < -1e-3) push(dn, FX_NAME[dn]); };
   ar(atk, 'atkUp', 'atkDown'); ar(aspd, 'aspdUp', 'aspdDown'); ar(spd, 'spdUp', 'spdDown'); ar(taken, 'takenUp', 'takenDown');
   if (u.wn || u.gpu) { push('critUp', FX_NAME.critUp); push('critDmgUp', FX_NAME.critDmgUp); } // 소믈리에 와인 · 엑시노스 [GPU 칩] if (buffSum(u, 'dodge') > 0) push('dodgeUp', FX_NAME.dodgeUp);
-  if (vw) push('healDown', FX_NAME.healDown); if ((u.hots && u.hots.length) || relV(side, 'regen')) push('regen', FX_NAME.regen);
+  if (vw) push('healDown', FX_NAME.healDown); if ((u.hots && u.hots.length) || relV(side, 'regen') || evN(side, 'regen')) push('regen', FX_NAME.regen);
   return L;
 }
 const fxTile = (x, cls) => `<i class="${cls || 'fx'}" style="background-image:url(${fxSrc(x.k)})" title="${x.t}">${x.n !== '' && x.n != null ? `<b>${x.n}</b>` : ''}</i>`;
@@ -4781,7 +4825,7 @@ const EV_OLD = {
 const EV_CAT = { pos: '긍정', neg: '부정' };
 // ═════════ 이벤트 모드 (R2.23): 일반전에서 로비 토글로 고른다 · 하트 4 · 보상 ×1.3 · 짝수 라운드 시작마다 이벤트 카드 ═════════
 // 등급 (브론즈 · 실버 · 골드) 은 양쪽이 같다 · 카드 3장은 따로 받고 따로 하나를 고른다 (15초) · 고른 이벤트는 경기 내내 · 같은 이벤트를 또 고르면 수치가 더해진다
-// v: 등급별 수치 [브론즈, 실버, 골드] (%) · 0 이면 그 등급에는 안 나온다 · deck: 덱의 지후 하나를 정해서 나온다 (c)
+// v: 등급별 수치 [브론즈, 실버, 골드] (% · 레벨업 · 단체 레벨업 · 모 아니면 도 · 평준화는 1) · 0 이면 그 등급에는 안 나온다 · deck: 덱의 지후 하나를 정해서 나온다 (c) · ins: 고르는 순간 한 번 (evInstant)
 const EV_GRADES = [{ name: '브론즈', icon: '🥉', color: '#d08a4e' }, { name: '실버', icon: '🥈', color: '#c3ccd8' }, { name: '골드', icon: '🥇', color: '#ffc83d' }];
 const EVENTS = {
   hardcore: { name: '하드코어', icon: '💀', v: [30, 40, 50], desc: v => `하트가 가득 차 있으면 모든 지후 최대 체력 · 공격력 <b>+${v}%</b>` },
@@ -4796,8 +4840,22 @@ const EVENTS = {
   invest: { name: '집중투자', icon: '💰', v: [20, 30, 40], desc: v => `Lv2 지후 최대 체력 · 공격력 <b>+${v}%</b>` },
   frenzy: { name: '광란', icon: '🔥', v: [20, 30, 40], desc: v => `모든 지후 공격속도 <b>+${v}%</b>` },
   elite: { name: '소수정예', icon: '💎', v: [30, 40, 50], desc: v => `전투 시작 때 지후가 4기 이하면 모든 지후 최대 체력 · 공격력 <b>+${v}%</b>` },
-  mana: { name: '마력의 힘', icon: '🔮', v: [0, 25, 25], desc: v => `모든 지후 SP 충전 <b>+${v}%</b>` },
+  mana: { name: '마력의 힘', icon: '🔮', v: [0, 12, 25], desc: v => `모든 지후 SP 충전 <b>+${v}%</b>` },
   fuse: { name: '합체마스터', icon: '🔗', v: [0, 8, 12], desc: v => `레벨업 · 합체할 때 <b>${v}%</b> 확률로 레벨이 하나 더 오른다` },
+  fast: { name: 'fast as f boi', icon: '💨', v: [20, 30, 40], desc: v => `모든 지후 이동속도 <b>+${v}%</b>` },
+  blitz: { name: '속전속결', icon: '⏱️', v: [30, 50, 70], desc: v => `라운드 시작 5초 동안 모든 지후 공격력 <b>+${v}%</b>` },
+  lvup: { name: '레벨업', icon: '⬆️', v: [0, 1, 0], desc: () => `라운드에서 이길 때마다 살아남은 지후 하나 레벨 <b>+1</b>` },
+  combo: { name: '스피드 콤보', icon: '🌀', stack: 1, v: [1, 2, 3], desc: v => `레벨업 · 합체할 때마다 스택 +1 · 스택당 모든 지후 공격속도 <b>+${v}%</b>` },
+  mid: { name: '중앙 Good', icon: '👍', v: [30, 40, 50], desc: v => `중열 지후 최대 체력 · 공격력 <b>+${v}%</b>` },
+  front: { name: '선봉대', icon: '🛡️', v: [30, 40, 50], desc: v => `전열 지후 최대 체력 · 공격력 <b>+${v}%</b>` },
+  star: { name: '천살성', icon: '☄️', v: [60, 45, 30], desc: v => `모든 지후 공격력 <b>+80%</b> · 대신 받는 피해 <b>+${v}%</b>` },
+  allup: { name: '단체 레벨업', icon: '⏫', ins: 1, v: [0, 0, 1], desc: () => `지금 전장의 모든 지후 레벨 <b>+1</b>` },
+  allin: { name: '모 아니면 도', icon: '🎲', ins: 1, v: [1, 0, 0], desc: () => `모든 지후가 50% 확률로 레벨 <b>+1</b> 또는 <b>−1</b> (Lv1 이 내려가면 영영 사라진다)` },
+  backup: { name: '지원요청', icon: '📞', ins: 1, v: [2, 3, 4], desc: v => `무작위 지후 <b>${v}기</b>를 빈 칸에 소환 (Lv1)` },
+  veteran: { name: '베테랑', icon: '🎖️', v: [0, 0, 30], desc: v => `내 진영 무작위 칸 하나가 베테랑 칸 · 거기 놓인 지후 최대 체력 · 공격력 · 공격속도 <b>+${v}%</b>` },
+  equal: { name: '평준화', icon: '⚖️', ins: 1, v: [0, 1, 0], desc: () => `양쪽 모든 지후 레벨이 <b>평균 레벨</b>로 (반올림)` },
+  regen: { name: '자힐', icon: '💚', v: [4, 6, 8], desc: v => `모든 지후 초당 최대 체력의 <b>${v}%</b> 회복` },
+  weak: { name: '약점공략', icon: '🎯', v: [10, 20, 30], desc: v => `적이 받는 피해 <b>+${v}%</b>` },
 };
 const evVal = c => EVENTS[c.id].v[c.g] || 0;
 const evName = c => (EVENTS[c.id].deck && CHARS[c.c] ? `${CHARS[c.c].name} ${EVENTS[c.id].name}` : EVENTS[c.id].name);
@@ -5681,7 +5739,7 @@ function dealDamage(src, t, amount, opts = {}) {
   if (t.st.bubble > 0) { if (t.bub6 && rng() < 0.2) { if (!S.fast) dmgNum(t, '🫧 탱탱!', { crit: true }); return 0; } /* 랭크 6 [질긴 비눗방울]: 20% 안 터진다 */ t.st.bubble = 0; if (!S.fast) dmgNum(t, '🫧 톡!', { crit: true }); drawUnit(t); return 0; } // [버블]: 처음 받는 피해 한 번 무효
   let crit = false;
   if (src && !opts.dot && !opts.noCrit && rng() < (t.st.wound > 0 ? 0.5 : CFG.CRIT + 0.04 * (src.wn || 0) + 0.02 * (src.wn6 || 0) + (src.gpu ? buffSum(src, 'crit') : 0))) { crit = true; amount *= 2 + 0.3 * (src.wn || 0) + (src.gpu ? buffSum(src, 'critDmg') : 0); } // R2.20 [GPU 칩]: 확률 · 피해 (+) // 치명타: 피해 ×2 (소믈리에 와인: 확률 +3% (R2.10.2) · 피해 +30% 씩)
-  let d = amount * (t.def.takenMult ? t.def.takenMult(t) : 1) * (t.ballBy && hongHold(t) ? 0.85 : 1) * (t.st.vuln > 0 ? 1 + ((t.st.vulnX && t.st.vulnX.amt) || 0.3) : 1) * (t.st.frost > 0 ? 1.1 : 1) * (t.st.vweak > 0 ? 1.2 : 1) * (1 - Math.min(0.9, relV(t.side, 'dr'))) * (1 + relV(t.side === 'a' ? 'e' : 'a', 'vuln')); // R2.17 유물: 방탄조끼 · 방패(였던 것)
+  let d = amount * evTaken(t) * (t.def.takenMult ? t.def.takenMult(t) : 1) * (t.ballBy && hongHold(t) ? 0.85 : 1) * (t.st.vuln > 0 ? 1 + ((t.st.vulnX && t.st.vulnX.amt) || 0.3) : 1) * (t.st.frost > 0 ? 1.1 : 1) * (t.st.vweak > 0 ? 1.2 : 1) * (1 - Math.min(0.9, relV(t.side, 'dr'))) * (1 + relV(t.side === 'a' ? 'e' : 'a', 'vuln')); // R2.17 유물: 방탄조끼 · 방패(였던 것)
   let refl = 0; if (t.def.reflect && src && src !== t && src.melee && !opts.skill && !opts.dot && !opts.reflect) { refl = d * t.def.reflect; d *= 1 - t.def.reflect; } // 선인장: 근접 공격의 일부를 돌려준다
   d = Math.max(1, Math.round(Math.max(d, amount * 0.1))); // R2.8: 받는 피해 감소는 최대 90% · 최소 1 피해
   if (t.nbD > 0) { t.nbD--; d += 30; if (t.nbD <= 0) t.st.nbdead = 0; if (!S.fast) dmgNum(t, '🖤 +30', { crit: true }); } // 솔렘라멘트 [죽은나비]: 처음 받는 피해 +30 (R2.18 · 중첩 하나마다 한 번)
@@ -6189,7 +6247,7 @@ function spawnDeathEffect(u) {
 // ── 전투 한 스텝 (전작 physicsStep 순서: 상태 → 조향 · 공격 → 투사체 → 적분 → 충돌 해소 → 벽) ──
 function stepCombat(dt) {
   if (!S.started) { S.started = true; S.units.forEach(u => u.def.onStart && u.def.onStart(u, A)); } // 시작 효과는 [밴]이어도 (원자 · 데스노트 등 준비 상태) · 스킬은 castSkill 이 막는다
-  const t0 = S.time; S.time += dt; relTick(dt);
+  const t0 = S.time; S.time += dt; evTick(t0); relTick(dt);
   for (const u of S.units) if (u.alive) { u.xPrev = u.x; u.yPrev = u.y; u._sl = null; }
   for (const u of S.units) if (u.alive && u.melee && u._engaged && u.slotT && u.slotT.alive) (u.slotT._sl || (u.slotT._sl = [])).push(u); // 때리는 중인 근접은 자리를 먼저 차지한다
   gridBuild(); // R2.12: 이동 · 회피가 근처만 본다 (걷는 근접은 이번 스텝에 다시 예약)
@@ -6479,7 +6537,7 @@ function trainDash(u, dt, A) {
 }
 
 // ═════════ 라운드 · 배치 (전작 일반전 규칙) ═════════
-// 라운드마다 배치 기회 2번 (3라운드부터 3번 · 양쪽 라이프 1이면 데스매치 3번). 기회마다 덱에서 카드 3장 → 1장을 골라
+// 라운드마다 배치 기회 3번 (R2.23 · 양쪽 라이프 1이면 데스매치 4번). 기회마다 덱에서 카드 3장 → 1장을 골라
 // 빈 칸에 놓거나 같은 지후 위에 겹쳐 레벨업 (15초가 지나면 자동). 내가 하나 놓으면 상대도 하나.
 // 놓은 지후는 라운드가 끝나도 남고, 다음 라운드에 제자리에서 체력이 가득 찬 채로 다시 나온다.
 // place[side][tile] = { id, lv } | null (tile = row * 5 + col)
@@ -6548,7 +6606,7 @@ function mergeTile(side, id) { let best = null; S.place[side].forEach((p, i) => 
 function canPlaceNew(side, id) { return countSide(side) < CFG.MAX_UNITS && sameCount(side, id) < limitOf(id) && S.place[side].some(p => !p); }
 function playable(side, id) { return mergeTile(side, id) != null || canPlaceNew(side, id); }
 function isDeathmatch() { return S.lives.a === 1 && S.lives.e === 1; }
-function deployChances() { return isDeathmatch() ? CFG.DM_DEPLOYS : S.round === 1 ? 3 : 2; } // R2.2: 첫 라운드 4번 → R2.10.4: 3번 · 그다음 2번 · 데스매치 3번
+function deployChances() { return isDeathmatch() ? CFG.DM_DEPLOYS : CFG.DEPLOYS; } // R2.23: 모든 라운드 3번 · 데스매치 4번 (예전: 첫 라운드 3 · 그다음 2 · 데스매치 3)
 function rollPool(side, r = rng) { const ban = (S.evf && S.evf[side] && S.evf[side].ban) || [], d = S.deck[side].filter(id => !ban.includes(id)); // [밴] 이벤트: 그 지후는 나오지 않는다
   return d.length ? Array.from({ length: CFG.POOL }, () => d[Math.floor(r() * d.length)]) : []; } // 전작 일반전: 덱에서 매번 3장 (중복 가능)
 function roleRow(id) { // 배치 줄 (0 전열 · 1 중열 · 2 후열 · R2.3): 탱커 · 딜러는 앞 · 어쌔신 · 서포터는 뒤 · 근접은 앞으로 · 사거리가 길면 뒤로 · 체력이 높으면 앞으로
@@ -6595,8 +6653,9 @@ function applyAct(side, act) {
 function normF(f) { const v = (f.match(/v/g) || []).length; return (f.includes('b') ? 'b' : '') + (f.includes('g') ? 'g' : '') + 'v'.repeat(Math.min(5, v)) || undefined; }
 function evRecount() { ['a', 'e'].forEach(s => { const c = S.evc[s] = {}; S.ev[s].forEach(x => { const k = EVENTS[x.id].deck ? x.id + ':' + x.c : x.id; c[k] = (c[k] || 0) + evVal(x); }); }); } // evN(진영, id) = 고른 이벤트 수치 합 (%)
 const evOpp = s => (s === 'a' ? 'e' : 'a');
-function evMerge(side, t) { // 레벨업 · 합체 뒤: 합체마스터 (레벨 +1 더) · 합성마스터 (빈 칸에 덱의 Lv1 지후 · 출격제한에 안 센다)
+function evMerge(side, t) { // 레벨업 · 합체 뒤: 스피드 콤보 스택 · 합체마스터 (레벨 +1 더) · 합성마스터 (빈 칸에 덱의 Lv1 지후 · 출격제한에 안 센다)
   if (!S.evOn) return; const p = S.place[side][t], r = rng; if (!p) return;
+  if (evN(side, 'combo')) S.evf[side].combo = (S.evf[side].combo || 0) + 1;
   const f = evN(side, 'fuse'); if (f && p.lv < maxLv(p.id) && r() * 100 < f) { p.lv++; if (side === ME() && !S.fast) banner(`🔗 합체마스터! Lv.${p.lv}`); }
   const sy = evN(side, 'synth'); if (!sy || r() * 100 >= sy) return;
   const L = S.deck[side].filter(id => CHARS[id]), id = L.length ? L[Math.floor(r() * L.length)] : null, e = id ? pickTile(side, roleRow(id), r) : null; if (e == null) return;
@@ -6609,10 +6668,25 @@ function evDeal(side, g, r) { // 같은 등급 카드 3장 (서로 다른 이벤
 }
 function evBotPick(side, cards, r) { // 봇: 상황에 맞는 카드에 점수 (+ 무작위)
   const P = S.place[side].filter(Boolean), lv = n => P.filter(p => p.lv === n).length, full = S.lives[side] >= S.maxLives;
-  const W = { hardcore: full ? 3 : 0.2, deckA: 2, deckS: 2, rear: 1.2, synth: 1.8, even: 0.8 + 0.4 * (lv(2) + lv(4)), odd: 0.8 + 0.3 * (lv(1) + lv(3) + lv(5)), leech: 1.8, peasant: 0.6 + 0.3 * lv(1), invest: 0.6 + 0.4 * lv(2), frenzy: 2.4, elite: P.length <= 4 ? 2.2 : 0.4, mana: 2, fuse: 2 };
+  const W = { hardcore: full ? 3 : 0.2, deckA: 2, deckS: 2, rear: 1.2, synth: 1.8, even: 0.8 + 0.4 * (lv(2) + lv(4)), odd: 0.8 + 0.3 * (lv(1) + lv(3) + lv(5)), leech: 1.8, peasant: 0.6 + 0.3 * lv(1), invest: 0.6 + 0.4 * lv(2), frenzy: 2.4, elite: P.length <= 4 ? 2.2 : 0.4, mana: 2, fuse: 2, fast: 1.1, blitz: 1.6, lvup: 2, combo: 1.5, mid: 0.6 + 0.35 * S.place[side].slice(5, 10).filter(Boolean).length, front: 0.6 + 0.35 * S.place[side].slice(0, 5).filter(Boolean).length, star: 2, allup: 3, allin: 0.7, backup: 0.6 + 0.3 * (CFG.MAX_UNITS - P.length) / 3, veteran: 1.8, regen: 1.6, weak: 2,
+    equal: (() => { const avg = s => { const L = S.place[s].filter(Boolean); return L.length ? L.reduce((t, p) => t + p.lv, 0) / L.length : 1; }; return avg(side) < avg(evOpp(side)) ? 3 : 0.3; })() };
   let best = 0, bv = -1; cards.forEach((c, i) => { const v = (W[c.id] || 1) * (1 + c.g * 0.2) + r() * 1.5; if (v > bv) { bv = v; best = i; } }); return best;
 }
-function evTake(side, c) { if (!c) return; S.ev[side].push({ id: c.id, g: c.g, c: c.c }); evRecount(); renderLives(); }
+function evTake(side, c) { if (!c) return; S.ev[side].push({ id: c.id, g: c.g, c: c.c }); evRecount(); evInstant(side, c); renderLives(); }
+function evInstant(side, c) { // 고르는 순간: 단체 레벨업 · 모 아니면 도 · 지원요청 · 평준화 · 베테랑 칸 정하기 (전투 난수 rng)
+  const P = S.place, r = rng, fx = (s, t, kind) => (S.fx || (S.fx = [])).push({ side: s, t, kind }), tiles = s => P[s].map((p, t) => (p ? t : -1)).filter(t => t >= 0);
+  if (c.id === 'allup') tiles(side).forEach(t => { if (P[side][t].lv < maxLv(P[side][t].id)) { P[side][t].lv++; fx(side, t, 'merge'); } });
+  else if (c.id === 'allin') tiles(side).forEach(t => { const p = P[side][t]; if (r() < 0.5) { if (p.lv < maxLv(p.id)) { p.lv++; fx(side, t, 'merge'); } } else if (p.lv > 1) p.lv--; else P[side][t] = null; });
+  else if (c.id === 'backup') { const ids = Object.keys(CHARS); for (let k = 0; k < evVal(c); k++) { const id = ids[Math.floor(r() * ids.length)], t = pickTile(side, roleRow(id), r); if (t == null) break; P[side][t] = { id, lv: 1, f: 'b' }; fx(side, t, 'drop'); } }
+  else if (c.id === 'equal') { const L = [...tiles('a').map(t => P.a[t]), ...tiles('e').map(t => P.e[t])]; if (L.length) { const lv = Math.round(L.reduce((x, p) => x + p.lv, 0) / L.length); ['a', 'e'].forEach(s => tiles(s).forEach(t => { P[s][t].lv = Math.max(1, Math.min(maxLv(P[s][t].id), lv)); fx(s, t, 'merge'); })); } }
+  else if (c.id === 'veteran') { const v = S.evf[side].vet || (S.evf[side].vet = []), free = Array.from({ length: TILES }, (_, t) => t).filter(t => !v.includes(t)); if (free.length) v.push(free[Math.floor(r() * free.length)]); }
+}
+function evSnap() { if (S.roundStart) S.roundStart = { a: S.place.a.map(p => p && { ...p }), e: S.place.e.map(p => p && { ...p }) }; } // 카드를 고른 뒤 (배치 전): 50:50 재경기 · 상대 화면 기준 배치를 다시
+function evRoundWin(w) { // 레벨업 이벤트: 라운드를 이긴 쪽 · 살아남은 지후 (배치한 지후만) 중 하나씩 레벨 +1
+  if (!S.evOn || (w !== 'a' && w !== 'e')) return; const n = evN(w, 'lvup'); if (!n) return;
+  const L = S.units.filter(u => u.alive && u.side === w && !u.summoner && !u.small && u.tile != null && S.place[w][u.tile] && S.place[w][u.tile].lv < maxLv(S.place[w][u.tile].id));
+  for (let k = 0; k < n && L.length; k++) { const u = L.splice(Math.floor(rng() * L.length), 1)[0], p = S.place[w][u.tile]; p.lv++; if (w === ME() && !S.fast) banner(`⬆️ 레벨업! ${CHARS[p.id] ? CHARS[p.id].name : ''} Lv.${p.lv}`); }
+}
 function evRoll() { // 짝수 라운드 시작: 등급 하나 (양쪽 같다 · 브론즈 50 · 실버 35 · 골드 15) → 카드 3장씩 → 봇은 바로 고르고, 나는 evShow 에서 (같은 라운드 50:50 재경기는 다시 뽑지 않는다)
   S.evCards = null;
   if (!S.evOn || S.round < 2 || S.round % 2 || S.evRound === S.round) return;
@@ -6621,45 +6695,81 @@ function evRoll() { // 짝수 라운드 시작: 등급 하나 (양쪽 같다 · 
   C.pick = { [op]: evBotPick(op, C[op], r) }; evTake(op, C[op][C.pick[op]]);
   S.evPending = true;
 }
-function evCardHtml(c, i) { const e = EVENTS[c.id], G = EV_GRADES[c.g]; return `<button type="button" class="evc g${c.g}" data-i="${i}">${e.deck && CHARS[c.c] ? `<img src="${u2Img(c.c)}" alt=""><i class="evc-sub">${e.icon}</i>` : `<span class="evc-ic">${e.icon}</span>`}<b>${esc(evName(c))}</b><small>${evDesc(c)}</small><em>${G.icon} ${G.name}</em></button>`; }
 function evIcons() { // 전장 위 이름 아래: 고른 이벤트 아이콘 (마우스를 올리면 설명 · 누르면 목록)
   [[ME(), 'A'], [OPP(), 'E']].forEach(([s, U]) => { const el = $('fev' + U); if (!el) return;
-    el.innerHTML = (S.ev ? S.ev[s] : []).map(x => `<i class="g${x.g}" data-tip="${esc(evName(x))} · ${EV_GRADES[x.g].name} — ${esc(evDesc(x).replace(/<[^>]+>/g, ''))}">${EVENTS[x.id].icon}</i>`).join(''); });
+    el.innerHTML = (S.ev ? S.ev[s] : []).map(x => `<i class="g${x.g}" data-tip="${esc(evName(x))} · ${EV_GRADES[x.g].name} — ${esc(evDesc(x).replace(/<[^>]+>/g, ''))}${evStack(s, x)}">${EVENTS[x.id].icon}</i>`).join(''); });
 }
-function evHide() { (evShow.tm || []).forEach(clearTimeout); clearInterval(evShow.iv); evShow.tm = []; $('evPop').className = ''; }
-function evShow(done) { // 이벤트 카드 고르기: 15초 (시간이 다 되면 무작위) → 상대가 고른 카드를 잠깐 보여 주고 배치 시작
+function evStack(s, x) { return EVENTS[x.id].stack && S.evf && S.evf[s] ? ` · 스택 ${S.evf[s].combo || 0}` : ''; }
+function evFaceHtml(c) { // 이벤트 카드 앞면 (릴의 한 칸)
+  const e = EVENTS[c.id], G = EV_GRADES[c.g], gs = e.v.map((v, g) => (v ? EV_GRADES[g].name : '')).filter(Boolean), only = gs.length < 3 ? gs.join(' · ') + ' 전용' : '', tag = [e.ins ? '즉시' : '', only].filter(Boolean).join(' · ');
+  const art = e.deck && CHARS[c.c] ? `<img class="evf-pt" src="${u2Img(c.c)}" alt=""><span class="evf-badge">${e.icon}</span>` : `<span class="evf-ic">${e.icon}</span>`;
+  return `<div class="evf g${c.g}"><div class="evf-in"><div class="evf-art"><i class="evf-burst"></i>${art}${tag ? `<span class="evf-tag">${tag}</span>` : ''}</div><div class="evf-tx"><div class="evf-name">${esc(evName(c))}</div><div class="evf-desc">${evDesc(c)}</div><div class="evf-gem">${G.icon} ${G.name}</div></div><i class="evf-shine"></i></div></div>`;
+}
+function evMiniHtml(c) { const e = EVENTS[c.id], G = EV_GRADES[c.g]; return `<div class="evx-mini g${c.g}">${e.deck && CHARS[c.c] ? `<img src="${u2Img(c.c)}" alt="">` : `<span>${e.icon}</span>`}<b>${esc(evName(c))}</b><em>${G.icon} ${G.name}</em></div>`; }
+function evHide() { (evShow.tm || []).forEach(clearTimeout); clearInterval(evShow.iv); (evShow.an || []).forEach(a => { try { a.cancel(); } catch (e) {} }); evShow.tm = []; evShow.an = []; $('evPop').className = ''; }
+function evShow(done) { // 이벤트 카드: 슬롯머신 (등급 릴 → 카드 릴 3개가 위에서 따다닥 · 차례로 멈춤) → 15초 안에 하나 (시간이 다 되면 무작위) → 상대가 고른 카드 → 배치
   const el = $('evPop'), rk = S.rk, me = ME(), op = OPP(), C = S.evCards;
   if (!C) return done();
-  if (S.fast || S.replay) { evTake(me, C[me][Math.floor(rng() * C[me].length)]); return done(); }
-  const G = EV_GRADES[C.g], sec = CFG.EV_PICK_SEC, t0 = Date.now();
+  if (S.fast || S.replay) { evTake(me, C[me][Math.floor(rng() * C[me].length)]); evSnap(); return done(); }
+  const g = C.g, G = EV_GRADES[g], sec = CFG.EV_PICK_SEC, N = 14;
   S.phase = 'event'; S.pool = []; renderPool(); evHide();
-  el.innerHTML = `<div class="evbox evpick" style="--gc:${G.color}"><div class="eh">ROUND ${S.round} · EVENT</div><h3>${G.icon} ${G.name} 이벤트</h3><small class="evsub">카드 하나를 골라요 · 경기 내내 유지 · 상대는 다른 ${G.name} 카드 3장 중에서 골라요</small><div class="evc-row">${C[me].map(evCardHtml).join('')}</div><div class="evc-op"></div><div class="evc-time"><i style="animation-duration:${sec}s"></i><b>${sec}</b></div></div>`;
-  el.className = 'show'; let picked = false;
+  const pool = Object.keys(EVENTS).filter(id => EVENTS[id].v[g] > 0), deck = S.deck[me].filter(x => CHARS[x]); // 릴에 지나가는 카드 (연출만 · Math.random)
+  const rnd = () => { const id = pool[Math.floor(Math.random() * pool.length)]; return { id, g, c: EVENTS[id].deck ? deck[Math.floor(Math.random() * deck.length)] : undefined }; };
+  const gl = [g, ...Array.from({ length: 11 }, (_, k) => (g + 2 + k) % 3)];
+  el.innerHTML = `<div class="evx g${g}"><div class="evx-rays"></div><div class="evx-sp">${Array.from({ length: 18 }, (_, i) => `<i style="left:${(i * 37 + 7) % 100}%;animation-delay:${((i * 0.61) % 3.4).toFixed(2)}s;animation-duration:${(2.6 + (i % 5) * 0.35).toFixed(2)}s"></i>`).join('')}</div>
+    <div class="evx-box"><div class="evx-eh">ROUND ${S.round} · EVENT CARD</div>
+      <div class="evx-gwin"><div class="evx-gstrip">${gl.map(k => `<b class="g${k}"><i>${EV_GRADES[k].icon}</i><span>${EV_GRADES[k].name}</span></b>`).join('')}</div></div>
+      <div class="evx-row">${C[me].map((c, i) => `<div class="evs" data-i="${i}"><div class="evs-win"><div class="evs-strip">${[c, ...Array.from({ length: N - 1 }, rnd)].map(evFaceHtml).join('')}</div></div><i class="evs-flash"></i><span class="evs-pick">선택!</span></div>`).join('')}</div>
+      <div class="evx-foot"><div class="evx-time"><i><u></u></i><b>${sec}</b></div><div class="evx-op"></div></div></div></div>`;
+  el.className = 'show';
+  const box = el.querySelector('.evx'), slots = [...el.querySelectorAll('.evs')], live = () => S.rk === rk && el.className === 'show' && S.phase === 'event';
+  let ready = false, picked = false, landed = 0;
   const finish = () => { evHide(); if (S.rk === rk && S.phase === 'event') done(); };
-  const pick = i => {
-    if (picked || S.rk !== rk) return; picked = true; clearInterval(evShow.iv); C.pick[me] = i; evTake(me, C[me][i]); sfx('gacha_legend');
-    el.querySelectorAll('.evc').forEach((b, k) => b.classList.add(k === i ? 'on' : 'off')); el.querySelector('.evc-time').style.visibility = 'hidden';
-    const o = C[op][C.pick[op]]; el.querySelector('.evc-op').innerHTML = o ? `${esc(S.nick[op] || '상대')} 의 선택: ${EVENTS[o.id].icon} <b>${esc(evName(o))}</b>` : '';
-    evShow.tm.push(setTimeout(finish, 1800));
+  const roll = (strip, dur, delay, onEnd) => { // 위에서 아래로 빠르게 → 살짝 지나쳤다가 제자리 (WAAPI · transform 만)
+    const f = strip.firstElementChild, gap = parseFloat(getComputedStyle(strip).rowGap) || 0, dist = (f.offsetHeight + gap) * (strip.children.length - 1);
+    const a = strip.animate([{ transform: `translateY(${-dist}px)`, easing: 'cubic-bezier(.18,.5,.28,1)' }, { transform: 'translateY(14px)', offset: 0.9, easing: 'ease-in-out' }, { transform: 'translateY(0)' }], { duration: dur, delay, fill: 'both' });
+    evShow.an.push(a); a.onfinish = () => { if (live()) onEnd(); }; return a;
   };
-  el.onclick = e => { const b = e.target.closest('.evc'); if (b) pick(+b.dataset.i); };
-  evShow.iv = setInterval(() => { const left = Math.max(0, Math.ceil(sec - (Date.now() - t0) / 1000)), b = el.querySelector('.evc-time b'); if (b) b.textContent = left; if (left <= 0) pick(Math.floor(Math.random() * C[me].length)); }, 200);
+  const startTimer = () => {
+    ready = true; box.classList.add('ready'); const t0 = Date.now(), b = el.querySelector('.evx-time b'), u = el.querySelector('.evx-time u');
+    u.style.animation = `evxT ${sec}s linear forwards`;
+    evShow.iv = setInterval(() => { const left = Math.max(0, Math.ceil(sec - (Date.now() - t0) / 1000)); if (b.textContent !== String(left)) { b.textContent = left; box.classList.toggle('hurry', left <= 5); } if (left <= 0) pick(Math.floor(Math.random() * C[me].length)); }, 200);
+  };
+  roll(el.querySelector('.evx-gstrip'), 950, 150, () => { el.querySelector('.evx-gwin').classList.add('land'); sfx(g === 2 ? 'gacha_legend' : g === 1 ? 'gacha_epic' : 'gacha_rare'); });
+  slots.forEach((sl, i) => roll(sl.querySelector('.evs-strip'), 1500 + i * 420, 150, () => { sl.classList.add('land'); sfx('ev_land'); if (++landed === slots.length) startTimer(); }));
+  let tk = 40; const tick = () => { if (!live() || landed >= slots.length) return; sfx('ev_tick'); tk = Math.min(150, tk * 1.06); evShow.tm.push(setTimeout(tick, tk)); }; // 따다닥 (점점 느리게)
+  evShow.tm.push(setTimeout(tick, 200));
+  const pick = i => {
+    if (picked || !ready || S.rk !== rk) return; picked = true; clearInterval(evShow.iv);
+    C.pick[me] = i; evTake(me, C[me][i]); evSnap(); renderField(); sfx('gacha_legend');
+    box.classList.add('picked'); slots.forEach((sl, k) => sl.classList.add(k === i ? 'on' : 'off'));
+    const o = C[op][C.pick[op]], oe = el.querySelector('.evx-op'); oe.innerHTML = o ? `<span>${esc(S.nick[op] || '상대')}의 선택</span>${evMiniHtml(o)}` : ''; oe.classList.add('show');
+    evShow.tm.push(setTimeout(finish, 2300));
+  };
+  el.onclick = e => { if (!ready) { evShow.an.forEach(a => { try { a.finish(); } catch (er) {} }); return; } const sl = e.target.closest('.evs'); if (sl) pick(+sl.dataset.i); }; // 도는 중에 누르면 바로 멈춤
 }
 function evList() { // HUD 아이콘 줄: 양쪽이 고른 이벤트
-  const part = s => `<h5>${esc(s === ME() && !(S.net && S.net.spec) ? '나' : S.nick[s])} · ${S.ev[s].length}개</h5>` + (S.ev[s].length ? S.ev[s].map(x => `<div class="evrow g${x.g}"><span>${EVENTS[x.id].icon}</span><b>${esc(evName(x))}<em>${EV_GRADES[x.g].icon} ${EV_GRADES[x.g].name}</em></b><small>${evDesc(x)}</small></div>`).join('') : '<small>아직 없어요</small>');
+  const part = s => `<h5>${esc(s === ME() && !(S.net && S.net.spec) ? '나' : S.nick[s])} · ${S.ev[s].length}개</h5>` + (S.ev[s].length ? S.ev[s].map(x => `<div class="evrow g${x.g}"><span>${EVENTS[x.id].icon}</span><b>${esc(evName(x))}<em>${EV_GRADES[x.g].icon} ${EV_GRADES[x.g].name}${evStack(s, x)}</em></b><small>${evDesc(x)}</small></div>`).join('') : '<small>아직 없어요</small>');
   dlg({ icon: '🎴', title: '이벤트', html: `<div class="evlist">${part(ME())}${part(OPP())}</div><small>짝수 라운드마다 카드 하나 · 경기 내내 유지 · 같은 이벤트는 수치가 더해져요</small>` });
 }
 document.addEventListener('click', e => { if (e.target.closest('.fev[data-ev]') && S.ev && (S.ev.a.length || S.ev.e.length)) evList(); }); // 아이콘 줄을 누르면 목록 (모바일)
-function evUnit(u, p) { // 전투 시작: 최대 체력 · 공격력 (공격속도는 evCombat 에서 버프로)
+function evUnit(u, p) { // 전투 시작: 최대 체력 · 공격력 · 이동속도 (공격속도는 evCombat 에서 버프로)
   if (!S.evOn) return;
   const s = u.side, n = id => evN(s, id), row = Math.floor(u.tile / CFG.COLS), cnt = S.place[s].filter(Boolean).length, lv = p.lv, par = lv % 2 ? n('odd') : n('even');
-  const hp = (S.lives[s] >= S.maxLives ? n('hardcore') : 0) + n('deckA:' + p.id) + n('deckS:' + p.id) + par + (lv === 1 ? n('peasant') : 0) + (lv === 2 ? n('invest') : 0) + (cnt <= 4 ? n('elite') : 0);
-  const atk = (S.lives[s] >= S.maxLives ? n('hardcore') : 0) + n('deckA:' + p.id) + par + (lv === 1 ? n('peasant') : 0) + (lv === 2 ? n('invest') : 0) + (cnt <= 4 ? n('elite') : 0);
-  u.evAspd = (n('deckS:' + p.id) + (row === 2 ? n('rear') : 0) + par + n('frenzy')) / 100;
+  const vet = ((S.evf[s] && S.evf[s].vet) || []).filter(t => t === u.tile).length * 30, stars = S.ev[s].filter(x => x.id === 'star').length;
+  const both = (S.lives[s] >= S.maxLives ? n('hardcore') : 0) + n('deckA:' + p.id) + par + (lv === 1 ? n('peasant') : 0) + (lv === 2 ? n('invest') : 0) + (cnt <= 4 ? n('elite') : 0) + (row === 0 ? n('front') : 0) + (row === 1 ? n('mid') : 0) + vet;
+  const hp = both + n('deckS:' + p.id), atk = both + 80 * stars;
+  u.evAspd = (n('deckS:' + p.id) + (row === 2 ? n('rear') : 0) + par + n('frenzy') + vet + ((S.evf[s] && S.evf[s].combo) || 0) * n('combo')) / 100;
   if (hp) u.baseMaxHp = u.maxHp = u.hp = Math.max(1, Math.round(u.maxHp * (1 + hp / 100)));
   if (atk) u.atk = Math.round(u.atk * (1 + atk / 100));
+  if (n('fast')) u.speed *= 1 + n('fast') / 100;
 }
-function evCombat() { if (S.evOn) S.units.forEach(u => { if (u.evAspd) A.buff(u, 'ev', { aspd: u.evAspd }, 9999); }); } // 공격속도 이벤트 (후방주의 · 짝수 / 홀수마스터 · 광란 · 덱 강화)
+function evCombat() { if (S.evOn) S.units.forEach(u => { if (u.evAspd) A.buff(u, 'ev', { aspd: u.evAspd }, 9999); const b = evN(u.side, 'blitz'); if (b) A.buff(u, 'ev_blitz', { atk: b / 100 }, 5); }); } // 공격속도 (후방주의 · 짝수 / 홀수마스터 · 광란 · 덱 강화 · 베테랑 · 스피드 콤보) · 속전속결 5초
+function evTick(t0) { // 자힐: 1초마다 최대 체력의 4 · 6 · 8% (숫자 없이 조용히 · [회복 불가] 면 없음)
+  if (!S.evOn || Math.floor(S.time) === Math.floor(t0)) return;
+  for (const s of ['a', 'e']) { const v = evN(s, 'regen'); if (!v) continue; for (const u of S.units) if (u.alive && u.side === s && u.hp < u.maxHp && !(u.st.noheal > 0)) { u.hp = Math.min(u.maxHp, u.hp + u.maxHp * v / 100); drawUnit(u); } }
+}
+const evTaken = t => (S.evOn ? 1 + (evN(evOpp(t.side), 'weak') + evN(t.side, 'star')) / 100 : 1); // 약점공략 (상대가 고름) · 천살성 (내가 고름): 받는 피해
 const evSp = u => (S.evOn && S.evc && S.evc[u.side] && S.evc[u.side].mana ? 1 + S.evc[u.side].mana / 100 : 1); // 마력의 힘: SP 충전 배율
 // ── 라운드 ──
 function startRound() {
@@ -6859,7 +6969,7 @@ function renderField() {
     for (let t = 0; t < TILES; t++) {
       const { x, y } = tileXY(side, t), hid = oppHidden(side), p = viewPlace(side)[t];
       const tile = document.createElement('div');
-      tile.className = 'tile ' + (mine ? 'ally' : 'enemy') + (mine && pick && !p && canPlaceNew(me, pick) ? ' hot' : '') + (mine && S.moveSel === t ? ' sel' : '');
+      tile.className = 'tile ' + (mine ? 'ally' : 'enemy') + (mine && pick && !p && canPlaceNew(me, pick) ? ' hot' : '') + (mine && S.moveSel === t ? ' sel' : '') + (S.evOn && S.evf && S.evf[side].vet && S.evf[side].vet.includes(t) ? ' ev-vet' : '');
       tile.dataset.side = side; tile.dataset.tile = t;
       tile.style.left = (x - ts.w / 2) + 'px'; tile.style.top = (y - ts.h / 2) + 'px'; tile.style.width = ts.w + 'px'; tile.style.height = ts.h + 'px';
       f.appendChild(tile);
@@ -7072,6 +7182,7 @@ function roundResult(w, timedOut) {
     return;
   }
   if (w === 'a') S.lives.e = Math.max(0, S.lives.e - 1); else if (w === 'e') S.lives.a = Math.max(0, S.lives.a - 1);
+  evRoundWin(w); // 이벤트 모드 [레벨업]
   S.hist.push(w === 'draw' ? 'D' : w === 'a' ? 'A' : 'E'); // 진영 기준 (결과 화면에서 내 쪽으로 바꿔 보여 준다)
   renderLives(); if (profile.live && !S.replay) { profile.live.lives = { ...S.lives }; profile.live.hist = S.hist.slice(); profile.live.round = S.round; save(); }
   if (!S.fast) { if (w !== 'draw') lifeFx(w === 'a' ? 'e' : 'a'); else banner('무승부'); }
@@ -9079,7 +9190,7 @@ const TIPS_MORE = [ // R2.12.3 build 10: 팁 100종 추가 — 접속 로딩 (BO
   '새 카드는 전장의 같은 지후 위에 레벨 상관없이 겹쳐서 레벨을 올릴 수 있어요.',
   '같은 지후는 전장에 최대 <b>3기</b>까지 놓을 수 있어요.',
   '배치 카드는 세 장 중 하나를 골라요. 고르는 시간은 15초!',
-  '첫 라운드에는 배치 기회가 <b>4번</b>, 그다음 라운드부터는 2번이에요.',
+  '라운드마다 배치 기회가 <b>3번</b>이에요.',
   '한 라운드는 최대 <b>60초</b>. 시간이 다 되면 남은 체력으로 승패를 가려요.',
   '배치하는 동안 상대 진영은 <b>지난 라운드 모습</b>으로 흐리게 보여요. 수 싸움이 시작됐어요!',
   '탱커는 앞줄, 사거리가 긴 지후는 뒷줄에 두면 오래 버텨요.',
@@ -9092,7 +9203,7 @@ const TIPS_MORE = [ // R2.12.3 build 10: 팁 100종 추가 — 접속 로딩 (BO
   '이벤트 카드 등급은 상대와 같아요 · <b>실버 · 골드</b>에서만 <b>합체마스터</b> · <b>마력의 힘</b>이 나와요.',
   '이벤트가 싫다면 로비에서 <b>클래식</b> 모드를 골라 보세요.',
   '<b>하드코어</b> 이벤트는 하트가 가득 차 있을 때만 힘을 써요.',
-  '데스매치에서는 배치 기회가 3번이에요. 마지막까지 포기하지 마세요!',
+  '데스매치에서는 배치 기회가 <b>4번</b>이에요. 마지막까지 포기하지 마세요!',
   '전투가 끝나면 마지막으로 쓰러진 자리를 확대해서 보여 줘요.',
   // ── 지후 ──
   '고독한 지후는 주변 8칸에 아무도 없을 때 대상 현재 체력의 <b>8%</b>를 더 때리고 더 빨라져요.',
@@ -9493,6 +9604,8 @@ const SFX = {
   gacha_rare: { gap: 0.15, vol: 0.8, notes: [[660, 0.07], [990, 0.12]] },
   gacha_epic: { gap: 0.15, vol: 0.9, notes: [[660, 0.07], [880, 0.07], [1320, 0.16]] },
   gacha_legend: { gap: 0.15, vol: 1, notes: [[523, 0.08], [784, 0.08], [1046, 0.08], [1568, 0.3]] },
+  ev_tick: { gap: 0.03, vol: 0.28, notes: [[2100, 0.018, 'square']] }, // R2.23 이벤트 카드 릴: 따다닥
+  ev_land: { gap: 0.05, vol: 0.9, notes: [[150, 0.09, 'triangle'], [1500, 0.04, 'square'], [500, 0.06, 'noise']] }, // 카드가 멈출 때: 쿵
 };
 const SFX_VOL_KEY = 'rejhbt-sfx-vol';
 const sfxState = { ctx: null, buf: {}, last: {}, missing: {}, vol: (() => { try { const v = localStorage.getItem(SFX_VOL_KEY); return v == null ? 70 : clamp(Number(v) || 0, 0, 100); } catch (e) { return 70; } })() };
@@ -10779,7 +10892,7 @@ function renderHelp(tab) {
   $('helpTabs').querySelectorAll('[data-h]').forEach(b => b.onclick = () => renderHelp(b.dataset.h));
   $('helpBody').innerHTML = tab === 'online' ? `<ul><li><b>친구</b>: 친구 · 채팅 → <b>+ 친구 추가</b>에서 닉네임으로 신청 · 받은 사람이 수락하면 친구</li><li><b>친선전</b>: 접속 중인 친구에게 신청 → 20초 안에 수락하면 시작 · 규칙은 일반전과 같고 두 사람이 동시에 카드를 골라요 · 경험치 · 보상은 없어요</li><li>참가자 화면은 전장을 좌우로 뒤집어 내 진영이 왼쪽에 와요 · 라운드 결과는 방장 화면 기준</li><li><b>관전</b>: 친구가 관전을 허용했으면 친구 목록의 <b>관전</b>으로 지켜볼 수 있어요 (끝난 라운드는 빠르게 따라잡아요)</li><li>상대 연결이 50초 넘게 끊기면 승리 · 포기하면 항복</li><li>전체 채팅 · 1:1 채팅은 욕설이 가려지고 3초에 한 번 보낼 수 있어요</li></ul>`
     : tab === 'rule' ? `<p>덱의 지후 5기로 봇과 싸워요. 라이프 <b>${CFG.LIVES}</b>를 먼저 잃는 쪽이 져요${CFG.EV_ENABLED ? ` (이벤트 모드는 <b>${CFG.EV_LIVES}</b>)` : ''}.</p>
-    <h4>배치</h4><ul><li>배치 기회: <b>첫 라운드 3번</b> · 그다음 라운드 <b>2번</b> · 양쪽 라이프가 1이면 데스매치 <b>3번</b></li><li>기회마다 덱에서 카드 <b>3장</b> → 1장을 골라 <b>빈 칸</b>에 놓거나, 전장의 같은 지후 위에 겹쳐 <b>레벨 +1</b> (레벨 상관없이 · 2렙 + 카드 = 3렙 · ${CFG.PICK_TIME}초가 지나면 자동)</li><li><b>합체</b>: 내 지후를 눌러 같은 종류 · <b>같은 레벨</b> 지후(금색) 위로 옮기면 레벨 +1 (2렙 + 2렙 = 3렙 · 전장의 2렙과 1렙은 합칠 수 없어요 · 최대 Lv${CFG.MAX_LV})</li><li>내가 하나 놓으면 상대도 하나 · 배치 수 제한 없음 (빈 칸이 있으면) · 같은 지후는 <b>${CFG.SAME_LIMIT}기</b>까지 (출격제한 1 은 1기)</li><li>놓은 지후는 다음 라운드에도 제자리에서 체력이 가득 찬 채로 다시 나와요 · 내 지후를 눌러 자리를 옮길 수 있어요</li><li><b>비공개 배치</b>: 배치 시간에는 상대가 새로 놓거나 옮긴 지후가 보이지 않아요 · 상대 진영에는 이번 라운드 시작 때 배치가 반투명하게 보이고, 전투가 시작되면 공개돼요</li><li>칸은 앞에서부터 전열 · 중열 · 후열 — 전열이 먼저 맞아요</li></ul>
+    <h4>배치</h4><ul><li>배치 기회: 라운드마다 <b>${CFG.DEPLOYS}번</b> · 양쪽 라이프가 1이면 데스매치 <b>${CFG.DM_DEPLOYS}번</b></li><li>기회마다 덱에서 카드 <b>3장</b> → 1장을 골라 <b>빈 칸</b>에 놓거나, 전장의 같은 지후 위에 겹쳐 <b>레벨 +1</b> (레벨 상관없이 · 2렙 + 카드 = 3렙 · ${CFG.PICK_TIME}초가 지나면 자동)</li><li><b>합체</b>: 내 지후를 눌러 같은 종류 · <b>같은 레벨</b> 지후(금색) 위로 옮기면 레벨 +1 (2렙 + 2렙 = 3렙 · 전장의 2렙과 1렙은 합칠 수 없어요 · 최대 Lv${CFG.MAX_LV})</li><li>내가 하나 놓으면 상대도 하나 · 배치 수 제한 없음 (빈 칸이 있으면) · 같은 지후는 <b>${CFG.SAME_LIMIT}기</b>까지 (출격제한 1 은 1기)</li><li>놓은 지후는 다음 라운드에도 제자리에서 체력이 가득 찬 채로 다시 나와요 · 내 지후를 눌러 자리를 옮길 수 있어요</li><li><b>비공개 배치</b>: 배치 시간에는 상대가 새로 놓거나 옮긴 지후가 보이지 않아요 · 상대 진영에는 이번 라운드 시작 때 배치가 반투명하게 보이고, 전투가 시작되면 공개돼요</li><li>칸은 앞에서부터 전열 · 중열 · 후열 — 전열이 먼저 맞아요</li></ul>
     <h4>SP · 치명타</h4><ul><li><b>SP</b>: 일반 공격이 맞을 때마다 1씩 차요 (파란 게이지). <b>SP 6</b>이면 6번째 공격에 스킬 발동 · [침묵]이면 멈춰요</li><li>모든 지후는 공격이 <b>2%</b> 확률로 <b>치명타</b> (피해 ×2) · [부상]에 걸린 적은 <b>50%</b></li><li>출격제한이 있는 지후는 그 수만큼만 전장에 둘 수 있어요</li></ul>
     ${CFG.EV_ENABLED ? `<h4>이벤트 모드</h4><ul><li>로비의 일반전 버튼 아래에서 <b>이벤트 모드 / 클래식</b>을 골라요 · 이벤트 모드는 하트 <b>${CFG.EV_LIVES}</b>개 · 보상 <b>×${CFG.EV_REWARD}</b></li><li><b>짝수 라운드</b>가 시작할 때마다 이벤트 카드 등급 (🥉 브론즈 · 🥈 실버 · 🥇 골드) 이 하나 정해져요 · 상대와 같은 등급</li><li>그 등급 카드 <b>3장</b> 중 하나를 <b>${CFG.EV_PICK_SEC}초</b> 안에 골라요 · 상대는 다른 카드 3장에서 따로 골라요 · 시간이 지나면 무작위</li><li>고른 이벤트는 경기 내내 남고, 같은 이벤트를 또 고르면 수치가 더해져요 · 전투 화면 이름 아래 아이콘을 누르면 양쪽 목록</li></ul>` : ''}
     <h4>지후왕국</h4><ul><li>여러 지후들이 살고 있는 <b>지후왕국</b> · 같은 종류의 지후도 1호 · 2호 · 3호… 많이 산다 · 국왕 <b>화염 지후 1호</b>와 오른팔 신하 <b>물 지후</b></li><li><b>반란</b>: 「황사회주의」를 퍼뜨리려는 <b>황사 지후</b>의 지령으로 서쪽 마을의 <b>화염 지후 314호</b>가 반란군을 이끌고 일어났다 (황사 지후도 참전) · 국왕이 소탕군을 모았지만 지원자는 <b>암살 · 쉴드 · 검 · 얼음 지후</b> 넷뿐 — 처음 받는 기본 지후들</li><li>지후들의 서사는 덱 설정의 [서사]에서 · 서로 얽혀 있어요</li></ul>
