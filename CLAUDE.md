@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.23** (build 2).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.23** (build 3).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -80,7 +80,7 @@
 - 지후마다 자세한 서사 연결은 `docs/CLAUDE-history.md` 의 「세계관 · 서사」와 각 버전 서사 항목.
 
 ## 시뮬 · 티어
-- **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R2.22.2` 는 R2.22.2 build 4 코드 · 1,600판. (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
+- **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R2.23` 은 R2.23 build 2 코드 · 1,600판 (R2.23 build 3 에 반영). (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
 - 결과로 `TIER_SC` (S 80~100 · A 65~79 · B 40~64 · C 20~39 · D 0~19) 를 갱신한다.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
