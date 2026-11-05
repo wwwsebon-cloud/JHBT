@@ -4461,7 +4461,7 @@ const c4Mine = (u, e) => e.st.c4 > 0 && e.st.c4X && e.st.c4X.src === u;
 function c4Pick(u) { const L = targets(u); if (!L.length) return null; const c = u.c4t, ok = c && L.includes(c); if (ok && !c4Mine(u, c)) return c; const free = L.filter(e => !c4Mine(u, e)); if (!free.length && ok) return c; const P = free.length ? free : L; return (u.c4t = P[Math.floor(rng() * P.length)]); } // 무작위 · 내 C4 가 없는 적 먼저 (붙으면 다른 적으로)
 function c4Attack(u, t) {
   const mine = foes(u).filter(e => c4Mine(u, e)); if (mine.length && rng() < 0.35) return c4Blow(u, mine); // R2.22.2 build 2: 25 → 35%
-  launchProjectile(u, t, () => { if (!t.alive || rng() >= 0.75) return; // R2.22.2 build 6: C4 모양의 큰 탄 (예전엔 기본 탄이라 잘 안 보였다) A.status(t, 'c4', 600, { src: u }); if (t.st.c4 > 0 && !S.fast) dmgNum(t, '💣 C4', { crit: true }); }, 'c4'); // 피해 없음
+  launchProjectile(u, t, () => { if (!t.alive || rng() >= 0.75) return; A.status(t, 'c4', 600, { src: u }); if (t.st.c4 > 0 && !S.fast) dmgNum(t, '💣 C4', { crit: true }); }, 'c4'); // 피해 없음 · R2.22.2 build 6: C4 모양의 큰 탄 (예전엔 기본 탄이라 잘 안 보였다)
 }
 function c4Blow(u, L) { // C4 마다 그 자리 반경 2.5칸 · 공격력 100% · 붙어 있던 적은 무작위 방향 3칸 넉백 (큰 폭발 그림 · 숫자는 4개까지)
   const R = 2.5 * CFG.CELL, atk = effAtk(u); let n = 0; if (!S.fast) { dmgNum(u, '💥 기폭!', { crit: true, stamp: true }); shake(true); } sfx('death');
