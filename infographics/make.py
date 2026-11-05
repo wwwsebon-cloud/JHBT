@@ -135,6 +135,7 @@ body.dark .it p { color:var(--sub); }
 .tc { width:112px; display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; }
 .tc .pp { width:88px; height:88px; border-radius:50%; overflow:hidden; background:#fff; border:4px solid var(--rc, #c9c9c6); box-shadow:0 0 0 3px #0c1020; }
 .tc.r-rare { --rc:#4f9dff; } .tc.r-epic { --rc:#b26bff; } .tc.r-legend { --rc:#ffc21a; }
+.tc .pp { position:relative; overflow:visible; } .tc .pp img { border-radius:50%; } .tc .mv { position:absolute; right:-8px; top:-6px; min-width:26px; height:26px; padding:0 5px; box-sizing:border-box; border-radius:13px; border:3px solid #0c1020; font-style:normal; font-size:13px; font-weight:900; line-height:20px; text-align:center; color:#fff; } .tc .mv.up { background:#3cc23a; } .tc .mv.down { background:#e8392f; } .tc .mv.new { background:#4f7cff; font-size:10px; } .tc.unsure .pp { border-style:dashed; opacity:.8; } /* R2.22.2: ▲ ▼ NEW · 경계 */
 .tc b { font-size:15px; font-weight:900; color:#fff; line-height:1.15; word-break:keep-all; } .tc small { font-size:13px; font-weight:800; color:var(--mut); }
 .tnote { margin-top:22px; font-size:15px; line-height:1.6; font-weight:600; color:var(--mut); }
 """
@@ -360,7 +361,9 @@ def short(n):
 
 def tier_card(c):  # 초상화 · 이름 · 표시 승률
     wr = f'<small>{c["wr"]:.1f}%</small>' if c.get('wr') is not None else ''
-    return f'<div class="tc r-{c.get("rarity", "")}"><span class="pp">{pic(c["id"])}</span><b>{e(short(c.get("name") or NAMES.get(c["id"], c["id"])))}</b>{wr}</div>'
+    mv = {'up': '<i class="mv up">▲</i>', 'down': '<i class="mv down">▼</i>', 'new': '<i class="mv new">NEW</i>'}.get(c.get('mv'), '')  # R2.22.2: 지난 티어보다 오름 · 내림 · 처음
+    un = ' unsure' if c.get('unsure') else ''  # 판을 다시 뽑으면 티어가 자주 바뀌는 경계 지후
+    return f'<div class="tc r-{c.get("rarity", "")}{un}"><span class="pp">{pic(c["id"])}{mv}</span><b>{e(short(c.get("name") or NAMES.get(c["id"], c["id"])))}</b>{wr}</div>'
 
 
 def build_tier(d):

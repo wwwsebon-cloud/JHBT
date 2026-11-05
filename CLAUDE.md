@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22.2** (build 4).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.22.2** (build 5).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -80,7 +80,7 @@
 - 지후마다 자세한 서사 연결은 `docs/CLAUDE-history.md` 의 「세계관 · 서사」와 각 버전 서사 항목.
 
 ## 시뮬 · 티어
-- `tools/tier-5v5.js` (무작위 10기 5:5 · Lv1 · 60초 판정 · Bradley-Terry 점수 · k-평균으로 S~D). 헤드리스: `%TEMP%/ld/bprun.js <tier-5v5.js> index.html <포트> <판수> <out.json>` (전투 시간도 기록 · R2.18 build 16 에서 1,000판 약 5분 · 판 시드가 고정이라 N 을 늘리면 앞 판은 그대로 두고 뒤에 더 붙는다). 지금 `TIER_SC` · `infographics/tier-R2.21.2` 는 R2.21.2 · 679판 (사용자 요청으로 1,000판 중간에 멈춤).
+- **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R2.22.2` 는 R2.22.2 build 4 코드 · 1,600판. (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
 - 결과로 `TIER_SC` (S 80~100 · A 65~79 · B 40~64 · C 20~39 · D 0~19) 를 갱신한다.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
@@ -110,7 +110,6 @@
 - 랭크 6 고유능력 32종 추가 (`ENH_SKILL` · 도우미는 `reapFx` 앞 `// ── R2.22 랭크 6 고유능력 도우미 ──`): 비 SP 7 (유닛별 SP `u.need` → **`skNeed(u)`** · SP 를 읽는 곳은 `sk.need` 대신 이것) · 주사 새 상태 **`noheal` [회복 불가]** (`heal` · 유물 회복이 막는다 · 아이콘은 healDown) · 독 [신경독] `u.vAtk` (venom 중독 X 의 `v6` · 틱마다 +1 · 공격력 −0.5% · 중독이 끝나면 0) · 소믈리에 와인 랭크 6 분은 `wn6` (배치 기록 · 합체 · 반중력 분열에도) · 고고학자 `S.arch6[진영]` (낡은 → 다음 전설 · 클로버보다 먼저) · 홍명보 `t.ballBy` + `hongHold` · 랜턴 `lanAura` (buff `lanUp` · `lanDn` 0.5초씩 늘림) · 죠스 `jawsStack` (buff `jaws6`) · 개구리는 배치 단계라 `enhOf(side, 'frog')`.
 - build 3 (추가 패치 · 표시만): 도둑 지후 [절도] 뒤 머리 위에 스킬 주인 초상화 — `u.bgOwn = { id, src }` (도둑에게서 훔치면 원래 주인) · `bgPic(u)` 가 효과 아이콘 줄 레이어 `u.ufxEl` 안에 `.bg-pic` (아이콘이 있으면 `.status-icons:not(:empty) + .bg-pic` 로 그 위 · `ufxOf` 가 레이어를 새로 만들 때도) · 스파이 [변장] 뒤 `u.spyDis` → `unitEl` 이 `spy-dis` (보라 테두리 #5b2a6e · 진영은 체력바 색) · C4 공격 간격 6.2 → 4초 (서사: 인사를 「나중에 펑」으로 줄임) · **튜토리얼은 고정 수치 `TUT_STATS`** (화염 · 얼음 · 물 · 쉴드 체력 · 공격력 · 간격 · 사거리 · 이동 · 쉴드 · `makeUnit` 이 튜토리얼 판에서 CHARS 대신) + 봇 배율 `TUT_EBUFF` { 2: 1.35, 3: 1.8 } — 밸런스를 바꿔도 튜토리얼은 안 건드린다 (스킬 · 패시브 동작을 바꿀 때만 1~4라운드 승패를 시뮬로 확인).
 - build 4: 코인 도감 상세의 「반전 확률 55%」 줄 삭제 (반전은 R2.17.2 에 이미 삭제 · `coinMult` 는 반반).
-- 남은 일: 바뀐 수치로 티어 시뮬 · `TIER_SC` 갱신 (이번에는 안 돌렸다).
 
 ## 지난 변경 (R2.21.2)
 - 밸런스 11종: 충전 SP 2.5% · 반경 3.6칸 · [급속 충전] SP 13 · 태양 HP 2200 · 모노리스 아군 충전 3배 (`monoTick` 안 6 · 밖 3 %/초) · 사신 · 부활 SP 와 부활 대상에 소환체 · 분열체 포함 (부활은 `revL` 에 `ch` = 쓰러질 때 체력 · 공격력 · 분열 깊이 · 소환자로 되살린다) · 최후의 탄환 쓰러질 때까지 (`bulletLastEnd` 안 부름) · 24% · 고고학자 유물 45 · 30 · 20 · 5 (`RELIC_TIER` · 클로버는 전설 + 개쩌는 합 안에서) · 폭주족 최대 체력 75% · 소믈리에 ATK 115 · 포식 **전설** · ATK 100 · [포식]당 25% · 광폭화 ATK 170 · 3초.
