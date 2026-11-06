@@ -4163,15 +4163,14 @@ const CHARS = {
     atkMult(u) { return 1 + 0.125 * (u.msN || 0); },
     skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[버섯 먹기]</b>. 최대 체력이 <b>35%</b> 늘고 체력을 모두 회복합니다. <b>25%</b> 확률로 독버섯을 먹어 오히려 피해를 입습니다.',
       run(u) { mushEat(u); } } },
-  wolf: { name: '늑대 지후', rarity: 'legend', role: '어쌔신', hp: 1650, atk: 40, atkSpeed: 1, range: 3.5, speed: 1.3, portrait: PORTRAITS.wolf, sfx: 'swing', color: '#5d6d7e',
+  wolf: { name: '늑대 지후', rarity: 'legend', role: '어쌔신', hp: 1650, atk: 100, /* R2.24 (출시 전): 40 → 100 */ atkSpeed: 1, range: 3.5, speed: 1.3, portrait: PORTRAITS.wolf, sfx: 'swing', color: '#5d6d7e',
     story: '보름달이 뜨면 늑대로 변한다고 소문난 지후입니다. 사실은 달 지후가 밤새 자는 바람에 보름달이 제대로 뜬 적이 없어서, 그냥 1년 내내 늑대예요. 그는 눈앞에 사냥감이 없는 걸 0.5초도 못 참아서, 적이 안 보이면 순간이동으로 냅다 등 뒤까지 가 버립니다. 한 번 갈 때마다 이빨이 조금씩 더 날카로워지는데, 치과 의사는 진료 기록에 「제발 그만 가세요」라고 적었어요. 처음엔 멀리서 짖기만 했지만, 요즘은 붙어서 무는 게 더 편하대요. 카우보이 지후는 그를 길들이려다 로봇 청소기만 물어뜯겼습니다.',
     passive: '<b>0.5초</b> 동안 공격할 적이 없으면 적 곁으로 <b>순간이동</b>합니다. 순간이동한 뒤로는 모든 공격이 <b>치명타</b>가 되고, 순간이동할 때마다 치명타 피해가 <b>50%</b>씩 오릅니다 (경기 내내).',
     onStart(u) { wolfInit(u); },
     tick(u, dt) { if (u.wf) wolfTick(u, dt); } },
-  weather: { name: '기상캐스터 지후', rarity: 'legend', role: '컨트롤러', community: 'Kaden', hp: 2026, atk: 20, atkSpeed: 1, range: 6, speed: 1.6, deployLimit: 1, atkText: () => '20 (폭염 60)', portrait: PORTRAITS.weather, sfx: 'ice', color: '#3fa7e0',
+  weather: { name: '기상캐스터 지후', rarity: 'legend', role: '컨트롤러', community: 'Kaden', hp: 2026, atk: 20, atkSpeed: 1, range: 6, speed: 1.6, deployLimit: 1, portrait: PORTRAITS.weather, sfx: 'ice', color: '#3fa7e0',
     story: '왕국 방송국에서 날씨를 알려 주는 기상캐스터 지후입니다. 그의 예보는 적중률 100%라서, 천문대의 별 지후는 슈퍼컴퓨터를 팔고 그의 방송만 봐요. 비결을 묻는 기자들에게 그는 늘 「과학」이라고 대답하지만, 사실은 방송 5분 전에 할머니께 전화해 「할머니, 오늘 무릎 어때요?」라고 묻는 게 전부입니다. 할머니 무릎이 쑤시면 낙뢰, 허리가 쑤시면 태풍, 아무 데도 안 쑤시면 폭염이에요. 예보가 너무 잘 맞다 보니 이제는 날씨가 그의 말을 따라온다는 소문까지 돌아서, 그가 「태풍」이라고 말하면 정말로 적진에서 소가 날아옵니다. 할머니는 손자가 텔레비전에 나오는 게 자랑스러워서 매일 아침 무릎을 일부러 문지방에 부딪친대요.',
     passive: '라운드가 시작되면 무작위 <b>날씨</b>를 부릅니다. 날씨마다 넓은 범위의 적을 공격합니다.',
-    atkMult(u) { return u.wx && u.wx.k === 'heat' ? 3 : 1; }, // 폭염: 공격력 20 → 60
     onStart(u) { wxSet(u); },
     tick(u, dt) { if (u.wx) wxTick(u, dt); },
     skill: { type: 'hit', need: 8, desc: '<b>SP 8</b> · 다른 <b>날씨</b>를 부릅니다 (다음 스킬까지). <b>폭염</b> · <b>태풍</b> · <b>낙뢰</b> 중 하나입니다.',
@@ -4674,8 +4673,8 @@ function wolfTick(u, dt) {
   w.n++; const p = u.tile != null && S.place && S.place[u.side][u.tile]; if (p && p.id === 'wolf') p.wf = w.n; wolfHunt(u, w.n);
   if (!S.fast) { A.ring(u.x, u.y, 0.6); dmgNum(u, '🐺 치명타 피해 +' + Math.round(w.n * 50) + '%', { crit: true }); } sfx('swing'); drawUnit(u);
 }
-// 기상캐스터 지후: 날씨 (라운드 시작 무작위 · 스킬로 다른 날씨) — 폭염 (공격력 ×3 · 0.6초마다 모든 적 200% · 적 이동 · 공격속도 −25% · 적 일반 공격 25% 로 사거리 안 자기 아군) · 태풍 (1.5초마다 적진 끝에서 물체 · 500%) · 낙뢰 (1초마다 무작위 적 300% · 기절 0.4초)
-const WX = { heat: { name: '폭염', icon: '☀️', iv: 0.6 }, typhoon: { name: '태풍', icon: '🌀', iv: 1.5 }, storm: { name: '낙뢰', icon: '⚡', iv: 1 } };
+// 기상캐스터 지후: 날씨 (라운드 시작 무작위 · 스킬로 다른 날씨) — 폭염 (3초마다 모든 적 200% · 적 이동 · 공격속도 −25% · 적 일반 공격 25% 로 사거리 안 자기 아군) · 태풍 (1.5초마다 적진 끝에서 물체 · 처음 맞은 적 500%) · 낙뢰 (1초마다 무작위 적 300% · 기절 0.4초)
+const WX = { heat: { name: '폭염', icon: '☀️', iv: 3 } /* R2.24 (출시 전): 0.6 → 3초 · 공격력 ×3 삭제 */, typhoon: { name: '태풍', icon: '🌀', iv: 1.5 }, storm: { name: '낙뢰', icon: '⚡', iv: 1 } };
 const WX_OBJ = ['🐄', '🪑', '🚗', '🌳', '📦', '🛢️', '🐖', '🚲', '🏠', '🛒'];
 function wxSet(u, cur) {
   const K = Object.keys(WX).filter(k => k !== cur), k = K[Math.floor(rng() * K.length)]; u.wx = { k, acc: 0 };
@@ -4684,11 +4683,11 @@ function wxSet(u, cur) {
 }
 function wxTick(u, dt) {
   const w = u.wx, W = WX[w.k]; w.acc += dt; if (w.acc < W.iv - 1e-9) return; w.acc -= W.iv;
-  if (w.k === 'heat') { const dmg = effAtk(u) * 2; foes(u).forEach(e => { if (!e.alive) return; if (!immune(e)) { if (e.buffs.heat) e.buffs.heat.left = 0.75; else A.buff(e, 'heat', { aspd: -0.25, spd: -0.25 }, 0.75); } dealDamage(u, e, dmg, { skill: true, lite: true, noCrit: true }); }); return; }
+  if (w.k === 'heat') { const dmg = effAtk(u) * 2; foes(u).forEach(e => { if (!e.alive) return; if (!immune(e)) { if (e.buffs.heat) e.buffs.heat.left = W.iv + 0.15; else A.buff(e, 'heat', { aspd: -0.25, spd: -0.25 }, W.iv + 0.15); } dealDamage(u, e, dmg, { skill: true, lite: true, noCrit: true }); }); return; }
   const L = targets(u); if (!L.length) return; const t = L[Math.floor(rng() * L.length)];
   if (w.k === 'storm') { if (!S.fast) { fxAt('fx-bolt', t.x, t.y, 520); A.ring(t.x, t.y, 0.8); } if (dealDamage(u, t, effAtk(u) * 3, { skill: true, lite: true }) > 0 && !S.fast) hitFx(u, t, true); if (t.alive) A.status(t, 'stun', 0.4); return; }
   const by = backDir(t.side), sx = clamp(t.x + (rng() - 0.5) * 3 * CFG.CELL, CFG.CELL * 0.5, FW() - CFG.CELL * 0.5), sy = by.y > 0 ? FH() - 4 : 4, ang = Math.atan2(t.y - sy, t.x - sx), obj = WX_OBJ[Math.floor(rng() * WX_OBJ.length)]; // 적진 끝에서 날아온다
-  const ln = A.line(u, sx, sy, ang, { speed: 14, hw: 0.5 * CFG.CELL, len: Math.hypot(t.x - sx, t.y - sy) + 1.5 * CFG.CELL, cls: 'fx-wx-obj', onHit: e => { if (dealDamage(u, e, effAtk(u) * 5, { skill: true, lite: true }) > 0 && !S.fast) hitFx(u, e, true); } });
+  const ln = A.line(u, sx, sy, ang, { speed: 14, hw: 0.5 * CFG.CELL, len: Math.hypot(t.x - sx, t.y - sy) + 1.5 * CFG.CELL, cls: 'fx-wx-obj', onHit: e => { if (ln.done) return; ln.done = true; ln.went = ln.len; /* R2.24 (출시 전): 관통 없음 · 처음 맞은 적에서 사라진다 */ if (dealDamage(u, e, effAtk(u) * 5, { skill: true, lite: true }) > 0 && !S.fast) hitFx(u, e, true); } });
   if (ln && ln.el) ln.el.innerHTML = '<i>' + obj + '</i>';
 }
 function heatAlly(u) { const reach = attackDist(u), L = friends(u).filter(a => a !== u && dist(u, a) <= reach + unitRadius(a)); return L.length ? L[Math.floor(rng() * L.length)] : null; } // 폭염 [짜증]: 사거리 안 자기 아군
@@ -4830,7 +4829,7 @@ const CHAR_INFO = {
   phoenix: [['버티기', '쓰러지는 순간 (라운드마다 한 번) · 체력 1'], ['[불사조 쉴드]', '350 (레벨만큼 강해진다) · 3.7초 · 수은 보호막 다음 · 일반 쉴드보다 먼저 막는다 · 깨지면 쓰러진다 · 머리 위에 남은 쉴드 · 초'], ['부활', '3초 동안 쉴드가 깨지지 않으면 각성 불사조 지후로 (체력 가득 · 이번 라운드 동안 · 다음 라운드엔 다시 불사조) · 반경 4칸 적을 4칸 밖까지 넉백'], ['각성 불사조 지후', 'HP 1,250 · ATK 200 · 1.2초 · 사거리 6 · 일반 공격 반경 2.1칸 광역 · 불사조 패시브 없음'], ['[업화]', '일반 공격의 4% · 피해 −50% · 범위 6배 (반경 12.6칸) · 맞은 적 [화상] 4초 (1초마다 공격력 30% · 중첩)'], ['[비행]', '일반 공격의 6% · 적진 끝까지 초당 10칸 → 우리 진영 맨 뒤에서 다시 나와 제자리에 착지 · 지나간 길 (폭 몸 지름 2배) 의 적: 공격력 150% · [화상] 4초 (1초마다 20%) · 날아가는 동안 공격하지 않는다']],
   mushroom: [['[버섯 먹기]', 'SP 3 · 75% 일반 버섯 / 25% 독버섯'], ['일반 버섯', '최대 체력 +35% (처음 최대 체력 기준 · 선형) · 체력 모두 회복 · 공격력 +12.5% (선형) · 이번 라운드 동안'], ['독버섯', '1초마다 최대 체력 15% 피해 · 4번 · 체력 · 공격력은 오르지 않는다']],
   wolf: [['순간이동', '0.5초 동안 공격할 적이 없을 때마다 · 무작위 적의 등 뒤 (±60°) · 기절 · 빙결 · 잠금 중에는 안 한다'], ['처음 순간이동부터', '사거리 3.5 → 2.2칸 · 치명타 확률 100%'], ['치명타 피해', '순간이동마다 +50% (기본 200% → 250% → 300% …)'], ['유지', '경기 내내 (배치 칸에 남는다 · 합체하면 많은 쪽)']],
-  weather: [['출격제한', '1'], ['날씨', '라운드 시작 때 무작위 · [스킬] SP 8 → 지금과 다른 날씨 (다음 스킬까지) · 기상캐스터가 쓰러지면 끝'], ['폭염', '공격력 20 → 60 · 0.6초마다 모든 적 공격력 200% (치명타 없음) · 적 이동속도 · 공격속도 −25% · 적 일반 공격의 25% 는 사거리 안 자기 아군을 노린다 (매혹처럼)'], ['태풍', '1.5초마다 적진 끝에서 무작위 물체가 무작위 적에게 날아온다 · 지나간 길의 적 공격력 500%'], ['낙뢰', '1초마다 무작위 적 공격력 300% · [기절] 0.4초'], ['제작', '커뮤니티 지후 · Kaden']],
+  weather: [['출격제한', '1'], ['날씨', '라운드 시작 때 무작위 · [스킬] SP 8 → 지금과 다른 날씨 (다음 스킬까지) · 기상캐스터가 쓰러지면 끝'], ['폭염', '3초마다 모든 적 공격력 200% (치명타 없음) · 적 이동속도 · 공격속도 −25% · 적 일반 공격의 25% 는 사거리 안 자기 아군을 노린다 (매혹처럼)'], ['태풍', '1.5초마다 적진 끝에서 무작위 물체가 무작위 적에게 날아온다 · 처음 맞은 적 공격력 500% (관통 없음)'], ['낙뢰', '1초마다 무작위 적 공격력 300% · [기절] 0.4초'], ['제작', '커뮤니티 지후 · Kaden']],
   sniper: [['피해 감소', '(1 − 대상과의 거리 (몸 바깥끼리) ÷ 사거리) × 50% · 바로 앞 50% · 사거리 끝 0%'], ['첫 공격', '라운드 시작 7.5초 뒤']],
 };
 // 전설 컷신 대사 (R2.4 · 뽑기 연출) — 전설이 추가되면 대사도 함께
@@ -9881,8 +9880,8 @@ const PATCH_NOTES = [
       { id: 'phoenix', name: '불사조 지후', tag: 'new', desc: '전설 · 딜러 · HP <b>1,150</b> · ATK <b>140</b> · <b>1.2초</b> · 사거리 <b>6</b> — 쓰러지면 버티며 <b>[불사조 쉴드] 350</b> · <b>3초</b> 안 깨지면 <b>각성 불사조</b>로 부활 (반경 4칸 넉백)' },
       { id: 'phoenix2', name: '각성 불사조 지후', tag: 'new', desc: 'HP <b>1,250</b> · ATK <b>200</b> · 반경 <b>2.1칸</b> 광역 — <b>4%</b> [업화] 범위 <b>6배</b> · 피해 −50% · 화상 · <b>6%</b> 적진 끝까지 [비행] (<b>150%</b> · 화상)' },
       { id: 'mushroom', name: '버섯 지후', tag: 'new', desc: '영웅 · 탱커 · HP <b>2,200</b> · ATK <b>80</b> · <b>1.6초</b> · 근접 — SP 3 버섯: 최대 체력 <b>+35%</b> · 풀회복 · 공격력 <b>+12.5%</b> · <b>25%</b> 독버섯 (최대 체력 15% × 4)' },
-      { id: 'wolf', name: '늑대 지후', tag: 'new', desc: '전설 · 어쌔신 · HP <b>1,650</b> · ATK <b>40</b> · <b>1초</b> — 칠 적이 없으면 <b>0.5초</b> 뒤 적 등 뒤로 순간이동 · 치명타 <b>100%</b> · 순간이동마다 치명타 피해 <b>+50%</b> (경기 내내)' },
-      { id: 'weather', name: '기상캐스터 지후', tag: 'new', desc: '전설 · 컨트롤러 · HP <b>2,026</b> · ATK <b>20</b> — 무작위 날씨: <b>폭염</b> (모든 적 0.6초마다 200% · 둔화 · 짜증) · <b>태풍</b> (날아오는 물체 500%) · <b>낙뢰</b> (300% · 기절) · 커뮤니티 지후 (Kaden)' },
+      { id: 'wolf', name: '늑대 지후', tag: 'new', desc: '전설 · 어쌔신 · HP <b>1,650</b> · ATK <b>100</b> · <b>1초</b> — 칠 적이 없으면 <b>0.5초</b> 뒤 적 등 뒤로 순간이동 · 치명타 <b>100%</b> · 순간이동마다 치명타 피해 <b>+50%</b> (경기 내내)' },
+      { id: 'weather', name: '기상캐스터 지후', tag: 'new', desc: '전설 · 컨트롤러 · HP <b>2,026</b> · ATK <b>20</b> — 무작위 날씨: <b>폭염</b> (3초마다 모든 적 200% · 둔화 · 짜증) · <b>태풍</b> (날아오는 물체 500%) · <b>낙뢰</b> (300% · 기절) · 커뮤니티 지후 (Kaden)' },
     ] },
     { title: '밸런스', items: [
       { id: 'bullet', name: '탄환 지후', tag: 'buff', desc: '[최후의 탄환] 체력 손실 <b>16 → 10%</b> · 공격 간격 <b>0.6 → 0.25초</b>' },
@@ -11524,7 +11523,7 @@ function u2Sorted() { // 지후 탭 정렬: 보유 먼저 → 기본순(등급 �
   return ids.sort((a, b) => own(a) - own(b) || dir * ((sort === 'role' ? DECK_ROLES.indexOf(CHARS[a].role) - DECK_ROLES.indexOf(CHARS[b].role) : 0) || (sort === 'name' ? CHARS[a].name.localeCompare(CHARS[b].name, 'ko') : R[CHARS[b].rarity] - R[CHARS[a].rarity] || idx[a] - idx[b])));
 }
 // ── 티어 점수 (R2.12 티어리스트 · 덱 추천이 쓴다 · 티어리스트를 다시 매기면 같이 바꾼다) ──
-const TIER_SC = {"weather":100,"dj":80,"bullet":79,"levelup":79,"phoenix":78,"sun":78,"moon":77,"mercury":77,"scythe":76,"syringe":76,"arcane":76,"teemo":75,"heal":75,"tentacle":74,"cactus":74,"emp":73,"rush":73,"lament":73,"slime":72,"venom":72,"magic":71,"god":71,"necro":71,"mushroom":70,"atom":70,"coin":69,"sniper":69,"bat":68,"engineer":68,"gumiho":68,"laser":67,"blizzard":67,"tyrant":66,"nou":66,"berserk":65,"assassin":65,"star":64,"exynos":63,"bbgun":63,"shield":62,"lightning":61,"whirl":61,"pan":60,"clock":60,"berserker":59,"spy":58,"melody":58,"fire":57,"lonely":56,"combo":56,"holy":55,"train":55,"titanium":54,"barrier":53,"lock":53,"soulcaller":52,"growth":51,"accel":51,"dragon":50,"hong":49,"water":49,"mafia":48,"sword":48,"tailwind":47,"revive":46,"burglar":46,"dust":45,"lantern":44,"bow":44,"dice":43,"devour":43,"chicken":42,"cowboy":41,"rain":41,"blackhole":40,"antigrav":39,"gun":38,"ice":37,"roulette":36,"guardian":35,"rifle":34,"warp":33,"jaws":32,"radiation":31,"prophecy":30,"bubble":29,"gift":28,"deathnote":27,"monolith":26,"nuke":25,"charge":24,"slot":23,"thief":22,"sommelier":21,"archaeo":20,"reaper":19,"frog":16,"c4":13,"wolf":10,"joker":6,"bomb":3,"biker":0}; // R2.22 티어리스트 (tools/tier-5v5.js · 5:5 679판 · 평균 전투 32.6초 · 충전 · 태양 · 모노리스 · 사신 · 부활 · 탄환 · 고고학자 · 폭주족 · 소믈리에 · 포식 · 광폭화 조정 뒤)
+const TIER_SC = {"dj":100,"phoenix":99,"weather":98,"bullet":97,"mercury":96,"levelup":94,"sun":93,"syringe":92,"teemo":91,"scythe":90,"moon":89,"slime":88,"mushroom":87,"cactus":86,"lament":84,"arcane":83,"venom":82,"tentacle":81,"heal":80,"emp":79,"atom":79,"tyrant":78,"necro":78,"magic":77,"gumiho":77,"coin":76,"god":76,"nou":75,"melody":75,"engineer":74,"pan":74,"wolf":73,"sniper":73,"blizzard":72,"bat":72,"bbgun":71,"laser":71,"rush":70,"clock":70,"spy":69,"berserk":69,"star":68,"shield":68,"exynos":67,"whirl":67,"lock":66,"lightning":66,"assassin":65,"berserker":65,"bow":64,"holy":63,"fire":62,"accel":61,"lonely":60,"burglar":59,"train":58,"dragon":58,"combo":57,"revive":56,"barrier":55,"titanium":54,"soulcaller":53,"water":52,"lantern":51,"mafia":50,"devour":49,"dust":48,"hong":47,"dice":46,"chicken":46,"growth":45,"antigrav":44,"tailwind":43,"sword":42,"ice":41,"blackhole":40,"rain":39,"cowboy":38,"guardian":37,"gun":36,"roulette":35,"jaws":34,"prophecy":33,"bubble":32,"gift":31,"rifle":30,"deathnote":28,"nuke":27,"warp":26,"radiation":25,"charge":24,"monolith":23,"slot":22,"thief":21,"archaeo":20,"sommelier":19,"reaper":16,"c4":13,"frog":10,"bomb":6,"joker":3,"biker":0}; // R2.22 티어리스트 (tools/tier-5v5.js · 5:5 679판 · 평균 전투 32.6초 · 충전 · 태양 · 모노리스 · 사신 · 부활 · 탄환 · 고고학자 · 폭주족 · 소믈리에 · 포식 · 광폭화 조정 뒤)
 const tierOf = id => { const v = TIER_SC[id] ?? 50; return v >= 80 ? 'S' : v >= 65 ? 'A' : v >= 40 ? 'B' : v >= 20 ? 'C' : 'D'; }, TIER_C = { S: '#ff5d6c', A: '#ff9f43', B: '#ffc94a', C: '#53d3c0', D: '#7c8bb5' };
 const REC_MAX_LV = 10; // 덱 추천은 Lv.10 까지 (초보 도움 · 이후 버튼이 사라진다)
 function recDeck() { // 덱 추천: 보유 지후 · 점수가 높을수록 자주 (무작위) · 탱커 최대 2 · 서포터류 최대 2 · 딜러류 최소 1

@@ -98,7 +98,7 @@
 - **불사조** `phoenix` (전설): `onLethal` → `phxLethal` 체력 1 + [불사조 쉴드] `u.phx` (350 × 레벨 · `dealDamage` 에서 수은 다음 · 일반 쉴드보다 먼저 · 깨지면 `phxBreak` 뒤 쓰러짐) → 3초 뒤 `phxRise` = `A.transform(u, 'phoenix2', lv, keepSlot)` (**배치 기록은 그대로** · 이번 라운드만) · 반경 4칸 넉백. **각성 불사조** `phoenix2` 는 숨은 항목 (`rankOf: 'phoenix'` → `makeUnit` 이 불사조 랭크로) · `phx2Attack` 6% [비행] `phxFly` (ghost · 적진 끝 → 우리 진영 맨 뒤 → 제자리) · 4% [업화] `phxBlaze` (12.6칸 · 화상).
 - **버섯** `mushroom` (영웅): `mushEat` · 최대 체력 +35% · 공격력 +12.5% 모두 **처음 최대 체력 · 공격력 기준 선형** (`u.msN`) · 독버섯은 1초마다 최대 체력 15% × 4 (합 60% · 사용자 문구 「15% 를 4번」으로 읽음).
 - **늑대** `wolf` (전설): `wolfTick` · 대상 없음 0.5초 → 무작위 적 등 뒤로 · `u.critP` (치명타 확률 · 부상보다 우선) · `u.critD` (치명타 피해 +) 는 `dealDamage` 범용 필드 · 순간이동 수는 배치 칸 `p.wf` (경기 내내 · 합체는 큰 쪽).
-- **기상캐스터** `weather` (전설 · 커뮤니티 Kaden · 출격제한 1): `wxSet` / `wxTick` · `WX` 폭염 (공격력 ×3 · 버프 `heat` 둔화 · `performAttack` 맨 앞에서 25% 로 `heatAlly` 사거리 안 자기 아군) · 태풍 (`A.line` 이 이제 관통탄 객체를 돌려준다 · `.fx-wx-obj`) · 낙뢰 (`fx-bolt`).
+- **기상캐스터** `weather` (전설 · 커뮤니티 Kaden · 출격제한 1): `wxSet` / `wxTick` · `WX` 폭염 (3초마다 모든 적 200% · 공격력 증가 없음 · 버프 `heat` 둔화 · `performAttack` 맨 앞에서 25% 로 `heatAlly` 사거리 안 자기 아군) · 태풍 (`A.line` 이 이제 관통탄 객체를 돌려준다 · `.fx-wx-obj` · 처음 맞은 적에서 사라진다 `ln.done`) · 낙뢰 (`fx-bolt`). 늑대 ATK 100 (출시 전 40 → 100).
 - 탄환 [최후의 탄환] 체력 손실 16 → 10% · 간격 0.6 → 0.25초.
 - 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것).
 
