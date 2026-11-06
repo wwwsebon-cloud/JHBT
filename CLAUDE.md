@@ -11,7 +11,7 @@
 8. **브라우저로 테스트할 때는 반드시 소리를 끈다** (사용자 요청 · 시끄럽다): 페이지를 열자마자 `localStorage` 의 `rejhbt-sfx-vol` · `rejhbt-bgm-vol` 을 `'0'` 으로 두고 새로고침 (효과음 볼륨은 켤 때만 읽는다) · 헤드리스 크롬은 `--mute-audio`.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.24** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.25** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -95,7 +95,15 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.24 · 신규 지후 4종)
+## 최근 변경 (R2.25 · 신규 지후 5종)
+- **케이크** `cake` (영웅 · 커뮤니티 Kaden · 사용자가 준 두 능력치 중 첫 줄 HP 2250 · ATK 120 · 3초 + 이동 1.8): `onHit` → [중독됨] `addict` (300초 · `addictX.by` · `dealDamage` 에서 그 케이크가 아닌 대상에게 −15%) · 체력 25% `cakeCall` → 맨 뒤 줄 조각 케이크 8기 (SUMMONS `cakeslice` · `sliceSteer` 다친 가장 가까운 아군에게 → 자기 현재 체력만큼 회복 → 사라짐).
+- **흡혈** `vampire` (영웅): 스킬 훅 **`skill.hold(u)`** (새 · `afterHit` · `spGive` 가 보면 SP 를 가득 찬 채로 아껴 둔다 · 체력 80% 초과) · `vampStart` / `vampTick` 0.25초마다 대상 최대 체력 2% → 회복 · 빔은 `FXC.beams`.
+- **파멸** `ruin` (전설 · id 는 STATUS `doom` 천살성과 겹치지 않게): 16초 `ruinGo` → 레벨 −1 · `S.deck` 무작위 지후로 `A.transform(…, true)` (이번 라운드만) · 변이할 때 반경 10칸 공격력 4444% (`ruinBoom`) · Lv1 이면 대신 반경 10칸 **적 최대 체력 25%** + 소멸.
+- **탄핵** `impeach` (전설 · 공격 간격 1.5초는 내가 정함): `onDamaged` 적에게 맞은 횟수 18 → `impeachGo` 쉴드 1500 × 레벨 · 공격력 · 사거리 2배 · 모든 적 [도발] `taunt` 7초 (`aiSteerAndAttack` 이 `tauntX.by` 를 먼저 노린다).
+- **차원** `dimension` (전설 · R1 로직): 2연발 · 3번 뒤 [아공간] 3초 — **`u.realm` 층 번호**: `foes` · `friends` · `canTarget` · `dealDamage` · `physSolvePair` 가 같은 층만 본다 · [공포] `fear` 0.7초 (`aiSteerAndAttack` 맨 앞 · 공격 안 하고 도망). R1 아공간 초상화 `dimension_realm` 은 archive/v8.1 에서.
+- 새 상태 `addict` · `taunt` · `fear` · `realm` (`STATUS` · `FX_OF` · 도움말). 인포그래픽 extract.js 도 `--mute-audio`.
+
+## 지난 변경 (R2.24 · 신규 지후 4종)
 - **불사조** `phoenix` (전설): `onLethal` → `phxLethal` 체력 1 + [불사조 쉴드] `u.phx` (350 × 레벨 · `dealDamage` 에서 수은 다음 · 일반 쉴드보다 먼저 · 깨지면 `phxBreak` 뒤 쓰러짐) → 3초 뒤 `phxRise` = `A.transform(u, 'phoenix2', lv, keepSlot)` (**배치 기록은 그대로** · 이번 라운드만) · 반경 4칸 넉백. **각성 불사조** `phoenix2` 는 숨은 항목 (`rankOf: 'phoenix'` → `makeUnit` 이 불사조 랭크로) · `phx2Attack` 6% [비행] `phxFly` (ghost · 적진 끝 → 우리 진영 맨 뒤 → 제자리) · 4% [업화] `phxBlaze` (12.6칸 · 화상).
 - **버섯** `mushroom` (영웅): `mushEat` · 최대 체력 +35% · 공격력 +12.5% 모두 **처음 최대 체력 · 공격력 기준 선형** (`u.msN`) · 독버섯은 1초마다 최대 체력 15% × 4 (합 60% · 사용자 문구 「15% 를 4번」으로 읽음).
 - **늑대** `wolf` (전설): `wolfTick` · 대상 없음 0.5초 → 무작위 적 등 뒤로 · `u.critP` (치명타 확률 · 부상보다 우선) · `u.critD` (치명타 피해 +) 는 `dealDamage` 범용 필드 · 순간이동 수는 배치 칸 `p.wf` (경기 내내 · 합체는 큰 쪽).
@@ -107,7 +115,7 @@
 - build 2: 덱 설정 5열 (`gridTpl` · 긴 이름 `nmFs`) · 서버로 보내는 지후 id 는 `CID_RE` `^[a-z][a-z0-9_]{0,23}$` (예전 `^[a-z_]` 가 c4 를 뺐다 · `firestore.rules` 도 · 예전 규칙이면 `FB.oldIds` 로 다시). build 3: 태풍 0.6초 · 무작위 방향 · `A.line` 의 `home` · `turn` 살짝 유도 (`lineHome`) · 관통 · 낙뢰 2초 600% (build 6: 태풍 200% · 낙뢰 300% · 폭염 짜증 10% · **build 7 최종안**: 폭염 300% · 짜증 20% · 공격속도 −10% · 이동 −25% · 낙뢰 400% · 태풍 0.9초 · 맵 둘레 무작위 자리 → 맵 안 무작위 자리 · `turn` 0.2 · 0.6칸 · 맞을 때 `hitFx(…, false)` (예전 big = 큰 불꽃 + 화면 흔들림이 관통마다 겹쳐 렉)) · 늑대 HP 1450 · 1.25초 · `lifesteal` 0.2 · `gauge` · `wolfBlinkFx` (캔버스 줄기 `FXC.beams` 의 `c1 · w1 · c2 · w2`) · 불사조 ATK 110 · 각성 140.
 - 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것).
 
-## 지난 변경 (R2.23.1 · 밸런스)
+## 그 전 변경 (R2.23.1 · 밸런스)
 - EMP 파동 `empWave` 50 → 35% · 엑시노스 `gpuTick` 오르는 양 2배 (최대 50% 그대로) · 화염 공격력 140 → 120.
 - 탄환 공격력 135 → 100 · 사거리 6.2 → 6.4 · [최후의 탄환] `bulletLast` 간격 0.45 → 0.6초 · `bulletCost` 24 → 16% · 처치 회복 50 → 65%.
 
