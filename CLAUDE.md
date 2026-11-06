@@ -97,7 +97,7 @@
 
 ## 최근 변경 (R2.25 · 신규 지후 5종)
 - **케이크** `cake` (영웅 · 커뮤니티 Kaden · 사용자가 준 두 능력치 중 첫 줄 HP 2250 · ATK 120 · 3초 + 이동 1.8): `onHit` → [중독됨] `addict` (300초 · `addictX.by` · `dealDamage` 에서 그 케이크가 아닌 대상에게 −15%) · 체력 25% `cakeCall` → 맨 뒤 줄 조각 케이크 8기 (SUMMONS `cakeslice` · `sliceSteer` 다친 가장 가까운 아군에게 → 자기 현재 체력만큼 회복 → 사라짐).
-- **흡혈** `vampire` (영웅 · 사거리 5.7): [흡혈] 리워크 — 대상이 쓰러질 때까지 `vampTick` 0.2초마다 대상 최대 체력 1.8% · 대상 SP −2% (흡수 안 함) · 자신 최대 체력 1.8% 회복 · 멈추고 공격 안 함 · 빔은 `FXC.beams`. (스킬 훅 `skill.hold(u)` 는 `afterHit` · `spGive` 에 남아 있지만 지금 쓰는 지후 없음)
+- **흡혈** `vampire` (영웅 · 사거리 5.7): [흡혈] 리워크 — 대상이 쓰러질 때까지 `vampTick` 0.2초마다 대상 최대 체력 2.2% · 대상 SP −2.2% · 자신 최대 체력 2.2% 회복 · 자신 최대 SP 2.2% 흡수 (build 3 · 직접 `u.sk` 에 채움) · 멈추고 공격 안 함 · 빔은 `FXC.beams`. (스킬 훅 `skill.hold(u)` 는 `afterHit` · `spGive` 에 남아 있지만 지금 쓰는 지후 없음)
 - **파멸** `ruin` (전설 · id 는 STATUS `doom` 천살성과 겹치지 않게): 11초 `ruinGo` → 레벨 −1 · `S.deck` 무작위 지후로 `A.transform(…, true)` (이번 라운드만) · 변이할 때 반경 10칸 공격력 4444% (`ruinBoom`) · Lv1 이면 대신 반경 10칸 **적 최대 체력 25%** + 소멸.
 - **탄핵** `impeach` (전설 · 공격 간격 1.5초는 내가 정함): `onDamaged` 적에게 맞은 횟수 18 → `impeachGo` 쉴드 1500 × 레벨 · 공격력 · 사거리 2배 · 모든 적 [도발] `taunt` 7초 (`aiSteerAndAttack` 이 `tauntX.by` 를 먼저 노린다).
 - **차원** `dimension` (전설 · R1 로직): 2연발 · 3번 뒤 [아공간] 3초 — **`u.realm` 층 번호**: `foes` · `friends` · `canTarget` · `dealDamage` · `physSolvePair` 가 같은 층만 본다 · [공포] `fear` 0.7초 (`aiSteerAndAttack` 맨 앞 · 공격 안 하고 도망). R1 아공간 초상화 `dimension_realm` 은 archive/v8.1 에서.
