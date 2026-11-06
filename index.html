@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.25"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.25"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -5822,7 +5822,7 @@ function renderDeck() {
   $('deckCount').textContent = `${profile.deck.length} / 5`;
   let n = 0; const sort = deckSortGet(), card = id => { const c = CHARS[id], have = owned(id), sh = profile.shards[id] || 0;
     return `<div class="ccard r-${c.rarity}${profile.deck.includes(id) ? ' sel' : ''}${id === deckSel ? ' cur' : ''}${have ? '' : ' locked'}" data-id="${id}" style="animation-delay:${(n++ * 0.02).toFixed(2)}s"><div class="pic">${pic(id)}</div><b>${shortName(id)}</b><small>${have ? RARITY[c.rarity] + (sh ? ` · 조각 ${sh}` : '') : '미보유'}</small></div>`; };
-  const groups = sort === 'role' ? DECK_ROLES.map(r => [r, Object.keys(RARITY).flatMap(byRarity).filter(id => CHARS[id].role === r)]) // 역할군순: 역할 칸막이 · 안에서는 등급 → 출시 순
+  const groups = sort === 'role' ? DECK_ROLES.map(r => [r, Object.keys(CHARS).filter(id => CHARS[id].role === r)]) // 역할군순: 역할 칸막이 · 안에서는 출시 순 (R2.25 build 2: 등급 → 출시 순 → 출시 순만)
     : Object.keys(RARITY).map(r => [RARITY[r], sort === 'name' ? byRarity(r).sort((x, y) => CHARS[x].name.localeCompare(CHARS[y].name, 'ko')) : byRarity(r)]); // 기본순: 등급 → 출시 순 · 이름순: 등급 → 가나다
   $('deckCards').innerHTML = `<div class="dsort"><span class="eyebrow">정렬</span><span class="seg">${[['base', '기본순'], ['role', '역할군순'], ['name', '이름순']].map(([k, l]) => `<button data-dsort="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</span></div>`
     + groups.map(([label, ids]) => !ids.length ? '' : `<div class="rdiv"><b>${label}</b><span>${ids.filter(owned).length} / ${ids.length}</span></div>` + ids.map(card).join('')).join(''); // 칸막이 (등급 또는 역할군)
@@ -10017,6 +10017,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.25', date: '2026.11.06', title: '신규 지후 5종', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { icon: '🃏', name: '덱 설정', tag: 'adjust', desc: '등급 · 역할군 칸 안에서는 정렬 기준과 방향에 상관없이 늘 <b>오래된 지후가 위 · 새 지후가 아래</b> (출시 순) · 정렬 방향을 바꾸면 칸 순서만 바뀌어요 · 이름순은 가나다 그대로.' },
+    ] },
     { title: '신규 지후', items: [
       { id: 'cake', name: '케이크 지후', tag: 'new', desc: '영웅 · 탱커 · HP <b>2,250</b> · ATK <b>120</b> · <b>3초</b> · 근접 — 맞은 적 <b>[중독됨]</b> (케이크가 아닌 지후에게 피해 −15%) · 체력 25% 에서 <b>조각 케이크 8기</b> (아군 회복) · 커뮤니티 지후 (Kaden)' },
       { id: 'vampire', name: '흡혈 지후', tag: 'new', desc: '영웅 · 딜러 · HP <b>1,150</b> · ATK <b>30</b> · <b>1초</b> · 사거리 <b>5.7</b> — SP 7 <b>[흡혈]</b> 빔: 대상이 쓰러질 때까지 0.2초마다 최대 체력 <b>1.8%</b> 피해 · SP <b>−2%</b> · 자신 <b>1.8%</b> 회복' },
@@ -11695,7 +11698,7 @@ function u2LbLoad() { UI2.st.lb = { tab: lbTab, loading: true }; const tab = lbT
 const sortDir = () => { try { return localStorage.getItem('rejhbt-deck-sort-dir') === 'up' ? -1 : 1; } catch (e) { return 1; } }; // 1 = 기본 방향 (전설 먼저 · 가나다) · -1 = 반대 (R2.12 화살표)
 function u2Sorted() { // 지후 탭 정렬: 보유 먼저 → 기본순(등급 → 출시) · 역할군순 · 이름순 (기존 덱 정렬과 같은 기억) · 화살표로 방향
   const sort = deckSortGet(), dir = sortDir(), R = RARITY_ORDER, ids = Object.keys(CHARS), idx = Object.fromEntries(ids.map((id, i) => [id, i])), own = id => (owned(id) ? 0 : 1);
-  return ids.sort((a, b) => own(a) - own(b) || dir * ((sort === 'role' ? DECK_ROLES.indexOf(CHARS[a].role) - DECK_ROLES.indexOf(CHARS[b].role) : 0) || (sort === 'name' ? CHARS[a].name.localeCompare(CHARS[b].name, 'ko') : R[CHARS[b].rarity] - R[CHARS[a].rarity] || idx[a] - idx[b])));
+  return ids.sort((a, b) => own(a) - own(b) || dir * (sort === 'role' ? DECK_ROLES.indexOf(CHARS[a].role) - DECK_ROLES.indexOf(CHARS[b].role) : R[CHARS[b].rarity] - R[CHARS[a].rarity]) || (sort === 'name' ? dir * CHARS[a].name.localeCompare(CHARS[b].name, 'ko') : 0) || idx[a] - idx[b]); // R2.25 build 2: 칸 (등급 · 역할군) 안에서는 늘 출시 순 (오래된 지후 위 · 새 지후 아래 · 방향을 바꿔도 칸 순서만 · 이름순은 가나다)
 }
 // ── 티어 점수 (R2.12 티어리스트 · 덱 추천이 쓴다 · 티어리스트를 다시 매기면 같이 바꾼다) ──
 const TIER_SC = {"dj":100,"phoenix":99,"weather":98,"bullet":97,"mercury":96,"levelup":94,"sun":93,"syringe":92,"teemo":91,"scythe":90,"moon":89,"slime":88,"mushroom":87,"cactus":86,"lament":84,"arcane":83,"venom":82,"tentacle":81,"heal":80,"emp":79,"atom":79,"tyrant":78,"necro":78,"magic":77,"gumiho":77,"coin":76,"god":76,"nou":75,"melody":75,"engineer":74,"pan":74,"wolf":73,"sniper":73,"blizzard":72,"bat":72,"bbgun":71,"laser":71,"rush":70,"clock":70,"spy":69,"berserk":69,"star":68,"shield":68,"exynos":67,"whirl":67,"lock":66,"lightning":66,"assassin":65,"berserker":65,"bow":64,"holy":63,"fire":62,"accel":61,"lonely":60,"burglar":59,"train":58,"dragon":58,"combo":57,"revive":56,"barrier":55,"titanium":54,"soulcaller":53,"water":52,"lantern":51,"mafia":50,"devour":49,"dust":48,"hong":47,"dice":46,"chicken":46,"growth":45,"antigrav":44,"tailwind":43,"sword":42,"ice":41,"blackhole":40,"rain":39,"cowboy":38,"guardian":37,"gun":36,"roulette":35,"jaws":34,"prophecy":33,"bubble":32,"gift":31,"rifle":30,"deathnote":28,"nuke":27,"warp":26,"radiation":25,"charge":24,"monolith":23,"slot":22,"thief":21,"archaeo":20,"sommelier":19,"reaper":16,"c4":13,"frog":10,"bomb":6,"joker":3,"biker":0}; // R2.22 티어리스트 (tools/tier-5v5.js · 5:5 679판 · 평균 전투 32.6초 · 충전 · 태양 · 모노리스 · 사신 · 부활 · 탄환 · 고고학자 · 폭주족 · 소믈리에 · 포식 · 광폭화 조정 뒤)

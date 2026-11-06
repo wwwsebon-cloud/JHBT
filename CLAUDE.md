@@ -102,6 +102,7 @@
 - **탄핵** `impeach` (전설 · 공격 간격 1.5초는 내가 정함): `onDamaged` 적에게 맞은 횟수 18 → `impeachGo` 쉴드 1500 × 레벨 · 공격력 · 사거리 2배 · 모든 적 [도발] `taunt` 7초 (`aiSteerAndAttack` 이 `tauntX.by` 를 먼저 노린다).
 - **차원** `dimension` (전설 · R1 로직): 2연발 · 3번 뒤 [아공간] 3초 — **`u.realm` 층 번호**: `foes` · `friends` · `canTarget` · `dealDamage` · `physSolvePair` 가 같은 층만 본다 · [공포] `fear` 0.7초 (`aiSteerAndAttack` 맨 앞 · 공격 안 하고 도망). R1 아공간 초상화 `dimension_realm` 은 archive/v8.1 에서.
 - 새 상태 `addict` · `taunt` · `fear` · `realm` (`STATUS` · `FX_OF` · 도움말). 인포그래픽 extract.js 도 `--mute-audio`.
+- build 2: 덱 설정 정렬 `u2Sorted` — 칸 (등급 · 역할군) 안은 늘 출시 순 (`Object.keys(CHARS)` 순서 · 방향 `sortDir` 은 칸 순서만 · 이름순은 가나다).
 
 ## 지난 변경 (R2.24 · 신규 지후 4종)
 - **불사조** `phoenix` (전설): `onLethal` → `phxLethal` 체력 1 + [불사조 쉴드] `u.phx` (350 × 레벨 · `dealDamage` 에서 수은 다음 · 일반 쉴드보다 먼저 · 깨지면 `phxBreak` 뒤 쓰러짐) → 3초 뒤 `phxRise` = `A.transform(u, 'phoenix2', lv, keepSlot)` (**배치 기록은 그대로** · 이번 라운드만) · 반경 4칸 넉백. **각성 불사조** `phoenix2` 는 숨은 항목 (`rankOf: 'phoenix'` → `makeUnit` 이 불사조 랭크로) · `phx2Attack` 6% [비행] `phxFly` (ghost · 적진 끝 → 우리 진영 맨 뒤 → 제자리) · 4% [업화] `phxBlaze` (12.6칸 · 화상).
