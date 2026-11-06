@@ -19,11 +19,11 @@ service cloud.firestore {
     }
     function validDeck(deck) {
       return deck is list && deck.size() <= 5
-        && (deck.size() < 1 || (deck[0] is string && deck[0].matches('^[a-z_]{1,24}$')))
-        && (deck.size() < 2 || (deck[1] is string && deck[1].matches('^[a-z_]{1,24}$')))
-        && (deck.size() < 3 || (deck[2] is string && deck[2].matches('^[a-z_]{1,24}$')))
-        && (deck.size() < 4 || (deck[3] is string && deck[3].matches('^[a-z_]{1,24}$')))
-        && (deck.size() < 5 || (deck[4] is string && deck[4].matches('^[a-z_]{1,24}$')));
+        && (deck.size() < 1 || (deck[0] is string && deck[0].matches('^[a-z][a-z0-9_]{0,23}$')))
+        && (deck.size() < 2 || (deck[1] is string && deck[1].matches('^[a-z][a-z0-9_]{0,23}$')))
+        && (deck.size() < 3 || (deck[2] is string && deck[2].matches('^[a-z][a-z0-9_]{0,23}$')))
+        && (deck.size() < 4 || (deck[3] is string && deck[3].matches('^[a-z][a-z0-9_]{0,23}$')))
+        && (deck.size() < 5 || (deck[4] is string && deck[4].matches('^[a-z][a-z0-9_]{0,23}$')));
     }
 
     // ── 계정 · 기록 ──
@@ -111,7 +111,7 @@ service cloud.firestore {
         && request.resource.data.tp is int && request.resource.data.tp >= 0 && request.resource.data.tp <= 10000000
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
         && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
-        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && request.resource.data.updatedAt is timestamp;
     }
@@ -165,7 +165,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
-        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && request.resource.data.updatedAt is timestamp;
     }
@@ -179,7 +179,7 @@ service cloud.firestore {
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
         && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
         && validDeck(request.resource.data.deck)
-        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z_]{1,24}$'))
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && request.resource.data.xp is int && request.resource.data.xp >= 0 && request.resource.data.xp <= 1000000
         // R2.12 핵 방지: 재화 · 뽑기 수 · 보유 지후 수 · 핵 흔적 (운영 도구 '의심 계정') · 없어도 됨
         && (!('dia' in request.resource.data) || (request.resource.data.dia is int && request.resource.data.dia >= 0 && request.resource.data.dia <= 99999999))
