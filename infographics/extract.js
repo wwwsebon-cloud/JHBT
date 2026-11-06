@@ -5,7 +5,7 @@ const { spawn } = require('child_process'), fs = require('fs'), path = require('
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', PORT = 9399, URL = process.env.URL || 'http://127.0.0.1:8766/index.html?bench=';
 const OUT = path.join(__dirname, '_data'), sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
-  const ch = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + PORT, '--user-data-dir=' + path.join(os.tmpdir(), 'jhbt-info-' + Date.now()), '--disable-background-timer-throttling', 'about:blank'], { stdio: 'ignore' });
+  const ch = spawn(CHROME, ['--headless=new', '--mute-audio', '--remote-debugging-port=' + PORT, '--user-data-dir=' + path.join(os.tmpdir(), 'jhbt-info-' + Date.now()), '--disable-background-timer-throttling', 'about:blank'], { stdio: 'ignore' });
   try {
     let tabs; for (let i = 0; i < 40 && !tabs; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); } catch (e) { await sleep(250); } }
     const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
