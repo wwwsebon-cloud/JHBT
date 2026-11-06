@@ -10,7 +10,7 @@
 7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.23.1** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.24** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -94,11 +94,19 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
-## 최근 변경 (R2.23.1 · 밸런스)
+## 최근 변경 (R2.24 · 신규 지후 4종)
+- **불사조** `phoenix` (전설): `onLethal` → `phxLethal` 체력 1 + [불사조 쉴드] `u.phx` (350 × 레벨 · `dealDamage` 에서 수은 다음 · 일반 쉴드보다 먼저 · 깨지면 `phxBreak` 뒤 쓰러짐) → 3초 뒤 `phxRise` = `A.transform(u, 'phoenix2', lv, keepSlot)` (**배치 기록은 그대로** · 이번 라운드만) · 반경 4칸 넉백. **각성 불사조** `phoenix2` 는 숨은 항목 (`rankOf: 'phoenix'` → `makeUnit` 이 불사조 랭크로) · `phx2Attack` 6% [비행] `phxFly` (ghost · 적진 끝 → 우리 진영 맨 뒤 → 제자리) · 4% [업화] `phxBlaze` (12.6칸 · 화상).
+- **버섯** `mushroom` (영웅): `mushEat` · 최대 체력 +35% · 공격력 +12.5% 모두 **처음 최대 체력 · 공격력 기준 선형** (`u.msN`) · 독버섯은 1초마다 최대 체력 15% × 4 (합 60% · 사용자 문구 「15% 를 4번」으로 읽음).
+- **늑대** `wolf` (전설): `wolfTick` · 대상 없음 0.5초 → 무작위 적 등 뒤로 · `u.critP` (치명타 확률 · 부상보다 우선) · `u.critD` (치명타 피해 +) 는 `dealDamage` 범용 필드 · 순간이동 수는 배치 칸 `p.wf` (경기 내내 · 합체는 큰 쪽).
+- **기상캐스터** `weather` (전설 · 커뮤니티 Kaden · 출격제한 1): `wxSet` / `wxTick` · `WX` 폭염 (공격력 ×3 · 버프 `heat` 둔화 · `performAttack` 맨 앞에서 25% 로 `heatAlly` 사거리 안 자기 아군) · 태풍 (`A.line` 이 이제 관통탄 객체를 돌려준다 · `.fx-wx-obj`) · 낙뢰 (`fx-bolt`).
+- 탄환 [최후의 탄환] 체력 손실 16 → 10% · 간격 0.6 → 0.25초.
+- 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것).
+
+## 지난 변경 (R2.23.1 · 밸런스)
 - EMP 파동 `empWave` 50 → 35% · 엑시노스 `gpuTick` 오르는 양 2배 (최대 50% 그대로) · 화염 공격력 140 → 120.
 - 탄환 공격력 135 → 100 · 사거리 6.2 → 6.4 · [최후의 탄환] `bulletLast` 간격 0.45 → 0.6초 · `bulletCost` 24 → 16% · 처치 회복 50 → 65%.
 
-## 지난 변경 (R2.23)
+## 그 전 변경 (R2.23)
 - **이벤트 모드** (예전 랜덤 이벤트를 갈아엎음 · 옛 목록은 `EV_OLD` 로 R2.6.1 패치노트에만): 일반전 로비 토글 (🎴 이벤트 모드 / 클래식) · 하트 `CFG.EV_LIVES` 4 · 보상 (승리 XP · 골드 · 부스트 ◆) ×`EV_REWARD` 1.3 · 친선전 · 아케이드 · 튜토리얼 · 벤치는 `evOn: false` (matchBase 기본도 false).
 - 짝수 라운드 `evRoll`: 등급 `EV_GRADE` [50, 35, 15] (양쪽 같다) → `evDeal` 카드 3장씩 (따로) → 봇은 `evBotPick` 바로 · 나는 `evShow` (#evPop · 15초 `EV_PICK_SEC` · 시간 초과 무작위 · S.fast / 리플레이는 바로 무작위).
 - 고른 이벤트 `S.ev[진영] = [{ id, g, c }]` → `evRecount` → `evN(진영, id)` = 수치 합 (%) · 덱 강화는 `'deckA:<id>'` · `'deckS:<id>'`. 이벤트 데이터 `EVENTS[id].v` = [브론즈, 실버, 골드] (0 = 그 등급엔 없음).
