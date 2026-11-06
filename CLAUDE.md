@@ -101,6 +101,7 @@
 - **늑대** `wolf` (전설): `wolfTick` · 대상 없음 0.5초 → 무작위 적 등 뒤로 · `u.critP` (치명타 확률 · 부상보다 우선) · `u.critD` (치명타 피해 +) 는 `dealDamage` 범용 필드 · 순간이동 수는 배치 칸 `p.wf` (경기 내내 · 합체는 큰 쪽).
 - **기상캐스터** `weather` (전설 · 커뮤니티 Kaden · 출격제한 1): `wxSet` / `wxTick` · `WX` 폭염 (3초마다 모든 적 200% · 공격력 증가 없음 · 버프 `heat` 둔화 · `performAttack` 맨 앞에서 25% 로 `heatAlly` 사거리 안 자기 아군) · 태풍 (`A.line` 이 이제 관통탄 객체를 돌려준다 · `.fx-wx-obj` · 처음 맞은 적에서 사라진다 `ln.done`) · 낙뢰 (`fx-bolt`). 늑대 ATK 100 (출시 전 40 → 100).
 - 탄환 [최후의 탄환] 체력 손실 16 → 10% · 간격 0.6 → 0.25초.
+- build 2: 덱 설정 5열 (`gridTpl` · 긴 이름 `nmFs`) · 서버로 보내는 지후 id 는 `CID_RE` `^[a-z][a-z0-9_]{0,23}$` (예전 `^[a-z_]` 가 c4 를 뺐다 · `firestore.rules` 도 · 예전 규칙이면 `FB.oldIds` 로 다시). build 3: 태풍 0.6초 · 무작위 방향 · `A.line` 의 `home` · `turn` 살짝 유도 (`lineHome`) · 관통 · 낙뢰 2초 600% · 늑대 HP 1450 · 1.25초 · `lifesteal` 0.2 · `gauge` · `wolfBlinkFx` (캔버스 줄기 `FXC.beams` 의 `c1 · w1 · c2 · w2`) · 불사조 ATK 110 · 각성 140.
 - 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것).
 
 ## 지난 변경 (R2.23.1 · 밸런스)
