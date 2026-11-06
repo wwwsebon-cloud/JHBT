@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.24"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.24"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -488,6 +488,7 @@ body.replaying #screen-battle .hud::after { content:'▶ REPLAY'; position:absol
 .u2-ac-sum b { font-size:14px; font-weight:900; } .u2-ac-sum small { font-size:12px; color:#9aa3bf; font-weight:700; } .u2-ac-sum .go { font-size:22px; color:#9aa3bf; } .u2-ac-sum.fail, .u2-ac-sum.conflict { border-color:#a87900; }
 .u2-ac-cmp { display:flex; gap:8px; margin-top:12px; text-align:left; } .u2-ac-cmp-c { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; padding:10px 12px; border-radius:14px; background:rgba(127,127,127,.12); font-size:12px; }
 .u2-ac-cmp-c b { font-size:14px; font-weight:900; margin-bottom:2px; } .u2-ac-cmp-c small { color:var(--mute); font-size:11px; }
+.off-pill { display:none; position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 2px); transform:translateX(-50%); z-index:9000; padding:3px 10px; border-radius:999px; background:#3b466b; color:#fff; font-size:11px; font-weight:800; line-height:1.3; pointer-events:none; box-shadow:0 2px 0 #252d48; } body.off-mode.ui2-on .off-pill { display:block; } /* R2.24 build 4 오프라인 모드 */
 .u2-ns-acc { display:block; width:100%; margin-top:10px; padding:10px; border:1px solid #3b466b; border-radius:12px; background:#1a2034; color:#ffc94a; font:inherit; font-size:13px; font-weight:900; cursor:pointer; }
 @media (prefers-reduced-motion:reduce) { #ui2 *, #ui2 *::before, #ui2 *::after { animation:none !important; transition:none !important; } }
 
@@ -5473,7 +5474,7 @@ async function syncAfterLogin(fromStart) { // R2 기록이 있으면 맞추고, 
   await migrateR22(); lbPush(); updCheck();
 }
 async function accBoot() { // 켤 때: 남아 있는 로그인이면 서버 기록과 맞추고 로비로 · 없으면 게스트로 첫 실행 (R2.13: 만화 → 튜토리얼 → 닉네임)
-  if (!(await fbInit())) { renderAccPill(); if (!AUTH.ok) { if (profile.ownerUid) renderGate('offline'); else gateDone(); } return; } // 계정 기록이 있으면 접속을 기다리고, 처음이면 오프라인으로도 만화 · 튜토리얼
+  if (!(await fbInit())) { renderAccPill(); if (!AUTH.ok) { if (profile.ownerUid) renderGate('offline'); else { offMode(); gateDone(); } } return; } // 계정 기록이 있으면 오프라인으로 할지 묻고 (R2.24 build 4), 게스트 · 처음이면 바로 오프라인 모드 (만화 · 튜토리얼도)
   if (isMember()) { try { await syncAfterLogin(true); } catch (e) { console.warn('[rejhbt] 계정 동기화 실패', e); } migrateR22(); gateDone(); return; }
   renderAccPill(); migrateR22(); if (!AUTH.ok) { const was = !!profile.ownerUid; gateDone(); if (was) setTimeout(() => { ACC.tab = 'login'; ACC.msg = '로그인이 풀렸어요. 다시 로그인하면 계정 기록을 이어서 해요.'; openAccount(); }, 800); return; } // R2.13 build 2: 로그인 화면 없음 · 로그인이 풀린 계정은 환경설정 → 계정 창으로: 로그인 없이 게스트로 시작 (만화 → 튜토리얼 → 닉네임) · 로그인 · 가입은 환경설정 → 계정
   onlineStart(); updCheck(); // 벤치 (?bench=) 만
@@ -5689,7 +5690,7 @@ function renderLobby() {
   $('modeSeg').querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === profile.mode)); $('playSub').textContent = CFG.EV_ENABLED && profile.mode !== 'classic' ? `봇과 대전 · 이벤트 모드 · 하트 ${CFG.EV_LIVES} · 보상 ×${CFG.EV_REWARD}` : `봇과 대전 · 라이프 ${CFG.LIVES}${CFG.EV_ENABLED ? ' · 클래식' : ''}`; $('modeCard').hidden = !CFG.EV_ENABLED;
   $('lobbyDeck').innerHTML = Array.from({ length: 5 }, (_, i) => { const id = profile.deck[i]; return id ? `<span class="ld" data-cid="${id}"><span class="pic">${pic(id)}</span><span>${shortName(id)}</span></span>` : '<span class="ld empty"><span class="pic">+</span><span>빈 칸</span></span>'; }).join('');
 }
-function banner(text) { const b = document.createElement('div'); b.className = 'banner'; b.textContent = text; document.body.appendChild(b); setTimeout(() => b.remove(), 1300); }
+function banner(text, ms = 1300) { const b = document.createElement('div'); b.className = 'banner'; b.textContent = text; document.body.appendChild(b); setTimeout(() => b.remove(), ms); }
 
 // 덱 — 오른쪽 전체 지후에서 지후를 누르면 왼쪽에 상세 · [덱에 넣기 / 빼기]. 덱이 꽉 차 있으면 바꿀 자리를 고른다
 let pendingEquip = null, deckSel = null;
@@ -9892,6 +9893,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.24', date: '2026.11.06', title: '신규 지후 4종 · 탄환 지후 밸런스', sections: [
+    { title: '추가 패치 (build 4)', items: [
+      { icon: '📴', name: '오프라인 모드', tag: 'system', desc: '인터넷이 없어도 <b>이 기기에 저장된 기록</b>으로 플레이할 수 있어요 · 계정 기록이 있으면 시작 화면에서 <b>「오프라인으로 플레이」</b> · 게임 파일은 한 번 접속할 때 미리 받아 둬요 (배경음악 · 큰 이모티콘은 한 번 쓴 것만) · 친선전 · 랭킹 · 채팅 · 우편은 연결되면 · 다시 연결되면 새로고침해서 서버 기록과 맞춰요.' },
+    ] },
     { title: '추가 패치 (build 3) · 밸런스', items: [
       { id: 'weather', name: '기상캐스터 지후', tag: 'adjust', desc: '[태풍] 간격 <b>1.5 → 0.6초</b> · 무작위 방향에서 <b>살짝 유도</b> · <b>관통</b> · 물체 크기 증가 · [낙뢰] 피해 <b>300 → 600%</b> · [낙뢰] 간격 <b>1 → 2초</b>' },
       { id: 'wolf', name: '늑대 지후', tag: 'adjust', desc: '체력 <b>1,650 → 1,450</b> · 공격 간격 <b>1 → 1.25초</b> · 피해량의 <b>20%</b> 회복 (새 패시브) · 순간이동 <b>게이지</b> · 순간이동 이펙트 강화' },
@@ -11835,6 +11839,12 @@ async function accSwitch(code) { // 원터치 전환
   onlineStop(); await FB.sdk.updateCurrentUser(FB.auth, v.currentUser); FB.uid = myUid();
   await syncAfterLogin(false); gateDone();
 }
+// ── 오프라인 모드 (R2.24 build 4): 서버에 못 붙어도 이 기기 기록으로 플레이 · 파일은 sw.js 가 받아 둔다 · 친선전 · 랭킹 · 채팅 · 우편은 연결되면 ──
+const OFF = { on: false };
+function offMode() { if (OFF.on) return; OFF.on = true; document.body.classList.add('off-mode'); let p = $('offPill'); if (!p) { p = document.createElement('div'); p.id = 'offPill'; p.className = 'off-pill'; p.textContent = '📴 오프라인 모드'; document.body.appendChild(p); }
+  setTimeout(() => banner('📴 오프라인 모드 · 친선전 · 랭킹 · 채팅은 인터넷이 연결되면 쓸 수 있어요', 3200), 900); }
+window.addEventListener('online', () => { if (OFF.on) banner('🔌 인터넷이 다시 연결됐어요 · 새로고침하면 서버 기록과 맞춰요', 4000); });
+window.addEventListener('offline', () => { if (!OFF.on && AUTH.ok) banner('📴 인터넷 연결이 끊겼어요 · 게임은 계속할 수 있어요', 3200); });
 function gateDone() { // 로그인 끝 → 로비
   AUTH.ok = true; AUTH.msg = ''; accRemember(); renderAccPill(); onlineStart(); closeModal('accModal');
   if (!profile.nick && isMember()) profile.nick = '지후' + (accCode() || '').slice(-4); // 게스트는 튜토리얼 뒤 닉네임 단계 (nickStep)
@@ -11843,7 +11853,7 @@ function gateDone() { // 로그인 끝 → 로비
 function renderGate(state) { // 시작 화면 (#screen-welcome): 연결 중 · 오프라인만 (R2.13 build 2: 로그인은 환경설정 → 계정에서만)
   const box = $('screen-welcome');
   if (state === 'loading') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">서버에 연결하는 중…</div></div></div>`; return; }
-  if (state === 'offline') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">온라인에 연결할 수 없어요<br><small>계정 기록을 불러오려면 연결이 필요해요. 네트워크를 확인해 주세요.</small></div><button class="gt-go" id="gtRetry">다시 연결</button></div></div>`; $('gtRetry').onclick = () => location.reload(); return; }
+  if (state === 'offline') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">온라인에 연결할 수 없어요<br><small>이 기기에 저장된 기록으로 <b>오프라인 플레이</b>를 할 수 있어요. 인터넷이 다시 연결되면 새로고침해서 서버 기록과 맞춰요.</small></div><button class="gt-go" id="gtOff">📴 오프라인으로 플레이</button><button class="u2-ns-acc" id="gtRetry" type="button">🔄 다시 연결</button></div></div>`; $('gtRetry').onclick = () => location.reload(); $('gtOff').onclick = () => { offMode(); gateDone(); }; return; } // R2.24 build 4: 오프라인 모드
 }
 const NS_A = ['용감한', '졸린', '배고픈', '빛나는', '수상한', '느긋한', '전설의', '불타는', '차가운', '번쩍이는', '귀여운', '엉뚱한', '무적의', '은밀한', '행복한', '잠꾸러기', '반짝이는', '성실한', '위풍당당'], NS_B = ['지후', '화염', '얼음', '검객', '방패', '암살자', '기사', '용사', '지휘관', '왕자', '요리사', '마법사', '궁수', '선인장', '슬라임', '별'];
 function nickStep() { // R2.13 첫 실행 마지막 단계 (build 3 새 화면): 닉네임만 정하고 시작 · 프로필 미리보기 · 🎲 무작위 이름 · 바로 검사 (#screen-welcome 을 다시 쓴다)
