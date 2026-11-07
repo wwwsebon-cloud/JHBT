@@ -11,7 +11,7 @@
 8. **브라우저로 테스트할 때는 반드시 소리를 끈다** (사용자 요청 · 시끄럽다): 페이지를 열자마자 `localStorage` 의 `rejhbt-sfx-vol` · `rejhbt-bgm-vol` 을 `'0'` 으로 두고 새로고침 (효과음 볼륨은 켤 때만 읽는다) · 헤드리스 크롬은 `--mute-audio`.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.25** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.25.4** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
