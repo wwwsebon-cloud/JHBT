@@ -184,3 +184,15 @@ self.addEventListener('fetch', event => {
     }).catch(() => hit(key).then(h => h || (isPage ? hit(new URL('./', self.registration.scope).href) : null)).then(h => h || Response.error()))
   );
 });
+
+// ── R2.26 업데이트 알림 (웹 푸시 · FCM): tools/push-send.js 가 보낸 알림을 띄운다 ──
+// FCM 이 보내는 데이터: { notification: { title, body, image }, data: { url } } (webpush) · 직접 보낸 { title, body, url } 도 받는다
+self.addEventListener('push', event => {
+  let d = {}; try { d = event.data ? event.data.json() : {}; } catch (e) { d = { notification: { body: event.data ? event.data.text() : '' } }; }
+  const n = d.notification || d, data = d.data || {}, title = n.title || 'RE : 지후배틀', url = data.url || n.click_action || d.url || './';
+  event.waitUntil(self.registration.showNotification(title, { body: n.body || '', icon: 'icons/icon-192.png', badge: 'icons/favicon-32.png', image: n.image, tag: data.tag || 'rejhbt-update', renotify: true, data: { url } }));
+});
+self.addEventListener('notificationclick', event => {
+  event.notification.close(); const url = new URL((event.notification.data && event.notification.data.url) || './', self.registration.scope).href;
+  event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(L => { const w = L.find(c => c.url.startsWith(self.registration.scope)); if (w) { w.focus(); return; } return clients.openWindow(url); }));
+});

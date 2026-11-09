@@ -3266,6 +3266,7 @@ const CFG = {
   BOOST_PER_DAY: 3, BOOST_MIN: 30, BOOST_DIA: 300, // 부스트: 하루 3번 · 30분 동안 (R2.24 build 7 · 예전 하루 2번 · 15분) 일반전 승리마다 ◆1~300 (R2.3)
   START_DIA: 500,  // R2.13: 1,500 → 500 (신규 첫날 다이아 약 8,000 → 약 4,000 · 튜토리얼 우편 2,000 · 출석 1일차 1,000 · 퀘스트 · 업적)
   ARC_FREE: 1, ARC_BUY: 3, ARC_GOLD: 10000, ARC_WIN_P: 5, ARC_LOSE_P: 1, MIRROR_FEE: 1, TOWER_FEE: 2, // 아케이드 (R2.7.2): 티켓 매일 1장 무료 · ●10,000 으로 하루 3장 · 승리 5P · 패배 1P
+  PUSH_VAPID: '', PUSH_DIA: 1000, // R2.26 업데이트 알림 (웹 푸시 · FCM): Firebase 콘솔 → 프로젝트 설정 → 클라우드 메시징 → 웹 푸시 인증서의 「키 쌍」(공개 키) 을 넣는다 · 비어 있으면 허용 · 보상만 하고 토큰은 저장하지 않는다
   EASY_MULT: 0.75, // R2.13 build 2: 초보자 보호 중 봇 유닛 체력 · 공격력 ×0.75 (S.weak · build 1 은 3판 ×0.5)
   NEWBIE_GAMES: 5, // 초보자 보호 (R2.7.1): 일반전 처음 5판은 봇 덱이 일반 4 + 희귀 1
   UPD_DIA: 500, UPD_ITEM: 'testKit', // 업데이트 보상 (R2.7): 버전마다 한 번 · 지금 버전 것만 (중첩 안 됨)
@@ -5849,7 +5850,38 @@ const BOT_NAMES = [ // 지후배틀(R1) 봇 닉네임 전부 그대로
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 const shortName = id => CHARS[id].name.replace(/ ?지후$/, ''); // '화염 지후' → '화염'
 function renderMoney() { $('lobbyDia').textContent = profile.dia.toLocaleString(); $('lobbyGold').textContent = (profile.gold || 0).toLocaleString(); } // 상단 바 재화 (모든 화면 공통)
+// ═════════ R2.26 업데이트 알림 (웹 푸시) ═════════
+// 허용 요청: 튜토리얼이 끝난 뒤 · 기존 유저는 로비에서 한 번 (profile.pushAsk) · 허용하면 ◆PUSH_DIA (profile.pushRw · 계정당 한 번)
+// 토큰: firebase-messaging getToken (sw.js 를 그대로 쓴다) → push_tokens/<uid> (rules: 자기 문서만 쓰기 · 읽기 없음) → 보내기는 tools/push-send.js (사용자 PC · 서비스 계정)
+// 아이폰은 홈 화면에 설치한 앱에서만 Notification 이 있다 (없으면 묻지 않고 다음에 다시)
+const pushCan = () => typeof Notification !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+let pushAsked = false;
+async function pushAsk(force) {
+  if (!pushCan() || (pushAsked && !force)) return; pushAsked = true;
+  if (Notification.permission === 'granted') return pushGranted(true);
+  if (Notification.permission === 'denied') { if (force) dlg({ icon: '🔕', title: '알림이 막혀 있어요', html: '브라우저 · 기기 설정에서 이 사이트의 알림을 허용해 주세요.' }); profile.pushAsk = 1; save(); return; }
+  const ok = await dlg({ icon: '🔔', title: '업데이트 알림 받기', html: `새 지후 · 업데이트 · 점검 소식을 알림으로 알려 드려요.${profile.pushRw ? '' : `<br>허용하면 <b>◆ ${CFG.PUSH_DIA.toLocaleString()}</b> 를 드려요!`}`, ok: '알림 받기', cancel: '나중에' });
+  profile.pushAsk = 1; save(); if (!ok) return;
+  let p = 'default'; try { p = await Notification.requestPermission(); } catch (e) {}
+  if (p === 'granted') pushGranted(false); else banner('알림을 허용하지 않았어요 · 환경설정에서 다시 켤 수 있어요');
+}
+async function pushGranted(quiet) {
+  if (!profile.pushRw) { profile.pushRw = 1; profile.dia += CFG.PUSH_DIA; save(); renderMoney(); sfx('buy'); banner(`🔔 알림 허용 보상 ◆ ${CFG.PUSH_DIA.toLocaleString()}`); } else if (!quiet) banner('🔔 업데이트 알림을 켰어요');
+  pushRegister();
+}
+async function pushRegister() { // 토큰을 서버에 (키가 없거나 오프라인이면 조용히 넘어간다)
+  try { if (!CFG.PUSH_VAPID || !pushCan() || Notification.permission !== 'granted' || !(await fbInit()) || !FB.uid) return;
+    const m = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js'), reg = await navigator.serviceWorker.ready;
+    const token = await m.getToken(m.getMessaging(FB.app), { vapidKey: CFG.PUSH_VAPID, serviceWorkerRegistration: reg }); if (!token) return;
+    if (profile.pushTok === token && profile.pushUid === FB.uid) return;
+    await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'push_tokens', FB.uid), { token, updatedAt: FB.sdk.serverTimestamp(), app: appStandalone() ? 1 : 0 });
+    profile.pushTok = token; profile.pushUid = FB.uid; save();
+  } catch (e) { console.warn('[rejhbt] 알림 토큰:', e && e.message || e); } }
+function pushLobby() { if (!pushCan() || pushAsked) return; if (Notification.permission === 'granted') { pushAsked = true; if (!profile.pushRw) pushGranted(true); else pushRegister(); return; }
+  if (profile.pushAsk || !profile.nick || !(profile.tut || profile.tutSkip || (profile.wins | 0) + (profile.losses | 0) > 0)) return;
+  setTimeout(() => { if (TUT.on || document.querySelector('#screen-battle.active') || document.querySelector('.modal.open')) return; pushAsk(); }, 2500); }
 function renderLobby() {
+  pushLobby(); // R2.26: 알림 허용 요청 (기존 유저 한 번) · 허용돼 있으면 토큰 새로
   renderAccPill(); renderMailDot(); renderRewardsDot(); renderSocialDot(); renderAnn(); renderMoney(); $('lobbyVer').textContent = gameVersion();
   $('lobbyNick').textContent = profile.nick || '신입 지휘관'; $('lobbyAv').innerHTML = pfHtml(profile.frame, 36, myPhoto()); mqCheck(); renderMQ(); renderBoost(); // 닉네임 전(첫 실행 튜토리얼 뽑기 · 덱 화면)은 '신입 지휘관' (R2.13 build 3)
   $('lobbyLv').textContent = profile.level; $('lobbyXp').textContent = `${profile.xp} / ${xpNeed(profile.level)} XP`;
@@ -11378,6 +11410,7 @@ function renderSettings() {
     <div class="bset-head">전투 화면</div>${BSET_ROWS.map(([k, n, d]) => `<div class="bset-row"><span>${n}<small>${d}</small></span><span class="sp"></span><button class="bset-sw${BSET[k] ? ' on' : ''}" data-bset="${k}" aria-label="${n}"></button></div>`).join('')}
     <div class="setrow"><span>친선전 관전 허용 (친구)</span><span class="sp"></span><button class="sw${profile.spec !== false ? ' on' : ''}" id="setSpec" aria-label="관전 허용"></button></div>
     <div class="setrow"><span>쿠폰 코드 입력</span><span class="sp"></span><button class="btn" id="setCode">코드 입력</button></div>
+    <div class="setrow"><span>업데이트 알림${pushCan() ? '' : '<small style="display:block;opacity:.6">이 기기는 지원하지 않아요 (아이폰은 홈 화면 앱에서)</small>'}</span><span class="sp"></span><button class="btn" id="setPush" ${pushCan() && Notification.permission !== 'granted' ? '' : 'disabled'}>${pushCan() && Notification.permission === 'granted' ? '켜짐' : '켜기'}</button></div>
 ${DEV.op ? `<div class="setrow"><span>개발자 모드 (모든 지후 해금)</span><span class="sp"></span><button class="sw${DEV.pref ? ' on' : ''}" id="setDev" aria-label="개발자 모드"></button></div>${renderAdmin()}` : ''}`;
   if ($('setDev')) { $('setDev').onclick = () => { DEV.pref = !DEV.pref; try { localStorage.setItem('rejhbt-dev', DEV.pref ? '1' : '0'); } catch (e) {} devSanitize(); save(); renderSettings(); renderLobby(); try { renderDeck(); } catch (e) {} banner(devOn() ? '개발자 모드 ON · 모든 지후 해금' : '개발자 모드 OFF'); }; bindAdmin(); }
   $('setSfx').oninput = e => { sfxSetVolume(e.target.value); $('setSfxV').textContent = sfxState.vol; };
@@ -11385,6 +11418,7 @@ ${DEV.op ? `<div class="setrow"><span>개발자 모드 (모든 지후 해금)</s
   $('setBgm').oninput = e => { bgm.vol = clamp(Math.round(Number(e.target.value) || 0), 0, 100); $('setBgmV').textContent = bgm.vol; try { localStorage.setItem(BGM_KEY, String(bgm.vol)); } catch (err) {} bgmTick(); };
   $('setSpec').onclick = () => { profile.spec = profile.spec === false; save(); renderSettings(); };
   $('setCode').onclick = () => { closeModal('setModal'); $('btnMenuCode').click(); }; // R2.26: 코드 입력은 환경설정에서
+  $('setPush').onclick = () => { closeModal('setModal'); pushAsk(true); }; // R2.26 업데이트 알림
   bsetBind($('setBody')); // R2.12.1 전투 화면 설정
   renderSetAcc(); // R2.20 build 3: 계정은 JHBT 계정 창 (요약 한 줄 → 누르면 창) · 닉네임은 로비 프로필에서
 }
@@ -11649,7 +11683,7 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
       await W('deckDone'); setTarget(null); hint(''); document.body.classList.remove('tut-deck', 'tut-pend');
       await talk([f('이걸로 기초적인 강의는 끝났다'), f('뽑은 지후가 마음에 안든다고 접고 자러가지 말아라'), f('그럼 기대하고 있을게! 바이~')]);
     } else await talk([f('그럼 기대하고 있을게! 바이~')]);
-    profile.tut = 1; save(); finish();
+    profile.tut = 1; save(); finish(); setTimeout(() => pushAsk(), 900); // R2.26: 튜토리얼이 끝나면 알림 허용 요청 (◆1,000)
   }
 
   function cleanup() {

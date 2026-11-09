@@ -150,6 +150,16 @@ service cloud.firestore {
     }
     // R2.7.2 지후의 탑 리더보드: r2tower/{uid} = { nickname, best(최고 층), fav, frame(없어도 됨), updatedAt }
     // R2.13.2 크레딧 USERS: 한 판이라도 한 모든 닉네임 (게스트 익명 로그인 포함) · uid 마다 한 문서
+    // R2.26 업데이트 알림: 기기 알림 토큰 (자기 문서만 쓰기 · 읽기는 아무도 — 보내기는 서비스 계정 tools/push-send.js 가 규칙을 건너뛴다)
+    match /push_tokens/{userId} {
+      allow read: if false;
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['token', 'updatedAt', 'app'])
+        && request.resource.data.token is string && request.resource.data.token.size() > 20 && request.resource.data.token.size() <= 600
+        && request.resource.data.updatedAt == request.time
+        && (!('app' in request.resource.data) || request.resource.data.app in [0, 1]);
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
     match /r2users/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
