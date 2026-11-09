@@ -95,6 +95,15 @@
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
 
+## 안드로이드 앱 (APK · R2.26 부터)
+- **Capacitor 7** · `app/` (패키지 `kr.jihoobattle.app` · 바꿀 수 없음) · 게임 파일을 **APK 안에** 넣는다 (사용자가 고름 · 사이트를 감싸는 TWA 아님) → 업데이트마다 새 APK.
+- 만들기: `cd app` → `npm run sync` (`tools/app-sync.js` 가 index.html · manifest · icons · sfx · bgm · comic · emo · r1jihoo 를 `app/www` 로 복사 + `cap sync`) → `cd android` → `JAVA_HOME=<JDK 21> ./gradlew.bat assembleRelease` → `app/android/app/build/outputs/apk/release/app-release.apk`.
+- **새 APK 마다 `app/android/app/build.gradle` 의 `versionCode` +1 · `versionName` = 게임 버전** (낮으면 폰이 업데이트로 받지 않는다).
+- 도구 (저장소 밖 · 관리자 권한 없이): JDK 21 `C:/Users/User/AppData/Local/jhbt-android/jdk` · Android SDK 35 `…/jhbt-android/sdk` (`android/local.properties` 의 `sdk.dir`).
+- **서명 키** `C:/Users/User/Documents/jhbt-app/jhbt-release.jks` + `keystore.properties` (비밀번호 · `app/android/keystore.properties` 로 복사해 쓴다 · git 에 안 올림) — **잃어버리면 같은 앱으로 업데이트를 못 낸다** (유저가 지우고 다시 설치해야 함).
+- 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
+- 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
+
 ## 최근 변경 (R2.26 · 화면 개편 · 밸런스 35종)
 - **로비** (`ui2Tpl` 전투 탭): 스크롤 없이 한 화면 · 친선전 버튼 · 모드 토글 · 부스트 줄 삭제 · 부스트 배지는 `.u2-cta` 밖 (overflow:hidden 에 잘렸다) · 아레나는 `u2ArenaFit` 이 남는 높이만큼 scale.
 - **일반전은 늘 클래식** (`profile.mode` 안 씀) · 이벤트 모드는 아케이드 `ARC_MODES.event` → `EV_NEXT = true` 뒤 일반전 한 판 (보상 그대로 · 무료) · **랜덤전** `random` (미러전과 같은 요금 · 서로 다른 무작위 덱).
