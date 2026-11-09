@@ -138,10 +138,6 @@ const CORE = [
   'emo/thumb/gif_11.png',
   'emo/thumb/gif_12.png',
   'emo/thumb/gif_13.png',
-  'fonts/REATIC-Bold.woff2',
-  'fonts/REATIC-Narrow.woff2',
-  'fonts/REATIC-NarrowBold.woff2',
-  'fonts/REATIC-Regular.woff2',
   'fonts/SongMyung-Regular.woff2',
 ];
 // ── CORE 끝 ──
