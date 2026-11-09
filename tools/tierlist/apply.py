@@ -11,8 +11,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 d = json.load(open(os.path.join(W, 'agg.json'), encoding='utf-8'))
 info = json.load(open(os.path.join(W, 'info.json'), encoding='utf-8'))
 meta, rows = d['meta'], d['rows']
-BAND = {'S': (80, 100), 'A': (65, 79), 'B': (40, 64), 'C': (20, 39), 'D': (0, 19)}
-ORDER = 'SABCD'
+BAND = {'SS': (90, 100), 'S': (80, 89), 'A': (65, 79), 'B': (40, 64), 'C': (20, 39), 'D': (0, 19)}  # R2.26: SS 추가
+ORDER = ['SS', 'S', 'A', 'B', 'C', 'D']
 UNSURE = 60  # 안정도(%)가 이보다 낮으면 경계 지후
 
 # 1) TIER_SC
@@ -30,7 +30,8 @@ s = s[:m.start()] + 'const TIER_SC = ' + json.dumps(sc, ensure_ascii=False, sepa
 open(p, 'wb').write(s.encode('utf-8'))
 
 # 2) 티어표 인포그래픽 JSON
-mv = lambda x: '' if not x['prev'] else ('up' if ORDER.index(x['tier']) < ORDER.index(x['prev']) else 'down' if ORDER.index(x['tier']) > ORDER.index(x['prev']) else '')
+mv = lambda x: '' if not x['prev'] or (os.environ.get('LEGACY_PREV') and x['prev'] == 'S' and x['tier'] == 'SS') else (  # LEGACY_PREV: 예전 5티어 S → SS 는 그대로로 본다
+     'up' if ORDER.index(x['tier']) < ORDER.index(x['prev']) else 'down' if ORDER.index(x['tier']) > ORDER.index(x['prev']) else '')
 tiers = []
 for t in ORDER:
     ids = [{'id': x['id'], 'name': info.get(x['id'], {}).get('name', x['id']), 'rarity': info.get(x['id'], {}).get('rarity', ''), 'wr': x['wr'],

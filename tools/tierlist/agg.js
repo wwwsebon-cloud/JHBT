@@ -1,10 +1,10 @@
 // 티어 시뮬 결과 → 티어 (R2.22.2 · R1 tools/tierlist/agg.js 를 R2 에 맞게 + 안정도 · 지난 티어 비교)
 //   node tools/tierlist/agg.js <작업폴더> [부트스트랩 횟수=100]
 // 팀 실력 모델 (Bradley-Terry): 지후마다 점수 s · P(아군 승) = σ(Σ아군 s − Σ적 s) 가 모든 판의 「결과 점수」 y = 0.5 + (아군 − 적 남은 체력 비율 평균) / 2 에 가장 잘 맞게 (L2 λ 0.5 · 뉴턴법)
-// 표시 승률 = σ(s) (50% = 평균) · 오차 = 헤세 역행렬 대각 · 티어 = 점수가 크게 벌어지는 곳에서 5개 (1차원 최적 k-평균 · 한 티어 최소 2기 · R2 규칙 S ~ D)
+// 표시 승률 = σ(s) (50% = 평균) · 오차 = 헤세 역행렬 대각 · 티어 = 점수가 크게 벌어지는 곳에서 6개 (1차원 최적 k-평균 · 한 티어 최소 2기 · R2.26 부터 SS ~ D · 예전 S ~ D 5개)
 // 강화 (R2.22.2): 안정도 = 판을 다시 뽑아 (부트스트랩) 맞췄을 때 같은 티어가 나온 비율 · 지난 티어 = index.html 의 TIER_SC 띠 · 실제 승률 · 피해 비중 · 판 수
 const fs = require('fs'), path = require('path');
-const W = process.argv[2], BOOT = process.argv[3] != null ? +process.argv[3] : 100, TIERS = 'SABCD';
+const W = process.argv[2], BOOT = process.argv[3] != null ? +process.argv[3] : 100, TIERS = ['SS', 'S', 'A', 'B', 'C', 'D']; // R2.26: 지후 100종 넘어 SS 추가
 const recs = [];
 for (const f of fs.readdirSync(W).filter(f => /^t5_\d+\.jsonl$/.test(f))) for (const line of fs.readFileSync(path.join(W, f), 'utf8').split('\n')) if (line) { try { recs.push(JSON.parse(line)); } catch (e) {} }
 recs.sort((a, b) => a.g - b.g);
@@ -26,7 +26,7 @@ function fit(games, lambda = 0.5) { // games: [{ a: [i…], e: [i…], y }] · n
 }
 function solve(A, b) { const n = b.length, x = Float64Array.from(b); for (let c = 0; c < n; c++) { let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; [A[c], A[p]] = [A[p], A[c]]; [x[c], x[p]] = [x[p], x[c]]; const d = A[c][c] || 1e-12; for (let r = c + 1; r < n; r++) { const f = A[r][c] / d; if (!f) continue; for (let k = c; k < n; k++) A[r][k] -= f * A[c][k]; x[r] -= f * x[c]; } } for (let r = n - 1; r >= 0; r--) { let t = x[r]; for (let k = r + 1; k < n; k++) t -= A[r][k] * x[k]; x[r] = t / (A[r][r] || 1e-12); } return x; }
 function invDiag(H) { const n = H.length, A = H.map((row, i) => { const r = new Float64Array(2 * n); r.set(row); r[n + i] = 1; return r; }); for (let c = 0; c < n; c++) { let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; [A[c], A[p]] = [A[p], A[c]]; const d = A[c][c] || 1e-12; for (let k = c; k < 2 * n; k++) A[c][k] /= d; for (let r = 0; r < n; r++) { if (r === c) continue; const f = A[r][c]; if (!f) continue; for (let k = c; k < 2 * n; k++) A[r][k] -= f * A[c][k]; } } return Float64Array.from({ length: n }, (_, i) => A[i][n + i]); }
-function breaks(vals, k = 5, minSize = 2) { // 내림차순 점수 → 티어 번호 (1차원 최적 k-평균)
+function breaks(vals, k = TIERS.length, minSize = 2) { // 내림차순 점수 → 티어 번호 (1차원 최적 k-평균)
   const n = vals.length; if (n <= k) return vals.map((_, i) => i);
   const pre = [0], pre2 = [0]; vals.forEach(v => { pre.push(pre[pre.length - 1] + v); pre2.push(pre2[pre2.length - 1] + v * v); });
   const cost = (i, j) => { const m = j - i, t = pre[j] - pre[i]; return pre2[j] - pre2[i] - t * t / m; };
@@ -56,7 +56,7 @@ let bs = 20261105 >>> 0; const rnd = () => { bs = (bs * 1664525 + 1013904223) >>
 for (let b = 0; b < BOOT; b++) { const G = games.map(() => games[Math.floor(rnd() * games.length)]), f = fit(G), sb = {}; ids.forEach((k, i) => { sb[k] = f.s[i]; }); const tb = tierOf(sb); ids.forEach(k => { if (tb[k] === T0[k]) same[k]++; }); }
 // 지난 티어 (index.html 의 TIER_SC 띠)
 const html = fs.readFileSync(path.join(__dirname, '../../index.html'), 'utf8'), m = /const TIER_SC = (\{[^}]*\})/.exec(html), prevSc = m ? JSON.parse(m[1]) : {};
-const band = v => v >= 80 ? 'S' : v >= 65 ? 'A' : v >= 40 ? 'B' : v >= 20 ? 'C' : 'D';
+const band = v => v >= (process.env.LEGACY_PREV ? 101 : 90) ? 'SS' : v >= 80 ? 'S' : v >= 65 ? 'A' : v >= 40 ? 'B' : v >= 20 ? 'C' : 'D'; // 지난 TIER_SC 띠 (LEGACY_PREV=1: 예전 5티어 TIER_SC 와 비교할 때 · SS 없음)
 const out = ids.map((k, i) => ({ id: k, tier: T0[k], s: +S0[k].toFixed(4), se: +Math.sqrt(Math.max(0, inv[i])).toFixed(4), wr: Math.round(sig(S0[k]) * 1000) / 10, raw: Math.round(st[k].w / st[k].n * 1000) / 10, n: st[k].n, sh: Math.round(st[k].sh / st[k].n * 5 * 100) / 100, stab: BOOT ? Math.round(same[k] / BOOT * 100) : null, prev: prevSc[k] != null ? band(prevSc[k]) : null })).sort((a, b) => b.s - a.s);
 const meta = { games: games.length, errs, timed, avgT: games.length ? Math.round(tsum / games.length * 10) / 10 : 0, chars: NID, boot: BOOT };
 fs.writeFileSync(path.join(W, 'agg.json'), JSON.stringify({ meta, rows: out }, null, 1));
