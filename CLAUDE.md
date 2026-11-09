@@ -11,7 +11,7 @@
 8. **브라우저로 테스트할 때는 반드시 소리를 끈다** (사용자 요청 · 시끄럽다): 페이지를 열자마자 `localStorage` 의 `rejhbt-sfx-vol` · `rejhbt-bgm-vol` 을 `'0'` 으로 두고 새로고침 (효과음 볼륨은 켤 때만 읽는다) · 헤드리스 크롬은 `--mute-audio`.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.25.4** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.26** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -81,7 +81,7 @@
 - 지후마다 자세한 서사 연결은 `docs/CLAUDE-history.md` 의 「세계관 · 서사」와 각 버전 서사 항목.
 
 ## 시뮬 · 티어
-- **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R2.25.4` 는 R2.25.4 코드 · 1,258판 (1,600판 중 · 로컬 윈도우에서 일꾼 12개가 PC 를 멈출 만큼 무거워 중간에 끊고 그대로 집계 · **로컬에서는 일꾼 1~2개로**). (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
+- **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R2.26` 은 R2.26 코드 · 1,600판 (일꾼 2개) · 예전: tier-R2.25.4 는 R2.25.4 코드 · 1,258판 (1,600판 중 · 로컬 윈도우에서 일꾼 12개가 PC 를 멈출 만큼 무거워 중간에 끊고 그대로 집계 · **로컬에서는 일꾼 1~2개로**). (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
 - 결과로 `TIER_SC` (S 80~100 · A 65~79 · B 40~64 · C 20~39 · D 0~19) 를 갱신한다.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
@@ -94,6 +94,21 @@
 - 운영 우편 `giftMail` 보상: ◆ · ● · 랜덤 영웅/전설 · **정해진 지후** `{ kind: 'char', id, amount }` (R2.20 build 2 · 운영 도구 「지후」 칸에 이름) · 이 버전이 모르는 보상이 든 우편은 받은 것으로 치지 않고 남겨 둔다 (`giftOk`).
 - 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
 - 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
+
+## 최근 변경 (R2.26 · 화면 개편 · 밸런스 35종)
+- **로비** (`ui2Tpl` 전투 탭): 스크롤 없이 한 화면 · 친선전 버튼 · 모드 토글 · 부스트 줄 삭제 · 부스트 배지는 `.u2-cta` 밖 (overflow:hidden 에 잘렸다) · 아레나는 `u2ArenaFit` 이 남는 높이만큼 scale.
+- **일반전은 늘 클래식** (`profile.mode` 안 씀) · 이벤트 모드는 아케이드 `ARC_MODES.event` → `EV_NEXT = true` 뒤 일반전 한 판 (보상 그대로 · 무료) · **랜덤전** `random` (미러전과 같은 요금 · 서로 다른 무작위 덱).
+- **햄버거 `MENU`**: 퀘스트 · 업적 삭제 · 랭킹 / 전투기록 / 가방 / 패치노트 / 도움말 / 크레딧 따로 · 코드 입력은 환경설정 `#setCode` · 튜토리얼 · 인트로 만화 · 티어리스트 (`helpTierHtml` · TIER_SC) 는 도움말 안.
+- **전투 화면 R1 처럼**: `.hud.r1hud` (라운드 배지 · 단계 · `.r1acts` 에 EMOTE `#btnEmo` · 배속 `#speedSeg` · 스탯 `#btnStatsHud` · 설정 · 항복 `#btnQuit` · 타이머) · 아래 줄 상대 · 트레이는 흰색 · 자동 배치 버튼 「배치」 · 덮어쓰는 CSS 는 `/* ═══ R2.26 전투 화면 */` 블록 (!important · 예전 u2 남색 규칙을 덮는다) · 전장 덱 `.fdeck` 네모 40px.
+- **경쟁전 로비 R1 처럼**: `#screen-comp.r1c` · `renderComp` 의 `hero` (육각 `.hex` · TP 링 · 사다리 · `#cpStart` 금색) · 아래 규칙 · 보상 카드는 그대로.
+- 도감 능력치 줄을 누르면 1랭크 기준 (`s.statR1`) · 덱 추천: Lv.10 까지 추천 · 그 뒤 랜덤 덱 · 둘 다 `recRoll` 2초 연출.
+- 배치 카드: 바로 앞 배치 기회에 놓은 지후 (`S.lastPut[진영]`, `applyAct`) 는 `rollPool` 에서 뺀다 (덱에 그것뿐이면 그대로).
+- 뽑기 `CFG.GACHA` 전설 2.7 · 영웅 7 · 희귀 27.8 · 일반 62.5 · 일반 · 희귀 `ENH_SHARD` 2배 (초기화권 환급도 새 값 기준이라 예전에 싸게 올린 랭크를 초기화하면 더 돌려받는다 — 알고 둠).
+- 지후의 탑: `TOWER_LIVES` 2 · `towerPersona` 1층만 초보 · 5층부터 초고수 반반 · 10층부터 초고수 · 봇 덱은 같은 등급이면 TIER_SC 높은 지후 · 15층부터 `makeUnit` 이 봇 체력 · 공격력 ×(1 + 0.1 × (층 − 14)).
+- 개구리: 25% (랭크 6 27.5%) · 결과는 `S.fx` 의 `txt` → `renderField` 가 그 칸 위 `.fx-tiletxt` (배너 아님) · `frogSweep` 은 빈 함수 (이벤트 · 괴도로 오른 레벨은 그냥 레벨).
+- 엔지니어 포탑 `c.tdecay` (20초 수명 · `stepUnit`) · EMP 패시브 `empDrain` · 수은 보호막 막대는 체력바 밖 (`.unit-hpbar-wrap` 에 붙여 `left = 체력 비율`) · 성검 현재 체력 5% + 레벨마다 1% · 괴도 `onStart` 예고장 · 랜턴 흡혈 대신 빔이 맞을 때 5 × 레벨.
+- **업데이트 알림 (웹 푸시)**: `pushAsk` (튜토리얼 끝 · 기존 유저 로비 한 번 `profile.pushAsk` · 환경설정 `#setPush`) → 허용하면 ◆`CFG.PUSH_DIA` (`profile.pushRw`) → `pushRegister` 가 firebase-messaging 토큰을 `push_tokens/<uid>` 에 (`CFG.PUSH_VAPID` 가 비어 있으면 저장 안 함) · `sw.js` push / notificationclick · **보내기**: 버전을 올린 업데이트 (잠수함 패치 제외) 를 배포한 뒤 사용자 PC 에서 `node tools/push-send.js --key <서비스 계정 JSON>` (제목 · 내용은 버전 · 패치노트에서 · `--dry` 로 기기 수만).
+- 글꼴은 Black Han Sans 그대로 (R2.26 에 리틱체 · 송명체를 시험했다가 사용자 요청으로 되돌림 — 다시 바꾸지 않는다).
 
 ## 최근 변경 (R2.25 · 신규 지후 5종)
 - **케이크** `cake` (영웅 · 커뮤니티 Kaden · 사용자가 준 두 능력치 중 첫 줄 HP 2250 · ATK 120 · 3초 + 이동 1.8): `onHit` → [중독됨] `addict` (300초 · `addictX.by` · `dealDamage` 에서 그 케이크가 아닌 대상에게 −15%) · 체력 25% `cakeCall` → 맨 뒤 줄 조각 케이크 8기 (SUMMONS `cakeslice` · `sliceSteer` 다친 가장 가까운 아군에게 → 자기 현재 체력만큼 회복 → 사라짐).
