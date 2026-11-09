@@ -2,7 +2,7 @@
 // 항상 네트워크를 먼저 쓰고, 연결이 없을 때만 받아 둔 사본을 보여준다 (새 버전 배포가 늦게 보이는 일이 없다).
 // 설치할 때 게임에 꼭 필요한 파일(CORE · 약 2.5MB)을 미리 받아 두고, 배경음악 · 큰 이모티콘 · 글꼴처럼 큰 것은 한 번 쓸 때 받아 둔다 (RT).
 // 버전 확인 요청(?vc=)과 Firebase 는 건드리지 않는다. 파일을 더하면 python tools/sw_assets.py 로 CORE 목록을 다시 만든다.
-const CACHE = 'rejhbt-r2-core-4'; // 미리 받는 사본 (목록이 바뀌면 이름을 바꾼다 · 예전 사본은 지운다)
+const CACHE = 'rejhbt-r2-core-5'; // 미리 받는 사본 (목록이 바뀌면 이름을 바꾼다 · 예전 사본은 지운다)
 const RT = 'rejhbt-r2-rt'; // 쓸 때 받아 두는 사본 (버전이 바뀌어도 남긴다)
 const SHELL = ['./', 'manifest.webmanifest'];
 // ── CORE (tools/sw_assets.py 가 만든다 · 손으로 고치지 않는다) ──
@@ -138,6 +138,11 @@ const CORE = [
   'emo/thumb/gif_11.png',
   'emo/thumb/gif_12.png',
   'emo/thumb/gif_13.png',
+  'fonts/REATIC-Bold.woff2',
+  'fonts/REATIC-Narrow.woff2',
+  'fonts/REATIC-NarrowBold.woff2',
+  'fonts/REATIC-Regular.woff2',
+  'fonts/SongMyung-Regular.woff2',
 ];
 // ── CORE 끝 ──
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net']; // 글꼴 CSS · 파일 (바뀌지 않는 주소라 받아 둔 사본을 먼저)
