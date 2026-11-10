@@ -11,7 +11,7 @@
 8. **브라우저로 테스트할 때는 반드시 소리를 끈다** (사용자 요청 · 시끄럽다): 페이지를 열자마자 `localStorage` 의 `rejhbt-sfx-vol` · `rejhbt-bgm-vol` 을 `'0'` 으로 두고 새로고침 (효과음 볼륨은 켤 때만 읽는다) · 헤드리스 크롬은 `--mute-audio`.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.26** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.27** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -104,7 +104,15 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.26 · 화면 개편 · 밸런스 35종)
+## 최근 변경 (R2.27 · 로비 UI 리뉴얼 · 애니메이션)
+- 시안 「네이비 리파인 v2」 (사용자 바탕화면 zip · 캐주얼 모바일 문법): `ui2Tpl` 마크업 + CSS 블록 `/* R2.27 로비 UI 리뉴얼 */` · `/* R2.27 모드 화면 */` · `/* R2.27 화려한 애니메이션 */` (`#ui2` 안 `k-` 접두사 · **버튼 클래스는 `kb`** — `k-btn` 은 예전 게임 클래스라 겹친다). 잉크 `#0e1226` · `.k-ol` 글자 외곽선 · `.k-pnl` 패널 · `.kb.k-gold/k-mint/k-navy/k-dia/k-off` · `.k-seg > .on` · `.k-pc` 초상화 카드.
+- 값은 `u2Vals()` = `u2ValsBase()` (예전 그대로) + **`u2Extra(v)`** (새 마크업 값 · 덮어쓰기) · 프로필은 `u2PfExtra` (정보 · 전적 · 아바타(`fav`) · 테두리). 로비 덱 부채꼴 `K_FAN` · 높이 맞춤 `u2FanFit` (예전 `u2ArenaFit` 이 부른다).
+- 온라인 탭 = 랭킹 (`u2Go('rank')`) · 위 스위치 `onSw` 로 친구 · 친선전 (`openSocial` · `UI2.st.onSub` 기억). 탑 · 경쟁전 · 샌드박스는 전체 화면 페이지 (`K_PAGE` 색 · `.k-hostfull` 안 기존 화면 · 안쪽 `.ph` 숨김). 이벤트 · 랜덤전 · 미러전은 모드 로비 `UI2.st.mode` (`K_MODE`) → 시작 버튼 `modeGo` 는 `ARC_SURE` 로 티켓 확인 창 없이.
+- 경쟁전 로비 `renderComp` hero 를 시안대로 (`kc-*` · R1 검은 화면 `r1c` 은 지운다) · 탑 진행 `kt-hero` (현재 층 · 하트).
+- 애니메이션은 **transform · opacity 만** (로비 전용 · 전투 중엔 `#ui2` 가 숨어 멈춘다 · 50기 벤치 변화 없음) · 탭 효과 `K_TAP` → `.k-tapfx` (링 + 별 · 0.52초) · `prefers-reduced-motion` 이면 끔 · `:has()` 는 쓰지 않는다.
+- 보조 문구는 시안대로 Pretendard (`.k-sub`) · 제목 · 버튼은 Black Han Sans 그대로.
+
+## 지난 변경 (R2.26 · 화면 개편 · 밸런스 35종)
 - **로비** (`ui2Tpl` 전투 탭): 스크롤 없이 한 화면 · 친선전 버튼 · 모드 토글 · 부스트 줄 삭제 · 부스트 배지는 `.u2-cta` 밖 (overflow:hidden 에 잘렸다) · 아레나는 `u2ArenaFit` 이 남는 높이만큼 scale.
 - **일반전은 늘 클래식** (`profile.mode` 안 씀) · 이벤트 모드는 아케이드 `ARC_MODES.event` → `EV_NEXT = true` 뒤 일반전 한 판 (보상 그대로 · 무료) · **랜덤전** `random` (미러전과 같은 요금 · 서로 다른 무작위 덱).
 - **햄버거 `MENU`**: 퀘스트 · 업적 삭제 · 랭킹 / 전투기록 / 가방 / 패치노트 / 도움말 / 크레딧 따로 · 코드 입력은 환경설정 `#setCode` · 튜토리얼 · 인트로 만화 · 티어리스트 (`helpTierHtml` · TIER_SC) 는 도움말 안.
