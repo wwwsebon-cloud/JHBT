@@ -18,6 +18,7 @@ SIG_FIX = {  # id: '#rrggbb' — 자동으로 뽑은 색이 그 지후의 색과
     'joker': '#ff4d4d,#ffa63d,#ffe14d,#4ad66b,#4da6ff,#a46bff',  # 예외: 무지개 그라데이션 (사용자 요청)
     'cake': '#e6010f,#ff8ccf', 'cakeslice': '#e6010f,#ff8ccf',  # 빨간 모자 + 분홍 크림 (색상이 가까워 자동으로는 한 색)
     'engineer': '#ca1e02,#3aa0ff',  # 갈색 + 파란 고글
+    'rot': '#9b3fc7', 'pkskul': '#ff7a00',  # R2.30 부패: 보라 (자동은 자홍) · 폭발 스껄: 호박 주황 (자동은 회색)
 }
 
 HTML = 'index.html'

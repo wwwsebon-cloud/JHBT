@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.29** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.30** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -87,6 +87,7 @@
 
 ## 시뮬 · 티어
 - **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R2.26` 은 R2.26 코드 · 1,600판 (일꾼 2개 · 괴도 예고장 16초 반영) · 예전: tier-R2.25.4 는 R2.25.4 코드 · 1,258판 (1,600판 중 · 로컬 윈도우에서 일꾼 12개가 PC 를 멈출 만큼 무거워 중간에 끊고 그대로 집계 · **로컬에서는 일꾼 1~2개로**). (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
+- 로컬 윈도우: playwright 없음 → `node tools/tierlist/run-cdp.js <폴더> <번호> <일꾼 수> <판수>` 를 일꾼 수만큼 띄운 뒤 `node tools/tierlist/agg.js <폴더> 100` → `python tools/tierlist/apply.py <폴더> <버전> <날짜>`.
 - 결과로 `TIER_SC` (**SS 90~100** · S 80~89 · A 65~79 · B 40~64 · C 20~39 · D 0~19 · R2.26 부터 6티어 — 지후 100종이 넘어서) 를 갱신한다 · 게임 `tierOf` · `TIER_C` · 도움말 티어리스트 · make.py `.tr.SS` 도 SS ~ D.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
@@ -109,7 +110,17 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.29 · 전장 캔버스 · 버그 수정)
+## 최근 변경 (R2.30 · 신규 지후 11종 · 속성)
+- 신규: 스껄 `skul` · 멈춰! `stopj` · 페이즈 `phase` (전설 → 영웅) · 부패 `rot` · 메탈 `metal` · 부루스타 `burner` · 샌즈 `sans` · 스테인리스 `stainless` · 총? `gunq` · 태극 `taegeuk` · 호박 `pumpkin` (도우미 `// ── R2.30 신규 지후 도우미 ──`) · SUMMONS 폭발 스껄 `pkskul` · 병아리 `chick` (닭 지후 부화가 이제 병아리). 초상화 원본 `지후초상화/R2.30/` · **오케스트라 지후는 그림만 받고 능력이 없어서 아직 안 넣었다** (바탕화면 new7).
+- **속성** `FIRE_T` (화염 · 태양 · 불사조 · 각성 불사조 · 드래곤 · 태극 · 부루스타): [화상] · [3도 화상] 피해 없음 (`fireImm`) · 대신 공격력 +20% (`burnK`) · `ICE_T` (얼음 · 블리자드): `addStatus` 가 빙결 · 동상을 막는다. 새 불 · 얼음 지후는 여기에.
+- 새 상태 `sear` [3도 화상] (아이콘 `icons/fx/sear.png` · 해제되면 보통 화상 `searCleanse`) · `ignite` [점화] (`igniteTick` · 일반 공격 `hitOne` 이 `searOn`) · `rot` (`rotK`) · `corr` · `absorb`. 받는 피해 계산 한 줄 (`dealDamage` 의 rot · sear · 스테인리스) · 메탈은 그 뒤 `d = 2 / 4`.
+- 스테인리스 `def.stainless`: 적의 `opts.skill` 피해 · 넉백 (`A.knock`) · 즉사 (`instaKill`) · 절상 · 아공간 무시 · 디버프는 `stRev` (반대로 걸 것만 `ST_REV` · 버프 `rv_…`) · `buffSum` 이 음수 버프를 뒤집는다 (`taken` 제외). 새 디버프를 만들면 `ST_REV` 에 반대 효과를 넣을지 정한다.
+- 태극: 배치 기록 `p.tg` ('r' · 'b' · `tgRoll` 친선전은 해시) · `packPlace` 12번째 칸 · 라운드 끝 `tgFlip` · 줄 판정 `tgPowers` (교차 칸은 두 색으로 친다 = [극의 조화] · 조화 폼 = 기본 초상화) · 배치 화면 `renderField` 가 아우라 클래스 `tg-r/b/h` + 줄 번쩍임 `tgFlash` · 캔버스 `CV_RING` · `_cvTgH`.
+- 샌즈 화살표는 캔버스 `CVF.over` 의 `k: 'sans'` (화면 가운데 `W.hw/hh`) · 총? 빛줄기 `FXC.beams`.
+- 티어: `TIER_SC` · `infographics/tier-R2.30` 은 R2.30 코드 · 1,600판 · **로컬 윈도우에는 playwright 가 없다 → `tools/tierlist/run-cdp.js` (시스템 크롬 · 일꾼 2개 약 3분)** 뒤 `agg.js` · `apply.py` · make.py · shot.py. 샌즈가 SS 1위 (65.8%) · 메탈 · 태극 D.
+- dev 전용 `window.__rejhbt` 에 `effAtk` · `rotK` · `tgPowers` · `instaKill` · `renderField` · `charDetail` 를 더했다 (헤드리스 확인용).
+
+## 지난 변경 (R2.29 · 전장 캔버스 · 버그 수정)
 - **전장 캔버스** (`// ═════════ R2.29 전장 캔버스` · `CV` · `cvDraw`): 전투 중 유닛은 `#field` 안 캔버스 `.fx-ucv` 하나에 그린다 (z-index 5 · 카메라의 반대 변환 `cvPlace` 로 화면 크기 그대로). 유닛 DOM `u.el` 은 상태 모델로 남겨 `display:none` (스킬 코드가 classList · 자식을 그대로 쓴다). 몸통 · 체력바 · 레벨 · 효과 아이콘 줄은 미리 그린 그림 `cvSprite` (배율 `cvQ` √2 단계) · 클래스 · 자식은 MutationObserver (`cvWatch`) 가 바뀔 때만 `cvPlain` 으로 다시 본다.
   - **새 유닛 클래스 · 머리 위 요소를 만들면**: 캔버스가 모르는 클래스 · 자식이 붙은 동안 그 지후는 DOM 으로 보인다 (자동 · 안전). 자주 쓰는 상태면 `CV_CLS` (빛나는 둘레는 `CV_RING`) 에 넣고 `cvDraw` 에 그리기를 더한다. 머리 위 글씨는 `span.xlv` 면 캔버스가 읽는다 (`XLV_C` 색).
   - 이펙트: 피해 숫자 `cvNum` · 불꽃 · 총구 · 베기 · 고리 (`A.ring`) · 먼지 · 공격 예고 (`u.tgc` · `cvFan`) · 투사체 (`CV_SHOT` 종류는 `el = CV_STUB` · `cvShot`) 는 `CV.on` 이면 `CVF.under / over` 에. 새 이펙트도 `CV.on` 일 때 캔버스로 (드문 것은 DOM 그대로 돼도 된다). 사망 이펙트는 결정적 순간 슬로 모션 때문에 DOM.

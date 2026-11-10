@@ -15,7 +15,7 @@ function schedule(ids, pairs) { // 고르게 뽑기 (일꾼마다 같은 결과)
 (async () => {
   const file = path.join(W, `t5_${shard}.jsonl`), done = new Set();
   if (fs.existsSync(file)) for (const line of fs.readFileSync(file, 'utf8').split('\n')) if (line) { try { done.add(JSON.parse(line).g); } catch (e) {} }
-  const b = await chromium.launch(), p = await b.newPage();
+  const b = await chromium.launch({ args: ['--mute-audio'] }), p = await b.newPage(); // 소리 끔 (CLAUDE.md)
   let errs = 0; p.on('pageerror', e => { errs++; if (errs <= 3) console.error('PAGEERR', e.message); });
   await p.route(/gstatic\.com|googleapis\.com|firebaseio\.com|firebaseapp\.com|workers\.dev|jsdelivr\.net/, r => r.abort()); // Firebase 등 바깥 주소는 막는다
   await p.goto(URL); await p.waitForFunction(() => window.__rejhbt && __rejhbt.S && __rejhbt.S.place, null, { timeout: 60000 }); await p.waitForTimeout(2500);
