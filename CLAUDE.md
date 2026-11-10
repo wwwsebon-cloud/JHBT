@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.28** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.29** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -32,7 +32,7 @@
 - 로컬 서버를 켠 뒤: `node infographics/extract.js` → `node infographics/notes2json.js <버전>` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py "infographics/<버전>*.html"`.
 - 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …) · **R2.22.1 타일 개편**: 변경 하나 = 타일 하나 (같은 지후는 연달아 · `split_tiles`) · 단색 (상향 `--tb` · 조정 `--ta` · 하향 `--tn`) · 글꼴 **Lilita One (숫자 · 영문) + Do Hyeon (한글)** (사용자가 고름) + 검은 외곽선 · 한 줄 4칸 · 높이 모두 같게 · 색은 지후 태그 (조정 지후만 수치 방향 `line_dir`). 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
 - **신규 지후**: `node infographics/notes2json.js <버전> --new` (그 버전 패치노트의 tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make.py · shot.py.
-- 눈으로 보이는 변화는 구역에 게임 스크린샷 `"shots": [{ "src": "shots/<파일>.png", "cap": … }]` (infographics/ 기준 · R2.22 build 3 · 하나만 따로 낼 때는 JSON 을 직접 · 예: `R2.22-b3.json`). 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 를 붙인 래퍼를 준다 (extract.js).
+- **인포그래픽 안에 게임 스크린샷을 넣지 않는다** (R2.29 사용자 요청 · make.py 의 `"shots"` 칸은 쓰지 않는다 · 눈으로 보이는 변화도 글 타일로만). 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 를 붙인 래퍼를 준다 (extract.js).
 - 여러 버전 밸런스 총정리: `node infographics/balance-sum.js <처음 버전> <마지막 버전>` (지후별 처음 → 지금 · 랭크 6 제외 · 지저분하게 합쳐지는 지후는 파일 안 `OVERRIDE`) → `balance-<처음>-<마지막>.json` → make.py · shot.py.
 - 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로).
 - 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
@@ -56,7 +56,7 @@
 - CSS 에 `[style*=…]` 같은 **style 속성 선택자를 쓰지 않는다** — 하나만 있어도 전투 중 인라인 style (위치 · 체력바) 이 바뀔 때마다 자식 요소를 모두 다시 계산한다 (R2.18 build 5 · 새 로비 그리드는 `U2_GRID_TAG` 가 붙이는 클래스 `u2-gr` 로). 쓰러진 유닛은 효과 아이콘 줄 `ufxOf` 을 다시 만들지 않는다.
 - DOM 위치 · 크기는 프레임마다 한 번 이하로 (`tick` 은 한 프레임에 여러 번 돈다 · 그리기는 바뀐 값만 · `translate` 로).
 - 매 스텝 `A.status` · `A.buff` 를 다시 걸지 않는다 (걸 때마다 `drawUnit` → 상태 아이콘을 다시 그린다) — 이미 걸려 있으면 남은 시간만 늘린다.
-- 이펙트 DOM 은 `S.fast` 일 때 만들지 않고, 끝나면 꼭 지운다 (`u.fx` 에 넣으면 쓰러질 때 · 라운드 끝에 지워진다).
+- 이펙트 DOM 은 `S.fast` 일 때 만들지 않고, 끝나면 꼭 지운다 (`u.fx` 에 넣으면 쓰러질 때 · 라운드 끝에 지워진다). **R2.29 부터 자주 생기는 이펙트는 `CV.on` 이면 전장 캔버스 (`CVF`)** — 아래 「최근 변경」.
 - 여러 유닛을 잇는 선 · 빛줄기는 유닛마다 DOM 을 만들지 않는다 → 전장 캔버스 하나에 프레임마다 한 번 (모노리스 `monoDraw` · R2.20 · DOM 으로는 50기 벤치 FPS 46 → 36).
 - **큰 원 · 긴 빛줄기도 DOM 으로 만들지 않는다** — 반경 15칸 원 (지름 2,250px) · 대각선 레이저는 폰 GPU 에 거대한 레이어가 된다 (헤드리스로는 안 보인다) → `fxRing(x, y, R, 색, ms, 테두리)` · `FXC.beams` (monoDraw 캔버스 · R2.20 build 3 DJ · 모노리스).
 - 넓은 범위 스킬 피해 숫자는 `dealDamage(..., { skill: true, lite: true })` (처음 몇 개만 크게) — 스킬 피해 숫자는 원래 한도(FX_CAP)를 무시한다.
@@ -109,7 +109,20 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.28 · 리더보드 · 시그니처 색)
+## 최근 변경 (R2.29 · 전장 캔버스 · 버그 수정)
+- **전장 캔버스** (`// ═════════ R2.29 전장 캔버스` · `CV` · `cvDraw`): 전투 중 유닛은 `#field` 안 캔버스 `.fx-ucv` 하나에 그린다 (z-index 5 · 카메라의 반대 변환 `cvPlace` 로 화면 크기 그대로). 유닛 DOM `u.el` 은 상태 모델로 남겨 `display:none` (스킬 코드가 classList · 자식을 그대로 쓴다). 몸통 · 체력바 · 레벨 · 효과 아이콘 줄은 미리 그린 그림 `cvSprite` (배율 `cvQ` √2 단계) · 클래스 · 자식은 MutationObserver (`cvWatch`) 가 바뀔 때만 `cvPlain` 으로 다시 본다.
+  - **새 유닛 클래스 · 머리 위 요소를 만들면**: 캔버스가 모르는 클래스 · 자식이 붙은 동안 그 지후는 DOM 으로 보인다 (자동 · 안전). 자주 쓰는 상태면 `CV_CLS` (빛나는 둘레는 `CV_RING`) 에 넣고 `cvDraw` 에 그리기를 더한다. 머리 위 글씨는 `span.xlv` 면 캔버스가 읽는다 (`XLV_C` 색).
+  - 이펙트: 피해 숫자 `cvNum` · 불꽃 · 총구 · 베기 · 고리 (`A.ring`) · 먼지 · 공격 예고 (`u.tgc` · `cvFan`) · 투사체 (`CV_SHOT` 종류는 `el = CV_STUB` · `cvShot`) 는 `CV.on` 이면 `CVF.under / over` 에. 새 이펙트도 `CV.on` 일 때 캔버스로 (드문 것은 DOM 그대로 돼도 된다). 사망 이펙트는 결정적 순간 슬로 모션 때문에 DOM.
+  - 결정적 순간 (`beginFinalMoment`) · 라운드 끝 · 화면 이동 → `cvEnd` 가 유닛을 DOM 으로 되돌리고 떠 있던 피해 숫자는 DOM 으로 다시 띄운다. 비교용 `?dom=1` (예전 DOM 렌더링). 누르기는 `cvPick`.
+  - 측정 (CPU ×4 · 50기 · 사용자 PC 가 다른 게임으로 바빠 절대값은 흔들림): FPS 11~14 → 15 · 스타일 + 레이아웃 260 → 85ms/초. 남은 병목은 **전투 계산** (×4 에서 스텝당 약 8ms · 따라잡기 4스텝).
+- `loop`: 다음 프레임을 맨 앞에서 걸고 몸통 `loopBody` 는 try · 유닛 스텝 · `A.later` · 투사체 맞음은 `stepErr` (같은 오류는 한 번만) — 한 지후의 오류로 전투가 멈추지 않는다. 프레임 제한은 예정 시각 `frameDue` (90 · 144Hz 도 60번).
+- 도둑 [아공간] 절도: `dimReady` (차원 · 훔친 도둑 공용 · 스킬 없으면 2연발만) · 도둑 `tick` / `onDeath` 가 `dimTick` / `dimClose` · 도둑 패시브 `noSpGive` (공격으로만 SP · `spGive` · 충전 `chExcl`) · `spGive` 재귀 막기 `a.spIn` · `skNeed` 는 스킬이 없으면 Infinity.
+- 친선전 `packPlace` 10번째 칸 = 늑대 `wf` · 봇전 `S.coinSlot` 도 경기 시작 시세 (`matchBase`).
+- 기록 보호: `xkStash` (normProfile 맨 앞) — 이 버전이 모르는 지후 (owned · shards · enh) · 아이템 · 테두리는 `p.xk` 에 맡겨 두고 아는 버전이 되돌린다 · 백업 기록에 `profile.gv` (게임 버전) · 서버 기록이 더 새 버전이면 `backupNow` 가 쓰지 않고 업데이트 창.
+- 햄버거 점 `menuDot` = 메뉴 항목 점 (`MENU.some`) · 아케이드 상점은 시트 `hasArcShop` (`UI2.st.arcShop`) · 우편 받기 → `mailSummary` 정리 창 (새 지후만 뽑기 연출) · 로비 1초 타이머 `u2Render(true)` 는 HTML 이 같으면 건너뛴다.
+- 주석 검사 `tools/comment-check.py` 가 「주석 뒤에 묻힌 호출 · 선언 · if」 도 잡는다 (R2.25.4 부터 차원 지후 아공간 초상화가 묻혀 있었다). 티어 하네스는 판 사이에 `#field` 를 비운다.
+
+## 지난 변경 (R2.28 · 리더보드 · 시그니처 색)
 - **시그니처 색** `SIG_C` (PORTRAITS 바로 뒤 한 줄 · `tools/sig-color.py` 가 쓴다 · 손으로 고치지 말고 `SIG_FIX`) · 값은 `'#hex'` 또는 두 색 `'#a,#b'` · `sigC(id)` 한 색 · `sigBg(id)` 늘 `linear-gradient(...)` (두 색이면 135° 그라데이션) · 숨은 지후는 `rankOf` → `CHARS.color`.
 - **덱 설정 화면 (지후 탭 덱 슬롯 · 카드) 은 등급색 그대로**, 그 밖의 덱 표시 (로비 부채꼴 · 프로필 대표 덱 `pfDeck` · 리더보드 · 전장 덱 `.fdeck span.sg` · 전투기록 · 유저 정보 · 탑 덱 `.pic.sg`) 는 시그니처 색. 그라데이션 테두리는 `border: transparent` + `background: linear-gradient(#fff,#fff) padding-box, <sigBg> border-box` (둥근 모서리 그대로).
 - 리더보드 기본 탭 `lbTab = 'cp'` (레벨은 두 번째) · 줄을 높게 (`k-lbfav` · `k-lbpic` · 랭크 `k-lbrk`) · `lbPush` 가 덱 랭크 `rk` (1~6 배열) 를 올린다 → **firestore.rules `rkOk` 게시 필요** (예전 규칙이면 `FB.noRk` 로 빼고 다시).
@@ -156,7 +169,7 @@
 - build 7: 부스트 하루 3번 · 30분 (`CFG.BOOST_*`) · 일반전 버튼 오른쪽 위 빨간 배지 (u2 `boostBadge` · `.u2-bb` 는 1초 타이머가 글자만) · 상점 빛나는 조각 가중치 절반 (`SHOP_ITEMS.glow*.w`) · 이벤트 등급 `EV_GRADE` [45, 35, 20] · 관통탄 `stepLines` 는 이제 `translate` 로 옮긴다 (처음 자리만 left/top). 렉 확인 `node tools/perf-typhoon.js` (헤드리스라 폰 GPU 렉은 안 보인다 · 상대 비교만).
 - build 5 **앱 다운로드**: 햄버거 `MENU` 「앱 다운로드」 → `appInstall()` (`beforeinstallprompt` 를 `APP.evt` 에 받아 두었으면 `prompt()` · 아니면 기기별 안내 dlg · 앱으로 실행 중이면 `appStandalone()` 「설치됨」). 예전 주소 `wwwsebon-cloud.github.io/JHBT` 에 설치된 앱은 오프라인이면 그 주소의 옛 사본 (5.7.6 무렵 · 10/2 도메인 이전 전) 이 뜬다 — 서버에서는 못 고친다 (지우고 jihoobattle.kr 에서 다시 설치).
 - build 2: 덱 설정 5열 (`gridTpl` · 긴 이름 `nmFs`) · 서버로 보내는 지후 id 는 `CID_RE` `^[a-z][a-z0-9_]{0,23}$` (예전 `^[a-z_]` 가 c4 를 뺐다 · `firestore.rules` 도 · 예전 규칙이면 `FB.oldIds` 로 다시). build 3: 태풍 0.6초 · 무작위 방향 · `A.line` 의 `home` · `turn` 살짝 유도 (`lineHome`) · 관통 · 낙뢰 2초 600% (build 6: 태풍 200% · 낙뢰 300% · 폭염 짜증 10% · **build 7 최종안**: 폭염 300% · 짜증 20% · 공격속도 −10% · 이동 −25% · 낙뢰 400% · 태풍 0.9초 · 맵 둘레 무작위 자리 → 맵 안 무작위 자리 · `turn` 0.2 · 0.6칸 · 맞을 때 `hitFx(…, false)` (예전 big = 큰 불꽃 + 화면 흔들림이 관통마다 겹쳐 렉)) · 늑대 HP 1450 · 1.25초 · `lifesteal` 0.2 · `gauge` · `wolfBlinkFx` (캔버스 줄기 `FXC.beams` 의 `c1 · w1 · c2 · w2`) · 불사조 ATK 110 · 각성 140.
-- 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것).
+- 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것: `open(..., newline='')` 로 읽고 쓰기). **Edit 도구도 index.html 의 섞인 줄바꿈을 한쪽으로 바꿔 버린다** (R2.29) — index.html 은 `newline=''` 파이썬 치환으로 고친다.
 
 ## 그 전 변경 (R2.23.1 · 밸런스)
 - EMP 파동 `empWave` 50 → 35% · 엑시노스 `gpuTick` 오르는 양 2배 (최대 50% 그대로) · 화염 공격력 140 → 120.

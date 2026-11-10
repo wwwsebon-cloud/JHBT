@@ -6,6 +6,7 @@
   const place = ids => { const used = new Set(); return ids.slice().sort((a, b) => rowOf(a) - rowOf(b)).map(id => { let t = -1; for (let rr = rowOf(id); rr < 3 && t < 0; rr++) for (let c = 0; c < 5; c++) if (!used.has(rr * 5 + c)) { t = rr * 5 + c; break; } used.add(t); return [id, t]; }); };
   const TID = new Map(); // uid → 배치한 지후 (스파이 변장 · 성장 변신 뒤에도 원래 지후로 센다)
   const fight = (A, E, seed) => { R.setSeed(seed); TID.clear();
+    { const f = document.getElementById('field'); if (f) for (const el of [...f.children]) if (!el.classList.contains('tile') && !el.classList.contains('rowlab')) el.remove(); } // R2.29: 판 사이에 전장 DOM 을 비운다 (예전엔 쌓여서 120판에 DOM 196 → 16,630개 · 판마다 느려졌다)
     Object.assign(S, { phase: 'combat', time: 0, started: false, lastDmgAt: 0, stallEnded: false, odds: [], timed: [], units: [], shots: [], lines: [], zones: [], barriers: [], fast: true, net: null, rel: null, relLog: [], relAcc: 0, clover: { a: 0, e: 0 }, evOn: false, ev: { a: [], e: [] }, evc: { a: {}, e: {} }, speed: 1, deaths: 0, place: { a: [], e: [] }, roundStart: null, prop: { a: [], e: [] }, deck: { a: A.slice(), e: E.slice() }, enh: null, weak: false }); // 판(arc)은 벤치 샌드박스 그대로 (전적 · 퀘스트에 안 잡힌다)
     for (const [side, ids] of [['a', A], ['e', E]]) for (const [id, t] of place(ids)) { const q = R.tileXY(side, t), u = R.makeUnit(side, id, 1, q.x, q.y); u.tile = t; S.place[side][t] = { id, lv: 1 }; S.units.push(u); TID.set(u.uid, id); }
     let win = null, timed = false;
