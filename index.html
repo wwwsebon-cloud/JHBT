@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.31"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.31"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4679,9 +4679,9 @@ const CHARS = {
     steer(u) { if (!(u.st.absorb > 0)) return false; u.desVx = u.desVy = 0; return true; }, // [흡수] 중: 멈춘다
     skill: { type: 'hit', need: 7, desc: '<b>SP 7</b> · <b>2초</b> 동안 그 자리에 멈춰 모든 피해를 흡수하고, 흡수한 피해의 <b>15%</b>만큼 회복합니다.',
       run(u) { stainAbsorb(u); } } },
-  gunq: { name: '총? 지후', rarity: 'legend', role: '폭발형', hp: 1067, atk: 99999, /* R2.30 build 2: 999,999,999,999,999 (즉사) → 99,999 */ atkSpeed: 1, range: 1, speed: 2, noAttack: true, atkText: () => '99,999', /* R2.31: 도감 · 덱에 공격력 표시 */ portrait: PORTRAITS.gunq, sfx: 'shot', color: '#1d1d22',
-    story: '자기 몸보다 열 배는 큰 저격총을 주운 아주 작은 지후입니다. 총이 너무 무거워서 그는 아직 한 번도 방아쇠를 일부러 당겨 본 적이 없어요. 그런데 누군가 그를 쓰러뜨리는 순간, 넘어지면서 손가락이 방아쇠에 걸려 총이 발사됩니다. 그 총알은 맞은 지후를 왕국 밖까지 날려 보낼 만큼 강해서, 반동으로 그 자신도 반대쪽 하늘로 날아가요. 저격 지후는 그건 저격이 아니라 사고라며 그를 총기 협회에 넣어 주지 않고 있습니다. 근위대 예산이 깎인 뒤로는 총알이 싸구려라 가끔 맞고도 버티는 지후가 나오는데, 날아가는 건 똑같대요.',
-    passive: '공격하지 않고 적에게 다가갑니다. 쓰러지면 자신을 쓰러뜨린 적을 쏴서 <b>공격력</b>만큼 피해를 줍니다. 버틴 적은 <b>10칸</b> 날아갑니다.',
+  gunq: { name: '총? 지후', rarity: 'legend', role: '폭발형', hp: 1067, atk: 0, /* R2.31 build 2 리워크: 피해 대신 [고자] (예전 999조 즉사 → 99,999 피해) · 도감 공격력 — */ atkSpeed: 1, range: 1, speed: 2, noAttack: true, portrait: PORTRAITS.gunq, sfx: 'shot', color: '#1d1d22',
+    story: '자기 몸보다 열 배는 큰 저격총을 주운 아주 작은 지후입니다. 총이 너무 무거워서 그는 아직 한 번도 방아쇠를 일부러 당겨 본 적이 없어요. 그런데 누군가 그를 쓰러뜨리는 순간, 넘어지면서 손가락이 방아쇠에 걸려 총이 발사됩니다. 그 총알은 맞은 지후를 왕국 밖까지 날려 보낼 만큼 강해서, 반동으로 그 자신도 반대쪽 하늘로 날아가요. 저격 지후는 그건 저격이 아니라 사고라며 그를 총기 협회에 넣어 주지 않고 있습니다. 근위대 예산이 깎인 뒤로는 총알이 싸구려라 맞은 지후가 쓰러지지는 않는데, 대신 그날 하루는 기운이 하나도 없대요.',
+    passive: '공격하지 않고 적에게 다가갑니다. 쓰러지면 자신을 쓰러뜨린 적을 쏴서 <b>[고자]</b>로 만듭니다. [고자]가 된 적은 이번 라운드 동안 최대 체력과 체력이 <b>1</b>이 됩니다.',
     onDamaged(u, src) { if (src && src !== u && src.side !== u.side) u.gqLast = src; },
     steer(u) { return gunqSteer(u); },
     onDeath(u) { gunqFire(u); } },
@@ -5354,11 +5354,15 @@ function sansPush(u) { // 모든 적 · 상하좌우 중 무작위 한 벽까지
     const r = unitRadius(e), far = dx > 0 ? W - r - e.x : dx < 0 ? e.x - r : dy > 0 ? H - r - e.y : e.y - r; A.knock(u, e, Math.max(0.3, far / CFG.CELL), dx, dy); });
 }
 function gunqSteer(u) { const t = nearestFoe(u); if (!t) return true; if (dist(u, t) > unitRadius(u) + unitRadius(t) + 0.6 * CFG.CELL) moveToward(u, t.x, t.y, 1, t); return true; } // 총? 지후: 공격하지 않고 가장 가까운 적 곁으로
-function gunqFire(u) { // 총? 지후 [탕!!] (지후배틀 1 8.1): 쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 공격력만큼 (R2.30 build 2: 즉사 → 99,999) · 쓰러지면 총알 방향으로 날아가고 버티면 10칸 넉백 · 자신은 반동으로 반대로
+function gunqFire(u) { // 총? 지후 [탕!!]: 쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · [고자] (이번 라운드 최대 체력 · 체력 1 · 죽이지 않는다 · R2.31 build 2 리워크) · 총알 방향 10칸 넉백 · 자신은 반동으로 반대로 날아가며 그대로 쓰러진다
   const k = u.killer || u.lastKiller, c = k && k.alive && k.side !== u.side ? k : u.gqLast, t = c && c.alive && c.side !== u.side && (c.realm || 0) === (u.realm || 0) ? c : null;
   const bd = backDir(u.side), ang = t ? Math.atan2(t.y - u.y, t.x - u.x) : Math.atan2(-bd.y, -bd.x);
   if (!S.fast) { dmgNum(u, '💥 탕!!', { crit: true, stamp: true }); shake(true); if (t) FXC.beams.push({ x0: u.x, y0: u.y, x1: t.x, y1: t.y, t0: performance.now(), ms: 420, c1: 'rgba(255,140,0,.45)', w1: 30, c2: 'rgba(255,240,180,.98)', w2: 9 }); gqFly(u, ang + Math.PI); }
-  if (!t) return; dealDamage(u, t, u.atk, { noCrit: true }); if (!t.alive) { if (!S.fast) gqFly(t, ang); } else A.knock(u, t, 10, Math.cos(ang), Math.sin(ang)); /* 버티면 10칸 넉백 */
+  if (!t) return; gojaOn(t); A.knock(u, t, 10, Math.cos(ang), Math.sin(ang));
+}
+function gojaOn(t) { // [고자]: 이번 라운드 최대 체력 · 체력 1 (스테인리스 · 무적 · 잠수는 튕겨 낸다)
+  if (!t.alive) return; if (t.def.stainless || t.st.inv > 0 || t.st.dive > 0) { if (!S.fast) dmgNum(t, '🛡 튕겨냄', { crit: true }); return; }
+  t.baseMaxHp = t.maxHp = 1; t.hp = 1; t.cuts = []; t.cutFrac = 0; t.st.goja = 300; if (!S.fast) dmgNum(t, '🥚 고자', { crit: true, stamp: true }); drawUnit(t);
 }
 function gqFly(u, ang) { const d = 14 * CFG.CELL, el = fxAt('fx-gq-fly', u.x, u.y, 900), i = document.createElement('i'); i.style.backgroundImage = `url("${cvPic(u)}")`; el.appendChild(i); el.style.setProperty('--dx', (Math.cos(ang) * d).toFixed(0) + 'px'); el.style.setProperty('--dy', (Math.sin(ang) * d).toFixed(0) + 'px'); } // 빙글빙글 날아간다 (연출만)
 function pkCall(u) { // 호박 지후 [트릭 오어 트릿]: 가장 가까운 적 쪽 1.2칸 앞 땅에서 2초 뒤 폭발 스껄 지후 (호박 지후 최대 체력의 25%)
@@ -5552,7 +5556,7 @@ const CHAR_INFO = {
   rot: [['대상', '[부패]되지 않은 가장 가까운 적 먼저 (모두 부패했으면 보통 대상)'], ['[부패]', '일반 공격 · 라운드 끝까지 · 받는 피해 +10% · 2초마다 +1%p (최대 50%)'], ['[부식]', 'SP 5 · 자신 주위 반경 3칸 적 모두 · 5초 · 처음 받는 공격 피해 +100 (레벨마다 늘어난다) · 맞으면 사라진다']],
   sans: [['[와! 샌즈]', '라운드 시작 3초 뒤 · 그 뒤 15초마다 (쿨타임) · 0.5초 간격으로 4번'], ['한 번에', '모든 적 · 상 · 하 · 좌 · 우 중 무작위 한 방향의 벽까지 밀쳐낸다 · 공격력의 50% (스킬 피해)'], ['일반 공격', '하지 않는다 · 가장 가까운 적과 사거리 (6칸) 만큼 떨어져 따라간다']],
   stainless: [['[액티브 스킬]', '적의 스킬 피해 · 넉백 · 즉사 · 아공간을 받지 않는다'], ['디버프', '모두 면역 · 반대로: [동상] 공격력 +10% · 이동 +40% · 받는 피해 −10% / [취약] 받는 피해 감소 / [졸음] 공격력 +30% / [약화] 공격력 +15% · 이동 +20% · 받는 피해 −20% / [3도 화상] 공격력 +10% · 받는 피해 −20% / [부패] · [부식] 받는 피해 감소 / 공격력 · 공격속도 · 이동속도 감소는 증가로'], ['[흡수]', 'SP 7 · 2초 · 그 자리에 멈춘다 · 모든 피해 0 · 흡수한 피해 (줄기 전) 의 15% 회복']],
-  gunq: [['일반 공격', '하지 않는다 · 가장 가까운 적 곁으로 걸어간다'], ['[탕!!]', '쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 공격력만큼 피해 (ATK 99,999 · 치명타 없음) · 쓰러뜨리면 총알 방향으로 날아가고, 버티면 총알 방향으로 10칸 넉백 · 자신은 반동으로 반대로 날아간다']],
+  gunq: [['일반 공격', '하지 않는다 · 가장 가까운 적 곁으로 걸어간다'], ['[탕!!]', '쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 피해는 없다 · 대상 [고자] · 총알 방향으로 10칸 넉백 · 자신은 반동으로 반대로 날아가며 그대로 쓰러진다'], ['[고자]', '이번 라운드 동안 최대 체력 · 체력 1 (절상 풀림) · 스테인리스 · 무적 · 잠수는 튕겨 낸다']],
   taegeuk: [['출격제한', '없음 (같은 지후 3기 제한을 무시)'], ['색', '놓일 때 [청] · [적] 반반 · 라운드가 끝날 때마다 다시 무작위 (그대로일 수도)'], ['[붉은 힘]', '[적] 3기가 세로 한 줄 (전열 · 중열 · 후열) · 그 줄의 [적] 공격력 +100% · 빨간 아우라'], ['[푸른 힘]', '[청] 5기가 가로 한 줄 · 그 줄의 [청] 공격속도 +50% · 파란 아우라'], ['[극의 조화]', '세로 줄과 가로 줄이 만나는 칸의 태극 지후 (색 상관없이 두 색 모두로 친다) · 두 힘 모두 + 체력 +50% · 공격력 +100% 더 · 공격속도 +50% 더 · 두 색 아우라가 돈다 · 그 즉시 조화 폼으로 모습이 바뀐다 (배치 중에도 · 다른 칸으로 옮기면 원래 색으로)']],
   pumpkin: [['[트릭 오어 트릿]', 'SP 9 · 가장 가까운 적 쪽 1.2칸 앞 땅에서 2초 뒤 나온다 (그사이 호박 지후가 쓰러지면 나오지 않는다)'], ['폭발 스껄 지후', 'HP 호박 지후 최대 체력의 25% · 이동 2.5 · 공격하지 않고 적에게 달려간다'], ['폭발', '적에게 닿거나 쓰러지면 · 반경 1.3칸 적 모두 · 자기 최대 체력만큼 (치명타 없음) · 3칸 넉백']],
   sniper: [['피해 감소', '(1 − 대상과의 거리 (몸 바깥끼리) ÷ 사거리) × 50% · 바로 앞 50% · 사거리 끝 0%'], ['첫 공격', '라운드 시작 7.5초 뒤']],
@@ -5603,6 +5607,7 @@ const STATUS = {
   addict: { name: '중독됨', icon: '🍰' },           // R2.25 케이크 지후: 케이크가 아닌 지후를 때리면 피해 −15% (addictX.by = 케이크)
   taunt: { name: '도발', icon: '📢' },              // R2.25 탄핵 지후: 도발한 지후만 노린다 (tauntX.by)
   fear: { name: '공포', icon: '😱' },               // R2.25 차원 지후: 공격하지 못하고 도망친다 (fearX.by)
+  goja: { name: '고자', icon: '🥚' },                 // R2.31 build 2 총? 지후: 이번 라운드 최대 체력 · 체력 1 (gojaOn · 표시용)
   realm: { name: '아공간', icon: '🌌', buff: true }, // R2.25 차원 지후: 다른 층 (u.realm) · 바깥과 서로 노리지도 · 맞히지도 · 부딪히지도 않는다
   sear: { name: '3도 화상', icon: '🔥', dot: true },   // R2.30 부루스타 [점화]: 라운드 끝까지 · 공격력 −10% · 받는 피해 증가 (searK) · 해제하면 보통 [화상]
   ignite: { name: '점화', icon: '🔥', buff: true },    // R2.30 부루스타: 불타는 동안 일반 공격이 [3도 화상] (불이 꺼지면 사라진다 · igniteTick)
@@ -5613,7 +5618,7 @@ const STATUS = {
 };
 
 // 효과 아이콘 (R2.17 build 3 · 사용자가 직접 그린 icons/fx/<키>.png · 분류마다 바탕색) — 이름 있는 상태는 자기 아이콘 하나 · 능력치 변화는 화살표로 모은다 (fxList)
-const FX_OF = { sear: 'sear', ignite: 'miscUp', rot: 'miscDown', corr: 'miscDown', absorb: 'inv', addict: 'miscDown', taunt: 'miscDown', fear: 'miscDown', realm: 'miscUp', noheal: 'noheal', c4: 'c4', stun: 'stun', freeze: 'freeze', burn: 'burn', poison: 'poison', blind: 'blind', silence: 'silence', stealth: 'stealth', lacer: 'lacer', wound: 'wound', inv: 'inv', rage: 'rage', frost: 'frost', dive: 'dive', alone: 'alone', charm: 'charm', bubble: 'bubble', dnote: 'dnote', arcana: 'arcana', ban: 'ban', seal: 'seal', guard: 'guard', feast: 'feast', drowsy: 'drowsy', sleep: 'sleep', nbfly: 'nbfly', nbdead: 'nbdead', lock: 'lock', pure: 'pure', antigrav: 'antigrav', nou: 'nou', card: 'card', doom: 'miscDown', warpUp: 'miscUp', warpDn: 'miscDown', vuln: null, foxguard: null, vweak: null };
+const FX_OF = { goja: 'miscDown', sear: 'sear', ignite: 'miscUp', rot: 'miscDown', corr: 'miscDown', absorb: 'inv', addict: 'miscDown', taunt: 'miscDown', fear: 'miscDown', realm: 'miscUp', noheal: 'noheal', c4: 'c4', stun: 'stun', freeze: 'freeze', burn: 'burn', poison: 'poison', blind: 'blind', silence: 'silence', stealth: 'stealth', lacer: 'lacer', wound: 'wound', inv: 'inv', rage: 'rage', frost: 'frost', dive: 'dive', alone: 'alone', charm: 'charm', bubble: 'bubble', dnote: 'dnote', arcana: 'arcana', ban: 'ban', seal: 'seal', guard: 'guard', feast: 'feast', drowsy: 'drowsy', sleep: 'sleep', nbfly: 'nbfly', nbdead: 'nbdead', lock: 'lock', pure: 'pure', antigrav: 'antigrav', nou: 'nou', card: 'card', doom: 'miscDown', warpUp: 'miscUp', warpDn: 'miscDown', vuln: null, foxguard: null, vweak: null };
 const FX_NAME = { atkUp: '공격력 증가', atkDown: '공격력 감소', aspdUp: '공격속도 증가', aspdDown: '공격속도 감소', spdUp: '이동속도 증가', spdDown: '이동속도 감소', takenUp: '받는 피해 증가', takenDown: '받는 피해 감소', critUp: '치명타 확률 증가', critDmgUp: '치명타 피해 증가', dodgeUp: '회피율 증가', healDown: '회복 감소', regen: '지속 회복', lastBullet: '최후의 탄환', reaper: '사신강림', miscUp: '기타 버프', miscDown: '기타 디버프' };
 const fxSrc = k => 'icons/fx/' + k + '.png';
 function fxList(u) { // 유닛에 걸린 효과 → [{ k 아이콘, n 숫자, t 이름 }]
@@ -10944,6 +10949,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.31', date: '2026.11.11', title: '한정 등급 · 밸런스 · 전투 화질', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { id: 'gunq', name: '총? 지후', tag: 'rework', desc: '[탕!!] 피해 대신 <b>[고자]</b> (최대 체력 <b>1</b>)' },
+      { id: 'gunq', name: '총? 지후', tag: 'rework', desc: '공격력 <b>99,999 → 없음</b>' },
+    ] },
     { title: '한정 등급', items: [
       { icon: '💗', name: '한정 등급', tag: 'new', desc: '뽑기 · 상점에 나오지 않는 <b>한정</b> 지후 · 가진 사람에게만 보여요' },
       { id: 'sans', name: '샌즈 지후', tag: 'adjust', desc: '등급 <b>전설 → 한정</b>' },
