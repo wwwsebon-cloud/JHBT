@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.27"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.27"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -10416,6 +10416,9 @@ const PATCH_NOTES = [
       { icon: '🃏', name: '덱 · 카드', tag: 'new', desc: '로비에 오면 덱 카드가 <b>한 장씩 날아와</b> 둥실둥실 · 엠블럼 뒤 빛이 돌고 · 리본이 살랑' },
       { icon: '🔴', name: '알림 · 배지', tag: 'new', desc: '빨간 점은 두근두근 · 부스트 · NEW 배지는 흔들흔들 · 하단 탭 아이콘은 고를 때 통!' },
     ] },
+    { title: '수정 (build 2)', items: [
+      { icon: '🖼', name: '지후 상세', tag: 'fix', desc: '덱 설정 · 도감의 지후 상세 창에서 <b>초상화와 이름</b>이 사라지던 것 (R2.26 「1랭크 기준」 기능을 넣으면서 생긴 문제)' },
+    ] },
   ] },
   { v: 'R2.26', date: '2026.11.09', title: '로비 · 전투 화면 개편 · 밸런스 패치', sections: [
     { title: '화면 개편', items: [
@@ -12432,7 +12435,7 @@ function u2ValsBase() {
       pas: { html: c.passive || '특수 능력 없음 · 기본기에 충실합니다' }, hasSkill: !!sk, skN: sk ? ((sk.desc || '').replace(/<[^>]+>/g, '').match(/\[([^\]]+)\]/) || [])[1] || '스킬' : '', skD: { html: sk ? sk.desc : '' }, spTxt: !sk ? '' : sk.type === 'cooldown' ? `쿨타임 ${sk.cd}초` : sk.need ? `SP ${sk.need}` : '',
       story: c.story || '서사는 준비 중이에요.', glow: r.c + '55', dark: '#161a28', lockFilter: have ? 'none' : 'grayscale(1)',
       info: (c.info && c.info.length ? c.info : [['—', '상세 수치가 없어요']]).map(([k, v], i) => ({ k, v: { html: String(v) }, bg: i % 2 ? '#262d4d' : 'transparent' })),
-      tabAb: dtab === 'ab', tabNum: dtab === 'num', tabSt: dtab === 'st', tabUp: dtab === 'up', up: dtab === 'up' ? { html: enhHtml(s.detail) } : '', upFoot: dtab === 'up' ? { html: enhHtml(s.detail, 'foot') } : '', footEquip: dtab !== 'up', showStats: dtab !== 'up', statTap: () => u2Set({ statR1: !s.statR1 }), statNote: s.statR1 || !have ? '1랭크 기준 능력치' + (have ? ' · 누르면 내 랭크' : '') : `내 랭크 (${enhLv(s.detail)}) 능력치 · 누르면 1랭크 기준`, // R2.26: 능력치를 누르면 1랭크 기준 heroH: dtab === 'up' ? '104px' : '228px', picD: dtab === 'up' ? 'none' : 'block', arT: dtab === 'up' ? '34px' : '76px', // build 2: 랭크 탭은 한 화면에
+      tabAb: dtab === 'ab', tabNum: dtab === 'num', tabSt: dtab === 'st', tabUp: dtab === 'up', up: dtab === 'up' ? { html: enhHtml(s.detail) } : '', upFoot: dtab === 'up' ? { html: enhHtml(s.detail, 'foot') } : '', footEquip: dtab !== 'up', showStats: dtab !== 'up', statTap: () => u2Set({ statR1: !s.statR1 }), statNote: s.statR1 || !have ? '1랭크 기준 능력치' + (have ? ' · 누르면 내 랭크' : '') : `내 랭크 (${enhLv(s.detail)}) 능력치 · 누르면 1랭크 기준`, /* R2.26: 능력치를 누르면 1랭크 기준 */ heroH: dtab === 'up' ? '104px' : '228px', picD: dtab === 'up' ? 'none' : 'block', arT: dtab === 'up' ? '34px' : '76px', // build 2: 랭크 탭은 한 화면에
       upClick: e => { const b = e.target.closest('[data-enh]'); if (!b) return; e.stopPropagation(); const k = b.dataset.enh; if (k === 'up') enhUp(s.detail); else if (k === 'glow') enhGlow(s.detail); else if (k === 'reset') enhReset(s.detail); else if (k === 'sk6' || k === 'sk12') u2Set({ enhSk: k === 'sk12' ? 12 : 6 }); }, // R2.15 강화 탭
       tabs: [['ab', '능력'], ['up', '랭크'], ['num', '상세 수치'], ['st', '서사']].map(([k, label]) => ({ label, bg: dtab === k ? '#3b466b' : 'transparent', fc: dtab === k ? '#fff' : '#7d87ab', onClick: e => { e.stopPropagation(); u2Set({ dtab: k }); } })),
       stats: [['체력', fmt(have && !s.statR1 ? enhStat(c, enhLv(s.detail)).hp : c.hp), '#ff6b7a', 'HP'], ...(c.shield ? [['쉴드', fmt(c.shield), '#65cfff', 'SH']] : []), ['공격력', c.atkText ? c.atkText() : c.noAttack || !c.atk ? '—' : fmt(have && !s.statR1 ? enhStat(c, enhLv(s.detail)).atk : dexAtk(c)), '#ff9f43', 'AT'], ['공격 간격', c.noAttack ? '—' : c.atkSpeed ? (have && !s.statR1 ? enhStat(c, enhLv(s.detail)).iv : c.atkSpeed) + '초' : '—', '#3fb7f0', 'IV'], ['사거리', rng, '#8b7bff', 'RG'], ['이동속도', String(c.speed || 1.6), '#36c98a', 'MV'], ['역할군', c.role, '#5b6480', 'RL']].map(([label, val, color, ic]) => ({ label, val, color, ic })),
