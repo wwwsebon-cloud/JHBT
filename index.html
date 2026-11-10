@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.32"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.32"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4582,7 +4582,7 @@ const CHARS = {
     story: '왕궁 뒤뜰 숲에서 버섯을 캐 먹으며 사는 지후입니다. 그는 버섯을 먹을 때마다 몸이 커지고 힘이 세지는데, 어디서 많이 본 설정이라는 말이 나오면 슬쩍 화제를 돌려요. 문제는 그가 버섯을 전혀 구분하지 못한다는 겁니다. 가끔 독버섯을 먹고 배를 움켜쥐는데, 그래도 맛이 좀 독특하다며 끝까지 다 먹어요. 보다 못한 왕궁 의원 주사 지후가 버섯 도감을 선물했지만, 그는 사진을 보다가 배가 고파져서 도감까지 먹었습니다. 하필 그날 뜯어 먹은 장이 독버섯 페이지였대요.',
     passive: '<b>[일반 버섯]</b>을 먹을 때마다 공격력이 <b>12.5%</b> 오릅니다.',
     atkMult(u) { return 1 + 0.125 * (u.msN || 0); },
-    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[버섯 먹기]</b>. 최대 체력이 <b>25%</b> 늘고 체력을 모두 회복합니다. <b>27%</b> 확률로 독버섯을 먹어 오히려 피해를 입습니다.',
+    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[버섯 먹기]</b>. 최대 체력이 <b>25%</b> 늘고 체력을 모두 회복합니다. <b>27%</b> 확률로 독버섯을 먹어 오히려 피해를 입고, 그동안 <b>[침묵]</b>에 걸립니다.',
       run(u) { mushEat(u); } } },
   wolf: { name: '늑대 지후', rarity: 'legend', role: '어쌔신', hp: 1450, /* R2.24 build 3: 1650 → 1450 */ atk: 100, /* R2.24 (출시 전): 40 → 100 */ atkSpeed: 1.25, /* R2.24 build 3: 1 → 1.25초 */ range: 3.5, speed: 1.3, lifesteal: 0.2, /* R2.24 build 3: 흡혈 20% (아케인과 같은 dealDamage 흡혈) */ portrait: PORTRAITS.wolf, sfx: 'swing', color: '#5d6d7e',
     story: '보름달이 뜨면 늑대로 변한다고 소문난 지후입니다. 사실은 달 지후가 밤새 자는 바람에 보름달이 제대로 뜬 적이 없어서, 그냥 1년 내내 늑대예요. 그는 눈앞에 사냥감이 없는 걸 잠시도 못 참아서, 적이 안 보이면 냅다 등 뒤까지 가 버립니다. 그럴 때마다 이빨이 조금씩 더 날카로워져서, 치과 의사는 진료 기록에 제발 그만 가라고 적었어요. 처음엔 멀리서 짖기만 했지만, 요즘은 붙어서 무는 게 더 편하대요. 카우보이 지후는 그를 길들이려다 로봇 청소기만 물어뜯겼습니다.',
@@ -5179,7 +5179,7 @@ function phxFly(u, dt) {
 function phxLand(u) { const f = u.pf; if (!f) return; u.pf = null; u.ghost = false; u.x = f.hx; u.y = f.hy; u.xPrev = u.x; u.yPrev = u.y; if (u.el) u.el.classList.remove('phx-fly'); if (!S.fast) fxRing(u.x, u.y, 1.2 * CFG.CELL, 'rgba(255,150,40,.9)', 400, 6); drawUnit(u); }
 // 버섯 지후 [버섯 먹기]: 73% 일반 버섯 (최대 체력 +25% (R2.25.4) · 처음 최대 체력 기준 선형 · 체력 가득 · 공격력 +12.5% 선형) · 27% 독버섯 (R2.25.4) (1초마다 최대 체력 15% · 4번)
 function mushEat(u) {
-  if (rng() < 0.27) { /* R2.25.4: 25 → 27% */ if (!S.fast) dmgNum(u, '🍄 독버섯!', { crit: true, stamp: true }); for (let k = 1; k <= 4; k++) A.later(k, () => { if (u.alive) dealDamage(null, u, u.maxHp * 0.15, { dot: true }); }); return; }
+  if (rng() < 0.27) { /* R2.25.4: 25 → 27% */ if (!S.fast) dmgNum(u, '🍄 독버섯!', { crit: true, stamp: true }); A.status(u, 'silence', 4); /* R2.32 build 2: 독버섯이 끝날 때까지 (4초) [침묵] */ for (let k = 1; k <= 4; k++) A.later(k, () => { if (u.alive) dealDamage(null, u, u.maxHp * 0.15, { dot: true }); }); return; }
   const add = Math.round((u.msBase || (u.msBase = u.baseMaxHp || u.maxHp)) * 0.25); /* R2.25.4: 35 → 25% */ u.maxHp += add; u.baseMaxHp = (u.baseMaxHp || u.maxHp - add) + add; u.msN = (u.msN || 0) + 1;
   if (!S.fast) dmgNum(u, '🍄 냠! 최대 체력 +25%', { crit: true }); heal(u, u, u.maxHp); drawUnit(u);
 }
@@ -5539,7 +5539,7 @@ const CHAR_INFO = {
   cowboy: [['반격', '공격을 받으면 (지속 피해 제외 · 3.6초마다 한 번) 그 공격을 피한다 · 공격한 적 반대쪽으로 3칸'], ['리볼버', '0.25초 간격 4발 · 한 발에 공격력 100% · 공격한 적 (노릴 수 없으면 가장 가까운 적)'], ['골드', '탄환마다 8% · 40 ~ 199 골드 · 내 카우보이만 · 일반전 · 아케이드 (친선전 · 샌드박스 · 튜토리얼 · 리플레이 제외)'], ['제작', '커뮤니티 지후 · Kaden']],
   // ── R2.24 신규 ──
   phoenix: [['버티기', '쓰러지는 순간 (라운드마다 한 번) · 체력 1'], ['[불사조 쉴드]', '350 (레벨과 상관없이) · 3.7초 · 수은 보호막 다음 · 일반 쉴드보다 먼저 막는다 · 깨지면 쓰러진다 · 머리 위에 남은 쉴드 · 초'], ['부활', '3초 동안 쉴드가 깨지지 않으면 각성 불사조 지후로 (체력 가득 · 이번 라운드 동안 · 다음 라운드엔 다시 불사조) · 반경 3칸 적에게 각성 불사조 공격력의 2000% 피해 · 넉백'], ['각성 불사조 지후', 'HP 1,250 · ATK 140 · 1.2초 · 사거리 6 · 일반 공격 반경 2.1칸 광역 · 불사조 패시브 없음'], ['[업화]', '일반 공격의 4% · 피해 −50% · 범위 6배 (반경 12.6칸) · 맞은 적 [화상] 4초 (1초마다 공격력 30% · 중첩)'], ['[비행]', '일반 공격의 6% · 적진 끝까지 초당 10칸 → 우리 진영 맨 뒤에서 다시 나와 제자리에 착지 · 지나간 길 (폭 몸 지름 2배) 의 적: 공격력 150% · [화상] 4초 (1초마다 20%) · 날아가는 동안 공격하지 않는다']],
-  mushroom: [['[버섯 먹기]', 'SP 3 · 73% 일반 버섯 / 27% 독버섯'], ['일반 버섯', '최대 체력 +25% (처음 최대 체력 기준 · 선형) · 체력 모두 회복 · 공격력 +12.5% (선형) · 이번 라운드 동안'], ['독버섯', '1초마다 최대 체력 15% 피해 · 4번 · 체력 · 공격력은 오르지 않는다']],
+  mushroom: [['[버섯 먹기]', 'SP 3 · 73% 일반 버섯 / 27% 독버섯'], ['일반 버섯', '최대 체력 +25% (처음 최대 체력 기준 · 선형) · 체력 모두 회복 · 공격력 +12.5% (선형) · 이번 라운드 동안'], ['독버섯', '1초마다 최대 체력 15% 피해 · 4번 · 체력 · 공격력은 오르지 않는다 · 그동안 [침묵] (4초)']],
   wolf: [['순간이동', '0.5초 동안 공격할 적이 없을 때마다 · 무작위 적의 등 뒤 (±60°) · 기절 · 빙결 · 잠금 중에는 안 한다'], ['게이지', '순간이동까지 0.5초 (공격할 적이 없을 때 차오른다)'], ['처음 순간이동부터', '사거리 3.5 → 2.2칸 · 치명타 확률 100%'], ['흡혈', '체력에 입힌 피해의 20% (쉴드에 막힌 피해 · 넘친 피해는 세지 않는다)'], ['치명타 피해', '순간이동마다 +50% (기본 200% → 250% → 300% …)'], ['유지', '경기 내내 (배치 칸에 남는다 · 합체하면 많은 쪽)']],
   weather: [['출격제한', '1'], ['날씨', '라운드 시작 때 무작위 · [스킬] SP 8 → 지금과 다른 날씨 (다음 스킬까지) · 기상캐스터가 쓰러지면 끝'], ['폭염', '3초마다 모든 적 공격력 300% (치명타 없음) · 적 이동속도 −25% · 공격속도 −10% · 적 일반 공격의 20% 는 사거리 안 자기 아군을 노린다 (매혹처럼)'], ['태풍', '0.5초마다 맵 둘레의 무작위 자리에서 맵 안의 무작위 자리 쪽으로 물체가 날아간다 (적을 노리지 않는다 · 무작위 적 쪽으로 아주 약하게 휜다 · 초당 0.2 라디안) · 관통 · 지나간 길의 적 공격력 400% (한 번씩)'], ['낙뢰', '2초마다 무작위 적 공격력 750% · [기절] 0.4초'], ['제작', '커뮤니티 지후 · Kaden']],
   // ── R2.25 신규 ──
@@ -10950,6 +10950,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.32', date: '2026.11.11', title: '밸런스 패치', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { id: 'mushroom', name: '버섯 지후', tag: 'nerf', desc: '독버섯을 먹으면 끝날 때까지 <b>[침묵]</b>' },
+    ] },
     { title: '밸런스', items: [
       { icon: '🧩', name: '일반 지후 랭크업', tag: 'nerf', desc: '필요 조각 <b>2배</b>' },
       { id: 'ice', name: '얼음 지후', tag: 'nerf', desc: '사거리 <b>6 → 5.5</b>' },
