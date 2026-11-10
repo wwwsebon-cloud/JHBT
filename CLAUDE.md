@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.30** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.30** (build 2).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -116,6 +116,7 @@
 - 새 상태 `sear` [3도 화상] (아이콘 `icons/fx/sear.png` · 해제되면 보통 화상 `searCleanse`) · `ignite` [점화] (`igniteTick` · 일반 공격 `hitOne` 이 `searOn`) · `rot` (`rotK`) · `corr` · `absorb`. 받는 피해 계산 한 줄 (`dealDamage` 의 rot · sear · 스테인리스) · 메탈은 그 뒤 `d = 2 / 4`.
 - 스테인리스 `def.stainless`: 적의 `opts.skill` 피해 · 넉백 (`A.knock`) · 즉사 (`instaKill`) · 절상 · 아공간 무시 · 디버프는 `stRev` (반대로 걸 것만 `ST_REV` · 버프 `rv_…`) · `buffSum` 이 음수 버프를 뒤집는다 (`taken` 제외). 새 디버프를 만들면 `ST_REV` 에 반대 효과를 넣을지 정한다.
 - 태극: 배치 기록 `p.tg` ('r' · 'b' · `tgRoll` 친선전은 해시) · `packPlace` 12번째 칸 · 라운드 끝 `tgFlip` · 줄 판정 `tgPowers` (교차 칸은 두 색으로 친다 = [극의 조화] · 조화 폼 = 기본 초상화) · 배치 화면 `renderField` 가 아우라 클래스 `tg-r/b/h` + 줄 번쩍임 `tgFlash` · 캔버스 `CV_RING` · `_cvTgH`.
+- build 2: 샌즈 한 번에 공격력 150 → 50% · 총? [탕!!] 즉사 → 공격력 (ATK 99,999) 피해 · 버티면 총알 방향 10칸 넉백 (`gunqFire`) · 인포그래픽 `R2.30-b2` (`R2.30.json` 에서 build 2 칸만 골라 만든다).
 - 샌즈 화살표는 캔버스 `CVF.over` 의 `k: 'sans'` (화면 가운데 `W.hw/hh`) · 총? 빛줄기 `FXC.beams`.
 - 티어: `TIER_SC` · `infographics/tier-R2.30` 은 R2.30 코드 · 1,600판 · **로컬 윈도우에는 playwright 가 없다 → `tools/tierlist/run-cdp.js` (시스템 크롬 · 일꾼 2개 약 3분)** 뒤 `agg.js` · `apply.py` · make.py · shot.py. 샌즈가 SS 1위 (65.8%) · 메탈 · 태극 D.
 - dev 전용 `window.__rejhbt` 에 `effAtk` · `rotK` · `tgPowers` · `instaKill` · `renderField` · `charDetail` 를 더했다 (헤드리스 확인용).
