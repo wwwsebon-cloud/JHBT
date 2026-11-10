@@ -15,11 +15,12 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.30** (build 2).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.30** (build 3).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
 - R1 (v8.1) 코드는 `archive/v8.1` 브랜치.
+- **사이트 배포 (GitHub Pages)**: `_config.yml` 의 `exclude` 로 게임에 안 쓰는 폴더 (인포그래픽 · tools · docs · app · 지후초상화 …) 를 뺀다 — 배포물이 225MB (그중 인포그래픽 204MB) 가 되자 Pages 배포가 10분 제한을 넘겨 실패했다 (R2.28 · R2.30). 큰 폴더를 새로 올리면 여기에 더한다. 배포 상태: `https://api.github.com/repos/wwwsebon-cloud/JHBT/actions/runs` · 사이트 버전 `curl jihoobattle.kr` 의 `jihoo-version`. **작업이 끝나면 `main` 으로 돌아와 둔다** (작업 브랜치에서 사용자가 `git push` 하면 upstream 없음 오류).
 
 ## 업데이트 때 할 일
 1. `index.html` 수정 — `CHARS` 수치와 함께 `passive` · `skill.desc` · `atkText` · `CHAR_INFO` (도감 상세) · 팁 (`TIPS_MORE` · `BOOT_TIPS`) 에 적힌 숫자도 같이.
@@ -43,7 +44,12 @@
 - **시그니처 색 (R2.28)**: 초상화를 넣은 뒤 **`python tools/sig-color.py --sheet <확인표.png>`** → `SIG_C` 한 줄이 갱신된다 · 확인표를 **눈으로 꼭 보고** 그 지후 색과 다르면 (몸은 회색인데 작은 소품 색이 뽑힘 · 연한 색연필이 회색으로 · 두 색인데 한 색) 파일 안 `SIG_FIX` 에 `'id': '#색'` 또는 두 색 `'#색1,#색2'` 를 적고 다시 돌린다.
 - `CHARS` 끝에 추가 (도우미 함수는 `reapFx` 바로 앞 `// ── R2.xx 신규 지후 도우미 ──`). 사용자가 안 준 역할군 · 사거리 등은 정하고 알린다.
 - `passive` · `skill.desc` 는 **쉽게 · 존댓말 ~니다 · 한두 문장** (중요한 숫자만 · 조건 · 예외 · 세부 수치는 넣지 않는다 · 예: 황사 · 슬라임 지후) · 자세한 숫자는 `CHAR_INFO[id]`.
-- **서사 `story`**: 「~입니다 · ~해요」 체 · 5~7문장 · **개그 · 병맛 톤** (R2.21 오버홀 — 외양 묘사는 줄이고, 말도 안 되는 사건 · 반전 · 마지막 한 줄 펀치라인 · 능력을 핑계로 웃기게) · 지후왕국 세계관과 다른 지후를 엮는다 (아래 「세계관」 · 기존 연결을 깨지 않게). 밸런스로 수치가 바뀌면 서사에 핑계를 하나 넣어도 좋다 (예: 저격 「근위대 예산이 깎여서 총알도 싼 걸로」).
+- **서사 `story`**: ~입니다 · ~해요 체 · 5~7문장 · **개그 · 병맛 톤** (외양 묘사는 줄이고, 말도 안 되는 사건 · 반전 · 마지막 한 줄 펀치라인) · 지후왕국 세계관과 다른 지후를 엮는다 (아래 「세계관」 · 기존 연결을 깨지 않게). **R2.30 build 3 글 오버홀 규칙 (AI 티가 나는 것들 · 사용자 요청)**:
+  - **인용문을 넣지 않는다** (「…」 · "…" 대사 금지 · 말한 내용은 서술로 풀어 쓴다).
+  - **실제 능력과 관련된 숫자를 넣지 않는다** (초 · % · 횟수 · 발 수 · 체력 등 · 한글로 쓴 숫자도). 세계관 숫자 (1호 · 314호 · 3년 등) 는 괜찮다.
+  - **능력 서술은 최소한** (능력은 passive · CHAR_INFO 가 말한다 · 서사는 이야기).
+  - 밸런스로 바뀌면 핑계를 넣어도 되지만 숫자 없이 (예: 근위대 예산이 깎여 총알이 싸구려가 됐다).
+- **도감 상세 `CHAR_INFO`**: 버전명 (R2.x · build) 을 쓰지 않는다 · 예전에 비해 바뀐 것을 쓰지 않는다 (지금 규칙만) · 불필요한 서술 (~이 아니라 · 없음 · 하지 않음 같은 부정 설명은 꼭 필요할 때만) 은 뺀다. 버전 기록은 코드 주석 · 패치노트에만.
 - 뽑기 · 덱 · 도감에 안 나오는 변신 지후 (왕자 지후 `prince`) 는 `Object.defineProperty(CHARS, id, { enumerable: false })` — `Object.keys(CHARS)` 에는 없고 `CHARS[id]` 로는 찾는다 (배치 기록 · 친선전 · 이름 표시가 그대로 돈다).
 - 새 상태 · 버프는 `STATUS` · `FX_OF` / `fxList` (효과 아이콘) · `BUFF_SRC` (버프 출처 이름).
 - 배치 기록에 새 필드를 넣으면 친선전 `packPlace` 에도.
@@ -117,6 +123,7 @@
 - 스테인리스 `def.stainless`: 적의 `opts.skill` 피해 · 넉백 (`A.knock`) · 즉사 (`instaKill`) · 절상 · 아공간 무시 · 디버프는 `stRev` (반대로 걸 것만 `ST_REV` · 버프 `rv_…`) · `buffSum` 이 음수 버프를 뒤집는다 (`taken` 제외). 새 디버프를 만들면 `ST_REV` 에 반대 효과를 넣을지 정한다.
 - 태극: 배치 기록 `p.tg` ('r' · 'b' · `tgRoll` 친선전은 해시) · `packPlace` 12번째 칸 · 라운드 끝 `tgFlip` · 줄 판정 `tgPowers` (교차 칸은 두 색으로 친다 = [극의 조화] · 조화 폼 = 기본 초상화) · 배치 화면 `renderField` 가 아우라 클래스 `tg-r/b/h` + 줄 번쩍임 `tgFlash` · 캔버스 `CV_RING` · `_cvTgH`.
 - build 2: 샌즈 한 번에 공격력 150 → 50% · 총? [탕!!] 즉사 → 공격력 (ATK 99,999) 피해 · 버티면 총알 방향 10칸 넉백 (`gunqFire`) · 인포그래픽 `R2.30-b2` (`R2.30.json` 에서 build 2 칸만 골라 만든다).
+- build 3: 서사 120개 · 도감 상세 글 오버홀 (위 규칙) · 전투 HUD — 버튼은 아래 줄 (상대 이름 오른쪽 · 크기 고정 · 예전엔 단계 글자를 덮었다) · **배속 버튼 `#speedSeg` 가 R2.26 부터 안 보였다** (예전 CSS `#speedSeg { display:none }` 이 `.tbar` 밖이면 숨겼다 → `.r1acts #speedSeg` 로 보이게) · 이모티콘 자리는 `emoPlace` 가 덱 줄 (`#flabE` · `#flabA`) 을 재서 겹치지 않게.
 - 샌즈 화살표는 캔버스 `CVF.over` 의 `k: 'sans'` (화면 가운데 `W.hw/hh`) · 총? 빛줄기 `FXC.beams`.
 - 티어: `TIER_SC` · `infographics/tier-R2.30` 은 R2.30 코드 · 1,600판 · **로컬 윈도우에는 playwright 가 없다 → `tools/tierlist/run-cdp.js` (시스템 크롬 · 일꾼 2개 약 3분)** 뒤 `agg.js` · `apply.py` · make.py · shot.py. 샌즈가 SS 1위 (65.8%) · 메탈 · 태극 D.
 - dev 전용 `window.__rejhbt` 에 `effAtk` · `rotK` · `tgPowers` · `instaKill` · `renderField` · `charDetail` 를 더했다 (헤드리스 확인용).
