@@ -179,11 +179,13 @@ service cloud.firestore {
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && request.resource.data.updatedAt is timestamp;
     }
+    function rkI(l, i) { return l.size() <= i || (l[i] is int && l[i] >= 1 && l[i] <= 6); } // R2.28
+    function rkOk(l) { return l is list && l.size() <= 5 && rkI(l, 0) && rkI(l, 1) && rkI(l, 2) && rkI(l, 3) && rkI(l, 4); }
     match /r2lb/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
@@ -199,6 +201,7 @@ service cloud.firestore {
         && (!('cheat' in request.resource.data) || (request.resource.data.cheat is int && request.resource.data.cheat >= 0 && request.resource.data.cheat <= 9999))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && (!('cp' in request.resource.data) || (request.resource.data.cp is int && request.resource.data.cp >= 0 && request.resource.data.cp <= 99999999)) // R2.21 전투력
+        && (!('rk' in request.resource.data) || rkOk(request.resource.data.rk)) // R2.28 덱 지후 랭크 (리더보드 표시)
         && request.resource.data.updatedAt is timestamp;
     }
     // 명예의 전당: R1 레벨 리더보드 (읽기만 · 더 이상 바뀌지 않는다)
