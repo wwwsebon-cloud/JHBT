@@ -8,7 +8,7 @@ path = sys.argv[1] if len(sys.argv) > 1 else 'index.html'
 L = open(path, 'rb').read().decode('utf-8', 'replace').split('\n')
 bad = 0
 # R2.29: 주석 뒤에 묻힌 호출 · 선언 · if 도 (예: R2.25.4 「… [침묵] A.portrait(u, u.def.portraitRealm);」 — 아공간 초상화가 안 바뀌었다)
-CODE = re.compile(r"(\b[A-Za-z_$][\w$]*(?:\.[\w$]+)+\([^()]*\);|\bconst [\w$]+ = [^;]+;|\bif \([^)]+\) \{|\breturn [\w$.]+\([^)]*\);)")
+CODE = re.compile(r"(\b[A-Za-z_$][\w$]*(?:\.[\w$]+)+\([^()]*\);|\bconst [\w$]+ = [^;]+;|\bif \([^)]+\) \{|\breturn [\w$.]+\([^)]*\);|\)\.(?:forEach|push|sort|map|filter)\(.*\);|\b[\w$]+\([^)]*=>)")  # R2.31: 괄호가 든 호출 · 화살표 함수도 (도움말 티어표의 .forEach(id => …) 가 묻혀 티어표가 비어 있었다)
 for i, l in enumerate(L):
     for m in re.finditer(r'(?<![:"\'])//', l):  # http:// 같은 주소는 뺀다
         tail = l[m.start():]
