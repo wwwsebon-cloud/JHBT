@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.30"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.30"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4671,9 +4671,9 @@ const CHARS = {
     steer(u) { if (!(u.st.absorb > 0)) return false; u.desVx = u.desVy = 0; return true; }, // [흡수] 중: 멈춘다
     skill: { type: 'hit', need: 7, desc: '<b>SP 7</b> · <b>2초</b> 동안 그 자리에 멈춰 모든 피해를 흡수하고, 흡수한 피해의 <b>15%</b>만큼 회복합니다.',
       run(u) { stainAbsorb(u); } } },
-  gunq: { name: '총? 지후', rarity: 'legend', role: '폭발형', hp: 1067, atk: 999999999999999, atkSpeed: 1, range: 1, speed: 2, noAttack: true, portrait: PORTRAITS.gunq, sfx: 'shot', color: '#1d1d22',
-    story: '자기 몸보다 열 배는 큰 저격총을 주운 아주 작은 지후입니다. 총이 너무 무거워서 그는 아직 한 번도 방아쇠를 당겨 본 적이 없어요. 그런데 누군가 그를 쓰러뜨리는 순간, 넘어지면서 손가락이 방아쇠에 걸려 총이 발사됩니다. 그 총알은 맞은 지후를 왕국 밖까지 날려 보낼 만큼 강해서, 반동으로 그 자신도 반대쪽 하늘로 날아가요. 저격 지후는 「저건 저격이 아니라 사고」라며 그를 총기 협회에 넣어 주지 않고 있습니다. 공격력이 999조인 건 총 설명서에 그렇게 적혀 있어서래요.',
-    passive: '공격하지 않고 적에게 다가갑니다. 쓰러지면 자신을 쓰러뜨린 적을 쏴서 <b>즉사</b>시킵니다.',
+  gunq: { name: '총? 지후', rarity: 'legend', role: '폭발형', hp: 1067, atk: 99999, /* R2.30 build 2: 999,999,999,999,999 (즉사) → 99,999 */ atkSpeed: 1, range: 1, speed: 2, noAttack: true, portrait: PORTRAITS.gunq, sfx: 'shot', color: '#1d1d22',
+    story: '자기 몸보다 열 배는 큰 저격총을 주운 아주 작은 지후입니다. 총이 너무 무거워서 그는 아직 한 번도 방아쇠를 당겨 본 적이 없어요. 그런데 누군가 그를 쓰러뜨리는 순간, 넘어지면서 손가락이 방아쇠에 걸려 총이 발사됩니다. 그 총알은 맞은 지후를 왕국 밖까지 날려 보낼 만큼 강해서, 반동으로 그 자신도 반대쪽 하늘로 날아가요. 저격 지후는 「저건 저격이 아니라 사고」라며 그를 총기 협회에 넣어 주지 않고 있습니다. 원래 총 설명서에는 공격력이 999조라고 적혀 있었는데, 근위대 예산이 깎이면서 총알도 싼 걸로 바뀌어 이제는 가끔 맞고도 버티는 지후가 나와요. 그래도 날아가는 건 똑같대요.',
+    passive: '공격하지 않고 적에게 다가갑니다. 쓰러지면 자신을 쓰러뜨린 적을 쏴서 <b>공격력</b>만큼 피해를 줍니다. 버틴 적은 <b>10칸</b> 날아갑니다.',
     onDamaged(u, src) { if (src && src !== u && src.side !== u.side) u.gqLast = src; },
     steer(u) { return gunqSteer(u); },
     onDeath(u) { gunqFire(u); } },
@@ -5337,19 +5337,19 @@ function rotOn(t) { if (!t.alive || t.st.rot > 0) return; A.status(t, 'rot', 300
 function rotCorrode(u) { const amt = 100 * u.mult; A.around(u, u.x, u.y, 3, e => { if (e.alive) A.status(e, 'corr', 5, { amt }); }); if (!S.fast) { dmgNum(u, '🧪 부식!', { crit: true, stamp: true }); fxRing(u.x, u.y, 3 * CFG.CELL, 'rgba(123,63,158,.9)', 500, 6); } }
 const SANS_D = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 function sansGo(u) { if (!S.fast) dmgNum(u, '💀 와! 샌즈', { crit: true, stamp: true }); for (let i = 0; i < 4; i++) A.later(i * 0.5, () => sansPush(u)); A.later(2.1, () => { if (u.alive) A.portrait(u, u.def.portrait); }); } // 샌즈 지후 [와! 샌즈]: 0.5초 간격 4번
-function sansPush(u) { // 모든 적 · 상하좌우 중 무작위 한 벽까지 · 공격력 150% (스킬)
+function sansPush(u) { // 모든 적 · 상하좌우 중 무작위 한 벽까지 · 공격력 50% (스킬 · R2.30 build 2: 150 → 50%)
   if (!u.alive || S.phase !== 'combat') return; const [dx, dy] = SANS_D[Math.floor(rng() * 4)], P = u.def.portraitPose; A.portrait(u, P[Math.floor(rng() * P.length)]);
   if (!S.fast) { shake(true); if (CV.on) CVF.over.push({ k: 'sans', t0: performance.now(), ms: 520, x: 0, y: 0, a: Math.atan2(dy, dx) }); }
-  const W = FW(), H = FH(), dmg = effAtk(u) * 1.5;
+  const W = FW(), H = FH(), dmg = effAtk(u) * 0.5; /* R2.30 build 2: 150 → 50% */
   foes(u).forEach(e => { if (!e.alive) return; dealDamage(u, e, dmg, { skill: true, lite: true }); if (!e.alive) return;
     const r = unitRadius(e), far = dx > 0 ? W - r - e.x : dx < 0 ? e.x - r : dy > 0 ? H - r - e.y : e.y - r; A.knock(u, e, Math.max(0.3, far / CFG.CELL), dx, dy); });
 }
 function gunqSteer(u) { const t = nearestFoe(u); if (!t) return true; if (dist(u, t) > unitRadius(u) + unitRadius(t) + 0.6 * CFG.CELL) moveToward(u, t.x, t.y, 1, t); return true; } // 총? 지후: 공격하지 않고 가장 가까운 적 곁으로
-function gunqFire(u) { // 총? 지후 [탕!!] (지후배틀 1 8.1): 쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 즉사 · 맞은 적은 총알 방향 · 자신은 반동으로 반대로 날아간다
+function gunqFire(u) { // 총? 지후 [탕!!] (지후배틀 1 8.1): 쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 공격력만큼 (R2.30 build 2: 즉사 → 99,999) · 쓰러지면 총알 방향으로 날아가고 버티면 10칸 넉백 · 자신은 반동으로 반대로
   const k = u.killer || u.lastKiller, c = k && k.alive && k.side !== u.side ? k : u.gqLast, t = c && c.alive && c.side !== u.side && (c.realm || 0) === (u.realm || 0) ? c : null;
   const bd = backDir(u.side), ang = t ? Math.atan2(t.y - u.y, t.x - u.x) : Math.atan2(-bd.y, -bd.x);
   if (!S.fast) { dmgNum(u, '💥 탕!!', { crit: true, stamp: true }); shake(true); if (t) FXC.beams.push({ x0: u.x, y0: u.y, x1: t.x, y1: t.y, t0: performance.now(), ms: 420, c1: 'rgba(255,140,0,.45)', w1: 30, c2: 'rgba(255,240,180,.98)', w2: 9 }); gqFly(u, ang + Math.PI); }
-  if (!t) return; const was = t.alive; instaKill(u, t, '💥 즉사'); if (was && !t.alive && !S.fast) gqFly(t, ang);
+  if (!t) return; dealDamage(u, t, u.atk, { noCrit: true }); if (!t.alive) { if (!S.fast) gqFly(t, ang); } else A.knock(u, t, 10, Math.cos(ang), Math.sin(ang)); /* 버티면 10칸 넉백 */
 }
 function gqFly(u, ang) { const d = 14 * CFG.CELL, el = fxAt('fx-gq-fly', u.x, u.y, 900), i = document.createElement('i'); i.style.backgroundImage = `url("${cvPic(u)}")`; el.appendChild(i); el.style.setProperty('--dx', (Math.cos(ang) * d).toFixed(0) + 'px'); el.style.setProperty('--dy', (Math.sin(ang) * d).toFixed(0) + 'px'); } // 빙글빙글 날아간다 (연출만)
 function pkCall(u) { // 호박 지후 [트릭 오어 트릿]: 가장 가까운 적 쪽 1.2칸 앞 땅에서 2초 뒤 폭발 스껄 지후 (호박 지후 최대 체력의 50%)
@@ -5541,9 +5541,9 @@ const CHAR_INFO = {
   metal: [['받는 피해', '늘 2 (치명타 4) · 지속 피해도 · 쉴드 · 받는 피해 증가 · 감소와 상관없이'], ['녹슬기', '1초마다 최대 체력의 2% · 회복 불가 · 즉사는 그대로 받는다']],
   burner: [['공격력', '라운드 시작부터 15초에 걸쳐 0까지 · (1 − 지난 시간 / 15)² 배 · 처음엔 빠르게 · 갈수록 완만하게'], ['꺼질 때', '반경 3.2칸 아군 (자신 제외) · [화상] 6초 · 1초마다 부루스타 공격력의 20% · [점화]'], ['꺼진 동안', '10초 · 움직이지도 공격하지도 않는다 → 공격력이 처음으로 돌아온다 (다시 15초)'], ['[점화]', '불타는 동안 ([화상] · [3도 화상]) 일반 공격이 대상에게 [3도 화상] · 불이 꺼지면 [점화]도 사라진다 · 화상 없이 [점화]만 있으면 다음 화상부터'], ['[3도 화상]', '라운드 끝까지 · 1초마다 [점화]된 지후 공격력의 10% · 중첩 없음 (센 쪽) · 공격력 −10% · 받는 피해 + (잃은 체력 비율 × 20%) · 해제하면 보통 [화상]']],
   rot: [['대상', '[부패]되지 않은 가장 가까운 적 먼저 (모두 부패했으면 보통 대상)'], ['[부패]', '일반 공격 · 라운드 끝까지 · 받는 피해 +10% · 2초마다 +1%p (최대 50%)'], ['[부식]', 'SP 5 · 자신 주위 반경 3칸 적 모두 · 5초 · 처음 받는 공격 피해 +100 (레벨마다 늘어난다) · 맞으면 사라진다']],
-  sans: [['[와! 샌즈]', '라운드 시작 3초 뒤 · 그 뒤 15초마다 (쿨타임) · 0.5초 간격으로 4번'], ['한 번에', '모든 적 · 상 · 하 · 좌 · 우 중 무작위 한 방향의 벽까지 밀쳐낸다 · 공격력의 150% (스킬 피해)'], ['일반 공격', '하지 않는다 · 움직이지 않는다']],
+  sans: [['[와! 샌즈]', '라운드 시작 3초 뒤 · 그 뒤 15초마다 (쿨타임) · 0.5초 간격으로 4번'], ['한 번에', '모든 적 · 상 · 하 · 좌 · 우 중 무작위 한 방향의 벽까지 밀쳐낸다 · 공격력의 50% (스킬 피해 · R2.30 build 2: 150 → 50%)'], ['일반 공격', '하지 않는다 · 움직이지 않는다']],
   stainless: [['[액티브 스킬]', '적의 스킬 피해 · 넉백 · 즉사 · 아공간을 받지 않는다'], ['디버프', '모두 면역 · 반대로: [동상] 공격력 +10% · 이동 +40% · 받는 피해 −10% / [취약] 받는 피해 감소 / [졸음] 공격력 +30% / [약화] 공격력 +15% · 이동 +20% · 받는 피해 −20% / [3도 화상] 공격력 +10% · 받는 피해 −20% / [부패] · [부식] 받는 피해 감소 / 공격력 · 공격속도 · 이동속도 감소는 증가로'], ['[흡수]', 'SP 7 · 2초 · 그 자리에 멈춘다 · 모든 피해 0 · 흡수한 피해 (줄기 전) 의 15% 회복']],
-  gunq: [['일반 공격', '하지 않는다 · 가장 가까운 적 곁으로 걸어간다'], ['[탕!!]', '쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 즉사 (생존기 무시) · 맞은 적은 총알 방향으로 날아가고 자신은 반대로 날아간다 (지후배틀 1 과 같다)']],
+  gunq: [['일반 공격', '하지 않는다 · 가장 가까운 적 곁으로 걸어간다'], ['[탕!!]', '쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · 공격력만큼 피해 (ATK 99,999 · 치명타 없음 · R2.30 build 2: 즉사 → 피해) · 쓰러뜨리면 총알 방향으로 날아가고, 버티면 총알 방향으로 10칸 넉백 · 자신은 반동으로 반대로 날아간다']],
   taegeuk: [['출격제한', '없음 (같은 지후 3기 제한을 무시)'], ['색', '놓일 때 [청] · [적] 반반 · 라운드가 끝날 때마다 다시 무작위 (그대로일 수도)'], ['[붉은 힘]', '[적] 3기가 세로 한 줄 (전열 · 중열 · 후열) · 그 줄의 [적] 공격력 +100% · 빨간 아우라'], ['[푸른 힘]', '[청] 5기가 가로 한 줄 · 그 줄의 [청] 공격속도 +50% · 파란 아우라'], ['[극의 조화]', '세로 줄과 가로 줄이 만나는 칸의 태극 지후 (색 상관없이 두 색 모두로 친다) · 두 힘 모두 + 체력 +50% · 공격력 +100% 더 · 공격속도 +50% 더 · 두 색 아우라가 돈다 · 그 즉시 조화 폼으로 모습이 바뀐다 (배치 중에도 · 다른 칸으로 옮기면 원래 색으로)']],
   pumpkin: [['[트릭 오어 트릿]', 'SP 9 · 가장 가까운 적 쪽 1.2칸 앞 땅에서 2초 뒤 나온다 (그사이 호박 지후가 쓰러지면 나오지 않는다)'], ['폭발 스껄 지후', 'HP 호박 지후 최대 체력의 50% · 이동 2.5 · 공격하지 않고 적에게 달려간다'], ['폭발', '적에게 닿거나 쓰러지면 · 반경 1.3칸 적 모두 · 자기 최대 체력만큼 (치명타 없음) · 3칸 넉백']],
   sniper: [['피해 감소', '(1 − 대상과의 거리 (몸 바깥끼리) ÷ 사거리) × 50% · 바로 앞 50% · 사거리 끝 0%'], ['첫 공격', '라운드 시작 7.5초 뒤']],
@@ -10929,6 +10929,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.30', date: '2026.11.10', title: '신규 지후 11종 · 불 · 얼음 속성', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { id: 'sans', name: '샌즈 지후', tag: 'nerf', desc: '[와! 샌즈] 한 번에 피해 <b>150% → 50%</b>' },
+      { id: 'gunq', name: '총? 지후', tag: 'nerf', desc: '[탕!!] 즉사 → 피해 <b>99,999</b> (버티면 <b>10칸</b> 넉백)' },
+    ] },
     { title: '신규 지후', items: [
       { id: 'skul', name: '스껄 지후', tag: 'new', desc: '희귀 · 탱커 · HP <b>960</b> · ATK <b>145</b> · <b>1.4초</b> · 근접 — 쓰러질 때 <b>48%</b> 확률로 부활 (체력 가득)' },
       { id: 'stopj', name: '멈춰! 지후', tag: 'new', desc: '희귀 · 탱커 · HP <b>3,680</b> · ATK <b>90</b> · <b>2초</b> · 근접 — SP 3 <b>[멈춰!]</b>: 반경 2.8칸 적 <b>2칸</b> 넉백 · <b>3초</b> 기절' },
