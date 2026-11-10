@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.31** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.31** (build 2).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -119,6 +119,7 @@
 ## 최근 변경 (R2.31 · 한정 등급 · 밸런스 · 전투 화질)
 - **한정 등급** `rarity: 'limited'` (한정 · 분홍 `#ff3d7f` · RARITY_ORDER 4 · 랭크 조각은 전설과 같다 · CP 800): 뽑기 (`rollOne` 은 CFG.GACHA 등급만) · 상점 · 봇 덱 · 미러 · 랜덤 · 선물 변신 · 이벤트 지원요청 · 샌드박스 무작위 · 부팅 · 크레딧에 안 나온다 (`pubIds()`) · 미보유자 목록 · 도감 수 · 티어표에서 숨긴다 (`seeId(id)`) · 지후 탭은 보유하면 맨 위에 한정 칸. 주는 방법은 운영 우편 `{ kind: 'char', id }`. 지금 한정: 샌즈.
 - 새 등급을 만들면 `RARITY` · `RARITY_ORDER` · `CP_RAR` · `ENH_SHARD` · `RAR_C` · `U2_RAR` · `DOTS` · `SHOP_PRICE` · CSS `.r-<등급>` · make.py `RARITY` 를 같이.
+- build 2: 총? 지후 리워크 — [탕!!] 은 피해 없이 `gojaOn` [고자] (이번 라운드 최대 체력 · 체력 1 · 스테인리스 · 무적 · 잠수는 튕겨 냄) + 10칸 넉백 · ATK 0 (도감 —).
 - 전장 캔버스 해상도: 기기 배율 그대로 (최대 3 · 저전력 1.5 · 예전 최대 2 라 폰에서 흐렸다) · 그림 캐시 `cvQ` 는 올림 · 50기 ×4 벤치 차이 없음.
 - 글자 `dmgNum(u, '…', { stamp: true })` 는 이제 노란 스킬 글씨 (`crit` + `big`) — stamp 의 빨간 CRITICAL 은 숫자 (치명타) 에만.
 - `tools/comment-check.py` 가 괄호가 든 호출 · 화살표 함수도 잡는다 (도움말 티어표 `helpTierHtml` 의 `.forEach` 가 R2.26 부터 주석에 묻혀 비어 있었다).
