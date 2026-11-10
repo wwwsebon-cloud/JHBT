@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.31** (build 2).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.32** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -116,7 +116,11 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.31 · 한정 등급 · 밸런스 · 전투 화질)
+## 최근 변경 (R2.32 · 밸런스 15종)
+- 일반 랭크업 조각 2배 (`ENH_SHARD.common` 합계 2000) · 얼음 사거리 5.5 · 활 HP 1,010 · 보호막 HP 2,040 · 멈춰! HP 2,980 · SP 4 · 촉수 ATK 140 · 랜턴 자가 회복 5 고정 · 마탄 ATK 140 · 빠따 ATK 240 · 신칸센 HP 1,460 · 수은 HP 2,260 · 스파이: 지금 모습과 같은 id 를 치면 치명타 없음 · 불사조 쉴드 350 고정 · 부활 폭발 3칸 · 기상캐스터 ATK 15 · 스테인리스 HP 1,750.
+- `fxList`: `immune(u)` (쉴드 지후 쉴드) · 보호막 쉴드 (`guardSh`) 가 있으면 [디버프 면역] 아이콘 `pure`.
+
+## 지난 변경 (R2.31 · 한정 등급 · 밸런스 · 전투 화질)
 - **한정 등급** `rarity: 'limited'` (한정 · 분홍 `#ff3d7f` · RARITY_ORDER 4 · 랭크 조각은 전설과 같다 · CP 800): 뽑기 (`rollOne` 은 CFG.GACHA 등급만) · 상점 · 봇 덱 · 미러 · 랜덤 · 선물 변신 · 이벤트 지원요청 · 샌드박스 무작위 · 부팅 · 크레딧에 안 나온다 (`pubIds()`) · 미보유자 목록 · 도감 수 · 티어표에서 숨긴다 (`seeId(id)`) · 지후 탭은 보유하면 맨 위에 한정 칸. 주는 방법은 운영 우편 `{ kind: 'char', id }`. 지금 한정: 샌즈.
 - 새 등급을 만들면 `RARITY` · `RARITY_ORDER` · `CP_RAR` · `ENH_SHARD` · `RAR_C` · `U2_RAR` · `DOTS` · `SHOP_PRICE` · CSS `.r-<등급>` · make.py `RARITY` 를 같이.
 - build 2: 총? 지후 리워크 — [탕!!] 은 피해 없이 `gojaOn` [고자] (이번 라운드 최대 체력 · 체력 1 · 스테인리스 · 무적 · 잠수는 튕겨 냄) + 10칸 넉백 · ATK 0 (도감 —).
