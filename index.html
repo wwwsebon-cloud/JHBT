@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1295,6 +1295,15 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 .update-card h2 { margin:2px 0 0; font-size:24px; font-weight:900; letter-spacing:-.04em; }
 /* 퀘스트 · 출석 시트 */
 .qs-sec { margin-bottom:6px; }
+/* R2.35 build 4 디펜스 보상 (메뉴 · 웨이브마다 처음 한 번) */
+.dfrw-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:2px 0 10px; font-size:13px; font-weight:800; opacity:.9; } .dfrw-head b { font-size:18px; color:#ffc94a; }
+.dfrw-list { display:flex; flex-direction:column; gap:8px; }
+.dfrw { display:grid; grid-template-columns:58px 34px 1fr auto; align-items:center; gap:10px; padding:10px 12px; border-radius:16px; background:#2c3553; border:1px solid #3b466b; color:#f2f4fa; }
+.dfrw .w { display:flex; flex-direction:column; align-items:center; font-size:20px; font-weight:900; line-height:1; } .dfrw .w small { font-size:10px; font-weight:700; opacity:.65; margin-top:3px; }
+.dfrw .ic { font-size:24px; text-align:center; } .dfrw .tx { font-size:14px; font-weight:800; min-width:0; }
+.dfrw .st { font-size:12px; font-weight:800; opacity:.7; white-space:nowrap; }
+.dfrw button { border:0; border-radius:12px; padding:8px 14px; font:inherit; font-size:13px; font-weight:900; background:#ffc94a; color:#3b2600; box-shadow:0 3px 0 #c98a1c; cursor:pointer; white-space:nowrap; }
+.dfrw.on { background:#3b466b; border-color:#ffc94a; } .dfrw.got { opacity:.5; } .dfrw.lock .ic, .dfrw.lock .tx { opacity:.75; }
 .qs-h { display:flex; align-items:baseline; gap:8px; margin:4px 0 10px; font-size:13px; font-weight:700; color:var(--mute); } .qs-h .qp { margin-left:auto; } .qs-h .qp b { font-size:20px; font-weight:900; color:var(--ink); }
 .qbar { position:relative; height:8px; border-radius:8px; background:rgba(60,60,67,.12); margin:4px 8px 16px; }
 .qbar > i { position:absolute; left:0; top:0; bottom:0; border-radius:8px; background:var(--ink); transition:width .6s; }
@@ -3624,6 +3633,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
 </div></div>
 <div class="modal pane" id="helpModal"><div class="box"><h3>도움말<button class="btn" data-close="helpModal">✕</button></h3><div class="tabs" id="helpTabs"></div><div class="help" id="helpBody"></div></div></div>
 <div class="modal pane" id="accModal"><div class="box u2-ac"><h3>JHBT 계정<button class="btn" data-close="accModal">✕</button></h3><div id="accBody"></div></div></div>
+<div class="modal pane" id="dfRwModal"><div class="box dfrw-box"><h3>디펜스 보상<button class="btn" data-close="dfRwModal">✕</button></h3><div class="dfrw-head" id="dfRwHead"></div><div class="dfrw-list" id="dfRwList"></div></div></div>
 <div class="modal pane" id="setModal"><div class="box"><h3>환경설정<button class="btn" data-close="setModal">✕</button></h3><div id="setBody"></div></div></div>
 <div class="modal" id="levelUp"><div class="box"><span class="shock"></span><span class="num" id="lvNum">2</span><h3>LEVEL UP!</h3><p class="note" id="lvMsg" style="margin:0"></p><span class="rw" id="lvReward">◆ 1,000</span><button class="k-btn wide" id="btnLvOk">확인</button></div></div>
 <div class="modal" id="dlg"><div class="box"><span class="ico" id="dlgIco"></span><h3 id="dlgTitle"></h3><div class="bd" id="dlgBody"></div><div class="bt"><button class="g-btn" id="dlgNo">취소</button><button class="k-btn" id="dlgOk">확인</button></div></div></div>
@@ -5985,7 +5995,7 @@ function normProfile(p) {
   p.giftSeen = Array.isArray(p.giftSeen) ? p.giftSeen.filter(x => typeof x === 'string').slice(-300) : [];
   p.codes = Array.isArray(p.codes) ? p.codes.map(String) : [];
   p.fr = Object.assign({ w: 0, l: 0 }, p.fr || {});
-  p.arc = Object.assign({ t: 0, p: 0, day: '', free: 0, buy: 0 }, p.arc && typeof p.arc === 'object' ? p.arc : {}); ['t', 'p', 'free', 'buy'].forEach(k => { p.arc[k] = nat(p.arc[k]); }); p.keys = nat(p.keys); p.dfBest = nat(p.dfBest); /* R2.34 열쇠 · 디펜스 최고 웨이브 */
+  p.arc = Object.assign({ t: 0, p: 0, day: '', free: 0, buy: 0 }, p.arc && typeof p.arc === 'object' ? p.arc : {}); ['t', 'p', 'free', 'buy'].forEach(k => { p.arc[k] = nat(p.arc[k]); }); p.keys = nat(p.keys); p.dfBest = nat(p.dfBest); p.dfRw = Array.isArray(p.dfRw) ? [...new Set(p.dfRw.map(nat).filter(w => w > 0))] : []; /* R2.35 build 4: 받은 디펜스 보상 (웨이브) */ /* R2.34 열쇠 · 디펜스 최고 웨이브 */
   { const s = p.arc.shop && typeof p.arc.shop === 'object' ? p.arc.shop : {}, n = s.n && typeof s.n === 'object' ? s.n : {}; p.arc.shop = { day: typeof s.day === 'string' ? s.day.slice(0, 12) : '', season: nat(s.season), d: {}, n: {} }; for (const k in n) if (/^[a-zA-Z0-9]{1,20}$/.test(k)) p.arc.shop.n[k] = nat(n[k]); const d = s.d && typeof s.d === 'object' ? s.d : {}; for (const k in d) if (/^[a-zA-Z0-9]{1,20}$/.test(k)) p.arc.shop.d[k] = nat(d[k]); } // R2.12.1 아케이드 상점 (d 오늘 · n 이번 시즌) // 아케이드: 티켓 · 포인트 · 오늘 무료 · 구매 수
   p.tower = Object.assign({ on: false, deck: [], draft: null, floor: 1, lose: 0, best: 0 }, p.tower && typeof p.tower === 'object' ? p.tower : {}); p.tower.deck = (Array.isArray(p.tower.deck) ? p.tower.deck : []).filter(id => CHARS[id]).slice(0, 5); p.tower.floor = Math.max(1, nat(p.tower.floor)); p.tower.lose = nat(p.tower.lose); p.tower.best = nat(p.tower.best); // 지후의 탑
   p.tower.cl = Number.isInteger(p.tower.cl) ? clamp(p.tower.cl, 0, p.tower.floor - 1) : p.tower.floor - 1; p.tower.over = !!p.tower.over; // R2.12.1: 층 보상은 눌러서 받는다
@@ -7421,6 +7431,28 @@ function dfRally() { // 반격: 🪙 +300 · 내 진영 (전장 절반) 의 적 
   for (const e of S.units.slice()) { if (!e.alive || e.side === c.me || ((e.x - mx) * bd.x + (e.y - my) * bd.y) <= 0) continue; A.knock(e, e, DF.RALLY_KB, -bd.x, -bd.y); dealDamage(e, e, DF.RALLY_DMG, { noCrit: true, lite: true, skill: true }); if (e.alive) { e.st.stun = Math.max(e.st.stun || 0, DF.RALLY_STUN); drawUnit(e); } }
   if (!S.fast) { shake(true); fxRing(mx + bd.x * mx / 2, my + bd.y * my / 2, Math.max(mx, my), 'rgba(80,170,255,.95)', 650, 12); banner(`🛡 반격! · 🪙 +${DF.RALLY_GOLD}`); }
 }
+// ── R2.35 build 4 디펜스 보상: 최고 웨이브 (profile.dfBest) 가 N 이상이면 한 번 받는다 (profile.dfRw) · 메뉴 「디펜스 보상」 ──
+const DF_RW = [[5, { dia: 100 }], [10, { gold: 1000 }], [15, { item: 'testKit' }], [20, { rand: 'epic' }], [25, { gold: 3000 }], [30, { dia: 500 }], [35, { tix: 5 }], [40, { item: 'kitPro' }], [45, { dia: 500 }], [50, { rand: 'legend' }],
+  [55, { item: 'glowLegend', n: 5 }], [60, { dia: 1000 }], [65, { gold: 20000 }], [70, { rand: 'legend' }], [75, { dia: 1000 }], [80, { item: 'glowLegend', n: 10 }], [85, { rand: 'epic', n: 5 }], [90, { rand: 'legend' }], [95, { rand: 'legend' }], [97, { item: 'glowLegend', n: 10 }], [100, { item: 'legendPick' }]];
+function dfRwLabel(r) { const n = r.n || 1, x = n > 1 ? ` ×${n}` : '';
+  if (r.dia) return ['💎', `◆ ${r.dia.toLocaleString()}`]; if (r.gold) return ['🪙', `골드 ${r.gold.toLocaleString()}`]; if (r.tix) return ['🎟', `아케이드 티켓 ×${r.tix}`];
+  if (r.rand) return [r.rand === 'legend' ? '🌟' : '🎫', `랜덤 ${r.rand === 'legend' ? '전설' : '영웅'} 지후${x}`];
+  return [ITEMS[r.item].icon, (r.item === 'legendPick' ? '선택 전설 지후' : r.item === 'testKit' ? '임테기' : ITEMS[r.item].name) + x]; }
+const dfRwGot = w => (profile.dfRw || []).includes(w);
+const dfRwReady = () => DF_RW.filter(([w]) => (profile.dfBest | 0) >= w && !dfRwGot(w)).length;
+function renderDfRw() { const b = profile.dfBest | 0, n = dfRwReady();
+  $('dfRwHead').innerHTML = `<span>최고 기록 <b>WAVE ${b}</b></span><span>${n ? `받을 보상 ${n}개` : '웨이브마다 처음 한 번'}</span>`;
+  $('dfRwList').innerHTML = DF_RW.map(([w, r]) => { const got = dfRwGot(w), can = b >= w && !got, [ic, tx] = dfRwLabel(r);
+    return `<div class="dfrw ${got ? 'got' : can ? 'on' : 'lock'}"><span class="w">${w}<small>WAVE</small></span><span class="ic">${ic}</span><span class="tx">${tx}</span>${got ? '<span class="st">✔ 받음</span>' : can ? `<button data-dfrw="${w}">받기</button>` : '<span class="st">🔒</span>'}</div>`; }).join(''); }
+function openDfRw() { renderDfRw(); openModal('dfRwModal'); const el = $('dfRwList').querySelector('.dfrw.on') || $('dfRwList').querySelector('.dfrw.lock'); if (el) el.scrollIntoView({ block: 'center' }); }
+function dfRwClaim(w) { const e = DF_RW.find(x => x[0] === w); if (!e || dfRwGot(w) || (profile.dfBest | 0) < w) return; const r = e[1], tx = dfRwLabel(r)[1]; let res = null;
+  profile.dfRw = (profile.dfRw || []).concat(w);
+  if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold += r.gold; if (r.tix) profile.arc.t += r.tix; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + (r.n || 1);
+  if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r.rand === 'legend') postEvent('gacha', id, 'legend'); res.push({ id, isNew, seenBefore: !isNew }); } }
+  save(); sfx('buy'); renderDfRw(); renderLobby();
+  if (res) { gachaLast = res; showReveal(res); } else if (r.item === 'legendPick') { closeModal('dfRwModal'); useItem('legendPick'); } /* 선택 창을 닫아도 모집권은 가방에 */ else banner(`${w}웨이브 보상 · ${tx} 받았어요`);
+}
+$('dfRwModal').addEventListener('click', e => { const b = e.target.closest('[data-dfrw]'); if (b) dfRwClaim(+b.dataset.dfrw); });
 function dfLeak(u) { // 적이 들어왔다: 라이프 −1 · 그 적은 사라진다 (처치 골드 없음)
   const c = S.cw; c.lives--; u.cwU = false; u.leak = true; u.hp = 0; drawUnit(u); killUnit(u); if (!S.fast) shake(true); /* build 2: 글 없이 흔들림 · 라이프만 */ dfRallyCheck();
   if (c.evs.miracle && !c.mirUsed && c.lives <= 1) { c.mirUsed = 1; c.lives = 1; for (const e of S.units) if (e.alive && e.side !== c.me) { e.hp = 0; drawUnit(e); killUnit(e); } if (!S.fast) { banner('🙏 자네는 기적을 믿나?'); shake(true); } } // [기적]: 라이프 1 → 모든 적 즉사 (1회)
@@ -7439,7 +7471,7 @@ function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · �
 function dfEnd(win, note) { // R2.34 디펜스 결과: 지난 웨이브 수만큼 열쇠
   const c = S.cw, w = c ? c.wave : 0, keys = Math.max(0, w - 1), best = w > (profile.dfBest | 0); profile.keys = (profile.keys | 0) + keys; if (best) profile.dfBest = w; save(); sfx('match_win'); if (best) dfPush(); /* R2.34 디펜스 리더보드 */
   $('dfPick').classList.remove('show'); $('screen-result').classList.add('win'); $('resTitle').textContent = `WAVE ${w}`; $('resMeta').textContent = `DEFENSE · 디펜스`; $('resSub').textContent = `웨이브 ${w} 도달 · 라이프 ${Math.max(0, c ? c.lives : 0)} / ${DF.LIVES}`;
-  $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>🔑 +${keys}</span><span>보유 🔑 ${profile.keys}</span><span>${best ? '🏆 최고 기록!' : `최고 WAVE ${profile.dfBest | 0}`}</span><span>열쇠 상자 🔑 ${DF.BOX}</span></div>`;
+  $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>🔑 +${keys}</span><span>보유 🔑 ${profile.keys}</span><span>${best ? '🏆 최고 기록!' : `최고 WAVE ${profile.dfBest | 0}`}</span><span>열쇠 상자 🔑 ${DF.BOX}</span>${dfRwReady() ? `<span>🎁 디펜스 보상 ${dfRwReady()}개 (메뉴)</span>` : ''}</div>`;
   show('result');
 }
 function keyBox() { // R2.34 열쇠 상자 (🔑 40): 일반 지후 5 · 희귀 지후 3 · 10% 영웅 1 · 1% 전설 1
@@ -11353,6 +11385,12 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.35', date: '2026.11.11', title: '밸런스 패치', sections: [
+    { title: '추가 패치 (build 4)', items: [
+      { icon: '🎁', name: '디펜스 보상', tag: 'new', desc: '메뉴에 <b>디펜스 보상</b> · 최고 웨이브마다 <b>처음 한 번</b> 받아요 (5 ~ 100웨이브 · 21단계)' },
+      { icon: '💎', name: '다이아 · 골드', tag: 'new', desc: '◆ 100 · 500 · 500 · 1,000 · 1,000 · 골드 1,000 · 3,000 · 20,000' },
+      { icon: '🌟', name: '지후', tag: 'new', desc: '랜덤 영웅 · 랜덤 영웅 ×5 · 랜덤 전설 ×4 · <b>100웨이브 선택 전설</b>' },
+      { icon: '✦', name: '아이템', tag: 'new', desc: '임테기 · 고급 임테기 · 아케이드 티켓 ×5 · 빛나는 전설조각 ×25' },
+    ] },
     { title: '추가 패치 (build 3)', items: [
       { id: 'revive', name: '부활 지후', tag: 'nerf', desc: '부활 지후는 <b>부활 지후를 되살리지 못해요</b>' },
       { icon: '👥', name: '소환체 수', tag: 'nerf', desc: '디펜스: 소환체 · 부활한 지후도 <b>지후 수</b>로 세요 (<b>40기</b>가 차면 소환 · 부활 · 분열 안 됨)' },
@@ -13544,7 +13582,7 @@ const K_FAN = [['rotate(-14deg) translateY(30px)', 1], ['rotate(-7deg) translate
 const K_BTN = { '#ffc94a': 'k-gold', '#53d3c0': 'k-mint', '#7cc8ff': 'k-dia', '#3b466b': 'k-off' }, kBtn = bg => K_BTN[bg] || 'k-navy'; // 예전 u2Btn 색 → 새 버튼 클래스
 const K_PAGE = { tower: ['#5a3aa8', `끝없는 층을 올라요 · ${TOWER_LIVES}번 지면 처음부터`], comp: ['#8e2f3c', ''], sandbox: ['#2a7a5a', '지후와 레벨을 골라 싸움을 붙여요 · 보상 · 전적 없음'] }; // 전체 화면 페이지 (모드 색 빛)
 const K_MODE = { defense: ['디펜스', '몰려오는 적 웨이브를 막아요', '#2a6aa0', '디펜스 시작'], castle: ['성뿌수기', '골드로 지후를 소환해 상대 성을 부숴요', '#a8482f', '성뿌수기 시작'], event: ['이벤트 모드', '짝수 라운드마다 이벤트 카드를 골라요', '#8a3a78', '이벤트 시작'], random: ['랜덤전', '서로 다른 무작위 덱으로 시작해요', '#2a5aa0', '랜덤전 시작'], mirror: ['미러전', '진정한 고수는 덱 탓을 하지 않는다', '#2a5aa0', '미러전 시작'] };
-const K_MI = { 우편함: ['melody', '#7cc8ff'], 커뮤니티: ['gumiho', '#ff8fb1'], 랭킹: ['sun', '#ffc94a'], 전투기록: ['sword', '#ffd76a'], 가방: ['thief', '#ff9f43'], 패치노트: ['lantern', '#b26bff'], 도움말: ['clock', '#c58bff'], 크레딧: ['moon', '#e0b3ff'], '앱 다운로드': ['accel', '#7fd8ff'], 'JHBT 계정': ['fire', '#53d3c0'], 환경설정: ['shield', '#c9d0e6'] }; // 메뉴 아이콘 (지후 초상화)
+const K_MI = { 우편함: ['melody', '#7cc8ff'], 커뮤니티: ['gumiho', '#ff8fb1'], 랭킹: ['sun', '#ffc94a'], 전투기록: ['sword', '#ffd76a'], '디펜스 보상': ['barrier', '#ff7a5c'], /* R2.35 build 4 */ 가방: ['thief', '#ff9f43'], 패치노트: ['lantern', '#b26bff'], 도움말: ['clock', '#c58bff'], 크레딧: ['moon', '#e0b3ff'], '앱 다운로드': ['accel', '#7fd8ff'], 'JHBT 계정': ['fire', '#53d3c0'], 환경설정: ['shield', '#c9d0e6'] }; // 메뉴 아이콘 (지후 초상화)
 const K_MEDAL = [['linear-gradient(180deg,#ffe07a,#ffad1a)', '#5a3a00'], ['linear-gradient(180deg,#f2f4fa,#aab3cc)', '#2a3356'], ['linear-gradient(180deg,#f0b58a,#c5773a)', '#4a2406']];
 const kBg = c => `radial-gradient(120% 38% at 50% 0%,${c} 0%,#1f2748 52%,#141a30 100%)`;
 const kShort = n => { n = Number(n) || 0; return n >= 1e7 ? Math.floor(n / 1e6) + 'M' : n >= 1e6 ? (Math.floor(n / 1e5) / 10) + 'M' : n >= 1e5 ? Math.floor(n / 1000) + 'K' : n.toLocaleString('ko-KR'); }; // 재화 필이 넘치지 않게
@@ -13719,6 +13757,7 @@ function u2ValsBase() {
     ['커뮤니티', '#ff8fb1', false, () => u2Set({ comm: true }), commLeft() ? '◆' + commLeft() * COMM_RW : ''], // R2.16.1: 남은 방문 보상
     ['랭킹', '#ffc94a', false, () => u2Go('rank')], // R2.26: 랭킹 · 전투기록 따로
     ['전투기록', '#ffd76a', false, () => u2Set({ hist: true })],
+    ['디펜스 보상', '#ff7a5c', dfRwReady() > 0, () => openDfRw(), dfRwReady() ? '받기 ' + dfRwReady() : ''], // R2.35 build 4: 웨이브마다 처음 한 번
     ['가방', '#ff9f43', dot('invDot'), () => openTab('inv')], // R2.26: 코드 입력은 환경설정으로
     ['패치노트', '#b26bff', false, () => $('btnMenuPatch').click()], // R2.26: 패치노트 · 도움말 · 크레딧 따로 (튜토리얼 · 인트로 만화는 도움말 안)
     ['도움말', '#c58bff', false, () => $('btnMenuHelp').click()],

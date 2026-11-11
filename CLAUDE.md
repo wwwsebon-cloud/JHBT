@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 3).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 4).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
@@ -121,6 +121,7 @@
 - 부루스타 ATK 225 · 공격력 선형 감소 (`atkMult` 1 − t/15) · `splash` 1.9 · 꺼짐 7초 · 차원 ATK 140 · 늑대 스킬 [포효] `wolfRoar` (SP 6 · 반경 2칸 넉백 2.5칸 · buff `wroar` 공격력 −15% 5초) · 불사조 쉴드 400 · 블랙홀 ATK 100 · 홍명보 패스 회복 40% · 빔 ATK 25 · 사거리 5.3 · 죠스 공격 회복 30%. 티어 시뮬은 돌리지 않았다 (사용자 요청).
 - **build 2 디펜스 광폭 웨이브**: 적 배율 `dfKw(w)` = 직선 (`K0 + (w − 1) × KADD`) × `dfExp(w)` (`DF.EXP_W` 30 웨이브 뒤 웨이브마다 `EXP_R` 1.035 곱 · 반복 곱셈) — 직선만이면 포식 · 합체처럼 계속 커지는 덱이 끝나지 않았다 (라이플만으로 141웨이브). 50웨이브 2.4 · 100웨이브 19.9 · 141웨이브 104배. HUD `oddsLabE` 에 `🔥×M` · 31웨이브 배너. 스택 한도는 사용자가 원하지 않는다.
 - **build 3**: 부활 지후는 부활 지후를 되살리지 않는다 (`onUnitDeath` 에서 revL 에 안 넣음 · SP 는 그대로 · 모든 모드 — 부활끼리 서로 되살리는 연쇄로 디펜스에서 아군이 500기를 넘었다) · 성뿌수기 · 디펜스는 `cwFull(side)` (소환체 포함 살아 있는 지후 ≥ `CW.CAP` 40) 이면 `A.spawnChild` (전장에 없는 쓰러진 사본을 돌려준다 · 부르는 쪽이 c 를 쓴다) · 부활 · 반중력 분열을 막는다. 새 소환 경로를 만들면 `cwFull` 을 본다.
+- **build 4 디펜스 보상**: 메뉴 「디펜스 보상」 (`MENU` · 아이콘 `K_MI` · 점은 `dfRwReady()`) → `#dfRwModal` (`openDfRw` · `renderDfRw` · 스크롤 목록) · 보상표 `DF_RW` [웨이브, { dia · gold · tix (아케이드 티켓 `profile.arc.t`) · item (+n) · rand 등급 (+n · 바로 지급 + `showReveal`) }] · 받는 조건 `profile.dfBest` ≥ 웨이브 · 받은 웨이브 `profile.dfRw` (계정당 한 번 · normProfile) · 선택 전설은 `legendPick` 을 넣고 바로 `useItem` · 디펜스 결과 화면에 받을 보상 수 칩.
 
 ## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
 - **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
