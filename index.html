@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="9"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -11517,6 +11517,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.35', date: '2026.11.11', title: '밸런스 패치', sections: [
+    { title: '추가 패치 (build 9)', items: [
+      { icon: '🏅', name: '랭킹 탭', tag: 'fix', desc: '디펜스 · 경쟁전 · 명예 탭을 누르면 <b>옆 탭이 켜져</b> 보이던 것' },
+    ] },
     { title: '추가 패치 (build 8)', items: [
       { icon: '🏆', name: '디펜스 리더보드', tag: 'fix', desc: '규칙을 게시한 뒤에도 <b>「규칙 게시 안 됨」</b>으로 안 나오던 것 (새로고침 없이 다시 시도)' },
       { icon: '🗼', name: '탑 리더보드', tag: 'fix', desc: '같은 문제 · 내 기록을 못 올려도 순위는 보여요' },
@@ -13751,8 +13754,8 @@ function u2Extra(v) {
   // 온라인 탭: 랭킹 · 친구 (친선전)
   const onSub = pg === 'social' ? 'social' : 'rank';
   const onSw = [['rank', '랭킹'], ['social', '친구 · 친선전']].map(([k, label]) => ({ label, cls: onSub === k ? 'on' : '', onClick: () => { UI2.st.onSub = k; if (k === onSub) return; if (k === 'social') openSocial(); else u2Go('rank'); } }));
-  const LBK = ['cp', 'level', 'wins', 'tower', 'comp', 'hall', 'def'];
-  const lbTabs = v.lbTabs.map((t, i) => ({ ...t, cls: lbTab === LBK[i] ? 'on' : '' }));
+
+  const lbTabs = v.lbTabs.map(t => ({ ...t, cls: lbTab === t.k ? 'on' : '' })); /* R2.35 build 9: 예전 순서 배열 LBK 가 디펜스 탭 자리와 어긋나 한 칸씩 밀려 켜졌다 */
   const LR = s.lb && s.lb.tab === lbTab && s.lb.rows ? s.lb.rows : [];
   const lbRows = v.lbRows.map((r, i) => ({ ...r, deck2: (() => { const d = (LR[i] && LR[i].data) || {}, ids = Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS(), rk = Array.isArray(d.rk) ? d.rk : []; return ids.map((id, k) => [id, rk[k]]).filter(([id]) => CHARS[id]).slice(0, 5).map(([id, n]) => ({ img: u2Img(id), c: sigC(id), bg: sigBg(id), rk: Number(n) >= 1 && Number(n) <= 6 ? String(Math.floor(n)) : '' })); })(), medal: (K_MEDAL[i] || ['#2a3356'])[0], mfc: (K_MEDAL[i] || [0, '#c9d0e6'])[1], ring: /\(나\)$/.test(r.name) ? '#53d3c0' : '#2f3963', frameC: /^#/.test(r.frame) ? r.frame : '#c9c9c6' }));
   // 상점 · 아케이드 버튼 색
@@ -13874,7 +13877,7 @@ function u2ValsBase() {
   const lbVal = d => { const w = Number(d.wins) || 0, l = Number(d.losses) || 0; return lbTab === 'cp' ? [fmt(d.cp), '전투력', `Lv.${clamp(Number(d.level) || 0, 0, 999)} · ${fmt(w)}승`] : lbTab === 'comp' ? [fmt(d.tp) + ' TP', compTierInfo(d.tp).name, `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'tower' ? [fmt(d.best) + '층', '최고 층', `${fmt(w)}승 ${fmt(l)}패`] : lbTab === 'def' ? ['WAVE ' + fmt(d.best), '최고 웨이브', '디펜스'] : lbTab === 'wins' ? [fmt(w) + '승', `${fmt(l)}패`, `Lv.${clamp(Number(d.level) || 0, 0, 999)}`] : ['Lv.' + clamp(Number(d.level) || 0, 0, 999), lbTab === 'hall' ? 'R1 기록' : `${fmt(w)}승`, `${fmt(w)}승 ${fmt(l)}패`]; };
   const lbRows = L && L.rows ? L.rows.map((r, i) => { const d = r.data, v = lbVal(d); return { rank: i + 1, rankColor: rankC[i] || '#f2f4fa', border: r.uid === L.me ? '#53d3c0' : i < 3 ? rankC[i] : '#3b466b', main: v[0], sub: v[1], lv: clamp(Number(d.level) || 0, 0, 999), name: String(safeNick(d.nickname) || '?').slice(0, 12) + (r.uid === L.me ? ' (나)' : ''), frame: frameBg(d.frame), favImg: CHARS[d.fav] ? u2Img(d.fav) : u2Img('fire'), deck: ((Array.isArray(d.deck) && d.deck.filter(id => CHARS[id]).length ? d.deck : STARTERS()).filter(id => CHARS[id]).slice(0, 5)).map(id => ({ img: u2Img(id), color: U2_RAR[CHARS[id].rarity].c })), open: () => u2UserInfo(r.uid, d), stat1: v[2], stat2: lbTab === 'comp' ? compTierInfo(d.tp).name : lbTab === 'tower' ? '지후의 탑' : lbTab === 'def' ? '디펜스' : lbTab === 'cp' ? '전투력' : '시즌 R2' }; }) : [];
   const myAt = L && L.rows ? L.rows.findIndex(r => r.uid === L.me) : -1, myD = { wins: profile.wins, losses: profile.losses, level: profile.level, best: lbTab === 'def' ? profile.dfBest | 0 : profile.tower.best, tp: profile.comp.tp, cp: cpTotal(), ...(lbTab === 'comp' ? { wins: profile.comp.wins, losses: profile.comp.losses } : {}) }, myV = lbVal(myD);
-  const lbTabs = [['cp', '전투력'], ['level', '레벨'], ['wins', '승리'], ['tower', '탑'], ['def', '디펜스'], ['comp', '경쟁전'], ['hall', '명예']].map(([k, label]) => ({ label, bg: lbTab === k ? '#3b466b' : 'transparent', fc: lbTab === k ? '#fff' : '#9aa3bf', onClick: () => { if (lbTab === k) return; lbTab = k; u2LbLoad(); u2Render(); } }));
+  const lbTabs = [['cp', '전투력'], ['level', '레벨'], ['wins', '승리'], ['tower', '탑'], ['def', '디펜스'], ['comp', '경쟁전'], ['hall', '명예']].map(([k, label]) => ({ k, label, bg: lbTab === k ? '#3b466b' : 'transparent', fc: lbTab === k ? '#fff' : '#9aa3bf', onClick: () => { if (lbTab === k) return; lbTab = k; u2LbLoad(); u2Render(); } }));
   // 상점
   const shop = ensureDaily(), free = shop.freeType === 'gold' ? { ic: '●', n: 500, label: '골드' } : { ic: '◆', n: 100, label: '다이아' }, ms = Math.max(0, new Date().setHours(24, 0, 0, 0) - Date.now()), pad = v => String(v).padStart(2, '0');
   const offers = [(() => { const b = u2Btn(shop.freeClaimed ? 'off' : 'mint'); return { name: '무료 보상', sub: `${free.ic} ${fmt(free.n)} · 하루 한 번`, glyph: free.ic, glyphFc: free.ic === '●' ? '#d18e00' : '#2a8fc0', color: '#53d3c0', line: shop.freeClaimed ? '#3b466b' : '#53d3c0', op: shop.freeClaimed ? 0.6 : 1, priceTxt: shop.freeClaimed ? '받음' : '받기', btnBg: b[0], btnFc: b[1], btnEdge: b[2], onClick: () => shop.freeClaimed ? null : u2After(claimFree) }; })(),

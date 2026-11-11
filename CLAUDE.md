@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 8).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 9).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
@@ -127,6 +127,7 @@
 - **build 6 기타**: 열쇠 상자 골드 1,000 ~ 2,000 · 지후 초기화권은 쓴 조각을 같은 등급 빛나는 조각 (`GLOW_OF` · 한정은 그 지후 조각) 으로 · 가방에서 사용 → `#rsModal` (`renderRs`).
 - **build 7**: 전투 화면 버튼 · 배치 카드 · 디펜스 트레이를 로비 톤으로 (CSS 블록 `R2.35 build 7 전투 화면 버튼` · `body #screen-battle …` 로 R2.26 의 !important 를 이긴다 · 전장 · 위 HUD 바탕은 흰색 그대로 · 움직이는 효과 없음) · `.banner` 와 경기 통계 (`.ms-seg` · `.ms-mvp`) 는 새 테마에서 `var(--ink)` 가 밝은 글자색이라 흰 바탕 흰 글씨였다 → 고정 남색 (**`var(--ink)` 를 배경으로 쓰는 예전 규칙은 새 테마에서 흰색이 된다**) · 열쇠 상자 `keyBox(n)` 여러 개 (`UI2.st.kbN` · `kbN` · `kbMax`) · 7일 상자 말풍선 `.e7-chest .tip` (hover · 누르면 `e7Tip` · transform 쌓임 맥락 때문에 hover 때 z-index) · 폰 상단 재화 줄: 에너지 필은 + 없이 (`.k-cen`) · 440px 이하에서 닉네임 · 경험치 (`.k-pfx`) 숨김 · 프로필 칸 min-width 50px.
 - **build 8 리더보드**: `dfPush` · `towerPush` 는 거절되면 테두리 없이 한 번 더 · 오류 코드 `FB.defErr` · `FB.towerErr` · 탭을 열 때마다 `FB.noDef` / `noTower` 를 지우고 다시 올린다 (예전엔 규칙 게시 전에 판이 끝나 한 번 거절되면 새로고침할 때까지 「규칙 게시 안 됨」) · 내 기록이 실패해도 순위는 읽는다 (토스트) · 읽기도 막히면 (permission-denied) 「규칙이 아직 반영되지 않았어요」. 시험: dev 훅 `FB` · `lbDef()` + 가짜 `FB.sdk` (`FB.ready = Promise.resolve(true)`).
+- **build 9**: 새 로비 랭킹 탭 강조는 탭 객체의 키 `t.k` 로 (예전 순서 배열 `LBK` 가 디펜스 탭 자리와 어긋나 한 칸씩 밀려 켜졌다 · 새 탭은 `u2ValsBase` 의 `lbTabs` 한 곳에만 넣는다). **2026-11-12 확인: 서버에 게시된 규칙에 `r2def` 가 없다** (익명 REST 읽기로 r2tower 200 · r2def 403) — 사용자가 firestore.rules 전체를 다시 게시해야 디펜스 리더보드가 나온다.
 
 ## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
 - **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
