@@ -168,16 +168,20 @@ service cloud.firestore {
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
         && request.resource.data.at == request.time;
     }
-    // R2.34 디펜스 리더보드: 최고 웨이브 (r2tower 와 같은 모양)
+    function rkI(l, i) { return l.size() <= i || (l[i] is int && l[i] >= 1 && l[i] <= 6); } // R2.28
+    function rkOk(l) { return l is list && l.size() <= 5 && rkI(l, 0) && rkI(l, 1) && rkI(l, 2) && rkI(l, 3) && rkI(l, 4); }
+    // R2.34 디펜스 리더보드: 최고 웨이브 (r2tower 와 같은 모양) · R2.35 build 11: 최고 기록 덱 deck · 그때 랭크 rk (없어도 됨)
     match /r2def/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'deck', 'rk', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
+        && (!('deck' in request.resource.data) || validDeck(request.resource.data.deck))
+        && (!('rk' in request.resource.data) || rkOk(request.resource.data.rk))
         && request.resource.data.updatedAt is timestamp;
     }
     match /r2tower/{userId} {
@@ -191,8 +195,6 @@ service cloud.firestore {
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && request.resource.data.updatedAt is timestamp;
     }
-    function rkI(l, i) { return l.size() <= i || (l[i] is int && l[i] >= 1 && l[i] <= 6); } // R2.28
-    function rkOk(l) { return l is list && l.size() <= 5 && rkI(l, 0) && rkI(l, 1) && rkI(l, 2) && rkI(l, 3) && rkI(l, 4); }
     match /r2lb/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
