@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 10).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 11).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
@@ -129,6 +129,7 @@
 - **build 8 리더보드**: `dfPush` · `towerPush` 는 거절되면 테두리 없이 한 번 더 · 오류 코드 `FB.defErr` · `FB.towerErr` · 탭을 열 때마다 `FB.noDef` / `noTower` 를 지우고 다시 올린다 (예전엔 규칙 게시 전에 판이 끝나 한 번 거절되면 새로고침할 때까지 「규칙 게시 안 됨」) · 내 기록이 실패해도 순위는 읽는다 (토스트) · 읽기도 막히면 (permission-denied) 「규칙이 아직 반영되지 않았어요」. 시험: dev 훅 `FB` · `lbDef()` + 가짜 `FB.sdk` (`FB.ready = Promise.resolve(true)`).
 - **build 9**: 새 로비 랭킹 탭 강조는 탭 객체의 키 `t.k` 로 (예전 순서 배열 `LBK` 가 디펜스 탭 자리와 어긋나 한 칸씩 밀려 켜졌다 · 새 탭은 `u2ValsBase` 의 `lbTabs` 한 곳에만 넣는다). **2026-11-12 확인: 서버에 게시된 규칙에 `r2def` 가 없다** (익명 REST 읽기로 r2tower 200 · r2def 403) — 사용자가 firestore.rules 전체를 다시 게시해야 디펜스 리더보드가 나온다.
 - **build 10**: 메탈 지후 HP 70 → 35 · 녹슬기 (`metalTick` · 1초마다 최대 체력 2%) 삭제 (받는 피해 2 · 회복 불가는 그대로) · 서사도 녹이 멈춘 이야기로.
+- **build 11 리더보드**: 덱 초상화 `.k-lbpic` 아담하게 (`clamp(38px, 10.5vw, 46px)` · flex · 테두리 2.5) · 덱 · 레벨이 없는 기록 (디펜스 · 탑) 은 기본 덱 · Lv.0 대신 비우고 내 줄 (`(나)`) 만 내 덱 · 디펜스 최고 기록 덱 `profile.dfDeck` · `dfRk` (`dfEnd` 가 최고 기록이거나 비어 있으면 그 판 `S.deck`) → `dfPush` 가 `deck` · `rk` 를 올린다 (예전 규칙이면 덱 없이 → 테두리 없이 다시 · `FB.noDfDeck`) · **firestore.rules `r2def` 에 deck · rk (validDeck · rkOk) 추가 → 게시 필요** · rkI · rkOk 는 r2def 위로 옮겼다.
 
 ## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
 - **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
