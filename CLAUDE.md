@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.33** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.33.1** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -116,7 +116,8 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.33 · 성뿌수기 모드)
+## 최근 변경 (R2.33 · 성뿌수기 모드 · R2.33.1 밸런스)
+- **R2.33.1**: 성 HP 24,000 · 사거리 6 · 웨이브 30초 (첫 웨이브 10초) · 성의 분노 16,000 · 8,000 = 모든 적 지후 기절 10초 (면역 · 쉴드 무시 · 스테인리스만 버팀 · 골드 +300 그대로) · 합체 `cwFuse` (같은 지후 · 같은 레벨 → 레벨 +1 · **덱의 무작위 지후** · 출격제한 지킴 · 조커 변신은 그대로) · 자리 옮기기 없음 · 입장 무료 (확인 창 없이) · 보상 경험치 `cwXp` (승리 100 · 패배 = 상대 성 피해 비율 × 50 · 항복 0 · 아케이드 포인트 없음) · PC (700px 이상) 는 `#screen-battle.cw:not(.reels)` 폭 520px 가운데 (`:not(.reels)` 는 뒤의 `inset:0` 을 이기려고 · `cwUi(true)` 를 `fitField` 앞에서).
 - **성뿌수기** (아케이드 `ARC_MODES.castle` · `arc.kind 'castle'` · 참고: 랜덤다이스 워즈 · 코드 블록 `// ═════════ R2.33 성뿌수기` · 상수 `CW`): 내 덱 vs 봇 덱 (`botDeckRamp('std')`) · `startRound` → `cwStart` (배치 단계 없음 · 리플레이 기록 없음). `S.cw = { gold · cost · wave · t · sd · rage · castle · gone · sel }`.
   - 성 = `SUMMONS.castle` (HP 60,000 · 사거리 3 · ATK 300 / 1초 · `immobile` · `immune` · `noHeal` · `u.big` 큰 몸 `cvD` 150) · `friends()` 에서 뺀다 (아군 버프 · 회복 대상 아님) · `instaKill` 무시 · 체력 비례 피해는 `pctD(t, v)` 로 5% (체력 비례 피해를 새로 만들면 `pctD` 로 감싼다) · 한 번에 최대 체력의 5% 까지 (핵 등) · 왜곡 · 고자 무시 · 슬롯머신 잭팟은 적 지후 전멸 + 성 피해.
   - 웨이브 `cwWave` (20초 `CW.WAVE` · 첫 웨이브 10초 `CW.FIRST` · 골드 `cwIncome` · `cwSpawn` 이 슬롯 `S.place` 의 지후를 칸 자리에 · 진영마다 살아 있는 지후 `CW.CAP` 40기까지 · 유물은 웨이브마다 새로) · 소환 `cwSummon` (10 · +10 · 덱 무작위 · 출격제한은 지킨다) · 합체는 `moveTile` (개구리 · 조커 규칙 그대로) · 성의 분노 `cwRage` (40,000 · 20,000 · 반경 6칸 즉사 · +300) · 처치 +4 (`u.cwU` 웨이브 지후만) · 30웨이브 서든 데스 · 봇 `cwBot` · 끝 `cwEnd` → `endMatch` (아케이드 포인트).
