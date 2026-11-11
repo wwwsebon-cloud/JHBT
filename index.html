@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="10"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="11"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -7652,6 +7652,10 @@ function cvEnd() { // 전투가 끝나면 (결정적 순간 · 라운드 끝 · 
   if (CV.mo) CV.mo.disconnect(); (S.units || []).forEach(u => { if (u.el) u.el._cvObs = false; u._cvOk = undefined; });
   if (CV.el) { CV.el.remove(); CV.el = null; CV.ctx = null; }
 }
+function cvReset() { // R2.34 build 11: 폰에서 다른 탭 · 앱에 다녀오면 캔버스 그림 (GPU) 이 날아가 깜빡였다 → 캔버스 · 그림 캐시를 버리고 다음 프레임에 새로 만든다
+  cvEnd(); CV.spr.clear(); for (const u of S.units || []) { u._cvB = null; u._cvI = null; } viewDirty(); lastTs = 0; frameDue = 0;
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') cvReset(); }); addEventListener('pageshow', () => cvReset());
 function cvPlace() { // 캔버스에 카메라의 반대 변환 → 화면 크기 그대로 보인다
   if (!CV.el) return; const { vw, vh } = viewSize(), z = CAM.z || 1;
   let t = `translate(${CAM.x.toFixed(2)}px, ${CAM.y.toFixed(2)}px) scale(${(1 / z).toFixed(6)}) translate(${(-vw / 2).toFixed(1)}px, ${(-vh / 2).toFixed(1)}px)`;
@@ -7666,8 +7670,9 @@ function cvPick(e) { // 누른 자리의 지후 (캔버스는 pointer-events 가
 const CV_L = []; // 이번 프레임에 그릴 지후 [u, x, y] (화면 좌표 / 확대 = 「확대한 CSS px」)
 function cvDraw() {
   if (!cvAllowed()) { cvEnd(); return; }
+  if (CV.lost) { CV.lost = 0; cvReset(); }
   const f = $('field');
-  if (!CV.el || !CV.el.isConnected) { CV.el = document.createElement('canvas'); CV.el.className = 'fx-ucv'; CV.ctx = CV.el.getContext('2d'); f.insertBefore(CV.el, f.querySelector('.unit') || null); CV.w = CV.h = 0; CV.tf = ''; }
+  if (!CV.el || !CV.el.isConnected) { CV.el = document.createElement('canvas'); CV.el.className = 'fx-ucv'; CV.ctx = CV.el.getContext('2d'); CV.el.addEventListener('contextlost', () => { CV.lost = 1; }); CV.el.addEventListener('contextrestored', () => { CV.lost = 1; }); /* build 11: 그림이 날아가면 다음 프레임에 새로 */ f.insertBefore(CV.el, f.querySelector('.unit') || null); CV.w = CV.h = 0; CV.tf = ''; }
   CV.on = true;
   const { vw, vh } = viewSize(), dpr = Math.min(BSET.low ? 1.5 : 3, window.devicePixelRatio || 1); /* R2.31: 폰 (배율 2.6 ~ 3) 에서 2배로 그려 늘어나 흐렸다 · 저전력은 1.5 */
   if (CV.w !== vw || CV.h !== vh || CV.dpr !== dpr) { CV.w = vw; CV.h = vh; CV.dpr = dpr; CV.el.width = Math.round(vw * dpr); CV.el.height = Math.round(vh * dpr); CV.el.style.width = vw + 'px'; CV.el.style.height = vh + 'px'; }
@@ -7860,7 +7865,7 @@ function applyCamera(light) {
   if (!light) { $('zoomLab').textContent = Math.round(CAM.z * 100) + '%'; camAutoUi(); drawMinimap(true); if (CV.on) cvDraw(); } /* R2.29: 손으로 옮기면 캔버스도 바로 */ // 따라가기는 매 프레임이라 가볍게 (미니맵은 loop 가 그린다)
 }
 function fitCamera() { CAM.z = fitZoom(); CAM.x = FW() / 2; CAM.y = camMidY(CAM.z); applyCamera(); }
-if (window.ResizeObserver) { const ro = new ResizeObserver(() => { viewDirty(); const s = $('screen-battle'), { t, b } = viewInsets(); s.style.setProperty('--hudH', t + 'px'); s.style.setProperty('--trayH', b + 'px'); if (s.classList.contains('active') && !CAM.moved) fitCamera(); }); ro.observe($('screen-battle').querySelector('.hud')); ro.observe($('screen-battle').querySelector('.tray')); ro.observe($('fieldWrap')); } // HUD 높이가 바뀌면 (배치 ↔ 전투) 다시 맞춘다
+if (window.ResizeObserver) { const ro = new ResizeObserver(() => { viewDirty(); const s = $('screen-battle'), { t, b } = viewInsets(); s.style.setProperty('--hudH', t + 'px'); s.style.setProperty('--trayH', b + 'px'); if (s.classList.contains('active') && !CAM.moved) { if (S.phase === 'combat' && CAM.follow && !CAM.user) { CAM.az = null; applyCamera(true); } else fitCamera(); } }); /* R2.34 build 11: 전투 중 따라가는 카메라는 맞춤으로 튀지 않는다 (폰 주소창이 오르내리면 크기가 계속 바뀌어 확대가 왔다 갔다 했다) */ ro.observe($('screen-battle').querySelector('.hud')); ro.observe($('screen-battle').querySelector('.tray')); ro.observe($('fieldWrap')); } // HUD 높이가 바뀌면 (배치 ↔ 전투) 다시 맞춘다
 // R2.12.2: 전투 중에는 살아 있는 유닛을 감싸게 부드럽게 확대 · 이동 (손으로 옮기거나 확대하면 그 라운드는 멈춘다)
 const TUT_STATS = { // R2.22 build 3: 튜토리얼 전용 고정 수치 (R2.22 값 · CHARS 를 바꿔도 튜토리얼은 이것만 쓴다 · makeUnit) — 시뮬 200판: 1라운드 승 · 2 · 3라운드 패 · 4라운드 승 모두 100%
   fire: { hp: 1840, atk: 150, atkSpeed: 2, range: 4.8, speed: 1.6 }, ice: { hp: 1400, atk: 120, atkSpeed: 3.5, range: 6, speed: 1.6 },
@@ -11338,6 +11343,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.34', date: '2026.11.11', title: '디펜스 모드 · 출격제한 개편', sections: [
+    { title: '추가 패치 (build 11)', items: [
+      { icon: '📱', name: '화면 깜빡임', tag: 'fix', desc: '폰에서 다른 탭에 다녀오면 전투 화면이 <b>빠르게 깜빡이던</b> 문제' },
+    ] },
     { title: '추가 패치 (build 10)', items: [
       { icon: '👥', name: '충격파 기준', tag: 'nerf', desc: '아군 다시 <b>30 → 20기</b>' },
       { id: 'archaeo', name: '고고학자 지후', tag: 'nerf', desc: '디펜스: 유물 효과가 <b>웨이브가 끝나면</b> 모두 초기화' },
