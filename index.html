@@ -7655,7 +7655,8 @@ function cvEnd() { // 전투가 끝나면 (결정적 순간 · 라운드 끝 · 
 function cvReset() { // R2.34 build 11: 폰에서 다른 탭 · 앱에 다녀오면 캔버스 그림 (GPU) 이 날아가 깜빡였다 → 캔버스 · 그림 캐시를 버리고 다음 프레임에 새로 만든다
   cvEnd(); CV.spr.clear(); for (const u of S.units || []) { u._cvB = null; u._cvI = null; } viewDirty(); lastTs = 0; frameDue = 0;
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') cvReset(); }); addEventListener('pageshow', () => cvReset());
+function animReset() { try { for (const a of document.getAnimations()) { const t = a.effect && a.effect.getTiming ? a.effect.getTiming() : null; if (t && t.iterations === Infinity) { a.cancel(); a.play(); } } } catch (e) {} } // R1 7.1.2 와 같은 고전 버그: 다른 탭 · 앱에 다녀오면 멈춰 있던 무한 애니메이션이 미친 듯이 깜빡인다 → 다시 시작
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { cvReset(); requestAnimationFrame(animReset); } }); addEventListener('pageshow', () => { cvReset(); requestAnimationFrame(animReset); });
 function cvPlace() { // 캔버스에 카메라의 반대 변환 → 화면 크기 그대로 보인다
   if (!CV.el) return; const { vw, vh } = viewSize(), z = CAM.z || 1;
   let t = `translate(${CAM.x.toFixed(2)}px, ${CAM.y.toFixed(2)}px) scale(${(1 / z).toFixed(6)}) translate(${(-vw / 2).toFixed(1)}px, ${(-vh / 2).toFixed(1)}px)`;
@@ -11344,7 +11345,7 @@ const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정'
 const PATCH_NOTES = [
   { v: 'R2.34', date: '2026.11.11', title: '디펜스 모드 · 출격제한 개편', sections: [
     { title: '추가 패치 (build 11)', items: [
-      { icon: '📱', name: '화면 깜빡임', tag: 'fix', desc: '폰에서 다른 탭에 다녀오면 전투 화면이 <b>빠르게 깜빡이던</b> 문제' },
+      { icon: '📱', name: '화면 깜빡임', tag: 'fix', desc: '폰에서 다른 탭에 다녀오면 화면이 <b>빠르게 깜빡이던</b> 문제 (R1 부터 있던 버그)' },
     ] },
     { title: '추가 패치 (build 10)', items: [
       { icon: '👥', name: '충격파 기준', tag: 'nerf', desc: '아군 다시 <b>30 → 20기</b>' },
