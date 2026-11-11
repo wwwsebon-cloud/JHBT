@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4214,11 +4214,11 @@ const CHARS = {
         (S.barriers || (S.barriers = [])).push({ side: u.side, x: u.x, y: u.y, r, left: 3.5, el }); } } },
   revive: { name: '부활 지후', rarity: 'legend', role: '서포터', hp: 1180, atk: 140, atkSpeed: 2.4, range: 7.5, speed: 1.6, portrait: PORTRAITS.revive, sfx: 'shot', color: '#f2c94c',
     story: '무덤가 옆 꽃집에서 시든 꽃을 하나하나 살려 내던 지후입니다. 어느 날 그가 숨을 불어넣은 화분에서 날개 달린 씨앗이 피어났고, 그걸 삼킨 뒤로 쓰러진 친구를 다시 일으켜 세울 수 있게 되었어요. 단골손님은 뼈다귀를 데리고 오는 네크로맨서 지후와, 매주 국화를 사 가는 사신 지후입니다. 셋이 동시에 가게에 있으면 다른 손님은 아무도 들어오지 않아요. 친구가 쓰러져야 힘이 모인다는 게 늘 마음 아프다면서도, 친구들 안부를 너무 자주 물어서 오해를 삽니다.',
-    passive: '아군이 쓰러질 때마다 SP 가 찹니다.',
+    passive: '아군이 쓰러질 때마다 SP 가 찹니다. 부활 지후는 되살리지 못합니다.',
     onUnitDeath(u, d) { if (d.side !== u.side) return; // R2.21.2: 소환체 · 분열체도 SP · 부활 대상 (예전엔 제외)
-      (u.revL || (u.revL = [])).push(d.small || d.summoner ? { id: d.id, lv: d.lv, ch: { hp: d.baseMaxHp, atk: d.atk, depth: d.slimeDepth || 0, sm: !!d.small, by: d.summoner || null, fixed: d.invMass === 0 } } : { id: d.id, lv: d.lv }); spGive(u, 1); },
+      if (d.id !== 'revive') /* R2.35 build 3: 부활 지후는 되살리지 않는다 (SP 는 그대로) */ (u.revL || (u.revL = [])).push(d.small || d.summoner ? { id: d.id, lv: d.lv, ch: { hp: d.baseMaxHp, atk: d.atk, depth: d.slimeDepth || 0, sm: !!d.small, by: d.summoner || null, fixed: d.invMass === 0 } } : { id: d.id, lv: d.lv }); spGive(u, 1); },
     tick(u, dt, A) { const q = u.revQ; if (!q) return; q.t -= dt; if (q.t > 0) return; u.revQ = null;
-      A.pick(q.L, u.lv).forEach(r => { const ang = rng() * Math.PI * 2, off = unitRadius(u) * 1.6, c = makeUnit(u.side, r.id, r.lv, u.x + Math.cos(ang) * off, u.y + Math.sin(ang) * off); c.revived = true; // 자기 자리에 (레벨 수만큼 · 무작위)
+      A.pick(q.L, u.lv).forEach(r => { if (cwFull(u.side)) return; /* R2.35 build 3: 성뿌수기 · 디펜스 진영이 가득 차면 못 살린다 */ const ang = rng() * Math.PI * 2, off = unitRadius(u) * 1.6, c = makeUnit(u.side, r.id, r.lv, u.x + Math.cos(ang) * off, u.y + Math.sin(ang) * off); c.revived = true; // 자기 자리에 (레벨 수만큼 · 무작위)
         const h = r.ch; if (h) { c.small = h.sm; c.slimeDepth = h.depth; c.summoner = h.by; c.baseMaxHp = c.maxHp = c.hp = Math.max(1, Math.round(h.hp)); c.atk = Math.max(1, Math.round(h.atk)); c.mass = physMass(c); c.invMass = h.fixed ? 0 : 1 / c.mass; } // 소환체 · 분열체: 쓰러질 때 체력 · 공격력 그대로
         physSnap(c, c.x, c.y); c.el = unitEl(c); if (c.small) c.el.classList.add('small'); $('field').appendChild(c.el); drawUnit(c); S.units.push(c); if (c.def.onStart) c.def.onStart(c, A); if (!S.fast) { deployFx(c, 'merge'); dmgNum(c, '부활!', { crit: true }); } });
       if (u.sk >= u.def.skill.need) castSkill(u); },
@@ -5576,7 +5576,7 @@ const CHAR_INFO = {
   lantern: [['공격 빔', '0.25초마다 공격력 150% · 5.5칸보다 멀면 희미해져 멈춤 · 2초 뒤 끊김'], ['회복 빔', '0.25초마다 공격력 60% · 사거리 안 체력 비율이 가장 낮은 아군 (자신 제외)'], ['동시에', '공격 빔 1 + 회복 빔 1'], ['자가 회복', '공격 빔이 맞을 때마다 5 (레벨과 상관없이)']],
   lightning: [['[낙뢰]', 'SP 5 · 공격력 570% · [기절] 0.5초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
   barrier: [['시작 쉴드', '십자 범위 아군 · 공격력 250% · 남아 있는 동안 디버프 무효'], ['쉴드 중첩', '한 아군에게 보호막 지후 둘 이상이 닿아 있으면 쉴드가 합쳐진다'], ['[배리어]', '반지름 2.2칸 · 3.5초 · 바깥에서 오는 투사체를 막는다'], ['못 막는 것', '근접 공격 · 투사체가 아닌 광역 공격']],
-  revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 포함)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위 (소환체 · 분열체는 쓰러질 때 체력 · 공격력으로)']],
+  revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 포함)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위 (소환체 · 분열체는 쓰러질 때 체력 · 공격력으로) · 부활 지후 제외']],
   reaper: [['[봉인]', '움직이지 못한다 (사거리 안에 들어온 적은 공격한다)'], ['SP (봉인)', '아군이 쓰러질 때마다 1 (소환체 · 분열체 포함)'], ['[사신강림]', 'SP 6 · 체력 2,044 · 공격 간격 1.2초 · 이동속도 2.4'], ['[즉사] (강림)', 'SP 4 (일반 공격) · 가장 가까운 적 하나 · 즉사 (무적 · 버티기 등 어떤 효과로도 못 막는다)']],
   guardian: [['[수호]', '십자 범위 아군 · 쓰러질 때 체력 1 + [무적] 1초 · 라운드에 한 번'], ['조건', '수호자 지후가 살아 있을 때'], ['예외', '광폭화 지후']],
   clock: [['같은 레벨 적', '공격속도 -4% (레벨마다 -1%)'], ['같은 레벨 아군', '공격속도 +4% (자신 포함 · 레벨마다 +1%)'], ['범위', '맵 전체 · 중첩']],
@@ -6792,7 +6792,7 @@ function nouClash(a, b) { // NO U 지후 (R2.10.2): [NO U] 중인 NO U 끼리 �
   A.later(T, () => { instaKill(null, a, false); instaKill(null, b, false); });
 }
 function antigravSplit(a) { // 반중력 지후 (R2.10.2): 체력이 절반인 둘로 (그 라운드만 · 둘째는 배치 기록에 없다)
-  if (!a.alive || S.phase !== 'combat') return; a.st.antigrav = 0;
+  if (!a.alive || S.phase !== 'combat') return; a.st.antigrav = 0; if (cwFull(a.side)) return; /* R2.35 build 3: 진영이 가득 차면 나뉘지 않는다 */
   const hm = Math.max(1, Math.round(a.baseMaxHp / 2)); a.baseMaxHp = hm; a.maxHp = Math.max(1, Math.round(a.maxHp / 2)); a.hp = Math.max(1, Math.min(a.maxHp, Math.round(a.hp / 2)));
   const bd = backDir(a.side), c = makeUnit(a.side, a.id, a.lv, a.x + unitRadius(a) * (bd.x * 1.4 + bd.y * 0.6), a.y + unitRadius(a) * (bd.y * 1.4 + bd.x * 0.6)); // c.tile 없음 → 배치 기록을 건드리지 않는다
   if (c.def.onStart) try { c.def.onStart(c, A); } catch (e) { console.error(e); }
@@ -6900,6 +6900,7 @@ const A = {
   },
   spawnChild: (p, id, o) => { // 분열 · 소환: 싸우는 중에 새 지후
     const c = makeUnit(p.side, id, p.lv, p.x + (o.dx || 0), p.y + (o.dy || 0));
+    if (cwFull(p.side)) { c.alive = false; c.hp = 0; c.el = unitEl(c); return c; } // R2.35 build 3: 진영이 가득 차면 나오지 않는다 (부르는 쪽이 c 를 그대로 쓰니 전장에 없는 쓰러진 사본)
     c.small = !!o.depth; c.slimeDepth = o.depth || 0; c.baseMaxHp = c.maxHp = c.hp = Math.max(1, Math.round(o.hp)); c.atk = Math.max(1, Math.round(o.atk)); c.mass = physMass(c); c.invMass = 1 / c.mass;
     physSnap(c, c.x, c.y); c.el = unitEl(c); if (c.small) c.el.classList.add('small'); $('field').appendChild(c.el); drawUnit(c); S.units.push(c); deployFx(c, 'drop');
     return c;
@@ -7404,6 +7405,7 @@ function dfInstant(id) { // 고르는 순간 효과
 const dfPool = () => pubIds().filter(id => { const c = CHARS[id]; return c && !c.immobile && !c.noAttack && !c.deployLimit; }); // 적 웨이브 지후: 움직이고 공격하는 지후 (출격제한 지후 · 고정형 제외)
 function dfExp(w) { let m = 1; for (let i = DF.EXP_W; i < w; i++) m *= DF.EXP_R; return m; } // R2.35 build 2: 광폭 배율 (EXP_W 웨이브 뒤 웨이브마다 EXP_R 곱 · 반복 곱셈)
 function dfKw(w) { return (DF.K0 + (w - 1) * DF.KADD) * dfExp(w); } // 적 능력치 배율 = 직선 × 광폭
+function cwFull(side) { return !!S.cw && sideIx()[side].filter(u => !u.def.castle).length >= CW.CAP; } // R2.35 build 3: 성뿌수기 · 디펜스에서 진영 지후 수 (소환체 포함) 가 CW.CAP 이면 소환 · 부활 · 분열도 막는다
 function dfSpawn(w) { // 적 웨이브 (상대 진영 무작위 칸 · 진영마다 살아 있는 지후 CW.CAP 기까지)
   const side = OPP(), mine = sideIx()[ME()].filter(u => !u.def.castle).length, n = Math.max(0, Math.min(DF.NMAX, Math.max(DF.N0, Math.round(mine * DF.NK) + Math.floor(rng() * 2)), CW.CAP - sideIx()[side].length)), /* build 7: 내 전장 지후 수 × NK (+0~1 · 최소 N0) */ k = dfKw(w), pool = dfPool(), f = S.fast ? null : $('field'), fresh = [];
   for (let i = 0; i < n && pool.length; i++) { const id = pool[Math.floor(rng() * pool.length)], q = tileXY(side, Math.floor(rng() * TILES)), u = makeUnit(side, id, 1, q.x + (rng() - 0.5) * CFG.CELL * 0.8, q.y + (rng() - 0.5) * CFG.CELL * 0.8);
@@ -11351,6 +11353,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.35', date: '2026.11.11', title: '밸런스 패치', sections: [
+    { title: '추가 패치 (build 3)', items: [
+      { id: 'revive', name: '부활 지후', tag: 'nerf', desc: '부활 지후는 <b>부활 지후를 되살리지 못해요</b>' },
+      { icon: '👥', name: '소환체 수', tag: 'nerf', desc: '디펜스: 소환체 · 부활한 지후도 <b>지후 수</b>로 세요 (<b>40기</b>가 차면 소환 · 부활 · 분열 안 됨)' },
+    ] },
     { title: '추가 패치 (build 2)', items: [
       { icon: '🔥', name: '광폭 웨이브', tag: 'adjust', desc: '디펜스 <b>30웨이브</b>부터 적 체력 · 공격력이 웨이브마다 <b>×1.035</b> 곱으로 올라요' },
       { icon: '👾', name: '적 배율', tag: 'adjust', desc: '50웨이브 <b>약 2배</b> · 100웨이브 <b>약 11배</b> 더 강해요' },
@@ -13595,7 +13601,7 @@ function u2Extra(v) {
     modeClose: () => u2Set({ mode: null }), modeGo: () => { const k = s.mode; u2Set({ mode: null }); if (k === 'defense') return dfGo(); /* R2.34 */ renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${k}"]`); if (!el) return; ARC_SURE = true; try { el.click(); } finally { ARC_SURE = false; } },
     isMEvent: mk === 'event', isMRandom: mk === 'random' || mk === 'mirror', isMCastle: mk === 'castle', /* R2.33 */ isMDef: mk === 'defense', /* R2.34 */ dfKeys: fmt(profile.keys | 0), dfBoxCost: DF.BOX, dfBoxCls: (profile.keys | 0) >= DF.BOX ? 'k-gold' : 'k-off', dfOpenBox: () => keyBox(),
     dfChips: [[`라이프 ${DF.LIVES}`, '#ff4f5e', '#fff'], [`적 ${DF.EWAVE}초마다`, '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['입장 무료', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
-    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `웨이브마다 (${DF.EWAVE}초 · 적을 다 잡으면 바로) 슬롯의 지후가 전장에 나가고 적 지후가 몰려와요 (내 전장 지후 수보다 적게 · 1랭크 · 처음엔 능력치 ×${DF.K0} · 웨이브마다 더 강해져요)`, `🔥 ${DF.EXP_W}웨이브부터 광폭 — 적 능력치가 웨이브마다 ×${DF.EXP_R} 씩 곱으로 올라요`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, '고고학자 지후의 유물은 웨이브가 끝나면 모두 사라지고, 엑시노스 지후가 쓰러지면 그가 준 칩도 사라져요', `라이프가 ${DF.RALLY.join(' · ')} 이 되면 반격 — 🪙 +${DF.RALLY_GOLD} · 내 진영의 적 모두 넉백 · ${DF.RALLY_DMG} 피해 · ${DF.RALLY_STUN}초 기절`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 웨이브가 끝날 때 전장의 내 지후가 ${DF.QCAP}기를 넘으면 다음 웨이브에 충격파 — 1초 전 빨간 경고 · 내 지후 모두 최대 체력 ${Math.round(DF.QD0 * 100)}% (점점 늘어 최대 ${Math.round(DF.QDMAX * 100)}%) 피해 · ${DF.QSTUN}초 기절`, `지난 웨이브마다 🔑 1 · 🔑 ${DF.BOX} 로 열쇠 상자`].map(t => ({ t })),
+    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `웨이브마다 (${DF.EWAVE}초 · 적을 다 잡으면 바로) 슬롯의 지후가 전장에 나가고 적 지후가 몰려와요 (내 전장 지후 수보다 적게 · 1랭크 · 처음엔 능력치 ×${DF.K0} · 웨이브마다 더 강해져요)`, `🔥 ${DF.EXP_W}웨이브부터 광폭 — 적 능력치가 웨이브마다 ×${DF.EXP_R} 씩 곱으로 올라요`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `전장의 내 지후는 소환체 · 부활한 지후까지 ${CW.CAP}기까지 (넘으면 소환 · 부활 · 분열이 안 돼요)`, `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, '고고학자 지후의 유물은 웨이브가 끝나면 모두 사라지고, 엑시노스 지후가 쓰러지면 그가 준 칩도 사라져요', `라이프가 ${DF.RALLY.join(' · ')} 이 되면 반격 — 🪙 +${DF.RALLY_GOLD} · 내 진영의 적 모두 넉백 · ${DF.RALLY_DMG} 피해 · ${DF.RALLY_STUN}초 기절`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 웨이브가 끝날 때 전장의 내 지후가 ${DF.QCAP}기를 넘으면 다음 웨이브에 충격파 — 1초 전 빨간 경고 · 내 지후 모두 최대 체력 ${Math.round(DF.QD0 * 100)}% (점점 늘어 최대 ${Math.round(DF.QDMAX * 100)}%) 피해 · ${DF.QSTUN}초 기절`, `지난 웨이브마다 🔑 1 · 🔑 ${DF.BOX} 로 열쇠 상자`].map(t => ({ t })),
     cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['20초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
     cwRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 처음 10 · 소환마다 +10', '20초마다 슬롯의 지후가 그대로 전장에 나가요 (웨이브 · 첫 웨이브는 10초 뒤) · 웨이브마다 골드를 받아요', '슬롯에서 같은 지후 · 같은 레벨을 눌러 합치면 레벨업', '적 처치 🪙 +4 · 내 성 체력이 40,000 · 20,000 이 되면 성 주변 적이 모두 쓰러지고 🪙 +300', '30웨이브까지 안 끝나면 서든 데스 — 먼저 전멸하면 패배', `입장료 🎟 ${fee}`].map(t => ({ t })),
     evCards: [['#ff8fb1,#c0408a', '브론즈'], ['#ffd76a,#e0a21c', '골드'], ['#7cc8ff,#3a78d0', '실버']].map(([c, t], i) => ({ bg: `linear-gradient(180deg,${c})`, t, zi: i === 1 ? 3 : 1, tf: ['rotate(-12deg) translateY(10px)', 'scale(1.08) translateY(-4px)', 'rotate(12deg) translateY(10px)'][i] })),
