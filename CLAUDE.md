@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.33.1** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.34** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -75,7 +75,7 @@
 - 즉사는 `instaKill(src, t, label)` 하나로 (모든 생존기 무시). 피해는 `dealDamage` (받는 피해 감소 최대 90% · 최소 1 · 죽인 쪽 `t.killer`).
 - 투사체 `S.shots` · 관통탄 `S.lines` 는 맞는 순간 새로 쏜 것도 남도록 목록을 비우고 돈다 (R2.18 수정 · 다시 `filter` 한 번으로 바꾸지 말 것).
 - 전투 중 `drawUnit` 은 모았다가 프레임마다 한 번 그린다. 화면 효과 DOM 은 `S.fast` (시뮬) 일 때 만들지 않는다.
-- 전장: 세로 17 × 24칸 (`CFG.CELL`) · 라운드 60초 · 배치 3 × 5칸 · 같은 지후 3기 (출격제한 `deployLimit`) · 레벨은 경기 안에서만 (최대 Lv5 · 갓지후 Lv6 · 레벨마다 체력 · 공격력 기본의 +60% `CFG.LEVEL_ADD` · R2.19).
+- 전장: 세로 17 × 24칸 (`CFG.CELL`) · 라운드 60초 · 배치 3 × 5칸 · 같은 지후 제한 없음 (R2.34 · 출격제한 `deployLimit` ≤ 2 지후는 넘으면 패시브 · 스킬 없음) · 레벨은 경기 안에서만 (최대 Lv5 · 갓지후 Lv6 · 레벨마다 체력 · 공격력 기본의 +60% `CFG.LEVEL_ADD` · R2.19).
 
 ## 게임 규칙 요약
 - 모드: 일반전 (봇 · 라이프 3) · 친선전 (온라인 1:1) · 아케이드 (미러전 · 지후의 탑 · 경쟁전) · 샌드박스. **이벤트 모드** (R2.23 · 일반전만 · 로비 토글 `profile.mode` · `CFG.EV_ENABLED`) — 아래 「최근 변경」.
@@ -116,7 +116,15 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.33 · 성뿌수기 모드 · R2.33.1 밸런스)
+## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
+- **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
+- **디펜스 모드** (`arc.kind 'defense'` · 성뿌수기 틀 재사용 `isCw()` · `S.cw.df` · 상수 `DF`): 로비 일반전 오른쪽 버튼 → 모드 로비 `K_MODE.defense` (`isMDef` · 열쇠 상자) → `dfGo` (무료). 내 슬롯 출격 `dfWave` 20초 (`c.t` · 골드 `cwIncome(c.mw)`) · 적 웨이브 `dfFoeWave` 10초 (`c.et` · 적을 다 잡으면 바로 · `dfSpawn` 무작위 지후 `dfPool` Lv1 · 수 3 + 0.3 × (웨이브 − 1) · 능력치 ×(0.7 + 0.04 × (웨이브 − 1)) · `u.dfE`) · 노릴 아군이 없으면 `dfMarch` (aiSteerAndAttack) · 내 진영 끝 `dfAtEnd` → `dfLeak` 라이프 −1 (10) · 끝 `dfEnd` 열쇠 = 웨이브 − 1 · 최고 웨이브 `profile.dfBest` → `dfPush` (`r2def` · **firestore.rules 게시 필요**) · 핵 지후는 고정 `DF.NUKE` 500 · PC (900px `DF_SPLIT`) 는 `#screen-battle.cw.df` 왼쪽 트레이 380px · 오른쪽 전장 (`viewInsets` 아래 가림 0).
+- **열쇠** `profile.keys` · `keyBox()` 🔑 40 = 일반 5 · 희귀 3 · 10% 영웅 · 1% 전설. **성뿌수기는 임시 삭제** (`ARC_MODES` 에서만 뺐다 · 코드 그대로).
+- **시작 연출**: `newMatch` 안에서 매칭 창 `mmShow` (#mmOv · 2~4초 · 경쟁전은 자기 매칭 창이 있어 건너뜀) → 인트로 3초 → 전장 로딩 `matchLoading` (#matchLoad · 3초 · 팁) → `startRound` · 튜토리얼 · 샌드박스 · 릴스 · 친선전은 그대로.
+- **AUTO 카메라** `CAM.auto` (`rejhbt-cam-auto` · 기본 켬 · 버튼 `#btnCamAuto`): `camFollow` → `camAuto` (교전 중 지후 4기 이상이면 그쪽만 · 위아래 8% 빼고 · 여백 2칸 · 전장 전체 ~ 125% · 10% 안 흔들림 무시). 손으로 옮기면 `CAM.user` → 버튼을 누르면 다시 따라간다. 성뿌수기 · 디펜스도 이제 따라간다.
+- 시험 훅 `__rejhbt.keyBox · dfGo · DF · prof()` (`profile` 은 동기화로 바뀌니 `prof()` 로).
+
+## 지난 변경 (R2.33 · 성뿌수기 모드 · R2.33.1 밸런스)
 - **R2.33.1**: 성 HP 24,000 · 사거리 6 · 웨이브 30초 (첫 웨이브 10초) · 성의 분노 16,000 · 8,000 = 모든 적 지후 기절 10초 (면역 · 쉴드 무시 · 스테인리스만 버팀 · 골드 +300 그대로) · 합체 `cwFuse` (같은 지후 · 같은 레벨 → 레벨 +1 · **덱의 무작위 지후** · 출격제한 지킴 · 조커 변신은 그대로) · 자리 옮기기 없음 · 입장 무료 (확인 창 없이) · 보상 경험치 `cwXp` (승리 100 · 패배 = 상대 성 피해 비율 × 50 · 항복 0 · 아케이드 포인트 없음) · PC (700px 이상) 는 `#screen-battle.cw:not(.reels)` 폭 520px 가운데 (`:not(.reels)` 는 뒤의 `inset:0` 을 이기려고 · `cwUi(true)` 를 `fitField` 앞에서).
 - **성뿌수기** (아케이드 `ARC_MODES.castle` · `arc.kind 'castle'` · 참고: 랜덤다이스 워즈 · 코드 블록 `// ═════════ R2.33 성뿌수기` · 상수 `CW`): 내 덱 vs 봇 덱 (`botDeckRamp('std')`) · `startRound` → `cwStart` (배치 단계 없음 · 리플레이 기록 없음). `S.cw = { gold · cost · wave · t · sd · rage · castle · gone · sel }`.
   - 성 = `SUMMONS.castle` (HP 60,000 · 사거리 3 · ATK 300 / 1초 · `immobile` · `immune` · `noHeal` · `u.big` 큰 몸 `cvD` 150) · `friends()` 에서 뺀다 (아군 버프 · 회복 대상 아님) · `instaKill` 무시 · 체력 비례 피해는 `pctD(t, v)` 로 5% (체력 비례 피해를 새로 만들면 `pctD` 로 감싼다) · 한 번에 최대 체력의 5% 까지 (핵 등) · 왜곡 · 고자 무시 · 슬롯머신 잭팟은 적 지후 전멸 + 성 피해.
