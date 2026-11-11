@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2419,7 +2419,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
 #ui2 .k-hb { display:block; width:15px; height:3px; border-radius:2px; background:#fff; }
 /* 로비 */
 #ui2 .k-ann { flex-shrink:0; margin:0 12px 6px; padding:7px 12px; border-radius:12px; background:rgba(255,201,74,.14); border:2px solid #ffc94a; color:#ffe7a8; font-size:12.5px; line-height:1.35; position:relative; z-index:4; }
-#ui2 .k-rail { position:absolute; top:10px; display:flex; flex-direction:column; gap:12px; z-index:4; }
+#ui2 .k-rail { position:absolute; top:10px; display:flex; flex-direction:column; gap:12px; z-index:4; } @media (max-height:700px) { #ui2 .k-rail { top:4px; gap:5px; } #ui2 .k-rb > .kb { width:44px; height:44px; border-radius:14px; } } /* R2.35 build 4: 왼쪽 레일 버튼 3개 (디펜스 보상) 가 작은 화면에서 덱 부채꼴에 가리지 않게 */
 #ui2 .k-rb { position:relative; width:58px; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; }
 #ui2 .k-rb > .kb { position:relative; width:52px; height:52px; border-radius:16px; display:grid; place-items:center; color:#fff; overflow:hidden; white-space:nowrap; }
 #ui2 .k-rb > span { font-size:11px; line-height:1; white-space:nowrap; }
@@ -2699,6 +2699,7 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
           <div class="k-rail" style="left:12px;">
             <div onClick="{{ tapMainQuest }}" class="k-rb"><div class="kb k-mint k-ol" style="font-size:{{ lq.mainFs }};">{{ lq.mainIc }}</div><span class="k-ol1">메인 퀘스트</span><sc-if value="{{ lq.mainDot }}"><i class="k-dot"></i></sc-if></div>
             <div onClick="{{ tapDailyQuest }}" class="k-rb"><div class="kb k-gold k-ol" style="font-size:{{ lq.dailyFs }};">{{ lq.dailyIc }}</div><span class="k-ol1">일일 퀘스트</span><sc-if value="{{ lq.dailyDot }}"><i class="k-dot"></i></sc-if></div>
+            <div onClick="{{ dfRwOpen }}" class="k-rb"><div class="kb k-dia k-ol" style="font-size:24px;">🛡</div><span class="k-ol1">디펜스 보상</span><sc-if value="{{ dfRwN }}"><i class="k-dot k-dotn">{{ dfRwN }}</i></sc-if></div>
           </div>
           <div class="k-rail" style="right:12px;">
             <div onClick="{{ spOpen }}" class="k-rb"><div class="kb k-purple k-ol" style="font-size:19px;">S{{ spw.no }}<i class="k-rbbar"><i style="width:{{ spw.pct }};"></i></i></div><span class="k-ol1">시즌 패스</span><sc-if value="{{ spw.ready }}"><i class="k-dot k-dotn">{{ spw.ready }}</i></sc-if></div>
@@ -7471,7 +7472,7 @@ function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · �
 function dfEnd(win, note) { // R2.34 디펜스 결과: 지난 웨이브 수만큼 열쇠
   const c = S.cw, w = c ? c.wave : 0, keys = Math.max(0, w - 1), best = w > (profile.dfBest | 0); profile.keys = (profile.keys | 0) + keys; if (best) profile.dfBest = w; save(); sfx('match_win'); if (best) dfPush(); /* R2.34 디펜스 리더보드 */
   $('dfPick').classList.remove('show'); $('screen-result').classList.add('win'); $('resTitle').textContent = `WAVE ${w}`; $('resMeta').textContent = `DEFENSE · 디펜스`; $('resSub').textContent = `웨이브 ${w} 도달 · 라이프 ${Math.max(0, c ? c.lives : 0)} / ${DF.LIVES}`;
-  $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>🔑 +${keys}</span><span>보유 🔑 ${profile.keys}</span><span>${best ? '🏆 최고 기록!' : `최고 WAVE ${profile.dfBest | 0}`}</span><span>열쇠 상자 🔑 ${DF.BOX}</span>${dfRwReady() ? `<span>🎁 디펜스 보상 ${dfRwReady()}개 (메뉴)</span>` : ''}</div>`;
+  $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>🔑 +${keys}</span><span>보유 🔑 ${profile.keys}</span><span>${best ? '🏆 최고 기록!' : `최고 WAVE ${profile.dfBest | 0}`}</span><span>열쇠 상자 🔑 ${DF.BOX}</span>${dfRwReady() ? `<span>🎁 디펜스 보상 ${dfRwReady()}개</span>` : ''}</div>`;
   show('result');
 }
 function keyBox() { // R2.34 열쇠 상자 (🔑 40): 일반 지후 5 · 희귀 지후 3 · 10% 영웅 1 · 1% 전설 1
@@ -11386,7 +11387,7 @@ const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정'
 const PATCH_NOTES = [
   { v: 'R2.35', date: '2026.11.11', title: '밸런스 패치', sections: [
     { title: '추가 패치 (build 4)', items: [
-      { icon: '🎁', name: '디펜스 보상', tag: 'new', desc: '메뉴에 <b>디펜스 보상</b> · 최고 웨이브마다 <b>처음 한 번</b> 받아요 (5 ~ 100웨이브 · 21단계)' },
+      { icon: '🎁', name: '디펜스 보상', tag: 'new', desc: '로비 퀘스트 아래 <b>디펜스 보상</b> · 최고 웨이브마다 <b>처음 한 번</b> 받아요 (5 ~ 100웨이브 · 21단계)' },
       { icon: '💎', name: '다이아 · 골드', tag: 'new', desc: '◆ 100 · 500 · 500 · 1,000 · 1,000 · 골드 1,000 · 3,000 · 20,000' },
       { icon: '🌟', name: '지후', tag: 'new', desc: '랜덤 영웅 · 랜덤 영웅 ×5 · 랜덤 전설 ×4 · <b>100웨이브 선택 전설</b>' },
       { icon: '✦', name: '아이템', tag: 'new', desc: '임테기 · 고급 임테기 · 아케이드 티켓 ×5 · 빛나는 전설조각 ×25' },
@@ -13582,7 +13583,7 @@ const K_FAN = [['rotate(-14deg) translateY(30px)', 1], ['rotate(-7deg) translate
 const K_BTN = { '#ffc94a': 'k-gold', '#53d3c0': 'k-mint', '#7cc8ff': 'k-dia', '#3b466b': 'k-off' }, kBtn = bg => K_BTN[bg] || 'k-navy'; // 예전 u2Btn 색 → 새 버튼 클래스
 const K_PAGE = { tower: ['#5a3aa8', `끝없는 층을 올라요 · ${TOWER_LIVES}번 지면 처음부터`], comp: ['#8e2f3c', ''], sandbox: ['#2a7a5a', '지후와 레벨을 골라 싸움을 붙여요 · 보상 · 전적 없음'] }; // 전체 화면 페이지 (모드 색 빛)
 const K_MODE = { defense: ['디펜스', '몰려오는 적 웨이브를 막아요', '#2a6aa0', '디펜스 시작'], castle: ['성뿌수기', '골드로 지후를 소환해 상대 성을 부숴요', '#a8482f', '성뿌수기 시작'], event: ['이벤트 모드', '짝수 라운드마다 이벤트 카드를 골라요', '#8a3a78', '이벤트 시작'], random: ['랜덤전', '서로 다른 무작위 덱으로 시작해요', '#2a5aa0', '랜덤전 시작'], mirror: ['미러전', '진정한 고수는 덱 탓을 하지 않는다', '#2a5aa0', '미러전 시작'] };
-const K_MI = { 우편함: ['melody', '#7cc8ff'], 커뮤니티: ['gumiho', '#ff8fb1'], 랭킹: ['sun', '#ffc94a'], 전투기록: ['sword', '#ffd76a'], '디펜스 보상': ['barrier', '#ff7a5c'], /* R2.35 build 4 */ 가방: ['thief', '#ff9f43'], 패치노트: ['lantern', '#b26bff'], 도움말: ['clock', '#c58bff'], 크레딧: ['moon', '#e0b3ff'], '앱 다운로드': ['accel', '#7fd8ff'], 'JHBT 계정': ['fire', '#53d3c0'], 환경설정: ['shield', '#c9d0e6'] }; // 메뉴 아이콘 (지후 초상화)
+const K_MI = { 우편함: ['melody', '#7cc8ff'], 커뮤니티: ['gumiho', '#ff8fb1'], 랭킹: ['sun', '#ffc94a'], 전투기록: ['sword', '#ffd76a'], 가방: ['thief', '#ff9f43'], 패치노트: ['lantern', '#b26bff'], 도움말: ['clock', '#c58bff'], 크레딧: ['moon', '#e0b3ff'], '앱 다운로드': ['accel', '#7fd8ff'], 'JHBT 계정': ['fire', '#53d3c0'], 환경설정: ['shield', '#c9d0e6'] }; // 메뉴 아이콘 (지후 초상화)
 const K_MEDAL = [['linear-gradient(180deg,#ffe07a,#ffad1a)', '#5a3a00'], ['linear-gradient(180deg,#f2f4fa,#aab3cc)', '#2a3356'], ['linear-gradient(180deg,#f0b58a,#c5773a)', '#4a2406']];
 const kBg = c => `radial-gradient(120% 38% at 50% 0%,${c} 0%,#1f2748 52%,#141a30 100%)`;
 const kShort = n => { n = Number(n) || 0; return n >= 1e7 ? Math.floor(n / 1e6) + 'M' : n >= 1e6 ? (Math.floor(n / 1e5) / 10) + 'M' : n >= 1e5 ? Math.floor(n / 1000) + 'K' : n.toLocaleString('ko-KR'); }; // 재화 필이 넘치지 않게
@@ -13757,7 +13758,6 @@ function u2ValsBase() {
     ['커뮤니티', '#ff8fb1', false, () => u2Set({ comm: true }), commLeft() ? '◆' + commLeft() * COMM_RW : ''], // R2.16.1: 남은 방문 보상
     ['랭킹', '#ffc94a', false, () => u2Go('rank')], // R2.26: 랭킹 · 전투기록 따로
     ['전투기록', '#ffd76a', false, () => u2Set({ hist: true })],
-    ['디펜스 보상', '#ff7a5c', dfRwReady() > 0, () => openDfRw(), dfRwReady() ? '받기 ' + dfRwReady() : ''], // R2.35 build 4: 웨이브마다 처음 한 번
     ['가방', '#ff9f43', dot('invDot'), () => openTab('inv')], // R2.26: 코드 입력은 환경설정으로
     ['패치노트', '#b26bff', false, () => $('btnMenuPatch').click()], // R2.26: 패치노트 · 도움말 · 크레딧 따로 (튜토리얼 · 인트로 만화는 도움말 안)
     ['도움말', '#c58bff', false, () => $('btnMenuHelp').click()],
@@ -13782,7 +13782,7 @@ function u2ValsBase() {
     arena: (() => { const w = profile.wins | 0, l = profile.losses | 0, T = [[400, '전설의 지휘관'], [150, '베테랑 지휘관'], [50, '숙련 지휘관'], [10, '견습 지휘관'], [0, '신입 지휘관']]; return { lv: profile.level, wins: fmt(w), streak: profile.streak | 0, wr: w + l ? Math.round(w / (w + l) * 100) + '%' : '—', title: T.find(t => w >= t[0])[1] }; })(), // R2.17 로비 가운데 장식
     arenaTap: () => u2Set({ profile: true, pfTab: 'stat', nickDraft: null, menuOpen: false }),
     favColor: favR.c, favGlow: favR.c + '55', favName: shortName(fav), openFav: () => u2Set({ detail: fav, dtab: 'ab' }),
-    deckSlots, presets, modes, goUnits: () => u2Go('units'), startNormal: () => $('btnPlay').click(), startDefense: () => u2Set({ mode: 'defense' }), dfKeysS: fmt(profile.keys | 0), /* R2.34 */ startFriendly: () => openSocial(), evMode: CFG.EV_ENABLED, ctaNew: profile.nick && !((profile.wins | 0) + (profile.losses | 0)) ? ' u2-cta-new' : '', // 첫 판 전: 일반전 버튼이 빛난다 (R2.13 build 3) // R2.13 build 3: 랜덤 이벤트 임시 삭제 → 모드 토글 숨김
+    deckSlots, presets, modes, goUnits: () => u2Go('units'), startNormal: () => $('btnPlay').click(), startDefense: () => u2Set({ mode: 'defense' }), dfKeysS: fmt(profile.keys | 0), /* R2.34 */ dfRwOpen: () => openDfRw(), dfRwN: dfRwReady(), /* R2.35 build 4: 로비 퀘스트 아래 디펜스 보상 */ startFriendly: () => openSocial(), evMode: CFG.EV_ENABLED, ctaNew: profile.nick && !((profile.wins | 0) + (profile.losses | 0)) ? ' u2-cta-new' : '', // 첫 판 전: 일반전 버튼이 빛난다 (R2.13 build 3) // R2.13 build 3: 랜덤 이벤트 임시 삭제 → 모드 토글 숨김
     nbOn: newbieLeft() > 0, nbText: `초보자 보호 중 · ${newbieLeft()}판 남음 · 봇 왕초보 · 능력치 ${Math.round(CFG.EASY_MULT * 100)}%`, nbOff: () => newbieOff(),
     boostBadge: bOn || bLeft > 0, boostBadgeTxt: bOn ? '⚡ ' + $('boostChip').textContent : '⚡' + bLeft, boostBadgeBg: bOn ? '#d62e3a' : '#ff3b4a', boostBadgeTap: e => { e.stopPropagation(); if (!boostActive()) $('btnBoost').click(); else banner(`⚡ 부스트 켜짐 · ${$('boostChip').textContent} 남음`); u2Render(); }, // R2.24 build 7
     boostTxt: bOn ? $('boostChip').textContent : bLeft > 0 ? `부스트 ${bLeft}` : '부스트 내일', boostBg: bOn ? '#ffc94a' : '#3b466b', boostFc: bOn ? '#3b2600' : '#f2f4fa', boostEdge: bOn ? '#c98a1c' : '#252d48', boostTap: () => { $('btnBoost').click(); u2Render(); },
