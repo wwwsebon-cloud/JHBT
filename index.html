@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.33"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.33.1"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -884,6 +884,7 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 .unit.phx-egg .unit-icon { box-shadow:0 0 0 3px #ff8a1f, 0 0 18px 6px rgba(255,120,20,.75); }
 .unit.phx-egg::after { content:''; position:absolute; inset:-14px; z-index:-1; border-radius:50%; pointer-events:none; background:radial-gradient(circle, rgba(255,200,80,0) 50%, rgba(255,140,30,.6) 64%, rgba(255,60,20,0) 78%); will-change:opacity, transform; animation:phxEgg .6s ease-in-out infinite alternate; }
 /* ═══ R2.33 성뿌수기: 트레이 슬롯판 · 성 (전장 애니메이션은 transform · opacity 만) ═══ */
+@media (min-width:700px) { #screen-battle.cw:not(.reels) { width:min(100%, 520px); left:calc(50% - min(50%, 260px)); right:auto; box-shadow:0 0 0 1px #d6d6d2, 0 0 40px rgba(0,0,0,.25); } } /* R2.33.1: PC 는 화면 폭을 폰처럼 (가운데 · :not(.reels) 는 뒤의 inset:0 보다 세게) */
 .cwp { display:none; } #screen-battle.cw .cwp { display:flex; flex-direction:column; gap:7px; grid-column:1 / -1; padding:0 10px 2px; color:#171717; }
 #screen-battle.cw #pool, #screen-battle.cw #btnDeployDone, #screen-battle.cw #hudLivesA, #screen-battle.cw #hudLivesE, #screen-battle.cw .flab, #screen-battle.cw .tipchip, #screen-battle.cw .ucount { display:none !important; } /* 덱 줄 · 안내 칩이 성을 가린다 */
 .cw-top { display:flex; align-items:center; gap:8px; font:900 13px/1 'Pretendard Variable',Pretendard,sans-serif; } .cw-top b { flex:none; padding:5px 8px; border-radius:3px; background:#111; color:#fff; letter-spacing:.04em; } .cw-top b i { font-style:normal; }
@@ -5467,7 +5468,7 @@ const SUMMONS = {
   pkskul: { name: '폭발 스껄 지후', rarity: 'rare', role: '폭발형', hp: 258, atk: 1, atkSpeed: 0.1, range: 'melee', speed: 2.5, portrait: PORTRAITS.skul, sfx: 'bash', color: '#ff7a00', passive: '호박 지후가 땅에서 불러낸 스껄. 적에게 닿거나 쓰러지면 터져 자기 최대 체력만큼 피해를 주고 <b>3칸</b> 밀어냅니다.', customAttack(u) { pkBoom(u); return true; }, onDeath(u) { pkBoom(u); } }, // R2.30 (체력 · 피해는 pkCall: 호박 지후 최대 체력의 50%)
   chick: { name: '병아리 지후', rarity: 'epic', role: '소환형', hp: 504, atk: 135, atkSpeed: 1.5, range: 5.5, speed: 1.6, shotCls: 'egg', portrait: PORTRAITS.chick, sfx: 'shot', color: '#ffc400', passive: '닭 지후의 달걀에서 부화한 병아리. 엄마처럼 달걀을 던지지만, 병아리의 달걀은 부화하지 않습니다. 라운드가 끝나면 사라집니다.' }, // R2.30 (예전엔 닭 지후가 부화 · 체력 · 공격력은 닭 지후 onHit)
   minion: { name: '소환체 지후', rarity: 'common', role: '딜러', hp: 160, atk: 50, atkSpeed: 0.9, range: 'melee', speed: 1.8, portrait: PORTRAITS.minion, sfx: 'swing', color: '#8a7bb8', passive: '네크로맨서 지후가 불러낸 소환체. 라운드가 끝나면 사라집니다.' },
-  castle: { name: '성', rarity: 'legend', role: '성', hp: 60000, atk: 300, atkSpeed: 1, range: 3, speed: 0, immobile: true, castle: true, noHeal: true, portrait: CASTLE_PIC, sfx: 'shot', color: '#9aa2b6', passive: '성뿌수기 모드의 성. 즉사 · 상태이상 · 회복을 받지 않고, 체력에 비례하는 피해는 <b>95%</b> 줄여 받습니다.', immune() { return true; } }, // R2.33 (CW · cwStart)
+  castle: { name: '성', rarity: 'legend', role: '성', hp: 24000, atk: 300, atkSpeed: 1, range: 6, speed: 0, immobile: true, castle: true, noHeal: true, portrait: CASTLE_PIC, sfx: 'shot', color: '#9aa2b6', passive: '성뿌수기 모드의 성. 즉사 · 상태이상 · 회복을 받지 않고, 체력에 비례하는 피해는 <b>95%</b> 줄여 받습니다.', immune() { return true; } }, // R2.33 (CW · cwStart) · R2.33.1: HP 60,000 → 24,000 · 사거리 3 → 6
 };
 // 도감 상세 수치 (R2.4): 설명(passive · skill.desc)은 쉽게 · 숫자는 여기에 [항목, 값] — 수치를 바꾸면 같이 고친다
 const CHAR_INFO = {
@@ -7214,10 +7215,11 @@ function spawnDeathEffect(u) {
 // ── 전투 한 스텝 (전작 physicsStep 순서: 상태 → 조향 · 공격 → 투사체 → 적분 → 충돌 해소 → 벽) ──
 const STEP_ERR = new Set(); function stepErr(u, e) { const k = (u && u.id) + ':' + (e && e.message); if (STEP_ERR.has(k)) return; STEP_ERR.add(k); console.error('[step]', u && u.id, e); } // R2.29: 같은 오류는 한 번만 알린다
 // ═════════ R2.33 성뿌수기 (아케이드 · 참고: 랜덤다이스 워즈) ═════════
-// 상대 성 (HP 60,000 · 사거리 3 · ATK 300 / 초) 을 부수면 승리. 골드로 「소환」 → 슬롯 (3 × 5 · S.place) 무작위 칸에 덱의 무작위 지후 (Lv1) · 20초마다 (첫 웨이브는 10초 뒤) 슬롯의 지후가 그대로 전장에 나간다 (웨이브).
+// 상대 성 (HP 24,000 · 사거리 6 · ATK 300 / 초) 을 부수면 승리. 골드로 「소환」 → 슬롯 (3 × 5 · S.place) 무작위 칸에 덱의 무작위 지후 (Lv1) · 30초마다 (첫 웨이브는 10초 뒤) 슬롯의 지후가 그대로 전장에 나간다 (웨이브).
+// R2.33.1: 슬롯 지후는 자리를 옮길 수 없고 합체만 (cwFuse · 같은 지후 · 같은 레벨 → 레벨 +1 · 덱의 무작위 지후로) · 입장 무료 · 보상은 경험치 (cwXp) · PC 는 화면 폭을 폰처럼 (CSS #screen-battle.cw)
 // S.cw = { gold · cost (진영별) · wave · t 이번 웨이브 지난 초 · sd 서든 데스 · rage 성의 분노 쓴 횟수 · castle 성 유닛 · gone 치운 유닛의 통계 · sel 고른 칸 }
 // 라운드가 없다: stepCombat 이 cwStep 으로 넘긴다 (전멸 · 60초 판정 없음) · 쓰러진 유닛은 cwPurge 가 치운다 (15분짜리 판이라 S.units 가 끝없이 늘지 않게) · 웨이브 = 다른 지후들의 「라운드」 (유물은 웨이브마다 새로)
-const CW = { WAVE: 20, FIRST: 10, /* 웨이브 20초 · 첫 웨이브는 10초 뒤 (사용자 요청 · 처음 30초) */ LAST: 30, START: 100, COST0: 10, COST_ADD: 10, KILL: 4, RAGE: [40000, 20000], RAGE_GOLD: 300, RAGE_R: 6, CAP: 40 };
+const CW = { WAVE: 30, FIRST: 10, /* 웨이브 30초 (R2.33.1 · 예전 20) · 첫 웨이브는 10초 뒤 */ LAST: 30, START: 100, COST0: 10, COST_ADD: 10, KILL: 4, RAGE: [16000, 8000], /* R2.33.1: 예전 40,000 · 20,000 */ RAGE_GOLD: 300, STUN: 10, /* 성의 분노: 모든 적 지후 기절 10초 (예전 반경 6칸 즉사) */ XP_WIN: 100, XP_LOSE: 50, /* 보상 경험치: 승리 100 · 패배는 상대 성에 준 피해 비율 × 50 */ CAP: 40 };
 const isCw = () => !!(S.arc && S.arc.kind === 'castle');
 const pctD = (t, v) => t.def.castle ? v * 0.05 : v; // 체력 비례 피해: 성은 95% 줄여 받는다
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
@@ -7229,11 +7231,11 @@ function cwStart() {
   clearInterval(S.timer); S.pick = null; S.moveSel = null; S.pool = [];
   uidSeq = 0; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.timed = []; S.rel = { a: {}, e: {} }; S.relAcc = 0; S.relLog = []; S.fx = [];
   S.cw = { gold: { a: CW.START, e: CW.START }, cost: { a: CW.COST0, e: CW.COST0 }, wave: 0, t: CW.WAVE - CW.FIRST, /* 첫 웨이브까지 10초 */ sd: false, rage: { a: 0, e: 0 }, botT: 1, purgeT: 0, gone: {}, sel: null, castle: {} };
-  const f = S.fast ? null : $('field');
+  const f = S.fast ? null : $('field'); if (f) cwUi(true); /* R2.33.1: PC 폭을 줄인 다음 fitField */
   if (f) { CAM.follow = false; CAM.user = false; fitField(); hideRangeRing(); renderField(); f.querySelectorAll('.unit, .ufx').forEach(el => el.remove()); f.querySelectorAll('.tile').forEach(t => { t.style.opacity = '.35'; }); }
   ['a', 'e'].forEach(side => { const q = cwCastleXY(side), u = makeUnit(side, 'castle', 1, q.x, q.y); u.big = true; S.cw.castle[side] = u; if (f) { u.el = unitEl(u); u.el.classList.add('big'); f.appendChild(u.el); drawUnit(u); } S.units.push(u); });
   if (!f) return;
-  cwUi(true); $('hudRound').textContent = 0; $('hudOdds').hidden = false; S._oddsW = null;
+  $('hudRound').textContent = 0; $('hudOdds').hidden = false; S._oddsW = null;
   S.speed = speedPref ? fastSpeed() : 1; S.speedManual = true; renderSpeedBtn(); renderPool();
   setPhase('전투 중'); $('hudPhase').textContent = '성뿌수기'; banner('🏰 성뿌수기 시작!'); sfx('battle_start');
   cwRender(); botMind.combatStart(); requestAnimationFrame(loop);
@@ -7251,10 +7253,10 @@ function cwWave() { // 20초마다 (첫 웨이브 10초): 이번 웨이브 골�
   if (c.wave >= CW.LAST) c.sd = true;
   if (!S.fast) { banner(c.sd ? '☠ 서든 데스 · 먼저 전멸하면 패배' : `WAVE ${c.wave}`); sfx('battle_start'); cwRender(); }
 }
-function cwRage(side) { // 성 체력 40,000 · 20,000: 성 주변 (6칸) 적 모두 즉사 · 골드 +300
-  const c = S.cw, k = c.castle[side], R = CW.RAGE_R * CFG.CELL; c.gold[side] += CW.RAGE_GOLD;
-  foes(k).forEach(e => { if (!e.def.castle && dist(k, e) <= R + unitRadius(e)) instaKill(k, e, '🏰 성의 분노'); });
-  if (!S.fast) { fxRing(k.x, k.y, R, 'rgba(255,200,60,.95)', 650, 12); shake(true); dmgNum(k, '🏰 성의 분노!', { crit: true, stamp: true }); if (side === ME()) banner(`🏰 성의 분노 · 🪙 +${CW.RAGE_GOLD}`); }
+function cwRage(side) { // 성 체력 16,000 · 8,000: 모든 적 지후 기절 10초 · 골드 +300 (R2.33.1 · 예전 반경 6칸 즉사)
+  const c = S.cw, k = c.castle[side]; c.gold[side] += CW.RAGE_GOLD;
+  foes(k).forEach(e => { if (e.def.castle || e.def.stainless || !e.alive) return; e.st.stun = Math.max(e.st.stun || 0, CW.STUN); drawUnit(e); }); /* 면역 · 쉴드 무시 (예전 즉사처럼 · 스테인리스만 버틴다) */
+  if (!S.fast) { fxRing(k.x, k.y, 8 * CFG.CELL, 'rgba(255,200,60,.95)', 650, 12); shake(true); dmgNum(k, '🏰 성의 분노!', { crit: true, stamp: true }); if (side === ME()) banner(`🏰 성의 분노 · 모든 적 기절 · 🪙 +${CW.RAGE_GOLD}`); }
 }
 function cwPurge() { // 쓰러진 지 2.5초 넘은 유닛을 치운다 (통계는 gone 에 모아 둔다)
   const keep = []; for (const u of S.units) { if (u.alive || u.def.castle || !(S.time - (u.deadAt || 0) > 2.5)) { keep.push(u); continue; }
@@ -7279,9 +7281,18 @@ function cwSummon(side) { // 소환: 비용 (10 · 소환마다 +10) · 슬롯 �
   c.gold[side] -= c.cost[side]; c.cost[side] += CW.COST_ADD; L[t] = { id, lv: 1 }; if (id === 'taegeuk') L[t].tg = Math.random() < 0.5 ? 'r' : 'b';
   if (!S.fast && side === ME()) { sfx('place'); c.pop = t; cwRender(); } return true;
 }
+function cwFuse(side, a, b) { // R2.33.1 합체: 같은 지후 · 같은 레벨 → 레벨 +1 · 덱의 무작위 지후가 된다 (출격제한 지킴 · 조커는 그대로 변신) · 자리 옮기기는 없다
+  const L = S.place[side]; if (a === b || !L[a] || !L[b]) return false;
+  if (jokerCan(L[a], L[b])) return !!moveTile(side, a, b);
+  if (!canFuse(L[a], L[b])) return false;
+  const lv = L[b].lv + 1; L[a] = null; L[b] = null;
+  const deck = (S.deck[side] || []).filter(id => CHARS[id]), ok = deck.filter(id => sameCount(side, id) < limitOf(id)), pool = ok.length ? ok : deck;
+  const id = pool[Math.floor(Math.random() * pool.length)]; L[b] = { id, lv: Math.min(lv, maxLv(id)) }; if (id === 'taegeuk') L[b].tg = Math.random() < 0.5 ? 'r' : 'b';
+  godAwake(side, L[b]); if (!S.fast && side === ME()) { sfx('merge'); S.cw.pop = b; } return true;
+}
 function cwBot(side) { // 봇: 자리가 모자라거나 가끔 합체 (같은 지후 · 같은 레벨) · 골드가 되면 소환
   const c = S.cw, L = S.place[side]; if (c.sd) return; const free = L.filter(p => !p).length;
-  if (free <= 2 || Math.random() < 0.25) { for (let a = 0; a < TILES; a++) for (let b = a + 1; b < TILES; b++) if (canFuse(L[a], L[b]) && L[a].id !== 'frog') { moveTile(side, a, b); if (!S.fast && side === ME()) cwRender(); return; } }
+  if (free <= 2 || Math.random() < 0.25) { for (let a = 0; a < TILES; a++) for (let b = a + 1; b < TILES; b++) if (canFuse(L[a], L[b])) { cwFuse(side, a, b); if (!S.fast && side === ME()) cwRender(); return; } }
   if (c.gold[side] >= c.cost[side] && free > 0 && Math.random() < 0.8) cwSummon(side);
 }
 function cwEnd(w, why) { // 성이 부서지거나 서든 데스에서 전멸
@@ -7308,10 +7319,10 @@ function cwHud(force) { // 골드 · 비용 · 웨이브 · 성 체력 (바뀐 �
   set('oddsA', ha.toLocaleString()); set('oddsE', he.toLocaleString()); if (c._w !== w) { c._w = w; $('oddsBar').style.width = w + '%'; }
 }
 $('cwSummon').addEventListener('click', () => { if (isCw() && !(S.replay)) cwSummon(ME()); });
-$('cwGrid').addEventListener('click', e => { // 칸을 누르고 → 다른 칸: 같은 지후 · 같은 레벨이면 합체 (레벨 +1) · 아니면 자리 바꾸기
+$('cwGrid').addEventListener('click', e => { // 칸을 누르고 → 다른 칸: 같은 지후 · 같은 레벨이면 합체 (레벨 +1 · 무작위 지후) · 합칠 수 없으면 그 칸을 고른다 (R2.33.1: 자리 옮기기 없음)
   const el = e.target.closest('[data-t]'), c = S.cw; if (!el || !c || S.phase !== 'combat') return; const t = Number(el.dataset.t), me = ME(), L = S.place[me];
   if (c.sel == null) { if (L[t]) { c.sel = t; cwRender(); } return; }
-  const a = c.sel; c.sel = null; if (a !== t && L[a]) moveTile(me, a, t); cwRender();
+  const a = c.sel; c.sel = null; if (a !== t && L[a] && L[t] && (canFuse(L[a], L[t]) || jokerCan(L[a], L[t]))) cwFuse(me, a, t); else if (a !== t && L[t]) c.sel = t; cwRender();
 });
 function stepCombat(dt) {
   if (!S.started) { S.started = true; S.units.forEach(u => u.def.onStart && u.def.onStart(u, A)); } // 시작 효과는 [밴]이어도 (원자 · 데스노트 등 준비 상태) · 스킬은 castSkill 이 막는다
@@ -8640,7 +8651,7 @@ async function arcBuy(k) { const it = ARC_SHOP.find(x => x.k === k), a = arcDay(
 function arcTicket(kind) { const a = arcDay(); if (kind === 'free') { if (a.free >= CFG.ARC_FREE) return; a.free++; a.t++; u2Toast('🎟 무료 티켓 받았어요'); } else { if (a.buy >= CFG.ARC_BUY) return; if (profile.gold < CFG.ARC_GOLD) return u2Toast('골드가 모자라요'); profile.gold -= CFG.ARC_GOLD; a.buy++; a.t++; u2Toast('🎟 티켓 1장 샀어요'); } save(); sfx('buy'); renderMoney(); renderArcade(); }
 const ARC_MODES = [
   { k: 'event', name: '이벤트 모드', fee: () => 0, dark: true, desc: '짝수 라운드마다 이벤트 카드를 골라요 · 하트 4 · 보상은 일반전 이벤트 모드 그대로 (×1.3)', q: '입장 무료 · 임시 (R2.26)' },
-  { k: 'castle', name: '성뿌수기', fee: () => CFG.MIRROR_FEE, dark: true, desc: '골드로 지후를 소환해 <b>상대 성</b>을 부숴요 · 20초마다 슬롯의 지후가 전장에 나가요 · 내 덱 그대로', q: '보상 · 입장료는 미러전과 같아요' }, // R2.33
+  { k: 'castle', name: '성뿌수기', fee: () => 0, dark: true, desc: '골드로 지후를 소환해 <b>상대 성</b>을 부숴요 · 30초마다 슬롯의 지후가 전장에 나가요 · 합체하면 레벨이 오르고 덱의 무작위 지후로', q: '입장 무료 · 보상은 경험치' }, // R2.33 · R2.33.1 무료 · 경험치
   { k: 'random', name: '랜덤전', fee: () => CFG.MIRROR_FEE, dark: true, desc: '양쪽 모두 <b>서로 다른 무작위 덱</b>을 받고 시작해요 · 이벤트 없음', q: '보상 · 입장료는 미러전과 같아요' },
   { k: 'mirror', name: '미러전', fee: () => CFG.MIRROR_FEE, dark: true, desc: '게임이 시작되면 양쪽이 <b>같은 무작위 덱</b>을 받아요 · 이벤트 없음', q: '진정한 고수는 덱 탓을 하지 않는다' },
   { k: 'comp', name: '경쟁전', fee: () => 0, dark: true, desc: '밴 3 · 드래프트 · <b>3판 2선승</b> · 티어 · 14일 시즌', q: '입장 무료' },
@@ -8666,19 +8677,31 @@ $('arcModes').addEventListener('click', async e => { const b = e.target.closest(
   if (m.k === 'sandbox') return openSandbox(); // 샌드박스 (R2.10)
   if (m.k === 'event') { if (profile.deck.filter(owned).length < 5) return banner(deckNeedMsg()); EV_NEXT = true; return $('btnPlay').click(); } // R2.26: 이벤트 모드 (일반전 한 판 · 보상 그대로 · 무료)
   if (m.k === 'castle' && profile.deck.filter(owned).length < 5) return banner(deckNeedMsg()); // R2.33 성뿌수기: 내 덱 5기
+  if (m.k === 'castle') return newMatch({ arc: { kind: 'castle' }, lives: 1, decks: () => ({ a: profile.deck.filter(owned).slice(0, 5), e: botDeckRamp('std') }) }); // R2.33 성뿌수기: 내 덱 vs 봇 덱 (startRound → cwStart) · R2.33.1 입장 무료 (확인 창 없이)
   const a = arcDay(), fee = m.fee(); if (a.t < fee) return dlg({ icon: '🎟', title: '티켓이 모자라요', html: `${m.name} 입장에는 티켓 <b>${fee}장</b>이 필요해요.<br>아래 아케이드 상점에서 받을 수 있어요.` });
   if (!ARC_SURE && !(await dlg({ icon: '🎟', title: `${m.name} 입장`, html: `티켓 <b>${fee}장</b>을 써요 (지금 ${a.t}장).<br>승리 +${CFG.ARC_WIN_P}P · 패배 +${CFG.ARC_LOSE_P}P`, ok: '입장', cancel: '취소' }))) return;
   a.t -= fee; save();
   if (m.k === 'mirror') newMatch({ arc: { kind: 'mirror' }, decks: () => { const d = A.pick(pubIds(), 5); return { a: d.slice(), e: d.slice() }; } }); // 미러전: 양쪽이 같은 무작위 덱
   if (m.k === 'random') newMatch({ arc: { kind: 'random' }, decks: () => ({ a: A.pick(pubIds(), 5), e: A.pick(pubIds(), 5) }) }); // R2.26 랜덤전: 양쪽이 서로 다른 무작위 덱
-  if (m.k === 'castle') newMatch({ arc: { kind: 'castle' }, lives: 1, decks: () => ({ a: profile.deck.filter(owned).slice(0, 5), e: botDeckRamp('std') }) }); // R2.33 성뿌수기: 내 덱 vs 봇 덱 (startRound → cwStart)
 });
-function arcEnd(win, note) { // 아케이드 결과: 포인트만 (탑은 층 보상)
+function cwXp(win, note) { // R2.33.1 성뿌수기 보상: 승리 +100 XP · 패배는 상대 성에 준 피해 비율 × 50 XP · 항복 0 · 잃는 경험치 없음
+  const c = S.cw, k = c && c.castle[OPP()], fr = k ? clamp(1 - Math.max(0, k.hp) / k.maxHp, 0, 1) : 0;
+  const xp = S.quit ? 0 : win ? CW.XP_WIN : Math.round(CW.XP_LOSE * fr), up = xp ? addXp(xp) : 0; if (up) profile.dia += CFG.LEVEL_REWARD * up;
+  save(); sfx(win ? 'match_win' : 'match_lose');
+  $('resTitle').textContent = win ? '승리' : '패배'; $('resMeta').textContent = `ARCADE · 성뿌수기 · VS ${S.nick[OPP()]}`;
+  $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>+${xp} XP</span>${!win && !S.quit ? `<span>상대 성 피해 ${Math.round(fr * 100)}%</span>` : ''}${up ? `<span>+◆ ${(CFG.LEVEL_REWARD * up).toLocaleString()} 레벨업</span>` : ''}</div>
+    <div class="rlv"><div class="xprow"><span>LV.${profile.level}</span><span>${profile.xp} / ${xpNeed(profile.level)} XP</span></div><div class="lvbar"><i style="width:0"></i></div></div>${up ? `<span class="lvup">LEVEL UP · Lv.${profile.level}</span>` : ''}`;
+  resBack = 'arcade'; show('result');
+  if (up) setTimeout(() => showLevelUp(up), 900);
+  setTimeout(() => { const i = $('resBody').querySelector('.lvbar i'); if (i) i.style.width = (profile.xp / xpNeed(profile.level) * 100).toFixed(1) + '%'; }, 80);
+}
+function arcEnd(win, note) { // 아케이드 결과: 포인트만 (탑은 층 보상 · 성뿌수기는 경험치)
   if (S.arc.kind === 'tutorial') return TUT.ev('matchEnd', win); // 튜토리얼: 결과 화면 없이 대본으로
   if (S.arc.kind === 'reels') return reelsEnd(win, note); // 릴스 모드: 결과 화면 없이 전장 위에 이긴 쪽
   if (S.arc.kind === 'sandbox') { sfx(win ? 'match_win' : 'match_lose'); $('resTitle').textContent = note && note.includes('무승부') ? '무승부' : win ? '승리' : '패배'; $('resMeta').textContent = 'ARCADE · 샌드박스'; $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>보상 없음</span><span>전적에 남지 않아요</span></div>`; resBack = 'sandbox'; show('result'); return; }
   if (S.arc.kind === 'tower') return towerEnd(win, note);
   if (S.arc.kind === 'comp') return compEnd(win, note);
+  if (S.arc.kind === 'castle') return cwXp(win, note); // R2.33.1 성뿌수기: 경험치
   const k = S.arc.kind, pts = win ? CFG.ARC_WIN_P : CFG.ARC_LOSE_P; profile.arc.p += pts; save(); sfx(win ? 'match_win' : 'match_lose');
   $('resTitle').textContent = win ? '승리' : '패배'; $('resMeta').textContent = `ARCADE · ${(ARC_MODES.find(m => m.k === k) || {}).name || ''} · VS ${S.nick[OPP()]}`;
   $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>+${pts} P</span><span>보유 ${profile.arc.p.toLocaleString()} P</span><span>🎟 ${profile.arc.t}</span></div>`;
@@ -11088,6 +11111,18 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
+  { v: 'R2.33.1', date: '2026.11.11', title: '성뿌수기 밸런스 패치', sections: [
+    { title: '성뿌수기', items: [
+      { icon: '🏰', name: '성 체력', tag: 'adjust', desc: '체력 <b>60,000 → 24,000</b>' },
+      { icon: '🏹', name: '성 사거리', tag: 'adjust', desc: '사거리 <b>3 → 6</b>' },
+      { icon: '💥', name: '성의 분노', tag: 'rework', desc: '성 체력 <b>16,000 · 8,000</b> 에서 <b>모든 적 기절 10초</b>' },
+      { icon: '🌊', name: '웨이브', tag: 'adjust', desc: '지후가 나가는 간격 <b>20 → 30초</b>' },
+      { icon: '⬆️', name: '합체', tag: 'rework', desc: '레벨이 오르고 <b>덱의 무작위 지후</b>가 돼요' },
+      { icon: '🚫', name: '자리 옮기기', tag: 'adjust', desc: '슬롯의 지후는 <b>합치기만</b> 할 수 있어요' },
+      { icon: '🎟', name: '입장 · 보상', tag: 'system', desc: '입장 <b>무료</b> · 보상은 <b>경험치</b> (승리 +100)' },
+      { icon: '🖥', name: 'PC 화면', tag: 'system', desc: 'PC 에서는 화면 폭을 <b>폰처럼</b> 줄여요' },
+    ] },
+  ] },
   { v: 'R2.33', date: '2026.11.11', title: '신규 아케이드 모드 · 성뿌수기', sections: [
     { title: '성뿌수기', items: [
       { icon: '🏰', name: '성뿌수기 모드', tag: 'new', desc: '아케이드 새 모드 — 골드로 지후를 소환해 <b>상대 성 (HP 60,000)</b> 을 부숴요 · 내 덱 그대로 · 입장료는 미러전과 같아요' },
@@ -13181,7 +13216,7 @@ function u2Extra(v) {
     onSw, lbTabs, lbRows, packs, offers, rerollK, arcadeModes, arcShopCards, giftImg: u2Img('gift'),
     menuGrid, menuWide, memberTxt: isMember() ? 'UID ' + accCode() : '게스트', navItems,
     isPage: !!pg && !full, isSocial: pg === 'social', notSocial: !!pg && pg !== 'social', isPageFull: full, pageBg: full ? kBg(K_PAGE[pg][0]) : '', pageSub, tickets: fmt(a.t),
-    isMode: !!mk, mTitle: M ? M[0] : '', mSub: M ? M[1] : '', mBg: M ? kBg(M[2]) : '', mBtn: M ? M[3] : '', mBtnSub: !mk ? '' : fee ? `입장 🎟 ${fee} · 승리 ${CFG.ARC_WIN_P}P / 패배 ${CFG.ARC_LOSE_P}P` : '입장 무료 · 보상은 일반전과 같아요 (×' + CFG.EV_REWARD + ')',
+    isMode: !!mk, mTitle: M ? M[0] : '', mSub: M ? M[1] : '', mBg: M ? kBg(M[2]) : '', mBtn: M ? M[3] : '', mBtnSub: !mk ? '' : fee ? `입장 🎟 ${fee} · 승리 ${CFG.ARC_WIN_P}P / 패배 ${CFG.ARC_LOSE_P}P` : mk === 'castle' ? `입장 무료 · 승리 ${CW.XP_WIN} XP` : '입장 무료 · 보상은 일반전과 같아요 (×' + CFG.EV_REWARD + ')',
     modeClose: () => u2Set({ mode: null }), modeGo: () => { const k = s.mode; u2Set({ mode: null }); renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${k}"]`); if (!el) return; ARC_SURE = true; try { el.click(); } finally { ARC_SURE = false; } },
     isMEvent: mk === 'event', isMRandom: mk === 'random' || mk === 'mirror', isMCastle: mk === 'castle', /* R2.33 */
     cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['20초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
