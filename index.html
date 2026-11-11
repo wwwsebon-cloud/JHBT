@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -7258,7 +7258,7 @@ const CW = { WAVE: 30, FIRST: 10, /* 웨이브 30초 (R2.33.1 · 예전 20) · �
 const isCw = () => !!(S.arc && (S.arc.kind === 'castle' || S.arc.kind === 'defense')); // R2.34: 디펜스도 같은 틀 (S.cw.df)
 const isDf = () => !!(S.arc && S.arc.kind === 'defense');
 // R2.34 디펜스: 내 슬롯 지후는 WAVE (20초) 마다 · 적 웨이브는 EWAVE (20초 · build 3: 10 → 20 · 다시 1배) 마다 (둘 다 처음은 10초 뒤 · 적을 다 잡으면 다음 적 웨이브 바로) · 적 = 무작위 지후 Lv1 · 수 N0 + (웨이브 − 1) × NADD · 능력치 ×(K0 + (웨이브 − 1) × KADD) · 적이 내 진영 끝에 닿으면 라이프 −1 (10) · 보상 열쇠 = 지난 적 웨이브 수 · 열쇠 상자 BOX 개 · 핵은 고정 NUKE 피해
-const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 30, /* build 2: 10 → 30 */ EV_EVERY: 5, /* 정비 시간 (이벤트 · build 3: 10 → 5웨이브) */ N0: 3, NADD: 0.13, NMAX: 24, K0: 0.7, KADD: 0.016, /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE: 500 };
+const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 30, /* build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QUAKE: 3, QDMG: 0.5, QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 50% 피해 · 5초 기절 */ N0: 3, NADD: 0.13, NMAX: 24, K0: 0.7, KADD: 0.016, /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE: 500 };
 const cwWv = () => (S.cw && S.cw.df ? DF.WAVE : CW.WAVE);
 const pctD = (t, v) => t.def.castle ? v * 0.05 : v; // 체력 비례 피해: 성은 95% 줄여 받는다
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
@@ -7301,11 +7301,16 @@ function dfWave() { // R2.34 디펜스 내 출격 (20초마다): 골드 → 내 
   const c = S.cw; c.gold[ME()] += cwIncome(c.mw); c.mw++; S.rel = { a: {}, e: {} }; S.relLog = [];
   cwSpawn(ME()); if (!S.fast) { sfx('battle_start'); cwRender(); }
 }
-function dfFoeWave() { // 적 웨이브 (EWAVE 20초마다 · 적을 다 잡으면 바로): 웨이브 +1 → (EV_EVERY 5웨이브마다 정비 시간) → 적 지후
+function dfFoeWave() { // 적 웨이브 (EWAVE 20초마다 · 적을 다 잡으면 바로): 웨이브 +1 → (EV_EVERY 10웨이브마다 정비 시간) → 적 지후
   const c = S.cw; c.wave++; c.wt = 0; c.et = 0; if (c.wave % DF.EV_EVERY === 0) { dfPickOpen(); if (c.pick) return; } dfFoeGo();
 }
-function dfFoeGo() { const c = S.cw; dfWaveEv(); dfSpawn(c.wave); if (!S.fast) { banner(`WAVE ${c.wave}`); cwHud(true); } }
-// ── R2.34 build 2 디펜스 이벤트: EV_EVERY (5) 웨이브마다 정비 시간 → 3장 중 하나 · 'p' 는 게임 내내 (다시 안 나온다) · 'i' 는 고르는 순간 (또 나올 수 있다) · 효과는 내 진영 (S.cw.me) 지후만 ──
+function dfFoeGo() { const c = S.cw; dfWaveEv(); dfSpawn(c.wave); if (!S.fast) { banner(`WAVE ${c.wave}`); cwHud(true); } dfQuake(); }
+function dfQuake() { // build 4 충격파: QUAKE (3) 웨이브마다 내 진영 지후 모두 최대 체력 QDMG (50%) 피해 · QSTUN (5초) 기절 (면역 무시 · 피해는 자기 자신이 준 dot = 처치 기록 · 탄핵 횟수에 안 센다)
+  const c = S.cw; if (c.wave % DF.QUAKE !== 0) return;
+  for (const u of S.units.slice()) if (u.alive && u.side === c.me && !u.def.castle) { dealDamage(u, u, u.maxHp * DF.QDMG, { noCrit: true, lite: true, dot: true }); if (u.alive) { u.st.stun = Math.max(u.st.stun || 0, DF.QSTUN); drawUnit(u); } }
+  if (!S.fast) { shake(true); banner(`💥 충격파 · 내 지후 체력 −${Math.round(DF.QDMG * 100)}% · 기절 ${DF.QSTUN}초`); }
+}
+// ── R2.34 build 2 디펜스 이벤트: EV_EVERY (10) 웨이브마다 정비 시간 → 3장 중 하나 · 'p' 는 게임 내내 (다시 안 나온다) · 'i' 는 고르는 순간 (또 나올 수 있다) · 효과는 내 진영 (S.cw.me) 지후만 ──
 const DF_EV = {
   vault: ['🏦', '금고', '웨이브마다 보유 골드의 5% (최대 100) 를 더 받아요', 'p'], miracle: ['🙏', '자네는 기적을 믿나?', '라이프가 1이 되면 모든 적이 즉사해요 (1번)', 'p'],
   mobilize: ['📯', '총동원령', '슬롯의 지후를 지금 모두 출격시켜요', 'i'], savings: ['🐷', '저축', '골드가 100 이상이면 아군 공격력 +15%', 'p'],
@@ -11315,6 +11320,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.34', date: '2026.11.11', title: '디펜스 모드 · 출격제한 개편', sections: [
+    { title: '추가 패치 (build 4)', items: [
+      { icon: '🔧', name: '정비 시간', tag: 'nerf', desc: '이벤트가 다시 <b>5 → 10웨이브</b>마다' },
+      { icon: '💥', name: '충격파', tag: 'nerf', desc: '<b>3웨이브</b>마다 내 지후 모두 최대 체력 <b>50%</b> 피해 · <b>5초</b> 기절' },
+    ] },
     { title: '추가 패치 (build 3)', items: [
       { icon: '🔧', name: '정비 시간', tag: 'buff', desc: '이벤트가 <b>10 → 5웨이브</b>마다' },
       { icon: '🌊', name: '적 웨이브 간격', tag: 'buff', desc: '<b>10 → 20초</b> (내 출격과 같게)' },
@@ -13502,7 +13511,7 @@ function u2Extra(v) {
     modeClose: () => u2Set({ mode: null }), modeGo: () => { const k = s.mode; u2Set({ mode: null }); if (k === 'defense') return dfGo(); /* R2.34 */ renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${k}"]`); if (!el) return; ARC_SURE = true; try { el.click(); } finally { ARC_SURE = false; } },
     isMEvent: mk === 'event', isMRandom: mk === 'random' || mk === 'mirror', isMCastle: mk === 'castle', /* R2.33 */ isMDef: mk === 'defense', /* R2.34 */ dfKeys: fmt(profile.keys | 0), dfBoxCost: DF.BOX, dfBoxCls: (profile.keys | 0) >= DF.BOX ? 'k-gold' : 'k-off', dfOpenBox: () => keyBox(),
     dfChips: [[`라이프 ${DF.LIVES}`, '#ff4f5e', '#fff'], [`적 ${DF.EWAVE}초마다`, '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['입장 무료', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
-    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `${DF.WAVE}초마다 슬롯의 지후가 전장에 나가고, 적 지후도 ${DF.EWAVE}초마다 몰려와요 (처음엔 능력치 ×${DF.K0} · 웨이브마다 더 많고 강해져요)`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `지난 웨이브마다 🔑 1 · 🔑 ${DF.BOX} 로 열쇠 상자`].map(t => ({ t })),
+    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `${DF.WAVE}초마다 슬롯의 지후가 전장에 나가고, 적 지후도 ${DF.EWAVE}초마다 몰려와요 (처음엔 능력치 ×${DF.K0} · 웨이브마다 더 많고 강해져요)`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 ${DF.QUAKE}웨이브마다 충격파 — 내 지후 모두 최대 체력 ${Math.round(DF.QDMG * 100)}% 피해 · ${DF.QSTUN}초 기절`, `지난 웨이브마다 🔑 1 · 🔑 ${DF.BOX} 로 열쇠 상자`].map(t => ({ t })),
     cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['20초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
     cwRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 처음 10 · 소환마다 +10', '20초마다 슬롯의 지후가 그대로 전장에 나가요 (웨이브 · 첫 웨이브는 10초 뒤) · 웨이브마다 골드를 받아요', '슬롯에서 같은 지후 · 같은 레벨을 눌러 합치면 레벨업', '적 처치 🪙 +4 · 내 성 체력이 40,000 · 20,000 이 되면 성 주변 적이 모두 쓰러지고 🪙 +300', '30웨이브까지 안 끝나면 서든 데스 — 먼저 전멸하면 패배', `입장료 🎟 ${fee}`].map(t => ({ t })),
     evCards: [['#ff8fb1,#c0408a', '브론즈'], ['#ffd76a,#e0a21c', '골드'], ['#7cc8ff,#3a78d0', '실버']].map(([c, t], i) => ({ bg: `linear-gradient(180deg,${c})`, t, zi: i === 1 ? 3 : 1, tf: ['rotate(-12deg) translateY(10px)', 'scale(1.08) translateY(-4px)', 'rotate(12deg) translateY(10px)'][i] })),
