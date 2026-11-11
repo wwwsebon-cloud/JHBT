@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 2).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -118,6 +118,7 @@
 
 ## 최근 변경 (R2.35 · 밸런스 8종)
 - 부루스타 ATK 225 · 공격력 선형 감소 (`atkMult` 1 − t/15) · `splash` 1.9 · 꺼짐 7초 · 차원 ATK 140 · 늑대 스킬 [포효] `wolfRoar` (SP 6 · 반경 2칸 넉백 2.5칸 · buff `wroar` 공격력 −15% 5초) · 불사조 쉴드 400 · 블랙홀 ATK 100 · 홍명보 패스 회복 40% · 빔 ATK 25 · 사거리 5.3 · 죠스 공격 회복 30%. 티어 시뮬은 돌리지 않았다 (사용자 요청).
+- **build 2 디펜스 광폭 웨이브**: 적 배율 `dfKw(w)` = 직선 (`K0 + (w − 1) × KADD`) × `dfExp(w)` (`DF.EXP_W` 30 웨이브 뒤 웨이브마다 `EXP_R` 1.035 곱 · 반복 곱셈) — 직선만이면 포식 · 합체처럼 계속 커지는 덱이 끝나지 않았다 (라이플만으로 141웨이브). 50웨이브 2.4 · 100웨이브 19.9 · 141웨이브 104배. HUD `oddsLabE` 에 `🔥×M` · 31웨이브 배너. 스택 한도는 사용자가 원하지 않는다.
 
 ## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
 - **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
