@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.32** (build 2).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.33** (build 1).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -116,7 +116,15 @@
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
-## 최근 변경 (R2.32 · 밸런스 15종)
+## 최근 변경 (R2.33 · 성뿌수기 모드)
+- **성뿌수기** (아케이드 `ARC_MODES.castle` · `arc.kind 'castle'` · 참고: 랜덤다이스 워즈 · 코드 블록 `// ═════════ R2.33 성뿌수기` · 상수 `CW`): 내 덱 vs 봇 덱 (`botDeckRamp('std')`) · `startRound` → `cwStart` (배치 단계 없음 · 리플레이 기록 없음). `S.cw = { gold · cost · wave · t · sd · rage · castle · gone · sel }`.
+  - 성 = `SUMMONS.castle` (HP 60,000 · 사거리 3 · ATK 300 / 1초 · `immobile` · `immune` · `noHeal` · `u.big` 큰 몸 `cvD` 150) · `friends()` 에서 뺀다 (아군 버프 · 회복 대상 아님) · `instaKill` 무시 · 체력 비례 피해는 `pctD(t, v)` 로 5% (체력 비례 피해를 새로 만들면 `pctD` 로 감싼다) · 한 번에 최대 체력의 5% 까지 (핵 등) · 왜곡 · 고자 무시 · 슬롯머신 잭팟은 적 지후 전멸 + 성 피해.
+  - 웨이브 `cwWave` (30초 · 골드 `cwIncome` · `cwSpawn` 이 슬롯 `S.place` 의 지후를 칸 자리에 · 진영마다 살아 있는 지후 `CW.CAP` 40기까지 · 유물은 웨이브마다 새로) · 소환 `cwSummon` (10 · +10 · 덱 무작위 · 출격제한은 지킨다) · 합체는 `moveTile` (개구리 · 조커 규칙 그대로) · 성의 분노 `cwRage` (40,000 · 20,000 · 반경 6칸 즉사 · +300) · 처치 +4 (`u.cwU` 웨이브 지후만) · 30웨이브 서든 데스 · 봇 `cwBot` · 끝 `cwEnd` → `endMatch` (아케이드 포인트).
+  - `stepCombat` 은 `S.cw` 면 `cwStep` 으로 (전멸 · 60초 · 무피해 판정 없음) · 쓰러진 유닛은 `cwPurge` 가 2.5초 뒤 `S.units` 에서 치운다 (통계는 `gone`) → **`S.units` 의 쓰러진 유닛을 오래 들고 있는 코드는 성뿌수기에서 깨진다** (부활 지후는 `{ id, lv }` 기록이라 괜찮다).
+  - 화면: 트레이 `#cwPanel` (웨이브 막대 · 골드 · 소환 · 슬롯판 `#cwGrid`) · `#screen-battle.cw` 가 배치 카드 · 덱 줄 · 안내 칩을 숨긴다 · 위 승률 막대는 성 체력 (`cwHud`) · 타이머 고리는 다음 웨이브 · 로비 모드 화면 `K_MODE.castle` · `isMCastle`.
+  - 시험: 빠른 시뮬 양쪽 봇 `S.cw.auto` (스크래치 `cwfuzz.js` · 24판 오류 0) · 빠른 시뮬에서 스파이 `getAnimations` 가 수 초 걸리는 건 화면을 안 그려서 생기는 시뮬 전용 현상.
+
+## 지난 변경 (R2.32 · 밸런스 15종)
 - 일반 랭크업 조각 2배 (`ENH_SHARD.common` 합계 2000) · 얼음 사거리 5.5 · 활 HP 1,010 · 보호막 HP 2,040 · 멈춰! HP 2,980 · SP 4 · 촉수 ATK 140 · 랜턴 자가 회복 5 고정 · 마탄 ATK 140 · 빠따 ATK 240 · 신칸센 HP 1,460 · 수은 HP 2,260 · 스파이: 지금 모습과 같은 id 를 치면 치명타 없음 · 불사조 쉴드 350 고정 · 부활 폭발 3칸 · 기상캐스터 ATK 15 · 스테인리스 HP 1,750.
 - build 2: 버섯 지후 독버섯 → `mushEat` 이 [침묵] 4초 (독버섯 피해가 끝날 때까지).
 - `fxList`: `immune(u)` (쉴드 지후 쉴드) · 보호막 쉴드 (`guardSh`) 가 있으면 [디버프 면역] 아이콘 `pure`.
