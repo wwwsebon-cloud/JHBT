@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="7"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -9451,13 +9451,17 @@ function towerEnd(win, note) { // 탑 결과: 이기면 층 보상 · 다음 층
 }
 async function dfPush() { // R2.34 디펜스 리더보드 r2def (최고 웨이브 · 규칙을 아직 게시하지 않았으면 조용히 건너뜀)
   if (!FB.on || ACC.banned || FB.noDef) return;
-  try { const doc = { nickname: (profile.nick || '이름없음').slice(0, 12), best: Math.min(100000, profile.dfBest | 0), fav: favChar(), updatedAt: FB.sdk.serverTimestamp() }; if (!FB.noFrame) doc.frame = profile.frame; await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2def', FB.uid), doc); }
-  catch (e) { if (e && e.code === 'permission-denied') FB.noDef = true; console.warn('[rejhbt] 디펜스 기록 업로드 실패', e); }
+  const doc = { nickname: (profile.nick || '이름없음').slice(0, 12), best: Math.min(100000, profile.dfBest | 0), fav: favChar(), updatedAt: FB.sdk.serverTimestamp() }; if (!FB.noFrame) doc.frame = profile.frame;
+  try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2def', FB.uid), doc); FB.defErr = ''; }
+  catch (e) { if (e && e.code === 'permission-denied' && doc.frame !== undefined) { delete doc.frame; try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2def', FB.uid), doc); FB.defErr = ''; return; } catch (e2) { e = e2; } } /* R2.35 build 8: 테두리 없이 한 번 더 */
+    FB.defErr = (e && e.code) || 'error'; if (e && e.code === 'permission-denied') FB.noDef = true; console.warn('[rejhbt] 디펜스 기록 업로드 실패', e); }
 }
 async function towerPush() { // 탑 리더보드 r2tower (최고 층 · 규칙을 아직 게시하지 않았으면 조용히 건너뜀)
   if (!FB.on || ACC.banned || FB.noTower) return;
-  try { const doc = { nickname: (profile.nick || '이름없음').slice(0, 12), best: Math.min(100000, profile.tower.best | 0), fav: favChar(), updatedAt: FB.sdk.serverTimestamp() }; if (!FB.noFrame) doc.frame = profile.frame; await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2tower', FB.uid), doc); }
-  catch (e) { if (e && e.code === 'permission-denied') FB.noTower = true; console.warn('[rejhbt] 탑 기록 업로드 실패', e); }
+  const doc = { nickname: (profile.nick || '이름없음').slice(0, 12), best: Math.min(100000, profile.tower.best | 0), fav: favChar(), updatedAt: FB.sdk.serverTimestamp() }; if (!FB.noFrame) doc.frame = profile.frame;
+  try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2tower', FB.uid), doc); FB.towerErr = ''; }
+  catch (e) { if (e && e.code === 'permission-denied' && doc.frame !== undefined) { delete doc.frame; try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2tower', FB.uid), doc); FB.towerErr = ''; return; } catch (e2) { e = e2; } }
+    FB.towerErr = (e && e.code) || 'error'; if (e && e.code === 'permission-denied') FB.noTower = true; console.warn('[rejhbt] 탑 기록 업로드 실패', e); }
 }
 $('invGrid').addEventListener('click', e => { const b = e.target.closest('[data-item]'); if (b) useItem(b.dataset.item); });
 // 업데이트 안내 (R2.7): 새 버전으로 처음 켜면 간단한 패치노트 + 업데이트 보상 (◆500 · 임테기) — 지금 버전 것만 받는다 (놓친 예전 버전 보상은 사라진다 · 중첩 안 됨)
@@ -11513,6 +11517,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.35', date: '2026.11.11', title: '밸런스 패치', sections: [
+    { title: '추가 패치 (build 8)', items: [
+      { icon: '🏆', name: '디펜스 리더보드', tag: 'fix', desc: '규칙을 게시한 뒤에도 <b>「규칙 게시 안 됨」</b>으로 안 나오던 것 (새로고침 없이 다시 시도)' },
+      { icon: '🗼', name: '탑 리더보드', tag: 'fix', desc: '같은 문제 · 내 기록을 못 올려도 순위는 보여요' },
+    ] },
     { title: '추가 패치 (build 7)', items: [
       { icon: '🎨', name: '전투 화면', tag: 'system', desc: '버튼 · 배치 카드 · 디펜스 슬롯을 <b>로비 톤</b>으로 (남색 · 두꺼운 테두리)' },
       { icon: '🗝', name: '열쇠 상자', tag: 'new', desc: '<b>여러 개 한 번에</b> 열기 (− · + · 최대)' },
@@ -13244,14 +13252,14 @@ async function lbLoad() {
       const rows = []; snap.forEach(d => rows.push({ uid: d.id.split('_')[1], data: d.data() })); rows.sort((a, b) => (b.data.tp || 0) - (a.data.tp || 0)); if (lbTab !== tab) return; lbShow(rows.slice(0, LB_TOP), myUid()); return;
     }
     if (tab === 'def') { // R2.34 디펜스 (r2def · 최고 웨이브)
-      await dfPush(); if (FB.noDef) throw new Error('디펜스 리더보드 규칙을 아직 게시하지 않았어요');
+      FB.noDef = false; await dfPush(); /* R2.35 build 8: 예전엔 한 번 거절되면 (규칙 게시 전에 판이 끝남) 새로고침할 때까지 「규칙 게시 안 됨」 이었다 */
       const snap = await FB.sdk.getDocs(FB.sdk.query(FB.sdk.collection(FB.db, 'r2def'), FB.sdk.orderBy('best', 'desc'), FB.sdk.limit(LB_TOP)));
-      const rows = []; snap.forEach(d => rows.push({ uid: d.id, data: d.data() })); if (lbTab !== tab) return; lbShow(rows, myUid()); return;
+      const rows = []; snap.forEach(d => rows.push({ uid: d.id, data: d.data() })); if (lbTab !== tab) return; lbShow(rows, myUid()); if (FB.defErr) u2Toast(`내 디펜스 기록을 올리지 못했어요 (${FB.defErr})`); return;
     }
     if (tab === 'tower') { // 지후의 탑 (R2.7.2 · r2tower)
-      await towerPush(); if (FB.noTower) throw new Error('탑 리더보드 규칙을 아직 게시하지 않았어요');
+      FB.noTower = false; await towerPush(); /* R2.35 build 8 */
       const snap = await FB.sdk.getDocs(FB.sdk.query(FB.sdk.collection(FB.db, 'r2tower'), FB.sdk.orderBy('best', 'desc'), FB.sdk.limit(LB_TOP)));
-      const rows = []; snap.forEach(d => rows.push({ uid: d.id, data: d.data() })); if (lbTab !== tab) return; lbShow(rows, myUid()); return;
+      const rows = []; snap.forEach(d => rows.push({ uid: d.id, data: d.data() })); if (lbTab !== tab) return; lbShow(rows, myUid()); if (FB.towerErr) u2Toast(`내 탑 기록을 올리지 못했어요 (${FB.towerErr})`); return;
     }
     await lbPush(); // 내 기록부터 최신으로 (덱 · 대표 지후 포함)
     if (tab === 'cp' && FB.noCp) throw new Error('전투력 리더보드 규칙을 아직 게시하지 않았어요');
@@ -13265,6 +13273,7 @@ async function lbLoad() {
     lbShow(rows, myUid());
   } catch (err) {
     conn.textContent = '오프라인';
+    if (err && err.code === 'permission-denied') { list.innerHTML = `<div class="lbrow msg">이 리더보드의 서버 규칙이 아직 반영되지 않았어요<br><span style="opacity:.6">Firebase 콘솔에 firestore.rules 전체를 게시했는지 확인해 주세요 · 게시 뒤 1분쯤 걸릴 수 있어요</span></div>`; return; } /* R2.35 build 8 */
     list.innerHTML = `<div class="lbrow msg">온라인 연결 실패 <span style="opacity:.6">(${esc(String(err && err.message || err || '').slice(0, 40))})</span><br>전적은 기기에 저장돼요 · 곧 다시 시도해 주세요</div>`;
   }
 }
@@ -14209,7 +14218,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { keyBox, dfGo, DF, dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgPowers, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { keyBox, dfGo, DF, dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgPowers, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
