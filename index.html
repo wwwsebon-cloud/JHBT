@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="11"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.35"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -4038,7 +4038,7 @@ const CHARS = {
       A.around(u, u.x, u.y, 2, e => { if (A.dmg(u, e, 50) > 0) hitFx(u, e, true); });
       return false;
     },
-    onAttack(u, t) { heal(u, u, effAtk(u) * 0.5 /* R2.26: 30 → 50% */); if (enh6(u)) jawsStack(u, t); } },
+    onAttack(u, t) { heal(u, u, effAtk(u) * 0.3 /* R2.26: 30 → 50% · R2.35: 50 → 30% */); if (enh6(u)) jawsStack(u, t); } },
   blizzard: { name: '블리자드 지후', rarity: 'legend', role: '컨트롤러', hp: 1244, /* R2.21: 1144 → 1244 */ atk: 80, atkSpeed: 1.1, range: 4.8, speed: 1.6, portrait: PORTRAITS.blizzard, sfx: 'ice', color: '#7fc8f8',
     story: '봄이 오면 눈사람이 녹는 걸 받아들일 수 없었던 지후입니다. 그래서 그는 봄이 아예 오지 못하게 막기로 했어요. 눈보라를 부르는 법을 익힌 뒤로 그의 동네는 5월에도 패딩을 입고 다닙니다. 난방비가 세 배로 뛰자 반상회에서 퇴출당했고, 봄을 기다리는 태양 지후와는 원수가 되었어요. 북쪽 성의 얼음 지후와는 유일한 펜팔인데, 그는 편지가 꽁꽁 얼어서 도착하는 걸 정성이라고 생각합니다. 얼음 지후는 그 정성을 녹이느라 매번 헤어드라이어를 세 개씩 태워요.',
     skill: { type: 'hit', need: 9, desc: '<b>SP 9</b> · <b>[눈보라]</b>. 모든 적에게 현재 체력의 <b>6%</b> 피해를 주고 <b>2초</b> 동안 얼립니다. 얼음이 녹은 적은 [동상]에 걸립니다.',
@@ -4447,7 +4447,7 @@ const CHARS = {
       list.forEach(sl => { const a = w + sl.ph, sx = u.x + Math.cos(a) * R, sy = u.y + Math.sin(a) * R; if (sl.el) { sl.el.style.left = sx.toFixed(1) + 'px'; sl.el.style.top = sy.toFixed(1) + 'px'; }
         foes(u).forEach(e => { const key = sl.k + ':' + e.uid; if ((u.sh[key] || 0) > S.time || Math.hypot(e.x - sx, e.y - sy) > sr + unitRadius(e)) return; u.sh[key] = S.time + 2.3; // 같은 영혼은 같은 적을 한 바퀴(2.3초)에 한 번
           const done = dealDamage(u, e, effAtk(u) * sl.dm, {}); if (done > 0 && !S.fast) hitFx(u, e, sl.dm > 1); }); }); } },
-  laser: { name: '빔 지후', rarity: 'epic', role: '딜러', hp: 1110, atk: 35, /* R2.25.4: 27 → 35 */ atkSpeed: 0.2, range: 5.7, speed: 1.6, portrait: PORTRAITS.laser, sfx: 'shot', color: '#1fd84a',
+  laser: { name: '빔 지후', rarity: 'epic', role: '딜러', hp: 1110, atk: 25, /* R2.25.4: 27 → 35 · R2.35: 35 → 25 */ atkSpeed: 0.2, range: 5.3, /* R2.35: 5.7 → 5.3 */ speed: 1.6, portrait: PORTRAITS.laser, sfx: 'shot', color: '#1fd84a',
     story: '돋보기로 종이에 구멍을 내려다 번번이 실패한 지후입니다. 그는 빛을 더 오래 모으면 된다는 결론을 내렸고, 숨을 꾹 참고 빛을 모으는 법을 익혔어요. 문제는 대상이 조금만 움직여도 집중이 깨져서 처음부터 다시 모아야 한다는 겁니다. 그래서 그는 늘 적에게 가만히 있어 달라고 부탁하며 싸워요. 적들은 당연히 움직입니다. 태양 지후는 그가 자기 빛을 훔쳐 쓴다며 저작권료를 청구했어요.',
     passive: '대상을 <b>3초</b> 동안 차징한 뒤 레이저를 쏩니다. 레이저는 오래 쏠수록 강해집니다.',
     pickTarget(u) { const L = u.lz; return L && L.t.alive && targets(u).includes(L.t) ? L.t : null; }, // 레이저를 쏘는 동안은 그 대상을 계속 본다 (없으면 가장 가까운 적)
@@ -4623,7 +4623,7 @@ const CHARS = {
     tick(u, dt) { if (u.dm) dimTick(u, dt); }, onDeath(u) { dimClose(u); }, /* R2.29: 훔친 [아공간] */
     pickTarget(u) { const g = u.bg; if (!g || g.done) return null; if (!g.t || !canTarget(u, g.t)) g.t = burglarPick(u); return g.t; }, // 훔친 뒤에는 보통 대상 (가장 가까운 적)
     customAttack(u, t) { const g = u.bg; if (!g || g.done) { if (dimReady(u, t)) { u.dimT = t; castSkill(u); return true; } return false; } burglarSteal(u, t); return true; } }, // R2.22.2: 첫 공격만 [절도] · 그 뒤로는 일반 공격 (SP 는 afterHit) · R2.29: 훔친 [아공간]은 차원처럼 다음 공격 때
-  blackhole: { name: '블랙홀 지후', rarity: 'legend', role: '컨트롤러', hp: 1900, atk: 120, atkSpeed: 4.4, /* R2.26: 1576 → 1900 · 100 → 120 · 5 → 4.4초 · 끌어당김 20 → 10% */ range: 5, speed: 1.6, portrait: PORTRAITS.blackhole, sfx: 'ice', color: '#2b1d4f',
+  blackhole: { name: '블랙홀 지후', rarity: 'legend', role: '컨트롤러', hp: 1900, atk: 100, /* R2.35: 120 → 100 */ atkSpeed: 4.4, /* R2.26: 1576 → 1900 · 100 → 120 · 5 → 4.4초 · 끌어당김 20 → 10% */ range: 5, speed: 1.6, portrait: PORTRAITS.blackhole, sfx: 'ice', color: '#2b1d4f',
     story: '천문대에서 별 지후와 함께 일하다가, 커피를 너무 진하게 타 마신 날 블랙홀이 되어 버린 지후입니다. 그 뒤로 주변의 모든 것이 그에게 빨려 들어와요. 덕분에 그의 방은 늘 깨끗한데, 물건이 전부 그의 안에 있기 때문입니다. 별 지후는 그를 우주의 신비라고 부르며 연구하지만, 사실은 빌려준 망원경을 돌려받고 싶을 뿐이에요. 회오리 지후와 누가 더 잘 빨아들이는지 내기를 했다가 회오리 지후까지 빨아들여서 내기가 무효가 됐습니다. 지금도 그의 안 어딘가에서 회오리 지후가 돌고 있대요.',
     passive: '일반 공격 대신 <b>[중력장]</b>을 펼칩니다. 반경 <b>10칸</b> 안의 모든 적에게 공격력의 <b>100%</b> 피해를 주고, 자신과의 거리의 <b>10%</b>만큼 끌어당깁니다.',
     customAttack(u) { bhField(u); return true; } },
@@ -4657,6 +4657,7 @@ const CHARS = {
   wolf: { name: '늑대 지후', rarity: 'legend', role: '어쌔신', hp: 1450, /* R2.24 build 3: 1650 → 1450 */ atk: 100, /* R2.24 (출시 전): 40 → 100 */ atkSpeed: 1.25, /* R2.24 build 3: 1 → 1.25초 */ range: 3.5, speed: 1.3, lifesteal: 0.2, /* R2.24 build 3: 흡혈 20% (아케인과 같은 dealDamage 흡혈) */ portrait: PORTRAITS.wolf, sfx: 'swing', color: '#5d6d7e',
     story: '보름달이 뜨면 늑대로 변한다고 소문난 지후입니다. 사실은 달 지후가 밤새 자는 바람에 보름달이 제대로 뜬 적이 없어서, 그냥 1년 내내 늑대예요. 그는 눈앞에 사냥감이 없는 걸 잠시도 못 참아서, 적이 안 보이면 냅다 등 뒤까지 가 버립니다. 그럴 때마다 이빨이 조금씩 더 날카로워져서, 치과 의사는 진료 기록에 제발 그만 가라고 적었어요. 처음엔 멀리서 짖기만 했지만, 요즘은 붙어서 무는 게 더 편하대요. 카우보이 지후는 그를 길들이려다 로봇 청소기만 물어뜯겼습니다.',
     passive: '<b>0.5초</b> 동안 공격할 적이 없으면 적 곁으로 <b>순간이동</b>합니다. 순간이동한 뒤로는 모든 공격이 <b>치명타</b>가 되고, 순간이동할 때마다 치명타 피해가 <b>50%</b>씩 오릅니다 (경기 내내). 입힌 피해의 <b>20%</b>만큼 회복합니다.',
+    skill: { type: 'hit', need: 6, desc: '<b>SP 6</b> · <b>[포효]</b>. 주위 적을 밀어내고 잠시 약하게 만듭니다.', run(u) { wolfRoar(u); } }, // R2.35 신규 스킬
     onStart(u) { wolfInit(u); },
     gauge(u) { const w = u.wf; return !w || u._engaged ? 0 : clamp(w.idle / 0.5, 0, 1); }, // R2.24 build 3: 순간이동까지 0.5초 게이지
     tick(u, dt) { if (u.wf) wolfTick(u, dt); } },
@@ -4690,7 +4691,7 @@ const CHARS = {
     passive: '<b>16번</b> 맞으면 <b>[탄핵]</b>됩니다. 큰 쉴드를 얻고 모든 적을 <b>7초</b> 동안 도발하며, 그 뒤로 공격력과 사거리가 <b>2배</b>가 됩니다.',
     onStart(u) { u.ipN = 0; ipHead(u); }, gauge(u) { return u.ipDone ? 1 : clamp((u.ipN || 0) / 16, 0, 1); },
     onDamaged(u, src) { if (u.ipDone || !src || src === u || src.side === u.side) return; u.ipN = (u.ipN || 0) + 1; ipHead(u); if (u.ipN >= 16) impeachGo(u); /* R2.25.4: 18 → 16번 */ } },
-  dimension: { name: '차원 지후', rarity: 'legend', role: '어쌔신', hp: 1090, atk: 110, atkSpeed: 1, range: 2.2, speed: 2.3, atkText: () => '110 × 2', portrait: PORTRAITS.dimension, portraitRealm: PORTRAITS.dimension_realm, sfx: 'shot', color: '#7b3fe0',
+  dimension: { name: '차원 지후', rarity: 'legend', role: '어쌔신', hp: 1090, atk: 140, /* R2.35: 110 → 140 */ atkSpeed: 1, range: 2.2, speed: 2.3, atkText: () => '140 × 2', portrait: PORTRAITS.dimension, portraitRealm: PORTRAITS.dimension_realm, sfx: 'shot', color: '#7b3fe0',
     story: '천문대 망원경을 거꾸로 들여다보다가 다른 차원으로 빠져 버렸던 지후입니다. 겨우 돌아오긴 했는데, 그 뒤로 주머니에 작은 아공간이 하나 생겨 버렸어요. 그는 마음에 안 드는 적이 있으면 그 주머니에 같이 들어가서 단둘이 이야기를 나누려 하는데, 주머니 안에서는 둘 다 말문이 막혀 버려서 서로 눈치만 봅니다. 주머니 안은 너무 좁고 어두워서, 끌려 들어간 적은 한동안 비명을 지르며 도망만 다녀요. 블랙홀 지후는 그 주머니가 자기 것보다 작다며 늘 무시하지만, 사실은 들어가 보고 싶어서 몰래 줄을 서 있습니다. 주머니에서 나올 때 그의 머리카락이 항상 반대쪽으로 넘어가 있는 건 아직 아무도 이유를 몰라요.',
     passive: '<b>2연발</b>로 공격합니다. <b>[아공간]</b> 안에서는 자신과 대상 모두 <b>[침묵]</b>에 걸립니다.',
     customAttack(u, t) { return dimAttack(u, t); },
@@ -4721,13 +4722,13 @@ const CHARS = {
     story: '티타늄 지후가 지키는 왕궁 금고에서 세상에서 가장 단단한 지후를 만들려다 태어난 메탈 지후입니다. 너무 단단해서 어떤 공격을 맞아도 간지러운 정도로만 아파해요. 문제는 몸이 금속이라 잠시도 쉬지 않고 녹이 슨다는 겁니다. 왕궁 의원 주사 지후가 치료하려고 주사를 놓았는데, 바늘이 휘어 버려서 주사 지후가 오히려 울었어요. 그래서 그는 치료를 받을 수 없고, 싸움이 길어지면 혼자 녹슬어 쓰러집니다. 평생 소원은 스테인리스 지후처럼 녹이 안 스는 몸이 되는 거래요.',
     passive: '모든 피해를 <b>2</b>만 받습니다 (치명타는 <b>4</b>). 대신 체력이 1초마다 <b>2%</b>씩 줄고, 회복을 받을 수 없습니다.',
     tick(u, dt) { metalTick(u, dt); } },
-  burner: { name: '부루스타 지후', rarity: 'legend', role: '하이브리드', hp: 1400, atk: 200, atkSpeed: 0.6, range: 5.2, speed: 1.6, portrait: PORTRAITS.burner, portraitOn: PORTRAITS.burner_on, sfx: 'fire', color: '#2f7bff',
+  burner: { name: '부루스타 지후', rarity: 'legend', role: '하이브리드', hp: 1400, atk: 225, /* R2.35: 200 → 225 */ atkSpeed: 0.6, range: 5.2, speed: 1.6, splash: 1.9, /* R2.35 일반 공격 광역 1.9칸 */ portrait: PORTRAITS.burner, portraitOn: PORTRAITS.burner_on, sfx: 'fire', color: '#2f7bff',
     story: '후라이팬 지후가 주방에서 쫓겨난 그날, 국왕의 식탁 위에서 폭발한 바로 그 부루스타입니다. 본인은 그게 폭발이 아니라 잠깐 신났던 것뿐이라고 주장해요. 그는 켜지자마자 가장 뜨겁게 타오르다가 점점 약해지는데, 가스가 떨어지면 주위 아군에게 마지막 불씨를 나눠 주고 픽 꺼져 버립니다. 불씨를 받은 아군은 엉덩이에 불이 붙어 허둥대면서도 이상하게 힘이 나요. 꺼진 뒤에는 누군가 가스통을 갈아 끼워 줄 때까지 꼼짝도 못 하는데, 그 일은 늘 물 지후가 투덜거리며 합니다. 후라이팬 지후와는 아직도 서로 눈을 안 마주쳐요.',
-    passive: '공격력이 <b>15초</b>에 걸쳐 <b>0</b>까지 줄어듭니다. 0이 되면 주위 아군에게 <b>[화상]</b>과 <b>[점화]</b>를 걸고 <b>10초</b> 동안 꺼졌다가 다시 켜집니다. [점화]된 아군은 불타는 동안 적에게 <b>[3도 화상]</b>을 겁니다.',
-    atkMult(u) { const b = u.br; if (!b) return 1; if (b.off > 0) return 0; const p = clamp(b.t / 15, 0, 1); return (1 - p) * (1 - p); }, // 처음엔 빠르게 · 갈수록 완만하게 (1 − t/15)²
+    passive: '일반 공격이 주변의 적에게도 피해를 줍니다. 공격력이 <b>15초</b>에 걸쳐 <b>0</b>까지 줄어들고, 0이 되면 주위 아군에게 <b>[화상]</b>과 <b>[점화]</b>를 걸고 <b>7초</b> 동안 꺼졌다가 다시 켜집니다. [점화]된 아군은 불타는 동안 적에게 <b>[3도 화상]</b>을 겁니다.',
+    atkMult(u) { const b = u.br; if (!b) return 1; if (b.off > 0) return 0; const p = clamp(b.t / 15, 0, 1); return 1 - p; }, // R2.35: 선형 (1 − t/15) · 예전 (1 − t/15)²
     onStart(u) { u.br = { t: 0, off: 0 }; A.portrait(u, u.def.portraitOn); if (!S.fast) cvImg(u.def.portrait); },
-    gauge(u) { const b = u.br; return !b ? 1 : b.off > 0 ? clamp(1 - b.off / 10, 0, 1) : clamp(1 - b.t / 15, 0, 1); },
-    steer(u) { if (!(u.br && u.br.off > 0)) return false; u.desVx = u.desVy = 0; return true; }, // 꺼진 10초: 움직이지도 공격하지도 않는다
+    gauge(u) { const b = u.br; return !b ? 1 : b.off > 0 ? clamp(1 - b.off / 7, 0, 1) : clamp(1 - b.t / 15, 0, 1); },
+    steer(u) { if (!(u.br && u.br.off > 0)) return false; u.desVx = u.desVy = 0; return true; }, // 꺼진 7초 (R2.35: 10 → 7): 움직이지도 공격하지도 않는다
     tick(u, dt) { if (u.br) burnerTick(u, dt); } },
   rot: { name: '부패 지후', rarity: 'epic', role: '컨트롤러', hp: 1350, atk: 100, atkSpeed: 2.2, range: 5.3, speed: 1.6, shotCls: 'venom', portrait: PORTRAITS.rot, sfx: 'shot', color: '#7b3f9e',
     story: '왕궁 부엌 냉장고 맨 안쪽에서 3년 동안 잊혀 있던 반찬통에서 태어난 지후입니다. 포식 지후가 남의 음식을 닥치는 대로 먹어 치우던 시절에도 그만은 아무도 건드리지 않았는데, 그게 그의 유일한 자랑이에요. 그는 처음 보는 지후에게만 관심을 보이며 한 번씩 꼭 손을 대고 지나가는데, 닿은 자리는 시간이 갈수록 점점 상합니다. 화가 나면 주위에 녹슨 냄새를 뿌려요. 메탈 지후는 그 냄새만 맡아도 녹이 슨다며 그를 피해 다닙니다. 유통기한을 물어보면 그는 늘 그건 그냥 숫자일 뿐이라며 웃어요.',
@@ -4906,7 +4907,7 @@ function hongTick(u, dt) {
   const dx = g.x - b.x, dy = g.y - b.y, d = Math.hypot(dx, dy), step = 14 * CFG.CELL * dt;
   if (d > step + unitRadius(g) * 0.6) { b.x += dx / d * step; b.y += dy / d * step; hongDraw(b); return; }
   b.x = g.x; b.y = g.y; hongDraw(b);
-  if (b.to) { b.done++; heal(u, g, effAtk(u) * 0.5); /* build 5: 공격력 50% (ATK 320 → Lv1 160) */ if (!S.fast) dmgNum(g, '⚽ 패스 ' + b.done, { heal: true }); b.from = g; b.to = null; b.wait = 0.4; if (enh6(u)) g.ballBy = u; /* 랭크 6 [볼 키핑] */ return; } // 받고 0.4초 뒤 다음 패스
+  if (b.to) { b.done++; heal(u, g, effAtk(u) * 0.4); /* R2.35: 50 → 40% */ if (!S.fast) dmgNum(g, '⚽ 패스 ' + b.done, { heal: true }); b.from = g; b.to = null; b.wait = 0.4; if (enh6(u)) g.ballBy = u; /* 랭크 6 [볼 키핑] */ return; } // 받고 0.4초 뒤 다음 패스
   const n = Math.max(1, b.done), done = dealDamage(u, g, effAtk(u) * 0.25 * n, {}); if (done > 0 && !S.fast) { hitFx(u, g, n >= 4); dmgNum(g, '⚽ 슛! ×' + n, { crit: true }); } // 패스 횟수 × 공격력 25% (아군이 없어 바로 차면 1번)
   hongEnd(u);
 }
@@ -5181,6 +5182,10 @@ function mafiaCall(u) {
   drawUnit(u);
 }
 // 블랙홀 지후 [중력장] (R1 5.5 그대로): 반경 10칸 · 공격력 100% · 자신과의 거리의 10% 만큼 끌어당긴다 (R2.26 · 예전 20% · 순간이동) · 큰 원은 캔버스 (fxRing · 안으로 줄어든다)
+function wolfRoar(u) { // R2.35 늑대 [포효]: 반경 2칸 적 모두 2.5칸 넉백 · 5초 공격력 −15%
+  const R = 2 * CFG.CELL; foes(u).forEach(e => { if (dist(u, e) > R + unitRadius(e)) return; A.knock(u, e, 2.5); A.buff(e, 'wroar', { atk: -0.15 }, 5); });
+  if (!S.fast) { dmgNum(u, '🐺 포효!', { crit: true, stamp: true }); fxRing(u.x, u.y, R, 'rgba(93,109,126,.9)', 450, 6); }
+}
 function bhField(u) {
   const R = 10 * CFG.CELL, atk = effAtk(u); let n = 0;
   if (!S.fast) { fxRing(u.x, u.y, R, 'rgba(150,100,255,.8)', 900, Math.round(CFG.CELL * 0.6), true); const c = fxAt('fx-bh', u.x, u.y, 900); c.style.width = c.style.height = Math.round(CFG.CELL * 2.6) + 'px'; dmgNum(u, '🕳 중력장', { crit: true }); }
@@ -5210,7 +5215,7 @@ function cowGold(u, g) { if (!S.fast) { const el = fxAt('fx-cowgold', u.x, u.y -
 // 불사조 지후: 쓰러지는 순간 체력 1로 버티며 [불사조 쉴드] (350 × 레벨 배율 · 3.7초 · 다른 쉴드보다 먼저 막는다) → 3초 동안 안 깨지면 각성 불사조로 부활 (이번 라운드만 · 배치 기록은 그대로) · 깨지면 쓰러진다 (dealDamage)
 function phxHead(u) { const p = u.phx, txt = p ? '🔥' + Math.max(0, Math.ceil(p.v)) + ' · ' + Math.max(0, Math.ceil(p.left)) : ''; if (!u.el || u.phxTxt === txt) return; u.phxTxt = txt; let b = u.phxEl; if (!txt) { if (b) b.remove(); u.phxEl = null; return; } if (!b || !b.isConnected) { b = u.phxEl = document.createElement('span'); b.className = 'xlv phx'; u.el.appendChild(b); } b.textContent = txt; }
 function phxLethal(u) {
-  if (u.phxUsed) return false; u.phxUsed = true; u.phx = { v: 350, left: 3, life: 3.7 }; /* R2.32: 레벨과 상관없이 350 */
+  if (u.phxUsed) return false; u.phxUsed = true; u.phx = { v: 400, left: 3, life: 3.7 }; /* R2.32: 레벨과 상관없이 350 · R2.35: 400 */
   if (u.el) u.el.classList.add('phx-egg'); phxHead(u); if (!S.fast) { dmgNum(u, '🔥 불사조 쉴드', { crit: true, stamp: true }); fxRing(u.x, u.y, 1.4 * CFG.CELL, 'rgba(255,140,30,.9)', 450, 6, true); }
   return true;
 }
@@ -5394,13 +5399,13 @@ function stopGo(u) { // 멈춰! 지후: 반경 2.8칸 · 공격력 150% · 2칸 
   A.around(u, u.x, u.y, 2.8, e => { if (!e.alive) return; A.dmg(u, e, 150); if (!e.alive) return; A.status(e, 'stun', 1.5); A.knock(u, e, 2); }); /* R2.31: 공격력 150% 피해 · 기절 3 → 1.5초 */
 }
 function metalTick(u, dt) { u.mtA = (u.mtA || 0) + dt; while (u.mtA >= 1 && u.alive) { u.mtA -= 1; u.hp -= Math.max(1, Math.round(u.maxHp * 0.02)); if (u.hp <= 0) { u.hp = 1; instaKill(null, u, '🫠 녹슬었다'); } else drawUnit(u); } } // 메탈 지후: 1초마다 최대 체력의 2% (녹슬기)
-function burnerTick(u, dt) { // 부루스타 지후: 15초 동안 공격력이 0까지 (atkMult) → 꺼짐 10초 → 다시 처음부터
+function burnerTick(u, dt) { // 부루스타 지후: 15초 동안 공격력이 0까지 (atkMult) → 꺼짐 7초 → 다시 처음부터
   const b = u.br;
   if (b.off > 0) { b.off -= dt; if (b.off <= 0) { b.off = 0; b.t = 0; A.portrait(u, u.def.portraitOn); if (!S.fast) dmgNum(u, '🔥 점화!', { crit: true }); } return; }
   b.t += dt; if (b.t >= 15) burnerOut(u);
 }
 function burnerOut(u) { // 공격력이 0: 반경 3.2칸 아군 (자신 제외) [화상] 6초 (부루스타 공격력의 20% · 초당) + [점화]
-  const b = u.br, R = 3.2 * CFG.CELL, dps = Math.max(1, u.atk * 0.2); b.off = 10; A.portrait(u, u.def.portrait); u.tgt = null; clearTelegraph(u);
+  const b = u.br, R = 3.2 * CFG.CELL, dps = Math.max(1, u.atk * 0.2); b.off = 7; /* R2.35: 10 → 7초 */ A.portrait(u, u.def.portrait); u.tgt = null; clearTelegraph(u);
   friends(u).forEach(a => { if (a === u || dist(u, a) > R + unitRadius(a)) return; A.status(a, 'burn', 6.05, { dps, stack: true, src: u }); A.status(a, 'ignite', 300); a.ignHad = false; });
   if (!S.fast) { dmgNum(u, '💨 꺼짐…', { crit: true, stamp: true }); fxRing(u.x, u.y, R, 'rgba(47,123,255,.9)', 550, 7); }
 }
@@ -5538,7 +5543,7 @@ const CHAR_INFO = {
   bow: [['화살 속도', '초당 7칸'], ['[황금 화살] 확률', '8%'], ['[황금 화살]', '2발 · 공격력의 130% · 관통']],
   dust: [['확률', '7.5%'], ['황사 지대', '반지름 3.5칸 · 4초'], ['회피율', '+35% (지대 안 아군)']],
   cactus: [['반사', '근접 피해의 35% · 65%만 받음'], ['가시', '4방향 · 4칸까지 관통 · 공격력의 50%']],
-  jaws: [['[잠수]', '노릴 수 없고 피해를 받지 않음 · 최대 8초'], ['잠수 속도', '4.5칸'], ['떠오를 때', '반경 2칸 · 공격력의 50%'], ['회복', '공격마다 공격력의 50%']],
+  jaws: [['[잠수]', '노릴 수 없고 피해를 받지 않음 · 최대 8초'], ['잠수 속도', '4.5칸'], ['떠오를 때', '반경 2칸 · 공격력의 50%'], ['회복', '공격마다 공격력의 30%']],
   blizzard: [['SP', '9'], ['[눈보라] 피해', '모든 적 · 현재 체력의 6%'], ['[빙결]', '모든 적 · 2초'], ['[동상]', '1.8초 · 공격력 -10% · 받는 피해 +10% · 이동속도 -40%']],
   bat: [['일반 공격', '앞쪽 120° 부채꼴 · 닿은 적 모두 (근접 예외)'], ['넉백', '5칸'], ['[홈런] 피해', '공격력의 450%'], ['[홈런] 넉백', '15칸']],
   train: [['출격제한', '1 · 넘게 놓으면 패시브 · 스킬 없음'], ['신호기', '4개 (상대 쪽 2 · 내 쪽 2) · 무작위 위치'], ['돌진 속도', '초당 16칸'], ['충돌 피해', '공격력의 100%'], ['돌진 중', '받는 피해 -35% · 유닛 통과'], ['다음 돌진', '4.5초 (부딪힌 적 1기당 -0.5초 · 최소 0.1초)'], ['일반 공격', '멈춰 있는 동안만 · 공격력의 10% · 1.4초 · 사거리 3.9']],
@@ -5592,7 +5597,7 @@ const CHAR_INFO = {
   roulette: [['받는 피해', '늘 −85%'], ['실린더', '6칸 · 실탄 1 (무작위 자리) · 공포탄 5'], ['순서', '자신 2.7초 조준 → 방아쇠 → 가장 가까운 적 2.7초 조준 → 방아쇠 → 반복'], ['실탄', '맞은 쪽 즉사 (어떤 효과로도 막을 수 없음)'], ['장전', '실린더를 다시 돌리지 않고 이어서 쏜다 · 6발을 다 쓰면 자동 재장전'], ['조준 취소', '조준 중 대상이 쓰러지면 쏘지 않고 다시 자신 차례'], ['조준된 적', '움직일 수 없음 (공격은 가능)']],
   tyrant: [['[폭정]', '체력 40% 미만 · 라운드마다 1번 · 반경 4칸 아군 · 적 모두 현재 체력 50%'], ['[공포 정치]', 'SP 3 · 반경 4칸 아군 · 적 모두 공격력 −20% · 3.5초'], ['출격제한', '1 · 넘게 놓으면 패시브 · 스킬 없음']],
   bbgun: [['튕김', '최대 2번 · 5칸 안 · 맞은 적에게서 가장 가까운 다른 적 (이미 맞은 적 제외)'], ['튕긴 탄 피해', '튕길 때마다 ×0.78 (100% → 78% → 61%)'], ['SP', '처음 맞은 적 하나로']],
-  hong: [['패스', '무작위 3 ~ 6번 · 자신을 뺀 아군 (방금 공을 준 아군에게 다시 갈 수 있다)'], ['공을 받으면', '체력 회복 공격력의 50% (Lv1 135) · 0.4초 뒤 다음 패스'], ['슛', '공을 가진 아군에게서 가장 가까운 적 · 패스 횟수 × 공격력 25% (Lv1 × 67.5)'], ['아군이 없으면', '바로 가장 가까운 적에게 슛 (1번으로 계산)'], ['공', '홍명보가 쓰러지면 사라진다 · 공이 도는 동안은 다음 패스를 하지 않는다']],
+  hong: [['패스', '무작위 3 ~ 6번 · 자신을 뺀 아군 (방금 공을 준 아군에게 다시 갈 수 있다)'], ['공을 받으면', '체력 회복 공격력의 40% (Lv1 108) · 0.4초 뒤 다음 패스'], ['슛', '공을 가진 아군에게서 가장 가까운 적 · 패스 횟수 × 공격력 25% (Lv1 × 67.5)'], ['아군이 없으면', '바로 가장 가까운 적에게 슛 (1번으로 계산)'], ['공', '홍명보가 쓰러지면 사라진다 · 공이 도는 동안은 다음 패스를 하지 않는다']],
   emp: [['일반 공격', '반경 6.5칸 파동 · 안의 적 모두 공격력 35%'], ['패시브', '반경 4.2칸 · 0.5초마다 안의 적 SP −(최대 SP 의 2.5%)'], ['[EMP 자기장]', 'SP 8 · 그 자리 · 반경 7.2칸 · 4초'], ['자기장 안', '1초마다 공격력 50% (4번) · 이동속도 −35% · 들어올 때마다 [침묵] 2초 · 들어올 때마다 SP −1'], ['빠져나가면', '몸이 완전히 빠져나가면 이동속도 감소가 바로 풀린다'], ['자기장', 'EMP가 쓰러지면 사라진다']],
   dragon: [['일반 공격', '사거리 6 · 불덩이 · 대상 주변 반경 1.9칸 · 닿은 적 모두 공격력 100% · SP 는 공격마다 1'], ['[드래곤 브레스]', 'SP 11 · 다음 일반 공격 한 번 · 공격력 150% · 범위 3.2칸 · 맞은 적 [화상] 3초 (1초마다 공격력 150% · 3번 · 다시 맞으면 새로)'], ['[비행]', '일반 공격 때 5% · 1초 동안 그 자리에서 날아오른다 (공격 안 함 · 기절하면 취소) · 그때 대상 쪽으로 초당 9.5칸 · 13칸 · 모든 유닛을 뚫고 지나간다 (맵 끝이면 멈춘다)'], ['불길', '지나간 길 · 폭 1.2칸 · 내려앉은 뒤 3초 · 1초마다 안의 적 공격력 50% · 드래곤이 쓰러지면 사라진다'], ['착지', '날아갔다 내려앉으면 주위 3칸 적 [화상] 3초 (1초마다 공격력 120% · 3번) · 자신 3초 동안 받는 피해 −20% (승천 중 기절로 취소되면 없음)']],
   frog: [['레벨업', '겹치기 · 합체로 레벨이 오르는 순간 25% 왕자 지후 (같은 레벨 · 같은 칸) · 75% 이번 경기에서 사라진다 (배치 칸이 빈다 · 덱의 카드로 다시 놓을 수는 있다) · 결과는 개구리 위에 작게'], ['다른 방법', '이벤트 · 괴도 등으로 레벨이 오르면 그냥 레벨만 오른다 (변신 · 소멸 없음)'], ['왕자 지후', 'HP 2,380 · ATK 200 · 1.2초 · 근접 · 앞쪽 120° 범위 공격'], ['[왕의 자질]', '맞은 뒤 체력이 15% 미만이면 즉사 (어떤 생존기로도 못 막는다)'], ['[왕의 권력]', '일반 공격이 맞을 때마다 공격력 +5% (선형 · 한 번 휘두를 때 한 번 · 라운드가 끝나면 초기화)'], ['[왕의 유산]', '쓰러지면 모든 아군 공격력 · 공격속도 +5% (이번 라운드 · 왕자 여럿이면 겹친다)']],
@@ -5611,9 +5616,9 @@ const CHAR_INFO = {
   spy: [['SP', '일반 공격 · 피격 · 충전 등으로 차지 않는다'], ['치명타', '일반 공격의 17% · 공격력 250% · 대상을 날려 보낸다 · SP 가득 → 바로 [변장] · 지금 자기 모습과 같은 지후를 칠 때는 발동하지 않는다'], ['날려 보냄', '3초 동안 전장에서 사라진다 (피해 · 상태이상 · 행동 없음) · 3초 뒤 그 자리로 돌아온다 · 무적 · 잠수 · 면역은 날아가지 않는다'], ['[변장]', 'SP 1 · 방금 날려 보낸 지후 (같은 레벨) 로 변신 · 체력 비율 그대로 · 이번 라운드 동안 · 변신한 뒤에도 17% 치명타 · 날려 보내기 · 치명타마다 또 [변장] (변신한 지후의 스킬도 그대로 · 이중 스킬)'], ['표시', '[변장]하면 유닛 테두리가 보라색 (스파이 지후 색) · 아군 · 적은 체력바 색으로']],
   cowboy: [['반격', '공격을 받으면 (지속 피해 제외 · 3.6초마다 한 번) 그 공격을 피한다 · 공격한 적 반대쪽으로 3칸'], ['리볼버', '0.25초 간격 4발 · 한 발에 공격력 100% · 공격한 적 (노릴 수 없으면 가장 가까운 적)'], ['골드', '탄환마다 8% · 40 ~ 199 골드 · 내 카우보이만 · 일반전 · 아케이드 (친선전 · 샌드박스 · 튜토리얼 · 리플레이 제외)'], ['제작', '커뮤니티 지후 · Kaden']],
   // ── R2.24 신규 ──
-  phoenix: [['버티기', '쓰러지는 순간 (라운드마다 한 번) · 체력 1'], ['[불사조 쉴드]', '350 (레벨과 상관없이) · 3.7초 · 수은 보호막 다음 · 일반 쉴드보다 먼저 막는다 · 깨지면 쓰러진다 · 머리 위에 남은 쉴드 · 초'], ['부활', '3초 동안 쉴드가 깨지지 않으면 각성 불사조 지후로 (체력 가득 · 이번 라운드 동안 · 다음 라운드엔 다시 불사조) · 반경 3칸 적에게 각성 불사조 공격력의 2000% 피해 · 넉백'], ['각성 불사조 지후', 'HP 1,250 · ATK 140 · 1.2초 · 사거리 6 · 일반 공격 반경 2.1칸 광역 · 불사조 패시브 없음'], ['[업화]', '일반 공격의 4% · 피해 −50% · 범위 6배 (반경 12.6칸) · 맞은 적 [화상] 4초 (1초마다 공격력 30% · 중첩)'], ['[비행]', '일반 공격의 6% · 적진 끝까지 초당 10칸 → 우리 진영 맨 뒤에서 다시 나와 제자리에 착지 · 지나간 길 (폭 몸 지름 2배) 의 적: 공격력 150% · [화상] 4초 (1초마다 20%) · 날아가는 동안 공격하지 않는다']],
+  phoenix: [['버티기', '쓰러지는 순간 (라운드마다 한 번) · 체력 1'], ['[불사조 쉴드]', '400 (레벨과 상관없이) · 3.7초 · 수은 보호막 다음 · 일반 쉴드보다 먼저 막는다 · 깨지면 쓰러진다 · 머리 위에 남은 쉴드 · 초'], ['부활', '3초 동안 쉴드가 깨지지 않으면 각성 불사조 지후로 (체력 가득 · 이번 라운드 동안 · 다음 라운드엔 다시 불사조) · 반경 3칸 적에게 각성 불사조 공격력의 2000% 피해 · 넉백'], ['각성 불사조 지후', 'HP 1,250 · ATK 140 · 1.2초 · 사거리 6 · 일반 공격 반경 2.1칸 광역 · 불사조 패시브 없음'], ['[업화]', '일반 공격의 4% · 피해 −50% · 범위 6배 (반경 12.6칸) · 맞은 적 [화상] 4초 (1초마다 공격력 30% · 중첩)'], ['[비행]', '일반 공격의 6% · 적진 끝까지 초당 10칸 → 우리 진영 맨 뒤에서 다시 나와 제자리에 착지 · 지나간 길 (폭 몸 지름 2배) 의 적: 공격력 150% · [화상] 4초 (1초마다 20%) · 날아가는 동안 공격하지 않는다']],
   mushroom: [['[버섯 먹기]', 'SP 3 · 73% 일반 버섯 / 27% 독버섯'], ['일반 버섯', '최대 체력 +25% (처음 최대 체력 기준 · 선형) · 체력 모두 회복 · 공격력 +12.5% (선형) · 이번 라운드 동안'], ['독버섯', '1초마다 최대 체력 15% 피해 · 4번 · 체력 · 공격력은 오르지 않는다 · 그동안 [침묵] (4초)']],
-  wolf: [['순간이동', '0.5초 동안 공격할 적이 없을 때마다 · 무작위 적의 등 뒤 (±60°) · 기절 · 빙결 · 잠금 중에는 안 한다'], ['게이지', '순간이동까지 0.5초 (공격할 적이 없을 때 차오른다)'], ['처음 순간이동부터', '사거리 3.5 → 2.2칸 · 치명타 확률 100%'], ['흡혈', '체력에 입힌 피해의 20% (쉴드에 막힌 피해 · 넘친 피해는 세지 않는다)'], ['치명타 피해', '순간이동마다 +50% (기본 200% → 250% → 300% …)'], ['유지', '경기 내내 (배치 칸에 남는다 · 합체하면 많은 쪽)']],
+  wolf: [['[포효]', 'SP 6 (맞힐 때마다 +1) · 반경 2칸 적 모두 2.5칸 넉백 · 5초 공격력 −15%'], ['순간이동', '0.5초 동안 공격할 적이 없을 때마다 · 무작위 적의 등 뒤 (±60°) · 기절 · 빙결 · 잠금 중에는 안 한다'], ['게이지', '순간이동까지 0.5초 (공격할 적이 없을 때 차오른다)'], ['처음 순간이동부터', '사거리 3.5 → 2.2칸 · 치명타 확률 100%'], ['흡혈', '체력에 입힌 피해의 20% (쉴드에 막힌 피해 · 넘친 피해는 세지 않는다)'], ['치명타 피해', '순간이동마다 +50% (기본 200% → 250% → 300% …)'], ['유지', '경기 내내 (배치 칸에 남는다 · 합체하면 많은 쪽)']],
   weather: [['출격제한', '1 · 넘게 놓으면 패시브 · 스킬 없음'], ['날씨', '라운드 시작 때 무작위 · [스킬] SP 8 → 지금과 다른 날씨 (다음 스킬까지) · 기상캐스터가 쓰러지면 끝'], ['폭염', '3초마다 모든 적 공격력 300% (치명타 없음) · 적 이동속도 −25% · 공격속도 −10% · 적 일반 공격의 20% 는 사거리 안 자기 아군을 노린다 (매혹처럼)'], ['태풍', '0.5초마다 맵 둘레의 무작위 자리에서 맵 안의 무작위 자리 쪽으로 물체가 날아간다 (적을 노리지 않는다 · 무작위 적 쪽으로 아주 약하게 휜다 · 초당 0.2 라디안) · 관통 · 지나간 길의 적 공격력 400% (한 번씩)'], ['낙뢰', '2초마다 무작위 적 공격력 750% · [기절] 0.4초'], ['제작', '커뮤니티 지후 · Kaden']],
   // ── R2.25 신규 ──
   cake: [['[중독됨]', '공격한 적 · 이번 라운드 내내 · 그 케이크 지후가 아닌 지후 (조각 케이크 포함) 를 공격하면 피해 −15%'], ['조각 케이크', '체력 25% 아래가 되는 순간 (라운드마다 한 번) · 우리 진영 맨 뒤 줄에 8기'], ['조각 케이크 지후', 'HP 80 · ATK 10 · 1초 · 근접 · 이동 3.8 · 케이크 레벨만큼 강해진다 · 다친 가장 가까운 아군에게 뛰어들어 자기 현재 체력만큼 회복시키고 사라진다 (다친 아군이 없으면 적을 공격) · 라운드가 끝나면 사라진다'], ['제작', '커뮤니티 지후 · Kaden']],
@@ -5625,7 +5630,7 @@ const CHAR_INFO = {
   phase: [['[페이즈]', '체력 50% 이하가 되는 순간 (라운드마다 한 번) · 하트로 변신 · 1.6초 동안 뒤로 물러난다 (그동안 공격하지 않는다)'], ['페이즈 뒤', '사거리 근접 → 6.3칸 (하트 투사체) · 공격력 −30% · 이번 라운드 동안']],
   stopj: [['[멈춰!]', 'SP 4 · 자신 주위 반경 2.8칸 적 모두 · 공격력 150% (스킬 피해) · 2칸 넉백 · 1.5초 [기절]']],
   metal: [['받는 피해', '늘 2 (치명타 4) · 지속 피해도 · 쉴드 · 받는 피해 증가 · 감소와 상관없이'], ['녹슬기', '1초마다 최대 체력의 2% · 회복 불가 · 즉사는 그대로 받는다']],
-  burner: [['공격력', '라운드 시작부터 15초에 걸쳐 0까지 · (1 − 지난 시간 / 15)² 배 · 처음엔 빠르게 · 갈수록 완만하게'], ['꺼질 때', '반경 3.2칸 아군 (자신 제외) · [화상] 6초 · 1초마다 부루스타 공격력의 20% · [점화]'], ['꺼진 동안', '10초 · 움직이지도 공격하지도 않는다 → 공격력이 처음으로 돌아온다 (다시 15초)'], ['[점화]', '불타는 동안 ([화상] · [3도 화상]) 일반 공격이 대상에게 [3도 화상] · 불이 꺼지면 [점화]도 사라진다 · 화상 없이 [점화]만 있으면 다음 화상부터'], ['[3도 화상]', '라운드 끝까지 · 1초마다 [점화]된 지후 공격력의 10% · 중첩 없음 (센 쪽) · 공격력 −10% · 받는 피해 + (잃은 체력 비율 × 20%) · 해제하면 보통 [화상]']],
+  burner: [['일반 공격', '대상 주변 반경 1.9칸 광역'], ['공격력', '라운드 시작부터 15초에 걸쳐 0까지 · 일정하게 줄어든다 (1 − 지난 시간 / 15 배)'], ['꺼질 때', '반경 3.2칸 아군 (자신 제외) · [화상] 6초 · 1초마다 부루스타 공격력의 20% · [점화]'], ['꺼진 동안', '7초 · 움직이지도 공격하지도 않는다 → 공격력이 처음으로 돌아온다 (다시 15초)'], ['[점화]', '불타는 동안 ([화상] · [3도 화상]) 일반 공격이 대상에게 [3도 화상] · 불이 꺼지면 [점화]도 사라진다 · 화상 없이 [점화]만 있으면 다음 화상부터'], ['[3도 화상]', '라운드 끝까지 · 1초마다 [점화]된 지후 공격력의 10% · 중첩 없음 (센 쪽) · 공격력 −10% · 받는 피해 + (잃은 체력 비율 × 20%) · 해제하면 보통 [화상]']],
   rot: [['대상', '[부패]되지 않은 가장 가까운 적 먼저 (모두 부패했으면 보통 대상)'], ['[부패]', '일반 공격 · 라운드 끝까지 · 받는 피해 +10% · 2초마다 +1%p (최대 50%)'], ['[부식]', 'SP 5 · 자신 주위 반경 3칸 적 모두 · 5초 · 처음 받는 공격 피해 +100 (레벨마다 늘어난다) · 맞으면 사라진다']],
   sans: [['[와! 샌즈]', '라운드 시작 3초 뒤 · 그 뒤 15초마다 (쿨타임) · 0.5초 간격으로 4번'], ['한 번에', '모든 적 · 상 · 하 · 좌 · 우 중 무작위 한 방향의 벽까지 밀쳐낸다 · 공격력의 50% (스킬 피해)'], ['일반 공격', '하지 않는다 · 가장 가까운 적과 사거리 (6칸) 만큼 떨어져 따라간다']],
   stainless: [['[액티브 스킬]', '적의 스킬 피해 · 넉백 · 즉사 · 아공간을 받지 않는다'], ['디버프', '모두 면역 · 반대로: [동상] 공격력 +10% · 이동 +40% · 받는 피해 −10% / [취약] 받는 피해 감소 / [졸음] 공격력 +30% / [약화] 공격력 +15% · 이동 +20% · 받는 피해 −20% / [3도 화상] 공격력 +10% · 받는 피해 −20% / [부패] · [부식] 받는 피해 감소 / 공격력 · 공격속도 · 이동속도 감소는 증가로'], ['[흡수]', 'SP 7 · 2초 · 그 자리에 멈춘다 · 모든 피해 0 · 흡수한 피해 (줄기 전) 의 15% 회복']],
@@ -7964,7 +7969,7 @@ function showRangeRing(u) {
 }
 function hideRangeRing() { if (rangeRing) rangeRing.el.remove(); rangeRing = null; const b = $('uInfo'); if (b) b.hidden = true; }
 // ── 전투 중 지후 정보 (R2.10.2 build 5): 누른 지후의 체력 · 공격력 · 공격 간격 · 이동속도 · SP · 효과 (바뀐 만큼은 연두 · 줄면 빨강) ──
-const BUFF_SRC = { ldance: '라스트댄스', tg: '태극', rv: '반전', heat: '폭염', tyrant: '폭군', lonely: '고독', emp: 'EMP 자기장', clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', maf: '마피아', lan: '랜턴', jaws: '죠스', ev: '이벤트', moon: '달', accel: '가속', gpu: 'GPU 칩', royal: '왕의 유산', dj: 'DJ 파동' };
+const BUFF_SRC = { wroar: '늑대 포효', ldance: '라스트댄스', tg: '태극', rv: '반전', heat: '폭염', tyrant: '폭군', lonely: '고독', emp: 'EMP 자기장', clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', maf: '마피아', lan: '랜턴', jaws: '죠스', ev: '이벤트', moon: '달', accel: '가속', gpu: 'GPU 칩', royal: '왕의 유산', dj: 'DJ 파동' };
 function buffSrcName(k) { const m = k.match(/^[a-z]+/); return (m && BUFF_SRC[m[0]]) || '효과'; }
 function uInfoHtml(u) {
   const c = u.def, pct = x => `${x > 0 ? '+' : ''}${Math.round(x * 100)}%`, f1 = x => (Math.round(x * 100) / 100).toString();
@@ -11343,6 +11348,24 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // tag: new 신규 · buff 상향 · nerf 하향 · adjust 조정 · fix 수정 · system 시스템
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
+  { v: 'R2.35', date: '2026.11.11', title: '밸런스 패치', sections: [
+    { title: '밸런스', items: [
+      { id: 'burner', name: '부루스타 지후', tag: 'buff', desc: '공격력 <b>200 → 225</b>' },
+      { id: 'burner', name: '부루스타 지후', tag: 'buff', desc: '공격력이 <b>일정하게</b> 줄어요' },
+      { id: 'burner', name: '부루스타 지후', tag: 'buff', desc: '일반 공격 <b>반경 1.9칸 광역</b>' },
+      { id: 'burner', name: '부루스타 지후', tag: 'buff', desc: '꺼짐 <b>10 → 7초</b>' },
+      { id: 'dimension', name: '차원 지후', tag: 'buff', desc: '공격력 <b>110 → 140</b>' },
+      { id: 'wolf', name: '늑대 지후', tag: 'buff', desc: '새 스킬 <b>[포효]</b> (SP 6)' },
+      { id: 'wolf', name: '늑대 지후', tag: 'buff', desc: '[포효] 반경 2칸 적 <b>2.5칸</b> 넉백' },
+      { id: 'wolf', name: '늑대 지후', tag: 'buff', desc: '[포효] 5초 적 공격력 <b>−15%</b>' },
+      { id: 'phoenix', name: '불사조 지후', tag: 'buff', desc: '[불사조 쉴드] <b>350 → 400</b>' },
+      { id: 'blackhole', name: '블랙홀 지후', tag: 'nerf', desc: '공격력 <b>120 → 100</b>' },
+      { id: 'hong', name: '홍명보 지후', tag: 'nerf', desc: '패스 회복 <b>50 → 40%</b>' },
+      { id: 'laser', name: '빔 지후', tag: 'nerf', desc: '공격력 <b>35 → 25</b>' },
+      { id: 'laser', name: '빔 지후', tag: 'nerf', desc: '사거리 <b>5.7 → 5.3</b>' },
+      { id: 'jaws', name: '죠스 지후', tag: 'nerf', desc: '공격 회복 <b>50 → 30%</b>' },
+    ] },
+  ] },
   { v: 'R2.34', date: '2026.11.11', title: '디펜스 모드 · 출격제한 개편', sections: [
     { title: '추가 패치 (build 11)', items: [
       { icon: '📱', name: '화면 깜빡임', tag: 'fix', desc: '폰에서 다른 탭에 다녀오면 화면이 <b>빠르게 깜빡이던</b> 문제 (R1 부터 있던 버그)' },
