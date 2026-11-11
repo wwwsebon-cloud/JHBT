@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.34"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1386,6 +1386,7 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 .dfp-c { display:flex; flex-direction:column; align-items:center; gap:7px; padding:14px 6px 12px; border-radius:16px; background:#fff; color:#171717; border:3px solid #0e1226; box-shadow:0 4px 0 #0e1226; cursor:pointer; font:inherit; animation:dfpIn .35s cubic-bezier(.3,1.6,.5,1) both; } .dfp-c:active { transform:translateY(3px); box-shadow:0 1px 0 #0e1226; }
 .dfp-c i { font-style:normal; font-size:34px; line-height:1; } .dfp-c b { font:400 15.5px/1.15 'Black Han Sans',var(--font); word-break:keep-all; } .dfp-c small { flex:1; font-size:11.5px; line-height:1.35; color:#555; font-weight:700; word-break:keep-all; } .dfp-c em { font-style:normal; font-size:10px; font-weight:900; padding:2px 7px; border-radius:999px; background:#ffd76a; color:#3b2600; } .dfp-c em.i { background:#7cc8ff; color:#08304f; }
 @keyframes dfpIn { from { opacity:0; transform:translateY(16px) scale(.92); } }
+#oddsLabA.over { color:#e5322d !important; font-weight:900; } /* build 6: 아군 20 초과 */
 .df-warn { position:absolute; inset:0; z-index:20; pointer-events:none; background:rgba(255,30,40,.26); box-shadow:inset 0 0 0 6px rgba(255,40,40,.9); opacity:0; animation:dfWarn .25s ease-in-out 4 alternate; } @keyframes dfWarn { to { opacity:1; } } /* build 5 충격파 경고 */
 .dfp-own { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin-top:4px; font-size:11px; } .dfp-own span { padding:2px 7px; border-radius:999px; background:#2f3860; color:#e6e9f5; font-weight:700; }
 #mmOv.found .sweep { animation:none; opacity:0; } #mmOv.found .cpm-face { animation:none; box-shadow:0 0 0 4px #4f9dff, 0 8px 22px rgba(79,157,255,.45); }
@@ -7259,12 +7260,12 @@ const CW = { WAVE: 30, FIRST: 10, /* 웨이브 30초 (R2.33.1 · 예전 20) · �
 const isCw = () => !!(S.arc && (S.arc.kind === 'castle' || S.arc.kind === 'defense')); // R2.34: 디펜스도 같은 틀 (S.cw.df)
 const isDf = () => !!(S.arc && S.arc.kind === 'defense');
 // R2.34 디펜스: 내 슬롯 지후는 WAVE (20초) 마다 · 적 웨이브는 EWAVE (20초 · build 3: 10 → 20 · 다시 1배) 마다 (둘 다 처음은 10초 뒤 · 적을 다 잡으면 다음 적 웨이브 바로) · 적 = 무작위 지후 Lv1 · 수 N0 + (웨이브 − 1) × NADD · 능력치 ×(K0 + (웨이브 − 1) × KADD) · 적이 내 진영 끝에 닿으면 라이프 −1 (10) · 보상 열쇠 = 지난 적 웨이브 수 · 열쇠 상자 BOX 개 · 핵은 고정 NUKE 피해
-const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 30, /* build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QUAKE: 3, QD0: 0.25, QDADD: 0.01, QDMAX: 0.8, QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 피해 · 5초 기절 · build 5: 피해 25% 에서 웨이브마다 +1%p · 최대 80% (예전 50% 고정) */ GOLD_K: 2, KILL_K: 0.5, /* build 5: 웨이브 골드 ×2 · 처치 골드 ×0.5 */ N0: 3, NADD: 0.13, NMAX: 24, K0: 0.7, KADD: 0.022, /* build 5 상향: 0.016 → 0.022 · 적 수는 이제 내 전장 지후 수만큼 (dfSpawn) */ /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE: 500 };
+const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 30, /* build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QCAP: 20, /* build 6: 웨이브가 끝날 때 아군이 이 수를 넘으면 충격파 (예전 3웨이브마다) */ QD0: 0.25, QDADD: 0.01, QDMAX: 0.8, QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 피해 · 5초 기절 · build 5: 피해 25% 에서 웨이브마다 +1%p · 최대 80% (예전 50% 고정) */ GOLD_K: 2, KILL_K: 0.5, /* build 5: 웨이브 골드 ×2 · 처치 골드 ×0.5 */ N0: 3, NADD: 0.13, NMAX: 24, K0: 0.7, KADD: 0.019, /* build 6: 0.022 → 0.019 */ /* build 5 상향: 0.016 → 0.022 · 적 수는 이제 내 전장 지후 수만큼 (dfSpawn) */ /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE: 500 };
 const cwWv = () => (S.cw && S.cw.df ? DF.WAVE : CW.WAVE);
 const pctD = (t, v) => t.def.castle ? v * 0.05 : v; // 체력 비례 피해: 성은 95% 줄여 받는다
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
 function cwCastleXY(side) { const c = tileXY(side, 12), b = backDir(side); return { x: c.x + b.x * 1.8 * CFG.CELL, y: c.y + b.y * 1.8 * CFG.CELL }; } // 후열 가운데 칸 뒤 (1.8칸 · 화면 위아래 HUD 에 가리지 않게)
-function cwUi(on) { const sb = $('screen-battle'); sb.classList.toggle('cw', !!on); sb.classList.toggle('df', !!on && isDf()); viewDirty(); /* R2.34 디펜스: PC 좌우 분할 */ const lab = document.querySelector('#hudMid .rd small'); if (lab) lab.textContent = on ? 'WAVE' : 'ROUND'; }
+function cwUi(on) { if (!on) $('oddsLabA').classList.remove('over'); const sb = $('screen-battle'); sb.classList.toggle('cw', !!on); sb.classList.toggle('df', !!on && isDf()); viewDirty(); /* R2.34 디펜스: PC 좌우 분할 */ const lab = document.querySelector('#hudMid .rd small'); if (lab) lab.textContent = on ? 'WAVE' : 'ROUND'; }
 function cwStart() {
   rng = mulberry32((Math.random() * 4294967296) >>> 0);
   S.phase = 'combat'; S.time = 0; acc = 0; lastTs = 0; S.started = true; S.lastDmgAt = 0; S.stallEnded = false; S.odds = []; S.rk++;
@@ -7305,10 +7306,11 @@ function dfWave() { // R2.34 디펜스 내 출격 (20초마다): 골드 → 내 
 function dfFoeWave() { // 적 웨이브 (EWAVE 20초마다 · 적을 다 잡으면 바로): 웨이브 +1 → (EV_EVERY 10웨이브마다 정비 시간) → 적 지후
   const c = S.cw; c.wave++; c.wt = 0; c.et = 0; if (c.wave % DF.EV_EVERY === 0) { dfPickOpen(); if (c.pick) return; } dfFoeGo();
 }
-function dfFoeGo() { const c = S.cw; dfWaveEv(); dfSpawn(c.wave); if (!S.fast) { banner(`WAVE ${c.wave}`); cwHud(true); } if (c.wave % DF.QUAKE === 0) { if (!S.fast) dfWarn(); A.later(1, () => { if (S.cw === c) dfQuake(); }); } } // build 5: 충격파는 1초 뒤 (그 전에 빨간 경고)
+function dfFoeGo() { const c = S.cw; dfWaveEv(); dfSpawn(c.wave); if (!S.fast) { banner(`WAVE ${c.wave}`); cwHud(true); } if (c.wave > 1 && dfAllies() > DF.QCAP) { if (!S.fast) dfWarn(); A.later(1, () => { if (S.cw === c) dfQuake(); }); } } // build 6: 웨이브가 끝날 때 아군이 QCAP (20) 을 넘으면 · 1초 전 빨간 경고
+const dfAllies = () => sideIx()[S.cw.me].filter(u => !u.def.castle).length; // 전장의 내 지후 수 (소환체 포함)
 function dfWarn() { const w = $('fieldWrap'), el = document.createElement('div'); el.className = 'df-warn'; w.appendChild(el); setTimeout(() => el.remove(), 1000); } // 전장 전체 빨간 경고 (opacity 애니메이션만)
-function dfQuake() { // build 4 충격파: QUAKE (3) 웨이브마다 내 진영 지후 모두 최대 체력 QDMG (50%) 피해 · QSTUN (5초) 기절 (면역 무시 · 피해는 자기 자신이 준 dot = 처치 기록 · 탄핵 횟수에 안 센다)
-  const c = S.cw, k = clamp(DF.QD0 + (c.wave - DF.QUAKE) * DF.QDADD, DF.QD0, DF.QDMAX); /* build 5: 25% → 웨이브마다 +1%p · 최대 80% */
+function dfQuake() { // build 4 충격파 (build 6: 웨이브가 끝날 때 아군 QCAP 초과일 때만): 내 진영 지후 모두 최대 체력 QDMG (50%) 피해 · QSTUN (5초) 기절 (면역 무시 · 피해는 자기 자신이 준 dot = 처치 기록 · 탄핵 횟수에 안 센다)
+  const c = S.cw, k = clamp(DF.QD0 + (c.wave - 1) * DF.QDADD, DF.QD0, DF.QDMAX); /* 웨이브가 갈수록 세진다 */ /* build 5: 25% → 웨이브마다 +1%p · 최대 80% */
   for (const u of S.units.slice()) if (u.alive && u.side === c.me && !u.def.castle) { dealDamage(u, u, u.maxHp * k, { noCrit: true, lite: true, dot: true }); if (u.alive) { u.st.stun = Math.max(u.st.stun || 0, DF.QSTUN); drawUnit(u); } }
   if (!S.fast) shake(true); /* build 5: 글 없이 */
 }
@@ -7407,8 +7409,8 @@ function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · �
   if (c.evs.pork && (c.porkT = (c.porkT || 0) + dt) >= 1) { c.porkT -= 1; for (const u of S.units) if (u.alive && u.side === c.me) dfHeal(u, u.maxHp * 0.02); } // [양념돼지목살]
   for (const u of S.units) if (u.alive && u.dfE) { if (dfAtEnd(u)) dfLeak(u); else ne++; }
   c.ne = ne; if (c.lives <= 0) return cwEnd(OPP(), '라이프 0');
-  if (c.t >= DF.WAVE) { c.t -= DF.WAVE; cwWave(); } // 내 출격
-  if (c.et >= DF.EWAVE || (c.wave > 0 && !ne && c.wt >= 1)) dfFoeWave(); // 적 웨이브 (다 잡으면 바로)
+  if (c.et >= DF.EWAVE || (c.wave > 0 && !ne && c.wt >= 1)) dfFoeWave(); // 적 웨이브 (다 잡으면 바로 · build 6: 내 출격보다 먼저 = 충격파는 새로 나올 지후를 세지 않는다)
+  if (!c.pick && c.t >= DF.WAVE) { c.t -= DF.WAVE; cwWave(); } // 내 출격
   c.botT -= dt; if (c.botT <= 0) { c.botT = 0.7 + Math.random() * 0.9; if (c.auto) cwBot(ME()); } // auto: 시험용 (내 쪽도 봇)
   c.purgeT += dt; if (c.purgeT >= 2) { c.purgeT = 0; cwPurge(); }
 }
@@ -7484,7 +7486,8 @@ function cwHud(force) { // 골드 · 비용 · 웨이브 · 성 체력 (바뀐 �
   set('cwGold', g.toLocaleString()); set('cwCost', '🪙 ' + cost); set('cwWave', c.wave); set('hudRound', c.wave); set('cwInc', c.sd ? '☠ 서든 데스' : '다음 웨이브 🪙 +' + cwIncome(c.wave));
   const bw = (c.sd ? 1 : clamp(c.t / cwWv(), 0, 1)).toFixed(3); if (c._bw !== bw) { c._bw = bw; $('cwBar').style.transform = `scaleX(${bw})`; }
   const full = !S.place[me].some(p => !p), off = c.sd || (g < cost && !(c.df && c.amT > S.time)) || full, btn = $('cwSummon'); if (btn.disabled !== off) btn.disabled = off; set('cwSumTxt', full ? '가득 참' : '소환');
-  if (c.df) { const w = Math.round(Math.max(0, c.lives) / DF.LIVES * 100); set('oddsA', '❤ ' + Math.max(0, c.lives)); set('oddsE', '적 ' + c.ne); set('cwInc', `🔑 ${Math.max(0, c.wave - 1)} · 다음 출격 🪙 +${cwIncome(c.mw) * DF.GOLD_K}`); if (c._w !== w) { c._w = w; $('oddsBar').style.width = w + '%'; } return; } /* R2.34 디펜스: 라이프 · 남은 적 */
+  if (c.df) { if (!S._oddsC || S.time - S._oddsC.t >= 0.2 || S.time < S._oddsC.t) S._oddsC = { t: S.time, p: allyOdds() }; const w = ME() === 'a' ? S._oddsC.p : 100 - S._oddsC.p, na = dfAllies(); /* build 6: 위 게이지 = 승률 · 라이프 · 아군 수 */
+    set('oddsA', w + '%'); set('oddsE', (100 - w) + '%'); set('oddsLabA', `❤ ${Math.max(0, c.lives)} · 👥 ${na}/${DF.QCAP}`); set('oddsLabE', '적 ' + c.ne); const ov = na > DF.QCAP, la = $('oddsLabA'); if (la.classList.contains('over') !== ov) la.classList.toggle('over', ov); set('cwInc', `🔑 ${Math.max(0, c.wave - 1)} · 다음 출격 🪙 +${cwIncome(c.mw) * DF.GOLD_K}`); if (c._w !== w) { c._w = w; $('oddsBar').style.width = w + '%'; } return; } /* R2.34 디펜스: 라이프 · 남은 적 */
   const ha = Math.max(0, Math.ceil(c.castle[me].hp)), he = Math.max(0, Math.ceil(c.castle[op].hp)), w = Math.round(ha / Math.max(1, ha + he) * 100);
   set('oddsA', ha.toLocaleString()); set('oddsE', he.toLocaleString()); if (c._w !== w) { c._w = w; $('oddsBar').style.width = w + '%'; }
 }
@@ -11322,6 +11325,11 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.34', date: '2026.11.11', title: '디펜스 모드 · 출격제한 개편', sections: [
+    { title: '추가 패치 (build 6)', items: [
+      { icon: '📊', name: '위 게이지', tag: 'system', desc: '<b>승률</b> · 라이프 · <b>아군 수 (n/20)</b>' },
+      { icon: '💥', name: '충격파', tag: 'rework', desc: '웨이브가 끝날 때 아군이 <b>20기</b>를 넘으면 (매 웨이브)' },
+      { icon: '👾', name: '적 배율', tag: 'buff', desc: '웨이브마다 오르는 배율 <b>소폭 하향</b>' },
+    ] },
     { title: '추가 패치 (build 5)', items: [
       { icon: '🪙', name: '웨이브 골드', tag: 'buff', desc: '웨이브마다 받는 골드 <b>2배</b>' },
       { icon: '🗡', name: '처치 골드', tag: 'nerf', desc: '적 처치 골드 <b>절반</b>' },
@@ -13519,7 +13527,7 @@ function u2Extra(v) {
     modeClose: () => u2Set({ mode: null }), modeGo: () => { const k = s.mode; u2Set({ mode: null }); if (k === 'defense') return dfGo(); /* R2.34 */ renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${k}"]`); if (!el) return; ARC_SURE = true; try { el.click(); } finally { ARC_SURE = false; } },
     isMEvent: mk === 'event', isMRandom: mk === 'random' || mk === 'mirror', isMCastle: mk === 'castle', /* R2.33 */ isMDef: mk === 'defense', /* R2.34 */ dfKeys: fmt(profile.keys | 0), dfBoxCost: DF.BOX, dfBoxCls: (profile.keys | 0) >= DF.BOX ? 'k-gold' : 'k-off', dfOpenBox: () => keyBox(),
     dfChips: [[`라이프 ${DF.LIVES}`, '#ff4f5e', '#fff'], [`적 ${DF.EWAVE}초마다`, '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['입장 무료', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
-    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `${DF.WAVE}초마다 슬롯의 지후가 전장에 나가고, 적 지후도 ${DF.EWAVE}초마다 몰려와요 (내 전장 지후 수만큼 · 1랭크 · 처음엔 능력치 ×${DF.K0} · 웨이브마다 더 강해져요)`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 ${DF.QUAKE}웨이브마다 충격파 — 1초 전 빨간 경고 · 내 지후 모두 최대 체력 ${Math.round(DF.QD0 * 100)}% (점점 늘어 최대 ${Math.round(DF.QDMAX * 100)}%) 피해 · ${DF.QSTUN}초 기절`, `지난 웨이브마다 🔑 1 · 🔑 ${DF.BOX} 로 열쇠 상자`].map(t => ({ t })),
+    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `${DF.WAVE}초마다 슬롯의 지후가 전장에 나가고, 적 지후도 ${DF.EWAVE}초마다 몰려와요 (내 전장 지후 수만큼 · 1랭크 · 처음엔 능력치 ×${DF.K0} · 웨이브마다 더 강해져요)`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 웨이브가 끝날 때 전장의 내 지후가 ${DF.QCAP}기를 넘으면 충격파 — 1초 전 빨간 경고 · 내 지후 모두 최대 체력 ${Math.round(DF.QD0 * 100)}% (점점 늘어 최대 ${Math.round(DF.QDMAX * 100)}%) 피해 · ${DF.QSTUN}초 기절`, `지난 웨이브마다 🔑 1 · 🔑 ${DF.BOX} 로 열쇠 상자`].map(t => ({ t })),
     cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['20초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
     cwRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 처음 10 · 소환마다 +10', '20초마다 슬롯의 지후가 그대로 전장에 나가요 (웨이브 · 첫 웨이브는 10초 뒤) · 웨이브마다 골드를 받아요', '슬롯에서 같은 지후 · 같은 레벨을 눌러 합치면 레벨업', '적 처치 🪙 +4 · 내 성 체력이 40,000 · 20,000 이 되면 성 주변 적이 모두 쓰러지고 🪙 +300', '30웨이브까지 안 끝나면 서든 데스 — 먼저 전멸하면 패배', `입장료 🎟 ${fee}`].map(t => ({ t })),
     evCards: [['#ff8fb1,#c0408a', '브론즈'], ['#ffd76a,#e0a21c', '골드'], ['#7cc8ff,#3a78d0', '실버']].map(([c, t], i) => ({ bg: `linear-gradient(180deg,${c})`, t, zi: i === 1 ? 3 : 1, tf: ['rotate(-12deg) translateY(10px)', 'scale(1.08) translateY(-4px)', 'rotate(12deg) translateY(10px)'][i] })),
