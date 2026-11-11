@@ -7214,10 +7214,10 @@ function spawnDeathEffect(u) {
 // ── 전투 한 스텝 (전작 physicsStep 순서: 상태 → 조향 · 공격 → 투사체 → 적분 → 충돌 해소 → 벽) ──
 const STEP_ERR = new Set(); function stepErr(u, e) { const k = (u && u.id) + ':' + (e && e.message); if (STEP_ERR.has(k)) return; STEP_ERR.add(k); console.error('[step]', u && u.id, e); } // R2.29: 같은 오류는 한 번만 알린다
 // ═════════ R2.33 성뿌수기 (아케이드 · 참고: 랜덤다이스 워즈) ═════════
-// 상대 성 (HP 60,000 · 사거리 3 · ATK 300 / 초) 을 부수면 승리. 골드로 「소환」 → 슬롯 (3 × 5 · S.place) 무작위 칸에 덱의 무작위 지후 (Lv1) · 30초마다 슬롯의 지후가 그대로 전장에 나간다 (웨이브).
+// 상대 성 (HP 60,000 · 사거리 3 · ATK 300 / 초) 을 부수면 승리. 골드로 「소환」 → 슬롯 (3 × 5 · S.place) 무작위 칸에 덱의 무작위 지후 (Lv1) · 20초마다 (첫 웨이브는 10초 뒤) 슬롯의 지후가 그대로 전장에 나간다 (웨이브).
 // S.cw = { gold · cost (진영별) · wave · t 이번 웨이브 지난 초 · sd 서든 데스 · rage 성의 분노 쓴 횟수 · castle 성 유닛 · gone 치운 유닛의 통계 · sel 고른 칸 }
 // 라운드가 없다: stepCombat 이 cwStep 으로 넘긴다 (전멸 · 60초 판정 없음) · 쓰러진 유닛은 cwPurge 가 치운다 (15분짜리 판이라 S.units 가 끝없이 늘지 않게) · 웨이브 = 다른 지후들의 「라운드」 (유물은 웨이브마다 새로)
-const CW = { WAVE: 30, LAST: 30, START: 100, COST0: 10, COST_ADD: 10, KILL: 4, RAGE: [40000, 20000], RAGE_GOLD: 300, RAGE_R: 6, CAP: 40 };
+const CW = { WAVE: 20, FIRST: 10, /* 웨이브 20초 · 첫 웨이브는 10초 뒤 (사용자 요청 · 처음 30초) */ LAST: 30, START: 100, COST0: 10, COST_ADD: 10, KILL: 4, RAGE: [40000, 20000], RAGE_GOLD: 300, RAGE_R: 6, CAP: 40 };
 const isCw = () => !!(S.arc && S.arc.kind === 'castle');
 const pctD = (t, v) => t.def.castle ? v * 0.05 : v; // 체력 비례 피해: 성은 95% 줄여 받는다
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
@@ -7228,7 +7228,7 @@ function cwStart() {
   S.phase = 'combat'; S.time = 0; acc = 0; lastTs = 0; S.started = true; S.lastDmgAt = 0; S.stallEnded = false; S.odds = []; S.rk++;
   clearInterval(S.timer); S.pick = null; S.moveSel = null; S.pool = [];
   uidSeq = 0; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.timed = []; S.rel = { a: {}, e: {} }; S.relAcc = 0; S.relLog = []; S.fx = [];
-  S.cw = { gold: { a: CW.START, e: CW.START }, cost: { a: CW.COST0, e: CW.COST0 }, wave: 0, t: 0, sd: false, rage: { a: 0, e: 0 }, botT: 2, purgeT: 0, gone: {}, sel: null, castle: {} };
+  S.cw = { gold: { a: CW.START, e: CW.START }, cost: { a: CW.COST0, e: CW.COST0 }, wave: 0, t: CW.WAVE - CW.FIRST, /* 첫 웨이브까지 10초 */ sd: false, rage: { a: 0, e: 0 }, botT: 1, purgeT: 0, gone: {}, sel: null, castle: {} };
   const f = S.fast ? null : $('field');
   if (f) { CAM.follow = false; CAM.user = false; fitField(); hideRangeRing(); renderField(); f.querySelectorAll('.unit, .ufx').forEach(el => el.remove()); f.querySelectorAll('.tile').forEach(t => { t.style.opacity = '.35'; }); }
   ['a', 'e'].forEach(side => { const q = cwCastleXY(side), u = makeUnit(side, 'castle', 1, q.x, q.y); u.big = true; S.cw.castle[side] = u; if (f) { u.el = unitEl(u); u.el.classList.add('big'); f.appendChild(u.el); drawUnit(u); } S.units.push(u); });
@@ -7244,7 +7244,7 @@ function cwSpawn(side) { // 슬롯의 지후를 그대로 전장에 (칸 자리 
     if (f) { u.el = unitEl(u); f.appendChild(u.el); drawUnit(u); } S.units.push(u); fresh.push(u); n++; });
   fresh.forEach(u => { if (u.def.onStart) try { u.def.onStart(u, A); } catch (e) { stepErr(u, e); } if (f) deployFx(u, 'drop'); });
 }
-function cwWave() { // 30초마다: 이번 웨이브 골드 → 웨이브 +1 → 양쪽 슬롯이 전장에 · 30번째 웨이브부터 서든 데스
+function cwWave() { // 20초마다 (첫 웨이브 10초): 이번 웨이브 골드 → 웨이브 +1 → 양쪽 슬롯이 전장에 · 30번째 웨이브부터 서든 데스
   const c = S.cw; c.gold.a += cwIncome(c.wave); c.gold.e += cwIncome(c.wave); c.wave++;
   S.rel = { a: {}, e: {} }; S.relLog = []; // 유물 (고고학자) 은 웨이브마다 새로
   cwSpawn('a'); cwSpawn('e');
@@ -8640,7 +8640,7 @@ async function arcBuy(k) { const it = ARC_SHOP.find(x => x.k === k), a = arcDay(
 function arcTicket(kind) { const a = arcDay(); if (kind === 'free') { if (a.free >= CFG.ARC_FREE) return; a.free++; a.t++; u2Toast('🎟 무료 티켓 받았어요'); } else { if (a.buy >= CFG.ARC_BUY) return; if (profile.gold < CFG.ARC_GOLD) return u2Toast('골드가 모자라요'); profile.gold -= CFG.ARC_GOLD; a.buy++; a.t++; u2Toast('🎟 티켓 1장 샀어요'); } save(); sfx('buy'); renderMoney(); renderArcade(); }
 const ARC_MODES = [
   { k: 'event', name: '이벤트 모드', fee: () => 0, dark: true, desc: '짝수 라운드마다 이벤트 카드를 골라요 · 하트 4 · 보상은 일반전 이벤트 모드 그대로 (×1.3)', q: '입장 무료 · 임시 (R2.26)' },
-  { k: 'castle', name: '성뿌수기', fee: () => CFG.MIRROR_FEE, dark: true, desc: '골드로 지후를 소환해 <b>상대 성</b>을 부숴요 · 30초마다 슬롯의 지후가 전장에 나가요 · 내 덱 그대로', q: '보상 · 입장료는 미러전과 같아요' }, // R2.33
+  { k: 'castle', name: '성뿌수기', fee: () => CFG.MIRROR_FEE, dark: true, desc: '골드로 지후를 소환해 <b>상대 성</b>을 부숴요 · 20초마다 슬롯의 지후가 전장에 나가요 · 내 덱 그대로', q: '보상 · 입장료는 미러전과 같아요' }, // R2.33
   { k: 'random', name: '랜덤전', fee: () => CFG.MIRROR_FEE, dark: true, desc: '양쪽 모두 <b>서로 다른 무작위 덱</b>을 받고 시작해요 · 이벤트 없음', q: '보상 · 입장료는 미러전과 같아요' },
   { k: 'mirror', name: '미러전', fee: () => CFG.MIRROR_FEE, dark: true, desc: '게임이 시작되면 양쪽이 <b>같은 무작위 덱</b>을 받아요 · 이벤트 없음', q: '진정한 고수는 덱 탓을 하지 않는다' },
   { k: 'comp', name: '경쟁전', fee: () => 0, dark: true, desc: '밴 3 · 드래프트 · <b>3판 2선승</b> · 티어 · 14일 시즌', q: '입장 무료' },
@@ -11092,7 +11092,7 @@ const PATCH_NOTES = [
     { title: '성뿌수기', items: [
       { icon: '🏰', name: '성뿌수기 모드', tag: 'new', desc: '아케이드 새 모드 — 골드로 지후를 소환해 <b>상대 성 (HP 60,000)</b> 을 부숴요 · 내 덱 그대로 · 입장료는 미러전과 같아요' },
       { icon: '🪙', name: '소환', tag: 'new', desc: '시작 골드 <b>100</b> · 소환 <b>10</b> (할 때마다 +10) · 슬롯 (3 × 5) 무작위 칸에 덱의 지후' },
-      { icon: '🌊', name: '웨이브', tag: 'new', desc: '<b>30초</b>마다 슬롯의 지후가 그대로 전장에 · 웨이브마다 골드 <b>50</b> (5웨이브마다 +20)' },
+      { icon: '🌊', name: '웨이브', tag: 'new', desc: '<b>20초</b>마다 슬롯의 지후가 그대로 전장에 (첫 웨이브는 10초 뒤) · 웨이브마다 골드 <b>50</b> (5웨이브마다 +20)' },
       { icon: '⬆️', name: '합체', tag: 'new', desc: '슬롯에서 같은 지후 · 같은 레벨을 차례로 누르면 <b>레벨업</b>' },
       { icon: '⚔️', name: '성', tag: 'new', desc: '사거리 3 · 초당 <b>300</b> 피해 · 즉사 · 상태이상 면역 · 체력 비례 피해 <b>−95%</b>' },
       { icon: '💥', name: '성의 분노', tag: 'new', desc: '내 성 체력이 <b>40,000 · 20,000</b> 이 되면 성 주변 적이 모두 쓰러지고 골드 <b>+300</b>' },
@@ -13184,8 +13184,8 @@ function u2Extra(v) {
     isMode: !!mk, mTitle: M ? M[0] : '', mSub: M ? M[1] : '', mBg: M ? kBg(M[2]) : '', mBtn: M ? M[3] : '', mBtnSub: !mk ? '' : fee ? `입장 🎟 ${fee} · 승리 ${CFG.ARC_WIN_P}P / 패배 ${CFG.ARC_LOSE_P}P` : '입장 무료 · 보상은 일반전과 같아요 (×' + CFG.EV_REWARD + ')',
     modeClose: () => u2Set({ mode: null }), modeGo: () => { const k = s.mode; u2Set({ mode: null }); renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${k}"]`); if (!el) return; ARC_SURE = true; try { el.click(); } finally { ARC_SURE = false; } },
     isMEvent: mk === 'event', isMRandom: mk === 'random' || mk === 'mirror', isMCastle: mk === 'castle', /* R2.33 */
-    cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['30초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
-    cwRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 처음 10 · 소환마다 +10', '30초마다 슬롯의 지후가 그대로 전장에 나가요 (웨이브) · 웨이브마다 골드를 받아요', '슬롯에서 같은 지후 · 같은 레벨을 눌러 합치면 레벨업', '적 처치 🪙 +4 · 내 성 체력이 40,000 · 20,000 이 되면 성 주변 적이 모두 쓰러지고 🪙 +300', '30웨이브까지 안 끝나면 서든 데스 — 먼저 전멸하면 패배', `입장료 🎟 ${fee}`].map(t => ({ t })),
+    cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['20초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
+    cwRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 5) 무작위 칸에 덱의 지후가 나와요 · 처음 10 · 소환마다 +10', '20초마다 슬롯의 지후가 그대로 전장에 나가요 (웨이브 · 첫 웨이브는 10초 뒤) · 웨이브마다 골드를 받아요', '슬롯에서 같은 지후 · 같은 레벨을 눌러 합치면 레벨업', '적 처치 🪙 +4 · 내 성 체력이 40,000 · 20,000 이 되면 성 주변 적이 모두 쓰러지고 🪙 +300', '30웨이브까지 안 끝나면 서든 데스 — 먼저 전멸하면 패배', `입장료 🎟 ${fee}`].map(t => ({ t })),
     evCards: [['#ff8fb1,#c0408a', '브론즈'], ['#ffd76a,#e0a21c', '골드'], ['#7cc8ff,#3a78d0', '실버']].map(([c, t], i) => ({ bg: `linear-gradient(180deg,${c})`, t, zi: i === 1 ? 3 : 1, tf: ['rotate(-12deg) translateY(10px)', 'scale(1.08) translateY(-4px)', 'rotate(12deg) translateY(10px)'][i] })),
     evChips: [[`하트 ${CFG.EV_LIVES}`, '#ff4f5e', '#fff'], ['짝수 라운드 이벤트', '#0b0f20', '#c9d0e6'], [`보상 ×${CFG.EV_REWARD}`, '#ffd234', '#3b2600'], ['입장 무료', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
     evSteps: ['짝수 라운드가 시작되면 이벤트 카드 3장이 나와요', '한 장을 골라 내 진영에 더해요 · 상대도 따로 골라요', `하트 ${CFG.EV_LIVES}개를 모두 잃으면 끝나요 · 덱은 지금 덱 그대로`].map((t, i) => ({ n: i + 1, t })),
