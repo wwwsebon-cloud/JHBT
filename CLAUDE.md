@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.34** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.34** (build 2).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -119,6 +119,7 @@
 ## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
 - **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
 - **디펜스 모드** (`arc.kind 'defense'` · 성뿌수기 틀 재사용 `isCw()` · `S.cw.df` · 상수 `DF`): 로비 일반전 오른쪽 버튼 → 모드 로비 `K_MODE.defense` (`isMDef` · 열쇠 상자) → `dfGo` (무료). 내 슬롯 출격 `dfWave` 20초 (`c.t` · 골드 `cwIncome(c.mw)`) · 적 웨이브 `dfFoeWave` 10초 (`c.et` · 적을 다 잡으면 바로 · `dfSpawn` 무작위 지후 `dfPool` Lv1 · 수 3 + 0.3 × (웨이브 − 1) · 능력치 ×(0.7 + 0.04 × (웨이브 − 1)) · `u.dfE`) · 노릴 아군이 없으면 `dfMarch` (aiSteerAndAttack) · 내 진영 끝 `dfAtEnd` → `dfLeak` 라이프 −1 (10) · 끝 `dfEnd` 열쇠 = 웨이브 − 1 · 최고 웨이브 `profile.dfBest` → `dfPush` (`r2def` · **firestore.rules 게시 필요**) · 핵 지후는 고정 `DF.NUKE` 500 · PC (900px `DF_SPLIT`) 는 `#screen-battle.cw.df` 왼쪽 트레이 380px · 오른쪽 전장 (`viewInsets` 아래 가림 0).
+- **build 2**: 라이프 30 · 들어오면 흔들림만 · 난이도 하향 (`DF.NADD` 0.13 · `KADD` 0.016 · 시뮬 `cwBot` 은 디펜스에서 슬롯이 꽉 찼을 때만 합친다 → 기본 덱 자동 봇 평균 42웨이브 · 예전 수치 16) · **디펜스 이벤트** `DF_EV` 39종 (`[아이콘, 이름, 설명, p 게임 내내 | i 바로]`): `DF.EV_EVERY` 10웨이브마다 `dfFoeWave` → `dfPickOpen` (#dfPick · `S.cw.pick` 동안 `loopBody` 가 멈춘다 · 자동 · 빠른 시뮬은 무작위) → `dfTake` → `dfInstant` / `c.evs`. 수치는 `dfStats` → `c.k` → `dfA` · `dfK` (effAtk · aspdRate · 회피 · 치명타 · 받는 피해 · moveToward) · `dfHas` (피의 갈증 · 마력의 힘 · 강약약강 · 멀티샷) · 웨이브 시작 `dfWaveEv` · 출격 `dfMod` · 합체 `dfFused` · `dfCan` (자유합성). 새 디펜스 이벤트는 `DF_EV` + 효과 자리에.
 - **열쇠** `profile.keys` · `keyBox()` 🔑 40 = 일반 5 · 희귀 3 · 10% 영웅 · 1% 전설. **성뿌수기는 임시 삭제** (`ARC_MODES` 에서만 뺐다 · 코드 그대로).
 - **시작 연출**: `newMatch` 안에서 매칭 창 `mmShow` (#mmOv · 2~4초 · 경쟁전은 자기 매칭 창이 있어 건너뜀) → 인트로 3초 → 전장 로딩 `matchLoading` (#matchLoad · 3초 · 팁) → `startRound` · 튜토리얼 · 샌드박스 · 릴스 · 친선전은 그대로.
 - **AUTO 카메라** `CAM.auto` (`rejhbt-cam-auto` · 기본 켬 · 버튼 `#btnCamAuto`): `camFollow` → `camAuto` (교전 중 지후 4기 이상이면 그쪽만 · 위아래 8% 빼고 · 여백 2칸 · 전장 전체 ~ 125% · 10% 안 흔들림 무시). 손으로 옮기면 `CAM.user` → 버튼을 누르면 다시 따라간다. 성뿌수기 · 디펜스도 이제 따라간다.
