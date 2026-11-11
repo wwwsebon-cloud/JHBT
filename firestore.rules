@@ -168,6 +168,18 @@ service cloud.firestore {
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
         && request.resource.data.at == request.time;
     }
+    // R2.34 디펜스 리더보드: 최고 웨이브 (r2tower 와 같은 모양)
+    match /r2def/{userId} {
+      allow get, list: if true;
+      allow delete: if owner(userId) || isAdmin();
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
+        && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
+        && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
+        && request.resource.data.updatedAt is timestamp;
+    }
     match /r2tower/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
