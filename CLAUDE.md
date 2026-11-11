@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.34** (build 8).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.34** (build 9).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
 - `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
@@ -119,6 +119,7 @@
 ## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
 - **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
 - **디펜스 모드** (`arc.kind 'defense'` · 성뿌수기 틀 재사용 `isCw()` · `S.cw.df` · 상수 `DF`): 로비 일반전 오른쪽 버튼 → 모드 로비 `K_MODE.defense` (`isMDef` · 열쇠 상자) → `dfGo` (무료). 내 슬롯 출격 `dfWave` 20초 (`c.t` · 골드 `cwIncome(c.mw)`) · 적 웨이브 `dfFoeWave` 10초 (`c.et` · 적을 다 잡으면 바로 · `dfSpawn` 무작위 지후 `dfPool` Lv1 · 수 3 + 0.3 × (웨이브 − 1) · 능력치 ×(0.7 + 0.04 × (웨이브 − 1)) · `u.dfE`) · 노릴 아군이 없으면 `dfMarch` (aiSteerAndAttack) · 내 진영 끝 `dfAtEnd` → `dfLeak` 라이프 −1 (10) · 끝 `dfEnd` 열쇠 = 웨이브 − 1 · 최고 웨이브 `profile.dfBest` → `dfPush` (`r2def` · **firestore.rules 게시 필요**) · 핵 지후는 고정 `DF.NUKE` 500 · PC (900px `DF_SPLIT`) 는 `#screen-battle.cw.df` 왼쪽 트레이 380px · 오른쪽 전장 (`viewInsets` 아래 가림 0).
+- **build 9**: 충격파 기준 `DF.QCAP` 20 → 30 (위 게이지 n/30).
 - **build 8**: 내 출격 `dfWave` 는 이제 웨이브 시작 (`dfFoeGo`) 에 적과 같이 (따로 돌던 `c.t` 타이머 없음 · 막대는 `c.et`) · 충격파 판정 `c.qNext` 는 `dfFoeWave` 맨 앞 (이전 웨이브가 끝난 때 · 새 지후 전) — 예전엔 타이머가 어긋나 막 출격한 지후로 바로 터졌다.
 - **build 7**: 적 수 = 내 전장 지후 × `DF.NK` 0.6 (+0~1 · 최소 2) · `K0` 0.6 · `KADD` 0.012 · 반격 `dfRally` (`dfRallyCheck` · 라이프 `RALLY` 20 · 10 에서 한 번씩: 🪙 +300 · 전장의 내 쪽 절반에 있는 적 넉백 4칸 · 2000 피해 · 10초 기절) · 사망 이펙트 `spawnDeathEffect` 에 연기 + 해골 (반전 화면은 해골만 되돌림).
 - **build 6**: 위 게이지 = 승률 (`allyOdds`) · 라벨 `❤ 라이프 · 👥 아군/20` (`cwHud` · 20 초과면 `.over` 빨강) · 충격파는 3웨이브마다 → 웨이브가 끝날 때 `dfAllies()` > `DF.QCAP` 20 이면 매번 (`dfStep` 이 적 웨이브를 내 출격보다 먼저) · 피해 25% + (웨이브 − 1) × 1%p · `KADD` 0.019.
