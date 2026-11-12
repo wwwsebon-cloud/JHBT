@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R2.36"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R2.36"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -8387,10 +8387,12 @@ function evDeal(side, g, r) { // 같은 등급 카드 3장 (서로 다른 이벤
   while (out.length < 3 && pool.length) { const id = pool.splice(Math.floor(r() * pool.length), 1)[0], c = { id, g }; if (EVENTS[id].deck) { const L = S.deck[side].filter(x => CHARS[x]); if (!L.length) continue; c.c = L[Math.floor(r() * L.length)]; } out.push(c); }
   return out;
 }
-function evBotPick(side, cards, r) { // 봇: 상황에 맞는 카드에 점수 (+ 무작위)
-  const P = S.place[side].filter(Boolean), lv = n => P.filter(p => p.lv === n).length, full = S.lives[side] >= S.maxLives;
-  const nl = P.filter(p => CHARS[p.id] && CHARS[p.id].rarity !== 'legend' && CHARS[p.id].rarity !== 'limited').length; const W = { hardcore: full ? 3 : 0.2, deckA: 2.2, rear: 1.2, synth: 1.8, even: 0.8 + 0.4 * (lv(2) + lv(4)), odd: 0.8 + 0.3 * (lv(1) + lv(3) + lv(5)), leech: 1.8, peasant: 0.6 + 0.25 * nl, horde: 0.6 + 0.3 * lv(1), invest: 0.6 + 0.4 * lv(2), frenzy: 2.4, elite: P.length <= 4 ? 2.2 : 0.4, mana: 2, fuse: 2, fast: 1.1, blitz: 1.6, lvup: 2, combo: 1.5, mid: 0.6 + 0.35 * S.place[side].slice(5, 10).filter(Boolean).length, front: 0.6 + 0.3 * S.place[side].slice(0, 5).filter(Boolean).length, star: 2, allup: 3, allin: 0.7, backup: 0.6 + 0.3 * (CFG.MAX_UNITS - P.length) / 3, veteran: 2.2, regen: 1.6, weak: 1.6, phys: 1.8, tough: 1.8, diaper: 1.6 };
-  let best = 0, bv = -1; cards.forEach((c, i) => { const v = (W[c.id] || 1) * (1 + c.g * 0.2) + r() * 1.5; if (v > bv) { bv = v; best = i; } }); return best;
+function evBotPick(side, cards, r) { // 봇: 상황에 맞는 카드에 점수 (+ 무작위 0 ~ 1.5) · R2.36 build 3: 새 밸런스 기준으로 다시
+  const L = S.place[side], P = L.filter(Boolean), lv = n => P.filter(p => p.lv === n).length, full = S.lives[side] >= S.maxLives, row = k => L.slice(k * 5, k * 5 + 5).filter(Boolean).length;
+  const nl = P.filter(p => CHARS[p.id] && CHARS[p.id].rarity !== 'legend' && CHARS[p.id].rarity !== 'limited').length, even = lv(2) + lv(4), odd = lv(1) + lv(3) + lv(5);
+  const W = { hardcore: full ? 3.4 : 0.2, rear: 0.6 + 0.35 * row(2), synth: 1.5, even: 0.6 + 0.5 * even, odd: 0.6 + 0.5 * odd, leech: 1.8, peasant: 0.5 + 0.3 * nl, horde: 0.5 + 0.3 * lv(1), invest: 0.5 + 0.5 * lv(2), frenzy: 2.4, elite: P.length <= 4 ? 3 : 0.3, mana: 1.8, fuse: 1.6, fast: 1.2, blitz: 1.8, lvup: 2.2, combo: 1.4, mid: 0.5 + 0.4 * row(1), front: 0.5 + 0.3 * row(0), star: 2, allup: 3.2, allin: 0.7, backup: 0.6 + 0.3 * (CFG.MAX_UNITS - P.length) / 3, veteran: 3.2, regen: 1.6, weak: 0.8, phys: 1.5, tough: 1.2 + 0.15 * P.length, diaper: 1.5 };
+  const sc = c => (c.id === 'deckA' ? 1.2 + 0.5 * P.filter(p => p.id === c.c).length : W[c.id] || 1); /* 지후 강화: 그 지후가 전장에 많을수록 */
+  let best = 0, bv = -1; cards.forEach((c, i) => { const v = sc(c) * (1 + c.g * 0.2) + r() * 1.5; if (v > bv) { bv = v; best = i; } }); return best;
 }
 function evTake(side, c) { if (!c) return; S.ev[side].push({ id: c.id, g: c.g, c: c.c }); evRecount(); evInstant(side, c); renderLives(); }
 function evInstant(side, c) { // 고르는 순간: 단체 월반 · 모 아니면 도 · 지원요청 · 할렐야루 칸 정하기 (전투 난수 rng)
@@ -9598,10 +9600,25 @@ function sweepFx(u, a0, reach) { const el = document.createElement('div'), deg =
 const enhLv = id => clamp(Math.floor(Number(profile.enh && profile.enh[id]) || 1), 1, ENH_MAX);
 const enhCost = (id, lv) => lv >= ENH_MAX || !CHARS[id] ? null : { sh: ENH_SHARD[CHARS[id].rarity][lv - 1], gold: ENH_GOLD[lv - 1] };
 function enhOf(side, id) { const E = S.enh && S.enh[side]; return E ? clamp((E[id] || E._ || 1) | 0, 1, ENH_MAX) : 1; }
-function enhMatch(o) { // 판 시작 (newMatch): 내 쪽 = 내 강화 · 봇 = 내 덱 평균 (내림) · 튜토리얼 · 샌드박스 · 릴스 · 미러전 · 친선전(matchBase 기본 null)은 모두 +1
+function enhMatch(o) { // 판 시작 (newMatch): 내 쪽 = 내 강화 · 봇 = 내 덱 랭크를 섞어 지후마다 ±2 (botRanks) · 튜토리얼 · 샌드박스 · 릴스 · 미러전 · 친선전(matchBase 기본 null)은 모두 +1
   const k = o && o.arc && o.arc.kind; if (['tutorial', 'sandbox', 'reels', 'mirror'].includes(k)) return null;
   const a = {}, L = (S.deck.a || []).filter(id => CHARS[id]); L.forEach(id => { if (owned(id)) a[id] = enhLv(id); });
-  return { a, e: { _: L.length ? Math.floor(L.reduce((n, id) => n + (a[id] || 1), 0) / L.length) : 1 } };
+  return { a, e: botRanks(L.map(id => a[id] || 1), S.deck.e || [], S.persona) };
+}
+const BOT_SKILL = { noob: 0, rookie: 0.15, std: 0.55, pro: 1 }; // R2.36 build 3: 봇 실력 (나머지 페르소나 0.45) → 랭크가 위로 갈 확률
+function botRanks(mine, ids, persona) { // 내 덱 랭크 (예: 3 5 4 12 1) 를 무작위 순서로 봇 지후에 하나씩 · 지후마다 −2 ~ +2 (고수일수록 + 쪽) · 이상치는 고루 나눈다
+  const sk = BOT_SKILL[persona] ?? 0.45, R = mine.length ? mine.slice() : [1], out = {}, got = [];
+  for (let i = R.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [R[i], R[j]] = [R[j], R[i]]; }
+  const w = [-2, -1, 0, 1, 2].map(d => Math.pow(3, (sk - 0.5) * d)), tot = w.reduce((x, y) => x + y, 0); /* 보통 (0.5) 이면 고르게 · 초고수는 +2 가 −2 의 9배 */
+  const delta = () => { let x = Math.random() * tot; for (let k = 0; k < 5; k++) { x -= w[k]; if (x <= 0) return k - 2; } return 2; };
+  const D = ids.filter(id => CHARS[id]).map((id, i) => ({ id, v: clamp((i < R.length ? R[i] : R[Math.floor(Math.random() * R.length)]) + delta(), 1, ENH_MAX) }));
+  if (D.length > 1) { /* 이상치 (평균 + 3 넘게) 는 그 선까지 내리고, 내린 만큼 다른 지후에게 낮은 랭크부터 1씩 고루 (합은 그대로) · 예: 11 3 2 7 2 → 8 4 3 7 3 */
+    const cap = Math.round(D.reduce((x, d) => x + d.v, 0) / D.length) + 3;
+    for (const d of D) { let ex = d.v - cap; if (ex <= 0) continue; d.v = cap;
+      while (ex > 0) { const o = D.filter(e => e !== d && e.v < Math.min(cap, ENH_MAX)).sort((x, y) => x.v - y.v)[0]; if (!o) break; o.v++; ex--; } } }
+  D.forEach(d => { out[d.id] = Math.max(out[d.id] || 0, d.v); got.push(d.v); });
+  out._ = got.length ? Math.round(got.reduce((x, y) => x + y, 0) / got.length) : 1; /* 덱 밖 지후 (조커 변신 · 소환 · 왕자) 는 평균 */
+  return out;
 }
 function enhUp(id) {
   if (!owned(id)) return u2Toast('지후를 얻으면 랭크를 올릴 수 있어요');
@@ -9659,7 +9676,7 @@ function enhHtml(id, part) { // 지후 상세 '랭크' 탭 (part 'foot' = 창 �
   let tot = { sh: 0, gold: 0 }; for (let l = 1; l < lv; l++) { const k = enhCost(id, l); tot.sh += k.sh; tot.gold += k.gold; }
   const reset = have && lv > 1 && profile.items.resetTicket > 0 ? `<div class="u2-rk-reset" data-enh="reset">↺ 지후 초기화권으로 랭크 1로 · 조각 ${f(tot.sh)} · ● ${f(tot.gold)} 돌려받기</div>` : '';
   if (part === 'foot') return foot ? `<div class="u2-rk-foot">${foot}</div>` : '';
-  return `<div class="u2-rk"><div class="u2-rk-card"><div class="u2-rk-lv">랭크 ${lv}<small> / ${ENH_MAX}</small></div>${stats}<div class="u2-rk-rows">${rows}</div>${minor}<div class="u2-rk-ics">${icon(6)}${icon(12)}</div>${desc}</div>${reset}<div class="u2-rk-note">랭크는 일반전 · 경쟁전 · 아케이드 · 지후의 탑에 적용돼요 (봇은 내 덱 평균 랭크) · 친선전 · 미러전 · 샌드박스는 모두 랭크 1 · 중복 지후 = 조각 10개</div></div>`;
+  return `<div class="u2-rk"><div class="u2-rk-card"><div class="u2-rk-lv">랭크 ${lv}<small> / ${ENH_MAX}</small></div>${stats}<div class="u2-rk-rows">${rows}</div>${minor}<div class="u2-rk-ics">${icon(6)}${icon(12)}</div>${desc}</div>${reset}<div class="u2-rk-note">랭크는 일반전 · 경쟁전 · 아케이드 · 지후의 탑에 적용돼요 (봇은 내 덱과 비슷한 랭크) · 친선전 · 미러전 · 샌드박스는 모두 랭크 1 · 중복 지후 = 조각 10개</div></div>`;
 }
 // 지후 받기 (뽑기 · 상점 · 우편 · 보상): 처음이면 보유, 이미 있으면 조각 10개 (R2.15 · 예전 1개) · 새 영웅 · 전설은 업적에 센다
 function grantChar(id) {
@@ -11542,6 +11559,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R2.36', date: '2026.11.12', title: '디펜스 업그레이드 · 이벤트 개편', sections: [
+    { title: '추가 패치 (build 3) · 봇', items: [
+      { icon: '🤖', name: '봇 덱 랭크', tag: 'system', desc: '내 덱 지후 랭크를 무작위 순서로 하나씩 <b>±2</b> (고수 봇일수록 높게) · 혼자 튀는 랭크는 조금 낮춰 다른 지후에게 나눠요 · 예전 내 덱 평균 랭크' },
+      { icon: '🎴', name: '봇 이벤트 고르기', tag: 'adjust', desc: '새 이벤트 수치에 맞춰 봇이 카드를 고르는 기준을 다시 맞췄어요' },
+    ] },
     { title: '추가 패치 (build 2) · 이벤트 모드', items: [
       { icon: '💀', name: '케인인님 한판해요', tag: 'buff', desc: '(하드코어) 최대 체력 · 공격력 <b>30 · 40 · 50 → 60 · 90 · 120%</b>' },
       { icon: '🍐', name: '배먹어 배', tag: 'adjust', desc: '(광란) 이름 변경' },
@@ -14297,7 +14318,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { keyBox, dfGo, DF, dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgPowers, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgPowers, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
