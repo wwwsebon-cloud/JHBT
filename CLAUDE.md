@@ -101,6 +101,11 @@
 - 결과로 `TIER_SC` (**SS 90~100** · S 80~89 · A 65~79 · B 40~64 · C 20~39 · D 0~19 · R2.26 부터 6티어 — 지후 100종이 넘어서) 를 갱신한다 · 게임 `tierOf` · `TIER_C` · 도움말 티어리스트 · make.py `.tr.SS` 도 SS ~ D.
 - 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
 
+## 주기적 코드 리뷰 · 리팩터링 (R2.36 · `tools/review/` · 자세한 순서는 그 폴더 README)
+- **동작을 바꾸지 않는 정리만** (재배열 · 머리말 · 죽은 코드): 고치기 전 고정 시드 전투 120판 (`tools/tierlist/run.js`) 을 저장 → 정리 → 같은 시드 결과가 `cmp` 로 완전히 같아야 한다 + 첫 로딩 · 벤치 · `comment-check.py`.
+- `python tools/review/survey.py` (안 쓰는 함수 · 변수 · CSS 클래스 · 머리말 없는 긴 구간 — 고치지 않고 알려만 준다) · `css-prune.py [--dry] <클래스 …>` (안 쓰는 CSS 규칙 삭제 · `<style>` 밖에 낱말로 나오면 멈춘다) · `toc.py` (스크립트 맨 위 **목차** 를 `// ═════════ 제목` 머리말에서 다시 쓴다 — 큰 구간을 만들면 머리말을 달고 돌린다).
+- R2.36 정리로 옮긴 곳: 디펜스 보상 · 에너지 · 7일 이벤트 · 열쇠 상자 → `═ 디펜스 로비` (일일 퀘스트 앞 · 전투 코드는 `═ R2.33 성뿌수기 · R2.34 디펜스`) · 지후 받기 · 뽑기 · 뽑기 연출 → `═ 가차` · `stepCombat` · `loop` → `═ 전투 루프`. 남은 CSS 후보 (`r-<등급>` · `tier-<티어>` · `g1` 등) 는 이름을 조립해 쓰는 것이라 지우지 않는다.
+
 ## 계정 · 서버 (짧게)
 - Firebase 프로젝트 `jihoobattle` · 게스트는 익명 인증 · 기록 `r2_backups/<uid>` · 이 기기 `rejhbt.profile.v1`.
 - **켤 때 서버 기록과 맞추기 (R2.18 build 6)**: 저장 시각(`savedAt`)은 켜는 동안 `save()` 가 바꿔 버리니 비교에 쓰지 않는다 — 백업마다 기록 안에 저장 번호 `profile.bkWid` 를 넣고, 이 기기는 마지막으로 맞춘 번호 `profile.syncWid` 를 기억 → `serverNewer(b)`: 번호가 다르면 서버 기록 · 번호가 없으면 진행도(레벨 → 경험치 → 판 수) 앞선 쪽. 서버 규칙(`r2_backups` 는 payload · savedAt · updatedAt 만)을 안 바꾸려고 번호는 payload 안에.
@@ -235,7 +240,7 @@
 - 배치 카드: 바로 앞 배치 기회에 놓은 지후 (`S.lastPut[진영]`, `applyAct`) 는 `rollPool` 에서 뺀다 (덱에 그것뿐이면 그대로).
 - 뽑기 `CFG.GACHA` 전설 2.7 · 영웅 7 · 희귀 27.8 · 일반 62.5 · 일반 · 희귀 `ENH_SHARD` 2배 (초기화권 환급도 새 값 기준이라 예전에 싸게 올린 랭크를 초기화하면 더 돌려받는다 — 알고 둠).
 - 지후의 탑: `TOWER_LIVES` 2 · `towerPersona` 1층만 초보 · 5층부터 초고수 반반 · 10층부터 초고수 · 봇 덱은 같은 등급이면 TIER_SC 높은 지후 · 15층부터 `makeUnit` 이 봇 체력 · 공격력 ×(1 + 0.1 × (층 − 14)).
-- 개구리: 25% (랭크 6 27.5%) · 결과는 `S.fx` 의 `txt` → `renderField` 가 그 칸 위 `.fx-tiletxt` (배너 아님) · `frogSweep` 은 빈 함수 (이벤트 · 괴도로 오른 레벨은 그냥 레벨).
+- 개구리: 25% (랭크 6 27.5%) · 결과는 `S.fx` 의 `txt` → `renderField` 가 그 칸 위 `.fx-tiletxt` (배너 아님) · 이벤트 · 괴도로 오른 레벨은 그냥 레벨 (빈 함수 `frogSweep` 은 R2.36 정리 때 삭제).
 - 엔지니어 포탑 `c.tdecay` (20초 수명 · `stepUnit`) · EMP 패시브 `empDrain` · 수은 보호막 막대는 체력바 밖 (`.unit-hpbar-wrap` 에 붙여 `left = 체력 비율`) · 성검 현재 체력 5% + 레벨마다 1% · 괴도 `onStart` 예고장 · 랜턴 흡혈 대신 빔이 맞을 때 5 × 레벨.
 - **업데이트 알림 (웹 푸시)**: `pushAsk` (튜토리얼 끝 · 기존 유저 로비 한 번 `profile.pushAsk` · 환경설정 `#setPush`) → 허용하면 ◆`CFG.PUSH_DIA` (`profile.pushRw`) → `pushRegister` 가 firebase-messaging 토큰을 `push_tokens/<uid>` 에 (`CFG.PUSH_VAPID` 가 비어 있으면 저장 안 함) · `sw.js` push / notificationclick · **보내기**: 버전을 올린 업데이트 (잠수함 패치 제외) 를 배포한 뒤 사용자 PC 에서 `node tools/push-send.js --key <서비스 계정 JSON>` (제목 · 내용은 버전 · 패치노트에서 · `--dry` 로 기기 수만).
 - 글꼴은 Black Han Sans 그대로 (R2.26 에 리틱체 · 송명체를 시험했다가 사용자 요청으로 되돌림 — 다시 바꾸지 않는다).
@@ -270,7 +275,7 @@
 - 짝수 라운드 `evRoll`: 등급 `EV_GRADE` [50, 35, 15] (양쪽 같다) → `evDeal` 카드 3장씩 (따로) → 봇은 `evBotPick` 바로 · 나는 `evShow` (#evPop · 15초 `EV_PICK_SEC` · 시간 초과 무작위 · S.fast / 리플레이는 바로 무작위).
 - 고른 이벤트 `S.ev[진영] = [{ id, g, c }]` → `evRecount` → `evN(진영, id)` = 수치 합 (%) · 덱 강화는 `'deckA:<id>'` · `'deckS:<id>'`. 이벤트 데이터 `EVENTS[id].v` = [브론즈, 실버, 골드] (0 = 그 등급엔 없음).
 - 적용: 체력 · 공격력 `evUnit` (전투 시작 · 하드코어는 `S.lives` 가 `S.maxLives` 일 때 · 소수정예는 배치 4기 이하) · 공격속도 `u.evAspd` → `evCombat` 버프 'ev' · 피의 갈증 `dealDamage` · 마력의 힘 `evSp(u)` (SP 를 채우는 곳마다 곱한다 · hit SP 가 소수가 될 수 있다) · 합체 / 합성마스터 `evMerge` (`levelUp` · 합체 뒤 · 소환은 `f: 'b'`).
-- build 2: 카드 화면 = 슬롯머신 (`evShow` · `.evx` · 등급 릴 → 카드 릴 3개를 WAAPI `strip.animate` 로 위에서 아래로 · 차례로 멈춤 · 효과음 `ev_tick` · `ev_land` · 도는 중 누르면 `a.finish()` · 카드 앞면 `evFaceHtml` · 상대 선택 `evMiniHtml`) · 설명 줄은 사용자 요청으로 없음.
+- build 2: 카드 화면 = 슬롯머신 (`evShow` · `.evx` · 등급 릴 → 카드 릴 3개를 WAAPI `strip.animate` 로 위에서 아래로 · 차례로 멈춤 · 효과음 `ev_tick` · `ev_land` · 도는 중 누르면 `a.finish()` · 상대 선택 `evMiniHtml` · 카드 앞면 `evFaceHtml` 과 릴 CSS 는 R2.36 정리 때 삭제) · 설명 줄은 사용자 요청으로 없음.
 - build 2 이벤트 13종 추가 (fast as f boi · 속전속결 · 레벨업 · 스피드 콤보 · 중앙 Good · 선봉대 · 천살성 · 단체 레벨업 · 모 아니면 도 · 지원요청 · 베테랑 · 평준화 · 자힐 · 약점공략) · 마력의 힘 실버 12 · 골드 25%. 고르는 순간 효과 (`ins`) 는 `evInstant` → `evSnap` (S.roundStart 다시) · 레벨업 `evRoundWin` (roundResult) · 자힐 `evTick` · 받는 피해 `evTaken` (약점공략 · 천살성) · 스피드 콤보 스택 `S.evf[진영].combo` (`evMerge`) · 베테랑 칸 `S.evf[진영].vet` (renderField `.tile.ev-vet`).
 - **배치 기회 (모든 게임 · build 2)**: 라운드마다 `CFG.DEPLOYS` 3 · 데스매치 `CFG.DM_DEPLOYS` 4.
 - 새 이벤트를 만들면 `EVENTS` · `evUnit` / `evCombat` / `evInstant` 등 적용 · `evBotPick` 의 W · 패치노트.
