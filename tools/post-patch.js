@@ -4,7 +4,8 @@
 //   node tools/post-patch.js                 맨 위 패치노트 (그날 마지막 build) 를 둘 다 올린다
 //   node tools/post-patch.js --dry           올리지 않고 글 · 이미지 · 이미지 주소만 확인
 //   node tools/post-patch.js R2.36 --build 2 버전 · build 를 골라서 (--all : 그 버전 항목 전체 · build 1 은 --all)
-//   옵션: --only discord|threads · --img a.png,b.png (이미지를 직접) · --everyone (디스코드 @everyone) · --force (이미 올린 것도 다시)
+//   옵션: --only discord|threads · --img a.png,b.png (이미지를 직접) · --everyone (디스코드 @everyone) · --no-ping (역할 핑 빼기) · --force (이미 올린 것도 다시)
+//   디스코드 역할 핑: node tools/post-patch.js --discord-role <역할 ID> (서버 설정 → 역할 → 우클릭 → 역할 ID 복사 · 개발자 모드 필요) → 올릴 때마다 그 역할 핑
 //
 // 처음 한 번 (설정 파일은 저장소 밖: 문서/jhbt-app/post.json · 바꾸려면 --cfg <경로> 또는 환경 변수 JHBT_POST):
 //   node tools/post-patch.js --init                                   설정 파일 틀을 만든다
@@ -95,7 +96,8 @@ async function postDiscord(cfg, n, imgs) {
   const url = SITE, color = 0x5b6cff, names = imgs.map((f, i) => `p${i}${path.extname(f)}`);
   const embeds = [{ title: head(n).replace('📢 ', '') + ' · ' + plain(n.title), url, color, description: longText(n), footer: { text: n.date || '' }, ...(imgs[0] ? { image: { url: 'attachment://' + names[0] } } : {}) }];
   for (let i = 1; i < Math.min(imgs.length, 4); i++) embeds.push({ url, image: { url: 'attachment://' + names[i] } }); // 같은 url 이면 디스코드가 한 갤러리로 묶는다 (4장까지)
-  const ev = flag('everyone'), payload = { username: '지후배틀', content: ev ? '@everyone' : '', allowed_mentions: { parse: ev ? ['everyone'] : [] }, embeds, attachments: imgs.map((f, i) => ({ id: i, filename: names[i] })) };
+  const ev = flag('everyone'), role = !flag('no-ping') && cfg.discord.role ? String(cfg.discord.role) : ''; /* 역할 핑 (예: @update) · --no-ping 이면 안 함 */
+  const payload = { username: '지후배틀', content: [ev ? '@everyone' : '', role ? `<@&${role}>` : ''].filter(Boolean).join(' '), allowed_mentions: { parse: ev ? ['everyone'] : [], roles: role ? [role] : [] }, embeds, attachments: imgs.map((f, i) => ({ id: i, filename: names[i] })) };
   const fd = new FormData(); fd.append('payload_json', JSON.stringify(payload));
   imgs.forEach((f, i) => fd.append(`files[${i}]`, new Blob([fs.readFileSync(f)], { type: 'image/png' }), names[i]));
   const r = await fetch(hook + (hook.includes('?') ? '&' : '?') + 'wait=true', { method: 'POST', body: fd });
@@ -148,11 +150,12 @@ async function setThreadsToken(cfg) { // --threads-token <토큰> [--secret <앱
 (async () => {
   if (flag('init')) { if (loadCfg()) console.log('이미 있어요: ' + CFG_PATH); else { saveCfg(TEMPLATE); console.log('✅ 만들었어요: ' + CFG_PATH + ' (discord.webhook 을 채우고, Threads 는 --threads-token)'); } return; }
   if (opt('threads-token')) return setThreadsToken(loadCfg() || { ...TEMPLATE });
+  if (opt('discord-role')) { const c = loadCfg() || { ...TEMPLATE }, id = (/\d{15,}/.exec(opt('discord-role')) || [])[0]; if (!id) die('역할 ID (숫자) 를 넣어 주세요'); c.discord = { ...(c.discord || {}), role: id }; saveCfg(c); console.log(`✅ 디스코드 공지마다 역할 <@&${id}> 핑 · 빼려면 --no-ping`); return; }
   const n = pick(), imgs = images(n.key), want = k => !ONLY || ONLY === k;
   imgs.forEach(f => { if (!fs.existsSync(f)) die('이미지가 없어요: ' + f); });
   console.log(`📝 ${n.key} · ${plain(n.title)} · 항목 ${n.sections.reduce((t, s) => t + s.items.length, 0)}개 · 이미지 ${imgs.length}장`);
   if (DRY) {
-    if (want('discord')) console.log('\n── 디스코드 (임베드 설명) ──\n' + longText(n));
+    if (want('discord')) { const c0 = loadCfg(); console.log('\n── 디스코드 (임베드 설명)' + (c0 && c0.discord && c0.discord.role && !flag('no-ping') ? ` · 역할 핑 <@&${c0.discord.role}>` : '') + ' ──\n' + longText(n)); }
     if (want('threads')) console.log(`\n── Threads (${[...shortText(n)].length}자) ──\n` + shortText(n));
     console.log('\n── 이미지 ──'); for (const f of imgs) console.log(`${path.relative(ROOT, f)}  →  ${pubUrl(f)}  [${await checkUrl(f)}]`);
     console.log('\n(--dry: 올리지 않았어요 · 설정 파일 ' + (loadCfg() ? '있음' : '없음 → --init') + ')'); return;
