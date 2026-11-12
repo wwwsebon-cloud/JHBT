@@ -2,7 +2,7 @@
 // 항상 네트워크를 먼저 쓰고, 연결이 없을 때만 받아 둔 사본을 보여준다 (새 버전 배포가 늦게 보이는 일이 없다).
 // 설치할 때 게임에 꼭 필요한 파일(CORE · 약 2.5MB)을 미리 받아 두고, 배경음악 · 큰 이모티콘 · 글꼴처럼 큰 것은 한 번 쓸 때 받아 둔다 (RT).
 // 버전 확인 요청(?vc=)과 Firebase 는 건드리지 않는다. 파일을 더하면 python tools/sw_assets.py 로 CORE 목록을 다시 만든다.
-const CACHE = 'rejhbt-r2-core-5'; // 미리 받는 사본 (목록이 바뀌면 이름을 바꾼다 · 예전 사본은 지운다)
+const CACHE = 'rejhbt-r2-core-6'; // 미리 받는 사본 (목록이 바뀌면 이름을 바꾼다 · 예전 사본은 지운다)
 const RT = 'rejhbt-r2-rt'; // 쓸 때 받아 두는 사본 (버전이 바뀌어도 남긴다)
 const SHELL = ['./', 'manifest.webmanifest'];
 // ── CORE (tools/sw_assets.py 가 만든다 · 손으로 고치지 않는다) ──
@@ -12,6 +12,8 @@ const CORE = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/icon-maskable-512.png',
+  'icons/fx/absorb.png',
+  'icons/fx/addict.png',
   'icons/fx/alone.png',
   'icons/fx/antigrav.png',
   'icons/fx/arcana.png',
@@ -26,17 +28,22 @@ const CORE = [
   'icons/fx/c4.png',
   'icons/fx/card.png',
   'icons/fx/charm.png',
+  'icons/fx/corr.png',
   'icons/fx/critDmgUp.png',
   'icons/fx/critUp.png',
   'icons/fx/dive.png',
   'icons/fx/dnote.png',
   'icons/fx/dodgeUp.png',
   'icons/fx/drowsy.png',
+  'icons/fx/fear.png',
   'icons/fx/feast.png',
   'icons/fx/freeze.png',
   'icons/fx/frost.png',
+  'icons/fx/goja.png',
   'icons/fx/guard.png',
   'icons/fx/healDown.png',
+  'icons/fx/ignite.png',
+  'icons/fx/impeached.png',
   'icons/fx/inv.png',
   'icons/fx/lacer.png',
   'icons/fx/lastBullet.png',
@@ -50,6 +57,7 @@ const CORE = [
   'icons/fx/poison.png',
   'icons/fx/pure.png',
   'icons/fx/rage.png',
+  'icons/fx/realm.png',
   'icons/fx/reaper.png',
   'icons/fx/regen.png',
   'icons/fx/seal.png',
@@ -62,6 +70,8 @@ const CORE = [
   'icons/fx/stun.png',
   'icons/fx/takenDown.png',
   'icons/fx/takenUp.png',
+  'icons/fx/taunt.png',
+  'icons/fx/warp.png',
   'icons/fx/wound.png',
   'sfx/attack.mp3',
   'comic/1.png',
