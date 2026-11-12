@@ -4,6 +4,7 @@
 //   node tools/post-patch.js                 맨 위 패치노트 (그날 마지막 build) 를 둘 다 올린다
 //   node tools/post-patch.js --dry           올리지 않고 글 · 이미지 · 이미지 주소만 확인
 //   node tools/post-patch.js R2.36 --build 2 버전 · build 를 골라서 (--all : 그 버전 항목 전체 · build 1 은 --all)
+//   node tools/post-patch.js --day           하루 총정리: 맨 위 버전 항목 전체 (build 칸까지) + infographics/today-<날짜>*.png (없으면 <버전>.png) · 매일 마지막에 한 번
 //   옵션: --only discord|threads · --img a.png,b.png (이미지를 직접) · --everyone (디스코드 @everyone) · --no-ping (역할 핑 빼기) · --force (이미 올린 것도 다시)
 //   디스코드 역할 핑: node tools/post-patch.js --discord-role <역할 ID> (서버 설정 → 역할 → 우클릭 → 역할 ID 복사 · 개발자 모드 필요) → 올릴 때마다 그 역할 핑
 //
@@ -47,6 +48,10 @@ function pick() { // 올릴 항목: { key, ver, build, title, date, sections }
   const P = patchNotes(), ver = args.find(x => /^R\d/.test(x)) || P[0].v, e = P.find(x => x.v === ver);
   if (!e) die(`패치노트에 ${ver} 이 없어요`);
   const bOf = s => +((/^추가 패치 \(build (\d+)\)/.exec(s.title || '') || [])[1] || 0);
+  if (flag('day')) { /* 하루 총정리: build 칸까지 모두 · 이미지 today-<날짜> (없으면 <버전>) */
+    const day = 'today-' + String(e.date || '').replace(/\./g, '-'), secs = e.sections.map(x => ({ title: plain(x.title).replace(/^추가 패치 \(build \d+\)\s*·?\s*/, '') || plain(e.title), items: x.items }));
+    return { key: `${ver}-day`, img: day, ver, build: 0, title: e.title, date: e.date, sections: secs };
+  }
   let build = opt('build') ? +opt('build') : flag('all') ? 0 : bOf(e.sections[0]);
   if (build > 1) {
     const sec = e.sections.find(s => bOf(s) === build); if (!sec) die(`${ver} 에 「추가 패치 (build ${build})」 칸이 없어요`);
@@ -151,7 +156,7 @@ async function setThreadsToken(cfg) { // --threads-token <토큰> [--secret <앱
   if (flag('init')) { if (loadCfg()) console.log('이미 있어요: ' + CFG_PATH); else { saveCfg(TEMPLATE); console.log('✅ 만들었어요: ' + CFG_PATH + ' (discord.webhook 을 채우고, Threads 는 --threads-token)'); } return; }
   if (opt('threads-token')) return setThreadsToken(loadCfg() || { ...TEMPLATE });
   if (opt('discord-role')) { const c = loadCfg() || { ...TEMPLATE }, id = (/\d{15,}/.exec(opt('discord-role')) || [])[0]; if (!id) die('역할 ID (숫자) 를 넣어 주세요'); c.discord = { ...(c.discord || {}), role: id }; saveCfg(c); console.log(`✅ 디스코드 공지마다 역할 <@&${id}> 핑 · 빼려면 --no-ping`); return; }
-  const n = pick(), imgs = images(n.key), want = k => !ONLY || ONLY === k;
+  const n = pick(), imgs = (n.img && images(n.img).length ? images(n.img) : images(n.key.replace(/-day$/, ''))), want = k => !ONLY || ONLY === k;
   imgs.forEach(f => { if (!fs.existsSync(f)) die('이미지가 없어요: ' + f); });
   console.log(`📝 ${n.key} · ${plain(n.title)} · 항목 ${n.sections.reduce((t, s) => t + s.items.length, 0)}개 · 이미지 ${imgs.length}장`);
   if (DRY) {
