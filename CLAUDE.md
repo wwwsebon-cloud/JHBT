@@ -40,6 +40,7 @@
 - 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로).
 - 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
 - 만든 PNG 는 커밋하고 사용자에게 보낸다.
+- **공지 자동 올리기 (R2.36 build 2)**: `node tools/post-patch.js` — 맨 위 패치노트 (그날 마지막 build 칸 · `--all` 은 버전 전체) 글 + 인포그래픽을 **디스코드 (웹후크 · 임베드 갤러리 4장)** 와 **Threads (공식 API · 500자 → 항목 이름만 · 여러 장이면 캐러셀)** 에. Threads 는 이미지를 GitHub raw 주소로 받으니 **푸시한 뒤** · `--dry` 로 글 · 주소 확인 · 설정 (웹후크 · Threads 토큰 · 올린 기록 `posted`) 은 저장소 밖 `문서/jhbt-app/post.json` (`--init` · `--threads-token <토큰> --secret <앱 시크릿>` · 토큰은 20일마다 알아서 갱신). **밖으로 올리는 일이라 사용자가 하거나, 사용자가 올리라고 할 때만** 돌린다.
 
 ## 신규 지후 체크리스트
 - 초상화: **흰 배경 256×256 PNG** (투명 금지) → `PORTRAITS` (base64) · 원본은 `지후초상화/` 또는 사용자가 준 폴더.
