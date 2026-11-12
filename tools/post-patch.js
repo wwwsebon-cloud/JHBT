@@ -139,7 +139,7 @@ async function postThreads(cfg, n, imgs) {
 }
 async function setThreadsToken(cfg) { // --threads-token <토큰> [--secret <앱 시크릿>]
   let token = opt('threads-token'); if (!token) die('--threads-token 뒤에 토큰을 넣어 주세요');
-  if (opt('secret')) { const j = await th('GET', '/access_token', { grant_type: 'th_exchange_token', client_secret: opt('secret'), access_token: token }); if (!j.access_token) throw new Error('60일 토큰으로 못 바꿨어요 ' + JSON.stringify(j).slice(0, 200)); token = j.access_token; console.log('🔑 60일 토큰으로 바꿨어요'); }
+  if (opt('secret')) { try { const j = await th('GET', '/access_token', { grant_type: 'th_exchange_token', client_secret: opt('secret'), access_token: token }); if (!j.access_token) throw new Error(JSON.stringify(j).slice(0, 200)); token = j.access_token; console.log('🔑 60일 토큰으로 바꿨어요'); } catch (e) { console.log('ℹ️ 60일 토큰으로 바꾸지 못해 받은 토큰을 그대로 써요 (토큰 생성기 토큰은 이미 60일짜리예요)'); } }
   const me = await th('GET', '/v1.0/me', { fields: 'id,username', access_token: token }); if (!me.id) throw new Error('계정 id 를 못 받았어요 ' + JSON.stringify(me).slice(0, 200));
   cfg.threads = { userId: me.id, username: me.username, token, savedAt: new Date().toISOString() }; saveCfg(cfg);
   console.log(`✅ Threads @${me.username} (${me.id}) 저장 → ${CFG_PATH}`);
