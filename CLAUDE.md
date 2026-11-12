@@ -15,7 +15,7 @@
    - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.35** (build 11).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R2.36** (build 1).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 버전 그대로인 잠수함 패치는 `<meta name="jihoo-build">` +1.
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
@@ -116,6 +116,12 @@
 - **서명 키** `C:/Users/User/Documents/jhbt-app/jhbt-release.jks` + `keystore.properties` (비밀번호 · `app/android/keystore.properties` 로 복사해 쓴다 · git 에 안 올림) — **잃어버리면 같은 앱으로 업데이트를 못 낸다** (유저가 지우고 다시 설치해야 함).
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
+
+## 최근 변경 (R2.36 · 디펜스 업그레이드 · 이벤트 카드 · 상태 아이콘)
+- **디펜스 유닛 업그레이드**: 경기마다 `S.cw.up[id]` (Lv1~5 · 내 덱 지후만) · `DF.UP_COST` [100, 200, 400, 800] · 배율 `dfUpM` = 1 + (Lv − 1) × `DF.UP_K` 0.25 (Lv5 = 2배) · 출격할 때 `dfMod` → `dfUpApply` · 올리면 전장의 그 지후도 바로 (`dfUp`) · 트레이 아래 줄 `#cwUp` (`cwUpRender` · 골드가 바뀔 때만 `cwUpHud`) · 자동 봇은 업그레이드하지 않는다.
+- **디펜스 수치**: 열쇠 `dfKeys(깬 웨이브)` = 5웨이브마다 3 · 30웨이브부터 10 · 처치 골드 `KILL_K` 1.25 (= 5) · 충격파 `QDMAX` 0.6 · [금고] 최대 500 · [큰돈] 500 · **디펜스는 누구나 2배속** (`fastSpeed` · `renderSpeedBtn` 의 `isDf()`).
+- **이벤트 카드 고르기 = 세로 목록** (`.evp-*` · 육각 아이콘 `.evp-hx` 등급 색 g0~g2 · 주황 이름 · 흰 설명): 디펜스 `#dfPick` (`dfPickOpen`) · 이벤트 모드 `evShow` (`evRowHtml` · R2.23 build 2 슬롯머신 릴은 걷어 냄 · 타이머 · 상대 선택 `evMiniHtml` 은 그대로).
+- **상태 아이콘 10종** (사용자가 그린 `icons/fx/`): goja · fear · taunt · corr · realm · warp (warpUp · warpDn 같은 아이콘) · ignite · addict · absorb (`FX_OF`) · impeached (`fxList` 가 `u.ipDone` 이면) · 원본 `바탕화면/newicon` (고자는 사진을 정사각형으로 잘랐다) · `tools/sw_assets.py` · `sw.js` CACHE core-6.
 
 ## 최근 변경 (R2.35 · 밸런스 8종)
 - 부루스타 ATK 225 · 공격력 선형 감소 (`atkMult` 1 − t/15) · `splash` 1.9 · 꺼짐 7초 · 차원 ATK 140 · 늑대 스킬 [포효] `wolfRoar` (SP 6 · 반경 2칸 넉백 2.5칸 · buff `wroar` 공격력 −15% 5초) · 불사조 쉴드 400 · 블랙홀 ATK 100 · 홍명보 패스 회복 40% · 빔 ATK 25 · 사거리 5.3 · 죠스 공격 회복 30%. 티어 시뮬은 돌리지 않았다 (사용자 요청).
