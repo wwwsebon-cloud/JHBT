@@ -41,7 +41,7 @@
 - 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로).
 - 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
 - 만든 PNG 는 커밋하고 사용자에게 보낸다.
-- **공지 자동 올리기 (R2.36 build 2)**: `node tools/post-patch.js` — 맨 위 패치노트 (그날 마지막 build 칸 · `--all` 은 버전 전체) 글 + 인포그래픽을 **디스코드 (웹후크 · 임베드 갤러리 4장)** 와 **Threads (공식 API · 500자 → 항목 이름만 · 여러 장이면 캐러셀)** 에. Threads 는 이미지를 GitHub raw 주소로 받으니 **푸시한 뒤** · `--dry` 로 글 · 주소 확인 · 설정 (웹후크 · Threads 토큰 · 올린 기록 `posted`) 은 저장소 밖 `문서/jhbt-app/post.json` (`--init` · `--threads-token <토큰>` (토큰 생성기 토큰은 이미 60일짜리 · 짧은 토큰이면 `--secret`) · 토큰은 20일마다 알아서 갱신 · 디스코드 역할 핑 `--discord-role <역할 ID>` → 올릴 때마다 핑 · 빼려면 `--no-ping`). **밖으로 올리는 일이라 사용자가 하거나, 사용자가 올리라고 할 때만** 돌린다.
+- **공지 자동 올리기 (R2.36 build 2)**: `node tools/post-patch.js` — 맨 위 패치노트 (그날 마지막 build 칸 · `--all` 은 버전 전체) 글 + 인포그래픽을 **디스코드 (웹후크 · 임베드 갤러리 4장)** 와 **Threads (공식 API · 500자 → 항목 이름만 · 여러 장이면 캐러셀)** 에. Threads 는 이미지를 GitHub raw 주소로 받으니 **푸시한 뒤** · `--dry` 로 글 · 주소 확인 · 설정 (웹후크 · Threads 토큰 · 올린 기록 `posted`) 은 저장소 밖 `문서/jhbt-app/post.json` (`--init` · `--threads-token <토큰>` (토큰 생성기 토큰은 이미 60일짜리 · 짧은 토큰이면 `--secret`) · 토큰은 20일마다 알아서 갱신 · 디스코드 역할 핑 `--discord-role <역할 ID>` → 올릴 때마다 핑 · 빼려면 `--no-ping`). **매일 마지막 패치만 내가 올린다 (2026-11-12 사용자 허락 · 그 밖엔 사용자가 올리라고 할 때만)**: build 마다 올리지 않는다 · 하루가 끝날 때 (사용자가 오늘은 끝 · 잔다고 하거나 총정리를 하라고 할 때) `today-<날짜>` 총정리 인포그래픽 → 커밋 · 푸시 → **`node tools/post-patch.js --day`** (그 버전 항목 전체 + today 이미지 · 디스코드 @update 핑) · 다음 날 첫 작업에서 어제 버전의 `<버전>-day` 가 `post.json` 의 `posted` 에 없으면 먼저 올린다 · 잠수함 패치는 올리지 않는다.
 
 ## 신규 지후 체크리스트
 - 초상화: **흰 배경 256×256 PNG** (투명 금지) → `PORTRAITS` (base64) · 원본은 `지후초상화/` 또는 사용자가 준 폴더.
