@@ -50,7 +50,8 @@ function pick() { // 올릴 항목: { key, ver, build, title, date, sections }
   const bOf = s => +((/^추가 패치 \(build (\d+)\)/.exec(s.title || '') || [])[1] || 0);
   if (flag('day')) { /* 하루 총정리: build 칸까지 모두 · 이미지 today-<날짜> (없으면 <버전>) */
     const day = 'today-' + String(e.date || '').replace(/\./g, '-'), secs = e.sections.map(x => ({ title: plain(x.title).replace(/^추가 패치 \(build \d+\)\s*·?\s*/, '') || plain(e.title), items: x.items }));
-    return { key: `${ver}-day`, img: day, ver, build: 0, title: e.title, date: e.date, sections: secs };
+    let today = null; try { today = JSON.parse(fs.readFileSync(path.join(ROOT, 'infographics', day + '.json'), 'utf8')); } catch (er) {}
+    return { key: `${ver}-day`, img: day, today, ver, build: 0, title: e.title, date: e.date, sections: secs };
   }
   let build = opt('build') ? +opt('build') : flag('all') ? 0 : bOf(e.sections[0]);
   if (build > 1) {
@@ -70,12 +71,42 @@ function images(key) { // infographics/<key>.png · <key>-2.png …
 // ── 글 ──
 const head = n => `📢 RE : 지후배틀 ${n.ver}${n.build ? ` build ${n.build}` : ''} 업데이트`;
 const line = it => `${it.icon || TAG[it.tag] || '•'} ${plain(it.name)}${it.desc ? ' — ' + plain(it.desc) : ''}`;
+function balSum(sec) { // 총정리 밸런스 타일 → 지후별 상향 · 하향 · 조정 이름
+  const by = {}; (sec.tiles || []).forEach(t => { if (!by[t.id]) by[t.id] = { name: plain(t.name).replace(/ 지후$/, ''), tag: t.tag }; });
+  const L = Object.values(by), of = tag => L.filter(x => x.tag === tag).map(x => x.name);
+  return { n: L.length, up: of('buff'), dn: of('nerf'), adj: L.filter(x => x.tag !== 'buff' && x.tag !== 'nerf').map(x => x.name) };
+}
+const SEC_IC = { new: '🆕', change: '🔄', fix: '🔧', balance: '⚖️' };
+function dayLong(n) { // 디스코드 (하루 총정리): 섹션마다 항목 · 밸런스는 지후 이름만
+  const out = [];
+  for (const sec of n.today.sections) {
+    if (sec.kind === 'balance') { const b = balSum(sec); out.push(`\n**⚖️ ${plain(sec.label)} ${b.n}종**`); if (b.up.length) out.push(`🔺 상향: ${b.up.join(' · ')}`); if (b.dn.length) out.push(`🔻 하향: ${b.dn.join(' · ')}`); if (b.adj.length) out.push(`🔄 조정: ${b.adj.join(' · ')}`); continue; }
+    out.push(`\n**${SEC_IC[sec.kind] || '•'} ${plain(sec.label)}**`);
+    (sec.items || []).forEach(it => out.push(`${it.icon || '✨'} ${plain(it.title)}${(it.lines || []).length ? ' — ' + it.lines.map(plain).join(' · ') : ''}`));
+  }
+  let t = out.join('\n').trim(); if (t.length > 3900) t = t.slice(0, 3900).replace(/\n[^\n]*$/, '') + '\n…';
+  return t;
+}
+function dayShort(n) { // Threads (하루 총정리 · 500자): 섹션마다 앞 몇 개 이름 · 밸런스는 수만
+  const cp = x => [...x].length, top = `${head(n)}\n${plain(n.title)}\n\n`, tail = `\n\n▶ ${SITE.replace('https://', '')}`;
+  for (const k of [4, 3, 2, 1, 0]) {
+    const L = n.today.sections.map(sec => {
+      if (sec.kind === 'balance') { const b = balSum(sec); return `⚖️ ${plain(sec.label)} ${b.n}종 (상향 ${b.up.length} · 하향 ${b.dn.length}${b.adj.length ? ' · 조정 ' + b.adj.length : ''})`; }
+      const T = (sec.items || []).map(it => plain(it.title).split(' · ')[0]), more = T.length - k; /* 「얼음 · 한파주의보」 → 얼음 */
+      return `${SEC_IC[sec.kind] || '•'} ${plain(sec.label)}` + (k ? ` — ${T.slice(0, k).join(' · ')}${more > 0 ? ` 외 ${more}` : ''}` : ` ${T.length}`);
+    });
+    const t = top + L.join('\n') + tail; if (cp(t) <= 490) return t;
+  }
+  return top + n.today.sections.map(sec => plain(sec.label)).join(' · ') + tail;
+}
 function longText(n) { // 디스코드: 항목 전부 (4000자까지)
+  if (n.today) return dayLong(n);
   const out = []; n.sections.forEach(s => { if (n.sections.length > 1 || (s.title && s.title !== n.title)) out.push(`\n**${plain(s.title)}**`); s.items.forEach(it => out.push(line(it))); });
   let t = out.join('\n').trim(); if (t.length > 3900) t = t.slice(0, 3900).replace(/\n[^\n]*$/, '') + '\n…';
   return t;
 }
 function shortText(n) { // Threads: 500자 → 항목 이름만 · 넘치면 「외 N개」
+  if (n.today) return dayShort(n);
   const cp = s => [...s].length, top = `${head(n)}\n${plain(n.title)}\n\n`, tail = `\n\n▶ ${SITE.replace('https://', '')}`, names = [];
   n.sections.forEach(s => s.items.forEach(it => names.push(`${it.icon || TAG[it.tag] || '•'} ${plain(it.name)}`)));
   let body = '', k = 0;
