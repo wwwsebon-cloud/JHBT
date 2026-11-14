@@ -2297,12 +2297,13 @@ body.u2-theme .gcard { background:#2c3553; box-shadow:0 0 0 1px #3b466b; color:#
    바닥 (#field) 은 applyCamera 가 scaleY(TILT) 로 눌러 비스듬히 내려다본 모양 — 칸 · 장판 · 고리 · 빛줄기는 바닥에 눕고,
    서 있어야 하는 것 (지후 · 글씨 · 떨어지는 것) 은 낱개 속성 scale 로 다시 편다 (transform 애니메이션과 따로 논다). 캔버스 지후는 cvDraw 가 직접. */
 .unit, .ufx { --uh:46.5px; } .unit.big { --uh:75px; } .unit.small { --uh:29px; } /* 상자 반쪽 크기: scale 로 생기는 밀림을 left · top 으로 되돌린다 */
-#field.tilt > .unit, #field.tilt > .ufx { --sx:var(--ds, 1); --sy:calc(var(--ds, 1) * var(--ut)); scale:var(--sx) var(--sy); left:calc(var(--uh) * (var(--sx) - 1)); top:calc(var(--uh) * (var(--sy) - 1 - var(--lk))); }
+#field.tilt { transform-style:preserve-3d; } /* R3.0 3D: 자식 (지후 · 글씨) 이 눕힌 바닥에서 일어선다 (rotate x = −바닥 각도) */
+#field.tilt > .unit, #field.tilt > .ufx { rotate:x var(--rx, 0deg); --sx:var(--ds, 1); --sy:calc(var(--ds, 1) * var(--ut)); scale:var(--sx) var(--sy); left:calc(var(--uh) * (var(--sx) - 1)); top:calc(var(--uh) * (var(--sy) - 1 - var(--lk))); }
 #field.tilt.flip > .unit, #field.tilt.flip > .ufx { --sx:calc(-1 * var(--ds, 1)); }
 #field.tilt > .unit.cast { animation-name:castT; } @keyframes castT { 40% { scale:calc(var(--sx) * 1.18) calc(var(--sy) * 1.18); } }
 #field.tilt > .unit::before { content:''; position:absolute; left:10%; right:10%; bottom:-7%; height:20%; border-radius:50%; background:rgba(20,24,40,.17); z-index:-1; pointer-events:none; } /* 발밑 그림자 */
-#field.tilt > .rowlab, #field.tilt > .fx-damage-num, #field.tilt > .fx-lvtext, #field.tilt > .fx-tiletxt, #field.tilt > .slot-callout, #field.tilt > .fx-death-fx, #field.tilt > .fx-train-signal, #field.tilt > .fx-nuke, #field.tilt > .fx-nuke-cd, #field.tilt > .fx-relic, #field.tilt > .fx-card, #field.tilt > .fx-cowgold, #field.tilt > .fx-pk-rise, #field.tilt > .fx-sun-drop, #field.tilt > .fx-bolt, #field.tilt > .fx-dragon-rise, #field.tilt > .fx-gq-fly, #field.tilt > .df-warn, #field.tilt > .fx-up { scale:1 var(--ut); }
-#field.tilt.flip > .rowlab, #field.tilt.flip > .fx-damage-num, #field.tilt.flip > .fx-lvtext, #field.tilt.flip > .fx-tiletxt, #field.tilt.flip > .fx-death-fx, #field.tilt.flip > .fx-train-signal, #field.tilt.flip > .fx-nuke, #field.tilt.flip > .fx-nuke-cd, #field.tilt.flip > .fx-relic, #field.tilt.flip > .fx-card, #field.tilt.flip > .fx-cowgold, #field.tilt.flip > .fx-pk-rise, #field.tilt.flip > .fx-sun-drop, #field.tilt.flip > .fx-bolt, #field.tilt.flip > .fx-dragon-rise, #field.tilt.flip > .fx-gq-fly, #field.tilt.flip > .df-warn, #field.tilt.flip > .fx-up { scale:-1 var(--ut); }
+#field.tilt > .rowlab, #field.tilt > .fx-damage-num, #field.tilt > .fx-lvtext, #field.tilt > .fx-tiletxt, #field.tilt > .slot-callout, #field.tilt > .fx-death-fx, #field.tilt > .fx-train-signal, #field.tilt > .fx-nuke, #field.tilt > .fx-nuke-cd, #field.tilt > .fx-relic, #field.tilt > .fx-card, #field.tilt > .fx-cowgold, #field.tilt > .fx-pk-rise, #field.tilt > .fx-sun-drop, #field.tilt > .fx-bolt, #field.tilt > .fx-dragon-rise, #field.tilt > .fx-gq-fly, #field.tilt > .df-warn, #field.tilt > .fx-up { scale:1 var(--ut); rotate:x var(--rx, 0deg); }
+#field.tilt.flip > .rowlab, #field.tilt.flip > .fx-damage-num, #field.tilt.flip > .fx-lvtext, #field.tilt.flip > .fx-tiletxt, #field.tilt.flip > .fx-death-fx, #field.tilt.flip > .fx-train-signal, #field.tilt.flip > .fx-nuke, #field.tilt.flip > .fx-nuke-cd, #field.tilt.flip > .fx-relic, #field.tilt.flip > .fx-card, #field.tilt.flip > .fx-cowgold, #field.tilt.flip > .fx-pk-rise, #field.tilt.flip > .fx-sun-drop, #field.tilt.flip > .fx-bolt, #field.tilt.flip > .fx-dragon-rise, #field.tilt.flip > .fx-gq-fly, #field.tilt.flip > .df-warn, #field.tilt.flip > .fx-up { scale:-1 var(--ut); rotate:x var(--rx, 0deg); }
 #field.tilt > .rowlab { transform-origin:0 0; }
 #fieldWrap.ew #fieldGrid { display:none; }
 /* R3.0 편성판 (#fmBoard): 한 줄 12칸 (왼쪽 후열 3 · 중열 6 · 전열 3) */
@@ -3914,7 +3915,7 @@ const CFG = {
   ROW_KIND: [0, 1, 1, 2],                  // R3.0 줄 → 종류 (0 전열 3칸 · 1 중열 6칸 · 2 후열 3칸)
   DEPTH: [0.60, 0.70, 0.80, 0.90], ACROSS: [0.1, 0.9], // 칸 위치 (전장 비율 · 릴스의 깊이 · 옆 방향은 모든 전장)
   DEPTH_EW: [150, 262.5, 375, 487.5],      // R3.0 가로 전장: 줄마다 가운데 선에서의 거리 (px · 전열 사이 4칸 · 줄 간격 1.5칸)
-  TILT: 0.7, SKEW: -0.17, DEPTH_S: 0.1, LIFT: 0.3, /* R3.0 SKEW: 바닥 기울임 (화면 x += 세계 y × SKEW · 아래 줄이 왼쪽으로 · 시안의 사선) */      // R3.0 2.5D: 바닥 세로 눌림 (화면 y = 세계 y × TILT) · 뒤쪽 (위) 지후가 작아지는 정도 · 지후가 바닥 점에서 떠 보이는 높이 (반지름 비율)
+  TILT_DEG: 50, PERSP: 2.8, /* R3.0 3D: 바닥을 뒤로 눕힌 각도 · 원근 거리 (화면 높이 × PERSP · 작을수록 원근이 세다) */ TILT: 0.7, SKEW: 0, DEPTH_S: 0.1, LIFT: 0.3, /* R3.0 SKEW: 바닥 기울임 (화면 x += 세계 y × SKEW · 아래 줄이 왼쪽으로 · 시안의 사선) */      // R3.0 2.5D: 바닥 세로 눌림 (화면 y = 세계 y × TILT) · 뒤쪽 (위) 지후가 작아지는 정도 · 지후가 바닥 점에서 떠 보이는 높이 (반지름 비율)
   DEPTH_NS: [720, 504, 288],               // R2.12.2 세로 전장: 줄마다 내 진영 뒤 끝에서의 거리 (px · 전열 · 가운데 · 후열) → 맵이 길어지면 양쪽 전열 사이가 멀어진다
   MAP_REELS: [1120, 1120],                         // 릴스 모드: 정사각형 전장 (R2.10.5)
   MAP_EW: [1260, 750], /* R3.0 가로 전장 16.8 × 10칸 (컴팩트) */ MAP_NS: [1275, 2250],     // 전장 크기 (가로 · 세로 (R2 · 이제 안 쓴다)) · R2.12: 17 × 24칸 · R2.12.2: 17 × 30칸 (1275 × 2250 · 전열 사이 4.8 → 10.8칸 · 폭은 그대로라 폰에서 유닛이 작아지지 않게)
@@ -6909,8 +6910,10 @@ let uidSeq = 0;
 const WS = CFG.CELL / 45; // 전작 WORLD_SCALE: 45px 격자 기준 수치 → 지금 격자 (유닛 반지름 · 몸 간격도 같은 비율)
 // 전장 방향 (R3.0): 가로 전장 (나는 왼쪽 · 상대는 오른쪽) · 릴스만 예전 세로 정사각형 전장 (R2.12 ~ R2.37 은 모든 모드 세로)
 function isEW() { return !reelsOn(); }
-const TILT = () => (isEW() ? CFG.TILT : 1); // R3.0 2.5D: 바닥을 세로로 누른다 (그리기만 · 세계 좌표 · 전투 계산은 평면 그대로 · 릴스는 평면)
-const depthS = y => (isEW() ? 1 - CFG.DEPTH_S * (1 - y / FH()) : 1);
+const TILT = () => (isEW() ? Math.cos(CFG.TILT_DEG * Math.PI / 180) : 1); /* R3.0 3D: 눕힌 바닥의 세로 비율 (카메라 맞춤 · 따라가기용 근사) */ // R3.0 2.5D: 바닥을 세로로 누른다 (그리기만 · 세계 좌표 · 전투 계산은 평면 그대로 · 릴스는 평면)
+const depthS = y => 1; // R3.0 3D: 깊이 배율은 원근이 정한다 (캔버스는 proj3 의 s · DOM 은 CSS 3D)
+const P3 = { m: null, z: 1 }; // R3.0 3D: #field 의 3D 변환 행렬 (applyCamera 가 만든다) — 세계 (x, y, 0) → 전장 틀 (#fieldWrap) 안 화면 px
+function proj3(x, y) { const m = P3.m; if (!m) return { x, y, s: 1 }; const w = m.m14 * x + m.m24 * y + m.m44; return { x: (m.m11 * x + m.m21 * y + m.m41) / w, y: (m.m12 * x + m.m22 * y + m.m42) / w, s: 1 / w }; }
 const SKW = () => (isEW() ? CFG.SKEW : 0), vX0 = () => Math.min(0, SKW() * FH()), vX1 = () => FW() + Math.max(0, SKW() * FH()); // R3.0: 보기 좌표 x = 세계 x (반전 뒤) + 세계 y × SKEW · 전장의 보기 폭 vX0 ~ vX1 // R3.0: 뒤쪽 (화면 위) 일수록 살짝 작게 그린다
 const rowKind = row => CFG.ROW_KIND[row], tileKind = t => CFG.ROW_KIND[Math.floor(t / CFG.COLS)], rowGap = (row, kind) => { let d = 9; for (let r = 0; r < CFG.ROWS; r++) if (CFG.ROW_KIND[r] === kind) d = Math.min(d, Math.abs(r - row)); return d; }; // R3.0: 줄 종류 (0 전열 · 1 중열 · 2 후열) · 그 종류의 줄까지 거리
 const midXY = side => { const a = tileXY(side, CFG.COLS + 1), b = tileXY(side, 2 * CFG.COLS + 1); return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }; // R3.0: 진영 한가운데 (중열 두 줄 사이 · 예전 7번 칸)
@@ -7970,6 +7973,7 @@ function animReset() { try { for (const a of document.getAnimations()) { const t
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { cvReset(); requestAnimationFrame(animReset); } }); addEventListener('pageshow', () => { cvReset(); requestAnimationFrame(animReset); });
 function cvPlace() { // 캔버스에 카메라의 반대 변환 → 화면 크기 그대로 보인다
   if (!CV.el) return; const { vw, vh } = viewSize(), z = CAM.z || 1;
+  if (P3.m) { if (CV.tf !== 'none') { CV.tf = 'none'; CV.el.style.transform = 'none'; } return; } /* R3.0 3D: 캔버스는 #fieldWrap 에 (화면 그대로) · 위치는 proj3 */
   let t = `translate(${CAM.x.toFixed(2)}px, ${CAM.y.toFixed(2)}px) scale(${(1 / z).toFixed(6)}) translate(${(-vw / 2).toFixed(1)}px, ${(-vh / 2).toFixed(1)}px)`;
   if (TILT() !== 1) t = `matrix(1, 0, ${(-SKW() / TILT()).toFixed(6)}, ${(1 / TILT()).toFixed(6)}, 0, 0) ` + t; /* R3.0: 바닥 눌림 · 기울임의 반대 */
   if (flipView()) t = (isEW() ? `translateX(${FW()}px) scaleX(-1) ` : `translateY(${FH()}px) scaleY(-1) `) + t;
@@ -7979,6 +7983,7 @@ function cvPick(e) { // 누른 자리의 지후 (캔버스는 pointer-events 가
   if (!CV.on) return null; const r = $('fieldWrap').getBoundingClientRect(), { vw, vh } = viewSize(), z = CAM.z || 1;
   const X = CAM.x + (e.clientX - r.left - vw / 2) / z, Y = CAM.y + (e.clientY - r.top - vh / 2) / z, fl = flipView(), ew = isEW();
   const T = TILT(), lift = T !== 1 ? CFG.LIFT : 0, sk = SKW(); /* R3.0: 화면에 서 있는 그림 (보기 좌표) 으로 고른다 */
+  if (P3.m) { const sx = e.clientX - r.left, sy = e.clientY - r.top; let b3 = null, d3 = Infinity; for (const u of S.units) { if (!u.alive || !u._cv) continue; const p = proj3(u.x, u.y), rr = unitRadius(u) * p.s * z, d = Math.hypot(p.x - sx, p.y - rr * lift - sy); if (d < rr * 1.15 && d < d3) { d3 = d; b3 = u; } } return b3; } /* R3.0 3D: 원근 투영으로 고른다 */
   let best = null, bd = Infinity; for (const u of S.units) { if (!u.alive || !u._cv) continue; const ux = (fl && ew ? FW() - u.x : u.x) + sk * u.y, uy = (fl && !ew ? FH() - u.y : u.y) * T - unitRadius(u) * lift, d = Math.hypot(ux - X, uy - Y); if (d < unitRadius(u) * 1.15 && d < bd) { bd = d; best = u; } } return best;
 }
 const CV_IX = [], CV_M = []; function cvAt(c, k, X, Y, s) { c.setTransform(k * s, 0, 0, k * s, k * X, k * Y); } /* R3.0: 지후 하나의 자리 · 깊이 배율 */
@@ -7987,7 +7992,7 @@ function cvDraw() {
   if (!cvAllowed()) { cvEnd(); return; }
   if (CV.lost) { CV.lost = 0; cvReset(); }
   const f = $('field');
-  if (!CV.el || !CV.el.isConnected) { CV.el = document.createElement('canvas'); CV.el.className = 'fx-ucv'; CV.ctx = CV.el.getContext('2d'); CV.el.addEventListener('contextlost', () => { CV.lost = 1; }); CV.el.addEventListener('contextrestored', () => { CV.lost = 1; }); /* build 11: 그림이 날아가면 다음 프레임에 새로 */ f.insertBefore(CV.el, f.querySelector('.unit') || null); CV.w = CV.h = 0; CV.tf = ''; }
+  if (!CV.el || !CV.el.isConnected) { CV.el = document.createElement('canvas'); CV.el.className = 'fx-ucv'; CV.ctx = CV.el.getContext('2d'); CV.el.addEventListener('contextlost', () => { CV.lost = 1; }); CV.el.addEventListener('contextrestored', () => { CV.lost = 1; }); /* build 11: 그림이 날아가면 다음 프레임에 새로 */ if (P3.m) f.after(CV.el); else f.insertBefore(CV.el, f.querySelector('.unit') || null); /* R3.0 3D: 3D 로 기운 #field 밖 */ CV.w = CV.h = 0; CV.tf = ''; }
   CV.on = true;
   const { vw, vh } = viewSize(), dpr = Math.min(BSET.low ? 1.5 : 3, window.devicePixelRatio || 1); /* R2.31: 폰 (배율 2.6 ~ 3) 에서 2배로 그려 늘어나 흐렸다 · 저전력은 1.5 */
   if (CV.w !== vw || CV.h !== vh || CV.dpr !== dpr) { CV.w = vw; CV.h = vh; CV.dpr = dpr; CV.el.width = Math.round(vw * dpr); CV.el.height = Math.round(vh * dpr); CV.el.style.width = vw + 'px'; CV.el.style.height = vh + 'px'; }
@@ -8001,12 +8006,13 @@ function cvDraw() {
     if (u._cvOk === undefined) { u._cvOk = el.isConnected && cvPlain(u); }
     if (u._cvOk !== !!u._cv) cvSwap(u, u._cvOk);
     if (!u._cv) continue;
-    const x = u._rx != null ? u._rx : u.x, y = u._ry != null ? u._ry : u.y, X = (flip && ew ? fw - x : x) + sk * y - cx + hw, Y = (flip && !ew ? fh - y : y) * T - cy + hh - cvD(u) / 2 * lift; /* R3.0: 바닥 점 (y × TILT) 에서 살짝 떠서 선다 */
+    const x = u._rx != null ? u._rx : u.x, y = u._ry != null ? u._ry : u.y; let X, Y, ds = 1;
+    if (P3.m) { const p = proj3(x, y); ds = p.s; X = p.x / z; Y = p.y / z - cvD(u) / 2 * lift * ds; } /* R3.0 3D: 원근 투영 · 가까울수록 크게 · 발이 바닥 점에 닿게 살짝 위로 */ else { X = (flip && ew ? fw - x : x) + sk * y - cx + hw; Y = (flip && !ew ? fh - y : y) * T - cy + hh - cvD(u) / 2 * lift; }
     if (X < -160 || X > hw * 2 + 160 || Y < -200 || Y > hh * 2 + 120) continue; // 화면 밖
-    u._cvS = depthS(y); L.push(u, X, Y);
+    u._cvS = ds; L.push(u, X, Y);
   }
   if (T !== 1 && L.length > 3) { /* R3.0: 뒤 (위) 에서 앞 (아래) 순서로 그린다 */ const n = L.length / 3, ix = CV_IX, M = CV_M; ix.length = n; for (let i = 0; i < n; i++) ix[i] = i * 3; ix.sort((p, q2) => L[p + 2] - L[q2 + 2] || p - q2); M.length = L.length; for (let i = 0; i < n; i++) { const p = ix[i]; M[i * 3] = L[p]; M[i * 3 + 1] = L[p + 1]; M[i * 3 + 2] = L[p + 2]; } for (let i = 0; i < L.length; i++) L[i] = M[i]; }
-  const fy = flip && !ew ? -1 : 1, fx = flip && ew ? -1 : 1, W = CV.W || (CV.W = {}); W.fx = fx; W.fy = fy; W.x = (x, y) => (flip && ew ? fw - x : x) + sk * (y || 0) - cx + hw; /* R3.0: y 를 주면 기울임까지 */ W.y = (x, y) => (flip && !ew ? fh - y : y) * T - cy + hh; W.a = a => flip ? (ew ? Math.PI - a : -a) : a; W.hw = hw; W.hh = hh; W.t = T; /* R3.0: 이펙트도 보기 좌표 (y × TILT) */
+  const fy = flip && !ew ? -1 : 1, fx = flip && ew ? -1 : 1, W = CV.W || (CV.W = {}); W.fx = fx; W.fy = fy; W.x = (x, y) => P3.m ? proj3(x, y || 0).x / z : (flip && ew ? fw - x : x) + sk * (y || 0) - cx + hw; /* R3.0: 3D 는 원근 투영 */ W.y = (x, y) => P3.m ? proj3(x, y).y / z : (flip && !ew ? fh - y : y) * T - cy + hh; W.a = a => flip ? (ew ? Math.PI - a : -a) : a; W.hw = hw; W.hh = hh; W.t = T; /* R3.0: 이펙트도 보기 좌표 (y × TILT) */
   for (const u of S.units) if (u.tgc && u.alive) cvFan(c, W.x(u.x, u.y), W.y(u.x, u.y), u.tgc, W, 0); // 0) 아래층: 공격 예고 · 고리 · 먼지
   cvFxDraw(c, 'under', now, W);
   if (T !== 1) { for (let i = 0; i < L.length; i += 3) { const u = L[i], s = u._cvS, R = cvD(u) / 2 * s; if (u.st.dive > 0 || u.realm) continue; c.drawImage(r3Glow(u.side, q), L[i + 1] - R * 1.25, L[i + 2] + R * 0.62, R * 2.5, R * 0.72); } } /* R3.0: 발밑 빛 (아군 하늘색 · 적 빨강) */
@@ -8175,7 +8181,9 @@ const VIEW = { s: null, i: null }, viewDirty = () => { VIEW.s = VIEW.i = null; }
 function viewSize() { if (VIEW.s) return VIEW.s; const w = $('fieldWrap'), vw = w.clientWidth, vh = w.clientHeight; if (!vw || !vh) return { vw: vw || 1, vh: vh || 1 }; return (VIEW.s = { vw, vh }); } // 숨겨져 있으면 캐시하지 않는다
 function viewInsets() { if (VIEW.i) return (CAM.vi = VIEW.i); const s = $('screen-battle'), h = s.querySelector('.hud'), t = s.querySelector('.tray'), side = s.classList.contains('cw') && isEW() || s.classList.contains('df') && innerWidth >= DF_SPLIT, /* R3.0: 가로 화면 디펜스 · 성뿌수기는 늘 왼쪽 슬롯판 */ v = { t: h ? h.getBoundingClientRect().height : 0, b: t && !side ? t.getBoundingClientRect().height : 0 }; v.h = v.t; /* R3.0: h = HUD (CSS --hudH) */ /* R2.34: PC 디펜스는 트레이가 왼쪽이라 아래를 가리지 않는다 */ if (s.classList.contains('active') && (v.t || v.b)) VIEW.i = v; return (CAM.vi = v); }
 addEventListener('resize', viewDirty); addEventListener('orientationchange', viewDirty); // R2.12: 전장 위에 떠 있는 HUD (위) · 트레이 (아래)
-function fitZoom() { const { vw, vh } = viewSize(), { t, b } = viewInsets(); return Math.max(0.05, Math.min((vw - 16) / (vX1() - vX0()), (vh - t - b - 16) / (FH() * TILT()))); } /* R3.0: CAM.y 는 보기 좌표 (세계 y × TILT) */
+function fitZoom() { const { vw, vh } = viewSize(), { t, b } = viewInsets(); let z = Math.max(0.05, Math.min((vw - 16) / (vX1() - vX0()), (vh - t - b - 16) / (FH() * TILT())));
+  if (TILT() !== 1) for (let i = 0; i < 3; i++) { const e = 1 / Math.max(0.3, 1 - z * FH() * Math.sin(CFG.TILT_DEG * Math.PI / 180) / (vh * CFG.PERSP)); z = Math.max(0.05, Math.min((vw - 16) / ((vX1() - vX0()) * e), (vh - t - b - 16) / (FH() * TILT() * (1 + e) / 2))); } /* R3.0 3D: 가까운 (아래) 쪽이 원근으로 커지는 만큼 덜 당긴다 */
+  return z; } /* R3.0: CAM.y 는 보기 좌표 (세계 y × TILT) */
 const camMidY = z => { const { t, b } = viewInsets(); return FH() * TILT() / 2 - (t - b) / 2 / z; }; // 맵 가운데가 HUD 사이 가운데에 오게
 function zoomMin() { return Math.min(0.4, fitZoom()); } // 전작 ZOOM_MIN 0.4 · 화면이 작으면 전체가 보이는 배율까지
 function clampCamera() {
@@ -8186,7 +8194,7 @@ function clampCamera() {
 function applyCamera(light) {
   clampCamera();
   const { vw, vh } = viewSize();
-  $('field').style.transform = `translate(${vw / 2}px, ${vh / 2}px) scale(${CAM.z}) translate(${-CAM.x}px, ${-CAM.y}px)` + (TILT() !== 1 ? ` matrix(1, 0, ${SKW()}, ${TILT()}, 0, 0)` : '') /* R3.0: 바닥 눌림 */ + (flipView() ? (isEW() ? ` translateX(${FW()}px) scaleX(-1)` : ` translateY(${FH()}px) scaleY(-1)`) : ''); // 참가자: 반전 (세로 전장은 위아래 · CAM 은 화면 좌표)
+  const f3 = TILT() !== 1, P = Math.round(vh * CFG.PERSP), tf = (f3 ? `translate(${vw / 2}px, ${vh / 2}px) perspective(${P}px) translate(${-vw / 2}px, ${-vh / 2}px) ` : '') + `translate(${vw / 2}px, ${vh / 2}px) ${f3 ? `scale3d(${CAM.z}, ${CAM.z}, ${CAM.z})` : `scale(${CAM.z})`} translate(${-CAM.x}px, ${-CAM.y}px)` + (f3 ? ` rotateX(${CFG.TILT_DEG}deg)` : '') /* R3.0 3D: 원근 (화면 가운데) · 바닥을 위쪽 끝 (y = 0) 축으로 눕힌다 → 보기 y = 세계 y × cos (CAM.y 그대로) · 아래가 가깝다 */ + (flipView() ? (isEW() ? ` translateX(${FW()}px) scaleX(-1)` : ` translateY(${FH()}px) scaleY(-1)`) : ''); /* 참가자: 반전 (세로 전장은 위아래 · CAM 은 화면 좌표) */ $('field').style.transform = tf; P3.m = f3 ? new DOMMatrix(tf) : null; P3.z = CAM.z;
   $('field').classList.toggle('flip', flipView());
   if (!isEW()) { /* R3.0: 가로 전장은 격자를 전장 (#field) 바탕에 그린다 */ const g = $('fieldGrid'), C = CFG.CELL, z = CAM.z, s = C * z, ox = vw / 2 - CAM.x * z, oy = vh / 2 - CAM.y * z, mx = ((ox % s) + s) % s - s, my = ((oy % s) + s) % s - s; // R2.12: 흰 격자 1칸 = CFG.CELL (확대 · 이동에 맞춘다)
     /* R2.36 build 4: 격자를 전장 크기 (1 / 배율) 가 아니라 화면 크기로 그린다 — 예전엔 배치 화면 (전체 보기) 에서 2,100 × 4,400px 레이어 (will-change 라 폰 배율 3 그대로 = GPU 300MB 이상) 가 되어, 백그라운드에 다녀온 뒤 화면 전체가 깜빡였다 */
@@ -8219,7 +8227,7 @@ function camAuto(dt) {
   const F = L.filter(u => u._engaged); if (F.length >= 4) L = F;
   const T = TILT(), n = L.length, xs = L.map(u => mx(u.x) + SKW() * u.y).sort((a, b) => a - b), ys = L.map(u => u.y * T).sort((a, b) => a - b), cut = n >= 10 ? Math.floor(n * 0.08) : 0, pad = CFG.CELL * 2;
   const x0 = xs[cut] - pad, x1 = xs[n - 1 - cut] + pad, y0 = ys[cut] - pad, y1 = ys[n - 1 - cut] + pad, { vw, vh } = viewSize(), t = CAM.vi ? CAM.vi.t : 0, b = CAM.vi ? CAM.vi.b : 0;
-  let zt = clamp(Math.min(vw / Math.max(1, x1 - x0), Math.max(40, vh - t - b) / Math.max(1, y1 - y0)), Math.min(fitZoom(), 1.25), 1.25);
+  let zt = clamp(Math.min(vw / Math.max(1, x1 - x0), Math.max(40, vh - t - b) / Math.max(1, y1 - y0)), Math.min(fitZoom(), TILT() !== 1 ? fitZoom() * 1.2 : 1.25), TILT() !== 1 ? fitZoom() * 1.2 : 1.25) /* R3.0 3D: 원근 때문에 많이 당기면 양옆이 잘린다 */;
   if (CAM.az && Math.abs(zt - CAM.az) / CAM.az < 0.1) zt = CAM.az; else CAM.az = zt;
   const k = 1 - Math.exp(-dt * 2.4), kz = 1 - Math.exp(-dt * 1.5), nz = CAM.z + (zt - CAM.z) * kz, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - (t - b) / 2 / nz, nx = CAM.x + (cx - CAM.x) * k, ny = CAM.y + (cy - CAM.y) * k;
   if (Math.abs(nz - CAM.z) < 0.0005 && Math.abs(nx - CAM.x) < 0.3 && Math.abs(ny - CAM.y) < 0.3) return;
@@ -8238,7 +8246,7 @@ function setZoom(z, cx, cy) {
 function fitField() {
   const f = $('field'), T = TILT(); f.style.width = FW() + 'px'; f.style.height = FH() + 'px'; f.classList.toggle('ns', !isEW());
   if (isEW()) try { const o = screen.orientation; if (o && o.lock) { const p = o.lock('landscape'); if (p && p.catch) p.catch(() => {}); } } catch (e) {} /* R3.0: 가로 고정 (되는 기기만 · 안 되면 #rotOv 안내) */
-  f.classList.toggle('tilt', T !== 1); f.style.setProperty('--ut', (1 / T).toFixed(4)); f.style.setProperty('--lk', (T !== 1 ? CFG.LIFT / T : 0).toFixed(4)); $('fieldWrap').classList.toggle('ew', isEW()); /* R3.0 2.5D: 서 있는 요소가 쓰는 값 (CSS .tilt) */
+  f.classList.toggle('tilt', T !== 1); f.style.setProperty('--ut', '1'); f.style.setProperty('--lk', '0'); f.style.setProperty('--rx', (T !== 1 ? -CFG.TILT_DEG : 0) + 'deg'); /* R3.0 3D: 눌림 보정 대신 일으켜 세운다 */ $('fieldWrap').classList.toggle('ew', isEW()); /* R3.0 2.5D: 서 있는 요소가 쓰는 값 (CSS .tilt) */
   fitCamera();
 }
 window.addEventListener('resize', () => { if (S.phase !== 'idle') applyCamera(); });
