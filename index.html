@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -8038,6 +8038,7 @@ function cvEnd() { // 전투가 끝나면 (결정적 순간 · 라운드 끝 · 
   for (const u of S.units || []) if (u._cv && u.el) cvSwap(u, false);
   if (CV.mo) CV.mo.disconnect(); (S.units || []).forEach(u => { if (u.el) u.el._cvObs = false; u._cvOk = undefined; });
   if (CV.el) { CV.el.remove(); CV.el = null; CV.ctx = null; }
+  if (GL.el && GL.el.isConnected) GL.el.remove(); if (CV.el2 && CV.el2.isConnected) CV.el2.remove(); GL.on = false; /* R3.0 build 3 */
 }
 function cvReset() { // R2.34 build 11: 폰에서 다른 탭 · 앱에 다녀오면 캔버스 그림 (GPU) 이 날아가 깜빡였다 → 캔버스 · 그림 캐시를 버리고 다음 프레임에 새로 만든다
   cvEnd(); CV.spr.clear(); for (const u of S.units || []) { u._cvB = null; u._cvI = null; } viewDirty(); lastTs = 0; frameDue = 0;
@@ -8046,11 +8047,12 @@ function animReset() { try { for (const a of document.getAnimations()) { const t
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { cvReset(); requestAnimationFrame(animReset); } }); addEventListener('pageshow', () => { cvReset(); requestAnimationFrame(animReset); });
 function cvPlace() { // 캔버스에 카메라의 반대 변환 → 화면 크기 그대로 보인다
   if (!CV.el) return; const { vw, vh } = viewSize(), z = CAM.z || 1;
-  if (P3.m) { if (CV.tf !== 'none') { CV.tf = 'none'; CV.el.style.transform = 'none'; } return; } /* R3.0 3D: 캔버스는 #fieldWrap 에 (화면 그대로) · 위치는 proj3 */
+  const els = [CV.el, GL.on && GL.el, GL.on && CV.el2].filter(Boolean); /* R3.0 build 3: WebGL 층 · 위 이펙트 층도 같은 자리 */
+  if (P3.m) { if (CV.tf !== 'none') { CV.tf = 'none'; els.forEach(e => { e.style.transform = 'none'; }); } return; } /* R3.0 3D: 캔버스는 #fieldWrap 에 (화면 그대로) · 위치는 proj3 */
   let t = `translate(${CAM.x.toFixed(2)}px, ${CAM.y.toFixed(2)}px) scale(${(1 / z).toFixed(6)}) translate(${(-vw / 2).toFixed(1)}px, ${(-vh / 2).toFixed(1)}px)`;
   if (TILT() !== 1) t = `matrix(1, 0, ${(-SKW() / TILT()).toFixed(6)}, ${(1 / TILT()).toFixed(6)}, 0, 0) ` + t; /* R3.0: 바닥 눌림 · 기울임의 반대 */
   if (flipView()) t = (isEW() ? `translateX(${FW()}px) scaleX(-1) ` : `translateY(${FH()}px) scaleY(-1) `) + t;
-  if (CV.tf !== t) { CV.tf = t; CV.el.style.transform = t; }
+  if (CV.tf !== t) { CV.tf = t; els.forEach(e => { e.style.transform = t; }); }
 }
 function cvPick(e) { // 누른 자리의 지후 (캔버스는 pointer-events 가 없어서 직접 찾는다)
   if (!CV.on) return null; const r = $('fieldWrap').getBoundingClientRect(), { vw, vh } = viewSize(), z = CAM.z || 1;
@@ -8061,17 +8063,138 @@ function cvPick(e) { // 누른 자리의 지후 (캔버스는 pointer-events 가
 }
 const CV_IX = [], CV_M = []; function cvAt(c, k, X, Y, s) { c.setTransform(k * s, 0, 0, k * s, k * X, k * Y); } /* R3.0: 지후 하나의 자리 · 깊이 배율 */
 const CV_L = []; // 이번 프레임에 그릴 지후 [u, x, y] (화면 좌표 / 확대 = 「확대한 CSS px」)
-function cvDraw() {
+// ═════════ R3.0 build 3 WebGL 전장 — 지후 (몸통 · 체력바 · 글씨 · 아이콘) 를 GPU 로 그린다 ═════════
+// 2D 캔버스 그리기 코드 (cvDraw 의 지후 부분) 는 그대로 두고, 같은 이름의 함수를 가진 GLC 에 그린다 (drawImage · fillRect · arc · fillText …).
+// 그림 캐시 (cvSprite 캔버스) 는 한 번 텍스처로 올려 다시 쓴다 · 글씨 · 원은 작은 그림으로 만들어 캐시 · 같은 텍스처끼리 묶어 한 번에 그린다.
+// 층: 2D 캔버스 (아래 이펙트) → WebGL (지후) → 2D 캔버스 (위 이펙트 · 투사체 · 피해 숫자) — 예전과 겹치는 순서가 같다.
+// 끄기: 전투 설정 「WebGL 그리기」 · 주소 ?gl=0 · WebGL 이 없거나 만들다 실패하면 저절로 2D (예전 그대로).
+const GL = { on: false, ok: null, el: null, gl: null, lost: false, tex: new Map(), frame: 0, url: (location.search.match(/[?&]gl=([01])\b/) || [])[1] };
+const glWant = () => !CV.off && GL.ok !== false && !GL.lost && (GL.url === '1' || (GL.url !== '0' && BSET.gl));
+function glInit() { // 셰이더 · 버퍼 (컨텍스트를 다시 받으면 또 부른다)
+  const g = GL.gl, sh = (t, src) => { const o = g.createShader(t); g.shaderSource(o, src); g.compileShader(o); if (!g.getShaderParameter(o, g.COMPILE_STATUS)) throw new Error(g.getShaderInfoLog(o)); return o; };
+  const p = g.createProgram(); g.attachShader(p, sh(g.VERTEX_SHADER, 'attribute vec2 a_p;attribute vec2 a_t;attribute vec4 a_c;uniform vec2 u_r;varying vec2 v_t;varying vec4 v_c;void main(){v_t=a_t;v_c=a_c;gl_Position=vec4(a_p.x/u_r.x*2.0-1.0,1.0-a_p.y/u_r.y*2.0,0.0,1.0);}'));
+  g.attachShader(p, sh(g.FRAGMENT_SHADER, 'precision mediump float;uniform sampler2D u_s;varying vec2 v_t;varying vec4 v_c;void main(){gl_FragColor=texture2D(u_s,v_t)*v_c;}')); g.linkProgram(p);
+  if (!g.getProgramParameter(p, g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(p)); g.useProgram(p);
+  GL.N = 4096; GL.vb = new Float32Array(GL.N * 4 * 8); GL.n = 0; GL.cur = null;
+  const ib = new Uint16Array(GL.N * 6); for (let i = 0, v = 0; i < ib.length; i += 6, v += 4) { ib[i] = v; ib[i + 1] = v + 1; ib[i + 2] = v + 2; ib[i + 3] = v; ib[i + 4] = v + 2; ib[i + 5] = v + 3; }
+  GL.buf = g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER, GL.buf); g.bufferData(g.ARRAY_BUFFER, GL.vb.byteLength, g.DYNAMIC_DRAW);
+  const eb = g.createBuffer(); g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, eb); g.bufferData(g.ELEMENT_ARRAY_BUFFER, ib, g.STATIC_DRAW);
+  const at = (n, k, off) => { const l = g.getAttribLocation(p, n); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, k, g.FLOAT, false, 32, off); }; at('a_p', 2, 0); at('a_t', 2, 8); at('a_c', 4, 16);
+  GL.ur = g.getUniformLocation(p, 'u_r'); g.uniform1i(g.getUniformLocation(p, 'u_s'), 0);
+  g.enable(g.BLEND); g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA); g.pixelStorei(g.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true); g.disable(g.DEPTH_TEST);
+  GL.tex.clear(); glAtlas(); const w = document.createElement('canvas'); w.width = w.height = 2; const wc = w.getContext('2d'); wc.fillStyle = '#fff'; wc.fillRect(0, 0, 2, 2); GL.white = w;
+}
+function glMake() { // 처음 한 번 (실패하면 GL.ok = false → 2D 그대로)
+  if (GL.el) return true;
+  try {
+    const el = document.createElement('canvas'), g = el.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false }); if (!g) throw new Error('webgl 없음');
+    el.className = 'fx-ucv'; GL.el = el; GL.gl = g; glInit();
+    el.addEventListener('webglcontextlost', e => { e.preventDefault(); GL.lost = true; GL.tex.clear(); if (GL.at) GL.at.map.clear(); });
+    el.addEventListener('webglcontextrestored', () => { try { glInit(); GL.lost = false; } catch (e) { GL.ok = false; } });
+    GL.ok = true; return true;
+  } catch (e) { console.warn('[rejhbt] WebGL 을 쓸 수 없어 2D 로 그려요', e); GL.ok = false; GL.el = null; GL.gl = null; return false; }
+}
+function glAtlas() { const g = GL.gl, S = Math.min((navigator.deviceMemory && navigator.deviceMemory <= 4) || BSET.low ? 2048 : 4096, g.getParameter(g.MAX_TEXTURE_SIZE) || 2048), /* 메모리가 적은 폰 · 저전력은 2048 (가득 차면 비우고 다시 채운다) */ t = g.createTexture(); g.bindTexture(g.TEXTURE_2D, t); g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, S, S, 0, g.RGBA, g.UNSIGNED_BYTE, null);
+  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE);
+  GL.at = { t, S, x: 0, y: 0, rh: 0, map: new Map(), resets: 0 }; GL.cur = null; }
+function glSrc(src) { // 그림 → [텍스처, u0, v0, 폭, 높이] (작은 그림은 아틀라스 · 큰 그림은 따로)
+  const A = GL.at; let r = A.map.get(src); if (r) return r;
+  const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight, S = A.S;
+  if (w + 2 > S / 2 || h + 2 > S / 2) { r = [glTex(src), 0, 0, 1, 1]; A.map.set(src, r); return r; }
+  if (A.x + w + 2 > S) { A.x = 0; A.y += A.rh; A.rh = 0; }
+  if (A.y + h + 2 > S) { glFlush(); A.map.clear(); A.x = A.y = A.rh = 0; A.resets++; } /* 가득 참 → 그려 둔 것을 먼저 그리고 비운다 */
+  const g = GL.gl; if (GL.cur !== A.t) { glFlush(); g.bindTexture(g.TEXTURE_2D, A.t); GL.cur = A.t; }
+  g.texSubImage2D(g.TEXTURE_2D, 0, A.x + 1, A.y + 1, g.RGBA, g.UNSIGNED_BYTE, src);
+  r = [A.t, (A.x + 1) / S, (A.y + 1) / S, w / S, h / S]; A.map.set(src, r); A.x += w + 2; A.rh = Math.max(A.rh, h + 2); return r;
+}
+function glTex(src) { // 큰 그림 → 따로 텍스처 (캐시 · 오래 안 쓴 것부터 지운다)
+  let t = GL.tex.get(src); if (t) { t.f = GL.frame; return t.t; }
+  glFlush(); /* 묶어 둔 것을 먼저 그린다 (새 텍스처를 바인딩하면 앞 묶음이 엉뚱한 그림으로 그려진다) */ const g = GL.gl, tx = g.createTexture(); g.bindTexture(g.TEXTURE_2D, tx); g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, src);
+  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE); g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE);
+  GL.tex.set(src, { t: tx, f: GL.frame }); GL.cur = null;
+  if (GL.tex.size > 420) { const old = [...GL.tex.entries()].filter(([, v]) => v.f < GL.frame - 2).sort((a, b) => a[1].f - b[1].f).slice(0, 80); old.forEach(([k, v]) => { g.deleteTexture(v.t); GL.tex.delete(k); }); }
+  return tx;
+}
+const GL_COL = new Map(); GL.tm = new Map(); GL.gly = new Map();
+function glGlyphs(base, font, col, lw, lj, q, stroke) { // 숫자 글자판: '0123456789.k' 를 칸마다 (가로) · 칸 위치 u · 글자 폭 w
+  let G = GL.gly.get(base); if (G) return G; /* 글자판 캔버스는 G 가 쥐고 있다 (그림 캐시에서 밀려나도 그대로) */
+  const x = GL.cc || (GL.cc = document.createElement('canvas').getContext('2d')); x.font = font; const fs = +((font.match(/([\d.]+)px/) || [])[1] || 10), pad = Math.ceil(lw) + 2, H = Math.ceil(fs * 1.5 + pad * 2), CH = '0123456789.k';
+  const w = {}, u = {}; let tot = 0; for (const ch of CH) { w[ch] = x.measureText(ch).width; tot += w[ch] + pad * 2; } const W = Math.ceil(tot), key = 'gg|' + base;
+  const spr = cvSprite(key, W, H, q, g => { g.font = font; g.textAlign = 'left'; g.textBaseline = 'middle'; let cx = 0; for (const ch of CH) { if (stroke) { g.lineWidth = lw; g.lineJoin = lj; g.strokeStyle = col; g.strokeText(ch, cx + pad, H / 2); } else { g.fillStyle = col; g.fillText(ch, cx + pad, H / 2); } cx += w[ch] + pad * 2; } return true; }); if (!spr) return null;
+  let cx = 0; for (const ch of CH) { u[ch] = [cx / W, (w[ch] + pad * 2) / W]; cx += w[ch] + pad * 2; }
+  G = { spr, w, u, pad, H, fs, key }; GL.gly.set(base, G); return G;
+}
+function glCol(css, a) { // CSS 색 → [r, g, b, a] (0~1 · 캐시)
+  let c = GL_COL.get(css); if (!c) { const x = GL.cc || (GL.cc = document.createElement('canvas').getContext('2d')); x.fillStyle = '#000'; x.fillStyle = css; const v = x.fillStyle; let m;
+    if (v[0] === '#') c = [parseInt(v.slice(1, 3), 16) / 255, parseInt(v.slice(3, 5), 16) / 255, parseInt(v.slice(5, 7), 16) / 255, 1];
+    else if ((m = v.match(/rgba?\(([^)]+)\)/))) { const p = m[1].split(',').map(Number); c = [p[0] / 255, p[1] / 255, p[2] / 255, p.length > 3 ? p[3] : 1]; } else c = [0, 0, 0, 1];
+    GL_COL.set(css, c); if (GL_COL.size > 500) GL_COL.clear(); }
+  return c;
+}
+function glFlush() { const g = GL.gl; if (!GL.n) return; g.bufferSubData(g.ARRAY_BUFFER, 0, GL.vb.subarray(0, GL.n * 32)); g.drawElements(g.TRIANGLES, GL.n * 6, g.UNSIGNED_SHORT, 0); GL.n = 0; }
+function glQuad(src, sx, sy, sw, sh, x, y, w, h, m, r, gg, b, a) { // 원본 (sx, sy, sw, sh · 0~1) → 그리기 좌표 사각형 (변환 m 을 곱해 캔버스 px)
+  const T = glSrc(src), tx = T[0]; if (tx !== GL.cur) { glFlush(); GL.gl.bindTexture(GL.gl.TEXTURE_2D, tx); GL.cur = tx; } if (GL.n >= GL.N) glFlush();
+  sx = T[1] + sx * T[3]; sy = T[2] + sy * T[4]; sw *= T[3]; sh *= T[4];
+  const v = GL.vb, A = m[0], B = m[1], C = m[2], D = m[3], E = m[4], F = m[5], x1 = x + w, y1 = y + h, u1 = sx + sw, v1 = sy + sh, pr = r * a, pg = gg * a, pb = b * a; let k = GL.n * 32;
+  v[k] = A * x + C * y + E; v[k + 1] = B * x + D * y + F; v[k + 2] = sx; v[k + 3] = sy; v[k + 4] = pr; v[k + 5] = pg; v[k + 6] = pb; v[k + 7] = a; k += 8;
+  v[k] = A * x1 + C * y + E; v[k + 1] = B * x1 + D * y + F; v[k + 2] = u1; v[k + 3] = sy; v[k + 4] = pr; v[k + 5] = pg; v[k + 6] = pb; v[k + 7] = a; k += 8;
+  v[k] = A * x1 + C * y1 + E; v[k + 1] = B * x1 + D * y1 + F; v[k + 2] = u1; v[k + 3] = v1; v[k + 4] = pr; v[k + 5] = pg; v[k + 6] = pb; v[k + 7] = a; k += 8;
+  v[k] = A * x + C * y1 + E; v[k + 1] = B * x + D * y1 + F; v[k + 2] = sx; v[k + 3] = v1; v[k + 4] = pr; v[k + 5] = pg; v[k + 6] = pb; v[k + 7] = a; GL.n++;
+}
+function glArcSpr(rp, lw, a0, a1, cap) { // 원 · 고리 (흰색 · 화면 px 반지름 rp · 테두리 lw (0 = 채움)) → 그림 캐시
+  const R = Math.max(1, Math.round(rp)), L = Math.round(lw * 2) / 2, pad = Math.ceil(L / 2) + 2, S = (R + pad) * 2, q0 = Math.round(a0 * 64 / Math.PI) / 64 * Math.PI, q1 = Math.round(a1 * 64 / Math.PI) / 64 * Math.PI;
+  return { spr: cvSprite(['ga', R, L, q0, q1, cap || ''].join('|'), S, S, 1, g => { g.translate(S / 2, S / 2); g.beginPath(); g.arc(0, 0, R, q0, q1); if (L) { g.lineWidth = L; g.lineCap = cap || 'butt'; g.strokeStyle = '#fff'; g.stroke(); } else { g.fillStyle = '#fff'; g.fill(); } return true; }), S, R };
+}
+const GLC = { // CanvasRenderingContext2D 의 cvDraw 가 쓰는 부분만 (그 밖의 호출은 무시)
+  m: [1, 0, 0, 1, 0, 0], globalAlpha: 1, fillStyle: '#000', strokeStyle: '#000', lineWidth: 1, font: '10px sans-serif', textAlign: 'start', textBaseline: 'alphabetic', lineJoin: 'miter', lineCap: 'butt', imageSmoothingQuality: 'high', _p: [],
+  begin(w, h) { const g = GL.gl; GL.frame++; g.viewport(0, 0, w, h); g.uniform2f(GL.ur, w, h); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT); GL.n = 0; GL.cur = null; this.globalAlpha = 1; this.m = [1, 0, 0, 1, 0, 0]; },
+  end() { glFlush(); },
+  setTransform(a, b, c, d, e, f) { this.m = [a, b, c, d, e, f]; }, resetTransform() { this.m = [1, 0, 0, 1, 0, 0]; },
+  scale(x, y) { const m = this.m; this.m = [m[0] * x, m[1] * x, m[2] * y, m[3] * y, m[4], m[5]]; },
+  translate(x, y) { const m = this.m; this.m = [m[0], m[1], m[2], m[3], m[4] + m[0] * x + m[2] * y, m[5] + m[1] * x + m[3] * y]; },
+  save() {}, restore() {}, clearRect() {}, measureText(t) { const x = GL.cc || (GL.cc = document.createElement('canvas').getContext('2d')); x.font = this.font; return x.measureText(t); },
+  drawImage(img, a, b, c, d, e, f, g2, h) {
+    const W = img.width || img.naturalWidth, H = img.height || img.naturalHeight; if (!W || !H || this.globalAlpha <= 0) return; if (img.complete === false) return;
+    if (e === undefined) { if (c === undefined) { c = W; d = H; } glQuad(img, 0, 0, 1, 1, a, b, c, d, this.m, 1, 1, 1, this.globalAlpha); }
+    else glQuad(img, a / W, b / H, c / W, d / H, e, f, g2, h, this.m, 1, 1, 1, this.globalAlpha);
+  },
+  fillRect(x, y, w, h) { const c = glCol(this.fillStyle); glQuad(GL.white, 0.25, 0.25, 0.5, 0.5, x, y, w, h, this.m, c[0], c[1], c[2], c[3] * this.globalAlpha); },
+  strokeRect(x, y, w, h) { const l = this.lineWidth, f = this.fillStyle; this.fillStyle = this.strokeStyle; this.fillRect(x - l / 2, y - l / 2, w + l, l); this.fillRect(x - l / 2, y + h - l / 2, w + l, l); this.fillRect(x - l / 2, y + l / 2, l, h - l); this.fillRect(x + w - l / 2, y + l / 2, l, h - l); this.fillStyle = f; },
+  beginPath() { this._p.length = 0; }, arc(x, y, r, a0, a1) { this._p.push([x, y, r, a0, a1]); }, moveTo() {}, lineTo() {}, closePath() {}, roundRect() {}, rect() {},
+  _arcs(fill) { const m = this.m, sc = Math.hypot(m[0], m[1]) || 1, col = glCol(fill ? this.fillStyle : this.strokeStyle);
+    for (const [x, y, r, a0, a1] of this._p) { const full = Math.abs(a1 - a0) >= Math.PI * 2 - 0.01, A = glArcSpr(r * sc, fill ? 0 : this.lineWidth * sc, full ? 0 : a0, full ? Math.PI * 2 : a1, fill ? '' : this.lineCap); if (!A.spr) continue;
+      const half = A.S / 2 / sc; glQuad(A.spr, 0, 0, 1, 1, x - half, y - half, half * 2, half * 2, m, col[0], col[1], col[2], col[3] * this.globalAlpha); } },
+  fill() { this._arcs(true); }, stroke() { this._arcs(false); },
+  _text(t, x, y, stroke) { t = String(t); if (!t) return; const m = this.m, sc = Math.hypot(m[0], m[1]) || 1, q = cvQ(sc), lw = stroke ? this.lineWidth : 0, col = stroke ? this.strokeStyle : this.fillStyle, font = this.font, lj = this.lineJoin;
+    const base = font + '|' + col + '|' + lw + '|' + lj + '|' + q, al = this.textAlign, bl = this.textBaseline;
+    if (/^[0-9.k]+$/.test(t)) { /* 숫자: 글자판 (0~9 . k) 한 장에서 글자마다 잘라 찍는다 → 체력이 바뀌어도 새 그림 · 텍스처가 없다 */
+      const G = glGlyphs(base, font, col, lw, lj, q, stroke); if (!G) return; let tw = 0; for (let i = 0; i < t.length; i++) tw += G.w[t[i]];
+      const ax = al === 'center' ? tw / 2 : al === 'right' || al === 'end' ? tw : 0, ay = bl === 'top' ? -G.fs / 2 : bl === 'bottom' || bl === 'alphabetic' ? G.fs * 0.35 : 0, y0 = y - G.H / 2 - ay; let cx = x - ax;
+      for (let i = 0; i < t.length; i++) { const ch = t[i], u = G.u[ch]; glQuad(G.spr, u[0], 0, u[1], 1, cx - G.pad, y0, G.w[ch] + G.pad * 2, G.H, m, 1, 1, 1, this.globalAlpha); cx += G.w[ch]; }
+      return; }
+    const key = 'gt|' + t + '|' + base; let M = GL.tm.get(key);
+    if (!M) { const fs = +((font.match(/([\d.]+)px/) || [])[1] || 10), tw = this.measureText(t).width, pad = Math.ceil(lw) + 2, W = Math.ceil(tw + pad * 2), H = Math.ceil(fs * 1.5 + pad * 2);
+      const spr = cvSprite(key, W, H, q, g => { g.font = font; g.textAlign = 'left'; g.textBaseline = 'middle'; if (stroke) { g.lineWidth = lw; g.lineJoin = lj; g.strokeStyle = col; g.strokeText(t, pad, H / 2); } else { g.fillStyle = col; g.fillText(t, pad, H / 2); } return true; }); if (!spr) return;
+      M = { spr, fs, tw, pad, W, H }; GL.tm.set(key, M); if (GL.tm.size > 800) GL.tm.delete(GL.tm.keys().next().value); }
+    const ax = al === 'center' ? M.tw / 2 : al === 'right' || al === 'end' ? M.tw : 0, ay = bl === 'top' ? -M.fs / 2 : bl === 'bottom' || bl === 'alphabetic' ? M.fs * 0.35 : 0;
+    glQuad(M.spr, 0, 0, 1, 1, x - ax - M.pad, y - M.H / 2 - ay, M.W, M.H, m, 1, 1, 1, this.globalAlpha); },
+  fillText(t, x, y) { this._text(t, x, y, false); }, strokeText(t, x, y) { this._text(t, x, y, true); },
+};
+function cvDraw() { const t0 = BENCH.on ? performance.now() : 0; cvDraw0(); if (t0) BENCH.cv = (BENCH.cv || 0) + performance.now() - t0; } /* R3.0 build 3: 벤치는 그리기 시간을 따로 잰다 */
+function cvDraw0() {
   if (!cvAllowed()) { cvEnd(); return; }
   if (CV.lost) { CV.lost = 0; cvReset(); }
   const f = $('field');
   if (!CV.el || !CV.el.isConnected) { CV.el = document.createElement('canvas'); CV.el.className = 'fx-ucv'; CV.ctx = CV.el.getContext('2d'); CV.el.addEventListener('contextlost', () => { CV.lost = 1; }); CV.el.addEventListener('contextrestored', () => { CV.lost = 1; }); /* build 11: 그림이 날아가면 다음 프레임에 새로 */ if (P3.m) f.after(CV.el); else f.insertBefore(CV.el, f.querySelector('.unit') || null); /* R3.0 3D: 3D 로 기운 #field 밖 */ CV.w = CV.h = 0; CV.tf = ''; }
-  CV.on = true;
+  const gu = glWant() && glMake(); /* R3.0 build 3 WebGL: 지후는 GPU 층 · 위 이펙트는 그 위 2D 층 */
+  if (gu) { if (!CV.el2) { CV.el2 = document.createElement('canvas'); CV.el2.className = 'fx-ucv'; CV.ctx2 = CV.el2.getContext('2d'); } if (GL.el.previousSibling !== CV.el) { CV.el.after(GL.el); CV.w = 0; } if (CV.el2.previousSibling !== GL.el) { GL.el.after(CV.el2); CV.w = 0; } }
+  else { if (GL.el && GL.el.isConnected) GL.el.remove(); if (CV.el2 && CV.el2.isConnected) CV.el2.remove(); }
+  GL.on = gu; CV.on = true;
   const { vw, vh } = viewSize(), dpr = Math.min(BSET.low ? 1.5 : 3, window.devicePixelRatio || 1); /* R2.31: 폰 (배율 2.6 ~ 3) 에서 2배로 그려 늘어나 흐렸다 · 저전력은 1.5 */
-  if (CV.w !== vw || CV.h !== vh || CV.dpr !== dpr) { CV.w = vw; CV.h = vh; CV.dpr = dpr; CV.el.width = Math.round(vw * dpr); CV.el.height = Math.round(vh * dpr); CV.el.style.width = vw + 'px'; CV.el.style.height = vh + 'px'; }
+  if (CV.w !== vw || CV.h !== vh || CV.dpr !== dpr) { CV.w = vw; CV.h = vh; CV.dpr = dpr; CV.el.width = Math.round(vw * dpr); CV.el.height = Math.round(vh * dpr); CV.el.style.width = vw + 'px'; CV.el.style.height = vh + 'px'; CV.tf = ''; [gu && GL.el, gu && CV.el2].forEach(e => { if (e) { e.width = CV.el.width; e.height = CV.el.height; e.style.width = vw + 'px'; e.style.height = vh + 'px'; } }); }
   cvPlace();
-  const c = CV.ctx, z = CAM.z || 1, k = dpr * z, q = cvQ(k), now = performance.now(), flip = flipView(), ew = isEW(), fw = FW(), fh = FH(), cx = CAM.x, cy = CAM.y, hw = vw / 2 / z, hh = vh / 2 / z, T = TILT(), lift = T !== 1 ? CFG.LIFT : 0, sk = SKW();
-  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, CV.el.width, CV.el.height); c.setTransform(k, 0, 0, k, 0, 0); c.imageSmoothingQuality = 'high'; // 아래 좌표는 「확대한 CSS px」 (화면 px / 확대)
+  const c0 = CV.ctx, c = gu ? GLC : c0, cO = gu ? CV.ctx2 : c0, z = CAM.z || 1, k = dpr * z, q = cvQ(k), now = performance.now(), flip = flipView(), ew = isEW(), fw = FW(), fh = FH(), cx = CAM.x, cy = CAM.y, hw = vw / 2 / z, hh = vh / 2 / z, T = TILT(), lift = T !== 1 ? CFG.LIFT : 0, sk = SKW();
+  for (const x of gu ? [c0, cO] : [c0]) { x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, CV.el.width, CV.el.height); x.setTransform(k, 0, 0, k, 0, 0); x.imageSmoothingQuality = 'high'; } if (gu) { GLC.begin(CV.el.width, CV.el.height); c.setTransform(k, 0, 0, k, 0, 0); } // 아래 좌표는 「확대한 CSS px」 (화면 px / 확대)
   const nohp = !BSET.hpnum, low = BSET.low, L = CV_L; L.length = 0;
   for (const u of S.units) {
     const el = u.el; if (!el || !u.alive) continue;
@@ -8086,8 +8209,8 @@ function cvDraw() {
   }
   if (T !== 1 && L.length > 3) { /* R3.0: 뒤 (위) 에서 앞 (아래) 순서로 그린다 */ const n = L.length / 3, ix = CV_IX, M = CV_M; ix.length = n; for (let i = 0; i < n; i++) ix[i] = i * 3; ix.sort((p, q2) => L[p + 2] - L[q2 + 2] || p - q2); M.length = L.length; for (let i = 0; i < n; i++) { const p = ix[i]; M[i * 3] = L[p]; M[i * 3 + 1] = L[p + 1]; M[i * 3 + 2] = L[p + 2]; } for (let i = 0; i < L.length; i++) L[i] = M[i]; }
   const fy = flip && !ew ? -1 : 1, fx = flip && ew ? -1 : 1, W = CV.W || (CV.W = {}); W.fx = fx; W.fy = fy; W.x = (x, y) => P3.m ? proj3(x, y || 0).x / z : (flip && ew ? fw - x : x) + sk * (y || 0) - cx + hw; /* R3.0: 3D 는 원근 투영 */ W.y = (x, y) => P3.m ? proj3(x, y).y / z : (flip && !ew ? fh - y : y) * T - cy + hh; W.a = a => flip ? (ew ? Math.PI - a : -a) : a; W.hw = hw; W.hh = hh; W.t = T; /* R3.0: 이펙트도 보기 좌표 (y × TILT) */
-  for (const u of S.units) if (u.tgc && u.alive) cvFan(c, W.x(u.x, u.y), W.y(u.x, u.y), u.tgc, W, 0); // 0) 아래층: 공격 예고 · 고리 · 먼지
-  cvFxDraw(c, 'under', now, W);
+  for (const u of S.units) if (u.tgc && u.alive) cvFan(c0, W.x(u.x, u.y), W.y(u.x, u.y), u.tgc, W, 0); // 0) 아래층: 공격 예고 · 고리 · 먼지
+  cvFxDraw(c0, 'under', now, W, gu ? GLC : null);
   if (T !== 1) { for (let i = 0; i < L.length; i += 3) { const u = L[i], s = u._cvS, R = cvD(u) / 2 * s; if (u.st.dive > 0 || u.realm) continue; c.drawImage(r3Glow(u.side, q), L[i + 1] - R * 1.25, L[i + 2] + R * 0.62, R * 2.5, R * 0.72); } } /* R3.0: 발밑 빛 (아군 하늘색 · 적 빨강) */
   for (let i = 0; i < L.length; i += 3) { // 1) 몸통
     const u = L[i], st = u.st, D = cvD(u), R = D / 2, X = 0, Y = 0; cvAt(c, k, L[i + 1], L[i + 2], u._cvS); /* R3.0: 지후마다 자리 · 깊이 배율을 변환으로 (아래 X · Y 는 0) */
@@ -8145,9 +8268,9 @@ function cvDraw() {
       const bp = src && cvSprite('g|' + cvSrcId(src), 46, 46, q, g => { const im = cvImg(src); if (!im.complete || !im.naturalWidth) return false; g.fillStyle = '#12162a'; g.beginPath(); g.arc(23, 23, 23, 0, Math.PI * 2); g.fill(); g.save(); g.beginPath(); g.arc(23, 23, 20, 0, Math.PI * 2); g.clip(); g.fillStyle = '#fff'; g.fill(); g.drawImage(im, 3, 3, 40, 40); g.restore(); return true; });
       if (bp) c.drawImage(bp, X - 23, ty, 46, 46); }
   }
-  c.setTransform(k, 0, 0, k, 0, 0);
-  for (const p of S.shots) if (p.el === CV_STUB) cvShot(c, p, W.x(p.x, p.y), W.y(p.x, p.y), flip, ew); // 5) 위층: 투사체 · 불꽃 · 베기 · 피해 숫자
-  cvFxDraw(c, 'over', now, W);
+  c.setTransform(k, 0, 0, k, 0, 0); if (gu) cO.setTransform(k, 0, 0, k, 0, 0);
+  for (const p of S.shots) if (p.el === CV_STUB) cvShot(gu && GL_SHOT.has(p.cls || '') ? GLC : cO, p, W.x(p.x, p.y), W.y(p.x, p.y), flip, ew); // 5) 위층: 투사체 · 불꽃 · 베기 · 피해 숫자
+  cvFxDraw(cO, 'over', now, W, gu ? GLC : null); if (gu) GLC.end();
 }
 // ── R2.29 전장 캔버스 이펙트: 자주 생기는 이펙트 (피해 숫자 · 불꽃 · 총구 · 투사체 · 베기 · 고리 · 먼지 · 공격 예고) 를 DOM 대신 캔버스에 ──
 // 50기 벤치 8초에 DOM 이 520개 붙었다 떨어졌다 (피해 숫자 129 · 불꽃 103 · 예고 63 + 매 프레임 clip-path) — 이것이 남은 렉의 절반. 드문 스킬 이펙트는 DOM 그대로.
@@ -8183,9 +8306,10 @@ function cvShot(c, p, X, Y, flip, ew) { // 투사체 한 발
   else if (cls === 'bb') { c.fillStyle = '#2d4fa3'; c.beginPath(); c.arc(X, Y, 6.5, 0, Math.PI * 2); c.fill(); c.fillStyle = '#f4f6fb'; c.beginPath(); c.arc(X, Y, 4.5, 0, Math.PI * 2); c.fill(); }
   else { c.globalAlpha = 0.55; c.drawImage(cvGlow([0.05, 0.3, 0.8], col), X - 12, Y - 12, 24, 24); c.globalAlpha = 1; c.fillStyle = col; c.beginPath(); c.arc(X, Y, 4, 0, Math.PI * 2); c.fill(); }
 }
-function cvFxDraw(c, layer, now, W) { // W: 월드 → 그리기 좌표 { x(), y(), a() 각도 }
+const GL_FX = new Set(['spark', 'muzzle', 'ring', 'dust', 'num']), GL_SHOT = new Set(['', 'venom', 'magic', 'dragon', 'dragon br', 'bb']); // R3.0 build 3: WebGL 로 그리는 이펙트 · 투사체 (원 · 빛 · 글씨만 쓰는 것)
+function cvFxDraw(c2d, layer, now, W, g) { // W: 월드 → 그리기 좌표 { x(), y(), a() 각도 } · g: WebGL (있으면 GL_FX 종류는 거기에)
   const L = CVF[layer]; let n = 0;
-  for (let i = 0; i < L.length; i++) { const e = L[i], p = (now - e.t0) / e.ms; if (p >= 1) continue; L[n++] = e; if (p < 0) continue;
+  for (let i = 0; i < L.length; i++) { const e = L[i], p = (now - e.t0) / e.ms; if (p >= 1) continue; L[n++] = e; if (p < 0) continue; const c = g && GL_FX.has(e.k) ? g : c2d;
     const X = W.x(e.x, e.y), Y = W.y(e.x, e.y);
     if (e.k === 'spark' || e.k === 'muzzle') { const sz = (e.k === 'muzzle' ? 34 : e.big ? 110 : 56) * (0.4 + 1.05 * p); c.globalAlpha = 1 - p; c.drawImage(cvGlow(e.k === 'muzzle' ? [0.22, 0.4, 0.7] : [0.16, 0.3, 0.64], e.col), X - sz / 2, Y - sz / 2, sz, sz); }
     else if (e.k === 'ring') { const r = e.r * (0.3 + 0.7 * p); c.globalAlpha = 1 - p; c.strokeStyle = '#111318'; c.lineWidth = 3; c.beginPath(); c.arc(X, Y, r, 0, Math.PI * 2); c.stroke(); }
@@ -8197,7 +8321,7 @@ function cvFxDraw(c, layer, now, W) { // W: 월드 → 그리기 좌표 { x(), y
       const r3 = W.t !== 1 && !r3Light(); c.globalAlpha = Math.max(0, a); c.font = r3 ? `400 ${Math.round(e.fs * s * 1.15)}px ${R3_FONT}` : `900 ${Math.round(e.fs * s)}px ${CV_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.lineWidth = e.sw; c.strokeStyle = r3 ? 'rgba(0,0,0,.85)' : '#fff'; /* R3.0 다크: 검은 테두리 · 아래 cvNum 색 */ c.strokeText(e.txt, X, Y + dy); c.fillStyle = e.col; c.fillText(e.txt, X, Y + dy);
       if (e.stamp) { c.font = `900 10px ${CV_FONT}`; c.lineWidth = 3; c.strokeText('CRITICAL', X, Y + dy - e.fs * s * 0.62); c.fillStyle = r3 ? '#f06a5c' : '#111318'; c.fillText('CRITICAL', X, Y + dy - e.fs * s * 0.62); } }
   }
-  L.length = n; c.globalAlpha = 1;
+  L.length = n; c2d.globalAlpha = 1; if (g) g.globalAlpha = 1;
 }
 function cvFan(c, X, Y, t, W, full) { // 근접 공격 예고 부채꼴 (예전 .fx-telegraph: 옅은 바탕 + 왼쪽부터 차오르는 붉은 색)
   const a0 = W.a(t.angle), R = t.R, h = t.half, path = () => { c.beginPath(); c.moveTo(X, Y); c.arc(X, Y, R, a0 - h, a0 + h); c.closePath(); };
@@ -12055,6 +12179,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.0', date: '2026.11.14', title: '새 전투 시스템 · 가로 3D 전장 · 새 전투 화면 · 로비 새 톤', sections: [
+    { title: '추가 패치 (build 3)', items: [
+      { icon: '⚡', name: 'WebGL 그리기', tag: 'system', desc: '전투 중 지후 · 체력바 · 피해 숫자 · 불꽃 같은 이펙트를 GPU 로 그려요 · 렉이 줄어요 · 전투 설정에서 끌 수 있어요' },
+    ] },
     { title: '추가 패치 (build 2)', items: [
       { icon: '📱', name: '전체화면', tag: 'system', desc: '폰에서 위 · 아래 막대 (시계 · 홈 버튼) 를 숨겨 화면 전체로 · 전투 설정에서 끌 수 있어요' },
     ] },
@@ -13999,10 +14126,10 @@ function helpBodyHtml(tab) {
 }
 // 환경설정: 효과음 음량 · 배속 기억 · 닉네임
 // ═════════ 인게임 설정 (R2.12.1) — 이 기기에만 저장 ═════════
-const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, fs: o.fs !== false, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
+const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, fs: o.fs !== false, gl: o.gl !== false, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
 function bsetApply() { const c = document.body.classList; c.toggle('b-dark', BSET.dark); c.toggle('b-light', BSET.light); /* R3.0 전투 화면 라이트 */ c.toggle('b-low', BSET.low); c.toggle('b-nogrid', !BSET.grid); c.toggle('b-nohp', !BSET.hpnum); try { localStorage.setItem(BSET_KEY, JSON.stringify(BSET)); } catch (e) {} }
 bsetApply();
-const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['fs', '전체화면', '폰 위 · 아래 막대를 숨긴다'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
+const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['fs', '전체화면', '폰 위 · 아래 막대를 숨긴다'], ['gl', 'WebGL 그리기', 'GPU 로 지후를 그린다 · 이상하면 끄기'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
 // ═ R3.0 build 2 전체화면: 폰 브라우저는 화면을 누를 때 Fullscreen API (사용자 동작이 있어야 한다 · 나가면 다음에 누를 때 다시) · 홈 화면 앱은 매니페스트 display fullscreen · APK 는 네이티브 몰입 모드 (MainActivity)
 const fsIn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 const fsCan = () => !IS_APP && !!(window.matchMedia && matchMedia('(pointer: coarse)').matches) && !matchMedia('(display-mode: fullscreen)').matches && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
@@ -15046,7 +15173,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
