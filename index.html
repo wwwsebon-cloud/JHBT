@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1421,6 +1421,19 @@ html body #intro, html body.u2-theme #intro { background:#0d0c0e; color:#e8e3d8;
 .bfx-res .lr { display:flex; align-items:center; gap:7px; } .bfx-res .lr em { font-style:normal; margin-right:4px; opacity:.8; }
 .bfx-res .lr i { width:13px; height:13px; transform:rotate(45deg); border:1.5px solid #e8e3d8; opacity:.35; } .bfx-res .lr i.on { background:#c8102e; border-color:#ff6b7d; opacity:1; } .bfx-res .lr.me i.on { background:#8fc6dd; border-color:#cfe9f3; }
 .bfx-res .lr i.brk { opacity:1; background:#fff; border-color:#fff; animation:lrBrk .7s 1.1s cubic-bezier(.2,.8,.2,1) both; } @keyframes lrBrk { 0% { transform:rotate(45deg) scale(1); opacity:1; } 35% { transform:rotate(45deg) scale(1.8); opacity:1; } 100% { transform:rotate(45deg) scale(.6); opacity:.35; background:transparent; border-color:#e8e3d8; } }
+/* R3.0 build 5 전투 중 전체화면 + 아래 지후 카드 줄 (#ubar · 초상화 · 네모 SP 게이지 · 체력 · 효과 아이콘) */
+html body #screen-battle.b-cfull .tray { display:none !important; }
+#ubar { position:absolute; left:0; right:0; bottom:0; z-index:41; display:none; justify-content:center; align-items:flex-end; gap:clamp(3px, .6vw, 8px); padding:14px max(10px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right)); background:linear-gradient(0deg, rgba(10,9,12,.82), rgba(10,9,12,0)); pointer-events:none; }
+#screen-battle.b-cfull #ubar { display:flex; }
+.ub-c { position:relative; flex:0 1 50px; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.ub-ic { height:16px; display:flex; gap:2px; justify-content:center; overflow:hidden; } .ub-ic img { width:15px; height:15px; border-radius:3px; background:#fff; flex-shrink:0; }
+.ub-p { position:relative; aspect-ratio:1; background:#fff; } .ub-p > img { width:100%; height:100%; object-fit:cover; display:block; }
+.ub-p svg { position:absolute; left:-4px; top:-4px; width:calc(100% + 8px); height:calc(100% + 8px); overflow:visible; }
+.ub-p rect { fill:none; stroke-width:4; } .ub-p rect.bg { stroke:rgba(232,227,216,.22); } .ub-p rect.sp { stroke:#e9c46a; stroke-dasharray:100; stroke-dashoffset:100; }
+.ub-c.full rect.sp { stroke:#fff3c4; } .ub-c.full .ub-p { box-shadow:0 0 0 2px #e9c46a; }
+.ub-lv { position:absolute; left:2px; top:1px; font:400 11px/1 'Black Han Sans',var(--font); color:#a57810; text-shadow:0 0 2px #fff; }
+.ub-hp { height:5px; background:rgba(232,227,216,.18); overflow:hidden; } .ub-hp i { display:block; height:100%; background:#8fc6dd; transform-origin:left; }
+.ub-c.dead { opacity:.32; } .ub-c.dead .ub-p > img { filter:grayscale(1); }
 /* 전장 로딩: 3D 로 눕힌 두 전장의 칸이 차례로 켜지고 카운트다운 */
 html body #matchLoad { background:#0d0c0e; color:#e8e3d8; padding:0; gap:0; display:none; overflow:hidden; } html body #matchLoad.show { display:block; }
 #matchLoad .ml-glow { position:absolute; left:0; right:0; top:0; height:18%; background:linear-gradient(180deg, rgba(158,15,37,.35), transparent); }
@@ -8045,18 +8058,31 @@ function allyOdds() {
 let lastTs = 0, acc = 0;
 let frameDue = 0; // R2.29: 다음에 그릴 예정 시각 (90 · 144Hz 화면도 초당 60번 · 예전 「15.5ms 안 지났으면 건너뛰기」는 90Hz 에서 45번)
 function loop(ts) {
-  if (S.phase !== 'combat' && S.phase !== 'final') { monoDraw(); cvEnd(); frameDue = 0; return; } /* R3.0 build 4: 마지막 순간도 그리기는 계속 (계산은 combat 만) */ // 전투가 끝나면 모노리스 빛줄기를 지운다
+  if (S.phase !== 'combat' && S.phase !== 'final') { monoDraw(); cvEnd(); ubSync(); frameDue = 0; return; } /* R3.0 build 4: 마지막 순간도 그리기는 계속 (계산은 combat 만) */ // 전투가 끝나면 모노리스 빛줄기를 지운다
   requestAnimationFrame(loop); // R2.29: 다음 프레임을 먼저 건다 (그리다가 오류가 나도 전투가 멈추지 않게)
   const minDt = BSET.low ? 1000 / 30 : 1000 / 60; if (lastTs && frameDue && ts < frameDue - 1.5) return; frameDue = Math.min(Math.max(frameDue + minDt, ts), ts + minDt); // R2.12.1: 120Hz 화면에서도 초당 60번 (저전력 30번) · 발열
   try { loopBody(ts); } catch (e) { stepErr(null, e); }
 }
+// ═ R3.0 build 5 전투 중 전체화면 + 아래 지후 카드 줄: 배치 트레이를 숨기고 (viewInsets 아래 0) 내 지후 카드 (초상화 · 네모 SP 게이지 · 체력 · 효과 아이콘) 를 0.15초마다
+const UB = { key: '', list: [], els: null, t: 0 };
+const ubWant = () => (S.phase === 'combat' || S.phase === 'final') && isEW() && !S.cw && !reelsOn() && !S.fast;
+function ubSync() { const b = $('screen-battle'), on = ubWant(); if (b.classList.contains('b-cfull') !== on) { b.classList.toggle('b-cfull', on); viewDirty(); } if (!on) return; const k = (S.rk || 0) + ':' + S.round; if (UB.key !== k) { UB.key = k; ubBuild(); } ubTick(); }
+function ubBuild() { let el = $('ubar'); if (!el) { el = document.createElement('div'); el.id = 'ubar'; el.setAttribute('aria-hidden', 'true'); $('screen-battle').appendChild(el); }
+  const me = ME(); UB.list = S.units.filter(u => u.side === me && !u.summoner && !u.small && CHARS[u.id]).slice(0, 15);
+  el.innerHTML = UB.list.map(u => `<div class="ub-c"><div class="ub-ic"></div><div class="ub-p">${pic(u.id)}<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect class="bg" x="0" y="0" width="100" height="100" pathLength="100"/><rect class="sp" x="0" y="0" width="100" height="100" pathLength="100"/></svg>${u.lv > 1 ? `<b class="ub-lv">Lv${u.lv}</b>` : ''}</div><div class="ub-hp"><i></i></div></div>`).join('');
+  UB.els = [...el.children].map(c => ({ c, ic: c.querySelector('.ub-ic'), sp: c.querySelector('rect.sp'), hp: c.querySelector('.ub-hp i'), v: {} })); UB.t = 0; }
+function ubTick() { const now = performance.now(); if (!UB.els || now - UB.t < 150) return; UB.t = now;
+  UB.list.forEach((u, i) => { const e = UB.els[i]; if (!e) return; const v = e.v, al = u.alive, h = (al ? clamp(u.hp / (u.baseMaxHp || u.maxHp), 0, 1) : 0).toFixed(3); if (v.h !== h) { v.h = h; e.hp.style.transform = `scaleX(${h})`; }
+    const sk = u.def.skill, sp = !al ? 0 : u.def.gauge ? u.def.gauge(u) : !sk ? 0 : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / skNeed(u), q = Math.round(clamp(sp || 0, 0, 1) * 100); if (v.s !== q) { v.s = q; e.sp.style.strokeDashoffset = String(100 - q); e.c.classList.toggle('full', q >= 100); }
+    if (!al && !v.dead) { v.dead = 1; e.c.classList.add('dead'); }
+    const L = al ? (u._fxl || fxList(u)).slice(0, 4) : [], k = L.map(x => x.k).join(','); if (v.k !== k) { v.k = k; e.ic.innerHTML = L.map(x => `<img src="${fxSrc(x.k)}" alt="">`).join(''); } }); }
 function loopBody(ts) {
   const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts;
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
   acc += real * ((S.replay && S.replay.pause) || (S.cw && S.cw.pick) || (S.fxHold && performance.now() < S.fxHold) /* R3.0 라운드 전환 연출 동안 */ ? 0 : S.speed); /* build 2: 디펜스 정비 시간 */ const simT0 = performance.now(); // R2.14 다시보기 일시정지
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
   const simMs = performance.now() - simT0;
-  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); camYaw(real); camFollow(real); cvDraw(); drawShots(); monoDraw(); fmbTick(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
+  const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); ubSync(); camYaw(real); camFollow(real); cvDraw(); drawShots(); monoDraw(); fmbTick(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
   if (S.cw && S.cw.df) setRing(Math.max(0, DF.EWAVE - S.cw.et), DF.EWAVE); else if (S.cw) setRing(S.cw.sd ? 0 : Math.max(0, cwWv() - S.cw.t), cwWv()); else setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME); /* R2.33: 다음 웨이브까지 */
   if (S.phase === 'combat' && S.cw) { cwHud(); benchFrame(real * 1000, simMs); } /* R2.33: 승률 대신 성 체력 */ else if (S.phase === 'combat') { if (!S._oddsC || S.time - S._oddsC.t >= 0.2 || S.time < S._oddsC.t) S._oddsC = { t: S.time, p: allyOdds() }; const p = S._oddsC.p, mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); if (S._oddsW !== mine) { S._oddsW = mine; $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; } /* R2.12.1: 바뀔 때만 */ benchFrame(real * 1000, simMs); }
 }
@@ -12292,6 +12318,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.0', date: '2026.11.14', title: '새 전투 시스템 · 가로 3D 전장 · 새 전투 화면 · 로비 새 톤', sections: [
+    { title: '추가 패치 (build 5)', items: [
+      { icon: '🖥️', name: '전투 전체화면', tag: 'system', desc: '전투가 시작되면 아래 배치 칸을 숨겨 전장을 화면 가득' },
+      { icon: '🎴', name: '지후 카드 줄', tag: 'new', desc: '전투 중 화면 아래 내 지후 카드 · 체력 · 스킬 SP 게이지 (테두리) · 버프 · 디버프 아이콘' },
+    ] },
     { title: '추가 패치 (build 4)', items: [
       { icon: '🩹', name: '라운드 결과', tag: 'fix', desc: '예전 라이프 창과 WIN · LOSE 창이 겹쳐 꼬이던 것 · 라이프 깎임은 결과 창 안에' },
       { icon: '🩹', name: '배치 시작', tag: 'fix', desc: '결과 연출이 끝나기 전에 배치가 시작되던 것' },
