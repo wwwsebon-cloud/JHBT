@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -1434,6 +1434,19 @@ html body #screen-battle.b-cfull .tray { display:none !important; }
 .ub-lv { position:absolute; left:2px; top:1px; font:400 11px/1 'Black Han Sans',var(--font); color:#a57810; text-shadow:0 0 2px #fff; }
 .ub-hp { height:5px; background:rgba(232,227,216,.18); overflow:hidden; } .ub-hp i { display:block; height:100%; background:#8fc6dd; transform-origin:left; }
 .ub-c.dead { opacity:.32; } .ub-c.dead .ub-p > img { filter:grayscale(1); }
+/* R3.0 build 6 지후 카드 줄 리디자인 (작게 · 크림슨 레저: SQUAD 머리줄 · 잘린 모서리 · 테두리 SP · 체력 숫자) · 설정 BSET.ubar 로 끄기 */
+body.b-noubar #ubar { display:none !important; }
+#ubar { flex-direction:column; align-items:center; gap:4px; padding-top:20px; background:linear-gradient(0deg, rgba(10,9,12,.9), rgba(10,9,12,.55) 60%, rgba(10,9,12,0)); }
+.ub-hd { display:flex; align-items:center; gap:9px; font:500 9px/1 'Oswald',sans-serif; letter-spacing:.28em; color:#9b958a; } .ub-hd i { width:5px; height:5px; background:#c8102e; } .ub-hd b { font-weight:600; letter-spacing:.08em; color:#f3eee3; } .ub-hd em { font-style:normal; color:#e9c46a; }
+.ub-row { display:flex; gap:4px; justify-content:center; align-items:flex-end; max-width:100%; }
+.ub-c { flex:0 1 34px; gap:2px; }
+.ub-ic { height:10px; gap:1px; } .ub-ic img { width:10px; height:10px; border-radius:2px; }
+.ub-p { background:none; } .ub-p > img { background:#e9e4d8; clip-path:polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%); }
+.ub-p svg { left:-2px; top:-2px; width:calc(100% + 4px); height:calc(100% + 4px); } .ub-p path { fill:none; stroke-width:5; } .ub-p path.bg { stroke:rgba(232,227,216,.18); } .ub-p path.sp { stroke:#e9c46a; stroke-dasharray:100; stroke-dashoffset:100; }
+.ub-c.full path.sp { stroke:#fff3c4; } .ub-c.full .ub-p { box-shadow:none; }
+.ub-lv { left:0; top:0; padding:1px 2px; background:#121115; color:#e9c46a; font:600 7px/1 'Oswald',sans-serif; text-shadow:none; }
+.ub-hp { height:2px; } .ub-c.low .ub-hp i { background:#d6382c; }
+.ub-n { font:500 8px/1 'Oswald',sans-serif; color:#e8e3d8; text-align:center; } .ub-c.low .ub-n { color:#ff5a6e; }
 /* 전장 로딩: 3D 로 눕힌 두 전장의 칸이 차례로 켜지고 카운트다운 */
 html body #matchLoad { background:#0d0c0e; color:#e8e3d8; padding:0; gap:0; display:none; overflow:hidden; } html body #matchLoad.show { display:block; }
 #matchLoad .ml-glow { position:absolute; left:0; right:0; top:0; height:18%; background:linear-gradient(180deg, rgba(158,15,37,.35), transparent); }
@@ -8069,12 +8082,14 @@ const ubWant = () => (S.phase === 'combat' || S.phase === 'final') && isEW() && 
 function ubSync() { const b = $('screen-battle'), on = ubWant(); if (b.classList.contains('b-cfull') !== on) { b.classList.toggle('b-cfull', on); viewDirty(); } if (!on) return; const k = (S.rk || 0) + ':' + S.round; if (UB.key !== k) { UB.key = k; ubBuild(); } ubTick(); }
 function ubBuild() { let el = $('ubar'); if (!el) { el = document.createElement('div'); el.id = 'ubar'; el.setAttribute('aria-hidden', 'true'); $('screen-battle').appendChild(el); }
   const me = ME(); UB.list = S.units.filter(u => u.side === me && !u.summoner && !u.small && CHARS[u.id]).slice(0, 15);
-  el.innerHTML = UB.list.map(u => `<div class="ub-c"><div class="ub-ic"></div><div class="ub-p">${pic(u.id)}<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect class="bg" x="0" y="0" width="100" height="100" pathLength="100"/><rect class="sp" x="0" y="0" width="100" height="100" pathLength="100"/></svg>${u.lv > 1 ? `<b class="ub-lv">Lv${u.lv}</b>` : ''}</div><div class="ub-hp"><i></i></div></div>`).join('');
-  UB.els = [...el.children].map(c => ({ c, ic: c.querySelector('.ub-ic'), sp: c.querySelector('rect.sp'), hp: c.querySelector('.ub-hp i'), v: {} })); UB.t = 0; }
+  const P = 'M0 0H100V78L78 100H0Z'; el.innerHTML = `<div class="ub-hd"><i></i>SQUAD <b id="ubN"></b><em id="ubR"></em></div><div class="ub-row">` + UB.list.map(u => `<div class="ub-c"><div class="ub-ic"></div><div class="ub-p">${pic(u.id)}<svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="bg" d="${P}" pathLength="100"/><path class="sp" d="${P}" pathLength="100"/></svg>${u.lv > 1 ? `<b class="ub-lv">Lv${u.lv}</b>` : ''}</div><div class="ub-hp"><i></i></div><span class="ub-n"></span></div>`).join('') + '</div>';
+  UB.els = [...el.querySelector('.ub-row').children].map(c => ({ c, ic: c.querySelector('.ub-ic'), sp: c.querySelector('path.sp'), hp: c.querySelector('.ub-hp i'), n: c.querySelector('.ub-n'), v: {} })); UB.hd = [$('ubN'), $('ubR')]; UB.t = 0; } /* R3.0 build 6: 머리줄 · 잘린 모서리 · 체력 숫자 */
 function ubTick() { const now = performance.now(); if (!UB.els || now - UB.t < 150) return; UB.t = now;
+  if (UB.hd && UB.hd[0]) { const al = UB.list.filter(u => u.alive).length, rd = UB.els.filter(e => e.c.classList.contains('full')).length, a = al + ' / ' + UB.list.length, b = rd ? 'SKILL READY ' + rd : ''; if (UB.hd[0].textContent !== a) UB.hd[0].textContent = a; if (UB.hd[1].textContent !== b) UB.hd[1].textContent = b; }
   UB.list.forEach((u, i) => { const e = UB.els[i]; if (!e) return; const v = e.v, al = u.alive, h = (al ? clamp(u.hp / (u.baseMaxHp || u.maxHp), 0, 1) : 0).toFixed(3); if (v.h !== h) { v.h = h; e.hp.style.transform = `scaleX(${h})`; }
     const sk = u.def.skill, sp = !al ? 0 : u.def.gauge ? u.def.gauge(u) : !sk ? 0 : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / skNeed(u), q = Math.round(clamp(sp || 0, 0, 1) * 100); if (v.s !== q) { v.s = q; e.sp.style.strokeDashoffset = String(100 - q); e.c.classList.toggle('full', q >= 100); }
     if (!al && !v.dead) { v.dead = 1; e.c.classList.add('dead'); }
+    const hn = al ? Math.max(0, Math.ceil(u.hp)) : 0, ht = !al ? '—' : hn >= 10000 ? (hn / 1000).toFixed(1) + 'k' : String(hn); if (v.n !== ht) { v.n = ht; e.n.textContent = ht; e.c.classList.toggle('low', al && +h < 0.35); }
     const L = al ? (u._fxl || fxList(u)).slice(0, 4) : [], k = L.map(x => x.k).join(','); if (v.k !== k) { v.k = k; e.ic.innerHTML = L.map(x => `<img src="${fxSrc(x.k)}" alt="">`).join(''); } }); }
 function loopBody(ts) {
   const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts;
@@ -12318,6 +12333,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.0', date: '2026.11.14', title: '새 전투 시스템 · 가로 3D 전장 · 새 전투 화면 · 로비 새 톤', sections: [
+    { title: '추가 패치 (build 6)', items: [
+      { icon: '🎴', name: '지후 카드 줄', tag: 'system', desc: '더 작고 깔끔하게 · SQUAD 생존 수 · 스킬 준비 수 · 체력 숫자 · 전투 설정에서 끌 수 있어요' },
+    ] },
     { title: '추가 패치 (build 5)', items: [
       { icon: '🖥️', name: '전투 전체화면', tag: 'system', desc: '전투가 시작되면 아래 배치 칸을 숨겨 전장을 화면 가득' },
       { icon: '🎴', name: '지후 카드 줄', tag: 'new', desc: '전투 중 화면 아래 내 지후 카드 · 체력 · 스킬 SP 게이지 (테두리) · 버프 · 디버프 아이콘' },
@@ -14277,10 +14295,10 @@ function helpBodyHtml(tab) {
 }
 // 환경설정: 효과음 음량 · 배속 기억 · 닉네임
 // ═════════ 인게임 설정 (R2.12.1) — 이 기기에만 저장 ═════════
-const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, fs: o.fs !== false, gl: o.gl !== false, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
-function bsetApply() { const c = document.body.classList; c.toggle('b-dark', BSET.dark); c.toggle('b-light', BSET.light); /* R3.0 전투 화면 라이트 */ c.toggle('b-low', BSET.low); c.toggle('b-nogrid', !BSET.grid); c.toggle('b-nohp', !BSET.hpnum); try { localStorage.setItem(BSET_KEY, JSON.stringify(BSET)); } catch (e) {} }
+const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, fs: o.fs !== false, gl: o.gl !== false, ubar: o.ubar !== false, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
+function bsetApply() { const c = document.body.classList; c.toggle('b-dark', BSET.dark); c.toggle('b-light', BSET.light); /* R3.0 전투 화면 라이트 */ c.toggle('b-low', BSET.low); c.toggle('b-noubar', !BSET.ubar); /* R3.0 build 6 */ c.toggle('b-nogrid', !BSET.grid); c.toggle('b-nohp', !BSET.hpnum); try { localStorage.setItem(BSET_KEY, JSON.stringify(BSET)); } catch (e) {} }
 bsetApply();
-const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['fs', '전체화면', '폰 위 · 아래 막대를 숨긴다'], ['gl', 'WebGL 그리기', 'GPU 로 지후를 그린다 · 이상하면 끄기'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
+const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['fs', '전체화면', '폰 위 · 아래 막대를 숨긴다'], ['gl', 'WebGL 그리기', 'GPU 로 지후를 그린다 · 이상하면 끄기'], ['ubar', '지후 카드 줄', '전투 중 아래 체력 · SP 카드'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
 // ═ R3.0 build 2 전체화면: 폰 브라우저는 화면을 누를 때 Fullscreen API (사용자 동작이 있어야 한다 · 나가면 다음에 누를 때 다시) · 홈 화면 앱은 매니페스트 display fullscreen · APK 는 네이티브 몰입 모드 (MainActivity)
 const fsIn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 const fsCan = () => !IS_APP && !!(window.matchMedia && matchMedia('(pointer: coarse)').matches) && !matchMedia('(display-mode: fullscreen)').matches && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
