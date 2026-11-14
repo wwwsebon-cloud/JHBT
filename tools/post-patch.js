@@ -5,7 +5,9 @@
 //   node tools/post-patch.js --dry           올리지 않고 글 · 이미지 · 이미지 주소만 확인
 //   node tools/post-patch.js R2.36 --build 2 버전 · build 를 골라서 (--all : 그 버전 항목 전체 · build 1 은 --all)
 //   node tools/post-patch.js --day           하루 총정리: 맨 위 버전 항목 전체 (build 칸까지) + infographics/today-<날짜>*.png (없으면 <버전>.png) · 매일 마지막에 한 번
-//   옵션: --only discord|threads · --img a.png,b.png (이미지를 직접) · --everyone (디스코드 @everyone) · --no-ping (역할 핑 빼기) · --force (이미 올린 것도 다시)
+//   인스타그램: node tools/post-patch.js --ig-token <토큰> [--secret <인스타 앱 시크릿>] (프로페셔널 계정 · 토큰이 있으면 기본으로 같이 올린다)
+//             그림은 JPEG 4:5 조각 (tools/ig-slices.py → infographics/ig/) 을 GitHub raw 주소로 받는다 → 조각을 커밋 · 푸시한 뒤 올린다
+//   옵션: --only discord|threads|instagram · --img a.png,b.png (이미지를 직접) · --everyone (디스코드 @everyone) · --no-ping (역할 핑 빼기) · --force (이미 올린 것도 다시)
 //   디스코드 역할 핑: node tools/post-patch.js --discord-role <역할 ID> (서버 설정 → 역할 → 우클릭 → 역할 ID 복사 · 개발자 모드 필요) → 올릴 때마다 그 역할 핑
 //
 // 처음 한 번 (설정 파일은 저장소 밖: 문서/jhbt-app/post.json · 바꾸려면 --cfg <경로> 또는 환경 변수 JHBT_POST):
@@ -23,6 +25,7 @@ const ROOT = path.join(__dirname, '..');
 const args = process.argv.slice(2), opt = k => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : undefined; }, flag = k => args.includes('--' + k);
 const CFG_PATH = opt('cfg') || process.env.JHBT_POST || path.join(os.homedir(), 'Documents', 'jhbt-app', 'post.json');
 const TH = process.env.THREADS_API || 'https://graph.threads.net'; // 시험용으로 바꿀 수 있다
+const IG = process.env.IG_API || 'https://graph.instagram.com'; // 인스타그램 (Instagram 로그인 API · 프로페셔널 계정)
 const SITE = 'https://jihoobattle.kr';
 const DRY = flag('dry'), FORCE = flag('force'), ONLY = opt('only');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -31,7 +34,7 @@ const die = m => { console.error('❌ ' + m); process.exit(1); };
 // ── 설정 파일 ──
 const loadCfg = () => { try { return JSON.parse(fs.readFileSync(CFG_PATH, 'utf8')); } catch (e) { return null; } };
 const saveCfg = c => { fs.mkdirSync(path.dirname(CFG_PATH), { recursive: true }); fs.writeFileSync(CFG_PATH, JSON.stringify(c, null, 2)); };
-const TEMPLATE = { discord: { webhook: '' }, threads: { userId: '', token: '', savedAt: '' }, posted: {} };
+const TEMPLATE = { discord: { webhook: '' }, threads: { userId: '', token: '', savedAt: '' }, instagram: { userId: '', token: '', savedAt: '' }, posted: {} };
 
 // ── 패치노트 (index.html 의 PATCH_NOTES 를 그대로 읽는다 · 지후 이름 같은 게임 값은 없어도 되게) ──
 function patchNotes() {
@@ -183,9 +186,62 @@ async function setThreadsToken(cfg) { // --threads-token <토큰> [--secret <앱
   console.log(`✅ Threads @${me.username} (${me.id}) 저장 → ${CFG_PATH}`);
 }
 
+// ── 인스타그램 (graph.instagram.com · 게시물 컨테이너 → 상태 FINISHED → media_publish) ──
+async function ig(method, p, params) {
+  const u = new URL(IG + p); let body;
+  if (method === 'GET') Object.entries(params || {}).forEach(([k, v]) => u.searchParams.set(k, v)); else body = new URLSearchParams(params);
+  const r = await fetch(u, { method, body }), j = await r.json().catch(() => ({}));
+  if (!r.ok || j.error) throw new Error(`Instagram ${p} ${r.status} ${JSON.stringify(j.error || j).slice(0, 300)}`);
+  return j;
+}
+function igImages(imgs) { // 인포그래픽 → JPEG 4:5 조각 (infographics/ig/ · 이미 있으면 다시 만든다)
+  if (!imgs.length) return [];
+  const out = execSync(`python "${path.join(__dirname, 'ig-slices.py')}" "${path.join(ROOT, 'infographics', 'ig')}" ${imgs.map(f => `"${f}"`).join(' ')}`, { encoding: 'utf8' });
+  return out.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+}
+function igCaption(n) { // 2,200자 · 마크다운 없이 · 해시태그
+  const tags = '\n\n#지후배틀 #RE지후배틀 #인디게임 #게임업데이트 #패치노트';
+  let t = `${head(n)}\n${plain(n.title)}\n\n${longText(n).replace(/\*\*/g, '')}\n\n▶ jihoobattle.kr`;
+  const max = 2200 - tags.length; if ([...t].length > max) t = [...t].slice(0, max - 2).join('').replace(/\n[^\n]*$/, '') + '\n…';
+  return t + tags;
+}
+async function igToken(cfg) {
+  const t = cfg.instagram || {}; if (!t.token) throw new Error('인스타그램 토큰이 없어요 → node tools/post-patch.js --ig-token <토큰>');
+  if (Date.now() - (Date.parse(t.savedAt) || 0) > 20 * 864e5) {
+    try { const j = await ig('GET', '/refresh_access_token', { grant_type: 'ig_refresh_token', access_token: t.token }); if (!j.access_token) throw new Error(JSON.stringify(j).slice(0, 200)); t.token = j.access_token; t.savedAt = new Date().toISOString(); saveCfg(cfg); console.log('🔑 인스타그램 토큰 갱신 (60일)'); }
+    catch (e) { console.warn('⚠️ 인스타그램 토큰 갱신 실패 (만료됐으면 --ig-token 으로 새로): ' + e.message); }
+  }
+  return t.token;
+}
+async function igWait(id, token) { // 컨테이너가 준비될 때까지 (최대 2분)
+  for (let i = 0; i < 40; i++) { const j = await ig('GET', '/v21.0/' + id, { fields: 'status_code', access_token: token }); if (j.status_code === 'FINISHED') return; if (j.status_code === 'ERROR' || j.status_code === 'EXPIRED') throw new Error('Instagram 컨테이너 ' + j.status_code); await sleep(3000); }
+  throw new Error('Instagram 컨테이너가 2분 안에 준비되지 않았어요');
+}
+async function postInstagram(cfg, n, imgs) {
+  const jpg = igImages(imgs); if (!jpg.length) throw new Error('인스타그램은 그림이 꼭 있어야 해요 (인포그래픽 없음)');
+  for (const f of jpg) { const c = await checkUrl(f); if (c !== 'ok') throw new Error(`인스타그램 조각 주소가 아직 안 돼요: ${pubUrl(f)} — ${c} → infographics/ig 를 커밋 · 푸시한 뒤 다시 (--only instagram)`); }
+  const token = await igToken(cfg), uid = cfg.instagram.userId || 'me', caption = igCaption(n), urls = jpg.map(pubUrl);
+  let id;
+  if (urls.length === 1) id = (await ig('POST', `/v21.0/${uid}/media`, { image_url: urls[0], caption, access_token: token })).id;
+  else {
+    const kids = []; for (const u of urls) { const k = (await ig('POST', `/v21.0/${uid}/media`, { image_url: u, is_carousel_item: 'true', access_token: token })).id; await igWait(k, token); kids.push(k); }
+    id = (await ig('POST', `/v21.0/${uid}/media`, { media_type: 'CAROUSEL', children: kids.join(','), caption, access_token: token })).id;
+  }
+  await igWait(id, token);
+  const pub = await ig('POST', `/v21.0/${uid}/media_publish`, { creation_id: id, access_token: token });
+  try { const j = await ig('GET', '/v21.0/' + pub.id, { fields: 'permalink', access_token: token }); return j.permalink || pub.id; } catch (e) { return pub.id; }
+}
+async function setIgToken(cfg) { // --ig-token <토큰> [--secret <인스타 앱 시크릿>]
+  let token = opt('ig-token'); if (!token) die('--ig-token 뒤에 토큰을 넣어 주세요');
+  if (opt('secret')) { try { const j = await ig('GET', '/access_token', { grant_type: 'ig_exchange_token', client_secret: opt('secret'), access_token: token }); if (!j.access_token) throw new Error(JSON.stringify(j).slice(0, 200)); token = j.access_token; console.log('🔑 60일 토큰으로 바꿨어요'); } catch (e) { console.log('ℹ️ 60일 토큰으로 바꾸지 못해 받은 토큰을 그대로 써요 (토큰 생성기 토큰은 이미 60일짜리예요)'); } }
+  const me = await ig('GET', '/v21.0/me', { fields: 'user_id,username', access_token: token }); const id = me.user_id || me.id; if (!id) throw new Error('계정 id 를 못 받았어요 ' + JSON.stringify(me).slice(0, 200));
+  cfg.instagram = { userId: String(id), username: me.username, token, savedAt: new Date().toISOString() }; saveCfg(cfg);
+  console.log(`✅ 인스타그램 @${me.username} (${id}) 저장 → ${CFG_PATH}`);
+}
 (async () => {
   if (flag('init')) { if (loadCfg()) console.log('이미 있어요: ' + CFG_PATH); else { saveCfg(TEMPLATE); console.log('✅ 만들었어요: ' + CFG_PATH + ' (discord.webhook 을 채우고, Threads 는 --threads-token)'); } return; }
   if (opt('threads-token')) return setThreadsToken(loadCfg() || { ...TEMPLATE });
+  if (opt('ig-token')) return setIgToken(loadCfg() || { ...TEMPLATE });
   if (opt('discord-role')) { const c = loadCfg() || { ...TEMPLATE }, id = (/\d{15,}/.exec(opt('discord-role')) || [])[0]; if (!id) die('역할 ID (숫자) 를 넣어 주세요'); c.discord = { ...(c.discord || {}), role: id }; saveCfg(c); console.log(`✅ 디스코드 공지마다 역할 <@&${id}> 핑 · 빼려면 --no-ping`); return; }
   const n = pick(), imgs = (n.img && images(n.img).length ? images(n.img) : images(n.key.replace(/-day$/, ''))), want = k => !ONLY || ONLY === k;
   imgs.forEach(f => { if (!fs.existsSync(f)) die('이미지가 없어요: ' + f); });
@@ -193,14 +249,16 @@ async function setThreadsToken(cfg) { // --threads-token <토큰> [--secret <앱
   if (DRY) {
     if (want('discord')) { const c0 = loadCfg(); console.log('\n── 디스코드 (임베드 설명)' + (c0 && c0.discord && c0.discord.role && !flag('no-ping') ? ` · 역할 핑 <@&${c0.discord.role}>` : '') + ' ──\n' + longText(n)); }
     if (want('threads')) console.log(`\n── Threads (${[...shortText(n)].length}자) ──\n` + shortText(n));
+    if (want('instagram')) { const c0 = loadCfg(); console.log(`\n── 인스타그램 (${[...igCaption(n)].length}자${c0 && c0.instagram && c0.instagram.token ? '' : ' · 토큰 없음 → --ig-token'}) ──\n` + igCaption(n)); if (imgs.length) { const J = igImages(imgs); console.log('\n── 인스타그램 조각 ──'); for (const f of J) console.log(`${path.relative(ROOT, f)}  →  ${pubUrl(f)}  [${await checkUrl(f)}]`); } }
     console.log('\n── 이미지 ──'); for (const f of imgs) console.log(`${path.relative(ROOT, f)}  →  ${pubUrl(f)}  [${await checkUrl(f)}]`);
     console.log('\n(--dry: 올리지 않았어요 · 설정 파일 ' + (loadCfg() ? '있음' : '없음 → --init') + ')'); return;
   }
   const cfg = loadCfg(); if (!cfg) die('설정 파일이 없어요 → node tools/post-patch.js --init (' + CFG_PATH + ')');
   const log = (cfg.posted = cfg.posted || {})[n.key] = cfg.posted[n.key] || {}; let fail = 0;
   if (want('threads') && imgs.length) for (const f of imgs) { const c = await checkUrl(f); if (c !== 'ok') throw new Error(`Threads 용 이미지 주소가 아직 안 돼요: ${pubUrl(f)} — ${c}\n   먼저 git push 하고 몇 분 뒤 다시 (또는 --only discord)`); }
-  for (const [k, fn] of [['discord', postDiscord], ['threads', postThreads]]) {
+  for (const [k, fn] of [['discord', postDiscord], ['threads', postThreads], ['instagram', postInstagram]]) {
     if (!want(k)) continue;
+    if (k === 'instagram' && !ONLY && !(cfg.instagram && cfg.instagram.token)) continue; /* 토큰이 없으면 기본 올리기에서 뺀다 */
     if (log[k] && !FORCE) { console.log(`⏭️  ${k}: 이미 올렸어요 (${log[k].at}) · 다시 올리려면 --force`); continue; }
     try { const r = await fn(cfg, n, imgs); log[k] = { at: new Date().toISOString(), ref: r }; saveCfg(cfg); console.log(`✅ ${k}: ${r}`); }
     catch (e) { fail++; console.error(`❌ ${k}: ${e.message}`); }
