@@ -3,7 +3,8 @@
 (() => {
   const R = window.__rejhbt, S = R.S, C = R.CHARS, IDS = Object.keys(C); // 왕자 지후 등 숨은 변신 지후는 Object.keys 에 없다
   const rowOf = id => { const c = C[id], rg = c.range === 'melee' ? 0 : Number(c.range) || 0; let s = ({ 탱커: 0, 폭발형: 0, 딜러: 0.7, 컨트롤러: 1.2, 하이브리드: 1.3, 소환형: 1.6, 어쌔신: 2, 서포터: 2, 보조형: 2 })[c.role] ?? 1; if (c.range === 'melee') s -= 0.5; else if (rg >= 6) s += 0.8; else if (rg >= 4) s += 0.4; if (c.hp >= 1500) s -= 0.6; else if (c.hp >= 1200) s -= 0.3; else if (c.hp <= 800) s += 0.4; return Math.max(0, Math.min(2, Math.round(s))); };
-  const place = ids => { const used = new Set(); return ids.slice().sort((a, b) => rowOf(a) - rowOf(b)).map(id => { let t = -1; for (let rr = rowOf(id); rr < 3 && t < 0; rr++) for (let c = 0; c < 5; c++) if (!used.has(rr * 5 + c)) { t = rr * 5 + c; break; } used.add(t); return [id, t]; }); };
+  const CC = R.CFG.COLS, LINES = [[0, 1, 2, 3], [1, 2, 0, 3], [3, 2, 1, 0]]; // R3.0: 3 × 4 판 · 종류 (0 전열 · 1 중열 · 2 후열) 마다 찾는 줄 순서
+  const place = ids => { const used = new Set(); return ids.slice().sort((a, b) => rowOf(a) - rowOf(b)).map(id => { let t = -1; for (const rr of LINES[rowOf(id)]) { for (let c = 0; c < CC && t < 0; c++) if (!used.has(rr * CC + c)) t = rr * CC + c; if (t >= 0) break; } used.add(t); return [id, t]; }); };
   const TID = new Map(); // uid → 배치한 지후 (스파이 변장 · 성장 변신 뒤에도 원래 지후로 센다)
   const fight = (A, E, seed) => { R.setSeed(seed); TID.clear();
     { const f = document.getElementById('field'); if (f) for (const el of [...f.children]) if (!el.classList.contains('tile') && !el.classList.contains('rowlab')) el.remove(); } // R2.29: 판 사이에 전장 DOM 을 비운다 (예전엔 쌓여서 120판에 DOM 196 → 16,630개 · 판마다 느려졌다)
