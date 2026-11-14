@@ -7,8 +7,8 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap"><!-- 제목 · 숫자 · 버튼 블록 글꼴 (R2.12.3 build 2: Do Hyeon → Black Han Sans) -->
@@ -12055,6 +12055,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.0', date: '2026.11.14', title: '새 전투 시스템 · 가로 3D 전장 · 새 전투 화면 · 로비 새 톤', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { icon: '📱', name: '전체화면', tag: 'system', desc: '폰에서 위 · 아래 막대 (시계 · 홈 버튼) 를 숨겨 화면 전체로 · 전투 설정에서 끌 수 있어요' },
+    ] },
     { title: '새 전투 시스템', items: [
       { icon: '🗺️', name: '가로 전장', tag: 'system', desc: '왼쪽 아군 · 오른쪽 적 · 진영마다 세로 <b>3</b> × 가로 <b>4</b> = <b>12칸</b>' },
       { icon: '🛡️', name: '전열 · 중열 · 후열', tag: 'system', desc: '가운데 쪽 <b>1</b>열 전열 · <b>2</b>열 중열 · 맨 뒤 <b>1</b>열 후열' },
@@ -13996,14 +13999,20 @@ function helpBodyHtml(tab) {
 }
 // 환경설정: 효과음 음량 · 배속 기억 · 닉네임
 // ═════════ 인게임 설정 (R2.12.1) — 이 기기에만 저장 ═════════
-const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
+const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, fs: o.fs !== false, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
 function bsetApply() { const c = document.body.classList; c.toggle('b-dark', BSET.dark); c.toggle('b-light', BSET.light); /* R3.0 전투 화면 라이트 */ c.toggle('b-low', BSET.low); c.toggle('b-nogrid', !BSET.grid); c.toggle('b-nohp', !BSET.hpnum); try { localStorage.setItem(BSET_KEY, JSON.stringify(BSET)); } catch (e) {} }
 bsetApply();
-const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
+const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['fs', '전체화면', '폰 위 · 아래 막대를 숨긴다'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
+// ═ R3.0 build 2 전체화면: 폰 브라우저는 화면을 누를 때 Fullscreen API (사용자 동작이 있어야 한다 · 나가면 다음에 누를 때 다시) · 홈 화면 앱은 매니페스트 display fullscreen · APK 는 네이티브 몰입 모드 (MainActivity)
+const fsIn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+const fsCan = () => !IS_APP && !!(window.matchMedia && matchMedia('(pointer: coarse)').matches) && !matchMedia('(display-mode: fullscreen)').matches && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+function fsGo() { if (!BSET.fs || fsIn() || !fsCan()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen; try { const p = f.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+function fsExit() { const f = document.exitFullscreen || document.webkitExitFullscreen; try { const p = f && f.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+['touchend', 'click'].forEach(ev => document.addEventListener(ev, fsGo, true));
 function bsetHtml() { return BSET_ROWS.map(([k, n, d]) => `<div class="bset-row"><span>${n}<small>${d}</small></span><span class="sp"></span><button class="bset-sw${BSET[k] ? ' on' : ''}" data-bset="${k}" aria-label="${n}"></button></div>`).join('')
   + `<div class="bset-row"><span>효과음</span><span class="sp"></span><input type="range" min="0" max="100" value="${sfxState.vol}" data-bvol="sfx"><b>${sfxState.vol}</b></div><div class="bset-row"><span>배경음악</span><span class="sp"></span><input type="range" min="0" max="100" value="${bgm.vol}" data-bvol="bgm"><b>${bgm.vol}</b></div>`; }
 function bsetBind(root, again) {
-  root.querySelectorAll('[data-bset]').forEach(b => b.onclick = () => { const k = b.dataset.bset; BSET[k] = !BSET[k]; bsetApply(); b.classList.toggle('on', BSET[k]); if (k === 'light') { CV.spr.clear(); (S.units || []).forEach(u => { u._cvB = null; }); } /* R3.0: 지후 그림을 새로 */ if (k === 'hpnum' || k === 'low') S.units.forEach(u => { if (u.bars) { u.bars.v.ht = null; drawUnit(u); } }); if (again) again(); });
+  root.querySelectorAll('[data-bset]').forEach(b => b.onclick = () => { const k = b.dataset.bset; BSET[k] = !BSET[k]; bsetApply(); b.classList.toggle('on', BSET[k]); if (k === 'light') { CV.spr.clear(); (S.units || []).forEach(u => { u._cvB = null; }); } /* R3.0: 지후 그림을 새로 */ if (k === 'fs') { if (BSET.fs) fsGo(); else if (fsIn()) fsExit(); } /* R3.0 build 2 */ if (k === 'hpnum' || k === 'low') S.units.forEach(u => { if (u.bars) { u.bars.v.ht = null; drawUnit(u); } }); if (again) again(); });
   root.querySelectorAll('[data-bvol]').forEach(r => { r.oninput = () => { const v = clamp(Math.round(Number(r.value) || 0), 0, 100); r.nextElementSibling.textContent = v; if (r.dataset.bvol === 'sfx') sfxSetVolume(v); else { bgm.vol = v; try { localStorage.setItem(BGM_KEY, String(v)); } catch (e) {} bgmTick(); } }; if (r.dataset.bvol === 'sfx') r.onchange = () => sfx('buy'); });
 }
 function bsetToggle(force) { let p = $('bsetPop'); if (!p) { p = document.createElement('div'); p.id = 'bsetPop'; p.hidden = true; $('screen-battle').appendChild(p); }
@@ -14876,7 +14885,7 @@ async function accSwitch(code) { // 원터치 전환
 const APP = { evt: null };
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); APP.evt = e; });
 window.addEventListener('appinstalled', () => { APP.evt = null; banner('📲 앱을 설치했어요 · 홈 화면에서 열어 보세요', 3000); });
-function appStandalone() { return IS_APP || !!((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone); } // function: 메뉴를 그리는 u2Vals 가 이 줄보다 먼저 돌 수 있다
+function appStandalone() { return IS_APP || !!((window.matchMedia && (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches)) || navigator.standalone); } // function: 메뉴를 그리는 u2Vals 가 이 줄보다 먼저 돌 수 있다
 async function appInstall() {
   if (appStandalone()) return dlg({ icon: '📲', title: '이미 앱으로 실행 중이에요', html: '홈 화면의 지후배틀 앱으로 들어와 있어요.', ok: '확인' });
   if (APP.evt) { const e = APP.evt; APP.evt = null; try { e.prompt(); const c = await e.userChoice; if (c && c.outcome === 'accepted') return; } catch (err) {} return; }

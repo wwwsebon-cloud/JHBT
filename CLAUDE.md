@@ -16,7 +16,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.0** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.0** (build 2).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -126,6 +126,7 @@
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
 ## 최근 변경 (R3.0 · 새 전투 시스템 · 2026-11-14)
+- **build 2 전체화면**: 폰 브라우저는 화면을 누를 때 `fsGo` (Fullscreen API · `navigationUI: 'hide'` · 사용자 동작이 있어야 해서 `touchend` · `click` 캡처 · 나가면 다음 탭에 다시 · 전투 설정 `BSET.fs` 기본 켬 · 끄면 `fsExit`) · 아이폰 Safari 는 문서 전체화면을 지원하지 않는다 (홈 화면 앱 + `apple-mobile-web-app-status-bar-style` black-translucent 로 막대 위에 그린다) · 매니페스트 `display: fullscreen` (`appStandalone` 은 fullscreen 도 본다) · **APK** 는 `MainActivity` 몰입 모드 (`WindowInsetsControllerCompat` systemBars 숨김 · 쓸어내리면 잠깐 · 노치 `SHORT_EDGES`) · versionCode 3.
 - **가로 3D 전장**: 세계 좌표는 2D 그대로 · 그리기만 3D — `applyCamera` 가 `#field` 에 `perspective(vh × CFG.PERSP) … scale3d … rotateX(CFG.TILT_DEG)` (바닥을 위쪽 끝 축으로 눕힌다 · `#field.tilt` preserve-3d · DOM 지후 · 글씨는 `rotate x` / `--rx` · `--rz` 로 일어선다) · 행렬 `P3.m` (DOMMatrix) → `proj3(x, y)` = 화면 px · 원근 배율 s. 캔버스 (`cvDraw`) 는 3D 일 때 `#fieldWrap` 에 붙고 지후 위치 · 크기 · 이펙트 (`W.x` / `W.y`) · 누르기 (`cvPick`) 모두 `proj3`. 카메라 보기 좌표 `camV(x, y)` (반전 · 회전 · y × `TILT()` = cos) · `fitZoom` 은 원근 확대만큼 덜 당긴다. **새 이펙트 좌표는 `W.x(x, y)` · `W.y(x, y)` 로** (y 를 빼먹으면 원근이 틀린다).
 - **회전 카메라 (실험)**: 전투 설정 `BSET.cam3d` · 전투 중 `camYaw` 가 `CAM.yaw` → `CFG.YAW` (−28°) · 기본 꺼짐.
 - **전투 HUD (Limbus 풍 시안 · 디자인 handoff)**: 다크 기본 · 전투 설정 「라이트 모드」 `BSET.light` (`body.b-light`) · 크기는 1920 × 1080 기준 × `--u` (`r3Fit` 의 `--k`) · CSS 변수는 `--q*` (전장 안 `.fieldwrap` 이 `--ink` · `--gold` 를 다시 정해서 이름을 바꿨다) · 위 바 (`.r3top` · 모드 `#r3Mt`) · 둘째 줄 (하트 SVG `R3_HEART` · 예상 승률 `#hudOdds` — 배치 단계는 `r3Odds` 티어 점수 추정) · 아래 (`.r3bot`: 프로필 `.r3pf` · 카드 `.pcard` (등급 `--rr` · 레벨 칸 `.r3lv`) · 배치 버튼 `r3Dep`) · 처치 피드 `r3Kill` · 지후는 원래처럼 **동그란 테두리** (사용자 요청 · 시안의 사각 그림 아님) · 진영색 아군 `#8fc6dd` · 적 `#d6382c`.
