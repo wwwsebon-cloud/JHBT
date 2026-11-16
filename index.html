@@ -3219,6 +3219,25 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
 @keyframes rvName { 0% { opacity:0; transform:scale(2.4); letter-spacing:.6em; } 60% { opacity:1; transform:scale(.96); } 100% { opacity:1; transform:none; letter-spacing:0; } }
 @keyframes rvPart { 0% { opacity:0; transform:translate(0, 0) rotate(45deg) scale(.4); } 20% { opacity:1; } 100% { opacity:0; transform:translate(var(--px), var(--py)) rotate(45deg) scale(1); } }
 @keyframes rvNew { 0% { opacity:0; transform:translateY(6px) scale(.6); } 100% { opacity:1; transform:none; } }
+/* R3.1 ui3 상점 · 영수증 인장 */
+.u3 .u3-buy { position:absolute; inset:0; z-index:25; background:rgba(7,6,7,.84); }
+.u3 .u3-shin { animation:u3UnIn .35s cubic-bezier(.2,.8,.2,1) both; }
+.u3 .sh-ghost { animation:mnGhost 30s linear infinite; } .u3 .sh-gleam { animation:shGleam 3.2s ease-in-out infinite; } .u3 .sh-deal { animation:shDeal .55s cubic-bezier(.2,.8,.2,1) both; }
+.u3 .sh-mini { animation:shMini .35s cubic-bezier(.2,.9,.3,1.2) both; } .u3 .sh-fade { animation:mnDim .25s ease both; } .u3 .sh-paper { animation:shPaper .45s cubic-bezier(.2,.8,.2,1) both; }
+.u3 .sh-knock { animation:shKnock .4s .39s ease-out both; } .u3 .sh-drop { animation:shDrop 1.3s cubic-bezier(.55,0,.45,1) both; transform-origin:50% 100%; }
+.u3 .sh-seal { animation:shSeal .16s .39s cubic-bezier(.2,.9,.3,1) both; } .u3 .sh-seal-on { opacity:.93; transform:rotate(-16deg); }
+.u3 .sh-splat { animation:shSplat .45s .39s cubic-bezier(.1,.8,.2,1) both; } .u3 .sh-splat-on { opacity:.85; transform:translate(var(--dx), var(--dy)); }
+.u3 .sh-ring { animation:shRing .7s .39s cubic-bezier(.1,.7,.2,1) both; } .u3 .sh-tint { animation:shTint .6s .38s ease-out both; }
+@keyframes shDeal { 0% { opacity:0; transform:translateY(40px); } 100% { opacity:1; transform:none; } }
+@keyframes shGleam { 0% { transform:translateX(-120%) skewX(-20deg); } 60%,100% { transform:translateX(320%) skewX(-20deg); } }
+@keyframes shMini { 0% { opacity:0; transform:rotate(-14deg) scale(1.8); } 70% { opacity:1; transform:rotate(-14deg) scale(.95); } 100% { opacity:1; transform:rotate(-14deg) scale(1); } }
+@keyframes shPaper { 0% { opacity:0; transform:translateY(60px) rotate(-6deg); } 100% { opacity:1; transform:none; } }
+@keyframes shKnock { 0% { transform:rotate(-1.5deg); } 25% { transform:translate(-4px, 7px) rotate(-2.6deg); } 55% { transform:translate(3px, -2px) rotate(-1deg); } 100% { transform:rotate(-1.5deg); } }
+@keyframes shDrop { 0% { transform:translateY(-600px); } 30% { transform:translateY(0) scaleY(1); } 36% { transform:translateY(8px) scaleY(.9); } 54% { transform:translateY(0) scaleY(1); } 62% { transform:translateY(-20px); } 100% { transform:translateY(-640px); } }
+@keyframes shSeal { 0% { opacity:0; transform:rotate(-16deg) scale(1.3); } 100% { opacity:.93; transform:rotate(-16deg) scale(1); } }
+@keyframes shSplat { 0% { opacity:0; transform:translate(0, 0) scale(.2); } 100% { opacity:.85; transform:translate(var(--dx), var(--dy)) scale(1); } }
+@keyframes shRing { 0% { opacity:.8; transform:scale(.4); } 100% { opacity:0; transform:scale(2.6); } }
+@keyframes shTint { 0% { opacity:0; } 15% { opacity:.5; } 100% { opacity:0; } }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -4195,6 +4214,96 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
             <span class="u3-os" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:13px; color:#ffe1e5;"><span style="width:9px; height:9px; background:#fff; transform:rotate(45deg);"></span>{{ nbCost }} · {{ nbNote }}</span>
           </button>
         </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ u3.isShop }}">
+    <div aria-hidden="true" style="position:absolute; left:50%; margin-left:0; top:-60px; width:420px; height:860px; background:rgba(168,16,42,.16); transform:skewX(-14deg);"></div>
+    <div aria-hidden="true" class="u3-ghostrow" style="bottom:66px; font-size:120px; -webkit-text-stroke:1px rgba(232,227,216,.07);"><span class="sh-ghost">ROYAL TREASURY · ROYAL TREASURY · ROYAL TREASURY · ROYAL TREASURY ·</span></div>
+    <div class="u3c">
+      <div style="position:absolute; left:24px; top:92px; width:206px; display:flex; flex-direction:column; gap:8px;">
+        <span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#6f6a62;">CATEGORY</span>
+        <sc-for list="{{ u3.sh.cats }}" as="t">
+          <button type="button" onClick="{{ t.go }}" aria-pressed="{{ t.on }}" class="u3-btn" style="position:relative; height:66px; padding:0 16px; flex-direction:column; justify-content:center; align-items:flex-start; gap:3px; background:{{ t.bg }}; border:1px solid {{ t.bd }}; text-align:left;">
+            <span aria-hidden="true" style="position:absolute; left:-1px; top:-1px; bottom:-1px; width:4px; background:{{ t.bar }};"></span>
+            <span class="u3-os" style="font-size:10px; letter-spacing:3px; color:{{ t.ec }};">{{ t.en }}</span>
+            <span class="u3-bh" style="font-size:18px; color:#f3eee3;">{{ t.t }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div class="u3-shin" style="position:absolute; left:258px; right:24px; top:84px; bottom:100px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; height:56px; flex-shrink:0;">
+          <div style="display:flex; flex-direction:column; gap:4px;"><span class="u3-cz" style="font-size:12px; letter-spacing:6px; color:#e9c46a;">[ {{ u3.sh.en }} ]</span><b class="u3-bh" style="font-size:32px; line-height:1; color:#f3eee3;">{{ u3.sh.t }}</b></div>
+          <sc-if value="{{ u3.sh.daily }}">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="u3-os" style="font-size:12px; letter-spacing:3px; color:#9b958a;">RESET <b style="font-weight:600; font-size:16px; letter-spacing:1px; color:#f3eee3;">{{ resetIn }}</b></span>
+              <button type="button" onClick="{{ reroll }}" class="u3-btn" style="height:40px; padding:0 14px; gap:8px; background:rgba(13,12,14,.9); border:1px solid #4a4640; opacity:{{ u3.sh.rrOp }};"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M20 11a8 8 0 0 0-14.5-4.6L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.6L20 16M20 20v-4h-4"></path></svg><span class="u3-bh" style="font-size:15px;">{{ u3.sh.rrT }}</span></button>
+            </div>
+          </sc-if>
+        </div>
+        <div class="u2-scroll u3-scroll" style="flex:1; min-height:0; overflow-y:auto; margin-top:16px;">
+          <div style="display:grid; grid-template-columns:repeat({{ u3.sh.cols }}, minmax(0, 1fr)); gap:14px; padding-bottom:10px;">
+            <sc-for list="{{ u3.sh.items }}" as="o">
+              <button type="button" onClick="{{ o.go }}" class="u3-btn sh-deal" style="position:relative; height:{{ u3.sh.h }}; flex-direction:column; align-items:stretch; background:#121115; border:1px solid {{ o.bd }}; text-align:left; overflow:hidden; clip-path:polygon(0 0, 100% 0, 100% 94%, 88% 100%, 0 100%); animation-delay:{{ o.dl }};">
+                <div style="position:relative; flex:1; min-height:0; background:{{ o.artBg }}; display:grid; place-items:center; overflow:hidden;">
+                  <sc-if value="{{ o.img }}"><img src="{{ o.img }}" alt="" aria-hidden="true" style="width:{{ o.iw }}; height:{{ o.iw }}; object-fit:contain; filter:{{ o.flt }};"></sc-if>
+                  <sc-if value="{{ o.glyph }}"><span class="u3-bh" style="font-size:{{ o.gfs }}; line-height:1; color:{{ o.col }};">{{ o.glyph }}</span></sc-if>
+                  <sc-if value="{{ o.tag }}"><span class="u3-os" style="position:absolute; left:0; top:14px; padding:4px 10px 4px 8px; background:#c8102e; font-weight:600; font-size:14px; color:#fff; clip-path:polygon(0 0, 100% 0, 90% 100%, 0 100%);">{{ o.tag }}</span></sc-if>
+                  <span aria-hidden="true" class="sh-gleam" style="position:absolute; top:0; bottom:0; left:0; width:40%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);"></span>
+                </div>
+                <span style="height:4px; background:{{ o.col }}; flex-shrink:0;"></span>
+                <div style="padding:12px 14px 0; display:flex; flex-direction:column; gap:5px; flex-shrink:0;">
+                  <b class="u3-bh" style="font-size:19px; line-height:1.1; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ o.name }}</b>
+                  <span style="font-size:12px; color:#9b958a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ o.sub }}</span>
+                </div>
+                <div style="height:52px; margin:0 14px 14px; display:flex; align-items:center; border-top:1px dashed #3a3631; flex-shrink:0;">
+                  <b class="u3-os" style="font-weight:600; font-size:20px; color:#f3eee3;">{{ o.price }}</b>
+                </div>
+                <sc-if value="{{ o.sold }}"><div style="position:absolute; inset:0; background:rgba(8,7,9,.72); display:grid; place-items:center;"><div class="sh-mini" style="padding:8px 16px; border:3px double #c8102e; color:#c8102e; display:flex; flex-direction:column; align-items:center; gap:2px; transform:rotate(-14deg);"><span class="u3-cz" style="font-size:12px; letter-spacing:4px; font-weight:900;">SOLD</span><b class="u3-bh" style="font-size:24px;">{{ o.soldT }}</b></div></div></sc-if>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ u3.buy }}">
+    <div class="u3-buy sh-fade">
+      <div aria-hidden="true" class="{{ u3.buy.tint }}" style="position:absolute; inset:0; background:radial-gradient(circle at 50% 52%, rgba(200,16,46,.55), transparent 55%); opacity:0;"></div>
+      <div class="u3c">
+        <div class="sh-paper" style="position:absolute; left:410px; top:112px; width:460px; height:440px;">
+          <div class="{{ u3.buy.knock }}" style="position:absolute; inset:0; background:#ece6d9; color:#1d1a17; transform:rotate(-1.5deg); box-shadow:0 24px 60px rgba(0,0,0,.6); padding:28px 32px; box-sizing:border-box;">
+            <div aria-hidden="true" style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, rgba(29,26,23,.035) 0 1px, transparent 1px 26px); pointer-events:none;"></div>
+            <div style="position:relative; display:flex; justify-content:space-between; align-items:flex-start;"><div style="display:flex; flex-direction:column; gap:4px;"><span class="u3-cz" style="font-weight:900; font-size:12px; letter-spacing:5px; color:#a8102a;">ROYAL TREASURY</span><b class="u3-bh" style="font-size:30px; line-height:1;">구매 확인</b></div><span class="u3-os" style="font-size:12px; letter-spacing:2px; color:#6b645a;">No. {{ u3.buy.no }}</span></div>
+            <div style="position:relative; margin-top:22px; display:flex; gap:16px; align-items:center; padding:14px 0; border-top:2px solid #1d1a17; border-bottom:1px dashed #8a8276;">
+              <div style="width:72px; height:72px; flex-shrink:0; display:grid; place-items:center; background:{{ u3.buy.thBg }}; border:1px solid #1d1a17; overflow:hidden;"><sc-if value="{{ u3.buy.img }}"><img src="{{ u3.buy.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></sc-if><sc-if value="{{ u3.buy.glyph }}"><span class="u3-bh" style="font-size:34px; color:{{ u3.buy.col }};">{{ u3.buy.glyph }}</span></sc-if></div>
+              <div style="display:flex; flex-direction:column; gap:4px; min-width:0;"><b class="u3-bh" style="font-size:22px; line-height:1.1;">{{ u3.buy.name }}</b><span style="font-size:12px; color:#6b645a;">{{ u3.buy.sub }}</span></div>
+            </div>
+            <div style="position:relative; margin-top:14px; display:flex; flex-direction:column; gap:10px; font-size:14px;">
+              <div style="display:flex; justify-content:space-between;"><span style="color:#6b645a;">가격</span><b class="u3-os" style="font-weight:600; font-size:18px;">{{ u3.buy.price }}</b></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:#6b645a;">보유</span><span class="u3-os" style="font-size:16px;">{{ u3.buy.have }}</span></div>
+              <div style="display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid #1d1a17;"><span style="color:#6b645a;">구매 후</span><b class="u3-os" style="font-weight:600; font-size:18px; color:{{ u3.buy.afterC }};">{{ u3.buy.after }}</b></div>
+            </div>
+            <sc-if value="{{ u3.buy.seal }}">
+              <div aria-hidden="true" style="position:absolute; right:30px; bottom:60px; width:150px; height:150px;">
+                <span class="{{ u3.buy.ringCls }}" style="position:absolute; inset:0; border-radius:50%; border:3px solid rgba(168,16,42,.6); opacity:0;"></span>
+                <sc-for list="{{ u3.splats }}" as="sp"><span class="{{ u3.buy.splatCls }}" style="position:absolute; left:72px; top:72px; width:{{ sp.r }}; height:{{ sp.r }}; border-radius:50%; background:#b0122c; --dx:{{ sp.dx }}; --dy:{{ sp.dy }};"></span></sc-for>
+                <div class="{{ u3.buy.sealCls }}" style="position:absolute; inset:0; border-radius:50%; border:5px solid #b0122c; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:#b0122c;"><i style="position:absolute; inset:8px; border-radius:50%; border:1.5px solid #b0122c;"></i><span class="u3-cz" style="font-weight:900; font-size:10px; letter-spacing:3px;">APPROVED</span><b class="u3-bh" style="font-size:20px; line-height:1;">구매</b><b class="u3-bh" style="font-size:28px; line-height:1;">승인</b></div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        <sc-if value="{{ u3.buy.stamping }}">
+          <svg aria-hidden="true" class="sh-drop" viewBox="0 0 170 280" style="position:absolute; left:676px; top:186px; width:150px; height:247px; pointer-events:none;"><ellipse cx="85" cy="42" rx="38" ry="34" fill="#2b211d"></ellipse><ellipse cx="72" cy="30" rx="14" ry="9" fill="rgba(255,255,255,.12)"></ellipse><rect x="72" y="70" width="26" height="70" fill="#3a2c25"></rect><rect x="50" y="136" width="70" height="20" rx="3" fill="#b8862e" stroke="#e9c46a" stroke-width="2"></rect><path d="M40 156H130L142 236H28Z" fill="#151316" stroke="#3a3631" stroke-width="2"></path><rect x="24" y="236" width="122" height="22" fill="#8a0c20"></rect><rect x="24" y="252" width="122" height="6" fill="#b0122c"></rect></svg>
+        </sc-if>
+        <div style="position:absolute; left:410px; top:580px; width:460px; display:flex; justify-content:center; gap:12px;">
+          <sc-if value="{{ u3.buy.confirm }}">
+            <button type="button" onClick="{{ u3.buy.cancel }}" class="u3-btn u3-ghostbtn" style="width:160px; height:52px;"><span class="u3-bh" style="font-size:18px;">취소</span></button>
+            <button type="button" onClick="{{ u3.buy.ok }}" class="u3-btn u3-cutbtn" style="width:230px; height:52px; gap:10px; background:{{ u3.buy.btnBg }};"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 3h6v6l3 2v3H6v-3l3-2zM5 18h14M7 21h10"></path></svg><span class="u3-bh" style="font-size:19px; color:#fff;">{{ u3.buy.btnT }}</span></button>
+          </sc-if>
+        </div>
       </div>
     </div>
   </sc-if>
@@ -15212,7 +15321,7 @@ function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
 // 템플릿 <template id="ui3Tpl"> 은 ui2 와 같은 엔진 (u2Walk · u2Morph) · 값은 u2Vals() + u3Extra (v.u3.*) · 아직 옮기지 않은 탭 · 창 (U3_TABS · U3_OV) 은 예전 ui2 로 그린다
 const U3 = { shop: false, on: (() => { try { const q = new URLSearchParams(location.search).get('ui3'); if (q === '1') localStorage.setItem('rejhbt-ui3', '1'); if (q === '0') localStorage.removeItem('rejhbt-ui3'); return localStorage.getItem('rejhbt-ui3') === '1'; } catch (e) { return false; } })() };
 const U3_TABS = new Set(['battle', 'units', 'shop']), U3_OV = ['confirm', 'equipId', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
-const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !(UI2.st.tab === 'shop' && UI2.st.u3store !== 'recruit' && !U3.shop) && !UI2.st.page && !U3_OV.some(k => UI2.st[k]) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
+const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !UI2.st.page && !U3_OV.some(k => UI2.st[k]) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
 function u3Fit() { const b = $('ui2'); if (!b) return; const w = innerWidth, h = innerHeight, s = Math.min(w / 1280, h / 720) || 1; b.style.setProperty('--u3s', String(s)); b.style.setProperty('--u3w', (w / s).toFixed(1) + 'px'); b.style.setProperty('--u3h', (h / s).toFixed(1) + 'px'); }
 addEventListener('resize', u3Fit);
 const U3_D = { // 선 아이콘 (24 칸 path)
@@ -15305,6 +15414,51 @@ function u3RvDone() {
   $('u3rvOk').onclick = grClose;
   if ($('u3rvAgain')) $('u3rvAgain').onclick = () => { if (!free10 && profile.dia < cost) return banner('다이아가 부족해요'); if (nb) pull(10, false, true); else if (GR.again === 10) pull10Go(); else pull(GR.again); };
 }
+function u3Shop(v) { // 상점: 오늘의 매물 (무료 + 매물) · 패키지 · 이모티콘 → 사면 영수증 + 인장 (u3BuyOpen)
+  const s = UI2.st, cat = ['daily', 'pack', 'emo'].includes(s.u3cat) ? s.u3cat : 'daily', shop = ensureDaily(), fmt = n => (Number(n) || 0).toLocaleString('en-US');
+  const RC = { legend: '#e9c46a', epic: '#b07cff', rare: '#6fa8dc', common: '#9b958a', limited: '#ff3d7f' }, RN = { legend: 'LEGEND', epic: 'EPIC', rare: 'RARE', common: 'COMMON' };
+  const cats = [['daily', '오늘의 매물', 'DAILY'], ['pack', '패키지', 'PACKAGE'], ['emo', '이모티콘', 'EMOTE']].map(([k, t, en]) => { const on = cat === k; return { t, en, on, bg: on ? 'rgba(200,16,46,.16)' : 'rgba(13,12,14,.85)', bd: on ? '#c8102e' : '#3a3631', bar: on ? '#c8102e' : 'transparent', ec: on ? '#e9c46a' : '#6f6a62', go: () => u2Set({ u3cat: k }) }; });
+  const base = (o, i) => ({ img: '', glyph: '', tag: '', iw: '100%', flt: 'none', gfs: '64px', artBg: '#e9e4d8', soldT: '구매 완료', bd: '#3a3631', dl: (i * 0.06).toFixed(2) + 's', ...o });
+  let items = [];
+  if (cat === 'daily') {
+    const free = shop.freeType === 'gold' ? { ic: '●', n: 500, cur: 'g' } : { ic: '◆', n: 100, cur: 'd' };
+    items.push(base({ name: '무료 보상', sub: `${free.ic} ${fmt(free.n)} · 하루 한 번`, glyph: free.ic, col: '#5fd38a', artBg: 'radial-gradient(circle at 50% 55%, rgba(95,211,138,.25), transparent 62%), #0a090b', price: shop.freeClaimed ? '받음' : '무료', sold: shop.freeClaimed, soldT: '받음',
+      go: () => shop.freeClaimed ? null : u3BuyOpen({ name: '무료 보상', sub: '하루 한 번', glyph: free.ic, col: '#5fd38a', cur: free.cur, price: 0, run: () => u2After(claimFree) }) }, 0));
+    shop.offers.filter(o => (o.charId && CHARS[o.charId]) || o.random || (o.item && SHOP_ITEMS[o.item])).forEach((o, k) => {
+      const i = k + 1;
+      if (o.item) { const it = SHOP_ITEMS[o.item], r = shopItemRar(it), col = RC[r], cur = it.dia ? 'd' : 'g', pr = it.dia || it.gold;
+        items.push(base({ name: it.name, sub: it.sub, glyph: it.icon, col, artBg: `radial-gradient(circle at 50% 55%, ${col}33, transparent 62%), #0a090b`, bd: r === 'legend' ? 'rgba(233,196,106,.6)' : '#3a3631', price: (cur === 'd' ? '◆ ' : '● ') + fmt(pr), sold: !!o.sold,
+          go: () => o.sold ? null : u3BuyOpen({ name: it.name, sub: it.sub, glyph: it.icon, col, cur, price: pr, run: () => u2After(() => buyShopItem(o.id)) }) }, i)); return; }
+      const col = RC[o.rarity] || '#9b958a', pr = offerPrice(o), nm = offerName(o);
+      items.push(base({ name: o.charId ? CHARS[o.charId].name : nm, sub: `${RARITY[o.rarity]} · ${o.charId ? (owned(o.charId) ? '조각 +10' : '해금') : '랜덤'}`, img: o.charId ? u2Img(o.charId) : u2Img(byRarity(o.rarity)[0] || 'fire'), flt: o.charId ? 'none' : 'brightness(0) opacity(.85)', glyph: o.charId ? '' : '?', gfs: '110px', col, tag: o.disc && !o.sold ? `−${o.disc}%` : '', bd: o.rarity === 'legend' ? 'rgba(233,196,106,.6)' : '#3a3631', price: '● ' + fmt(pr), sold: !!o.sold,
+        go: () => o.sold ? null : u3BuyOpen({ name: o.charId ? CHARS[o.charId].name : nm, sub: RARITY[o.rarity], img: o.charId ? u2Img(o.charId) : '', glyph: o.charId ? '' : '?', col, cur: 'g', price: pr, run: () => u2After(() => buyOffer(o.id, false)) }) }, i));
+    });
+  } else if (cat === 'pack') {
+    items = PACKS.filter(p => !p.shopOnly).map((p, i) => { const sold = !!(p.once && profile.packs && profile.packs[p.k]), vd = p.vip && vipOn() ? Math.ceil(vipLeft() / 86400000) : 0, col = p.c || '#e9c46a';
+      return base({ name: p.name, sub: p.sub, glyph: p.icon, gfs: '72px', col, artBg: `repeating-linear-gradient(-45deg, rgba(232,227,216,.04) 0 2px, transparent 2px 14px), radial-gradient(circle at 50% 50%, ${col}40, transparent 60%), #0a090b`, tag: p.vip && vd ? `${vd}일` : p.once && !sold ? '1회' : '', price: '◆ ' + fmt(p.dia), sold, soldT: '구매 완료',
+        go: () => sold ? u2Toast('이미 구매한 패키지예요 (계정당 1회)') : u3BuyOpen({ name: p.name + (p.vip && vd ? ' · 30일 연장' : ''), sub: p.sub, glyph: p.icon, col, cur: 'd', price: p.dia, run: () => buyPack(p.k) }) }, i); });
+  } else {
+    if (!Array.isArray(shop.emo) || shop.emo.some(o => !emoDef(o.k))) { shop.emo = emoOffers(); save(); }
+    items = shop.emo.map((o, i) => { const have = o.sold || emoOwned(o.k), d = emoDef(o.k);
+      return base({ name: d.name, sub: '이모티콘', img: emoSrc(o.k), iw: '70%', artBg: '#16141a', col: '#8fc6dd', price: '◆ ' + fmt(EMO_PRICE), sold: have, soldT: '보유',
+        go: () => have ? null : u3BuyOpen({ name: '이모티콘 · ' + d.name, sub: '전투 중 이모티콘', img: emoSrc(o.k), col: '#8fc6dd', cur: 'd', price: EMO_PRICE, run: () => u2After(() => buyEmo(o.k)) }) }, i); });
+  }
+  const max = shop.rerolls >= SHOP_REROLL_MAX;
+  return { cats, items, daily: cat === 'daily', en: { daily: 'DAILY OFFERS', pack: 'PACKAGE', emo: 'EMOTE' }[cat], t: { daily: '오늘의 매물', pack: '패키지', emo: '이모티콘' }[cat], cols: cat === 'emo' ? 6 : cat === 'pack' ? 3 : 5, h: cat === 'emo' ? '230px' : cat === 'pack' ? '420px' : '430px', rrOp: max ? 0.4 : 1, rrT: String(v.rerollTxt || '').replace(/^[↻⟳🔄]\s*/u, '') };
+}
+const U3B = { no: 4180 };
+function u3BuyOpen(o) { clearTimeout(U3B.t); U3B.no++; u2Set({ u3buy: { ...o, phase: 'confirm', have: o.cur === 'g' ? profile.gold || 0 : profile.dia || 0, no: U3B.no } }); }
+function u3BuyGo() { const b = UI2.st.u3buy; if (!b || b.phase !== 'confirm') return; if (b.have < b.price) return u2Toast(b.cur === 'g' ? '골드가 부족해요' : '다이아가 부족해요');
+  b.phase = 'stamp'; u2Render(); sfx('ev_land');
+  U3B.t = setTimeout(() => { try { b.run(); } catch (e) { console.error(e); } }, 420);
+  setTimeout(() => { if (UI2.st.u3buy === b) { b.phase = 'done'; u2Render(); } }, 1300);
+  setTimeout(() => { if (UI2.st.u3buy === b) u2Set({ u3buy: null }); }, 2000); }
+function u3BuyVals() { const b = UI2.st.u3buy; if (!b) return null; const fmt = n => (Number(n) || 0).toLocaleString('en-US'), sym = b.cur === 'g' ? '● ' : '◆ ', st = b.phase === 'stamp', after = b.have - b.price, poor = after < 0;
+  return { name: b.name, sub: b.sub || '', img: b.img || '', glyph: b.img ? '' : b.glyph || '', col: b.col || '#e9c46a', thBg: b.img ? '#e9e4d8' : '#0a090b', no: String(b.no).padStart(5, '0'),
+    price: b.price ? sym + fmt(b.price) : '무료', have: sym + fmt(b.have), after: sym + fmt(Math.max(0, after)), afterC: poor ? '#c8102e' : '#1d1a17',
+    confirm: b.phase === 'confirm', stamping: st, seal: b.phase !== 'confirm', knock: st ? 'sh-knock' : '', sealCls: st ? 'sh-seal' : 'sh-seal-on', splatCls: st ? 'sh-splat' : 'sh-splat-on', ringCls: st ? 'sh-ring' : '', tint: st ? 'sh-tint' : '',
+    btnBg: poor ? '#4a4640' : '#c8102e', btnT: poor ? '잔액 부족' : b.price ? '구매' : '받기', ok: () => u3BuyGo(), cancel: () => u2Set({ u3buy: null }) }; }
+const U3_SPL = Array.from({ length: 12 }, (_, i) => { const a = i / 12 * Math.PI * 2 + (i % 3) * 0.3, d = 74 + (i * 37 % 40), r = 3 + (i * 5 % 6); return { r: r + 'px', dx: Math.cos(a) * d + 'px', dy: Math.sin(a) * d + 'px' }; });
 function u3Vals() { const v = u2Vals(); v.u3 = u3Extra(v); return v; }
 function u3Extra(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), fav = myPhoto(), fc = CHARS[fav] || CHARS.fire, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' };
@@ -15316,11 +15470,11 @@ function u3Extra(v) {
     .map(([k, t, en, ic, go]) => { const on = k === 'gacha' ? cur === 'shop' && s.u3store === 'recruit' : k === 'shop' ? cur === 'shop' && s.u3store !== 'recruit' : cur === k; return { t, en, d: U3_D[ic], go, on, cur: on ? 'page' : 'false', dot: k === 'social' ? dotOf('socialDot') : false, bg: on ? 'rgba(200,16,46,.12)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a' }; });
   const MI = v.menuItems || [], menu = MI.map((x, i) => { const m = U3_MENU[x.label] || ['', 'set'], last = i === MI.length - 1 && MI.length % 2 === 1; return { t: x.label, en: m[0], d: U3_D[m[1]], go: x.onClick, dot: !!x.dot, tag: x.tag || '', tagC: x.tag === '게스트' ? '#ff8a9a' : '#e9c46a', ic: i === 0 ? '#e9c46a' : '#d8d2c6', bar: i === 0 ? '#e9c46a' : 'transparent', dl: (0.15 + i * 0.03).toFixed(2) + 's', col: last ? '1 / span 2' : 'auto', h: MI.length > 12 ? '58px' : '72px' }; });
   const xpP = (v.xpPct || '0%').replace(/\.\d+%$/, '%');
-  const isRc = s.tab === 'shop' && s.u3store === 'recruit', PG = { units: ['UNITS', '지후'] }, pgk = isRc ? ['RECRUIT', '모집'] : PG[s.tab];
+  const isRc = s.tab === 'shop' && s.u3store === 'recruit', isSh = s.tab === 'shop' && !isRc, PG = { units: ['UNITS', '지후'], shop: ['SHOP', '상점'] }, pgk = isRc ? ['RECRUIT', '모집'] : PG[s.tab];
   const pg = pgk ? { en: pgk[0], t: pgk[1], sub: s.tab === 'units' ? `보유 ${v.ownedCount} / ${v.totalCount}` : '', tabs: s.tab === 'units' ? [['list', '보유 지후', false], ['col', '컬렉션', colReady()], ['emo', '이모티콘', false]].map(([k, t, dot]) => { const on = (s.uSub || 'list') === k; return { t, on, dot, bg: on ? 'rgba(200,16,46,.14)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a', go: () => u2Set({ uSub: k }) }; }) : [] } : { en: '', t: '', sub: '', tabs: [] };
   const un = s.tab === 'units' ? u3Units(v) : {};
   return {
-    scr: isRc ? 'recruit' : s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units', isRecruit: isRc, rc: isRc ? u3Recruit(v) : {}, pg, un, back: () => u2Go('battle'),
+    scr: isRc ? 'recruit' : s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units', isRecruit: isRc, rc: isRc ? u3Recruit(v) : {}, isShop: isSh, sh: isSh ? u3Shop(v) : {}, buy: u3BuyVals(), splats: U3_SPL, pg, un, back: () => u2Go('battle'),
     leader: { src: u2Img(fav), name: fc.name, sub: (RN[fc.rarity] || '') + (owned(fav) ? ' · RANK ' + enhLv(fav) : '') },
     e7On: !!v.e7On, e7Open: v.e7Open, e7Day: v.e7Day, e7Dot: !!v.e7N, e7Img: u2Img(fav),
     rail, deck, cp: fmt(cpTotal()), goUnits: () => u2Go('units'),
