@@ -4239,6 +4239,32 @@ html body.u3-on #reveal:not(.u3rv) { background:#0a090b; }
     </div>
   </sc-if>
 
+  <sc-if value="{{ u3.isUnitsSub }}">
+    <div class="u3c">
+      <sc-if value="{{ u3.uc.col }}">
+        <div class="u2-scroll u3-scroll" style="position:absolute; left:24px; right:24px; top:84px; bottom:100px; overflow-y:auto;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <sc-for list="{{ u3.uc.cols }}" as="c">
+              <div class="sh-deal" style="position:relative; padding:16px 18px; display:flex; flex-direction:column; gap:12px; background:#121115; border:1px solid {{ c.bd }};">
+                <div style="display:flex; align-items:center; gap:12px;"><b class="u3-bh" style="flex:1; font-size:20px; color:#f3eee3;">{{ c.name }}</b><span class="u3-os" style="font-weight:600; font-size:15px; color:#e9c46a;">{{ c.prog }}</span><button type="button" onClick="{{ c.go }}" class="u3-btn u3-cutbtn" style="height:38px; padding:0 18px; background:{{ c.btnBg }};"><span class="u3-bh" style="font-size:14px; color:#fff;">{{ c.btn }}</span></button></div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;"><sc-for list="{{ c.mem }}" as="m"><button type="button" onClick="{{ m.onClick }}" class="u3-btn" style="position:relative; width:62px; flex-direction:column; align-items:stretch; background:#16141a; border:1px solid {{ m.bd }}; opacity:{{ m.op }};"><span style="display:block; height:58px; background:#e9e4d8;"><sc-if value="{{ m.img }}"><img src="{{ m.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain; filter:{{ m.flt }};"></sc-if></span><span class="u3-os" style="padding:2px 0; font-size:10px; color:{{ m.rc }}; text-align:center;">{{ m.rk }}</span></button></sc-for></div>
+                <span style="font-size:12px; color:#9b958a;">{{ c.rw }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ u3.uc.emo }}">
+        <div style="position:absolute; left:24px; right:24px; top:84px; bottom:100px; display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; align-items:center; gap:16px;"><span class="u3-cz" style="font-size:12px; letter-spacing:5px; color:#c8102e;">[ EQUIPPED ]</span><span class="u3-os" style="font-size:12px; letter-spacing:2px; color:#9b958a;">{{ emoCnt }}</span><span style="font-size:12px; color:#6f6a62;">{{ emoHint }}</span></div>
+          <div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:10px;"><sc-for list="{{ emoSlotsV }}" as="e"><button type="button" onClick="{{ e.onClick }}" class="u3-btn" style="position:relative; aspect-ratio:1; background:#121115; border:2px solid {{ e.bd }};"><b class="u3-os" style="position:absolute; left:6px; top:4px; font-weight:600; font-size:11px; color:#6f6a62;">{{ e.n }}</b><sc-if value="{{ e.has }}"><img src="{{ e.img }}" alt="" style="width:86%; height:86%; object-fit:contain; background:#e9e4d8;"><span onClick="{{ e.un }}" style="position:absolute; right:2px; top:2px; width:22px; height:22px; display:grid; place-items:center; background:#c8102e; color:#fff; font-size:12px; cursor:pointer;">✕</span></sc-if><sc-if value="{{ e.none }}"><span class="u3-os" style="font-size:22px; color:#4a4640;">+</span></sc-if></button></sc-for></div>
+          <span class="u3-cz" style="font-size:12px; letter-spacing:5px; color:#e9c46a;">[ OWNED ]</span>
+          <div class="u2-scroll u3-scroll" style="flex:1; min-height:0; overflow-y:auto;"><div style="display:grid; grid-template-columns:repeat(10, 1fr); gap:8px;"><sc-for list="{{ emoOwnV }}" as="e"><button type="button" onClick="{{ e.onClick }}" class="u3-btn" style="flex-direction:column; align-items:stretch; background:#121115; border:1px solid {{ e.bd }};"><span style="display:grid; place-items:center; aspect-ratio:1; background:#e9e4d8;"><img src="{{ e.img }}" alt="" loading="lazy" style="width:90%; height:90%; object-fit:contain;"></span><span style="padding:3px 2px; font-size:10px; color:#d8d2c6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ e.name }}</span></button></sc-for></div></div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ u3.isRecruit }}">
     <div class="u3c">
       <div aria-hidden="true" class="u3-band rc-band" style="left:330px; width:470px; transform:skewX(-14deg);"><i class="u3-scan" style="animation-duration:4.4s;"></i></div>
@@ -15871,7 +15897,7 @@ function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
 // 템플릿 <template id="ui3Tpl"> 은 ui2 와 같은 엔진 (u2Walk · u2Morph) · 값은 u2Vals() + u3Extra (v.u3.*) · 아직 옮기지 않은 탭 · 창 (U3_TABS · U3_OV) 은 예전 ui2 로 그린다
 const U3 = { shop: false, on: (() => { try { const q = new URLSearchParams(location.search).get('ui3'); if (q === '1') localStorage.removeItem('rejhbt-ui3'); if (q === '0') localStorage.setItem('rejhbt-ui3', '0'); return localStorage.getItem('rejhbt-ui3') !== '0'; } catch (e) { return true; } })() };
 const U3_TABS = new Set(['battle', 'units', 'shop', 'arcade', 'rank']), U3_OV = ['confirm', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
-const u3Use = () => U3.on && !TUT.on && U3_TABS.has(UI2.st.tab) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
+const u3Use = () => U3.on && !TUT.on && U3_TABS.has(UI2.st.tab);
 function u3Fit() { const b = $('ui2'); if (!b) return; const w = innerWidth, h = innerHeight, s = Math.min(w / 1280, h / 720) || 1; b.style.setProperty('--u3s', String(s)); b.style.setProperty('--u3w', (w / s).toFixed(1) + 'px'); b.style.setProperty('--u3h', (h / s).toFixed(1) + 'px'); }
 addEventListener('resize', u3Fit); if (U3.on) document.body.classList.add('u3-on'); /* 공통 테마 */
 const U3_D = { // 선 아이콘 (24 칸 path)
@@ -16141,6 +16167,14 @@ function u3Det(v, tabOf) { // 지후 상세: 왼쪽 큰 스케치 · 오른쪽 �
       prev: e => d.prev ? (e && e.stopPropagation && e.stopPropagation(), u2Set({ detail: d.prev })) : null, next: e => d.next ? (e && e.stopPropagation && e.stopPropagation(), u2Set({ detail: d.next })) : null,
       eqT: !have ? '미보유' : inDeck ? '덱에 있음' : '덱에 넣기', eqBg: !have || inDeck ? '#3a3631' : '#c8102e', eq: () => (have && !inDeck ? u2Equip(id) : null) } };
 }
+function u3UnSub(v) { // 지후 탭 컬렉션 · 이모티콘
+  const s = UI2.st;
+  if (s.uSub === 'col') return { col: true, cols: colList().map(c => { const st = colState(c), mem = c.ids.map(id => { const have = owned(id); return { img: u2Img(id), rk: have ? 'R' + enhLv(id) : '미보유', rc: colMet(id) ? '#5fd38a' : have ? '#e9c46a' : '#6f6a62', bd: colMet(id) ? '#5fd38a' : '#2a2723', op: have ? 1 : 0.5, flt: have ? 'none' : 'grayscale(1) brightness(.6)', onClick: () => u2Set({ detail: id }) }; });
+    if (c.lock) mem.push({ img: '', rk: '곧 추가', rc: '#6f6a62', bd: '#2a2723', op: 0.5, flt: 'none', onClick: () => u2Toast('곧 이 컬렉션에 지후가 더해져요') });
+    return { name: c.name, mem, prog: c.lock ? 'SOON' : `${st.n}/${c.ids.length}`, bd: st.ready ? '#e9c46a' : st.done ? 'rgba(95,211,138,.5)' : '#2a2723', btn: st.done ? '완료' : st.ready ? '받기' : c.lock ? '준비 중' : '진행 중', btnBg: st.ready ? '#c8102e' : '#3a3631', go: () => { if (st.ready) { colClaim(c.k); sfx('ev_land'); u2Render(); } }, rw: c.lock ? '' : `◆${COL_DIA * c.ids.length} · 빛나는 전설조각 ×${COL_GLOW * c.ids.length}`, rank: st.ready ? 0 : st.done ? 2 : c.lock ? 3 : 1 }; }).sort((a, b) => a.rank - b.rank) };
+  const e = u2EmoVals(); Object.assign(v, e); v.emoSlotsV = e.emoSlotsV.map(x => ({ ...x, none: !x.has, bd: /on/.test(x.cls) ? '#c8102e' : x.has ? '#4a4640' : '#2a2723' })); v.emoOwnV = e.emoOwnV.map(x => ({ ...x, bd: /eq/.test(x.cls) ? '#c8102e' : '#2a2723' }));
+  return { emo: true };
+}
 function u3Vals() { u3OldInit(); const v = u2Vals(); v.u3 = u3Extra(v); return v; }
 function u3OldInit() { // 예전 ui2 의 창 · 페이지 마크업을 ui3 템플릿의 .u3-oldapp 칸으로 한 번 복사 (값은 같은 u2Vals)
   if (U3.oldDone) return; U3.oldDone = true;
@@ -16166,7 +16200,7 @@ function u3Extra(v) {
   const pg = pgk ? { en: pgk[0], t: pgk[1], sub: s.tab === 'units' ? `보유 ${v.ownedCount} / ${v.totalCount}` : '', tabs: s.tab === 'units' ? [['list', '보유 지후', false], ['col', '컬렉션', colReady()], ['emo', '이모티콘', false]].map(([k, t, dot]) => { const on = (s.uSub || 'list') === k; return { t, on, dot, bg: on ? 'rgba(200,16,46,.14)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a', go: () => u2Set({ uSub: k }) }; }) : [] } : { en: '', t: '', sub: '', tabs: [] };
   const un = s.tab === 'units' ? u3Units(v) : {};
   return {
-    scr: isRc ? 'recruit' : s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units', isRecruit: isRc, rc: isRc ? u3Recruit(v) : {}, isShop: isSh, sh: isSh ? u3Shop(v) : {}, isArcade: s.tab === 'arcade', ac: s.tab === 'arcade' ? u3Arcade(v) : {}, isRank: s.tab === 'rank', rk: s.tab === 'rank' ? u3Rank(v) : {}, buy: u3BuyVals(), splats: U3_SPL, pg, un, back: () => u2Go('battle'),
+    scr: isRc ? 'recruit' : s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units' && !['col', 'emo'].includes(s.uSub), isUnitsSub: s.tab === 'units' && ['col', 'emo'].includes(s.uSub), uc: s.tab === 'units' && ['col', 'emo'].includes(s.uSub) ? u3UnSub(v) : {}, isRecruit: isRc, rc: isRc ? u3Recruit(v) : {}, isShop: isSh, sh: isSh ? u3Shop(v) : {}, isArcade: s.tab === 'arcade', ac: s.tab === 'arcade' ? u3Arcade(v) : {}, isRank: s.tab === 'rank', rk: s.tab === 'rank' ? u3Rank(v) : {}, buy: u3BuyVals(), splats: U3_SPL, pg, un, back: () => u2Go('battle'),
     leader: { src: u2Img(fav), name: fc.name, sub: (RN[fc.rarity] || '') + (owned(fav) ? ' · RANK ' + enhLv(fav) : '') },
     e7On: !!v.e7On, e7Open: v.e7Open, e7Day: v.e7Day, e7Dot: !!v.e7N, e7Img: u2Img(fav),
     rail, deck, cp: fmt(cpTotal()), goUnits: () => u2Go('units'),
