@@ -127,7 +127,10 @@
 
 ## 최근 변경 (R3.1 · 2026-11-16)
 - **전투 설정 = 화면 전체 창** `#bsetFull` (`bsetToggle` · 예전 말풍선 `#bsetPop` 은 안 쓴다 · body 에 붙고 z-index 66 = 전투 화면 위 · `.modal` 70 아래): 검은 반투명 (.94) · 크림슨 레저 · 사운드 막대 + `BSET_ROWS` 토글 (`bsetBind` 그대로 · `.bf-row.on`) · 계속하기 · ✕ · Esc · 화면을 떠나면 `show()` 가 닫는다. **봇전 (`!S.net`) 은 여는 동안 `S.paused`** → `loopBody` 의 acc · 배치 타이머 `S.timer` · `botMind.pulse` 가 멈춘다 (친선전은 LIVE 표시만). 새로 멈춰야 하는 타이머가 생기면 `S.paused` 를 본다.
-- 로비 · 탭 리워크 시안 (가로 · 크림슨 레저 · 28장): https://claude.ai/artifact/TVMC4Mv4z2xHyHj7DmmUFm (게임에는 아직 안 넣었다).
+- **새 로비 ui3** (시안 https://claude.ai/artifact/TVMC4Mv4z2xHyHj7DmmUFm · `// ═════════ R3.1 새 로비 ui3`): 기본 켜짐 · `?ui3=0` 이면 예전 ui2 (`localStorage rejhbt-ui3`) · 튜토리얼 중엔 ui2. 같은 엔진 (`u2Walk` · `u2Morph`) 으로 `<template id="ui3Tpl">` 을 그리고 값은 `u2Vals()` + `u3Extra` (`v.u3.*`) · 1280 × 720 무대를 `u3Fit` 이 확대 (`--u3s`) · 가운데 1280 칸 `.u3c` · CSS 는 `.u3` / `u3-` 접두사.
+  - 옮긴 화면: 메인 · 햄버거 · 지후 (`u3Units`) · 모집 (`u3Recruit`) + 뽑기 연출 `u3Reveal` (showReveal 대신 · GR 타이머 · grClose) · 상점 (`u3Shop` · 영수증 인장 `u3BuyOpen`) · 아케이드 · 랭킹 · 퀘스트 · 출석부 (`u3AttClaim` 도장) · 디펜스 보상 (`UI2.st.u3df`) · 지후 상세 (`u3Det`) — 전체 창은 `u3Ov`.
+  - 아직 예전 마크업인 창 · 페이지 (프로필 · 시즌 패스 · 커뮤니티 · 아케이드 상점 · 전투기록 · 유저 정보 · 덱 추천 · 확인 창 · 모드 로비 · 친구 · 가방 · 공지 · 탑 · 경쟁전 · 샌드박스 · 컬렉션 · 이모티콘) 은 `u3OldInit` 이 ui2Tpl 블록을 복사해 새 로비 위 가운데 칸 `.u3-old` 에 띄운다 (컬렉션 · 이모티콘은 예전 로비로).
+  - DOM 모달 · 화면 (우편 · 환경설정 · 도움말 · 확인 dlg · 레벨업 · 매칭 #mmOv · 결과) 은 공통 테마 `body.u3-on` (`html body.u3-on …`) 으로 크림슨 레저.
 
 ## 최근 변경 (R3.0 · 새 전투 시스템 · 2026-11-14)
 - **build 6 지후 카드 줄 리디자인**: 작게 (`.ub-c` 34px) · 머리줄 `.ub-hd` (SQUAD 생존 / 전체 · SKILL READY 수) · 초상화 잘린 모서리 (img clip-path · SVG path `M0 0H100V78L78 100H0Z`) · 체력 숫자 `.ub-n` (35% 아래 `.low` 빨강) · 전투 설정 `BSET.ubar` (기본 켬 · 끄면 `body.b-noubar`) · 시안 https://claude.ai/artifact/AnWVFDLaTQLRggboAXGdQz .
