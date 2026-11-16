@@ -3238,6 +3238,12 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
 @keyframes shSplat { 0% { opacity:0; transform:translate(0, 0) scale(.2); } 100% { opacity:.85; transform:translate(var(--dx), var(--dy)) scale(1); } }
 @keyframes shRing { 0% { opacity:.8; transform:scale(.4); } 100% { opacity:0; transform:scale(2.6); } }
 @keyframes shTint { 0% { opacity:0; } 15% { opacity:.5; } 100% { opacity:0; } }
+.u3 .u3-arta-a, .u3 .u3-arta-b { animation:u3ArtA .6s cubic-bezier(.2,.8,.2,1) both; } .u3 .u3-arta-b { animation-name:u3ArtB; }
+.u3 .u3-arti-a, .u3 .u3-arti-b { animation:u3ArtIA .45s cubic-bezier(.2,.8,.2,1) both; } .u3 .u3-arti-b { animation-name:u3ArtIB; }
+@keyframes u3ArtA { 0% { opacity:0; transform:scale(1.12); } 100% { opacity:1; transform:none; } } @keyframes u3ArtB { 0% { opacity:0; transform:scale(1.12); } 100% { opacity:1; transform:none; } }
+@keyframes u3ArtIA { 0% { opacity:0; transform:translateX(60px); } 100% { opacity:1; transform:none; } } @keyframes u3ArtIB { 0% { opacity:0; transform:translateX(60px); } 100% { opacity:1; transform:none; } }
+.u3 .rk-ray { animation:u3Spin 20s linear infinite; } .u3 .rk-crown { animation:u3Crown 2.6s ease-in-out infinite; } .u3 .rk-pod { animation:shDeal .55s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes u3Crown { 0%,100% { transform:translateY(0) rotate(-6deg); } 50% { transform:translateY(-6px) rotate(-6deg); } }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -4303,6 +4309,87 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
             <button type="button" onClick="{{ u3.buy.cancel }}" class="u3-btn u3-ghostbtn" style="width:160px; height:52px;"><span class="u3-bh" style="font-size:18px;">취소</span></button>
             <button type="button" onClick="{{ u3.buy.ok }}" class="u3-btn u3-cutbtn" style="width:230px; height:52px; gap:10px; background:{{ u3.buy.btnBg }};"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 3h6v6l3 2v3H6v-3l3-2zM5 18h14M7 21h10"></path></svg><span class="u3-bh" style="font-size:19px; color:#fff;">{{ u3.buy.btnT }}</span></button>
           </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ u3.isArcade }}">
+    <div class="u3c">
+      <div class="{{ u3.ac.ab }}" style="position:absolute; left:430px; top:64px; right:0; bottom:84px; overflow:hidden;">
+        <div aria-hidden="true" class="u3-band" style="left:120px; width:460px; background:{{ u3.ac.band }}; transform:skewX(-14deg);"><i class="u3-scan" style="animation-duration:5s;"></i></div>
+        <div aria-hidden="true" style="position:absolute; left:584px; top:-40px; width:8px; height:760px; background:#e9c46a; transform:skewX(-14deg);"></div>
+        <div aria-hidden="true" class="u3-ghostrow" style="top:18px; font-size:128px; -webkit-text-stroke:1px rgba(232,227,216,.1);"><span class="mn-ghost">{{ u3.ac.ghost }}</span></div>
+        <img class="u3-sketch rc-float" src="{{ u3.ac.art }}" alt="" aria-hidden="true" style="left:90px; top:40px; width:480px; height:480px; filter:grayscale(1) invert(1) brightness(2.3);">
+        <sc-if value="{{ u3.ac.mirror }}"><img class="u3-sketch rc-float" src="{{ u3.ac.art }}" alt="" aria-hidden="true" style="left:330px; top:40px; width:480px; height:480px; opacity:.45; transform:scaleX(-1);"></sc-if>
+      </div>
+      <div aria-hidden="true" style="position:absolute; left:740px; top:64px; right:0; bottom:84px; background:linear-gradient(90deg, rgba(13,12,14,0), rgba(13,12,14,.9) 38%);"></div>
+      <div style="position:absolute; left:24px; top:92px; width:390px; display:flex; flex-direction:column; gap:10px;">
+        <span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#6f6a62;">SELECT MODE</span>
+        <sc-for list="{{ u3.ac.modes }}" as="m">
+          <button type="button" onClick="{{ m.pick }}" aria-pressed="{{ m.on }}" class="u3-btn" style="position:relative; height:{{ u3.ac.rowH }}; padding:0 22px 0 18px; justify-content:flex-start; gap:16px; background:{{ m.bg }}; border:1px solid {{ m.bd }}; text-align:left; transform:translateX({{ m.tx }}); transition:transform .3s cubic-bezier(.2,.8,.2,1); clip-path:polygon(0 0, 100% 0, 96% 100%, 0 100%);">
+            <b class="u3-cz" style="font-weight:900; font-size:28px; letter-spacing:0; color:{{ m.nc }};">{{ m.no }}</b>
+            <span style="flex:1; display:flex; flex-direction:column; gap:3px;"><span class="u3-os" style="font-size:10px; letter-spacing:4px; color:{{ m.ec }};">{{ m.en }}</span><b class="u3-bh" style="font-size:22px; line-height:1; color:#f3eee3;">{{ m.name }}</b></span>
+            <span class="u3-os" style="height:26px; padding:0 10px; display:flex; align-items:center; background:{{ m.feeBg }}; font-weight:600; font-size:13px; color:{{ m.feeC }};">{{ m.fee }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div class="{{ u3.ac.ib }}" style="position:absolute; right:40px; top:110px; width:400px; display:flex; flex-direction:column; gap:14px;">
+        <span class="u3-cz" style="font-size:13px; letter-spacing:6px; color:#e9c46a;">[ {{ u3.ac.cur.en }} ]</span>
+        <b class="u3-bh" style="font-size:60px; line-height:.95; color:#f3eee3;">{{ u3.ac.cur.name }}</b>
+        <span style="font-size:15px; line-height:1.6; color:#d8d2c6;">{{ u3.ac.cur.desc }}</span>
+        <div style="display:flex; flex-direction:column; gap:8px; padding:14px 0; border-top:1px solid #2a2723; border-bottom:1px solid #2a2723;">
+          <sc-for list="{{ u3.ac.cur.rows }}" as="r"><div style="display:flex; justify-content:space-between; font-size:13px;"><span class="u3-os" style="letter-spacing:3px; color:#9b958a;">{{ r.k }}</span><b class="u3-os" style="font-weight:600; color:#f3eee3;">{{ r.v }}</b></div></sc-for>
+        </div>
+        <button type="button" onClick="{{ u3.ac.cur.go }}" class="u3-btn" style="height:76px; justify-content:space-between; padding:0 28px; background:#c8102e; clip-path:polygon(0 0, 100% 0, 94% 100%, 0 100%);">
+          <span style="display:flex; flex-direction:column; align-items:flex-start; gap:2px;"><span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#ffd0d6;">START</span><b class="u3-bh" style="font-size:28px; color:#fff;">{{ u3.ac.cur.goT }}</b></span>
+          <span class="u3-os" style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:18px; color:#fff;">{{ u3.ac.cur.fee }}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+        </button>
+      </div>
+      <button type="button" onClick="{{ u3.ac.shop }}" class="u3-btn" style="position:absolute; left:24px; bottom:104px; width:390px; height:62px; justify-content:flex-start; gap:14px; padding:0 18px; background:rgba(13,12,14,.85); border:1px solid #3a3631; text-align:left;">
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e9c46a" stroke-width="1.6"><path d="M3 8h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"></path><path d="M14 8v10" stroke-dasharray="2 2"></path></svg>
+        <span style="flex:1; display:flex; flex-direction:column; gap:3px;"><b class="u3-bh" style="font-size:16px; color:#f3eee3;">아케이드 상점 · 티켓</b><span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#9b958a;">🎟 {{ tickets }} · {{ points }} P</span></span>
+      </button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ u3.isRank }}">
+    <div aria-hidden="true" style="position:absolute; left:calc(50% - 510px); top:60px; width:300px; height:760px; background:rgba(168,16,42,.22); transform:skewX(-14deg);"></div>
+    <div class="u3c">
+      <div aria-hidden="true" class="rk-ray" style="position:absolute; left:30px; top:0; width:480px; height:480px; background:conic-gradient(from 0deg, transparent 0 7%, rgba(233,196,106,.09) 9%, transparent 11% 32%, rgba(233,196,106,.07) 34%, transparent 36% 57%, rgba(233,196,106,.09) 59%, transparent 61% 82%, rgba(233,196,106,.07) 84%, transparent 86%);"></div>
+      <div style="position:absolute; left:24px; right:24px; top:80px; height:44px; display:flex; gap:6px;">
+        <sc-for list="{{ u3.rk.tabs }}" as="t">
+          <button type="button" onClick="{{ t.go }}" aria-pressed="{{ t.on }}" class="u3-btn" style="flex:1; height:44px; gap:8px; background:{{ t.bg }}; border:1px solid {{ t.bd }}; clip-path:polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);"><span class="u3-os" style="font-size:10px; letter-spacing:2px; color:{{ t.ec }};">{{ t.en }}</span><b class="u3-bh" style="font-size:16px; color:{{ t.c }};">{{ t.t }}</b></button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ u3.rk.msg }}"><div class="u3-bh" style="position:absolute; left:548px; right:24px; top:240px; text-align:center; font-size:18px; color:#9b958a;">{{ u3.rk.msg }}</div></sc-if>
+      <div class="rk-pod" style="position:absolute; left:24px; top:150px; width:500px; bottom:100px;">
+        <sc-for list="{{ u3.rk.podium }}" as="p">
+          <div style="position:absolute; left:{{ p.x }}; bottom:0; width:{{ p.w }}; display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <sc-if value="{{ p.first }}"><svg class="rk-crown" aria-hidden="true" width="54" height="40" viewBox="0 0 58 42"><path d="M4 36L2 8l14 12L29 2l13 18L56 8l-2 28z" fill="#e9c46a" stroke="#0d0c0e" stroke-width="2"></path><rect x="4" y="34" width="50" height="6" fill="#b8862e"></rect></svg></sc-if>
+            <div class="u3-cut" style="position:relative; width:{{ p.av }}; height:{{ p.av }}; background:#e9e4d8; box-shadow:inset 0 0 0 3px {{ p.c }}; clip-path:polygon(0 0, 100% 0, 100% 82%, 82% 100%, 0 100%);"><img src="{{ p.src }}" alt="" style="width:100%; height:100%; object-fit:contain;"><span aria-hidden="true" class="sh-gleam" style="position:absolute; top:0; bottom:0; left:0; width:35%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);"></span></div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:2px; max-width:100%;"><b class="u3-bh" style="font-size:{{ p.fs }}; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ p.name }}</b><span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#9b958a;">{{ p.lvT }}</span></div>
+            <div style="position:relative; width:100%; height:{{ p.h }}; background:linear-gradient(180deg, {{ p.c2 }}, rgba(13,12,14,.4)); border-top:4px solid {{ p.c }}; display:flex; flex-direction:column; align-items:center; padding-top:8px; box-sizing:border-box;"><b class="u3-cz" style="font-weight:900; font-size:{{ p.nfs }}; line-height:1; letter-spacing:0; color:{{ p.c }};">{{ p.rk }}</b><span class="u3-os" style="margin-top:6px; font-weight:600; font-size:16px; color:#f3eee3;">{{ p.val }}</span></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position:absolute; left:548px; right:24px; top:150px; bottom:100px; display:flex; flex-direction:column;">
+        <div class="u3-os" style="height:30px; display:flex; align-items:center; padding:0 16px; font-size:11px; letter-spacing:3px; color:#6f6a62; border-bottom:1px solid #2a2723; flex-shrink:0;"><span style="width:56px;">RANK</span><span style="flex:1;">PLAYER</span><span style="width:196px;">DECK</span><span style="width:130px; text-align:right;">{{ u3.rk.hd }}</span></div>
+        <div class="u2-scroll u3-scroll" style="flex:1; min-height:0; overflow-y:auto;">
+          <sc-for list="{{ u3.rk.rows }}" as="r">
+            <div style="height:60px; display:flex; align-items:center; padding:0 16px; border-bottom:1px solid #1e1c1f; background:{{ r.bg }};">
+              <b class="u3-cz" style="width:56px; font-weight:900; font-size:20px; letter-spacing:0; color:#6f6a62;">{{ r.rank }}</b>
+              <div style="flex:1; min-width:0; display:flex; align-items:center; gap:12px;"><div class="u3-cut" style="width:40px; height:40px; flex-shrink:0; background:#e9e4d8;"><img src="{{ r.favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div><div style="display:flex; flex-direction:column; gap:2px; min-width:0;"><b class="u3-bh" style="font-size:16px; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</b><span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#6f6a62;">{{ r.lvT }}</span></div></div>
+              <div style="width:196px; display:flex; gap:4px;"><sc-for list="{{ r.dk }}" as="d"><span style="width:32px; height:32px; padding:2px; box-sizing:border-box; background:{{ d.c }};"><img src="{{ d.src }}" alt="" style="display:block; width:100%; height:100%; background:#e9e4d8; object-fit:contain;"></span></sc-for></div>
+              <b class="u3-os" style="width:130px; text-align:right; font-weight:600; font-size:17px; color:#f3eee3;">{{ r.main }}</b>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height:62px; display:flex; align-items:center; padding:0 16px; background:#c8102e; clip-path:polygon(0 0, 100% 0, 98.5% 100%, 0 100%); flex-shrink:0;">
+          <b class="u3-cz" style="width:56px; font-weight:900; font-size:20px; letter-spacing:0; color:#fff;">{{ myRank }}</b>
+          <div style="flex:1; display:flex; align-items:center; gap:12px;"><div class="u3-cut" style="width:42px; height:42px; background:#e9e4d8;"><img src="{{ favImg }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div><div style="display:flex; flex-direction:column; gap:2px;"><b class="u3-bh" style="font-size:16px; color:#fff;">{{ nickname }} <span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#ffd0d6;">YOU</span></b><span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#ffd0d6;">LV {{ level }} · {{ myStat }}</span></div></div>
+          <div style="width:196px; display:flex; gap:4px;"><sc-for list="{{ u3.rk.myDk }}" as="d"><span style="width:32px; height:32px; padding:2px; box-sizing:border-box; background:#fff;"><img src="{{ d.src }}" alt="" style="display:block; width:100%; height:100%; background:#e9e4d8; object-fit:contain;"></span></sc-for></div>
+          <b class="u3-os" style="width:130px; text-align:right; font-weight:600; font-size:19px; color:#fff;">{{ myMain }}</b>
         </div>
       </div>
     </div>
@@ -15320,7 +15407,7 @@ function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
 // ═════════ R3.1 새 로비 ui3 (가로 · 크림슨 레저) — 다 옮길 때까지 ?ui3=1 (localStorage rejhbt-ui3) 로만 켠다 ═════════
 // 템플릿 <template id="ui3Tpl"> 은 ui2 와 같은 엔진 (u2Walk · u2Morph) · 값은 u2Vals() + u3Extra (v.u3.*) · 아직 옮기지 않은 탭 · 창 (U3_TABS · U3_OV) 은 예전 ui2 로 그린다
 const U3 = { shop: false, on: (() => { try { const q = new URLSearchParams(location.search).get('ui3'); if (q === '1') localStorage.setItem('rejhbt-ui3', '1'); if (q === '0') localStorage.removeItem('rejhbt-ui3'); return localStorage.getItem('rejhbt-ui3') === '1'; } catch (e) { return false; } })() };
-const U3_TABS = new Set(['battle', 'units', 'shop']), U3_OV = ['confirm', 'equipId', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
+const U3_TABS = new Set(['battle', 'units', 'shop', 'arcade', 'rank']), U3_OV = ['confirm', 'equipId', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
 const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !UI2.st.page && !U3_OV.some(k => UI2.st[k]) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
 function u3Fit() { const b = $('ui2'); if (!b) return; const w = innerWidth, h = innerHeight, s = Math.min(w / 1280, h / 720) || 1; b.style.setProperty('--u3s', String(s)); b.style.setProperty('--u3w', (w / s).toFixed(1) + 'px'); b.style.setProperty('--u3h', (h / s).toFixed(1) + 'px'); }
 addEventListener('resize', u3Fit);
@@ -15459,6 +15546,31 @@ function u3BuyVals() { const b = UI2.st.u3buy; if (!b) return null; const fmt = 
     confirm: b.phase === 'confirm', stamping: st, seal: b.phase !== 'confirm', knock: st ? 'sh-knock' : '', sealCls: st ? 'sh-seal' : 'sh-seal-on', splatCls: st ? 'sh-splat' : 'sh-splat-on', ringCls: st ? 'sh-ring' : '', tint: st ? 'sh-tint' : '',
     btnBg: poor ? '#4a4640' : '#c8102e', btnT: poor ? '잔액 부족' : b.price ? '구매' : '받기', ok: () => u3BuyGo(), cancel: () => u2Set({ u3buy: null }) }; }
 const U3_SPL = Array.from({ length: 12 }, (_, i) => { const a = i / 12 * Math.PI * 2 + (i % 3) * 0.3, d = 74 + (i * 37 % 40), r = 3 + (i * 5 % 6); return { r: r + 'px', dx: Math.cos(a) * d + 'px', dy: Math.sin(a) * d + 'px' }; });
+function u3Arcade(v) { // 아케이드: 왼쪽 모드 띠 · 가운데 그림 · 오른쪽 설명 · 입장 (랜덤전 · 미러전은 예전 modeGo · 나머지는 그 화면)
+  const s = UI2.st, a = arcDay(), tw = profile.tower, ti = compTierInfo(profile.comp.tp), fmt = n => (Number(n) || 0).toLocaleString('en-US');
+  const ART = { random: ['dice', '#7a0e22', 'RANDOM'], mirror: ['joker', '#a8102a', 'MIRROR'], comp: ['bat', '#5c0d1c', 'RANKED'], tower: ['titanium', '#8a0c20', 'TOWER'], sandbox: ['slime', '#3a2a2e', 'SANDBOX'], event: ['weather', '#7a0e22', 'EVENT'], castle: ['titanium', '#5c0d1c', 'CASTLE'] };
+  const L = (v.arcadeModes || []).filter(m => ART[m.k]), k = L.some(m => m.k === s.u3arc) ? s.u3arc : (L[0] || {}).k;
+  const modes = L.map((m, i) => { const on = m.k === k, free = !m.needsTicket; return { name: m.name, en: ART[m.k][2], no: '0' + (i + 1), fee: m.needsTicket ? '🎟 ' + m.cost : m.cost, on, bg: on ? '#c8102e' : 'rgba(13,12,14,.88)', bd: on ? '#c8102e' : '#3a3631', tx: on ? '16px' : '0px', nc: on ? '#fff' : '#4a4640', ec: on ? '#ffd0d6' : '#6f6a62', feeBg: on ? 'rgba(0,0,0,.28)' : free ? 'rgba(233,196,106,.12)' : 'rgba(232,227,216,.06)', feeC: free ? '#e9c46a' : '#e8e3d8', pick: () => u2Set({ u3arc: m.k, u3arcN: (s.u3arcN | 0) + 1 }) }; });
+  const m = L.find(x => x.k === k) || {}, A = ART[k] || ART.random, def = ARC_MODES.find(x => x.k === k);
+  const rows = k === 'tower' ? [['BEST', fmt(tw.best) + 'F'], ['LIFE', String(TOWER_LIVES)], ['NOW', tw.on ? tw.floor + 'F' : '—']] : k === 'comp' ? [['TIER', ti.name], ['TP', fmt(profile.comp.tp)], ['RECORD', `${profile.comp.wins | 0}승 ${profile.comp.losses | 0}패`]] : k === 'sandbox' ? [['TEAM', '최대 5기'], ['LEVEL', '1 ~ 6'], ['REWARD', '없음']] : [['REWARD', `승리 ${CFG.ARC_WIN_P}P · 패배 ${CFG.ARC_LOSE_P}P`], ['TICKET', '🎟 ' + fmt(a.t)], ['POINT', fmt(a.p) + ' P']];
+  const ab = (s.u3arcN | 0) % 2 ? 'b' : 'a';
+  return { modes, rowH: L.length > 4 ? '70px' : '92px', band: A[1], art: u2Img(CHARS[A[0]] ? A[0] : 'fire'), mirror: k === 'mirror', ghost: (A[2] + ' · ').repeat(8), ab: 'u3-arta-' + ab, ib: 'u3-arti-' + ab,
+    cur: { en: A[2], name: m.name || '', desc: m.desc || '', rows: rows.map(([k2, v2]) => ({ k: k2, v: v2 })), fee: m.needsTicket ? '🎟 ' + m.cost : m.cost || '', goT: k === 'tower' && tw.on ? '이어서' : '입장',
+      go: () => { if (K_MODE[k]) { UI2.st.mode = k; v.modeGo(); } else if (m.onClick) m.onClick(); } },
+    shop: () => u2Set({ arcShop: true }) };
+}
+function u3Rank(v) { // 랭킹: 위 탭 · 왼쪽 1~3위 단상 · 오른쪽 4위부터 · 아래 내 줄
+  const s = UI2.st, L = s.lb && s.lb.tab === lbTab ? s.lb : null, rows = v.lbRows || [];
+  const EN = { cp: 'CP', level: 'LV', wins: 'WIN', tower: 'TOWER', def: 'DEF', comp: 'RANK', hall: 'HALL' };
+  const tabs = (v.lbTabs || []).map(t => { const on = lbTab === t.k; return { t: t.label, en: EN[t.k] || '', on, bg: on ? '#c8102e' : 'rgba(13,12,14,.85)', bd: on ? '#c8102e' : '#3a3631', c: on ? '#fff' : '#d8d2c6', ec: on ? '#ffd0d6' : '#6f6a62', go: t.onClick }; });
+  const PC = [['#e9c46a', 'rgba(233,196,106,.28)'], ['#c9cdd3', 'rgba(201,205,211,.2)'], ['#c08457', 'rgba(192,132,87,.22)']];
+  const POS = [{ x: '165px', w: '170px', av: '140px', h: '190px', fs: '21px', nfs: '70px' }, { x: '0px', w: '155px', av: '108px', h: '140px', fs: '17px', nfs: '54px' }, { x: '345px', w: '155px', av: '108px', h: '110px', fs: '17px', nfs: '48px' }];
+  const podium = [0, 1, 2].filter(i => rows[i]).map(i => ({ ...POS[i], src: rows[i].favImg, name: rows[i].name, lvT: rows[i].lvOn ? 'LV ' + rows[i].lv : '', val: rows[i].main, rk: String(i + 1), c: PC[i][0], c2: PC[i][1], first: i === 0 }));
+  const list = rows.slice(3).map(r => ({ rank: r.rank, name: r.name, favImg: r.favImg, lvT: r.lvOn ? 'LV ' + r.lv : '', main: r.main, bg: /\(나\)$/.test(r.name) ? 'rgba(200,16,46,.14)' : 'transparent', dk: (r.deck || []).map(d => ({ src: d.img, c: d.color })) }));
+  const myDk = profile.deck.filter(id => CHARS[id]).slice(0, 5).map(id => ({ src: u2Img(id) }));
+  const hd = { cp: 'CP', level: 'LEVEL', wins: 'WINS', tower: 'FLOOR', def: 'WAVE', comp: 'TP', hall: 'SEASON' }[lbTab] || '';
+  return { tabs, podium, rows: list, myDk, hd, msg: v.lbMsg || '' };
+}
 function u3Vals() { const v = u2Vals(); v.u3 = u3Extra(v); return v; }
 function u3Extra(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), fav = myPhoto(), fc = CHARS[fav] || CHARS.fire, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' };
@@ -15470,11 +15582,11 @@ function u3Extra(v) {
     .map(([k, t, en, ic, go]) => { const on = k === 'gacha' ? cur === 'shop' && s.u3store === 'recruit' : k === 'shop' ? cur === 'shop' && s.u3store !== 'recruit' : cur === k; return { t, en, d: U3_D[ic], go, on, cur: on ? 'page' : 'false', dot: k === 'social' ? dotOf('socialDot') : false, bg: on ? 'rgba(200,16,46,.12)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a' }; });
   const MI = v.menuItems || [], menu = MI.map((x, i) => { const m = U3_MENU[x.label] || ['', 'set'], last = i === MI.length - 1 && MI.length % 2 === 1; return { t: x.label, en: m[0], d: U3_D[m[1]], go: x.onClick, dot: !!x.dot, tag: x.tag || '', tagC: x.tag === '게스트' ? '#ff8a9a' : '#e9c46a', ic: i === 0 ? '#e9c46a' : '#d8d2c6', bar: i === 0 ? '#e9c46a' : 'transparent', dl: (0.15 + i * 0.03).toFixed(2) + 's', col: last ? '1 / span 2' : 'auto', h: MI.length > 12 ? '58px' : '72px' }; });
   const xpP = (v.xpPct || '0%').replace(/\.\d+%$/, '%');
-  const isRc = s.tab === 'shop' && s.u3store === 'recruit', isSh = s.tab === 'shop' && !isRc, PG = { units: ['UNITS', '지후'], shop: ['SHOP', '상점'] }, pgk = isRc ? ['RECRUIT', '모집'] : PG[s.tab];
+  const isRc = s.tab === 'shop' && s.u3store === 'recruit', isSh = s.tab === 'shop' && !isRc, PG = { units: ['UNITS', '지후'], shop: ['SHOP', '상점'], arcade: ['ARCADE', '아케이드'], rank: ['RANKING', '랭킹'] }, pgk = isRc ? ['RECRUIT', '모집'] : PG[s.tab];
   const pg = pgk ? { en: pgk[0], t: pgk[1], sub: s.tab === 'units' ? `보유 ${v.ownedCount} / ${v.totalCount}` : '', tabs: s.tab === 'units' ? [['list', '보유 지후', false], ['col', '컬렉션', colReady()], ['emo', '이모티콘', false]].map(([k, t, dot]) => { const on = (s.uSub || 'list') === k; return { t, on, dot, bg: on ? 'rgba(200,16,46,.14)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a', go: () => u2Set({ uSub: k }) }; }) : [] } : { en: '', t: '', sub: '', tabs: [] };
   const un = s.tab === 'units' ? u3Units(v) : {};
   return {
-    scr: isRc ? 'recruit' : s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units', isRecruit: isRc, rc: isRc ? u3Recruit(v) : {}, isShop: isSh, sh: isSh ? u3Shop(v) : {}, buy: u3BuyVals(), splats: U3_SPL, pg, un, back: () => u2Go('battle'),
+    scr: isRc ? 'recruit' : s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units', isRecruit: isRc, rc: isRc ? u3Recruit(v) : {}, isShop: isSh, sh: isSh ? u3Shop(v) : {}, isArcade: s.tab === 'arcade', ac: s.tab === 'arcade' ? u3Arcade(v) : {}, isRank: s.tab === 'rank', rk: s.tab === 'rank' ? u3Rank(v) : {}, buy: u3BuyVals(), splats: U3_SPL, pg, un, back: () => u2Go('battle'),
     leader: { src: u2Img(fav), name: fc.name, sub: (RN[fc.rarity] || '') + (owned(fav) ? ' · RANK ' + enhLv(fav) : '') },
     e7On: !!v.e7On, e7Open: v.e7Open, e7Day: v.e7Day, e7Dot: !!v.e7N, e7Img: u2Img(fav),
     rail, deck, cp: fmt(cpTotal()), goUnits: () => u2Go('units'),
