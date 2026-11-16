@@ -285,6 +285,12 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
     }
 
+    // R3.1 실시간 동접 (로비 소식 줄): 접속자마다 1분마다 at 만 · 수를 세려면 list
+    match /pulse/{userId} {
+      allow list: if request.auth != null;
+      allow create, update: if owner(userId) && request.resource.data.keys().hasOnly(['at']) && request.resource.data.at == request.time;
+    }
+
     // ── 친구 · 접속 상태 · 1:1 채팅 ──
     // 접속 상태: 로그인한 사람은 누구나 읽고, 자기 것만 쓴다 (sp = 관전할 수 있는 친선전 번호 · frame 프로필 테두리 · fav 대표 지후)
     match /presence/{userId} {
