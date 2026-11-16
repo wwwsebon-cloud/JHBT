@@ -3249,6 +3249,18 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
 #ui2.u3m .u3-oldapp { position:absolute; top:0; bottom:0; left:50%; width:min(480px, 100%); height:auto; max-width:none; margin:0; transform:translateX(-50%); display:flex; flex-direction:column; overflow:hidden; background:#0d0c0e; border-left:1px solid #2a2723; border-right:1px solid #2a2723; box-shadow:0 0 60px rgba(0,0,0,.6); }
 #ui2.u3m .u3-oldapp > .u3-pagebox { position:absolute; inset:0; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top); }
 #ui2.u3m .u3-oldapp .k-mode, #ui2.u3m .u3-oldapp .k-sheet, #ui2.u3m .u3-oldapp .u2-sheet { max-width:none; }
+/* 전체 창 (퀘스트 · 출석부 · 디펜스 보상 · 지후 상세) */
+.u3 .u3-ovl { position:absolute; inset:0; z-index:24; background:#0d0c0e repeating-linear-gradient(90deg, rgba(232,227,216,.03) 0 1px, transparent 1px 80px); }
+.u3 .u3-ovhd { position:absolute; left:0; right:0; top:0; height:64px; display:flex; align-items:center; gap:16px; padding:0 max(24px, env(safe-area-inset-right)) 0 max(24px, env(safe-area-inset-left)); border-bottom:1px solid #2a2723; background:rgba(13,12,14,.85); }
+.u3 .u3-qrow { position:relative; height:72px; display:flex; align-items:center; gap:18px; padding:0 18px; border:1px solid #2a2723; animation:mmIn .4s cubic-bezier(.2,.8,.2,1) both; }
+.u3 .u3-dbox { padding:14px 16px; display:flex; flex-direction:column; gap:8px; background:#121115; border:1px solid #2a2723; border-left:4px solid #e9c46a; }
+.u3 .u3-enh { color:#e8e3d8; } .u3 .u3-qsach { color:#e8e3d8; }
+.u3 .qs-check { animation:qsCheck .35s cubic-bezier(.2,.9,.3,1.2) both; } .u3 .qs-glow { animation:qsGlow 1.2s ease-in-out infinite; } .u3 .qs-stamp { animation:qsStamp .35s cubic-bezier(.2,.9,.3,1.2) both; } .u3 .qs-seal-on { transform:rotate(-14deg); }
+.u3 .at-card { animation:atCard .5s cubic-bezier(.2,.8,.2,1) both; } .u3 .at-today { animation:mmPulse 1.2s ease-in-out infinite; }
+@keyframes qsCheck { 0% { opacity:0; transform:scale(2.2); } 70% { opacity:1; transform:scale(.9); } 100% { opacity:1; transform:none; } }
+@keyframes qsGlow { 0%,100% { opacity:.4; transform:scale(1); } 50% { opacity:1; transform:scale(1.12); } }
+@keyframes qsStamp { 0% { opacity:0; transform:rotate(-14deg) scale(2); } 65% { opacity:1; transform:rotate(-14deg) scale(.92); } 100% { opacity:1; transform:rotate(-14deg) scale(1); } }
+@keyframes atCard { 0% { opacity:0; transform:translateY(50px) rotate(3deg); } 100% { opacity:1; transform:none; } }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -4475,6 +4487,170 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
       </div>
       <div class="u3-os" style="position:absolute; left:28px; right:22px; bottom:22px; display:flex; justify-content:space-between; font-size:11px; letter-spacing:3px; color:#4a4640;"><span>RE : 지후배틀</span><span>{{ u3.ver }}</span></div>
     </div>
+  </sc-if>
+
+  <sc-if value="{{ u3.ov }}">
+    <div class="u3-ovl sh-fade">
+      <div class="u3-ovhd">
+        <button type="button" onClick="{{ u3.ov.close }}" aria-label="닫기" class="u3-ib"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        <div style="display:flex; flex-direction:column; gap:2px;"><span class="u3-cz" style="font-size:11px; letter-spacing:5px; color:#c8102e;">[ {{ u3.ov.en }} ]</span><b class="u3-bh" style="font-size:26px; line-height:1; color:#f3eee3;">{{ u3.ov.t }}</b></div>
+        <div style="margin-left:12px; display:flex; border:1px solid #3a3631;">
+          <sc-for list="{{ u3.ov.tabs }}" as="t"><button type="button" onClick="{{ t.go }}" aria-pressed="{{ t.on }}" class="u3-btn" style="height:36px; padding:0 18px; gap:8px; background:{{ t.bg }}; color:{{ t.c }};"><span class="u3-bh" style="font-size:15px;">{{ t.t }}</span><sc-if value="{{ t.dot }}"><span style="width:7px; height:7px; border-radius:50%; background:#ff5a6e;"></span></sc-if></button></sc-for>
+        </div>
+        <span style="flex:1;"></span>
+        <span class="u3-os" style="font-size:12px; letter-spacing:3px; color:#9b958a;">{{ u3.ov.right }}</span>
+      </div>
+      <div class="u3c" style="top:64px;">
+
+        <sc-if value="{{ u3.ov.qsDaily }}">
+          <div class="{{ u3.ov.shk }}" style="position:absolute; left:24px; top:22px; width:840px; bottom:24px; display:flex; flex-direction:column; gap:8px;">
+            <sc-for list="{{ u3.ov.rows }}" as="r">
+              <div class="u3-qrow" style="background:{{ r.bg }}; border-color:{{ r.bd }}; animation-delay:{{ r.dl }};">
+                <div style="position:relative; width:40px; height:40px; flex:none;"><span style="position:absolute; inset:0; border-radius:50%; border:2px solid {{ r.ringC }};"></span><sc-if value="{{ r.got }}"><svg class="qs-check" aria-hidden="true" viewBox="0 0 40 40" style="position:absolute; inset:0;"><circle cx="20" cy="20" r="17" fill="#c8102e"></circle><path d="M12 20l6 6 10-12" fill="none" stroke="#fff" stroke-width="3.4"></path></svg></sc-if></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:7px;"><b class="u3-bh" style="font-size:19px; color:{{ r.tc }};">{{ r.label }}</b><div style="display:flex; align-items:center; gap:10px;"><div style="width:300px; height:5px; background:rgba(232,227,216,.1);"><div style="width:{{ r.pct }}; height:100%; background:{{ r.barC }};"></div></div><span class="u3-os" style="font-size:12px; color:#9b958a;">{{ r.prog }}</span></div></div>
+                <span class="u3-os" style="width:110px; text-align:right; font-weight:600; font-size:17px; color:{{ r.rc }};">{{ r.rw }}</span>
+                <div style="position:relative; width:120px; height:44px; display:grid; place-items:center;">
+                  <sc-if value="{{ r.got }}"><span class="u3-bh qs-seal-on" style="padding:3px 12px; border:3px double #c8102e; font-size:18px; color:#c8102e; transform:rotate(-14deg);">완료</span></sc-if>
+                  <sc-if value="{{ r.can }}"><button type="button" onClick="{{ r.go }}" class="u3-btn u3-cutbtn" style="width:112px; height:44px; background:#c8102e;"><span class="u3-bh" style="font-size:17px; color:#fff;">받기</span></button></sc-if>
+                  <sc-if value="{{ r.wait }}"><span class="u3-os" style="font-size:11px; letter-spacing:3px; color:#4a4640;">IN PROGRESS</span></sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="position:absolute; left:896px; top:22px; right:24px; bottom:24px; display:flex; flex-direction:column; gap:14px; padding:22px 24px; box-sizing:border-box; background:rgba(13,12,14,.88); border:1px solid #3a3631;">
+            <span class="u3-cz" style="font-size:12px; letter-spacing:6px; color:#e9c46a;">[ DAILY POINTS ]</span>
+            <div style="display:flex; align-items:flex-end; gap:10px;"><b class="u3-cz" style="font-weight:900; font-size:60px; line-height:.9; letter-spacing:0; color:#f3eee3;">{{ u3.ov.pts }}</b><span class="u3-os" style="font-size:18px; color:#6f6a62; padding-bottom:6px;">/ {{ u3.ov.ptMax }}</span></div>
+            <div style="position:relative; flex:1; margin-top:8px;">
+              <div aria-hidden="true" style="position:absolute; left:21px; top:22px; bottom:22px; width:4px; background:rgba(232,227,216,.1);"></div>
+              <div aria-hidden="true" style="position:absolute; left:21px; top:22px; width:4px; height:{{ u3.ov.fill }}; background:linear-gradient(180deg, #e9c46a, #c8102e);"></div>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between;">
+                <sc-for list="{{ u3.ov.tiers }}" as="m">
+                  <button type="button" onClick="{{ m.go }}" class="u3-btn" style="position:relative; height:46px; justify-content:flex-start; gap:16px; background:none; text-align:left;">
+                    <span style="position:relative; width:46px; height:46px; flex:none; display:grid; place-items:center;">
+                      <sc-if value="{{ m.can }}"><span aria-hidden="true" class="qs-glow" style="position:absolute; inset:-6px; border-radius:50%; border:2px solid #e9c46a;"></span></sc-if>
+                      <span style="position:absolute; inset:0; border-radius:50%; background:{{ m.bg }}; border:2px solid {{ m.bd }};"></span>
+                      <b class="u3-os" style="position:relative; font-weight:600; font-size:13px; color:{{ m.nc }};">{{ m.p }}</b>
+                      <sc-if value="{{ m.fresh }}"><span class="sh-ring" aria-hidden="true" style="position:absolute; inset:0; border-radius:50%; border:3px solid #c8102e; opacity:0;"></span><sc-for list="{{ u3.splats }}" as="sp"><span aria-hidden="true" class="sh-splat" style="position:absolute; left:20px; top:20px; width:{{ sp.r }}; height:{{ sp.r }}; border-radius:50%; background:#b0122c; --dx:{{ sp.dx }}; --dy:{{ sp.dy }}; opacity:0;"></span></sc-for></sc-if>
+                    </span>
+                    <span style="position:relative; flex:1; display:flex; flex-direction:column; gap:2px;"><sc-if value="{{ m.got }}"><span class="u3-bh {{ m.stCls }}" style="position:absolute; right:0; top:4px; padding:2px 9px; border:3px double #c8102e; font-size:15px; color:#c8102e;">수령</span></sc-if><b class="u3-bh" style="font-size:16px; color:{{ m.tc }};">{{ m.label }}</b><span class="u3-os" style="font-size:10px; letter-spacing:3px; color:{{ m.sc }};">{{ m.st }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.qsMain }}">
+          <div style="position:absolute; left:24px; top:22px; right:24px; bottom:24px; display:flex; gap:20px;">
+            <div style="flex:1.3; position:relative; padding:32px; display:flex; flex-direction:column; gap:16px; background:#121115; border:1px solid {{ u3.ov.mq.bd }}; overflow:hidden;">
+              <div aria-hidden="true" class="u3-band" style="left:auto; right:60px; width:200px; transform:skewX(-14deg); opacity:.5;"></div>
+              <span class="u3-cz" style="position:relative; font-size:12px; letter-spacing:6px; color:#e9c46a;">[ MAIN QUEST · {{ u3.ov.mq.no }} ]</span>
+              <b class="u3-bh" style="position:relative; font-size:40px; line-height:1.15; color:#f3eee3;">{{ u3.ov.mq.label }}</b>
+              <div style="position:relative; display:flex; align-items:center; gap:12px;"><div style="width:420px; height:8px; background:rgba(232,227,216,.1);"><div style="width:{{ u3.ov.mq.pct }}; height:100%; background:linear-gradient(90deg, #a8102a, #e9c46a);"></div></div><span class="u3-os" style="font-size:15px; color:#d8d2c6;">{{ u3.ov.mq.prog }}</span></div>
+              <span class="u3-bh" style="position:relative; align-self:flex-start; height:40px; padding:0 16px; display:flex; align-items:center; background:rgba(233,196,106,.12); border:1px solid rgba(233,196,106,.5); font-size:17px; color:#e9c46a;">{{ u3.ov.mq.rw }}</span>
+              <span style="flex:1;"></span>
+              <sc-if value="{{ u3.ov.mq.ok }}"><button type="button" onClick="{{ u3.ov.mq.go }}" class="u3-btn u3-cutbtn" style="position:relative; align-self:flex-start; width:260px; height:60px; background:#c8102e;"><span class="u3-bh" style="font-size:22px; color:#fff;">보상 받기</span></button></sc-if>
+            </div>
+            <div class="u2-scroll u3-scroll" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+              <span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#6f6a62;">NEXT</span>
+              <sc-for list="{{ u3.ov.mq.next }}" as="n"><div style="min-height:58px; padding:10px 16px; display:flex; align-items:center; gap:14px; background:rgba(13,12,14,.85); border:1px solid #2a2723; opacity:{{ n.op }};"><b class="u3-cz" style="width:34px; font-weight:900; font-size:18px; letter-spacing:0; color:#4a4640;">{{ n.no }}</b><span style="flex:1; display:flex; flex-direction:column; gap:3px;"><b class="u3-bh" style="font-size:16px; color:#d8d2c6;">{{ n.label }}</b><span class="u3-os" style="font-size:11px; letter-spacing:1px; color:#9b958a;">{{ n.rw }}</span></span></div></sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.qsAch }}">
+          <div onClick="{{ qsClick }}" class="u2-scroll u3-scroll u3-qsach" style="position:absolute; left:50%; width:760px; margin-left:-380px; top:16px; bottom:16px; overflow-y:auto;">{{ u3.ov.achHtml }}</div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.att }}">
+          <div style="position:absolute; left:40px; top:24px; display:flex; flex-direction:column; gap:6px;"><span class="u3-cz" style="font-size:13px; letter-spacing:6px; color:#e9c46a;">[ {{ u3.ov.att.en }} ]</span><b class="u3-bh" style="font-size:36px; line-height:1; color:#f3eee3;">{{ u3.ov.att.title }}</b></div>
+          <div style="position:absolute; right:40px; top:34px; display:flex; gap:28px;"><div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;"><span class="u3-os" style="font-size:11px; letter-spacing:3px; color:#6f6a62;">TOTAL</span><b class="u3-os" style="font-weight:600; font-size:24px; color:#f3eee3;">{{ u3.ov.att.total }}</b></div></div>
+          <div style="position:absolute; left:28px; top:120px; display:flex; gap:14px;">
+            <sc-for list="{{ u3.ov.att.days }}" as="d">
+              <button type="button" onClick="{{ d.go }}" class="u3-btn at-card" style="position:relative; width:{{ d.w }}; height:330px; flex-direction:column; align-items:stretch; background:{{ d.bg }}; border:1px solid {{ d.bd }}; text-align:left; animation-delay:{{ d.dl }};">
+                <div class="{{ d.knock }}" style="position:absolute; inset:0; overflow:hidden; clip-path:polygon(0 0, 100% 0, 100% 92%, 86% 100%, 0 100%);">
+                  <sc-if value="{{ d.today }}"><span aria-hidden="true" class="at-today" style="position:absolute; inset:0; border:3px solid #e9c46a;"></span></sc-if>
+                  <div style="position:absolute; left:16px; top:16px; right:16px; display:flex; justify-content:space-between; align-items:center;"><b class="u3-cz" style="font-weight:900; font-size:15px; letter-spacing:3px; color:{{ d.nc }};">DAY {{ d.no }}</b><sc-if value="{{ d.today }}"><span class="u3-os" style="padding:2px 7px; background:#e9c46a; font-weight:600; font-size:10px; letter-spacing:2px; color:#0d0c0e;">TODAY</span></sc-if></div>
+                  <div style="position:absolute; left:0; right:0; top:70px; height:150px; display:grid; place-items:center;"><span class="u3-bh" style="font-size:{{ d.gfs }}; line-height:1; color:{{ d.gc }};">{{ d.ic }}</span></div>
+                  <div style="position:absolute; left:16px; right:16px; bottom:26px; display:flex; flex-direction:column; gap:4px; border-top:1px dashed {{ d.line }}; padding-top:12px;"><b class="u3-bh" style="font-size:{{ d.fs }}; line-height:1.15; color:{{ d.tc }};">{{ d.label }}</b></div>
+                  <sc-if value="{{ d.got }}"><span style="position:absolute; inset:0; background:rgba(8,7,9,.55);"></span></sc-if>
+                </div>
+                <sc-if value="{{ d.got }}">
+                  <div aria-hidden="true" style="position:absolute; left:50%; top:150px; width:0; height:0;">
+                    <span class="{{ d.ringCls }}" style="position:absolute; left:-60px; top:-60px; width:120px; height:120px; border-radius:50%; border:3px solid rgba(200,16,46,.55); opacity:0;"></span>
+                    <sc-for list="{{ d.splats }}" as="s"><span class="{{ d.splatCls }}" style="position:absolute; left:-3px; top:-3px; width:{{ s.r }}; height:{{ s.r }}; border-radius:50%; background:#b0122c; --dx:{{ s.dx }}; --dy:{{ s.dy }};"></span></sc-for>
+                    <div class="{{ d.sealCls }}" style="position:absolute; left:-55px; top:-55px; width:110px; height:110px; border-radius:50%; border:5px solid #c8102e; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#c8102e;"><i style="position:absolute; inset:7px; border-radius:50%; border:1.5px solid #c8102e;"></i><span class="u3-cz" style="font-weight:900; font-size:9px; letter-spacing:2px;">JIHOO</span><b class="u3-bh" style="font-size:28px; line-height:1;">출석</b><span class="u3-os" style="font-weight:600; font-size:10px; letter-spacing:2px;">DAY {{ d.no }}</span></div>
+                  </div>
+                </sc-if>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ u3.ov.att.stamping }}">
+            <svg aria-hidden="true" class="sh-drop" viewBox="0 0 170 280" style="position:absolute; left:{{ u3.ov.att.sx }}; top:76px; width:130px; height:214px; pointer-events:none;"><ellipse cx="85" cy="42" rx="38" ry="34" fill="#2b211d"></ellipse><rect x="72" y="70" width="26" height="70" fill="#3a2c25"></rect><rect x="50" y="136" width="70" height="20" rx="3" fill="#b8862e" stroke="#e9c46a" stroke-width="2"></rect><path d="M40 156H130L142 236H28Z" fill="#151316" stroke="#3a3631" stroke-width="2"></path><rect x="24" y="236" width="122" height="22" fill="#8a0c20"></rect></svg>
+          </sc-if>
+          <div style="position:absolute; left:28px; right:28px; top:480px; height:90px; display:flex; align-items:center; justify-content:center;">
+            <sc-if value="{{ u3.ov.att.can }}"><button type="button" onClick="{{ u3.ov.att.claim }}" class="u3-btn" style="width:320px; height:66px; gap:12px; background:#c8102e; clip-path:polygon(0 0, 100% 0, 94% 100%, 0 100%);"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 3h6v6l3 2v3H6v-3l3-2zM5 18h14M7 21h10"></path></svg><span class="u3-bh" style="font-size:23px; color:#fff;">출석 도장 찍기</span></button></sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.df }}">
+          <div style="position:absolute; left:24px; top:20px; width:380px; bottom:24px; overflow:hidden; background:#121115; border:1px solid #2a2723;">
+            <div aria-hidden="true" class="u3-band" style="left:60px; width:220px; transform:skewX(-14deg);"><i class="u3-scan"></i></div>
+            <div style="position:relative; padding:28px; display:flex; flex-direction:column; gap:6px;"><span class="u3-cz" style="font-size:13px; letter-spacing:6px; color:#f3eee3;">[ BEST WAVE ]</span><b class="u3-cz" style="font-weight:900; font-size:140px; line-height:.9; letter-spacing:0; color:#fff7dc;">{{ u3.ov.df.best }}</b></div>
+            <sc-if value="{{ u3.ov.df.hasNext }}"><div style="position:absolute; left:28px; right:28px; top:270px; display:flex; flex-direction:column; gap:8px; padding:16px; background:rgba(13,12,14,.88); border:1px solid #3a3631;"><div class="u3-os" style="display:flex; justify-content:space-between; font-size:12px; letter-spacing:2px; color:#9b958a;"><span>NEXT · WAVE {{ u3.ov.df.nextW }}</span><span><b style="color:#f3eee3; font-weight:600;">{{ u3.ov.df.left }}</b> LEFT</span></div><div style="height:6px; background:rgba(232,227,216,.1);"><div style="width:{{ u3.ov.df.pct }}; height:100%; background:linear-gradient(90deg, #a8102a, #e9c46a);"></div></div><b class="u3-bh" style="margin-top:6px; font-size:17px; color:#f3eee3;">{{ u3.ov.df.nextT }}</b></div></sc-if>
+            <button type="button" onClick="{{ u3.ov.df.all }}" class="u3-btn" style="position:absolute; left:28px; right:28px; bottom:26px; height:64px; justify-content:space-between; padding:0 22px; background:{{ u3.ov.df.allBg }}; clip-path:polygon(0 0, 100% 0, 94% 100%, 0 100%);"><b class="u3-bh" style="font-size:22px; color:#fff;">모두 받기</b><span class="u3-os" style="min-width:30px; height:30px; display:grid; place-items:center; background:rgba(0,0,0,.3); font-weight:600; font-size:16px; color:#fff;">{{ u3.ov.df.n }}</span></button>
+          </div>
+          <div class="u2-scroll u3-scroll" style="position:absolute; left:428px; right:24px; top:20px; bottom:24px; overflow-y:auto;">
+            <div style="display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:10px;">
+              <sc-for list="{{ u3.ov.df.tiles }}" as="t">
+                <button type="button" onClick="{{ t.go }}" class="u3-btn" style="position:relative; height:170px; flex-direction:column; align-items:stretch; background:{{ t.bg }}; border:1px solid {{ t.bd }}; overflow:hidden; text-align:left;">
+                  <sc-if value="{{ t.can }}"><span aria-hidden="true" class="qs-glow" style="position:absolute; inset:0; border:2px solid #e9c46a; border-radius:0;"></span></sc-if>
+                  <div style="padding:12px 12px 0; display:flex; justify-content:space-between; align-items:baseline;"><span class="u3-os" style="font-size:10px; letter-spacing:2px; color:{{ t.wc }};">WAVE</span><b class="u3-cz" style="font-weight:900; font-size:26px; line-height:1; letter-spacing:0; color:{{ t.nc }};">{{ t.w }}</b></div>
+                  <div style="flex:1; display:grid; place-items:center;"><span style="font-size:36px; opacity:{{ t.op }};">{{ t.ic }}</span></div>
+                  <span style="height:3px; background:{{ t.col }}; opacity:{{ t.op }};"></span>
+                  <b class="u3-bh" style="height:44px; padding:0 10px; display:flex; align-items:center; font-size:13px; line-height:1.15; color:{{ t.tc }};">{{ t.label }}</b>
+                  <sc-if value="{{ t.got }}"><span style="position:absolute; inset:0; background:rgba(8,7,9,.55);"></span><span class="u3-bh {{ t.stCls }}" style="position:absolute; left:50%; top:40%; width:80px; margin-left:-40px; padding:4px 0; text-align:center; border:3px double #c8102e; font-size:19px; color:#c8102e;">수령</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.det }}">
+          <div style="position:absolute; left:24px; top:16px; width:470px; bottom:20px; overflow:hidden; background:#0a090b; border:1px solid #2a2723;">
+            <div aria-hidden="true" class="u3-band" style="left:70px; width:260px; transform:skewX(-14deg); background:{{ u3.ov.det.band }};"></div>
+            <div aria-hidden="true" style="position:absolute; left:334px; top:-40px; width:6px; height:800px; background:#e9c46a; transform:skewX(-14deg);"></div>
+            <img class="u3-sketch rc-float" src="{{ u3.ov.det.src }}" alt="" aria-hidden="true" style="left:20px; top:50px; width:430px; height:430px; filter:grayscale(1) invert(1) brightness(2.4);">
+            <div style="position:absolute; left:28px; top:22px; display:flex; gap:8px;"><span class="u3-os" style="padding:3px 10px; background:{{ u3.ov.det.rc }}; font-weight:600; font-size:12px; letter-spacing:3px; color:#0d0c0e;">{{ u3.ov.det.rar }}</span><span class="u3-bh" style="padding:3px 10px; border:1px solid #e8e3d8; font-size:13px; color:#e8e3d8;">{{ u3.ov.det.role }}</span></div>
+            <button type="button" onClick="{{ u3.ov.det.prev }}" aria-label="이전" class="u3-ib" style="position:absolute; left:16px; top:250px;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M15 5l-7 7 7 7"></path></svg></button>
+            <button type="button" onClick="{{ u3.ov.det.next }}" aria-label="다음" class="u3-ib" style="position:absolute; right:16px; top:250px;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M9 5l7 7-7 7"></path></svg></button>
+            <div style="position:absolute; left:28px; bottom:26px; right:28px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; gap:4px;"><sc-for list="{{ u3.ov.det.stars }}" as="st"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="{{ st.c }}"><path d="M12 2l3 7 7 .6-5.3 4.6L18.4 21 12 17.3 5.6 21l1.7-6.8L2 9.6 9 9z"></path></svg></sc-for></div>
+              <b class="u3-bh" style="font-size:50px; line-height:1; color:#fff7dc;">{{ u3.ov.det.name }}</b>
+              <span class="u3-os" style="font-size:13px; letter-spacing:4px; color:#d9c69a;">{{ u3.ov.det.sub }}</span>
+            </div>
+          </div>
+          <div style="position:absolute; left:518px; right:24px; top:16px; bottom:20px; display:flex; flex-direction:column; gap:14px;">
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px 24px;">
+              <sc-for list="{{ u3.ov.det.stats }}" as="x"><div style="display:flex; flex-direction:column; gap:5px;"><div style="display:flex; justify-content:space-between;"><span class="u3-os" style="font-size:11px; letter-spacing:3px; color:#6f6a62;">{{ x.k }}</span><b class="u3-os" style="font-weight:600; font-size:17px; color:#f3eee3;">{{ x.v }}</b></div><div style="height:4px; background:rgba(232,227,216,.08);"><div style="width:{{ x.w }}; height:100%; background:linear-gradient(90deg, #a8102a, #e9c46a);"></div></div></div></sc-for>
+            </div>
+            <div class="u2-scroll u3-scroll u3-desc" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+              <sc-if value="{{ u3.ov.det.tabAb }}">
+                <sc-if value="{{ u3.ov.det.hasPas }}"><div class="u3-dbox" style="border-left-color:#c8102e;"><span class="u3-cz" style="font-weight:900; font-size:11px; letter-spacing:4px; color:#c8102e;">PASSIVE</span><span style="font-size:14px; line-height:1.6; color:#d8d2c6;">{{ u3.ov.det.pas }}</span></div></sc-if>
+                <sc-if value="{{ u3.ov.det.hasSk }}"><div class="u3-dbox" style="border-left-color:#e9c46a;"><span style="display:flex; align-items:center; gap:10px;"><span class="u3-cz" style="font-weight:900; font-size:11px; letter-spacing:4px; color:#e9c46a;">SKILL</span><span class="u3-os" style="margin-left:auto; padding:1px 8px; background:#e9c46a; font-weight:600; font-size:12px; color:#0d0c0e;">{{ u3.ov.det.skCost }}</span></span><span style="font-size:14px; line-height:1.6; color:#d8d2c6;">{{ u3.ov.det.sk }}</span></div></sc-if>
+                <sc-if value="{{ u3.ov.det.hasR6 }}"><div class="u3-dbox" style="border-left-color:#ff5a6e;"><span style="display:flex; align-items:center; gap:10px;"><span class="u3-cz" style="font-weight:900; font-size:11px; letter-spacing:4px; color:#ff5a6e;">RANK 6</span><b class="u3-bh" style="font-size:16px; color:{{ u3.ov.det.r6c }};">[{{ u3.ov.det.r6n }}]</b></span><span style="font-size:14px; line-height:1.6; color:{{ u3.ov.det.r6c }};">{{ u3.ov.det.r6d }}</span></div></sc-if>
+                <sc-for list="{{ u3.ov.det.info }}" as="f"><div style="display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #1e1c1f; font-size:13px;"><b class="u3-bh" style="width:120px; flex:none; font-size:14px; color:#e9c46a;">{{ f.k }}</b><span style="color:#b8b2a6; line-height:1.5;">{{ f.v }}</span></div></sc-for>
+              </sc-if>
+              <sc-if value="{{ u3.ov.det.tabSt }}"><div style="position:relative; padding:28px 32px; background:#ece6d9; color:#1d1a17; transform:rotate(-.5deg);"><span class="u3-cz" style="font-weight:900; font-size:12px; letter-spacing:5px; color:#a8102a;">KINGDOM ARCHIVE</span><p style="margin:14px 0 0; padding-top:14px; border-top:2px solid #1d1a17; font-size:16px; line-height:1.9;">{{ u3.ov.det.story }}</p></div></sc-if>
+              <sc-if value="{{ u3.ov.det.tabUp }}"><div onClick="{{ d.upClick }}" class="u3-enh">{{ d.up }}</div><div onClick="{{ d.upClick }}" class="u3-enh">{{ d.upFoot }}</div></sc-if>
+            </div>
+            <div style="display:flex; gap:10px; flex-shrink:0;">
+              <button type="button" onClick="{{ u3.ov.det.eq }}" class="u3-btn u3-cutbtn" style="flex:1; height:56px; background:{{ u3.ov.det.eqBg }};"><span class="u3-bh" style="font-size:19px; color:#fff;">{{ u3.ov.det.eqT }}</span></button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
   </sc-if>
 
   <sc-if value="{{ toast }}"><div class="u3-toast"><span></span><b class="u3-bh">{{ toast }}</b></div></sc-if>
@@ -15577,6 +15753,66 @@ function u3Rank(v) { // 랭킹: 위 탭 · 왼쪽 1~3위 단상 · 오른쪽 4�
   const hd = { cp: 'CP', level: 'LEVEL', wins: 'WINS', tower: 'FLOOR', def: 'WAVE', comp: 'TP', hall: 'SEASON' }[lbTab] || '';
   return { tabs, podium, rows: list, myDk, hd, msg: v.lbMsg || '' };
 }
+// ── R3.1 ui3 전체 창: 퀘스트 (s.qs) · 출석부 (s.att) · 디펜스 보상 (s.u3df) · 지후 상세 (s.detail) ──
+const U3_ATSPL = Array.from({ length: 8 }, (_, i) => { const a = i / 8 * Math.PI * 2 + 0.3, d = 64 + (i * 29 % 30), r = 3 + (i * 5 % 5); return { r: r + 'px', dx: Math.cos(a) * d + 'px', dy: Math.sin(a) * d + 'px' }; });
+function u3Ov(v) {
+  const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), tabOf = (L, cur, go) => L.map(([k, t, dot]) => { const on = cur === k; return { t, on, dot: !!dot, bg: on ? '#c8102e' : 'transparent', c: on ? '#fff' : '#9b958a', go: () => go(k) }; });
+  if (s.detail && CHARS[s.detail]) return u3Det(v, tabOf);
+  if (s.qs) {
+    const d = dq(), cur = s.qs === 'ach' ? 'ach' : s.qs === 'main' ? 'main' : 'quest', close = () => u2Set({ qs: null, u3tf: null });
+    const tiersReady = DAILY_TIERS.some(t => d.points >= t.p && !d.tiers.includes(t.p));
+    const o = { en: 'QUEST', t: '퀘스트', close, right: '', tabs: tabOf([['quest', '일일 퀘스트', tiersReady], ['main', '메인 퀘스트', mqReady()], ['ach', '업적', achAllReady() > 0]], cur, k => u2Set({ qs: k, u3tf: null })) };
+    if (cur === 'quest') {
+      const now = new Date(), left = Math.max(0, Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now) / 60000));
+      o.right = `RESET ${Math.floor(left / 60)}H ${left % 60}M`; o.qsDaily = true; o.pts = fmt(d.points); o.ptMax = fmt(DAILY_GOAL); o.fill = `calc((100% - 44px) * ${Math.min(1, d.points / DAILY_GOAL).toFixed(3)})`;
+      o.rows = DAILY_QUESTS.map((x, i) => { const val = Math.min(x.goal, d.progress[x.key] || 0), got = !!d.awarded[x.key]; return { label: x.label, prog: `${fmt(val)} / ${fmt(x.goal)}`, pct: (val / x.goal * 100).toFixed(1) + '%', rw: '+' + x.points + ' P', got, can: false, wait: !got, bg: 'rgba(13,12,14,.88)', bd: '#2a2723', ringC: got ? 'transparent' : '#3a3631', tc: got ? '#6f6a62' : '#f3eee3', barC: got ? '#4a4640' : '#e9c46a', rc: got ? '#4a4640' : '#e9c46a', dl: (i * 0.05).toFixed(2) + 's' }; });
+      o.tiers = DAILY_TIERS.map(t => { const got = d.tiers.includes(t.p), can = !got && d.points >= t.p, fr = s.u3tf === t.p;
+        return { p: String(t.p), label: t.label, got, can, fresh: fr, stCls: fr ? 'qs-stamp' : 'qs-seal-on', bg: got ? '#c8102e' : can ? '#2a2210' : '#121115', bd: got ? '#c8102e' : can ? '#e9c46a' : '#3a3631', nc: got ? '#fff' : can ? '#e9c46a' : '#6f6a62', tc: got ? '#6f6a62' : '#f3eee3', sc: got ? '#c8102e' : can ? '#e9c46a' : '#4a4640', st: got ? 'CLAIMED' : can ? 'TAP TO CLAIM' : 'LOCKED',
+          go: () => { if (!can) return u2Toast(got ? '이미 받은 보상이에요' : `${t.p}P 를 모으면 받을 수 있어요`); claimTier(t.p); sfx('ev_land'); u2Set({ u3tf: t.p }); } }; });
+    } else if (cur === 'main') {
+      const m = profile.mq, q = MQ[m.i], ok = mqReady();
+      o.qsMain = true; o.right = `${Math.min(m.i + 1, MQ.length)} / ${MQ.length}`;
+      o.mq = { no: `${Math.min(m.i + 1, MQ.length)} / ${MQ.length}`, label: q ? q.label : '다음 메인 퀘스트는 추가 예정이에요', pct: (q ? (ok ? 100 : q.need ? Math.min(100, m.n / q.need * 100) : 0) : 100).toFixed(1) + '%', prog: !q ? '' : ok ? '완료!' : q.need ? `${Math.min(m.n, q.need)} / ${q.need}` : '진행 중', rw: q ? mqRwLabel(q.rw) : '—', ok, bd: ok ? '#e9c46a' : '#2a2723', go: () => { mqClaim(); sfx('ev_land'); u2Render(); },
+        next: MQ.slice(m.i + 1, m.i + 7).map((x, k) => ({ no: String(m.i + 2 + k), label: x.label, rw: mqRwLabel(x.rw), op: k ? 0.55 : 0.85 })) };
+    } else { o.qsAch = true; o.achHtml = { html: qsHtml('ach') }; }
+    return o;
+  }
+  if (s.att) {
+    const b = attBook(), N = b.list.length, st = s.u3as === 'stamp', fresh = s.u3ai, g = b.days, close = () => u2Set({ att: null, u3as: null, u3ai: null });
+    const days = b.list.map((r, i) => { const ic = attIcon(r), got = i < g, today = b.ready && i === g && !st, big = i === N - 1, fr = i === fresh && st;
+      return { no: String(i + 1).padStart(2, '0'), label: attRwLabel(r), ic: ic.ic, gc: got ? '#4a4640' : ic.c, gfs: big ? '84px' : '58px', w: big ? '240px' : '150px', fs: big ? '22px' : '17px', got, today, bg: big ? 'linear-gradient(160deg, #2a2210, #121115 60%)' : '#121115', bd: today ? '#e9c46a' : big ? 'rgba(233,196,106,.5)' : '#2a2723', nc: got ? '#4a4640' : big ? '#e9c46a' : '#9b958a', tc: got ? '#6f6a62' : '#f3eee3', line: got ? '#2a2723' : '#3a3631',
+        dl: (i * 0.06).toFixed(2) + 's', knock: fr ? 'sh-knock' : '', sealCls: fr ? 'sh-seal' : 'sh-seal-on', splatCls: fr ? 'sh-splat' : 'sh-splat-on', ringCls: fr ? 'sh-ring' : '', splats: i === fresh ? U3_ATSPL : [], go: () => (today ? u3AttClaim() : null) }; });
+    const sx = fresh != null ? 28 + fresh * 164 + (fresh === N - 1 ? 120 : 75) - 65 : 0;
+    return { en: 'ATTENDANCE', t: '출석부', close, right: '', tabs: [], att: { en: b.kind === 'new' ? 'NEWCOMER' : 'WEEKLY', title: b.title, total: fmt(profile.ach.days) + '일', days, can: b.ready && !s.u3as, claim: () => u3AttClaim(), stamping: st, sx: sx + 'px' } };
+  }
+  if (s.u3df) {
+    const best = profile.dfBest | 0, close = () => u2Set({ u3df: null, u3dw: null }), RC = { dia: '#ff8a9a', gold: '#e9c46a', tix: '#6fa8dc', item: '#b07cff', rand: '#e9c46a' };
+    const tiles = DF_RW.map(([w, r]) => { const got = dfRwGot(w), can = !got && best >= w, lock = best < w, [ic, tx] = dfRwLabel(r), k = Object.keys(RC).find(x => r[x] != null) || 'item', fr = s.u3dw === w, legend = r.rand === 'legend' || r.item === 'legendPick' || r.item === 'glowLegend';
+      return { w: String(w).padStart(2, '0'), ic, label: tx, col: legend ? '#e9c46a' : RC[k], got, can, op: lock ? 0.35 : 1, bg: can ? 'linear-gradient(180deg, rgba(233,196,106,.12), #121115 70%)' : '#121115', bd: can ? '#e9c46a' : '#2a2723', nc: can ? '#e9c46a' : lock ? '#3a3631' : got ? '#4a4640' : '#f3eee3', wc: can ? '#e9c46a' : '#4a4640', tc: lock ? '#4a4640' : got ? '#6f6a62' : '#f3eee3', stCls: fr ? 'qs-stamp' : 'qs-seal-on',
+        go: () => { if (!can) return; dfRwClaim(w); sfx('ev_land'); u2Set({ u3dw: w }); } }; });
+    const ready = DF_RW.filter(([w]) => best >= w && !dfRwGot(w)).map(([w]) => w), nx = DF_RW.find(([w]) => w > best);
+    return { en: 'DEFENSE', t: '디펜스 보상', close, right: '', tabs: [], df: { best: String(best), tiles, n: String(ready.length), allBg: ready.length ? '#c8102e' : '#3a3631', hasNext: !!nx, nextW: nx ? nx[0] : '', left: nx ? nx[0] - best : '', pct: nx ? Math.min(100, best / nx[0] * 100).toFixed(0) + '%' : '100%', nextT: nx ? dfRwLabel(nx[1])[1] : '',
+      all: () => { ready.forEach((w, i) => setTimeout(() => { dfRwClaim(w); sfx('ev_tick'); u2Set({ u3dw: w }); }, i * 260)); } } };
+  }
+  return null;
+}
+function u3AttClaim() { const b = attBook(); if (!b.ready || UI2.st.u3as) return; const i = b.days; UI2.st.u3ai = i; UI2.st.u3as = 'stamp'; u2Render(); sfx('ev_land');
+  setTimeout(() => { const r = attClaim(); UI2.st.u3as = 'done'; u2Render(); if (r) u2Toast('출석 · ' + attRwLabel(r.r)); }, 420);
+  setTimeout(() => { if (UI2.st.u3as === 'done') { UI2.st.u3as = null; u2Render(); } }, 1400); }
+function u3Det(v, tabOf) { // 지후 상세: 왼쪽 큰 스케치 · 오른쪽 능력치 + 능력 · 서사 · 랭크업 (랭크업 칸은 예전 enhHtml 그대로 · d.upClick)
+  const s = UI2.st, id = s.detail, c = CHARS[id], have = owned(id), el = have ? enhLv(id) : 1, st = have && !s.statR1 ? enhStat(c, el) : { hp: c.hp, atk: dexAtk(c), iv: c.atkSpeed }, fmt = n => (Number(n) || 0).toLocaleString('en-US');
+  const RC = { legend: '#e9c46a', epic: '#b07cff', rare: '#6fa8dc', common: '#9b958a', limited: '#ff3d7f' }, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' };
+  const tab = ['st', 'up'].includes(s.dtab) ? s.dtab : 'ab', d = v.d || {}, r6 = ENH_SKILL[id] && ENH_SKILL[id][6], inDeck = profile.deck.includes(id), sk = c.skill;
+  const stats = [['HP', fmt(st.hp), Math.min(100, st.hp / 40)], ['ATK', c.atkText ? c.atkText() : c.noAttack || !c.atk ? '—' : fmt(st.atk), Math.min(100, (st.atk || 0) / 3)], ['INTERVAL', c.noAttack ? '—' : st.iv ? st.iv + 's' : '—', st.iv ? Math.min(100, 60 / st.iv) : 0], ['RANGE', c.range ? c.range + '칸' : '—', Math.min(100, (c.range || 0) * 12)], ['MOVE', c.speed ? String(c.speed) : '—', Math.min(100, (c.speed || 0) * 25)], ['ROLE', c.role || '—', 0]].map(([k, val, w]) => ({ k, v: val, w: w.toFixed(0) + '%' }));
+  return { en: 'UNIT', t: '지후 상세', close: () => u2Set({ detail: null }), right: have ? `조각 ${fmt(profile.shards[id] || 0)}` : '미보유',
+    tabs: tabOf([['ab', '능력'], ['st', '서사'], ['up', '랭크업', have && (() => { const k = enhCost(id, el); return !!k && (profile.shards[id] || 0) >= k.sh; })()]], tab, k => u2Set({ dtab: k })),
+    det: { src: u2Img(id), name: c.name, rar: RN[c.rarity] || '', rc: RC[c.rarity], role: c.role || '', band: c.rarity === 'legend' || c.rarity === 'limited' ? '#a8102a' : c.rarity === 'epic' ? '#5a2a7a' : c.rarity === 'rare' ? '#24486b' : '#3a3631',
+      sub: have ? `RANK ${el}` + (TIER_SC[id] != null ? ' · TIER ' + tierOf(id) : '') : '미보유', stars: Array.from({ length: 6 }, (_, i) => ({ c: i < (have ? el : 0) ? (i === 5 ? '#ff5a6e' : '#e9c46a') : '#2a2723' })), stats,
+      tabAb: tab === 'ab', tabSt: tab === 'st', tabUp: tab === 'up', hasPas: !!c.passive, pas: { html: c.passive || '' }, hasSk: !!(sk && sk.desc), sk: { html: (sk && sk.desc) || '' }, skCost: sk ? (sk.type === 'cooldown' ? sk.cd + 's' : 'SP ' + (sk.need || '')) : '',
+      hasR6: !!r6, r6n: r6 ? r6.name : '', r6d: r6 ? r6.desc : '', r6c: have && el >= 6 ? '#f3eee3' : '#6f6a62', info: (CHAR_INFO[id] || []).map(([k, val]) => ({ k, v: val })), story: c.story || '',
+      prev: e => d.prev ? (e && e.stopPropagation && e.stopPropagation(), u2Set({ detail: d.prev })) : null, next: e => d.next ? (e && e.stopPropagation && e.stopPropagation(), u2Set({ detail: d.next })) : null,
+      eqT: !have ? '미보유' : inDeck ? '덱에 있음' : '덱에 넣기', eqBg: !have || inDeck ? '#3a3631' : '#c8102e', eq: () => (have && !inDeck ? u2Equip(id) : null) } };
+}
 function u3Vals() { u3OldInit(); const v = u2Vals(); v.u3 = u3Extra(v); return v; }
 function u3OldInit() { // 예전 ui2 의 창 · 페이지 마크업을 ui3 템플릿의 .u3-oldapp 칸으로 한 번 복사 (값은 같은 u2Vals)
   if (U3.oldDone) return; U3.oldDone = true;
@@ -15591,7 +15827,7 @@ function u3Extra(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), fav = myPhoto(), fc = CHARS[fav] || CHARS.fire, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' };
   const dotOf = id => !!$(id) && !$(id).hidden;
   const deck = [0, 1, 2, 3, 4].map(i => { const id = profile.deck[i], c = id && CHARS[id]; return { has: !!c, none: !c, src: c ? u2Img(id) : '', name: c ? c.name : '', rk: c ? enhLv(id) : '', bg: c ? '#e9e4d8' : '#16141a' }; });
-  const rail = [['일일 퀘스트', 'quest', !!v.dailyDot || mqReady(), () => openQs()], ['출석부', 'att', attReady(), () => u2Set({ att: true })], ['디펜스 보상', 'dfrw', dfRwReady() > 0, () => openDfRw()]].map(([t, k, dot, go]) => ({ t, d: U3_D[k], dot, go }));
+  const rail = [['일일 퀘스트', 'quest', !!v.dailyDot || mqReady(), () => openQs()], ['출석부', 'att', attReady(), () => u2Set({ att: true })], ['디펜스 보상', 'dfrw', dfRwReady() > 0, () => u2Set({ u3df: true })]].map(([t, k, dot, go]) => ({ t, d: U3_D[k], dot, go }));
   const cur = s.tab;
   const nav = [['battle', '전투', 'BATTLE', 'battle', () => u2Go('battle')], ['units', '지후', 'UNITS', 'units', () => u2Go('units')], ['gacha', '모집', 'RECRUIT', 'recruit', () => openTab('gacha')], ['shop', '상점', 'SHOP', 'shop', () => openTab('shop')], ['arcade', '아케이드', 'ARCADE', 'arcade', () => u2Go('arcade')], ['rank', '랭킹', 'RANKING', 'rank', () => u2Go('rank')], ['social', '친구', 'SOCIAL', 'social', () => openSocial()]]
     .map(([k, t, en, ic, go]) => { const on = k === 'gacha' ? cur === 'shop' && s.u3store === 'recruit' : k === 'shop' ? cur === 'shop' && s.u3store !== 'recruit' : cur === k; return { t, en, d: U3_D[ic], go, on, cur: on ? 'page' : 'false', dot: k === 'social' ? dotOf('socialDot') : false, bg: on ? 'rgba(200,16,46,.12)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a' }; });
@@ -15608,7 +15844,7 @@ function u3Extra(v) {
     play: v.startNormal, playBg: profile.evOn && CFG.EV_ENABLED ? '#2f8f55' : '#c8102e', playSub: profile.evOn && CFG.EV_ENABLED ? 'BATTLE · 이벤트 모드' : 'BATTLE · 일반전',
     defense: () => u2Set({ mode: 'defense' }), dfBest: profile.dfBest | 0,
     evTog: v.evTog, evS: profile.evOn ? 'ON' : 'OFF', evC: profile.evOn ? '#5fd38a' : '#9b958a', evBd: profile.evOn ? '#2f8f55' : '#4a4640',
-    old: !!(s.page || s.mode || s.detail || s.profile || s.sp || s.att || s.comm || s.qs || s.arcShop || s.hist || s.uinfo || s.rec || s.confirm), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
+    old: !!(s.page || s.mode || s.profile || s.sp || s.comm || s.arcShop || s.hist || s.uinfo || s.rec || s.confirm), ov: u3Ov(v), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
     nav, menu, uid: isMember() ? 'UID ' + accCode() : '게스트', ver: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || '')
   };
 }
