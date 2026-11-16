@@ -3772,6 +3772,13 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
 /* R3.1 build 5 오케스트라 [피날레] */
 .oc-fin { position:absolute; inset:0; pointer-events:none; z-index:9; overflow:hidden; animation:ocFin 1.8s ease-out forwards; }
 .oc-fin img { width:100%; height:100%; object-fit:cover; }
+.fx-radar { position:absolute; width:0; height:0; z-index:2; pointer-events:none; }
+.fx-radar i { position:absolute; left:calc(var(--rr) * -1); top:calc(var(--rr) * -1); width:calc(var(--rr) * 2); height:calc(var(--rr) * 2); border-radius:50%; border:3px solid rgba(80,120,255,.85); background:radial-gradient(circle, rgba(60,90,255,.08) 0 30%, transparent 31% 32%, rgba(60,90,255,.08) 33% 62%, transparent 63% 64%, rgba(60,90,255,.12) 65%); box-sizing:border-box; }
+.fx-radar b { position:absolute; left:0; top:-2px; width:var(--rr); height:4px; background:linear-gradient(90deg, rgba(120,170,255,.2), #9fc0ff); transform-origin:0 50%; animation:rdSweep 2s linear forwards; box-shadow:0 0 12px rgba(120,170,255,.9); }
+.fx-scope { position:absolute; width:0; height:0; z-index:7; pointer-events:none; }
+.fx-scope::before { content:''; position:absolute; left:calc(var(--sr) * -1); top:calc(var(--sr) * -1); width:calc(var(--sr) * 2); height:calc(var(--sr) * 2); border-radius:50%; border:3px solid #3f7bff; box-sizing:border-box; background:linear-gradient(#3f7bff, #3f7bff) center / 3px 100% no-repeat, linear-gradient(#3f7bff, #3f7bff) center / 100% 3px no-repeat; opacity:.85; animation:rdScope .35s ease-out both; }
+@keyframes rdSweep { from { transform:rotate(0); } to { transform:rotate(360deg); } }
+@keyframes rdScope { from { transform:scale(1.8); opacity:0; } to { transform:scale(1); opacity:.85; } }
 .fx-portal { position:absolute; width:0; height:0; z-index:2; pointer-events:none; }
 .fx-portal i { position:absolute; left:calc(var(--pr) * -1); top:calc(var(--pr) * -1); width:calc(var(--pr) * 2); height:calc(var(--pr) * 2); border-radius:50%; background:conic-gradient(#ff4fd8, #6fe8ff, #ff4fd8, #6fe8ff, #ff4fd8); opacity:.55; animation:ptSpin 1.6s linear infinite; }
 .fx-portal b { position:absolute; left:calc(var(--pr) * -.62); top:calc(var(--pr) * -.62); width:calc(var(--pr) * 1.24); height:calc(var(--pr) * 1.24); border-radius:50%; background:#1a0b24; box-shadow:0 0 0 4px #ff4fd8; }
@@ -6955,7 +6962,7 @@ const CHARS = {
     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[놀래키기]</b>. 아공간으로 잠수해 무작위 적 곁에서 튀어나와 반경 <b>2.5칸</b> 적에게 공격력의 <b>1200%</b> 피해와 <b>3.5초</b> [공포]를 주고, 그중 하나를 납치해 제자리로 돌아옵니다.', run(u) { lkGo(u); } } },
   radar: { name: '레이더 지후', rarity: 'legend', role: '컨트롤러', hp: 1500, atk: 100, atkSpeed: 8, range: 3, speed: 1.6, tok: 3, atkText: () => '100 · 반경 5.5칸', portrait: PORTRAITS.radar, sfx: 'shot', color: '#2b33c8',
     story: '왕궁 성벽 위 망루에서 밤새 불침번을 서는 지후입니다. 머리 위에 커다란 나침반을 쓰고 있어서 방향만큼은 절대 잃지 않지만, 정작 자기가 어디를 지키고 있는지는 자주 잊어버려요. 그의 감시구역에 허락 없이 발을 들인 지후는 레이더에 포착되어 그 자리에 얼어붙고 맙니다. 한번은 국왕 화염 지후 1호가 몰래 야식을 먹으러 나왔다가 포착되어 아침까지 얼어 있었던 적도 있어요. 그 뒤로 국왕의 야식은 물 지후가 대신 사 옵니다. 그는 오늘도 이상 없음이라고 보고하지만, 보고서 뒷면에는 늘 졸았다고 적혀 있어요.',
-    passive: '반경 <b>5.5칸</b>이 <b>[감시구역]</b>입니다. 일반 공격으로 구역 안 적을 모두 치고, <b>[불침번]</b>으로 구역 안 우리 진영에 들어온 적을 <b>3초</b> 기절시킨 뒤 공격력의 <b>400%</b> 폭발을 일으킵니다.',
+    passive: '반경 <b>5.5칸</b>이 <b>[감시구역]</b>입니다. 일반 공격으로 구역 안 적을 모두 치고, <b>[불침번]</b>으로 구역 안 적을 <b>3초</b> 기절시키고, 레이더가 한 바퀴 돈 뒤 공격력의 <b>400%</b> 폭발을 일으킵니다.',
     customAttack(u) { return rdAttack(u); } },
 };
 // ── R2.17 신규 지후 도우미 ──
@@ -7667,14 +7674,14 @@ function ptSteer(u) { const p = u.pt; if (!p || p.ph !== 'go') return false; if 
 function ptTick(u, dt) { if (u.pt && u.pt.ph === 'go') u.pt.t += dt; }
 function ptOpen(u, x, y) { u.pt = { ph: 'open' }; if (!S.fast && $('field')) { const el = document.createElement('div'); el.className = 'fx-portal'; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.setProperty('--pr', (1.1 * CFG.CELL).toFixed(0) + 'px'); el.innerHTML = '<i></i><b></b>'; $('field').appendChild(el); setTimeout(() => el.remove(), 30000 / (S.speed || 1)); dmgNum(u, '🌀 포탈!', { crit: true, stamp: true }); }
   const iv = 2.7, n = Math.floor(30 / iv); /* R3.1 build 5: 5 → 2.7초 */
-  for (let k = 1; k <= n; k++) A.later(iv * k, () => { if (S.phase !== 'combat' && S.phase !== 'final') return; const c = A.spawnChild(u, 'dimkin', { hp: u.maxHp * 0.15, atk: u.atk, dx: x - u.x, dy: y - u.y }); if (c && c.alive && !S.fast) fxRing(x, y, 1.1 * CFG.CELL, 'rgba(255,79,216,.85)', 420, 6); }); }
+  for (let k = 1; k <= n; k++) A.later(iv * k, () => { if (S.phase !== 'combat' && S.phase !== 'final') return; u.ptKids = (u.ptKids || []).filter(o => o.alive); if (u.ptKids.length >= 6) return; /* R3.1 잠수함: 6마리까지 */ const c = A.spawnChild(u, 'dimkin', { hp: u.maxHp * 0.15, atk: u.atk, dx: x - u.x, dy: y - u.y }); if (c && c.alive) { u.ptKids.push(c); if (!S.fast) fxRing(x, y, 1.1 * CFG.CELL, 'rgba(255,79,216,.85)', 420, 6); } }); }
 // 럴커 지후: [놀래키기] 아공간으로 잠수 (초당 1칸 · 다른 층 · ghost) → 무작위 적 곁에서 나와 반경 2.5칸 적 공격력 600% + [공포] 3.5초 → 그중 하나를 납치해 같은 층으로 데리고 제자리로 (납치된 적 초당 100 피해) → 둘 다 나온다
 function lkGo(u) { if (u.lk) return; const L = foes(u).filter(e => e.alive); if (!L.length) return; const t = L[Math.floor(rng() * L.length)];
   u.lk = { ph: 'go', tx: t.x, ty: t.y, hx: u.x, hy: u.y, prey: null }; u.realm = S.realmSeq = (S.realmSeq || 0) + 1; u.ghost = true; u.vx = u.vy = 0; if (u.el) u.el.classList.add('in-realm'); if (!S.fast) dmgNum(u, '🫧 잠수', { crit: true }); drawUnit(u); }
 function lkSteer(u) { if (!u.lk) return false; u.desVx = u.desVy = 0; return true; }
 function lkTick(u, dt) { const k = u.lk; if (!k || !u.alive) return; if (blocked(u)) return;
-  const tx = k.ph === 'go' ? k.tx : k.hx, ty = k.ph === 'go' ? k.ty : k.hy, dx = tx - u.x, dy = ty - u.y, d = Math.hypot(dx, dy), st = 1 * CFG.CELL * dt;
-  if (d > st) { u.x += dx / d * st; u.y += dy / d * st; u.xPrev = u.x; u.yPrev = u.y; if (k.prey && k.prey.alive) { k.prey.x = u.x; k.prey.y = u.y; k.prey.xPrev = u.x; k.prey.yPrev = u.y; dealDamage(u, k.prey, 100 * dt, { dot: true, lite: true }); } drawUnit(u); return; }
+  const tx = k.ph === 'go' ? k.tx : k.hx, ty = k.ph === 'go' ? k.ty : k.hy, dx = tx - u.x, dy = ty - u.y, d = Math.hypot(dx, dy), st = 2 * CFG.CELL * dt; /* R3.1 잠수함: 1 → 2 */
+  if (d > st) { u.x += dx / d * st; u.y += dy / d * st; u.xPrev = u.x; u.yPrev = u.y; if (k.prey && k.prey.alive) { k.prey.x = u.x; k.prey.y = u.y; k.prey.xPrev = u.x; k.prey.yPrev = u.y; k.acc = (k.acc || 0) + dt; if (k.acc >= 1) { k.acc -= 1; dealDamage(u, k.prey, 200, { dot: true }); } } /* R3.1 잠수함: 초당 100 (매 스텝) → 1초마다 200 */ drawUnit(u); return; }
   u.x = tx; u.y = ty; if (k.ph === 'go') lkScare(u); else lkEnd(u); }
 function lkScare(u) { const k = u.lk, R = 2.5 * CFG.CELL; u.realm = 0; if (u.el) u.el.classList.remove('in-realm');
   const H = foes(u).filter(e => e.alive && Math.hypot(e.x - u.x, e.y - u.y) <= R + unitRadius(e)); if (!S.fast) { fxRing(u.x, u.y, R, 'rgba(47,107,102,.95)', 520, 10); dmgNum(u, '👻 놀래키기!', { crit: true, stamp: true }); shake(true); }
@@ -7685,12 +7692,15 @@ function lkEnd(u) { const k = u.lk; u.lk = null; u.realm = 0; u.ghost = false; i
   if (k.prey) { const p = k.prey; p.realm = 0; p.ghost = false; if (p.el) p.el.classList.remove('in-realm'); if (p.alive) { physSnap(p, u.x + unitRadius(u) * 2, u.y); if (!S.fast) dmgNum(p, '😵', { crit: true }); } }
   physSnap(u, u.x, u.y); if (!S.fast) fxRing(u.x, u.y, 1.2 * CFG.CELL, 'rgba(47,107,102,.9)', 420, 6); drawUnit(u); }
 // 레이더 지후: 일반 공격 = 반경 5.5칸 [감시구역] 적 모두 공격력 100% · 공격마다 [불침번] (SP 는 일반 방법으로 안 찬다 · 사실상 매 공격) — 감시구역 안 우리 진영 쪽에 있는 적은 3초 [기절] 뒤 그 자리 반경 1.5칸 적에게 공격력 400%
-function rdAttack(u) { const R = 5.5 * CFG.CELL, atk = effAtk(u), mid = FW() / 2, ours = e => (u.side === 'a' ? e.x < mid : e.x > mid);
-  if (!S.fast) { fxRing(u.x, u.y, R, 'rgba(60,70,200,.75)', 700, 6); } sfxAttack(u);
-  const H = foes(u).filter(e => e.alive && dist(u, e) <= R + unitRadius(e)); let d = 0; H.forEach(e => { d += dealDamage(u, e, atk, { lite: true }); });
-  H.filter(e => e.alive && ours(e)).forEach(e => { A.status(e, 'stun', 3); if (!S.fast) dmgNum(e, '📡 포착!', { crit: true });
-    A.later(3, () => { if (!u.alive) return; const x = e.x, y = e.y, r = 1.5 * CFG.CELL; if (!S.fast) fxRing(x, y, r, 'rgba(60,70,220,.95)', 520, 10); foes(u).forEach(f => { if (f.alive && Math.hypot(f.x - x, f.y - y) <= r + unitRadius(f) && dealDamage(u, f, effAtk(u) * 4, { skill: true, noCrit: true }) > 0 && !S.fast) hitFx(u, f, true); }); }); });
-  afterHit(u, d); return true; }
+function rdAttack(u) { // R3.1 잠수함: 감시구역 안 적 모두 3초 [기절] · 2초 레이더 (바닥 원 · 반지름 선 한 바퀴 · 파란 스코프) 뒤 구역 안 적 공격력 100% · 스코프 자리 반경 1.5칸 400%
+  const R = 5.5 * CFG.CELL, x0 = u.x, y0 = u.y; sfxAttack(u);
+  const H = foes(u).filter(e => e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)); H.forEach(e => A.status(e, 'stun', 3));
+  if (!S.fast && $('field')) { const el = document.createElement('div'); el.className = 'fx-radar'; el.style.left = x0 + 'px'; el.style.top = y0 + 'px'; el.style.setProperty('--rr', R.toFixed(0) + 'px'); el.innerHTML = '<i></i><b></b>'; $('field').appendChild(el); setTimeout(() => el.remove(), 2100 / (S.speed || 1));
+    H.forEach(e => { const m = document.createElement('div'); m.className = 'fx-scope'; m.style.left = e.x + 'px'; m.style.top = e.y + 'px'; m.style.setProperty('--sr', (unitRadius(e) * 1.4).toFixed(0) + 'px'); $('field').appendChild(m); setTimeout(() => m.remove(), 2100 / (S.speed || 1)); }); }
+  A.later(2, () => { if (!u.alive) return; const atk = effAtk(u); let d = 0; foes(u).forEach(e => { if (e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)) d += dealDamage(u, e, atk, { lite: true }); });
+    H.forEach(e => { const x = e.x, y = e.y, r = 1.5 * CFG.CELL; if (!S.fast) fxRing(x, y, r, 'rgba(60,110,255,.95)', 520, 10); foes(u).forEach(f => { if (f.alive && Math.hypot(f.x - x, f.y - y) <= r + unitRadius(f) && dealDamage(u, f, atk * 4, { skill: true, noCrit: true }) > 0 && !S.fast) hitFx(u, f, true); }); });
+    afterHit(u, d); });
+  return true; }
 // ── R2.30 신규 지후 도우미 ──
 const FIRE_T = new Set(['fire', 'sun', 'phoenix', 'phoenix2', 'dragon', 'taegeuk', 'burner']), ICE_T = new Set(['ice', 'blizzard']); // R2.30 속성: 불 지후는 화상 피해 대신 공격력 +20% · 얼음 지후는 빙결 · 동상이 걸리지 않는다
 const fireImm = (u, k) => (k === 'burn' || k === 'sear') && FIRE_T.has(u.id); // 불 지후: [화상] · [3도 화상] 피해 없음
@@ -7963,9 +7973,9 @@ const CHAR_INFO = {
   gunq: [['일반 공격', '하지 않는다 · 가장 가까운 적 곁으로 걸어간다'], ['[탕!!]', '쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 쪽으로 쏜다 · 그 길에서 먼저 맞은 적 하나 (관통하지 않는다) · 피해는 없다 · 맞은 적 [고자] · 총알 방향으로 10칸 넉백 · 자신은 반동으로 반대로 날아가며 그대로 쓰러진다'], ['[고자]', '이번 라운드 동안 최대 체력 · 체력 1 (절상 풀림) · 스테인리스 · 무적 · 잠수는 튕겨 낸다']],
   taegeuk: [['색', '배치 중 무색 · 라운드 시작 1초 뒤 [적] · [청] 반반'], ['줄 판정', '색이 정해지고 1초 뒤 · 세로 3칸 (한 줄) 또는 가로 4칸 (전열 · 중열 · 후열) 이 모두 같은 색 태극 지후'], ['[붉은 힘]', '[적] 줄 · 그 줄의 태극 지후 공격력 400%'], ['[푸른 힘]', '[청] 줄 · 그 줄의 태극 지후 공격속도 400%'], ['[극의 조화]', '같은 색 줄과 태극 지후로 가득 찬 다른 방향 줄이 만나는 칸 · 공격력 · 공격속도 모두 400% · 최대 체력 +50% · 조화 폼']],
   stand: [['레모네이드', '반경 4.5칸 · 처음 들어온 아군 (움직이는 지후) 을 끌어와 체력 600 × 레벨 배율 회복 · 넘친 만큼 쉴드'], ['[리얼 탄산 레모네이드]', '8초마다 · 무작위 아군 자리 반경 3칸 · 5초 동안 아군 초당 100 회복 · 적 초당 80 피해 (레벨 배율)'], ['장사', '한 잔에 토큰 0.2 (다섯 잔마다 토큰 1) · 디펜스는 한 잔에 골드 1'], ['손님 적', '처음 들어온 적 10% · 끌려와 마시면 체력 가득 · 라운드 끝까지 [매혹]']],
-  portal: [['쉴드', '1000'], ['이동', '라운드 시작 · 적을 노리지 않고 적진의 무작위 빈 칸으로 (빈 칸이 없거나 8초가 지나면 그 자리)'], ['포탈', '30초 · 노릴 수 없다 · 2.7초마다 차원체 지후 (포탈 지후 체력 15% · 공격력 100% · 1초 · 근접)']],
-  lurker: [['[놀래키기]', 'SP 4 · 아공간 잠수 (초당 1칸 · 맞지 않는다) → 무작위 적 곁 · 반경 2.5칸 적 공격력 1200% · [공포] 3.5초'], ['납치', '그중 무작위 적 하나를 데리고 잠수해 제자리로 · 납치된 적은 초당 100 피해']],
-  radar: [['일반 공격', '8초마다 반경 5.5칸 적 모두 공격력 100%'], ['[불침번]', '공격마다 · 감시구역 안 우리 진영 쪽 적 3초 [기절] → 그 자리 반경 1.5칸 적 공격력 400%'], ['SP', '일반 방법으로는 차지 않는다']],
+  portal: [['쉴드', '1000'], ['이동', '라운드 시작 · 적을 노리지 않고 적진의 무작위 빈 칸으로 (빈 칸이 없거나 8초가 지나면 그 자리)'], ['포탈', '30초 · 노릴 수 없다 · 2.7초마다 차원체 지후 (살아 있는 차원체 6마리까지) (포탈 지후 체력 15% · 공격력 100% · 1초 · 근접)']],
+  lurker: [['[놀래키기]', 'SP 4 · 아공간 잠수 (초당 2칸 · 맞지 않는다) → 무작위 적 곁 · 반경 2.5칸 적 공격력 1200% · [공포] 3.5초'], ['납치', '그중 무작위 적 하나를 데리고 잠수해 제자리로 · 납치된 적은 1초마다 200 피해']],
+  radar: [['일반 공격', '8초마다 [불침번]과 함께'], ['[불침번]', '공격마다 · 감시구역 안 적 모두 3초 [기절] · 2초 레이더가 한 바퀴 돈 뒤 구역 안 적 공격력 100% · 포착한 적 자리 반경 1.5칸 적 공격력 400%'], ['SP', '일반 방법으로는 차지 않는다']],
   forge: [['검 강화', '레벨업 (같은 카드 겹치기 · 이벤트) 대신 · 최대 +10 · 경기 내내 유지'], ['성공 확률', '+0 → +1 90% · 강화마다 −7%p (+9 → +10 27%)'], ['실패', '그대로 · 30% 확률로 검 파괴 (+0)'], ['공격력', '강화마다 기본 공격력의 500% (선형)'], ['레벨', 'Lv1 고정 · 배치 칸을 누르면 다음 강화 확률']],
   litmus: [['[검출]', '일반 공격이 맞으면 · 전설 (한정 포함) 빨강 · 그 밖 파랑'], ['[중화]', 'SP 6 · 빨강 수만큼 공격력 높은 아군 공격력 +40% 7초 · 파랑 수만큼 체력 비율 낮은 아군 쉴드 600 × 레벨 배율 (7초 동안 1초마다 1/7씩 사라진다) · 쓰면 검출 수 0']],
   jason: [['공격 간격', '0.2초 · 치명타마다 −0.01초 · 최소 0.05초 · 2초 동안 공격하지 않으면 처음으로'], ['[공포]', '반경 2칸 안에 처음 들어온 적 1초 (적마다 한 번)']],
