@@ -16,7 +16,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.1** (build 4).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.1** (build 5).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -127,6 +127,7 @@
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
 ## 최근 변경 (R3.1 · 2026-11-16)
+- **build 5 신규 지후 4종** (`// ── R3.1 build 5 신규 지후 도우미 ──`): 강화 `forge` (영웅 · 토큰 1 · `maxLv` 1 · 배치 칸 `p.fg` 검 강화 0~10 · `levelUp` → `forgeTry` (친선전은 해시 난수) · `stackable` 이 강화 지후를 받는다 · 공격력 ×(1 + 5 × 강화) · 초상화 단계 `forgePic`) · 리트머스 `litmus` (`lmHit` · `lmSkill` [중화]) · 제이슨 `jason` (새 훅 `def.onCrit` (dealDamage 치명타) · `jsTick` [공포]) · 오케스트라 `orchestra` (커뮤니티 METAL · 토큰 6 · `OC` · `ocTick` 상태 base → cresc ↔ ferm · `ocLethal` → wait → dc (`u.dcStore` 가 dealDamage 맨 앞에서 피해를 모은다) → fin `ocFinHit` · `OC_FINALE` 연출 그림). 원본 그림 `지후초상화/R3.1/`.
 - **build 2 토큰제** (`// ═════════ R3.1 build 2 토큰제` · `TOK` · `TOK_COST` · `tokCost`): 출격제한 삭제 (`overSet` 빈 집합 · `wouldOver` false · `deployLimit` 값은 디펜스 적 풀 `dfPool` 거르기에만 남음) · `S.tok` / `S.inc` (기본 5 · `tokUp` 4토큰에 +1 · 최대 8) / `S.rr` (리롤 판마다 2 · 1토큰) / `S.end` (라운드 배치 끝) · `tokRound` (startRound · 남은 토큰은 이월 · 데스매치 +2 · 50:50 재경기는 `S.reTok` 로 되돌림) · `playable` 이 `canPay` 를 본다 · `applyAct` 가 `tokPay` · 상대 행동의 `up` · `rr` · `end` (`tokAct`) · 배치는 양쪽이 `end` 일 때 전투 (예전 3번 고정 `deployChances` 는 토큰이 없을 때만) · 봇 `botTok` (내가 끝내면 남은 토큰을 다 쓴다 · `botPay` · `botPool`) · 친선전은 끝낸 쪽이 `{ k: 's', end: 1 }` 를 계속 보낸다 · 화면 `#tokBar` (`tokBar` · 업그레이드 · 리롤 · 전투 시작) · 카드 `.tkc` · 디펜스 · 성뿌수기 · 샌드박스 제외 (`tokOn`). 튜토리얼: `upStep` · `skipStep` (`TUT.allow`).
 - **build 2 기타**: 픽업 모집 (`puId` 주마다 · `puRoll` 50% · `profile.puLost` · `puPity`) · 마일리지 (`profile.mile` 모집 1회 1 · `u3MileOv` · `MILE`) · 전장 `MAP_EW` 1440 × 840 · `DEPTH_EW` 줄 간격 2칸 · 로비도 가로 전용 `#rotAll` · 매니페스트 landscape · APK `sensorLandscape` · 앱 권장 `appNag` (하루 한 번) · 탄환 리워크 `bulletFire` · `bulletFx` (`.bl-flash`) · 후라이팬은 `#field` 바닥 (`.fp-g`).
 - **전투 설정 = 화면 전체 창** `#bsetFull` (`bsetToggle` · 예전 말풍선 `#bsetPop` 은 안 쓴다 · body 에 붙고 z-index 66 = 전투 화면 위 · `.modal` 70 아래): 검은 반투명 (.94) · 크림슨 레저 · 사운드 막대 + `BSET_ROWS` 토글 (`bsetBind` 그대로 · `.bf-row.on`) · 계속하기 · ✕ · Esc · 화면을 떠나면 `show()` 가 닫는다. **봇전 (`!S.net`) 은 여는 동안 `S.paused`** → `loopBody` 의 acc · 배치 타이머 `S.timer` · `botMind.pulse` 가 멈춘다 (친선전은 LIVE 표시만). 새로 멈춰야 하는 타이머가 생기면 `S.paused` 를 본다.
