@@ -3311,6 +3311,7 @@ html body.u3-on .screen .ph h2 { font-family:'Black Han Sans', var(--font); font
 html body.u3-on #screen-result { background:#0a090b; color:#e8e3d8; }
 html body.u3-on #screen-result .g-card { background:#121115; }
 html body.u3-on #reveal:not(.u3rv) { background:#0a090b; }
+.u3 .u3-pfbig > * { transform:scale(1.1); transform-origin:left center; } .u3 .u3-pst { color:#e8e3d8; }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -4615,6 +4616,73 @@ html body.u3-on #reveal:not(.u3rv) { background:#0a090b; }
                 </button>
               </sc-for>
             </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.pf }}">
+          <div style="position:absolute; left:24px; top:16px; width:420px; bottom:20px; overflow:hidden; background:#121115; border:1px solid #2a2723; display:flex; flex-direction:column;">
+            <div aria-hidden="true" class="u3-band" style="left:auto; right:20px; width:180px; transform:skewX(-14deg); opacity:.55;"></div>
+            <div style="position:relative; padding:28px 28px 0; display:flex; align-items:center; gap:18px;">
+              <div onClick="{{ pfv.goAvatar }}" class="u3-pfbig" style="cursor:pointer;">{{ pfv.big }}</div>
+              <div style="display:flex; flex-direction:column; gap:8px; min-width:0;">
+                <span class="u3-os" style="align-self:flex-start; padding:2px 8px; background:#e9c46a; font-weight:600; font-size:13px; color:#0d0c0e;">LV {{ level }}</span>
+                <div style="display:flex; align-items:center; gap:10px;"><b class="u3-bh" style="font-size:30px; line-height:1; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ nickname }}</b><button type="button" onClick="{{ pfv.nickToggle }}" aria-label="닉네임 바꾸기" class="u3-ib" style="width:34px; height:34px;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"></path></svg></button></div>
+                <span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#6f6a62;">{{ pfv.idTxt }}</span>
+              </div>
+            </div>
+            <div style="position:relative; padding:18px 28px 0; display:flex; flex-direction:column; gap:6px;"><div style="height:6px; background:rgba(232,227,216,.1);"><div style="width:{{ xpPct }}; height:100%; background:linear-gradient(90deg, #c8102e, #ff5a6e);"></div></div><div class="u3-os" style="display:flex; justify-content:space-between; font-size:11px; letter-spacing:1px; color:#9b958a;"><span>{{ pfv.xpLeft }}</span><span>{{ pfv.xpTxt }}</span></div></div>
+            <sc-if value="{{ pfv.nickOpen }}"><div style="position:relative; padding:14px 28px 0; display:flex; flex-direction:column; gap:6px;"><div style="display:flex; height:46px; border:1px solid #4a4640; background:#0d0c0e;"><input value="{{ pfv.nickDraft }}" onChange="{{ pfv.onNick }}" onKeyDown="{{ pfv.onNickKey }}" maxlength="12" spellcheck="false" autocomplete="off" style="flex:1; min-width:0; padding:0 12px; background:none; border:0; outline:none; color:#f3eee3; font-size:15px;"><button type="button" onClick="{{ pfv.nickGo }}" class="u3-btn" style="width:90px; background:#c8102e;"><span class="u3-bh" style="font-size:15px; color:#fff;">{{ pfv.nickBtn }}</span></button></div><span style="font-size:11px; color:#9b958a;">{{ pfv.nickNote }}</span></div></sc-if>
+            <div style="position:relative; margin-top:auto; padding:0 28px 26px; display:flex; flex-direction:column; gap:10px;">
+              <span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#6f6a62;">DECK</span>
+              <div onClick="{{ pfv.goDeck }}" style="display:flex; gap:6px; cursor:pointer;"><sc-for list="{{ pfDeck }}" as="d"><span style="width:62px; height:62px; padding:2px; box-sizing:border-box; background:{{ d.color }};"><img src="{{ d.img }}" alt="" style="display:block; width:100%; height:100%; background:#e9e4d8; object-fit:contain;"></span></sc-for></div>
+            </div>
+          </div>
+          <div style="position:absolute; left:468px; right:24px; top:16px; bottom:20px; display:flex; flex-direction:column; gap:14px;">
+            <div class="u2-scroll u3-scroll u3-desc" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
+              <sc-if value="{{ pfv.isInfo }}">
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1.2; padding:18px 20px; display:flex; flex-direction:column; gap:10px; background:#121115; border:1px solid #2a2723;"><span class="u3-cz" style="font-size:12px; letter-spacing:5px; color:#e9c46a;">[ COMBAT POWER ]</span><b class="u3-cz" style="font-weight:900; font-size:48px; line-height:1; letter-spacing:0; color:#fff7dc;">{{ pfv.cp }}</b><div style="display:flex; flex-direction:column; gap:4px;"><sc-for list="{{ pfv.cpRows }}" as="r"><div class="u3-os" style="display:flex; justify-content:space-between; font-size:12px; color:#9b958a;"><span>{{ r.k }}</span><b style="font-weight:600; color:#e8e3d8;">{{ r.v }}</b></div></sc-for></div></div>
+                  <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px;"><sc-for list="{{ pfv.quick }}" as="q"><div style="padding:14px 16px; display:flex; flex-direction:column; justify-content:center; gap:4px; background:#121115; border:1px solid #2a2723;"><b class="u3-os" style="font-weight:600; font-size:22px; color:#f3eee3;">{{ q.v }}</b><span style="font-size:12px; color:#9b958a;">{{ q.k }}</span></div></sc-for></div>
+                </div>
+                <div style="padding:16px 20px; display:flex; flex-direction:column; gap:8px; background:#121115; border:1px solid #2a2723;"><div style="display:flex; justify-content:space-between;"><b class="u3-bh" style="font-size:17px; color:#f3eee3;">도감</b><span class="u3-os" style="font-weight:600; color:#e8e3d8;">{{ ownedCount }} / {{ totalCount }}</span></div><div style="height:6px; background:rgba(232,227,216,.1);"><div style="width:{{ pfv.dexPct }}; height:100%; background:#8fc6dd;"></div></div><div style="display:flex; flex-wrap:wrap; gap:6px;"><sc-for list="{{ pfv.dex }}" as="d"><span class="u3-os" style="padding:2px 10px; border:1px solid {{ d.c }}; font-size:12px; color:{{ d.c }};">{{ d.t }}</span></sc-for></div></div>
+                <div style="padding:16px 20px; display:flex; align-items:center; gap:14px; background:#121115; border:1px solid #2a2723;"><span style="flex:1; display:flex; flex-direction:column; gap:3px;"><b class="u3-bh" style="font-size:17px; color:#f3eee3;">JHBT 계정</b><span style="font-size:12px; color:#9b958a;">{{ pfv.accSub }}</span></span><button type="button" onClick="{{ pfv.accGo }}" class="u3-btn u3-cutbtn" style="height:44px; padding:0 22px; background:#c8102e;"><span class="u3-bh" style="font-size:15px; color:#fff;">{{ pfv.accBtn }}</span></button></div>
+              </sc-if>
+              <sc-if value="{{ pfv.isStat }}"><div onClick="{{ pfv.statClick }}" class="k-pst u3-pst">{{ pfv.stat }}</div></sc-if>
+              <sc-if value="{{ pfv.isFav }}"><div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:8px;"><sc-for list="{{ pfv.favs }}" as="c"><button type="button" onClick="{{ c.onClick }}" class="u3-btn" style="position:relative; flex-direction:column; align-items:stretch; background:#121115; box-shadow:{{ c.ring }};"><span style="display:block; aspect-ratio:1; background:#e9e4d8;"><img src="{{ c.img }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain;"></span><span class="u3-bh" style="padding:4px 2px; font-size:11px; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</span></button></sc-for></div></sc-if>
+              <sc-if value="{{ pfv.isFrame }}"><div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;"><sc-for list="{{ pfv.frames }}" as="f"><button type="button" onClick="{{ f.onClick }}" class="u3-btn" style="position:relative; padding:14px 10px; flex-direction:column; gap:6px; background:#121115; border:1px solid #2a2723;"><div>{{ f.pf }}</div><b class="u3-bh" style="font-size:15px; color:#f3eee3;">{{ f.name }}</b><span style="font-size:11px; color:#9b958a; text-align:center;">{{ f.cond }}</span><span class="u3-bh" style="padding:4px 12px; background:{{ f.btnBg }}; color:{{ f.btnFc }}; font-size:13px;">{{ f.btn }}</span><sc-if value="{{ f.dot }}"><span class="u3-dot" style="right:6px; top:6px;"></span></sc-if></button></sc-for></div></sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.sp }}">
+          <div style="position:absolute; left:24px; top:16px; width:360px; bottom:20px; overflow:hidden; background:#121115; border:1px solid #2a2723; display:flex; flex-direction:column; padding:26px; box-sizing:border-box; gap:12px;">
+            <div aria-hidden="true" class="u3-band" style="left:auto; right:30px; width:160px; transform:skewX(-14deg); opacity:.55;"></div>
+            <span class="u3-cz" style="position:relative; font-size:12px; letter-spacing:5px; color:#e9c46a;">[ SEASON {{ spv.no }} ]</span>
+            <b class="u3-cz" style="position:relative; font-weight:900; font-size:80px; line-height:.9; letter-spacing:0; color:#fff7dc;">{{ spv.tier }}</b>
+            <span style="position:relative; font-size:13px; color:#9b958a;">{{ spv.sub }}</span>
+            <div style="position:relative; display:flex; flex-direction:column; gap:6px;"><div style="height:6px; background:rgba(232,227,216,.1);"><div style="width:{{ spv.pct }}; height:100%; background:linear-gradient(90deg, #a8102a, #e9c46a);"></div></div><span class="u3-os" style="font-size:12px; color:#9b958a;">{{ spv.xpNow }} / {{ spv.xpNeed }} · {{ spv.left }}</span></div>
+            <button type="button" onClick="{{ spv.claimAll }}" class="u3-btn u3-cutbtn" style="position:relative; margin-top:auto; height:58px; background:#c8102e;"><span class="u3-bh" style="font-size:19px; color:#fff;">{{ spv.allLb }}</span></button>
+          </div>
+          <div class="u2-scroll u3-scroll" style="position:absolute; left:408px; right:24px; top:16px; bottom:20px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+            <sc-for list="{{ spv.rows }}" as="r"><button type="button" onClick="{{ r.onClick }}" class="u3-btn" style="min-height:62px; padding:0 16px; justify-content:flex-start; gap:16px; background:#121115; border:1px solid #2a2723; text-align:left;"><b class="u3-cz" style="width:44px; font-weight:900; font-size:20px; letter-spacing:0; color:#e9c46a;">{{ r.no }}</b><span style="font-size:26px;">{{ r.ic }}</span><span style="flex:1; display:flex; flex-direction:column; gap:3px;"><b class="u3-bh" style="font-size:16px; color:#f3eee3;">{{ r.lb }}</b><span style="font-size:12px; color:#9b958a;">{{ r.sub }}</span></span><span class="u3-bh" style="font-size:14px; color:#e9c46a;">{{ r.st }}</span></button></sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.mode }}">
+          <div style="position:absolute; left:0; top:0; width:620px; bottom:0; overflow:hidden;">
+            <div aria-hidden="true" class="u3-band" style="left:90px; width:400px; transform:skewX(-14deg);"><i class="u3-scan"></i></div>
+            <div aria-hidden="true" class="u3-ghostrow" style="top:30px; font-size:120px; -webkit-text-stroke:1px rgba(232,227,216,.1);"><span class="mn-ghost">{{ u3.ov.mode.ghost }}</span></div>
+            <img class="u3-sketch rc-float" src="{{ u3.ov.mode.art }}" alt="" aria-hidden="true" style="left:80px; top:40px; width:480px; height:480px; filter:grayscale(1) invert(1) brightness(2.3);">
+          </div>
+          <div style="position:absolute; left:640px; right:40px; top:30px; bottom:24px; display:flex; flex-direction:column; gap:14px;">
+            <b class="u3-bh" style="font-size:54px; line-height:.95; color:#f3eee3;">{{ mTitle }}</b>
+            <span style="font-size:14px; line-height:1.6; color:#d8d2c6;">{{ mSub }}</span>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;"><sc-for list="{{ u3.ov.mode.chips }}" as="c"><span class="u3-os" style="padding:4px 12px; border:1px solid #4a4640; font-weight:600; font-size:13px; color:#e8e3d8;">{{ c.t }}</span></sc-for></div>
+            <div class="u2-scroll u3-scroll" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding:12px 0; border-top:1px solid #2a2723; border-bottom:1px solid #2a2723;">
+              <sc-for list="{{ u3.ov.mode.rules }}" as="r"><div style="display:flex; gap:12px; font-size:13px; line-height:1.55; color:#b8b2a6;"><b class="u3-cz" style="font-weight:900; color:#c8102e;">{{ r.no }}</b><span>{{ r.t }}</span></div></sc-for>
+              <sc-if value="{{ isMDef }}"><div style="margin-top:8px; padding:14px 16px; display:flex; align-items:center; gap:12px; background:#121115; border:1px solid #2a2723;"><span style="flex:1; display:flex; flex-direction:column; gap:3px;"><b class="u3-bh" style="font-size:16px; color:#f3eee3;">열쇠 상자</b><span class="u3-os" style="font-size:12px; color:#9b958a;">🔑 {{ dfKeys }} · 하나에 {{ dfBoxCost }}</span></span><button type="button" onClick="{{ dfKbDec }}" class="u3-ib" style="width:36px; height:36px;">−</button><b class="u3-os" style="width:30px; text-align:center; font-weight:600; font-size:18px; color:#f3eee3;">{{ dfKbN }}</b><button type="button" onClick="{{ dfKbInc }}" class="u3-ib" style="width:36px; height:36px;">+</button><button type="button" onClick="{{ dfOpenBox }}" class="u3-btn u3-cutbtn" style="height:40px; padding:0 18px; background:#c8102e;"><span class="u3-bh" style="font-size:14px; color:#fff;">열기</span></button></div></sc-if>
+            </div>
+            <button type="button" onClick="{{ modeGo }}" class="u3-btn" style="height:76px; justify-content:space-between; padding:0 28px; background:#c8102e; clip-path:polygon(0 0, 100% 0, 94% 100%, 0 100%); flex-shrink:0;"><span style="display:flex; flex-direction:column; align-items:flex-start; gap:2px;"><span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#ffd0d6;">{{ mBtnSub }}</span><b class="u3-bh" style="font-size:28px; color:#fff;">{{ mBtn }}</b></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
           </div>
         </sc-if>
 
@@ -15882,6 +15950,11 @@ function u3Rank(v) { // 랭킹: 위 탭 · 왼쪽 1~3위 단상 · 오른쪽 4�
 const U3_ATSPL = Array.from({ length: 8 }, (_, i) => { const a = i / 8 * Math.PI * 2 + 0.3, d = 64 + (i * 29 % 30), r = 3 + (i * 5 % 5); return { r: r + 'px', dx: Math.cos(a) * d + 'px', dy: Math.sin(a) * d + 'px' }; });
 function u3Ov(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), tabOf = (L, cur, go) => L.map(([k, t, dot]) => { const on = cur === k; return { t, on, dot: !!dot, bg: on ? '#c8102e' : 'transparent', c: on ? '#fff' : '#9b958a', go: () => go(k) }; });
+  if (s.profile && v.pfv) { const P = v.pfv; P.favs = (P.favs || []).map(c => ({ ...c, ring: c.on ? '0 0 0 2px #c8102e' : 'none' })); return { en: 'PROFILE', t: '프로필', close: v.closeProfile, right: '', tabs: (P.tabs || []).map(t => { const on = /on/.test(t.cls || ''); return { t: t.label, on, dot: !!t.dot, bg: on ? '#c8102e' : 'transparent', c: on ? '#fff' : '#9b958a', go: t.onClick }; }), pf: true }; }
+  if (s.sp && v.spv) return { en: 'SEASON PASS', t: '시즌 패스', close: v.spClose, right: '', tabs: [], sp: true };
+  if (s.mode && v.isMode) { const ch = v.isMDef ? v.dfChips : v.isMEvent ? v.evChips : v.isMCastle ? v.cwChips : [], R = v.isMDef ? v.dfRules : v.isMEvent ? v.evSteps : v.isMCastle ? v.cwRules : v.isMRandom ? v.rmRules : [], ART = { defense: 'titanium', event: 'weather', random: 'dice', mirror: 'joker', castle: 'titanium' }, EN = { defense: 'DEFENSE', event: 'EVENT', random: 'RANDOM', mirror: 'MIRROR', castle: 'CASTLE' };
+    return { en: EN[s.mode] || 'MODE', t: v.mTitle || '', close: v.modeClose, right: v.isMDef ? `🔑 ${v.dfKeys}` : '', tabs: v.isMRandom ? (v.rmTabs || []).map(t => { const on = /on/.test(t.cls || ''); return { t: t.label, on, dot: false, bg: on ? '#c8102e' : 'transparent', c: on ? '#fff' : '#9b958a', go: t.onClick }; }) : [],
+      mode: { art: u2Img(CHARS[ART[s.mode]] ? ART[s.mode] : 'fire'), ghost: ((EN[s.mode] || 'MODE') + ' · ').repeat(8), chips: (ch || []).map(c => ({ t: c.t })), rules: (R || []).map((r, i) => ({ no: String(i + 1).padStart(2, '0'), t: typeof r === 'string' ? r.replace(/<[^>]+>/g, '') : String(r.t || r.text || '').replace(/<[^>]+>/g, '') })) } }; }
   if (s.uinfo) return { en: 'PLAYER', t: '유저 정보', close: v.uinfoClose, right: '', tabs: [], ui: true };
   if (s.rec) return { en: 'DECK', t: (v.rec && v.rec.title) || '덱 추천', close: v.recClose, right: '', tabs: [], rec: true };
   if (s.hist) return { en: 'RECORDS', t: '전투기록', close: v.histClose, right: v.histNote || '', tabs: [], hist: { rows: (v.hist || []).map((h, i) => { const w = /승|WIN/.test(h.res); return { ...h, r: w ? 'WIN' : /무/.test(h.res) ? 'DRAW' : 'LOSE', rb: w ? '#c8102e' : '#1d1b20', rc: w ? '#fff' : '#9b958a', dl: (Math.min(i, 12) * 0.04).toFixed(2) + 's' }; }) } };
@@ -15974,7 +16047,7 @@ function u3Extra(v) {
     play: v.startNormal, playBg: profile.evOn && CFG.EV_ENABLED ? '#2f8f55' : '#c8102e', playSub: profile.evOn && CFG.EV_ENABLED ? 'BATTLE · 이벤트 모드' : 'BATTLE · 일반전',
     defense: () => u2Set({ mode: 'defense' }), dfBest: profile.dfBest | 0,
     evTog: v.evTog, evS: profile.evOn ? 'ON' : 'OFF', evC: profile.evOn ? '#5fd38a' : '#9b958a', evBd: profile.evOn ? '#2f8f55' : '#4a4640',
-    old: !!(s.page || s.mode || s.profile || s.sp), ov: u3Ov(v), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
+    old: !!s.page, ov: u3Ov(v), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
     nav, menu, uid: isMember() ? 'UID ' + accCode() : '게스트', ver: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || '')
   };
 }
