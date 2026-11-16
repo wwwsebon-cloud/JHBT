@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.0"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.1"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2316,7 +2316,36 @@ body.b-low .unit, body.b-low .unit.enemy { box-shadow:0 0 0 3px #fff; } body.b-l
 body.b-low .unit .unit-icon, body.b-low .unit.cast, body.b-low .unit .xlv.pop { animation:none !important; } body.b-low .ufx .status-icons span { box-shadow:none; }
 #bsetPop { position:absolute; z-index:60; right:10px; bottom:calc(var(--trayH, 120px) + 8px); width:min(300px, calc(100% - 20px)); padding:12px 14px; border-radius:18px; background:#2c3553; border:1px solid #3b466b; box-shadow:0 6px 0 #1c2238, 0 18px 40px rgba(0,0,0,.35); color:#f2f4fa; display:flex; flex-direction:column; gap:2px; animation:u2rise .25s cubic-bezier(.2,.8,.2,1) both; }
 #bsetPop[hidden] { display:none; }
-#bsetPop h4 { margin:0 0 6px; font-family:'Black Han Sans',var(--font); font-weight:400; font-size:19px; display:flex; align-items:center; } #bsetPop h4 button { margin-left:auto; width:30px; height:30px; border-radius:10px; background:#3b466b; color:#f2f4fa; font-weight:800; }
+#bsetPop h4 { margin:0 0 6px; font-family:'Black Han Sans',var(--font); font-weight:400; font-size:19px; display:flex; align-items:center; } #bsetPop h4 button { margin-left:auto; width:30px; height:30px; border-radius:10px; background:#3b466b; color:#f2f4fa; font-weight:800; }
+/* R3.1 전투 설정 전체 창 (#bsetFull · 봇전은 열려 있는 동안 일시 정지 S.paused · 검은 반투명 바탕 위 크림슨 레저) */
+#bsetFull { position:fixed; inset:0; z-index:66; display:flex; flex-direction:column; background:rgba(5,4,6,.94); color:#e8e3d8; font-family:'Noto Sans KR', var(--font); overflow:hidden; animation:bfIn .2s ease both; }
+#bsetFull[hidden] { display:none; }
+@keyframes bfIn { from { opacity:0; } to { opacity:1; } }
+@keyframes bfUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+@keyframes bfGhost { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+#bsetFull .bf-ghost { position:absolute; left:0; bottom:-.12em; width:200%; white-space:nowrap; pointer-events:none; font:900 clamp(60px, 15vh, 140px)/1 'Cinzel', serif; color:transparent; -webkit-text-stroke:1px rgba(232,227,216,.07); animation:bfGhost 30s linear infinite; }
+#bsetFull .bf-band { position:absolute; left:-6%; top:-10%; width:30%; height:130%; background:rgba(168,16,42,.2); transform:skewX(-14deg); pointer-events:none; }
+#bsetFull .bf-hd { position:relative; flex:none; height:clamp(50px, 10vh, 72px); display:flex; align-items:center; gap:14px; padding:0 max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left)); border-bottom:1px solid #2a2723; }
+#bsetFull .bf-hd > span { display:flex; flex-direction:column; gap:2px; } #bsetFull .bf-hd i { font:700 11px/1 'Cinzel', serif; font-style:normal; letter-spacing:5px; color:#c8102e; } #bsetFull .bf-hd b { font:400 clamp(20px, 4vh, 28px)/1 'Black Han Sans', var(--font); color:#f3eee3; }
+#bsetFull .bf-st { margin-left:6px; height:26px; padding:0 10px; display:flex; align-items:center; gap:7px; border:1px solid #3a3631; font:600 11px/1 'Oswald', sans-serif; letter-spacing:3px; color:#9b958a; } #bsetFull .bf-st em { width:7px; height:7px; background:#e9c46a; } #bsetFull .bf-st.live em { border-radius:50%; background:#5fd38a; }
+#bsetFull .bf-x { margin-left:auto; width:44px; height:44px; display:grid; place-items:center; background:#e8e3d8; border:0; border-radius:0; } #bsetFull .bf-x svg { width:18px; height:18px; stroke:#0d0c0e; stroke-width:2.4; fill:none; }
+#bsetFull .bf-body { position:relative; flex:1; min-height:0; display:flex; gap:clamp(12px, 2vw, 24px); padding:clamp(12px, 2.5vh, 24px) max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left)); animation:bfUp .3s cubic-bezier(.2,.8,.2,1) both; }
+#bsetFull .bf-h { font:700 11px/1 'Cinzel', serif; letter-spacing:5px; color:#e9c46a; margin-bottom:10px; }
+#bsetFull .bf-snd { flex:0 0 32%; display:flex; flex-direction:column; gap:8px; }
+#bsetFull .bf-vol { display:flex; align-items:center; gap:12px; min-height:clamp(52px, 11vh, 76px); padding:0 16px; background:#121115; border:1px solid #2a2723; }
+#bsetFull .bf-vol span { width:72px; font:400 clamp(14px, 2.6vh, 17px)/1.1 'Black Han Sans', var(--font); color:#f3eee3; }
+#bsetFull .bf-vol input { flex:1; min-width:0; accent-color:#c8102e; }
+#bsetFull .bf-vol b { width:34px; text-align:right; font:600 clamp(14px, 2.6vh, 18px)/1 'Oswald', sans-serif; color:#f3eee3; }
+#bsetFull .bf-sw { flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
+#bsetFull .bf-grid { flex:1; min-height:0; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px; align-content:start; padding-bottom:12px; }
+#bsetFull .bf-row { min-height:clamp(48px, 10vh, 64px); padding:0 14px; display:flex; align-items:center; gap:12px; background:#121115; border:1px solid #2a2723; border-radius:0; text-align:left; color:#e8e3d8; }
+#bsetFull .bf-row > span { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; } #bsetFull .bf-row b { font:400 clamp(14px, 2.6vh, 17px)/1.1 'Black Han Sans', var(--font); color:#f3eee3; } #bsetFull .bf-row small { font-size:11px; line-height:1.3; color:#6f6a62; }
+#bsetFull .bf-row i { position:relative; flex:none; width:46px; height:24px; background:#1d1b20; border:1px solid #3a3631; } #bsetFull .bf-row i::after { content:''; position:absolute; left:3px; top:3px; width:16px; height:16px; background:#6f6a62; transition:transform .2s cubic-bezier(.2,.8,.2,1); }
+#bsetFull .bf-row.on { border-color:rgba(200,16,46,.55); } #bsetFull .bf-row.on i { background:#c8102e; border-color:#c8102e; } #bsetFull .bf-row.on i::after { background:#fff; transform:translateX(22px); }
+#bsetFull .bf-ft { position:relative; flex:none; display:flex; justify-content:flex-end; padding:10px max(18px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+#bsetFull .bf-go { min-width:220px; height:clamp(46px, 9vh, 60px); display:flex; align-items:center; justify-content:center; gap:10px; background:#c8102e; border:0; border-radius:0; clip-path:polygon(0 0, 100% 0, 93% 100%, 0 100%); font:400 clamp(17px, 3.2vh, 21px)/1 'Black Han Sans', var(--font); color:#fff; } #bsetFull .bf-go svg { width:16px; height:16px; fill:#fff; }
+@media (max-width:700px) { #bsetFull .bf-body { flex-direction:column; overflow-y:auto; } #bsetFull .bf-snd { flex:none; } #bsetFull .bf-grid { overflow:visible; } }
+@media (prefers-reduced-motion:reduce) { #bsetFull, #bsetFull .bf-body, #bsetFull .bf-ghost { animation:none; } }
 .bset-row { display:flex; align-items:center; gap:10px; min-height:40px; font-size:14px; font-weight:700; } .bset-row small { display:block; font-size:11px; color:#9aa3bf; font-weight:600; } .bset-row .sp { flex:1; }
 .bset-row input[type=range] { width:110px; accent-color:#ffc94a; } .bset-row b { width:28px; text-align:right; font-size:12px; color:#c9d0e6; }
 .bset-sw { width:46px; height:28px; border-radius:999px; background:#1a2034; border:1px solid #3b466b; position:relative; flex-shrink:0; transition:background-color .15s; } .bset-sw::after { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#9aa3bf; transition:transform .15s, background-color .15s; }
@@ -6924,6 +6953,7 @@ function openAccount(tab) { if (tab) ACC.tab = tab; if (!isMember()) ACC.newCode
 // ═════════ 화면 ═════════
 const CHROME = ['lobby', 'deck', 'gacha', 'shop', 'inv', 'arcade', 'tower', 'comp', 'sandbox', 'social', 'lb', 'custom']; // 상단 바 · 하단 탭 바가 보이는 화면
 function show(name) {
+  if (name !== 'battle' && document.getElementById('bsetFull') && !document.getElementById('bsetFull').hidden) bsetToggle(false); /* R3.1 전투 설정 창 */
   if (window.__u2 && !AUTH.ok && name !== 'welcome' && !(name === 'battle' && S.replay)) { renderGate('loading'); name = 'welcome'; } // accBoot 전에는 연결 중 화면만 (R2.13 build 2: 로그인 화면 없음 · R2.14: 공유 리플레이는 전투 화면)
   document.body.dataset.scr = name; // R2.12 테마: 전투 화면만 밝은 바탕
   if (window.__u2 && !TUT.on && (U2_TAB[name] || U2_PAGE[name])) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
@@ -8094,7 +8124,7 @@ function ubTick() { const now = performance.now(); if (!UB.els || now - UB.t < 1
 function loopBody(ts) {
   const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts;
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
-  acc += real * ((S.replay && S.replay.pause) || (S.cw && S.cw.pick) || (S.fxHold && performance.now() < S.fxHold) /* R3.0 라운드 전환 연출 동안 */ ? 0 : S.speed); /* build 2: 디펜스 정비 시간 */ const simT0 = performance.now(); // R2.14 다시보기 일시정지
+  acc += real * (S.paused /* R3.1 전투 설정 창 (봇전) */ || (S.replay && S.replay.pause) || (S.cw && S.cw.pick) || (S.fxHold && performance.now() < S.fxHold) /* R3.0 라운드 전환 연출 동안 */ ? 0 : S.speed); /* build 2: 디펜스 정비 시간 */ const simT0 = performance.now(); // R2.14 다시보기 일시정지
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
   const simMs = performance.now() - simT0;
   const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); ubSync(); camYaw(real); camFollow(real); cvDraw(); drawShots(); monoDraw(); fmbTick(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
@@ -9080,7 +9110,7 @@ function nextDeploy() {
 }
 function startPickTimer() {
   clearInterval(S.timer); S.left = CFG.PICK_TIME; setRing(S.left, CFG.PICK_TIME);
-  S.timer = setInterval(() => { S.left--; setRing(Math.max(0, S.left), CFG.PICK_TIME); if (S.left <= 0) { clearInterval(S.timer); autoPlace(); } }, 1000);
+  S.timer = setInterval(() => { if (S.paused) return; /* R3.1 */ S.left--; setRing(Math.max(0, S.left), CFG.PICK_TIME); if (S.left <= 0) { clearInterval(S.timer); autoPlace(); } }, 1000);
 }
 function tip(msg) {
   if (S.arc && S.arc.kind === 'tutorial') return; // 튜토리얼: 안내는 튜토리얼 말풍선이 한다
@@ -10644,7 +10674,7 @@ const botMind = {
   },
   // 0.4초마다: 정해진 때가 아니라 불쑥 한마디 (배치 중에도). 팽팽하거나 기분이 크게 흔들렸을수록 자주.
   pulse() {
-    if (!this.on() || (S.phase !== 'combat' && S.phase !== 'deploy')) return;
+    if (!this.on() || S.paused || (S.phase !== 'combat' && S.phase !== 'deploy')) return;
     const b = this.odds(), tension = S.phase === 'combat' ? 1 - Math.abs(b - 0.5) * 1.2 : 0.25;
     const perSec = 0.035 * this.chatty * (0.6 + tension + Math.abs(this.heat) * 0.6);
     if (Math.random() > perSec * 0.4) return;
@@ -12332,6 +12362,11 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
+  { v: 'R3.1', date: '2026.11.16', title: '전투 설정 창', sections: [
+    { title: '시스템', items: [
+      { icon: '⚙️', name: '전투 설정', tag: 'system', desc: '화면 전체 창으로 · 봇전은 여는 동안 일시 정지' },
+    ] },
+  ] },
   { v: 'R3.0', date: '2026.11.14', title: '새 전투 시스템 · 가로 3D 전장 · 새 전투 화면 · 로비 새 톤', sections: [
     { title: '추가 패치 (build 6)', items: [
       { icon: '🎴', name: '지후 카드 줄', tag: 'system', desc: '더 작고 깔끔하게 · SQUAD 생존 수 · 스킬 준비 수 · 체력 숫자 · 전투 설정에서 끌 수 있어요' },
@@ -14311,10 +14346,18 @@ function bsetBind(root, again) {
   root.querySelectorAll('[data-bset]').forEach(b => b.onclick = () => { const k = b.dataset.bset; BSET[k] = !BSET[k]; bsetApply(); b.classList.toggle('on', BSET[k]); if (k === 'light') { CV.spr.clear(); (S.units || []).forEach(u => { u._cvB = null; }); } /* R3.0: 지후 그림을 새로 */ if (k === 'fs') { if (BSET.fs) fsGo(); else if (fsIn()) fsExit(); } /* R3.0 build 2 */ if (k === 'hpnum' || k === 'low') S.units.forEach(u => { if (u.bars) { u.bars.v.ht = null; drawUnit(u); } }); if (again) again(); });
   root.querySelectorAll('[data-bvol]').forEach(r => { r.oninput = () => { const v = clamp(Math.round(Number(r.value) || 0), 0, 100); r.nextElementSibling.textContent = v; if (r.dataset.bvol === 'sfx') sfxSetVolume(v); else { bgm.vol = v; try { localStorage.setItem(BGM_KEY, String(v)); } catch (e) {} bgmTick(); } }; if (r.dataset.bvol === 'sfx') r.onchange = () => sfx('buy'); });
 }
-function bsetToggle(force) { let p = $('bsetPop'); if (!p) { p = document.createElement('div'); p.id = 'bsetPop'; p.hidden = true; $('screen-battle').appendChild(p); }
-  const on = force != null ? force : p.hidden; if (!on) { p.hidden = true; return; }
-  p.innerHTML = `<h4>전투 설정<button aria-label="닫기" id="bsetX">✕</button></h4>${bsetHtml()}`; p.hidden = false; bsetBind(p); $('bsetX').onclick = () => bsetToggle(false); }
-document.addEventListener('pointerdown', e => { const p = $('bsetPop'); if (p && !p.hidden && !p.contains(e.target) && !e.target.closest('#btnBset')) p.hidden = true; });
+function bsetToggle(force) { /* R3.1: 화면 전체 창 · 봇전 (친선전이 아니면) 은 열려 있는 동안 전투 · 배치 시간이 멈춘다 */
+  let p = $('bsetFull'); if (!p) { p = document.createElement('div'); p.id = 'bsetFull'; p.hidden = true; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', '전투 설정'); document.body.appendChild(p); }
+  const on = force != null ? force : p.hidden; if (!on) { if (!p.hidden) { p.hidden = true; S.paused = false; } return; }
+  const live = !!S.net, X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  const rows = BSET_ROWS.map(([k, n, d]) => `<button type="button" class="bf-row${BSET[k] ? ' on' : ''}" data-bset="${k}" aria-label="${n}"><span><b>${n}</b><small>${d}</small></span><i></i></button>`).join('');
+  const vol = (k, n, v) => `<label class="bf-vol"><span>${n}</span><input type="range" min="0" max="100" value="${v}" data-bvol="${k}"><b>${v}</b></label>`;
+  p.innerHTML = `<div class="bf-band" aria-hidden="true"></div><div class="bf-ghost" aria-hidden="true">${(live ? 'SETTINGS · ' : 'PAUSED · ').repeat(8)}</div>`
+    + `<div class="bf-hd"><span><i>[ SETTINGS ]</i><b>전투 설정</b></span><span class="bf-st${live ? ' live' : ''}"><em></em>${live ? 'LIVE' : 'PAUSED'}</span><button type="button" class="bf-x" id="bsetX" aria-label="닫기">${X}</button></div>`
+    + `<div class="bf-body"><div class="bf-snd"><div class="bf-h">SOUND</div>${vol('sfx', '효과음', sfxState.vol)}${vol('bgm', '배경음악', bgm.vol)}</div><div class="bf-sw"><div class="bf-h">BATTLE</div><div class="bf-grid">${rows}</div></div></div>`
+    + `<div class="bf-ft"><button type="button" class="bf-go" id="bsetGo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>계속하기</button></div>`;
+  p.hidden = false; S.paused = !live; bsetBind(p); $('bsetX').onclick = $('bsetGo').onclick = () => bsetToggle(false); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const p = $('bsetFull'); if (p && !p.hidden) bsetToggle(false); } });
 function renderSettings() {
   $('setBody').innerHTML = `<div class="setacc" id="setAcc"></div><div class="setrow"><span>효과음</span><span class="sp"></span><input type="range" min="0" max="100" value="${sfxState.vol}" id="setSfx"><b id="setSfxV" style="width:34px;text-align:right">${sfxState.vol}</b></div>
     <div class="setrow"><span>배경음악</span><span class="sp"></span><input type="range" min="0" max="100" value="${bgm.vol}" id="setBgm"><b id="setBgmV" style="width:34px;text-align:right">${bgm.vol}</b></div>

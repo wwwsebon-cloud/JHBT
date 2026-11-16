@@ -16,7 +16,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.0** (build 6).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.1** (build 1).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -124,6 +124,10 @@
 - **서명 키** `C:/Users/User/Documents/jhbt-app/jhbt-release.jks` + `keystore.properties` (비밀번호 · `app/android/keystore.properties` 로 복사해 쓴다 · git 에 안 올림) — **잃어버리면 같은 앱으로 업데이트를 못 낸다** (유저가 지우고 다시 설치해야 함).
 - 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
+
+## 최근 변경 (R3.1 · 2026-11-16)
+- **전투 설정 = 화면 전체 창** `#bsetFull` (`bsetToggle` · 예전 말풍선 `#bsetPop` 은 안 쓴다 · body 에 붙고 z-index 66 = 전투 화면 위 · `.modal` 70 아래): 검은 반투명 (.94) · 크림슨 레저 · 사운드 막대 + `BSET_ROWS` 토글 (`bsetBind` 그대로 · `.bf-row.on`) · 계속하기 · ✕ · Esc · 화면을 떠나면 `show()` 가 닫는다. **봇전 (`!S.net`) 은 여는 동안 `S.paused`** → `loopBody` 의 acc · 배치 타이머 `S.timer` · `botMind.pulse` 가 멈춘다 (친선전은 LIVE 표시만). 새로 멈춰야 하는 타이머가 생기면 `S.paused` 를 본다.
+- 로비 · 탭 리워크 시안 (가로 · 크림슨 레저 · 28장): https://claude.ai/artifact/TVMC4Mv4z2xHyHj7DmmUFm (게임에는 아직 안 넣었다).
 
 ## 최근 변경 (R3.0 · 새 전투 시스템 · 2026-11-14)
 - **build 6 지후 카드 줄 리디자인**: 작게 (`.ub-c` 34px) · 머리줄 `.ub-hd` (SQUAD 생존 / 전체 · SKILL READY 수) · 초상화 잘린 모서리 (img clip-path · SVG path `M0 0H100V78L78 100H0Z`) · 체력 숫자 `.ub-n` (35% 아래 `.low` 빨강) · 전투 설정 `BSET.ubar` (기본 켬 · 끄면 `body.b-noubar`) · 시안 https://claude.ai/artifact/AnWVFDLaTQLRggboAXGdQz .
