@@ -4552,6 +4552,72 @@ html body.u3-on #reveal:not(.u3rv) { background:#0a090b; }
       </div>
       <div class="u3c" style="top:64px;">
 
+        <sc-if value="{{ u3.ov.comm }}">
+          <div style="position:absolute; left:40px; right:40px; top:40px; display:grid; grid-template-columns:repeat({{ u3.ov.comm.cols }}, 1fr); gap:20px;">
+            <sc-for list="{{ u3.ov.comm.links }}" as="l">
+              <button type="button" onClick="{{ l.go }}" class="u3-btn sh-deal" style="position:relative; height:440px; flex-direction:column; align-items:stretch; background:#121115; border:1px solid #3a3631; overflow:hidden; text-align:left; clip-path:polygon(0 0, 100% 0, 100% 94%, 90% 100%, 0 100%); animation-delay:{{ l.dl }};">
+                <div style="position:relative; height:240px; overflow:hidden; background:{{ l.art }}; display:grid; place-items:center;"><div aria-hidden="true" style="position:absolute; inset:0; background:repeating-linear-gradient(-45deg, rgba(0,0,0,.14) 0 2px, transparent 2px 12px);"></div><span class="u3-bh" style="position:relative; font-size:92px; line-height:1; color:#fff;">{{ l.icon }}</span><span aria-hidden="true" class="sh-gleam" style="position:absolute; top:0; bottom:0; left:0; width:30%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);"></span><sc-if value="{{ l.tag }}"><span class="u3-os" style="position:absolute; left:0; top:18px; padding:4px 12px; background:#e9c46a; font-weight:600; font-size:11px; letter-spacing:2px; color:#0d0c0e;">{{ l.tag }}</span></sc-if></div>
+                <span style="height:4px; background:{{ l.ac }};"></span>
+                <div style="flex:1; padding:18px 22px; display:flex; flex-direction:column; gap:8px;"><b class="u3-bh" style="font-size:24px; color:#f3eee3;">{{ l.name }}</b><span style="font-size:13px; line-height:1.6; color:#9b958a;">{{ l.sub }}</span></div>
+                <div style="margin:0 22px 22px; height:46px; display:flex; align-items:center; justify-content:space-between; border-top:1px dashed #3a3631;"><span class="u3-bh" style="font-size:16px; color:{{ l.bc }};">{{ l.btn }}</span><span class="u3-os" style="display:flex; align-items:center; gap:6px; font-size:12px; letter-spacing:3px; color:#e8e3d8;">OPEN<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2.2"><path d="M7 17L17 7M9 7h8v8"></path></svg></span></div>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.hist }}">
+          <div class="u2-scroll u3-scroll" style="position:absolute; left:24px; right:24px; top:16px; bottom:20px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+            <sc-if value="{{ histEmpty }}"><div class="u3-bh" style="padding:60px 0; text-align:center; font-size:18px; color:#6f6a62;">아직 전투기록이 없어요</div></sc-if>
+            <sc-for list="{{ u3.ov.hist.rows }}" as="h">
+              <div class="u3-qrow" style="height:auto; min-height:76px; padding:0 16px 0 0; gap:16px; background:#121115; animation-delay:{{ h.dl }};">
+                <span style="width:96px; align-self:stretch; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; background:{{ h.rb }}; clip-path:polygon(0 0, 100% 0, 86% 100%, 0 100%);"><b class="u3-cz" style="font-weight:900; font-size:16px; letter-spacing:2px; color:{{ h.rc }};">{{ h.r }}</b><span class="u3-os" style="font-size:12px; color:{{ h.rc }};">{{ h.score }}</span></span>
+                <div style="width:220px; display:flex; flex-direction:column; gap:4px;"><b class="u3-bh" style="font-size:15px; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ h.title }}</b><span class="u3-os" style="font-size:11px; letter-spacing:1px; color:#6f6a62;">{{ h.when }}</span><div style="display:flex; gap:3px; flex-wrap:wrap;"><sc-for list="{{ h.rounds }}" as="r"><span class="u3-bh" style="min-width:24px; padding:1px 5px; text-align:center; font-size:11px; background:{{ r.bg }}; color:{{ r.fc }};">{{ r.t }}</span></sc-for></div></div>
+                <div style="flex:1; display:flex; align-items:center; gap:10px; min-width:0;"><div style="display:flex; gap:3px;"><sc-for list="{{ h.me }}" as="d"><span style="width:34px; height:34px; padding:2px; box-sizing:border-box; background:{{ d.color }};"><img src="{{ d.img }}" alt="" style="display:block; width:100%; height:100%; background:#e9e4d8; object-fit:contain;"></span></sc-for></div><span class="u3-os" style="font-size:10px; letter-spacing:3px; color:#4a4640;">VS</span><div style="display:flex; gap:3px;"><sc-for list="{{ h.op }}" as="d"><span style="width:34px; height:34px; padding:2px; box-sizing:border-box; background:{{ d.color }};"><img src="{{ d.img }}" alt="" style="display:block; width:100%; height:100%; background:#e9e4d8; object-fit:contain;"></span></sc-for></div></div>
+                <sc-if value="{{ h.rp }}"><button type="button" onClick="{{ h.rpGo }}" aria-label="다시 보기" class="u3-ib"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="#e8e3d8"><path d="M7 4l13 8-13 8z"></path></svg></button><button type="button" onClick="{{ h.rpShare }}" aria-label="공유" class="u3-ib"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M4 12v8h16v-8M12 3v13M7 8l5-5 5 5"></path></svg></button></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.rec }}">
+          <div style="position:absolute; left:50%; width:900px; margin-left:-450px; top:40px; display:flex; flex-direction:column; gap:22px;">
+            <span style="font-size:14px; line-height:1.6; color:#b8b2a6;">{{ rec.desc }}</span>
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:14px;">
+              <sc-for list="{{ rec.cards }}" as="c"><div class="sh-deal" style="display:flex; flex-direction:column; background:#121115; border:1px solid #3a3631;"><div style="aspect-ratio:1; background:#e9e4d8; clip-path:polygon(0 0, 100% 0, 100% 84%, 86% 100%, 0 100%);"><img src="{{ c.img }}" alt="" style="width:100%; height:100%; object-fit:contain;"></div><span style="height:4px; background:{{ c.color }};"></span><div style="padding:8px 10px; display:flex; flex-direction:column; gap:3px;"><b class="u3-bh" style="font-size:16px; color:#f3eee3;">{{ c.name }}</b><span class="u3-os" style="font-size:11px; letter-spacing:1px; color:#9b958a;">{{ c.role }}</span></div></div></sc-for>
+            </div>
+            <span class="u3-bh" style="text-align:center; font-size:15px; color:#d8d2c6;">{{ rec.summary }}</span>
+            <div style="display:flex; justify-content:center; gap:12px;"><button type="button" onClick="{{ recAgain }}" class="u3-btn u3-ghostbtn" style="width:200px; height:56px;"><span class="u3-bh" style="font-size:18px;">다시 추천</span></button><button type="button" onClick="{{ recUse }}" class="u3-btn u3-cutbtn" style="width:260px; height:56px; background:#c8102e;"><span class="u3-bh" style="font-size:18px; color:#fff;">이 덱 쓰기</span></button></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.ui }}">
+          <div style="position:absolute; left:50%; width:900px; margin-left:-450px; top:30px; bottom:24px; display:flex; flex-direction:column; gap:16px;">
+            <sc-if value="{{ ui.loading }}"><div class="u3-bh" style="padding:80px 0; text-align:center; font-size:18px; color:#6f6a62;">불러오는 중…</div></sc-if>
+            <sc-if value="{{ ui.err }}"><div class="u3-bh" style="padding:80px 0; text-align:center; font-size:18px; color:#ff8a9a;">{{ ui.err }}</div></sc-if>
+            <sc-if value="{{ ui.ready }}">
+              <div style="position:relative; height:200px; overflow:hidden; display:flex; align-items:center; gap:24px; padding:0 30px; background:#121115; border:1px solid #2a2723;"><div aria-hidden="true" class="u3-band" style="left:auto; right:120px; width:220px; transform:skewX(-14deg); opacity:.6;"></div><div style="position:relative;">{{ ui.pf }}</div><div style="position:relative; display:flex; flex-direction:column; gap:8px;"><span class="u3-os" style="align-self:flex-start; padding:2px 8px; background:#e9c46a; font-weight:600; font-size:13px; color:#0d0c0e;">LV {{ ui.lv }}</span><b class="u3-bh" style="font-size:40px; line-height:1; color:#f3eee3;">{{ ui.name }}</b><span class="u3-os" style="font-size:12px; letter-spacing:2px; color:#9b958a;">{{ ui.favName }} · {{ ui.seen }}</span></div></div>
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;"><sc-for list="{{ ui.stats }}" as="s"><div style="padding:14px 16px; display:flex; flex-direction:column; gap:4px; background:#121115; border:1px solid #2a2723;"><span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#6f6a62;">{{ s.k }}</span><b class="u3-os" style="font-weight:600; font-size:22px; color:#f3eee3;">{{ s.v }}</b></div></sc-for></div>
+              <span class="u3-os" style="font-size:11px; letter-spacing:4px; color:#6f6a62;">RECENT DECK</span>
+              <div style="display:flex; gap:10px;"><sc-for list="{{ ui.deck }}" as="d"><span style="width:96px; height:96px; padding:3px; box-sizing:border-box; background:{{ d.color }};"><img src="{{ d.img }}" alt="" style="display:block; width:100%; height:100%; background:#e9e4d8; object-fit:contain;"></span></sc-for></div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ u3.ov.arc }}">
+          <div class="u2-scroll u3-scroll" style="position:absolute; left:24px; right:24px; top:20px; bottom:20px; overflow-y:auto;">
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:14px;">
+              <sc-for list="{{ arcShopCards }}" as="c">
+                <button type="button" onClick="{{ c.onClick }}" class="u3-btn sh-deal" style="position:relative; height:250px; flex-direction:column; align-items:stretch; background:#121115; border:1px solid #2a2723; overflow:hidden; opacity:{{ c.op }};">
+                  <div style="height:120px; display:grid; place-items:center; background:radial-gradient(circle at 50% 55%, rgba(200,16,46,.25), transparent 65%), #0a090b;"><span class="u3-bh" style="font-size:52px; line-height:1; color:{{ c.icC }};">{{ c.icon }}</span></div>
+                  <span style="height:3px; background:#c8102e;"></span>
+                  <div style="flex:1; padding:10px 14px; display:flex; flex-direction:column; gap:4px; text-align:left;"><b class="u3-bh" style="font-size:17px; color:#f3eee3;">{{ c.name }}</b><span style="font-size:11px; color:#9b958a;">{{ c.desc }}</span><span class="u3-os" style="margin-top:auto; display:flex; justify-content:space-between; font-size:12px; color:#9b958a;"><span>{{ c.lim }}</span><b style="font-weight:600; font-size:16px; color:#f3eee3;">{{ c.cost }}</b></span></div>
+                  <sc-if value="{{ c.tag }}"><span class="u3-os" style="position:absolute; left:0; top:10px; padding:2px 8px; background:#c8102e; font-weight:600; font-size:11px; color:#fff;">{{ c.tag }}</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ u3.ov.qsDaily }}">
           <div class="{{ u3.ov.shk }}" style="position:absolute; left:24px; top:22px; width:840px; bottom:24px; display:flex; flex-direction:column; gap:8px;">
             <sc-for list="{{ u3.ov.rows }}" as="r">
@@ -4701,6 +4767,15 @@ html body.u3-on #reveal:not(.u3rv) { background:#0a090b; }
         </sc-if>
       </div>
     </div>
+  </sc-if>
+
+  <sc-if value="{{ hasConfirm }}">
+    <div class="u3-dim sh-fade" onClick="{{ closeConfirm }}" style="z-index:40; display:grid; place-items:center;">
+      <div onClick="{{ stop }}" class="sh-paper" style="width:420px; display:flex; flex-direction:column; background:#121115; border:1px solid #3a3631; border-top:4px solid #c8102e; clip-path:polygon(0 0, 100% 0, 100% 92%, 93% 100%, 0 100%); text-align:left;">
+        <div style="padding:22px 26px; display:flex; flex-direction:column; gap:10px;"><span class="u3-cz" style="font-size:11px; letter-spacing:5px; color:#6f6a62;">CONFIRM</span><b class="u3-bh" style="font-size:24px; color:#f3eee3;">{{ cf.name }}</b><span class="u3-os" style="font-weight:600; font-size:18px; color:#e9c46a;">{{ cf.priceTxt }}</span></div>
+        <div style="padding:0 26px 24px; display:flex; gap:8px;"><button type="button" onClick="{{ closeConfirm }}" class="u3-btn u3-ghostbtn" style="flex:1; height:50px;"><span class="u3-bh" style="font-size:17px;">취소</span></button><button type="button" onClick="{{ confirmYes }}" class="u3-btn u3-cutbtn" style="flex:1.3; height:50px; background:#c8102e;"><span class="u3-bh" style="font-size:17px; color:#fff;">확인</span></button></div>
+      </div>
+    </div>
   </sc-if>
 
   <sc-if value="{{ toast }}"><div class="u3-toast"><span></span><b class="u3-bh">{{ toast }}</b></div></sc-if>
@@ -15672,7 +15747,7 @@ function u3Units(v) { // 지후 탭: 왼쪽 덱 · 가운데 지후 격자 (등�
       story: () => u2Set({ detail: sel, dtab: 'ab' }), up: () => u2Set({ detail: sel, dtab: 'up' }),
       eqT: !have ? '미보유' : inDeck ? '덱에 있음' : '덱에 넣기', eqBg: !have || inDeck ? '#3a3631' : '#c8102e', eq: () => (have && !inDeck ? u2Equip(sel) : null) }; }
   return { has: !!c, p, grid, deck: dk, chips, equipping: !!s.equipId, eqImg: s.equipId ? u2Img(s.equipId) : '', eqName: s.equipId ? shortName(s.equipId) : '',
-    rec: () => u2Set({ rec: true }), recT: profile.level <= REC_MAX_LV ? '덱 추천' : '랜덤 덱' };
+    rec: () => recRoll(), recT: profile.level <= REC_MAX_LV ? '덱 추천' : '랜덤 덱' };
 }
 function u3Recruit(v) { // 모집 탭: 상시 · 초보자 배너 · 천장 · 확률 · 모집권
   const s = UI2.st, nbOn = !!v.nbOn, ban = s.u3ban === 'nb' && nbOn ? 'nb' : 'std', L = Object.keys(CHARS).filter(id => CHARS[id].rarity === 'legend' && !isLim(id));
@@ -15807,6 +15882,11 @@ function u3Rank(v) { // 랭킹: 위 탭 · 왼쪽 1~3위 단상 · 오른쪽 4�
 const U3_ATSPL = Array.from({ length: 8 }, (_, i) => { const a = i / 8 * Math.PI * 2 + 0.3, d = 64 + (i * 29 % 30), r = 3 + (i * 5 % 5); return { r: r + 'px', dx: Math.cos(a) * d + 'px', dy: Math.sin(a) * d + 'px' }; });
 function u3Ov(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), tabOf = (L, cur, go) => L.map(([k, t, dot]) => { const on = cur === k; return { t, on, dot: !!dot, bg: on ? '#c8102e' : 'transparent', c: on ? '#fff' : '#9b958a', go: () => go(k) }; });
+  if (s.uinfo) return { en: 'PLAYER', t: '유저 정보', close: v.uinfoClose, right: '', tabs: [], ui: true };
+  if (s.rec) return { en: 'DECK', t: (v.rec && v.rec.title) || '덱 추천', close: v.recClose, right: '', tabs: [], rec: true };
+  if (s.hist) return { en: 'RECORDS', t: '전투기록', close: v.histClose, right: v.histNote || '', tabs: [], hist: { rows: (v.hist || []).map((h, i) => { const w = /승|WIN/.test(h.res); return { ...h, r: w ? 'WIN' : /무/.test(h.res) ? 'DRAW' : 'LOSE', rb: w ? '#c8102e' : '#1d1b20', rc: w ? '#fff' : '#9b958a', dl: (Math.min(i, 12) * 0.04).toFixed(2) + 's' }; }) } };
+  if (s.comm) { const L = v.commLinks || [], AC = ['#7d86ff', '#e8e3d8', '#ff7aa8', '#e9c46a']; return { en: 'COMMUNITY', t: '커뮤니티', close: v.commClose, right: v.commNote || '', tabs: [], comm: { cols: Math.max(1, L.length), links: L.map((l, i) => ({ ...l, ac: AC[i % AC.length], art: `linear-gradient(160deg, ${AC[i % AC.length]}40, #121115 75%)`, bc: /◆/.test(l.btn || '') ? '#ff8a9a' : '#9b958a', dl: (i * 0.1).toFixed(1) + 's' })) } }; }
+  if (s.arcShop && s.tab === 'arcade') return { en: 'ARCADE SHOP', t: '아케이드 상점', close: v.arcShopClose, right: `P ${v.points} · ${v.arcSeason || ''}`, tabs: [], arc: true };
   if (s.detail && CHARS[s.detail]) return u3Det(v, tabOf);
   if (s.qs) {
     const d = dq(), cur = s.qs === 'ach' ? 'ach' : s.qs === 'main' ? 'main' : 'quest', close = () => u2Set({ qs: null, u3tf: null });
@@ -15894,7 +15974,7 @@ function u3Extra(v) {
     play: v.startNormal, playBg: profile.evOn && CFG.EV_ENABLED ? '#2f8f55' : '#c8102e', playSub: profile.evOn && CFG.EV_ENABLED ? 'BATTLE · 이벤트 모드' : 'BATTLE · 일반전',
     defense: () => u2Set({ mode: 'defense' }), dfBest: profile.dfBest | 0,
     evTog: v.evTog, evS: profile.evOn ? 'ON' : 'OFF', evC: profile.evOn ? '#5fd38a' : '#9b958a', evBd: profile.evOn ? '#2f8f55' : '#4a4640',
-    old: !!(s.page || s.mode || s.profile || s.sp || s.comm || s.arcShop || s.hist || s.uinfo || s.rec || s.confirm), ov: u3Ov(v), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
+    old: !!(s.page || s.mode || s.profile || s.sp), ov: u3Ov(v), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
     nav, menu, uid: isMember() ? 'UID ' + accCode() : '게스트', ver: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || '')
   };
 }
