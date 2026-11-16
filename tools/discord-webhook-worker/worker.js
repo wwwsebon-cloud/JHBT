@@ -102,8 +102,7 @@ function buildEmbed(body) {
     const wave = num(body.wave);
     if (!wave || wave < 1 || wave > 99999) return null;
     const l = list(body.myDeck), level = num(body.level);
-    return { color: COLORS.streak, description: `🛡 **${nick}** 님 디펜스 **${wave}웨이브** 도달!${body.best ? ' (최고 기록)' : ''}`, fields: l.length ? [{ name: `덱${level ? ` (Lv.${level})` : ''}`, value: l.join('
-'), inline: false }] : [], timestamp: at };
+    return { color: COLORS.streak, description: `🛡 **${nick}** 님 디펜스 **${wave}웨이브** 도달!${body.best ? ' (최고 기록)' : ''}`, fields: l.length ? [{ name: `덱${level ? ` (Lv.${level})` : ''}`, value: l.join('\n'), inline: false }] : [], timestamp: at };
   }
   if (body.type === 'match') {
     const mode = MODES[body.mode];
