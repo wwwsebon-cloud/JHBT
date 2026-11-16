@@ -3768,6 +3768,7 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
 @keyframes mmKnock { 0% { transform:scale(1.12); } 40% { transform:scale(.96); } 100% { transform:none; } }
 @keyframes mmGlint { 0% { filter:brightness(2.2); } 100% { filter:none; } }
 #ui2.u3m .u3 .u3-menu { overflow-y:auto; }
+.u3 .u3-newsrow b { color:#e9c46a; font-weight:700; }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -4977,7 +4978,7 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
         <span class="u3-os" style="font-size:10px; letter-spacing:2px; color:#9b958a;">EXP {{ u3.xpP }}</span>
       </span>
     </button></sc-if>
-    <sc-if value="{{ newsOn }}"><div class="u3-news"><span class="k">NEWS</span><div class="w"><span class="t">{{ newsH }}</span></div></div></sc-if>
+    <sc-if value="{{ newsOn }}"><div class="u3-news" onClick="{{ newsGo }}" role="button" style="cursor:pointer;"><span class="k">NEWS</span><div class="w"><span class="t">{{ newsH }}</span></div></div></sc-if>
     <div style="display:flex; align-items:center; gap:10px;">
       <button type="button" onClick="{{ enTap }}" class="u3-pill"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8fc6dd" stroke-width="2.2"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg><span class="u3-os">{{ enS }}</span></button>
       <button type="button" onClick="{{ goShop }}" class="u3-pill"><span style="width:12px; height:12px; border-radius:50%; background:#e9c46a;"></span><span class="u3-os">{{ goldTxt }}</span><i>+</i></button>
@@ -5221,6 +5222,13 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
           </div>
         </sc-if>
 
+        <sc-if value="{{ u3.ov.news }}">
+          <div class="u2-scroll u3-scroll" style="position:absolute; left:24px; right:24px; top:16px; bottom:20px; overflow-y:auto; background:rgba(15,14,17,.94); border:1px solid #2a2723;">
+            <sc-if value="{{ u3.ov.news.empty }}"><div class="u3-bh" style="padding:60px 0; text-align:center; font-size:18px; color:#6f6a62;">아직 소식이 없어요</div></sc-if>
+            <sc-for list="{{ u3.ov.news.rows }}" as="r"><div style="min-height:54px; display:flex; align-items:center; gap:18px; padding:0 22px; border-bottom:1px solid #1e1c1f;"><span class="u3-os" style="width:110px; flex-shrink:0; font-size:14px; letter-spacing:1px; color:#9b958a;">{{ r.t }}</span><span class="u3-newsrow" style="font-size:16px; color:#d8d2c6;">{{ r.h }}</span></div></sc-for>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ u3.ov.mile }}">
           <div class="u2-scroll u3-scroll" style="position:absolute; left:24px; top:16px; width:800px; bottom:20px; overflow-y:auto;">
             <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
@@ -9614,7 +9622,7 @@ function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · �
   c.purgeT += dt; if (c.purgeT >= 2) { c.purgeT = 0; cwPurge(); }
 }
 function dfEnd(win, note) { // R2.34 디펜스 결과: 지난 웨이브 수만큼 열쇠
-  const c = S.cw, w = c ? c.wave : 0, keys = dfKeys(Math.max(0, w - 1)), best = w > (profile.dfBest | 0); profile.keys = (profile.keys | 0) + keys; if (best) profile.dfBest = w; if (best || !profile.dfDeck.length) { const dk = ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).slice(0, 5); if (dk.length) { profile.dfDeck = dk; profile.dfRk = dk.map(id => (owned(id) ? clamp(enhLv(id) | 0, 1, 6) : 1)); } } /* R2.35 build 11: 리더보드에 그 덱 */ e7Add('dfWave', w, true); discordNotify({ type: 'defense', wave: w, best: !!best, level: profile.level, myDeck: ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).map(id => CHARS[id].name) }); /* R3.1 build 3 */ /* R2.35 build 6: 한 판 최고 웨이브 */ save(); sfx('match_win'); if (best) dfPush(); /* R2.34 디펜스 리더보드 */
+  const c = S.cw, w = c ? c.wave : 0, keys = dfKeys(Math.max(0, w - 1)), best = w > (profile.dfBest | 0); profile.keys = (profile.keys | 0) + keys; if (best) profile.dfBest = w; if (best || !profile.dfDeck.length) { const dk = ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).slice(0, 5); if (dk.length) { profile.dfDeck = dk; profile.dfRk = dk.map(id => (owned(id) ? clamp(enhLv(id) | 0, 1, 6) : 1)); } } /* R2.35 build 11: 리더보드에 그 덱 */ e7Add('dfWave', w, true); postEvent('gacha', (((S.deck && S.deck[c ? c.me : ME()]) || []).find(id => CHARS[id]) || 'fire'), 'df' + w); /* R3.1 build 4 소식 */ discordNotify({ type: 'defense', wave: w, best: !!best, level: profile.level, myDeck: ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).map(id => CHARS[id].name) }); /* R3.1 build 3 */ /* R2.35 build 6: 한 판 최고 웨이브 */ save(); sfx('match_win'); if (best) dfPush(); /* R2.34 디펜스 리더보드 */
   $('dfPick').classList.remove('show'); $('screen-result').classList.add('win'); $('resTitle').textContent = `WAVE ${w}`; $('resMeta').textContent = `DEFENSE · 디펜스`; $('resSub').textContent = `웨이브 ${w} 도달 · 라이프 ${Math.max(0, c ? c.lives : 0)} / ${DF.LIVES}`;
   $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>🔑 +${keys}</span><span>보유 🔑 ${profile.keys}</span><span>${best ? '🏆 최고 기록!' : `최고 WAVE ${profile.dfBest | 0}`}</span><span>열쇠 상자 🔑 ${DF.BOX}</span>${dfRwReady() ? `<span>🎁 디펜스 보상 ${dfRwReady()}개</span>` : ''}</div>`;
   show('result');
@@ -11337,15 +11345,15 @@ function useItem(k) { // 뽑기 화면 · 가방: 10회 뽑기권 · 임테기 �
   profile.items[k]--;
   if (k === 'pull10') return pull(10, true);
   if (BOX_RAR[k]) { const res = BOX_RAR[k]().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; }); save(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); return; } // 지후 상자
-  if (k === 'testKit') { const x = Math.random() * 100, r = x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') { postEvent('gacha', id, 'legend'); discordNotify({ type: 'legend', name: CHARS[id].name }); } save(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast); return; } // 임테기: 전설 1 · 영웅 14 · 희귀 · 일반 각 42.5
+  if (k === 'testKit') { const x = Math.random() * 100, r = x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') { discordNotify({ type: 'legend', name: CHARS[id].name }); } save(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast); return; } // 임테기: 전설 1 · 영웅 14 · 희귀 · 일반 각 42.5
   const rar = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(Math.random() * 4)] : k === 'legendRand' ? 'legend' : 'epic'; // 고급 임테기: 등급마다 25% · 랜덤 전설 모집권 · 영웅 모집권
-  const pool = byRarity(rar), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (rar === 'legend') postEvent('gacha', id, 'legend');
+  const pool = byRarity(rar), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar');
   save(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast);
 }
 // ── 지후 받기 · 뽑기 · 뽑기 연출 ──
 // 지후 받기 (뽑기 · 상점 · 우편 · 보상): 처음이면 보유, 이미 있으면 조각 10개 (R2.15 · 예전 1개) · 새 영웅 · 전설은 업적에 센다
 function grantChar(id) {
-  if (!CHARS[id]) return false;
+  if (!CHARS[id]) return false; if (CHARS[id].rarity === 'legend') postEvent('gacha', id, 'legend'); /* R3.1 build 4 소식: 전설 획득 (모든 경로) */
   if ((profile.owned[id] || 0) > 0) { profile.shards[id] = (profile.shards[id] || 0) + 10; return false; }
   profile.owned[id] = 1; const r = CHARS[id].rarity; if (r === 'epic') profile.ach.epic++; if (r === 'legend') profile.ach.legend++;
   return true;
@@ -11369,7 +11377,7 @@ function pull(n, free, nb, pu) { // R3.1 build 2 pu: 픽업 모집 // free: 10�
   } // 같은 판에서 두 번째부터는 중복 (조각) · 천장
   mqEvent('newChar', res.filter(r => r.isNew).length);
   { const top = res.slice().sort((a, b) => RARITY_ORDER[CHARS[b.id].rarity] - RARITY_ORDER[CHARS[a.id].rarity])[0]; if (top && CHARS[top.id].rarity === 'epic') postEvent('gacha', top.id, 'epic'); } /* R3.1 build 3 상단 소식 */
-  res.forEach(r => { if (CHARS[r.id].rarity === 'legend') { postEvent('gacha', r.id, 'legend'); discordNotify({ type: 'legend', name: CHARS[r.id].name }); } });
+  res.forEach(r => { if (CHARS[r.id].rarity === 'legend') { discordNotify({ type: 'legend', name: CHARS[r.id].name }); } });
   save(); renderGacha(); gachaLast = res; showReveal(res, free ? 0 : nb ? 'nb' : n); GR.pu = !!pu;
 }
 // 연출 (R2.4 · 서브컬처식 순차 공개): ① 봉인 카드(최고 등급 색 · 문구) → ② 카드 딜(70ms 간격) → ③ 자동으로 한 장씩 뒤집기 → 전설은 ④ 컷신(대사 한 글자씩 → 섬광 → 등장) → ⑤ 요약 · 한 번 더
@@ -11483,7 +11491,7 @@ function colView() { return colList().map(c => { const s = colState(c), mem = c.
   if (c.lock) mem.push({ img: '', cls: ' lock', rk: '곧 추가', onClick: () => u2Toast('곧 이 컬렉션에 지후가 더해져요') });
   return { name: c.name, mem, prog: c.lock ? '🔒' : `${s.n}/${c.ids.length}`, cls: s.done ? ' done' : s.ready ? ' ready' : c.lock ? ' soon' : '', btn: s.done ? '완료' : s.ready ? '받기' : c.lock ? '준비 중' : '진행 중', btnK: s.ready ? 'k-gold' : 'k-off', onClick: () => colClaim(c.k), rw: c.lock ? '' : `◆${COL_DIA * c.ids.length} · ✦ 빛나는 전설조각 ×${COL_GLOW * c.ids.length}${s.got.length && !s.done ? ` (받은 ${s.got.length}기 몫 제외)` : ''}` }; }).sort((a, b) => (b.cls === ' ready') - (a.cls === ' ready')); }
 const KIT_ALL = ['testKit', 'kitPro']; // R2.36 build 5: 가방에서 임테기 · 고급 임테기 한번에 까기 (한 번에 최대 100개)
-function kitRoll(k) { const x = Math.random() * 100, r = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(Math.random() * 4)] : x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') postEvent('gacha', id, 'legend'); return { id, isNew, seenBefore: !isNew, r }; }
+function kitRoll(k) { const x = Math.random() * 100, r = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(Math.random() * 4)] : x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew, r }; }
 function useKitAll(k) { const n = Math.min(100, profile.items[k] | 0); if (!KIT_ALL.includes(k) || n < 1) return; profile.items[k] -= n; const res = []; for (let i = 0; i < n; i++) res.push(kitRoll(k)); const lg = res.filter(o => o.r === 'legend'); if (k === 'testKit' && lg.length) discordNotify({ type: 'legend', name: CHARS[lg[0].id].name }); res.forEach(o => delete o.r); save(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); }
 function renderInv() { // 가방 (R2.7): 가진 아이템 전부 · 쓸 수 있는 것은 바로 사용
   const el = $('invGrid'); if (!el) return; const its = Object.keys(ITEMS).filter(k => profile.items[k] > 0);
@@ -12114,7 +12122,7 @@ function enhUp(id) {
   const lv = enhLv(id), c = enhCost(id, lv); if (!c) return u2Toast('이미 최대 랭크예요');
   if ((profile.shards[id] || 0) < c.sh) return u2Toast(`조각이 ${c.sh - (profile.shards[id] || 0)}개 모자라요`);
   if ((profile.gold || 0) < c.gold) return u2Toast(`골드가 ● ${(c.gold - (profile.gold || 0)).toLocaleString()} 모자라요`);
-  profile.shards[id] -= c.sh; profile.gold -= c.gold; profile.enh[id] = lv + 1; e7Add('rankUp'); /* R2.35 build 6 */ save(); renderMoney();
+  profile.shards[id] -= c.sh; profile.gold -= c.gold; profile.enh[id] = lv + 1; if ((lv + 1) % 3 === 0) postEvent('gacha', id, 'rank' + (lv + 1)); /* R3.1 build 4 소식 */ e7Add('rankUp'); /* R2.35 build 6 */ save(); renderMoney();
   const nx = lv + 1, mile = ENH_MILE.find(m => m.lv === nx), s6 = ENH_SKILL[id] && ENH_SKILL[id][6], s12 = ENH_SKILL[id] && ENH_SKILL[id][12]; sfx(mile ? 'match_win' : 'merge');
   rankUpFx(id, lv, nx); if (0) u2Toast(`${nx === 6 || nx === 12 ? '✨' : '⬆'} ${shortName(id)} 지후 랭크 ${nx}${nx === 6 ? ` · 고유능력${s6 ? ' [' + s6.name + ']' : ''} 해금!` : nx === 12 ? ` · 필살기${s12 ? ' [' + s12.name + ']' : ''} 해금!` : mile ? ' · ' + mile.txt.replace(/<[^>]+>/g, '').replace('증가합니다', '증가!') : '!'}`); u2Render();
 }
@@ -13298,7 +13306,7 @@ async function buyPack(k) {
   packOpen(p);
 }
 function packOpen(p) { // 패키지 열기 (R2.18 build 9: 오늘의 매물에서 산 패키지도)
-  const res = p.roll().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend' && isNew) postEvent('gacha', id, 'legend'); return { id, isNew, seenBefore: !isNew }; });
+  const res = p.roll().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
   res.sort((a, b) => RARITY_ORDER[CHARS[b.id].rarity] - RARITY_ORDER[CHARS[a.id].rarity]); save(); renderMoney(); gachaLast = res; showReveal(res);
 }
 async function buyEmo(key) {
@@ -13597,7 +13605,7 @@ function openDfRw() { renderDfRw(); openModal('dfRwModal'); const el = $('dfRwLi
 function dfRwClaim(w) { const e = DF_RW.find(x => x[0] === w); if (!e || dfRwGot(w) || (profile.dfBest | 0) < w) return; const r = e[1], tx = dfRwLabel(r)[1]; let res = null;
   profile.dfRw = (profile.dfRw || []).concat(w);
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold += r.gold; if (r.tix) profile.arc.t += r.tix; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + (r.n || 1);
-  if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r.rand === 'legend') postEvent('gacha', id, 'legend'); res.push({ id, isNew, seenBefore: !isNew }); } }
+  if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); } }
   save(); sfx('buy'); renderDfRw(); renderLobby();
   if (res) { gachaLast = res; showReveal(res); } else if (r.item === 'legendPick') { closeModal('dfRwModal'); useItem('legendPick'); } /* 선택 창을 닫아도 모집권은 가방에 */ else banner(`${w}웨이브 보상 · ${tx} 받았어요`);
 }
@@ -13652,7 +13660,7 @@ function renderE7() { const e = profile.ev7, D = e7Day(), pts = e7Pts(), sel = E
 function e7Tip(k) { document.querySelectorAll('#e7Body .e7-chest').forEach((c, i) => c.classList.toggle('tipon', i === k && !c.classList.contains('tipon'))); } // 누르면 (폰) 창 안 말풍선 · 한 번 더 누르면 닫힘
 function e7Claim(k) { const e = profile.ev7, pts = e7Pts(); if (e.box.includes(k) || pts < E7_BOX[k]) return e7Tip(k); /* R2.35 build 7: 예전엔 창 밖 토스트 */
   const r = e7Rw(k); e.box.push(k); if (r.gold) profile.gold += r.gold; if (r.dia) profile.dia += r.dia; Object.entries(r.items).forEach(([i, n]) => { profile.items[i] = (profile.items[i] || 0) + n; });
-  const res = []; for (let i = 0; i < (r.legend || 0); i++) { const pool = byRarity('legend'), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); postEvent('gacha', id, 'legend'); res.push({ id, isNew, seenBefore: !isNew }); }
+  const res = []; for (let i = 0; i < (r.legend || 0); i++) { const pool = byRarity('legend'), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); }
   save(); sfx('buy'); renderMoney(); renderInv(); renderE7(); u2Render(); banner(`🎁 ${k + 1}번 상자 · ${e7RwTxt(k)}`);
   if (res.length) { gachaLast = res; showReveal(res); } else if (r.items.legendPick) { closeModal('e7Modal'); useItem('legendPick'); } }
 $('e7Modal').addEventListener('click', e => { const d = e.target.closest('[data-e7day]'), q = e.target.closest('[data-e7q]'), b = e.target.closest('[data-e7box]');
@@ -13666,7 +13674,7 @@ function keyBox(n = 1) { // R2.34 열쇠 상자 (🔑 40): 일반 지후 5 · �
   if ((profile.keys | 0) < DF.BOX) return u2Toast(`열쇠가 모자라요 (🔑 ${DF.BOX} 필요 · 보유 ${profile.keys | 0})`);
   n = Math.max(1, Math.min(Math.floor(n) || 1, Math.floor((profile.keys | 0) / DF.BOX))); profile.keys -= DF.BOX * n; const rs = [];
   for (let i = 0; i < n; i++) rs.push('common', 'common', 'common', 'common', 'common', 'rare', 'rare', 'rare', ...(Math.random() < 0.1 ? ['epic'] : []), ...(Math.random() < 0.01 ? ['legend'] : []));
-  const res = rs.map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') postEvent('gacha', id, 'legend'); return { id, isNew, seenBefore: !isNew }; });
+  const res = rs.map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
   let g = 0; for (let i = 0; i < n; i++) g += 1000 + Math.floor(Math.random() * 1001); profile.gold = (profile.gold || 0) + g; /* R2.35 build 6: 골드 1,000 ~ 2,000 (상자마다) */ e7Add('keyBox', n); UI2.st.kbN = 1;
   save(); sfx('buy'); renderMoney(); gachaLast = res; showReveal(res); u2Render(); banner(`🔑 열쇠 상자${n > 1 ? ' ×' + n : ''} · 🪙 +${g.toLocaleString()}`);
 }
@@ -14081,6 +14089,7 @@ const PATCH_NOTES = [
       { icon: '📖', name: '지후 도감', tag: 'system', desc: '티어 표시 삭제 · 덱 설정에 토큰 표시' },
       { icon: '🏆', name: '리더보드', tag: 'system', desc: '프로필을 눌러 정보 보기 · 1~3위 덱 표시' },
       { icon: '❌', name: '매칭 취소', tag: 'new', desc: '일반전 매칭 중 취소' },
+      { icon: '📣', name: '소식', tag: 'new', desc: '로비 위 소식 줄을 누르면 시간별 목록 · 레벨업 · 전설 획득 · 3 · 6 · 9 · 12랭크 · 디펜스 기록' },
       { icon: '🔧', name: '수정', tag: 'fix', desc: '샌드박스 · 지후의 탑 · 경쟁전 화면이 보이지 않던 문제 · 모바일 결과 화면 잘림' },
       { icon: '📱', name: '모바일 화면', tag: 'system', desc: '메뉴 · 지후 설명 칸 넓게' },
       { id: 'god', name: '갓지후', tag: 'adjust', desc: '레이저 색 파란색' },
@@ -16828,7 +16837,8 @@ function u3Ov(v) {
 }
 function u3BsetToggle(k) { BSET[k] = !BSET[k]; bsetApply(); if (k === 'light') { CV.spr.clear(); (S.units || []).forEach(u => { u._cvB = null; }); } if (k === 'fs') { if (BSET.fs) fsGo(); else if (fsIn()) fsExit(); } if (k === 'hpnum' || k === 'low') (S.units || []).forEach(u => { if (u.bars) { u.bars.v.ht = null; drawUnit(u); } }); u2Render(); }
 function u3OvD(v, tabOf) {
-  if (UI2.st.u3mile) return u3MileOv(); /* R3.1 build 2 */ // 우편 · 환경설정 · 가방 (page inv) · 패치노트 (page patch) · 도움말
+  if (UI2.st.u3mile) return u3MileOv(); /* R3.1 build 2 */
+  if (UI2.st.u3news) return u3NewsOv(); /* R3.1 build 4 */ // 우편 · 환경설정 · 가방 (page inv) · 패치노트 (page patch) · 도움말
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US');
   if (s.u3mail) {
     const list = (profile.mail || []).filter(m => m.claimed || mailLive(m)).slice().sort((a, b) => (a.claimed - b.claimed) || (b.at - a.at)), cur = list.find(m => m.id === s.u3mid) || list[0], fr = cur && s.u3mf === cur.id;
@@ -16984,9 +16994,22 @@ function u3Sandbox() { // 시안 Sandbox (양쪽 팀 · 가운데 지후 고르�
 }
 const NEWS = { on: false, list: [] }; // R3.1 build 3 상단 뽑기 소식 (R1 처럼): events 최근 12개 중 뽑기
 function newsWatch() { if (NEWS.on || !FB.on || !FB.sdk) return; NEWS.on = true; const sdk = FB.sdk;
-  sdk.onSnapshot(sdk.query(sdk.collection(FB.db, 'events'), sdk.orderBy('at', 'desc'), sdk.limit(12)), snap => { NEWS.list = snap.docs.map(d => d.data()).filter(e => e.type === 'gacha' && CHARS[e.a]).slice(0, 6); u2Render(); }, () => {}); }
-function newsHtml() { newsWatch(); return NEWS.list.map(e => `${e.b === 'legend' ? '🌟' : '💜'} <b>${esc(String(safeNick(e.nickname) || '?'))}</b>님이 ${e.b === 'legend' ? '전설' : '영웅'} <b>${esc(CHARS[e.a].name)}</b> 획득`).join('　·　'); }
-function u3Vals() { u3OldInit(); const v = u2Vals(); v.u3 = u3Extra(v); const nh = newsHtml(); v.newsOn = !!nh; v.newsH = { html: nh + '　·　' + nh }; return v; }
+  sdk.onSnapshot(sdk.query(sdk.collection(FB.db, 'events'), sdk.orderBy('at', 'desc'), sdk.limit(30)), snap => { NEWS.list = snap.docs.map(d => d.data()).filter(e => newsLine(e)); u2Render(); }, () => {}); }
+function newsLine(e) { // R3.1 build 4: 소식 한 줄 (없으면 '')
+  const n = `<b>${esc(String(safeNick(e.nickname) || '?'))}</b>`, c = CHARS[e.a];
+  if (e.type === 'level' && Number(e.a) > 1) return `⬆️ ${n}님 <b>Lv.${Number(e.a)}</b> 달성`;
+  if (e.type !== 'gacha' || !c) return '';
+  if (e.b === 'legend') return `🌟 ${n}님이 전설 <b>${esc(c.name)}</b> 획득`;
+  if (e.b === 'epic') return `💜 ${n}님이 영웅 <b>${esc(c.name)}</b> 획득`;
+  const w = /^df(\d+)$/.exec(e.b || ''); if (w) return `🛡 ${n}님 디펜스 <b>${w[1]}웨이브</b> 도달`;
+  const r = /^rank(\d+)$/.exec(e.b || ''); if (r) return `⭐ ${n}님 <b>${esc(c.name)}</b> <b>${r[1]}랭크</b> 달성`;
+  return '';
+}
+function newsHtml() { newsWatch(); return NEWS.list.slice(0, 8).map(newsLine).join('　·　'); }
+function u3NewsOv() { // 소식 목록 (몇 시 몇 분 · 무슨 일)
+  return { en: 'NEWS', t: '소식', close: () => u2Set({ u3news: null }), right: '최근 ' + NEWS.list.length + '개', tabs: [], news: { empty: !NEWS.list.length, rows: NEWS.list.map(e => { const t = ts(e.at), d = t ? new Date(t) : null; return { t: d ? `${d.getMonth() + 1}/${d.getDate()} ${hhmm(e.at)}` : '', h: { html: newsLine(e) } }; }) } };
+}
+function u3Vals() { u3OldInit(); const v = u2Vals(); v.u3 = u3Extra(v); const nh = newsHtml(); v.newsOn = !!nh; v.newsH = { html: nh + '　·　' + nh }; v.newsGo = () => u2Set({ u3news: true }); return v; }
 function u3OldInit() { // 예전 ui2 의 창 · 페이지 마크업을 ui3 템플릿의 .u3-oldapp 칸으로 한 번 복사 (값은 같은 u2Vals)
   if (U3.oldDone) return; U3.oldDone = true;
   const T2 = $('ui2Tpl').content, slot = $('ui3Tpl').content.querySelector('.u3-oldapp'), app = T2.querySelector('.u2-app'); if (!slot || !app) return;
