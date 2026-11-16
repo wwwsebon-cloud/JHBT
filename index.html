@@ -3244,6 +3244,11 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
 @keyframes u3ArtIA { 0% { opacity:0; transform:translateX(60px); } 100% { opacity:1; transform:none; } } @keyframes u3ArtIB { 0% { opacity:0; transform:translateX(60px); } 100% { opacity:1; transform:none; } }
 .u3 .rk-ray { animation:u3Spin 20s linear infinite; } .u3 .rk-crown { animation:u3Crown 2.6s ease-in-out infinite; } .u3 .rk-pod { animation:shDeal .55s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes u3Crown { 0%,100% { transform:translateY(0) rotate(-6deg); } 50% { transform:translateY(-6px) rotate(-6deg); } }
+/* 아직 새 디자인이 아닌 예전 창 · 페이지는 새 로비 위 가운데 칸에 (확대하지 않는다 · 예전 마크업 그대로 u3OldInit 이 옮겨 담는다) */
+#ui2.u3m .u3-old { position:absolute; inset:0; z-index:30; background:rgba(5,4,6,.8); animation:mnDim .2s ease both; }
+#ui2.u3m .u3-oldapp { position:absolute; top:0; bottom:0; left:50%; width:min(480px, 100%); height:auto; max-width:none; margin:0; transform:translateX(-50%); display:flex; flex-direction:column; overflow:hidden; background:#0d0c0e; border-left:1px solid #2a2723; border-right:1px solid #2a2723; box-shadow:0 0 60px rgba(0,0,0,.6); }
+#ui2.u3m .u3-oldapp > .u3-pagebox { position:absolute; inset:0; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top); }
+#ui2.u3m .u3-oldapp .k-mode, #ui2.u3m .u3-oldapp .k-sheet, #ui2.u3m .u3-oldapp .u2-sheet { max-width:none; }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -4475,6 +4480,7 @@ body.u3rv-hit #reveal .u3rv-st { animation:rvShake .45s ease-out; }
   <sc-if value="{{ toast }}"><div class="u3-toast"><span></span><b class="u3-bh">{{ toast }}</b></div></sc-if>
   <div class="u3-rot"><div class="u3-rot-ph"><span></span></div><b class="u3-bh">화면을 가로로 돌려 주세요</b></div>
 </div>
+<sc-if value="{{ u3.old }}"><div class="u3-old" data-screen-label="u3old"><div class="u2-app k-app u3-oldapp"></div></div></sc-if>
 </template>
 <!-- 로비 -->
 <div id="screen-lobby" class="screen">
@@ -15407,8 +15413,8 @@ function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
 // ═════════ R3.1 새 로비 ui3 (가로 · 크림슨 레저) — 다 옮길 때까지 ?ui3=1 (localStorage rejhbt-ui3) 로만 켠다 ═════════
 // 템플릿 <template id="ui3Tpl"> 은 ui2 와 같은 엔진 (u2Walk · u2Morph) · 값은 u2Vals() + u3Extra (v.u3.*) · 아직 옮기지 않은 탭 · 창 (U3_TABS · U3_OV) 은 예전 ui2 로 그린다
 const U3 = { shop: false, on: (() => { try { const q = new URLSearchParams(location.search).get('ui3'); if (q === '1') localStorage.setItem('rejhbt-ui3', '1'); if (q === '0') localStorage.removeItem('rejhbt-ui3'); return localStorage.getItem('rejhbt-ui3') === '1'; } catch (e) { return false; } })() };
-const U3_TABS = new Set(['battle', 'units', 'shop', 'arcade', 'rank']), U3_OV = ['confirm', 'equipId', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
-const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !UI2.st.page && !U3_OV.some(k => UI2.st[k]) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
+const U3_TABS = new Set(['battle', 'units', 'shop', 'arcade', 'rank']), U3_OV = ['confirm', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
+const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
 function u3Fit() { const b = $('ui2'); if (!b) return; const w = innerWidth, h = innerHeight, s = Math.min(w / 1280, h / 720) || 1; b.style.setProperty('--u3s', String(s)); b.style.setProperty('--u3w', (w / s).toFixed(1) + 'px'); b.style.setProperty('--u3h', (h / s).toFixed(1) + 'px'); }
 addEventListener('resize', u3Fit);
 const U3_D = { // 선 아이콘 (24 칸 path)
@@ -15571,7 +15577,16 @@ function u3Rank(v) { // 랭킹: 위 탭 · 왼쪽 1~3위 단상 · 오른쪽 4�
   const hd = { cp: 'CP', level: 'LEVEL', wins: 'WINS', tower: 'FLOOR', def: 'WAVE', comp: 'TP', hall: 'SEASON' }[lbTab] || '';
   return { tabs, podium, rows: list, myDk, hd, msg: v.lbMsg || '' };
 }
-function u3Vals() { const v = u2Vals(); v.u3 = u3Extra(v); return v; }
+function u3Vals() { u3OldInit(); const v = u2Vals(); v.u3 = u3Extra(v); return v; }
+function u3OldInit() { // 예전 ui2 의 창 · 페이지 마크업을 ui3 템플릿의 .u3-oldapp 칸으로 한 번 복사 (값은 같은 u2Vals)
+  if (U3.oldDone) return; U3.oldDone = true;
+  const T2 = $('ui2Tpl').content, slot = $('ui3Tpl').content.querySelector('.u3-oldapp'), app = T2.querySelector('.u2-app'); if (!slot || !app) return;
+  const key = n => (n.getAttribute('value') || '').replace(/[{}\s]/g, '');
+  const pg = [...app.querySelectorAll('sc-if')].find(n => key(n) === 'isPage');
+  if (pg) { const box = document.createElement('div'); box.className = 'u3-pagebox'; box.appendChild(pg.cloneNode(true)); slot.appendChild(box); }
+  const WANT = ['isPageFull', 'isMode', 'hasDetail', 'hasProfile', 'hasSp', 'hasAtt', 'hasComm', 'hasQs', 'hasArcShop', 'hasHist', 'hasUinfo', 'hasRec', 'hasConfirm'];
+  [...app.children].filter(n => n.tagName === 'SC-IF' && WANT.includes(key(n))).forEach(n => slot.appendChild(n.cloneNode(true)));
+}
 function u3Extra(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), fav = myPhoto(), fc = CHARS[fav] || CHARS.fire, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' };
   const dotOf = id => !!$(id) && !$(id).hidden;
@@ -15593,7 +15608,7 @@ function u3Extra(v) {
     play: v.startNormal, playBg: profile.evOn && CFG.EV_ENABLED ? '#2f8f55' : '#c8102e', playSub: profile.evOn && CFG.EV_ENABLED ? 'BATTLE · 이벤트 모드' : 'BATTLE · 일반전',
     defense: () => u2Set({ mode: 'defense' }), dfBest: profile.dfBest | 0,
     evTog: v.evTog, evS: profile.evOn ? 'ON' : 'OFF', evC: profile.evOn ? '#5fd38a' : '#9b958a', evBd: profile.evOn ? '#2f8f55' : '#4a4640',
-    vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
+    old: !!(s.page || s.mode || s.detail || s.profile || s.sp || s.att || s.comm || s.qs || s.arcShop || s.hist || s.uinfo || s.rec || s.confirm), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => $('btnMail').click(), mailDot: dotOf('mailDot'),
     nav, menu, uid: isMember() ? 'UID ' + accCode() : '게스트', ver: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || '')
   };
 }
