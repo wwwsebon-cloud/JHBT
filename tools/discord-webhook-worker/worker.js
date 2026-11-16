@@ -98,6 +98,13 @@ function buildEmbed(body) {
     const mode = clean(body.mode, 10);
     return { color: COLORS.streak, description: `🔥 **${nick}** 님 **${streak}연승** 중!${mode ? ` (${mode})` : ''}`, timestamp: at };
   }
+  if (body.type === 'defense') { // R3.1 build 3 디펜스 기록
+    const wave = num(body.wave);
+    if (!wave || wave < 1 || wave > 99999) return null;
+    const l = list(body.myDeck), level = num(body.level);
+    return { color: COLORS.streak, description: `🛡 **${nick}** 님 디펜스 **${wave}웨이브** 도달!${body.best ? ' (최고 기록)' : ''}`, fields: l.length ? [{ name: `덱${level ? ` (Lv.${level})` : ''}`, value: l.join('
+'), inline: false }] : [], timestamp: at };
+  }
   if (body.type === 'match') {
     const mode = MODES[body.mode];
     const result = ['win', 'lose', 'draw'].includes(body.result) ? body.result : null;
