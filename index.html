@@ -3142,6 +3142,11 @@ body.b-light #screen-battle .bfx-r .pt { background:repeating-linear-gradient(84
 .u3 .u3-rot { display:none; position:absolute; inset:0; z-index:60; flex-direction:column; align-items:center; justify-content:center; gap:30px; background:#070607; }
 .u3 .u3-rot b { font-size:32px; color:#f3eee3; } .u3 .u3-rot-ph { width:80px; height:140px; border:4px solid #e8e3d8; border-radius:8px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:8px; box-sizing:border-box; animation:u3Rot 2.6s cubic-bezier(.6,0,.3,1) infinite; } .u3 .u3-rot-ph span { width:20px; height:4px; background:#e8e3d8; }
 @media (orientation:portrait) and (pointer:coarse) { .u3 .u3-rot { display:flex; } }
+.u3 .u3-scroll { scrollbar-width:thin; scrollbar-color:#3a3631 transparent; overscroll-behavior:contain; }
+.u3 .u3-desc b { color:#e9c46a; font-weight:700; }
+.u3 .u3-eqbar { position:absolute; left:244px; right:24px; top:78px; z-index:6; height:44px; display:flex; align-items:center; gap:12px; padding:0 8px 0 4px; background:#c8102e; animation:u3Toast .25s ease both; transform:none; } .u3 .u3-eqbar img { width:36px; height:36px; background:#e9e4d8; object-fit:contain; } .u3 .u3-eqbar b { flex:1; font-size:16px; color:#fff; }
+.u3 .u3-unin { animation:u3UnIn .35s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes u3UnIn { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:none; } }
 @keyframes u3Scan { from { transform:translateY(-100%); } to { transform:translateY(900%); } }
 @keyframes u3Toast { from { opacity:0; transform:translate(-50%, -12px); } to { opacity:1; transform:translateX(-50%); } }
 @keyframes u3Rot { 0%,25% { transform:rotate(0); } 55%,100% { transform:rotate(-90deg); } }
@@ -3987,8 +3992,100 @@ body.b-light #screen-battle .bfx-r .pt { background:repeating-linear-gradient(84
     </div>
   </sc-if>
 
+  <sc-if value="{{ u3.isUnits }}">
+    <div class="u3c">
+      <sc-if value="{{ u3.un.equipping }}">
+        <div class="u3-eqbar"><img src="{{ u3.un.eqImg }}" alt=""><b class="u3-bh">{{ u3.un.eqName }} · 넣을 자리를 누르세요</b><button type="button" onClick="{{ cancelEquip }}" class="u3-btn u3-ghostbtn" style="height:34px; padding:0 14px;">취소</button></div>
+      </sc-if>
+      <div style="position:absolute; left:24px; top:84px; width:200px; bottom:100px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;"><span class="u3-cz" style="font-size:12px; letter-spacing:5px; color:#c8102e;">[ DECK ]</span><span class="u3-os" style="font-size:11px; letter-spacing:1px; color:#9b958a;">CP {{ u3.cp }}</span></div>
+        <sc-for list="{{ u3.un.deck }}" as="d">
+          <button type="button" onClick="{{ d.go }}" class="u3-btn" style="justify-content:flex-start; gap:10px; height:64px; padding:0 10px 0 0; background:{{ d.bg }}; border:1px solid {{ d.bd }}; border-left:3px solid {{ d.rc }}; text-align:left;">
+            <span class="u3-cut" style="position:relative; width:62px; height:62px; flex-shrink:0; background:#e9e4d8;"><sc-if value="{{ d.has }}"><img src="{{ d.src }}" alt="" style="width:100%; height:100%; object-fit:contain;"></sc-if><sc-if value="{{ d.none }}"><span class="u3-os" style="position:absolute; inset:0; display:grid; place-items:center; background:#16141a; font-size:22px; color:#4a4640;">+</span></sc-if></span>
+            <span style="display:flex; flex-direction:column; gap:3px; min-width:0;"><b class="u3-bh" style="font-size:15px; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.name }}</b><span class="u3-os" style="font-size:11px; letter-spacing:2px; color:#e9c46a;">{{ d.rk }}</span></span>
+          </button>
+        </sc-for>
+        <button type="button" onClick="{{ u3.un.rec }}" class="u3-btn" style="margin-top:auto; height:44px; gap:8px; background:none; border:1px solid #4a4640; color:#e8e3d8;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6M5 15a7 7 0 0 0 12 3M19 9A7 7 0 0 0 7 6"></path></svg><span class="u3-bh" style="font-size:15px;">{{ u3.un.recT }}</span></button>
+      </div>
+
+      <div style="position:absolute; left:244px; top:84px; width:616px; bottom:100px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <sc-for list="{{ u3.un.chips }}" as="c">
+            <button type="button" onClick="{{ c.go }}" aria-pressed="{{ c.on }}" class="u3-btn" style="height:32px; padding:0 14px; gap:6px; background:{{ c.bg }}; border:1px solid {{ c.bd }}; font-size:13px; font-weight:700; color:{{ c.fg }};"><span style="width:8px; height:8px; background:{{ c.dot }};"></span>{{ c.t }}</button>
+          </sc-for>
+          <span style="flex:1;"></span>
+          <button type="button" onClick="{{ cycleSort }}" class="u3-btn" style="height:32px; padding:0 12px; gap:6px; background:none; border:1px solid #3a3631; font-size:13px; color:#e8e3d8;">{{ sortLabel }}</button>
+          <button type="button" onClick="{{ flipSort }}" aria-label="정렬 방향" class="u3-btn" style="width:32px; height:32px; background:none; border:1px solid #3a3631;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9b958a" stroke-width="2.4"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"></path></svg></button>
+        </div>
+        <div class="u2-scroll u3-scroll" style="flex:1; min-height:0; overflow-y:auto;">
+          <div style="display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:10px; padding:2px 2px 12px;">
+            <sc-for list="{{ u3.un.grid }}" as="g">
+              <button type="button" onClick="{{ g.go }}" aria-pressed="{{ g.sel }}" class="u3-btn" style="position:relative; flex-direction:column; align-items:stretch; background:#121115; box-shadow:{{ g.ring }}; opacity:{{ g.op }};">
+                <span class="u3-cut" style="position:relative; display:block; aspect-ratio:1; background:#e9e4d8; clip-path:polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);">
+                  <img src="{{ g.src }}" alt="" loading="lazy" style="width:100%; height:100%; object-fit:contain; filter:{{ g.filt }};">
+                  <sc-if value="{{ g.have }}"><span class="u3-os" style="position:absolute; left:0; top:0; padding:1px 5px; background:#121115; font-weight:600; font-size:10px; color:#e9c46a;">R{{ g.rk }}</span></sc-if>
+                  <sc-if value="{{ g.deck }}"><span class="u3-os" style="position:absolute; right:0; top:0; padding:1px 5px; background:#c8102e; font-weight:600; font-size:9px; letter-spacing:1px; color:#fff;">DECK</span></sc-if>
+                  <sc-if value="{{ g.up }}"><span class="u3-os" style="position:absolute; right:0; bottom:0; padding:1px 5px; background:#2f8f55; font-weight:600; font-size:9px; letter-spacing:1px; color:#fff;">UP</span></sc-if>
+                </span>
+                <span style="height:3px; background:{{ g.rc }};"></span>
+                <span class="u3-bh" style="padding:5px 4px 4px; font-size:13px; line-height:1; color:#f3eee3; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ g.name }}</span>
+                <span style="display:block; margin:0 6px 6px; height:3px; background:rgba(232,227,216,.12);"><span style="display:block; height:100%; width:{{ g.sh }}; background:{{ g.shc }};"></span></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ u3.un.has }}">
+        <div class="u3-unin" style="position:absolute; right:24px; top:84px; width:376px; bottom:100px; display:flex; flex-direction:column; background:rgba(18,17,21,.95); border:1px solid #2a2723;">
+          <div style="position:relative; height:196px; overflow:hidden; background:{{ u3.un.p.band }}; flex-shrink:0;">
+            <div aria-hidden="true" style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 2px, transparent 2px 6px);"></div>
+            <img class="u3-sketch" src="{{ u3.un.p.src }}" alt="" style="right:6px; top:-18px; width:230px; height:230px;">
+            <div style="position:absolute; left:18px; bottom:16px; display:flex; flex-direction:column; gap:6px;">
+              <span class="u3-os" style="align-self:flex-start; padding:2px 8px; border:1px solid {{ u3.un.p.rc }}; font-weight:600; font-size:11px; letter-spacing:3px; color:{{ u3.un.p.rc }};">{{ u3.un.p.rar }}</span>
+              <b class="u3-bh" style="font-size:32px; line-height:1; color:#fff;">{{ u3.un.p.name }}</b>
+              <span class="u3-os" style="font-size:12px; letter-spacing:3px; color:#ffd0d6;">{{ u3.un.p.sub }}</span>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); border-bottom:1px solid #2a2723; flex-shrink:0;">
+            <sc-for list="{{ u3.un.p.stats }}" as="s"><div style="padding:12px 14px; display:flex; flex-direction:column; gap:4px; border-right:1px solid #2a2723;"><span class="u3-os" style="font-size:10px; letter-spacing:3px; color:#9b958a;">{{ s.k }}</span><span class="u3-os" style="font-weight:600; font-size:20px; line-height:1; color:#f3eee3;">{{ s.v }}</span></div></sc-for>
+          </div>
+          <div style="padding:14px 16px; display:flex; flex-direction:column; gap:10px; flex:1; min-height:0;">
+            <div class="u2-scroll u3-scroll u3-desc" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+              <sc-if value="{{ u3.un.p.hasPas }}"><div style="display:flex; gap:10px;"><span class="u3-os" style="flex-shrink:0; width:50px; font-size:10px; letter-spacing:2px; color:#c8102e; padding-top:3px;">PASSIVE</span><span style="font-size:13px; line-height:1.5; color:#e8e3d8;">{{ u3.un.p.pas }}</span></div></sc-if>
+              <sc-if value="{{ u3.un.p.hasSk }}"><div style="display:flex; gap:10px;"><span class="u3-os" style="flex-shrink:0; width:50px; font-size:10px; letter-spacing:2px; color:#e9c46a; padding-top:3px;">SKILL</span><span style="font-size:13px; line-height:1.5; color:#e8e3d8;">{{ u3.un.p.sk }}</span></div></sc-if>
+            </div>
+            <sc-if value="{{ u3.un.p.have }}"><div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="u3-os" style="display:flex; justify-content:space-between; font-size:11px; letter-spacing:2px; color:#9b958a;"><span>{{ u3.un.p.rkL }}</span><span>{{ u3.un.p.rkR }}</span></div>
+              <div style="height:5px; background:rgba(232,227,216,.12);"><div style="width:{{ u3.un.p.rkW }}; height:100%; background:{{ u3.un.p.rkC }};"></div></div>
+            </div></sc-if>
+            <div style="display:flex; gap:8px;">
+              <button type="button" onClick="{{ u3.un.p.story }}" class="u3-btn u3-ghostbtn" style="width:88px; height:46px;"><span class="u3-bh" style="font-size:15px;">상세</span></button>
+              <button type="button" onClick="{{ u3.un.p.up }}" class="u3-btn u3-ghostbtn" style="flex:1; height:46px; border-color:{{ u3.un.p.upBd }};"><span class="u3-bh" style="font-size:15px;">랭크업</span></button>
+              <button type="button" onClick="{{ u3.un.p.eq }}" class="u3-btn u3-cutbtn" style="flex:1.3; height:46px; background:{{ u3.un.p.eqBg }};"><span class="u3-bh" style="font-size:16px; color:#fff;">{{ u3.un.p.eqT }}</span></button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
   <div class="u3-top">
-    <button type="button" onClick="{{ openMyProfile }}" aria-label="프로필" class="u3-btn u3-pf">
+    <sc-if value="{{ u3.notMain }}">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <button type="button" onClick="{{ u3.back }}" aria-label="뒤로" class="u3-ib"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e8e3d8" stroke-width="2"><path d="M15 5l-7 7 7 7"></path></svg></button>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span class="u3-cz" style="font-size:11px; letter-spacing:5px; color:#c8102e;">[ {{ u3.pg.en }} ]</span>
+          <span style="display:flex; align-items:baseline; gap:10px;"><b class="u3-bh" style="font-size:26px; line-height:1; color:#f3eee3;">{{ u3.pg.t }}</b><span class="u3-os" style="font-size:13px; letter-spacing:2px; color:#9b958a;">{{ u3.pg.sub }}</span></span>
+        </div>
+        <div role="tablist" style="display:flex; gap:2px; margin-left:24px;">
+          <sc-for list="{{ u3.pg.tabs }}" as="t">
+            <button type="button" role="tab" onClick="{{ t.go }}" aria-selected="{{ t.on }}" class="u3-btn" style="position:relative; height:40px; padding:0 20px; background:{{ t.bg }}; color:{{ t.fg }};"><span class="u3-bh" style="font-size:16px;">{{ t.t }}</span><sc-if value="{{ t.on }}"><span style="position:absolute; left:0; right:0; bottom:0; height:2px; background:#c8102e;"></span></sc-if><sc-if value="{{ t.dot }}"><span class="u3-dot" style="right:8px; top:8px; width:6px; height:6px;"></span></sc-if></button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ u3.isMain }}"><button type="button" onClick="{{ openMyProfile }}" aria-label="프로필" class="u3-btn u3-pf">
       <span aria-hidden="true" class="u3-pf-line"></span>
       <span class="u3-pf-av"><img src="{{ favImg }}" alt=""></span>
       <span class="u3-pf-lv"><span class="u3-os" style="font-weight:500; font-size:10px; letter-spacing:3px; color:#ffd0d6; margin-right:6px;">LV</span><span class="u3-os" style="font-weight:600; font-size:30px; line-height:.95; color:#fff; margin-right:6px;">{{ level }}</span></span>
@@ -3997,7 +4094,7 @@ body.b-light #screen-battle .bfx-r .pt { background:repeating-linear-gradient(84
         <span style="display:block; width:100%; height:5px; background:rgba(232,227,216,.14);"><span style="display:block; width:{{ xpPct }}; height:100%; background:linear-gradient(90deg, #c8102e, #ff5a6e);"></span></span>
         <span class="u3-os" style="font-size:10px; letter-spacing:2px; color:#9b958a;">EXP {{ u3.xpP }}</span>
       </span>
-    </button>
+    </button></sc-if>
     <div style="display:flex; align-items:center; gap:10px;">
       <button type="button" onClick="{{ enTap }}" class="u3-pill"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8fc6dd" stroke-width="2.2"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg><span class="u3-os">{{ enS }}</span></button>
       <button type="button" onClick="{{ goShop }}" class="u3-pill"><span style="width:12px; height:12px; border-radius:50%; background:#e9c46a;"></span><span class="u3-os">{{ goldTxt }}</span><i>+</i></button>
@@ -14985,8 +15082,8 @@ function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
 // ═════════ R3.1 새 로비 ui3 (가로 · 크림슨 레저) — 다 옮길 때까지 ?ui3=1 (localStorage rejhbt-ui3) 로만 켠다 ═════════
 // 템플릿 <template id="ui3Tpl"> 은 ui2 와 같은 엔진 (u2Walk · u2Morph) · 값은 u2Vals() + u3Extra (v.u3.*) · 아직 옮기지 않은 탭 · 창 (U3_TABS · U3_OV) 은 예전 ui2 로 그린다
 const U3 = { on: (() => { try { const q = new URLSearchParams(location.search).get('ui3'); if (q === '1') localStorage.setItem('rejhbt-ui3', '1'); if (q === '0') localStorage.removeItem('rejhbt-ui3'); return localStorage.getItem('rejhbt-ui3') === '1'; } catch (e) { return false; } })() };
-const U3_TABS = new Set(['battle']), U3_OV = ['confirm', 'equipId', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
-const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !UI2.st.page && !U3_OV.some(k => UI2.st[k]);
+const U3_TABS = new Set(['battle', 'units']), U3_OV = ['confirm', 'equipId', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
+const u3Use = () => U3.on && U3_TABS.has(UI2.st.tab) && !UI2.st.page && !U3_OV.some(k => UI2.st[k]) && !(UI2.st.tab === 'units' && (UI2.st.uSub === 'col' || UI2.st.uSub === 'emo'));
 function u3Fit() { const b = $('ui2'); if (!b) return; const w = innerWidth, h = innerHeight, s = Math.min(w / 1280, h / 720) || 1; b.style.setProperty('--u3s', String(s)); b.style.setProperty('--u3w', (w / s).toFixed(1) + 'px'); b.style.setProperty('--u3h', (h / s).toFixed(1) + 'px'); }
 addEventListener('resize', u3Fit);
 const U3_D = { // 선 아이콘 (24 칸 path)
@@ -14999,6 +15096,27 @@ const U3_D = { // 선 아이콘 (24 칸 path)
   acc: 'M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6zM12 7.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM8 16a4 4 0 0 1 8 0', app: 'M7 2h10v20H7zM12 7v7M9 11l3 3 3-3M10 19h4', set: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1'
 };
 const U3_MENU = { '우편함': ['MAIL', 'mail'], '커뮤니티': ['COMMUNITY', 'comm'], '랭킹': ['RANKING', 'rank'], '전투기록': ['RECORDS', 'hist'], '가방': ['INVENTORY', 'bag'], '패치노트': ['PATCH NOTES', 'patch'], '도움말': ['HELP', 'help'], '크레딧': ['CREDITS', 'credit'], 'JHBT 계정': ['ACCOUNT', 'acc'], '앱 다운로드': ['APP', 'app'], '환경설정': ['SETTINGS', 'set'] };
+function u3Units(v) { // 지후 탭: 왼쪽 덱 · 가운데 지후 격자 (등급 칩 · 정렬) · 오른쪽 고른 지후
+  const s = UI2.st, RC = { legend: '#e9c46a', epic: '#b07cff', rare: '#6fa8dc', common: '#9b958a', limited: '#ff3d7f' }, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' }, fmt = n => (Number(n) || 0).toLocaleString('en-US'), deck = profile.deck;
+  const ids = u2Sorted(), rar = s.u3rar || 'all', list = ids.filter(id => rar === 'all' || CHARS[id].rarity === rar);
+  let sel = s.u3sel && CHARS[s.u3sel] ? s.u3sel : (deck.find(id => CHARS[id]) || ids[0]);
+  const grid = list.map((id, i) => { const c = CHARS[id], have = owned(id), sh = profile.shards[id] || 0, el = have ? enhLv(id) : 1, rk = have ? enhCost(id, el) : null, ready = !!rk && sh >= rk.sh;
+    return { src: u2Img(id), name: shortName(id), have, rk: el, deck: deck.includes(id), up: ready, rc: have ? RC[c.rarity] : '#3a3631', sh: (!have ? 0 : !rk ? 100 : Math.min(100, sh / rk.sh * 100)).toFixed(0) + '%', shc: !rk && have ? '#e9c46a' : ready ? '#5fd38a' : '#8fc6dd', sel: id === sel, ring: id === sel ? '0 0 0 2px #c8102e' : 'none', op: have ? 1 : 0.45, filt: have ? 'none' : 'grayscale(1) brightness(.55)',
+      go: () => (s.equipId ? (have && !deck.includes(id) ? u2Set({ equipId: id }) : null) : u2Set({ u3sel: id })) }; });
+  const dk = [0, 1, 2, 3, 4].map(i => { const id = deck[i], c = id && CHARS[id]; return { has: !!c, none: !c, src: c ? u2Img(id) : '', name: c ? c.name : (s.equipId ? '빈 칸' : '—'), rk: c ? 'RANK ' + enhLv(id) : '', rc: c ? RC[c.rarity] : '#3a3631', bg: s.equipId ? 'rgba(200,16,46,.12)' : 'rgba(13,12,14,.85)', bd: s.equipId ? '#c8102e' : '#3a3631', go: () => (s.equipId || !id ? u2SlotTap(i) : u2Set({ u3sel: id })) }; });
+  const chips = [['all', '전체'], ['legend', '전설'], ['epic', '영웅'], ['rare', '희귀'], ['common', '일반']].concat(ids.some(id => CHARS[id].rarity === 'limited') ? [['limited', '한정']] : []).map(([k, t]) => { const on = rar === k; return { t, on, bg: on ? 'rgba(200,16,46,.16)' : 'transparent', bd: on ? '#c8102e' : '#3a3631', fg: on ? '#f3eee3' : '#9b958a', dot: RC[k] || '#e8e3d8', go: () => u2Set({ u3rar: k }) }; });
+  let p = {}; const c = CHARS[sel];
+  if (c) { const have = owned(sel), el = have ? enhLv(sel) : 1, st = have ? enhStat(c, el) : { hp: c.hp, atk: dexAtk(c) }, rk = have ? enhCost(sel, el) : null, sh = profile.shards[sel] || 0, inDeck = deck.includes(sel);
+    p = { src: u2Img(sel), name: c.name, rar: RN[c.rarity] || '', rc: RC[c.rarity], band: c.rarity === 'legend' || c.rarity === 'limited' ? '#a8102a' : c.rarity === 'epic' ? '#5a2a7a' : c.rarity === 'rare' ? '#24486b' : '#3a3631',
+      sub: (c.role || '') + (have ? ' · RANK ' + el : ' · 미보유'), have,
+      stats: [['HP', fmt(st.hp)], ['ATK', c.atkText ? c.atkText() : c.noAttack || !c.atk ? '—' : fmt(st.atk)], ['INTERVAL', c.noAttack ? '—' : c.atkSpeed ? c.atkSpeed + 's' : '—']].map(([k, v2]) => ({ k, v: v2 })),
+      hasPas: !!c.passive, pas: { html: c.passive || '' }, hasSk: !!(c.skill && c.skill.desc), sk: { html: (c.skill && c.skill.desc) || '' },
+      rkL: rk ? `RANK ${el} → ${el + 1}` : 'RANK MAX', rkR: rk ? `${sh} / ${rk.sh} · ● ${fmt(rk.gold)}` : '', rkW: (!rk ? 100 : Math.min(100, sh / rk.sh * 100)).toFixed(1) + '%', rkC: !rk ? '#e9c46a' : sh >= rk.sh ? '#5fd38a' : '#8fc6dd', upBd: rk && sh >= rk.sh ? '#5fd38a' : '#4a4640',
+      story: () => u2Set({ detail: sel, dtab: 'ab' }), up: () => u2Set({ detail: sel, dtab: 'up' }),
+      eqT: !have ? '미보유' : inDeck ? '덱에 있음' : '덱에 넣기', eqBg: !have || inDeck ? '#3a3631' : '#c8102e', eq: () => (have && !inDeck ? u2Equip(sel) : null) }; }
+  return { has: !!c, p, grid, deck: dk, chips, equipping: !!s.equipId, eqImg: s.equipId ? u2Img(s.equipId) : '', eqName: s.equipId ? shortName(s.equipId) : '',
+    rec: () => u2Set({ rec: true }), recT: profile.level <= REC_MAX_LV ? '덱 추천' : '랜덤 덱' };
+}
 function u3Vals() { const v = u2Vals(); v.u3 = u3Extra(v); return v; }
 function u3Extra(v) {
   const s = UI2.st, fmt = n => (Number(n) || 0).toLocaleString('en-US'), fav = myPhoto(), fc = CHARS[fav] || CHARS.fire, RN = { common: 'COMMON', rare: 'RARE', epic: 'EPIC', legend: 'LEGEND', limited: 'LIMITED' };
@@ -15010,8 +15128,11 @@ function u3Extra(v) {
     .map(([k, t, en, ic, go]) => { const on = cur === k; return { t, en, d: U3_D[ic], go, on, cur: on ? 'page' : 'false', dot: k === 'social' ? dotOf('socialDot') : false, bg: on ? 'rgba(200,16,46,.12)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a' }; });
   const MI = v.menuItems || [], menu = MI.map((x, i) => { const m = U3_MENU[x.label] || ['', 'set'], last = i === MI.length - 1 && MI.length % 2 === 1; return { t: x.label, en: m[0], d: U3_D[m[1]], go: x.onClick, dot: !!x.dot, tag: x.tag || '', tagC: x.tag === '게스트' ? '#ff8a9a' : '#e9c46a', ic: i === 0 ? '#e9c46a' : '#d8d2c6', bar: i === 0 ? '#e9c46a' : 'transparent', dl: (0.15 + i * 0.03).toFixed(2) + 's', col: last ? '1 / span 2' : 'auto', h: MI.length > 12 ? '58px' : '72px' }; });
   const xpP = (v.xpPct || '0%').replace(/\.\d+%$/, '%');
+  const PG = { units: ['UNITS', '지후'] }, pgk = PG[s.tab];
+  const pg = pgk ? { en: pgk[0], t: pgk[1], sub: s.tab === 'units' ? `보유 ${v.ownedCount} / ${v.totalCount}` : '', tabs: s.tab === 'units' ? [['list', '보유 지후', false], ['col', '컬렉션', colReady()], ['emo', '이모티콘', false]].map(([k, t, dot]) => { const on = (s.uSub || 'list') === k; return { t, on, dot, bg: on ? 'rgba(200,16,46,.14)' : 'transparent', fg: on ? '#f3eee3' : '#9b958a', go: () => u2Set({ uSub: k }) }; }) : [] } : { en: '', t: '', sub: '', tabs: [] };
+  const un = s.tab === 'units' ? u3Units(v) : {};
   return {
-    scr: s.tab, isMain: s.tab === 'battle',
+    scr: s.tab, isMain: s.tab === 'battle', notMain: s.tab !== 'battle', isUnits: s.tab === 'units', pg, un, back: () => u2Go('battle'),
     leader: { src: u2Img(fav), name: fc.name, sub: (RN[fc.rarity] || '') + (owned(fav) ? ' · RANK ' + enhLv(fav) : '') },
     e7On: !!v.e7On, e7Open: v.e7Open, e7Day: v.e7Day, e7Dot: !!v.e7N, e7Img: u2Img(fav),
     rail, deck, cp: fmt(cpTotal()), goUnits: () => u2Go('units'),
