@@ -4219,7 +4219,7 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
           <div style="flex-shrink:0; display:flex; flex-wrap:wrap; gap:6px;"><sc-for list="{{ dfChips }}" as="c"><span class="k-rchip" style="background:{{ c.bg }}; color:{{ c.fc }};">{{ c.t }}</span></sc-for></div>
           <div class="k-pnl" style="flex-shrink:0; padding:12px 14px; border-radius:18px; display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
             <span style="font-size:40px; line-height:1;">🗝</span>
-            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;"><span style="font-size:16px; line-height:1;">열쇠 상자</span><span class="k-sub" style="font-size:11.5px; line-height:1.35; color:#a8a296;">일반 지후 2 · 희귀 지후 1 · 골드 220 ~ 420 · ◆10 · 10% 영웅 1 · 1% 전설 1</span><span class="k-sub" style="font-size:12.5px; line-height:1; font-weight:800; color:#f0d58e;">보유 🔑 {{ dfKeys }} / {{ dfBoxCost }}</span></div>
+            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;"><span style="font-size:16px; line-height:1;">열쇠 상자</span><span class="k-sub" style="font-size:11.5px; line-height:1.35; color:#a8a296;">일반 지후 2 · 희귀 지후 1 · 골드 220 ~ 420 · ◆30 · 10% 영웅 1 · 1% 전설 1</span><span class="k-sub" style="font-size:12.5px; line-height:1; font-weight:800; color:#f0d58e;">보유 🔑 {{ dfKeys }} / {{ dfBoxCost }}</span></div>
             <div style="flex-basis:100%; display:flex; align-items:center; gap:7px;"><!-- R2.35 build 7: 여러 개 한 번에 -->
               <div onClick="{{ dfKbDec }}" class="kb k-navy k-ol1" style="flex:none; width:38px; height:38px; border-radius:12px; font-size:22px; line-height:33px; text-align:center; color:#fff;">−</div>
               <div class="k-ol1" style="flex:none; min-width:40px; text-align:center; font-size:20px; color:#fff;">{{ dfKbN }}</div>
@@ -14112,14 +14112,14 @@ $('e7Modal').addEventListener('click', e => { const d = e.target.closest('[data-
   if (b) e7Claim(+b.dataset.e7box); });
 // ── 열쇠 상자 (R2.34) ──
 const kbMax = () => Math.floor((profile.keys | 0) / DF.BOX), kbN = () => Math.max(1, Math.min(UI2.st.kbN || 1, Math.max(1, kbMax()))); // R2.35 build 7: 열쇠 상자 몇 개 열지 (UI2.st.kbN)
-const KB_EXTRA = [[0.025, { gold: 2500 }], [0.01, { item: 'glowEpic', n: 3 }], [0.005, { item: 'glowLegend', n: 10 }], [0.002, { item: 'r6Epic', n: 1 }], [0.001, { item: 'r6Legend', n: 1 }], [0.002, { item: 'resetTicket', n: 1 }], [0.001, { dia: 1000 }], [0.001, { gold: 20000 }]]; // R3.2 build 14 열쇠 상자 추가 보상 (상자마다 · 따로 굴린다 · ◆10 은 늘)
+const KB_EXTRA = [[0.025, { gold: 2500 }], [0.01, { item: 'glowEpic', n: 3 }], [0.005, { item: 'glowLegend', n: 10 }], [0.002, { item: 'r6Epic', n: 1 }], [0.001, { item: 'r6Legend', n: 1 }], [0.002, { item: 'resetTicket', n: 1 }], [0.001, { dia: 1000 }], [0.001, { gold: 20000 }]]; // R3.2 build 14 열쇠 상자 추가 보상 (상자마다 · 따로 굴린다 · ◆30 은 늘)
 function keyBox(n = 1) { // R2.34 열쇠 상자 (🔑 40): 일반 지후 2 · 희귀 지후 1 (R3.2 build 14: 5 · 3 →) · 10% 영웅 1 · 1% 전설 1 · R2.35 build 7: n 개 한 번에 (같은 지후는 한 장 ×N)
   if ((profile.keys | 0) < DF.BOX) return u2Toast(`열쇠가 모자라요 (🔑 ${DF.BOX} 필요 · 보유 ${profile.keys | 0})`);
   n = Math.max(1, Math.min(Math.floor(n) || 1, Math.floor((profile.keys | 0) / DF.BOX))); profile.keys -= DF.BOX * n; const rs = [];
   for (let i = 0; i < n; i++) rs.push('common', 'common', 'rare', /* R3.2 build 14: 일반 5 · 희귀 3 → 일반 2 · 희귀 1 */ ...(Math.random() < 0.1 ? ['epic'] : []), ...(Math.random() < 0.01 ? ['legend'] : []));
   const res = rs.map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
   let g = 0; for (let i = 0; i < n; i++) g += 220 + Math.floor(Math.random() * 201); /* R2.35 build 6: 골드 1,000 ~ 2,000 · R3.2 build 14: 220 ~ 420 (추가 보상까지 상자 하나 평균 약 400) */
-  let d = 0; const got = {}; for (let i = 0; i < n; i++) { d += 10; /* R3.2 build 14: 늘 ◆10 */ for (const [p, r] of KB_EXTRA) if (Math.random() < p) { if (r.dia) d += r.dia; if (r.gold) g += r.gold; if (r.item) { profile.items[r.item] = (profile.items[r.item] || 0) + r.n; got[r.item] = (got[r.item] || 0) + r.n; } } } /* R3.2 build 14 추가 보상 */
+  let d = 0; const got = {}; for (let i = 0; i < n; i++) { d += 30; /* R3.2 build 14: 늘 ◆30 (75상자 다이아 기댓값 약 2,325) */ for (const [p, r] of KB_EXTRA) if (Math.random() < p) { if (r.dia) d += r.dia; if (r.gold) g += r.gold; if (r.item) { profile.items[r.item] = (profile.items[r.item] || 0) + r.n; got[r.item] = (got[r.item] || 0) + r.n; } } } /* R3.2 build 14 추가 보상 */
   profile.gold = (profile.gold || 0) + g; profile.dia += d; e7Add('keyBox', n); UI2.st.kbN = 1;
   const xt = Object.keys(got).map(k => `${ITEMS[k].name} ×${got[k]}`).join(' · ');
   save(); sfx('buy'); renderMoney(); renderInv(); gachaLast = res; showReveal(res); u2Render(); banner(`🔑 열쇠 상자${n > 1 ? ' ×' + n : ''} · 🪙 +${g.toLocaleString()} · ◆ +${d.toLocaleString()}${xt ? ' · ' + xt : ''}`);
@@ -14529,7 +14529,7 @@ const PATCH_NOTES = [
   { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 진영 3 × 5 · 밸런스 조정', sections: [
     { title: '열쇠 상자 개편 (build 14)', items: [
       { icon: '🔑', name: '열쇠 상자', tag: 'system', desc: '디펜스 모드 화면 → <b>메뉴 화면</b> · 열쇠 게이지' },
-      { icon: '🔑', name: '열쇠 상자', tag: 'system', desc: '추가 보상: 늘 ◆10 · 2.5% 골드 2,500 · 1% 빛나는 영웅조각 ×3 · 0.5% 빛나는 전설조각 ×10' },
+      { icon: '🔑', name: '열쇠 상자', tag: 'system', desc: '추가 보상: 늘 ◆30 · 2.5% 골드 2,500 · 1% 빛나는 영웅조각 ×3 · 0.5% 빛나는 전설조각 ×10' },
       { icon: '🔑', name: '열쇠 상자', tag: 'system', desc: '0.2% 영웅 지후 6랭크권 · 0.1% 전설 지후 6랭크권 · 0.2% 지후 초기화권 · 0.1% ◆1,000 · 0.1% 골드 20,000' },
       { icon: '🔑', name: '열쇠 상자', tag: 'adjust', desc: '기본 보상 일반 지후 <b>5 → 2</b> · 희귀 지후 <b>3 → 1</b> · 골드 <b>1,000~2,000 → 220~420</b>' },
       { icon: '⑥', name: '지후 6랭크권', tag: 'new', desc: '보유한 그 등급 지후 하나를 바로 랭크 6으로 (영웅 · 전설)' },
