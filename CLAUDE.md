@@ -16,7 +16,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.2** (build 13).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.2** (build 14).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -129,6 +129,7 @@
 ## 최근 변경 (R3.2 · 2026-11-17)
 - **신규 지후 4종** (`// ── R3.2 신규 지후 도우미 ──` · 원본 `지후초상화/R3.2/`): 트리아지후 `triage` (`trgDrop` · 보급은 지후마다 한 번 `t.trgGot`) · 마녀 `witch` (`witchAttack` 물약 · 변이는 `A.transform(t, 'frog', lv, true)`) · 냉각 `frostj` (`frostShot` 관통 · [빙결] → [동상] · `polarZone`) · 낚시 `fisher` (`fishTick` 찌 · `fishAttack` 낚은 적만 100%). **받는 피해 버프 키 `tk`** (dealDamage 공통 · 예전 `taken` 은 스테인리스만) · 새 지후 토큰은 모두 2 (사용자가 안 정함).
 - **build 3 신규 지후 4종** (`// ── R3.2 build 3 신규 지후 도우미 ──`): 팔라딘 `paladin` (토큰 8 · `def.plCall` → dealDamage 맨 앞 `paladinCall` · SUMMONS `pknight` · 초상화는 R1 paladin · knight) · 저주 `curse` (`curseAttack` · `u.cuT` / `u.cuN`) · 최면 `hypno` (STATUS `hyp` · `aiSteerAndAttack` 의 `hypSteer`) · 부두술사 `voodoo` (커뮤니티 Kaden · `vdSteer` · `u.vdOn` 이면 `foeList` · `canTarget` 이 아군에게도 적 · dealDamage 맨 앞 · build 4: 누구에게 맞든 25% 만 받고 저주한 적에게 150% `opts.vdx` · `S.vdN`). 강화 지후 연출: 머리 위 `.xlv.fg` 흰 블록 글씨 (캔버스도 k2 'fg') · 배치 칸 누르기 `fgHoldOn` · 결과 `forgeFx` (S.fx 의 `fg` ok · fail · break).
+- **build 14 열쇠 상자 개편**: ui3 메인 메뉴 `u3.kb` (KEY BOX 카드 · 게이지 · 모두 열기 · 디펜스 모드 화면에서는 뺐다 · ui2 는 그대로) · `KB_EXTRA` [확률, 보상] 상자마다 따로 굴림 + 늘 ◆30 · 새 아이템 `r6Epic` · `r6Legend` (6랭크권 · `useItem` → `#pickModal` 을 `PICK_K` 로 같이 쓴다 · `profile.enh[id] = 6`).
 - **build 13**: 디펜스 충격파 `dfQk(웨이브)` = `QDMAX` 0.45 · `QDADD` 0.2 / 71 (25% 에서 72웨이브에 45%) · `QSTEP` 110웨이브 50% · 120웨이브 55%. · 넉백 `A.knock(…, { bounce: 칸 })` → `kbBounce` 가 벽에 닿으면 반대로 튕긴다 (샌즈 0.8칸). · 샌즈 `speed` 0 (제자리) · `stainless: true` (스테인리스와 같은 스킬 면역).
 - **build 12 진영 3 × 5**: `CFG.ROWS` 5 · `ROW_KIND` [0, 1, 1, 1, 2] (중열 9칸) · `DEPTH_EW` 에 750 (앞 4줄 자리 · 칸 번호 0~11 그대로 → 튜토리얼 · 예전 리플레이 그대로) · `MAP_EW` 1740 × 840 · `MAX_UNITS` 15 · `midXY` 는 줄 수에 맞춰 · 슬롯판 · 편성판 CSS 5열 · 케이크 조각은 맨 뒤 줄. **서포터 어드밴티지**: 힐 랭크마다 회복 +15% · 가속 `accelAdd` (레벨 +2% · 랭크 +0.2% · 예전 effMult 대신) · 시계 랭크 +0.3% · 충전 랭크 +0.3% · 레벨 +0.2% · 소믈리에 배치 기록 `wnL` (와인마다 소믈리에 레벨 − 1 · packPlace 13번째 칸). 샌즈 한정 → 전설 (이제 한정 지후 없음) · 갓지후 TOK_COST 3 · 태양 6.
 - **build 11 튜토리얼 장착**: 덱 장착 단계는 새 로비 지후 탭 (`TUT.u3` 이면 `u3Use` 가 튜토리얼 중에도 ui3 · `body.tut-deck3` 는 `.tut-hot` 만 누를 수 있다 · 누를 곳은 템플릿 `u3.un.p.tutHot` · `d.tut` · 끝났는지는 대본이 0.25초마다 `profile.deck` 확인) · ui3 를 끈 사람은 예전 덱 화면.
