@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="16"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="17"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3719,7 +3719,8 @@ html body.u3-on #screen-draft .dr-done .dr-chips .pic { width:80px; height:80px;
 #ui2.u3mob .u3 .u3-top .u3-pill { height:42px; font-size:17px; padding:0 8px 0 14px; }
 #ui2.u3mob .u3 .u3-top .u3-pf { transform:scale(1.15); transform-origin:left center; }
 #ui2.u3mob .u3 .u3-mL1 { top:68px !important; zoom:1.16; }
-#ui2.u3mob .u3 .u3-mL2 { top:auto !important; bottom:62px; zoom:1.18; } #ui2.u3mob .u3 .u3-mL2 > div:first-child { display:none; }
+#ui2.u3mob .u3 .u3-mL2 { top:auto !important; bottom:62px; zoom:1.18; } #ui2.u3mob .u3 .u3-mL2 > div:first-child { display:none !important; } /* R3.2 build 17: 인라인 display 에 져서 이벤트 칸과 겹쳤다 */
+#ui2.u3mob .u3 .u3-mKb { top:68px !important; zoom:1.16; } /* R3.2 build 17: 이벤트 칸만 커져 7일 이벤트와 열쇠 상자가 겹쳤다 */
 #ui2.u3mob .u3 .u3-mLd { top:auto !important; bottom:80px; }
 #ui2.u3mob .u3 .u3-menu > div:nth-of-type(2) { height:76px !important; }
 #ui2.u3mob .u3 .u3-menu .mn-tile { height:46px !important; }
@@ -4798,8 +4799,10 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
         <b class="u3-bh" style="font-size:54px; line-height:.95; color:#f3eee3;">{{ u3.rc.title }}</b>
         <span class="u3-os" style="font-size:13px; letter-spacing:3px; color:#9b958a;">{{ u3.rc.sub }}</span>
         <div style="display:flex; flex-direction:column; gap:6px; padding:14px 0; border-top:1px solid #2a2723; border-bottom:1px solid #2a2723;">
+          <sc-if value="{{ u3.rc.barOn }}">
           <div class="u3-os" style="display:flex; justify-content:space-between; font-size:12px; letter-spacing:2px; color:#9b958a;"><span>{{ u3.rc.barL }}</span><span><b style="color:#f3eee3; font-weight:600; font-size:15px;">{{ u3.rc.barN }}</b> / {{ u3.rc.barMax }}</span></div>
-          <div style="height:5px; background:rgba(232,227,216,.12);"><div style="width:{{ u3.rc.barW }}; height:100%; background:linear-gradient(90deg, #a8102a, #e9c46a);"></div></div>
+          <div style="height:5px; background:rgba(232,227,216,.12);"><div style="width:{{ u3.rc.barW }}; height:100%; background:linear-gradient(90deg, #a8102a, #e9c46a);"></div></div>
+          </sc-if>
           <div class="u3-os" style="display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:6px; font-size:11px; letter-spacing:1px;">
             <sc-for list="{{ u3.rc.odds }}" as="o"><span style="color:{{ o.c }};">{{ o.t }}</span></sc-for>
           </div>
@@ -6309,12 +6312,12 @@ const CHARS = {
       run(u, A) { if (enh6(u)) u.batDr = S.time + 5; /* R2.37 build 3 랭크 6 [헬멧] */ const t = u.lastHit && u.lastHit.alive ? u.lastHit : nearestFoe(u); if (!t) return; dmgNum(u, '홈런!', { crit: true }); shake(true); if (A.dmg(u, t, 450) > 0) hitFx(u, t, true); A.knock(u, t, 15); } },
     takenMult(u) { return u.batDr > S.time ? 0.7 : 1; }, /* R2.37 build 3 랭크 6 [헬멧] */
     onHit(u, t, A) { u.lastHit = t; A.knock(u, t, 5); } },
-  train: { name: '신칸센 지후', rarity: 'legend', role: '컨트롤러', hp: 1460, /* R2.32: 1360 → 1460 */ atk: 400, atkSpeed: 1.4, range: 3.9, speed: 0, immobile: true, deployLimit: 1, /* R3.2 build 5: 도감 공격력이 「공격력 10%」로만 보이던 것 → 실제 공격력 */ portrait: PORTRAITS.train, color: '#2f7fe0',
+  train: { name: '신칸센 지후', rarity: 'legend', role: '컨트롤러', hp: 1460, /* R2.32: 1360 → 1460 */ atk: 340, /* R3.2 build 17: 400 → 340 */ atkSpeed: 1.4, range: 3.9, speed: 0, immobile: true, deployLimit: 1, /* R3.2 build 5: 도감 공격력이 「공격력 10%」로만 보이던 것 → 실제 공격력 */ portrait: PORTRAITS.train, color: '#2f7fe0',
     story: '태어나서 단 한 번도 지각한 적이 없는 지후입니다. 비결은 간단한데, 멈추지 않는 거예요. 신호등이 빨간불이어도, 앞에 벽이 있어도 그는 정시에 도착했습니다. 벽과 함께요. 국왕은 그에게 선로를 깔 허가를 내줬는데, 허가서에 장소를 안 적은 탓에 그는 왕궁 거실에도 선로를 깔았어요. 매일 아침 시계방 앞을 지날 때 늦잠 잔 시계 지후가 손을 흔들지만, 그는 너무 빨라서 그 장면을 한 번도 본 적이 없습니다. 내려야 할 역은 늘 지나쳐요.',
     passive: '신호기 사이를 엄청난 속도로 오가며, 부딪힌 적에게 공격력의 <b>100%</b> 피해를 입힙니다.',
     takenMult(u) { return u.ghost ? 0.65 : 1; },
     steer(u) { if (!(u.tr && u.tr.dash)) return false; u.desVx = u.desVy = 0; return true; }, // R2.19: 돌진하는 동안은 일반 공격을 하지 않는다
-    customAttack(u, t) { muzzleFx(u, t); launchProjectile(u, t, () => { const d = dealDamage(u, t, effAtk(u) * 0.1); if (d > 0) hitFx(u, t, false); afterHit(u, d); }); return true; }, // R2.19: 멈춰 있는 동안 공격력 10%
+    customAttack(u, t) { muzzleFx(u, t); launchProjectile(u, t, () => { const d = dealDamage(u, t, effAtk(u) * 0.2); if (d > 0) hitFx(u, t, false); afterHit(u, d); }); return true; }, // R2.19: 멈춰 있는 동안 공격력 10% · R3.2 build 17: 20%
     gauge(u) { const t = u.tr; return !t ? 0 : t.dash ? 1 : clamp(1 - t.t / Math.max(0.1, t.full), 0, 1); },
     onStart(u) { u.tr = { phase: 'wait', t: 2, full: 2, signals: null, dash: null }; trainSignals(u); },
     tick(u, dt, A) {
@@ -6414,7 +6417,7 @@ const CHARS = {
     atkMult(u) { return u.propMult || 1; } },
   joker: { name: '조커 지후', rarity: 'legend', role: '보조형', hp: 500, atk: 10, atkSpeed: 1, range: 4, speed: 1.6, /* R2.36 build 6: 출격제한 1 삭제 · 변신 보너스 +10% → −10% */ portrait: PORTRAITS.joker, sfx: 'shot', color: '#ff5fa2',
     story: '무엇이든 따라 하는 걸 좋아하는 지후입니다. 친구의 말투, 걸음걸이, 웃음소리까지 따라 하다 보니 이제는 자기 원래 얼굴이 기억나지 않아요. 한때 미용실에서 일하며 손님의 갈색 염색 주문을 핑크로 바꿔 버렸고, 카지노에서는 전설의 도박꾼을 빈털터리로 만들었다는 소문도 있습니다. 그게 정말 자기였는지 물으면 그는 그저 웃기만 해요. 여권 사진을 찍을 때마다 다른 얼굴이 나와서 해외여행은 꿈도 못 꿉니다. 그래도 그는 웃어요. 심각해질 이유가 없다면서요.',
-    passive: '배치 중에 다른 지후에게 합성하면 그 라운드 동안 그 지후로 변합니다. 변한 지후는 체력과 공격력이 <b>10%</b> 낮습니다.' },
+    passive: '배치 중에 다른 지후에게 합성하면 그 라운드 동안 그 지후로 변합니다. 변한 지후는 체력과 공격력이 <b>20%</b> 낮습니다.' },
   syringe: { name: '주사 지후', rarity: 'epic', role: '하이브리드', hp: 1120, atk: 80, atkSpeed: 4.5, range: 7.2, speed: 1.6, portrait: PORTRAITS.syringe, sfx: 'shot', color: '#2fd35a',
     story: '주사를 무서워하는 친구들을 위해 간호사가 된 지후입니다. 그런데 손이 너무 빨라서, 한 번 놓은 주사가 환자를 지나 옆 침대 환자와 복도의 보호자까지 꿰뚫고 날아가요. 다행히 그의 약은 착한 지후에게는 약, 나쁜 지후에게는 독이 되는 신기한 약입니다. 반창고만 고집하는 힐 지후를 꺾고 왕궁 의원이 되었지만, 시험 날 경험치 물약 한 병을 잃어버린 건 아직도 찜찜해요. 정작 본인은 주삿바늘이 무서워서 예방 접종 날마다 병가를 냅니다.',
     passive: '일반 공격이 관통하며, 맞은 적에게는 [독]을 · 아군에게는 회복을 줍니다. 체력이 낮은 아군을 먼저 노립니다.',
@@ -6648,7 +6651,7 @@ const CHARS = {
     story: '왕궁 약초원의 가장 어두운 구석에서 해골 무늬 화분만 키우는 지후입니다. 주사 지후의 약이 착한 지후에게는 약, 나쁜 지후에게는 독이 되는 비결은 사실 그가 몰래 섞는 한 방울 덕분이에요. 주사 지후는 그걸 모르고, 그는 굳이 말하지 않습니다. 티모 지후가 말하는 대장이 바로 그인데, 티모 지후는 대장 얼굴을 본 적이 없어요. 그의 독은 천천히 퍼지지만, 한번 퍼지면 쉽게 낫지 않습니다. 무서운 인상을 지우려고 해골 화분마다 하트 스티커를 붙였는데, 더 무서워졌다는 평이에요.',
     passive: '한 번에 최대 <b>3기</b>를 공격해 [중독]시킵니다. 중독된 적의 체력이 낮으면 <b>[약화]</b>시킵니다.',
     pickTarget(u) { let b = null, bd = Infinity; targets(u).forEach(e => { if (e.st.poison > 0) return; const d = dist(u, e); if (d < bd) { bd = d; b = e; } }); return b; }, // 중독되지 않은 적 먼저
-    onHit(u, t, A) { if (!t.alive) return; A.status(t, 'poison', 12, { stack: false, dps: effAtk(u) * 0.3, src: u, v6: enh6(u) }); /* 랭크 6 [신경독]: v6 */ if (t.st.poison > 0) t.vmark = S.time + 12; } },
+    onHit(u, t, A) { if (!t.alive) return; A.status(t, 'poison', 16, { stack: false, dps: effAtk(u) * 0.3, src: u, v6: enh6(u) }); /* 랭크 6 [신경독]: v6 · R3.2 build 17: 12 → 16초 */ if (t.st.poison > 0) t.vmark = S.time + 16; } },
   biker: { name: '폭주족 지후', rarity: 'legend', role: '어쌔신', hp: 999, /* R3.1 build 4: 9999 → 999 */ atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.biker, sfx: 'bash', color: '#f07a1a',
     story: '왕국에서 가장 빠른 배달부 지후입니다. 주황색 스포츠카에 시동을 걸면 아무도 그를 멈출 수 없어요. 본인도 멈출 수 없습니다. 브레이크 밟는 법을 배운 적이 없어서, 매번 맵 끝 벽에 처박히며 배달을 마치거든요. 신칸센 지후의 선로를 가로지르다 몇 번이나 부딪힐 뻔해서 둘은 원수지간입니다. 배달 앱 리뷰는 대부분 음식은 빨리 왔는데 집 벽이 없어졌다는 내용이에요. 그래도 국왕의 삼겹살 배달만은 한 번도 늦은 적이 없습니다.',
     passive: '시동을 건 뒤 모든 유닛을 뚫고 맵 끝까지 돌진하고 즉사합니다. 부딪힌 적은 큰 피해를 입고 기절합니다.',
@@ -6988,7 +6991,7 @@ const CHARS = {
     gauge(u) { const b = u.br; return !b ? 1 : b.off > 0 ? clamp(1 - b.off / 12, 0, 1) : clamp(1 - b.t / 8, 0, 1); },
     steer(u) { if (!(u.br && u.br.off > 0)) return false; u.desVx = u.desVy = 0; return true; }, // 꺼진 7초 (R2.35: 10 → 7): 움직이지도 공격하지도 않는다
     tick(u, dt) { if (u.br) burnerTick(u, dt); } },
-  rot: { name: '부패 지후', rarity: 'epic', role: '컨트롤러', hp: 1350, atk: 60, /* R2.36 build 5: 100 → 60 */ atkSpeed: 2.2, range: 5.3, speed: 1.6, shotCls: 'venom', portrait: PORTRAITS.rot, sfx: 'shot', color: '#7b3f9e',
+  rot: { name: '부패 지후', rarity: 'epic', role: '컨트롤러', hp: 1350, atk: 60, /* R2.36 build 5: 100 → 60 */ atkSpeed: 1.7, /* R3.2 build 17: 2.2 → 1.7 */ range: 5.3, speed: 1.6, shotCls: 'venom', portrait: PORTRAITS.rot, sfx: 'shot', color: '#7b3f9e',
     story: '왕궁 부엌 냉장고 맨 안쪽에서 3년 동안 잊혀 있던 반찬통에서 태어난 지후입니다. 포식 지후가 남의 음식을 닥치는 대로 먹어 치우던 시절에도 그만은 아무도 건드리지 않았는데, 그게 그의 유일한 자랑이에요. 그는 처음 보는 지후에게만 관심을 보이며 한 번씩 꼭 손을 대고 지나가는데, 닿은 자리는 시간이 갈수록 점점 상합니다. 화가 나면 주위에 녹슨 냄새를 뿌려요. 메탈 지후는 그 냄새만 맡아도 녹이 슨다며 그를 피해 다닙니다. 유통기한을 물어보면 그는 늘 그건 그냥 숫자일 뿐이라며 웃어요.',
     passive: '<b>[부패]</b>되지 않은 적을 먼저 노립니다. 일반 공격이 적을 <b>[부패]</b>시켜, 받는 피해가 <b>10%</b>에서 시간이 갈수록 최대 <b>50%</b>까지 늘어납니다.',
     pickTarget(u) { return rotPick(u); },
@@ -7046,7 +7049,7 @@ const CHARS = {
     onStart(u) { ocStart(u); }, tick(u, dt) { ocTick(u, dt); }, onLethal(u) { return ocLethal(u); } },
   stand: { name: '가판대 지후', rarity: 'legend', role: '서포터', hp: 2000, atk: 0, atkSpeed: 1, range: 4.5, speed: 0, immobile: true, noAttack: true, tok: 5, /* R3.2 build 5: 2 → 5 */ atkText: () => '레모네이드', portrait: PORTRAITS.stand, color: '#3fd6f0',
     story: '왕궁 앞 사거리 모퉁이에서 레모네이드를 파는 지후입니다. 한 잔에 동전 하나라고 크게 써 붙였지만, 사실 거스름돈이 없어서 누구에게나 정확히 동전 하나만 받아요. 레몬이 너무 시어서 마신 지후들은 하나같이 얼굴을 찡그리는데, 이상하게도 다들 기운이 난다며 줄을 섭니다. 소탕군과 반란군이 서로 싸우다가도 그의 가판대 앞에서는 나란히 줄을 서는 바람에, 전쟁이 잠깐씩 멈추는 일도 생겼어요. 그 틈에 반란군 몇이 레모네이드에 반해 소탕군으로 넘어오기도 했습니다. 국왕은 그를 외교관으로 임명하려 했지만, 그는 장사가 바쁘다며 거절했어요. 가판대 뒤 금고는 이미 티타늄 지후가 지키고 있습니다.',
-    passive: '반경 <b>4.5칸</b>에 처음 들어온 아군을 불러 레모네이드를 팔아 체력 <b>600</b>을 회복시킵니다 (넘치면 쉴드). 다섯 잔을 팔 때마다 <b>토큰 1</b>을 얻습니다. 가끔 다가온 적도 사 마시고 우리 편이 됩니다.',
+    passive: '반경 <b>4.5칸</b>에 처음 들어온 아군을 불러 레모네이드를 팔아 체력 <b>400</b>을 회복시킵니다 (넘치면 쉴드). 다섯 잔을 팔 때마다 <b>토큰 1</b>을 얻습니다. 가끔 다가온 적도 사 마시고 영영 우리 편이 됩니다.',
     onStart(u) { lmnStart(u); }, tick(u, dt) { lmnTick(u, dt); },
     noSpGive: true, /* R3.1 잠수함: SP 는 초당 1 로만 */ skill: { type: 'sec', need: 10, can: u => friends(u).some(a => a.alive && a !== u), desc: '<b>SP 10</b> (초당 <b>1</b>) · <b>[리얼 탄산 레모네이드]</b>. 무작위 아군에게 던져 반경 <b>3칸</b> 아군 (자신 제외) 은 <b>5초</b> 동안 초당 <b>100</b> 회복, 적은 초당 <b>50</b> 피해를 입습니다.', run(u) { lmnThrow(u); } } },
   portal: { name: '포탈 지후', rarity: 'legend', role: '소환형', hp: 1000, shield: 1000, atk: 50, atkSpeed: 1.5, range: 5, speed: 1.6, tok: 4, portrait: PORTRAITS.portal, sfx: 'shot', color: '#ff4fd8',
@@ -7060,7 +7063,7 @@ const CHARS = {
     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[놀래키기]</b>. 아공간으로 잠수해 무작위 적 곁에서 튀어나와 반경 <b>2.5칸</b> 적에게 공격력의 <b>120%</b> 피해와 <b>3.5초</b> [공포]를 주고, 그중 하나를 납치해 제자리로 돌아옵니다.', run(u) { lkGo(u); } } },
   radar: { name: '레이더 지후', rarity: 'legend', role: '컨트롤러', hp: 1500, atk: 100, atkSpeed: 8, range: 3, speed: 1.6, tok: 4, /* R3.2 build 5: 3 → 4 */ atkText: () => '100 · 반경 5.5칸', portrait: PORTRAITS.radar, sfx: 'shot', color: '#2b33c8',
     story: '왕궁 성벽 위 망루에서 밤새 불침번을 서는 지후입니다. 머리 위에 커다란 나침반을 쓰고 있어서 방향만큼은 절대 잃지 않지만, 정작 자기가 어디를 지키고 있는지는 자주 잊어버려요. 그의 감시구역에 허락 없이 발을 들인 지후는 레이더에 포착되어 그 자리에 얼어붙고 맙니다. 한번은 국왕 화염 지후 1호가 몰래 야식을 먹으러 나왔다가 포착되어 아침까지 얼어 있었던 적도 있어요. 그 뒤로 국왕의 야식은 물 지후가 대신 사 옵니다. 그는 오늘도 이상 없음이라고 보고하지만, 보고서 뒷면에는 늘 졸았다고 적혀 있어요.',
-    passive: '반경 <b>5.5칸</b>이 <b>[감시구역]</b>입니다. 일반 공격으로 구역 안 적을 모두 치고, <b>[불침번]</b>으로 구역 안 적 <b>2기</b>를 <b>1.5초</b> 기절시키고 <b>[포착]</b>한 뒤, 레이더가 한 바퀴 돌면 공격력의 <b>250%</b> 폭발을 일으킵니다.',
+    passive: '반경 <b>5.5칸</b>이 <b>[감시구역]</b>입니다. 일반 공격으로 구역 안 적을 모두 치고, <b>[불침번]</b>으로 구역 안 적 <b>3기</b>를 <b>1.5초</b> 기절시키고 <b>[포착]</b>한 뒤, 레이더가 한 바퀴 돌면 공격력의 <b>500%</b> 폭발을 일으킵니다.',
     customAttack(u) { return rdAttack(u); } },
   triage: { name: '트리아지후', rarity: 'epic', role: '하이브리드', hp: 1400, atk: 50, atkSpeed: 1, range: 5.8, speed: 1.6, tok: 2, portrait: PORTRAITS.triage, sfx: 'shot', color: '#3a3a3a',
     story: '왕궁 의원의 응급 구조대장 지후입니다. 무전기 너머로 위급하다는 소리만 들리면 하늘에서 보급상자를 떨어뜨리는데, 문제는 조준을 늘 환자 머리 위에 한다는 거예요. 상자에 맞은 적들은 그대로 기절하고, 환자는 쉴드를 두른 채 일어나 살았다며 고마워합니다. 주사 지후는 그의 방식을 의료가 아니라 폭격이라고 부르지만, 생존율만큼은 왕국 최고라 아무도 따지지 못해요. 상자는 한 지후에게 한 번만 주는 것이 원칙이라, 두 번째로 다친 지후는 상자 옆에서 서운한 표정으로 기다립니다. 그는 오늘도 선글라스를 낀 채 무전기에 대고 괜찮다고 말해요. 무전기는 사실 고장 나 있습니다.',
@@ -7784,7 +7787,7 @@ function ocFinHit(u) { const o = u.oc, L = S.units.filter(x => x !== u && x.aliv
 function ocLethal(u) { if (u.ocDone || !u.oc) return false; u.ocDone = true; u.hp = 1; ocSet(u, 'wait'); A.status(u, 'inv', OC.WAIT + OC.DC + 0.3); if (!S.fast) dmgNum(u, '🎻 …', { crit: true }); return true; }
 function ocFinFx(u) { if (S.fast) return; shake(true); const L = bfxLayer && bfxLayer(); if (!L) return; const el = document.createElement('div'); el.className = 'oc-fin' + (u.side === ME() ? '' : ' e'); el.innerHTML = `<img src="${OC_FINALE}" alt="">`; L.appendChild(el); setTimeout(() => el.remove(), 1800); }
 // ── R3.1 build 6 신규 지후 도우미 ──
-// 가판대 지후: 반경 4.5칸에 처음 들어온 아군은 끌려와 레모네이드 (체력 200 × 레벨 배율) · 적은 10% 확률로 끌려와 마시면 체력 가득 + [매혹] (라운드 끝까지) · 한 잔에 토큰 0.2 (1이 되면 그 진영 S.tok +1 · 디펜스 · 성뿌수기는 골드 +1)
+// 가판대 지후: 반경 4.5칸에 처음 들어온 아군은 끌려와 레모네이드 (체력 400 × 레벨 배율) · 적은 10% 확률로 끌려와 마시면 체력 가득 + 우리 진영으로 영구 전향 (lmnDefect · R3.2 build 17) · 한 잔에 토큰 0.2 (1이 되면 그 진영 S.tok +1 · 디펜스 · 성뿌수기는 골드 +1)
 function lmnStart(u) { u.ln = { seen: new Set(), go: [], frac: 0 }; }
 function lmnTick(u, dt) { const L = u.ln; if (!L) return; const R = u.range + 6;
   S.units.forEach(x => { if (x === u || !x.alive || L.seen.has(x) || x.def.immobile || (x.realm || 0) !== (u.realm || 0) || dist(u, x) > R + unitRadius(x)) return; L.seen.add(x); if (x.lmnBy && x.lmnBy !== u) return; /* R3.1 잠수함: 가판대가 둘 이상이면 하나에게만 */ if (x.side === u.side || rng() < 0.1) { x.lmnBy = u; L.go.push(x); } });
@@ -7795,9 +7798,15 @@ function lmnThrow(u) { // [리얼 탄산 레모네이드] SP 10 (초당 1): 자�
   if (!S.fast) { FXC.beams.push({ x0: u.x, y0: u.y, x1: x, y1: y, t0: performance.now(), ms: 380, c1: 'rgba(255,230,60,.5)', w1: 14, c2: 'rgba(255,255,220,1)', w2: 4 }); fxRing(x, y, R, 'rgba(255,225,60,.9)', 600, 10); dmgNum(u, '🍋 리얼 탄산!', { crit: true, stamp: true }); }
   for (let k = 1; k <= 5; k++) A.later(k, () => { if (!S.fast) fxRing(x, y, R, 'rgba(255,225,60,.45)', 450, 5);
     S.units.forEach(o => { if (!o.alive || (o.realm || 0) !== (u.realm || 0) || Math.hypot(o.x - x, o.y - y) > R + unitRadius(o)) return; if (o === u) return; if (o.side === u.side) heal(u, o, 100 * m); else dealDamage(u, o, 50 * m /* R3.1 잠수함: 80 → 50 */, { skill: true, lite: true, noCrit: true }); }); }); }
+// R3.2 build 17 전향: 상대 진영에서 사라지고 이 진영 지후가 된다 · 배치 기록도 옮긴다 (빈 칸이 없으면 이번 라운드만) · 체력 가득 · 디펜스 · 성뿌수기는 진영만
+function lmnDefect(t, side) { const from = t.side; if (from === side || !t.alive) return;
+  if (!S.cw && t.tile != null && S.place && S.place[from] && S.place[side] && S.place[from][t.tile]) { const p = S.place[from][t.tile]; S.place[from][t.tile] = null; let k = -1; for (let i = 0; i < TILES; i++) if (!S.place[side][i]) { k = i; break; } if (k >= 0) { S.place[side][k] = p; t.tile = k; } else t.tile = null; }
+  t.side = side; t.st.charm = 0; t.hp = t.maxHp; t.target = null; t.lmnBy = null; S._ix = null;
+  if (t.el) { t.el.classList.toggle('enemy', side === OPP()); t.el.classList.toggle('ally', side !== OPP()); } drawUnit(t); }
 function lmnSell(u, x) { const L = u.ln;
-  if (x.side === u.side) { const amt = 600 * lvMult(u.lv || 1), over = Math.max(0, amt - (x.maxHp - x.hp)); heal(u, x, amt); if (over > 0 && x.alive && !(x.st.noheal > 0)) { x.shield = (x.shield || 0) + over; drawUnit(x); } if (!S.fast) dmgNum(x, '🍋 레모네이드', { heal: true }); } /* R3.1 build 5: 200 → 600 · 넘친 체력은 쉴드 */
-  else { x.hp = x.maxHp; A.status(x, 'charm', 999); drawUnit(x); if (!S.fast) dmgNum(x, '🍋 단골 손님!', { crit: true, stamp: true }); }
+  if (x.side === u.side) { const amt = 400 * lvMult(u.lv || 1), /* R3.2 build 17: 600 → 400 */ over = Math.max(0, amt - (x.maxHp - x.hp)); heal(u, x, amt); if (over > 0 && x.alive && !(x.st.noheal > 0)) { x.shield = (x.shield || 0) + over; drawUnit(x); } if (!S.fast) dmgNum(x, '🍋 레모네이드', { heal: true }); } /* R3.1 build 5: 200 → 600 · 넘친 체력은 쉴드 */
+  else if (x.st.nou > 0) { lmnDefect(u, x.side); if (!S.fast) dmgNum(u, '🍋 NO U!', { crit: true, stamp: true }); return; } /* R3.2 build 17: [NO U] 중인 NO U 가 마시면 가판대가 넘어간다 */
+  else { lmnDefect(x, u.side); if (!S.fast) dmgNum(x, '🍋 전향!', { crit: true, stamp: true }); } /* R3.2 build 17: [매혹] 대신 우리 진영으로 영구 전향 */
   if (S.cw && S.cw.gold) { S.cw.gold[u.side] = (S.cw.gold[u.side] || 0) + 1; return; } /* 디펜스 · 성뿌수기: 한 잔에 골드 1 */
   if (!S.tok) return; L.frac += 0.2; if (L.frac >= 0.999) { L.frac -= 1; S.tok[u.side] += 1; if (!S.fast) dmgNum(u, '🪙 +1', { crit: true }); } }
 // 포탈 지후: 라운드 시작에 적을 노리지 않고 적진의 무작위 빈 칸으로 가서 (빈 칸이 없거나 8초가 지나면 그 자리) 포탈 · 포탈은 30초 (체력 1500 이 줄어든다 · 노릴 수 없다) · 5초마다 차원체 지후 (체력 15% · 공격력 100%)
@@ -7828,12 +7837,12 @@ function lkEnd(u) { const k = u.lk; u.lk = null; u.realm = 0; u.ghost = false; i
 // 레이더 지후: 일반 공격 = 반경 5.5칸 [감시구역] 적 모두 공격력 100% · 공격마다 [불침번] — R3.2 build 8 리워크: 구역 안 가장 가까운 적 최대 2기 1.5초 [기절] + [포착] (이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100% t.spot1) → 2초 뒤 그 자리 반경 1.5칸 250%
 function rdAttack(u) { // R3.1 잠수함: 감시구역 안 적 모두 3초 [기절] · 2초 레이더 (바닥 원 · 반지름 선 한 바퀴 · 파란 스코프) 뒤 구역 안 적 공격력 100% · 스코프 자리 반경 1.5칸 400%
   const R = 5.5 * CFG.CELL, x0 = u.x, y0 = u.y; sfxAttack(u);
-  const H = foes(u).filter(e => e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)).sort((a, b) => Math.hypot(a.x - x0, a.y - y0) - Math.hypot(b.x - x0, b.y - y0)).slice(0, 2); /* R3.2 build 8: 최대 2기 */
+  const H = foes(u).filter(e => e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)).sort((a, b) => Math.hypot(a.x - x0, a.y - y0) - Math.hypot(b.x - x0, b.y - y0)).slice(0, 3); /* R3.2 build 8: 최대 2기 · build 17: 3기 */
   H.forEach(e => { A.status(e, 'stun', 1.5); A.status(e, 'spot', 999); if (e.st.spot > 0) { e.spot1 = true; if (e.st.stealth > 0) { e.st.stealth = 0; drawUnit(e); } } });
   if (!S.fast && $('field')) { const el = document.createElement('div'); el.className = 'fx-radar'; el.style.left = x0 + 'px'; el.style.top = y0 + 'px'; el.style.setProperty('--rr', R.toFixed(0) + 'px'); el.innerHTML = '<i></i><b></b>'; $('field').appendChild(el); setTimeout(() => el.remove(), 2100 / (S.speed || 1));
     H.forEach(e => { const m = document.createElement('div'); m.className = 'fx-scope'; m.style.left = e.x + 'px'; m.style.top = e.y + 'px'; m.style.setProperty('--sr', (unitRadius(e) * 1.4).toFixed(0) + 'px'); $('field').appendChild(m); setTimeout(() => m.remove(), 2100 / (S.speed || 1)); }); }
   A.later(2, () => { if (!u.alive) return; const atk = effAtk(u); let d = 0;
-    H.forEach(e => { const x = e.x, y = e.y, r = 1.5 * CFG.CELL; if (!S.fast) fxRing(x, y, r, 'rgba(60,110,255,.95)', 520, 10); foes(u).forEach(f => { if (f.alive && Math.hypot(f.x - x, f.y - y) <= r + unitRadius(f) && dealDamage(u, f, atk * 2.5, { skill: true, noCrit: true }) > 0 && !S.fast) hitFx(u, f, true); }); }); /* R3.2 build 8: 400 → 250% · 폭발이 먼저 ([포착] 첫 피해 +100%) */
+    H.forEach(e => { const x = e.x, y = e.y, r = 1.5 * CFG.CELL; if (!S.fast) fxRing(x, y, r, 'rgba(60,110,255,.95)', 520, 10); foes(u).forEach(f => { if (f.alive && Math.hypot(f.x - x, f.y - y) <= r + unitRadius(f) && dealDamage(u, f, atk * 5, { skill: true, noCrit: true }) > 0 && !S.fast) hitFx(u, f, true); }); }); /* R3.2 build 17: 250 → 500% · R3.2 build 8: 400 → 250% · 폭발이 먼저 ([포착] 첫 피해 +100%) */
     foes(u).forEach(e => { if (e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)) d += dealDamage(u, e, atk, { lite: true }); });
     afterHit(u, d); });
   return true; }
@@ -7985,7 +7994,7 @@ function sansGo(u) { if (!S.fast) dmgNum(u, '💀 와! 샌즈', { crit: true, st
 function sansPush(u) { // 모든 적 · 상하좌우 중 무작위 한 벽까지 · 공격력 50% (스킬 · R2.30 build 2: 150 → 50%)
   if (!u.alive || S.phase !== 'combat') return; const [dx, dy] = SANS_D[Math.floor(rng() * 4)], P = u.def.portraitPose; A.portrait(u, P[Math.floor(rng() * P.length)]);
   if (!S.fast) { shake(true); if (CV.on) CVF.over.push({ k: 'sans', t0: performance.now(), ms: 520, x: 0, y: 0, a: Math.atan2(dy, dx) }); }
-  const W = FW(), H = FH(), dmg = effAtk(u) * 0.75; /* R3.2 build 12: 50 → 75% */ /* R2.30 build 2: 150 → 50% */
+  const W = FW(), H = FH(), dmg = effAtk(u) * 1; /* R3.2 build 17: 75 → 100% · R3.2 build 12: 50 → 75% */ /* R2.30 build 2: 150 → 50% */
   foes(u).forEach(e => { if (!e.alive) return; dealDamage(u, e, dmg, { skill: true, lite: true }); if (!e.alive) return;
     const r = unitRadius(e), far = dx > 0 ? W - r - e.x : dx < 0 ? e.x - r : dy > 0 ? H - r - e.y : e.y - r; A.knock(u, e, Math.max(0.3, far / CFG.CELL), dx, dy, { bounce: 0.8 }); }); /* R3.2 build 13: 벽에 부딪히면 0.8칸 튕겨 나온다 */
 }
@@ -8109,7 +8118,7 @@ const CHAR_INFO = {
   jaws: [['[잠수]', '노릴 수 없고 피해를 받지 않음 · 최대 8초'], ['잠수 속도', '4.5칸'], ['떠오를 때', '반경 2칸 · 공격력의 50%'], ['회복', '공격마다 공격력의 30%']],
   blizzard: [['SP', '9'], ['[눈보라] 피해', '모든 적 · 현재 체력의 6%'], ['[빙결]', '모든 적 · 2초'], ['[동상]', '1.8초 · 공격력 -10% · 받는 피해 +10% · 이동속도 -40%']],
   bat: [['일반 공격', '앞쪽 120° 부채꼴 · 닿은 적 모두 (근접 예외)'], ['넉백', '5칸'], ['[홈런] 피해', '공격력의 450%'], ['[홈런] 넉백', '15칸']],
-  train: [['신호기', '4개 (상대 쪽 2 · 내 쪽 2) · 무작위 위치'], ['돌진 속도', '초당 16칸'], ['충돌 피해', '공격력의 100%'], ['돌진 중', '받는 피해 -35% · 유닛 통과'], ['다음 돌진', '4.5초 (부딪힌 적 1기당 -0.5초 · 최소 0.1초)'], ['일반 공격', '멈춰 있는 동안만 · 공격력의 10% · 1.4초 · 사거리 3.9']],
+  train: [['신호기', '4개 (상대 쪽 2 · 내 쪽 2) · 무작위 위치'], ['돌진 속도', '초당 16칸'], ['충돌 피해', '공격력의 100%'], ['돌진 중', '받는 피해 -35% · 유닛 통과'], ['다음 돌진', '4.5초 (부딪힌 적 1기당 -0.5초 · 최소 0.1초)'], ['일반 공격', '멈춰 있는 동안만 · 공격력의 20% · 1.4초 · 사거리 3.9']],
   sun: [['광역 범위', '반경 1.8칸'], ['공격력 증가', '같은 적 2번마다 +20 · 최대 없음 (대상을 바꾸거나 멈추면 초기화)'], ['부활 조건', '쓰러질 때 아군 중 혼자 · 라운드당 1번'], ['낙하', '2초 뒤 무작위 적 위치 · 반경 3칸 기본 공격력의 2000% 피해 · 2.5초 [기절]'], ['부활 뒤', '기본 공격력 +40']],
   whirl: [['지속', '3.3초'], ['이동속도', '4배'], ['피해', '0.2초마다 공격력의 40%'], ['변신 중', '일반 공격은 하지 않는다'], ['변신 중 받는 피해', '−30%']],
   titanium: [['쉴드', '맞을 때마다 최대 체력의 2% (겹쳐 쌓임)'], ['지속', '0.5초']],
@@ -8118,7 +8127,7 @@ const CHAR_INFO = {
   deathnote: [['첫 발동', '라운드 시작 즉시'], ['쿨타임', '16초'], ['즉사까지', '15초 (이번 라운드에 데스노트로 처치할 때마다 -1초)'], ['해제', '풀 수 없다 · 데스노트 지후가 쓰러져도 남는다'], ['일반 공격', '하지 않는다']],
   rifle: [['일반 공격', '34 × 3연발'], ['연발 간격', '공격 간격의 1/10 (2.7초면 0.27초)'], ['레벨업', '기본 공격 간격 -0.25초 (Lv5 1.7초)'], ['공격마다', '공격속도 +10% (복리)'], ['최대', '공격 간격 0.1초'], ['초기화', '라운드마다']],
   prophecy: [['예언 성공', '배치 동안 예언 지후가 새로 놓이거나 · 옮겨지거나 · 레벨이 바뀌었고, 그 대칭 칸 (적 진영)의 지후도 놓이거나 · 바뀌거나 · 레벨이 오르거나 · 사라졌을 때'], ['변신', '그 라운드 동안 공격력 +150%'], ['[아르카나]', '성공마다 1중첩 · 하나당 공격력 +20% · 최대 7 · 경기 내내 유지'], ['여러 명이면', '한 명만 변신 · 나머지 예언 지후는 그 라운드 공격력 +20']],
-  joker: [['변신', '다른 지후 위로 옮기면 그 지후로 (조커 레벨 그대로 · 출격제한 무시)'], ['되돌아오기', '라운드가 끝나면 다시 조커로'], ['변신 능력치', '체력 · 공격력 −10%'], ['같은 레벨 조커', '보통처럼 합체']],
+  joker: [['변신', '다른 지후 위로 옮기면 그 지후로 (조커 레벨 그대로 · 출격제한 무시)'], ['되돌아오기', '라운드가 끝나면 다시 조커로'], ['변신 능력치', '체력 · 공격력 −20%'], ['같은 레벨 조커', '보통처럼 합체']],
   star: [['일반 공격', '대상 주변 반경 2.5칸 광역'], ['[졸음]', '공격력이 가장 높은 적 · 4초 · 공격력 −30% · 쉴드 · 보호막으로 못 막는다'], ['[수면]', '3.5초 또는 200 이상 피해를 받을 때까지 행동 불능'], ['깨어나면', '별 지후가 관통 · 무적 돌진 (초당 17칸) · 공격력 400% · 부딪혀 튕긴 뒤 제자리로 돌아온다 · SP +1']],
   sommelier: [['레벨', '소믈리에 레벨마다 와인 한 잔이 공격력 +1% · 치명타 확률 +1% · 치명타 피해 +10% 더'], ['와인', '라운드 시작 · 십자 범위 아군 2명 이상일 때 · 그 아군들'], ['마시면', '체력 −10% · 공격력 +10% · 치명타 확률 +4% · 치명타 피해 +50% (라운드마다 쌓임 · 경기 내내)'], ['자신', '와인을 마신 아군 하나마다 공격력 +5 (경기 내내)']],
   chicken: [['달걀', '일반 공격 · 투사체'], ['부화', '맞으면 6% · 병아리 지후 · 원본 체력의 40% · 공격력 그대로 · 라운드가 끝나면 사라진다'], ['병아리 지후', '닭 지후처럼 달걀을 던진다 · 병아리의 달걀은 부화하지 않는다']],
@@ -8128,7 +8137,7 @@ const CHAR_INFO = {
   teemo: [['실명 다트', '20% · [눈가림] 3초 · 일반 공격 50% 빗나감'], ['[강화 실명 다트]', 'SP 8 · [눈가림] 3초 75% 확정 + [중독] 5초 · 1초마다 공격력 50%']],
   rain: [['[가랑비]', 'SP 8 · 모든 적 공격력 220% · 이동속도 −40% 3초'], ['회복', '모든 아군 · 3초 · 1초마다 공격력 100%'], ['패시브', '[가랑비] 뒤 1.5초 공격 불가']],
   nou: [['[NO U]', 'SP 6 · 2.5초 · 받는 피해 100% 반사 (자신은 0)'], ['디버프', '마지막으로 나를 공격한 상대에게 대신 걸린다'], ['그동안', '공격은 하지만 SP 는 차지 않는다'], ['NO U 끼리', '[NO U] 중 서로 치면 둘 다 튕겨 나가 즉사']],
-  venom: [['공격', '한 번에 최대 3기 · 대상 + 사거리 안의 다른 적 ([중독]되지 않은 적 먼저 · 가까운 순) · 각각 [중독]'], ['[중독]', '12초 · 1초마다 공격력 30% · 중첩 없음'], ['노리는 적', '[중독]되지 않은 적 먼저'], ['[약화] (독)', '독 지후에게 맞은 적 · 아무 [중독] · 체력 40% 이하 → 받는 피해 +20% · 회복 −60% · 이동속도 −20% · 공격력 −15%']],
+  venom: [['공격', '한 번에 최대 3기 · 대상 + 사거리 안의 다른 적 ([중독]되지 않은 적 먼저 · 가까운 순) · 각각 [중독]'], ['[중독]', '16초 · 1초마다 공격력 30% · 중첩 없음'], ['노리는 적', '[중독]되지 않은 적 먼저'], ['[약화] (독)', '독 지후에게 맞은 적 · 아무 [중독] · 체력 40% 이하 → 받는 피해 +20% · 회복 −60% · 이동속도 −20% · 공격력 −15%']],
   biker: [['시동', '2초 (기절 · 빙결이면 멈춘다)'], ['돌진', '적 진영 쪽 −35° ~ 35° · 초당 50칸 · 모든 유닛 관통 · 맵 끝에서 즉사 · 무적 · 상태이상 면역'], ['부딪힌 적', '최대 체력 50% · 3칸 넉백 · 기절 3초'], ['공격', '하지 않는다']],
   growth: [['[변이]', '전투 시작 15초 뒤 · 레벨마다 −2초 (Lv5 7초) · 기절 · 밴이면 풀린 뒤 · 라운드 안에서 횟수 제한 없음'], ['변이체', '내 덱의 지후 중 무작위 (성장 지후 포함 · [밴] 지후 제외) · 레벨 +1 (최대 5) · 체력 가득'], ['다음 라운드', '배치 기록도 변이체로 · 성장 지후가 되면 또 자란다 (같은 라운드 안에서도 다시 자란다)']],
   melody: [['종', '7초마다 · 반경 4칸'], ['아군', '최대 체력 5% 회복 · 디버프 면역 2.5초'], ['적', '공격력 100% 피해']],
@@ -8195,7 +8204,7 @@ const CHAR_INFO = {
   metal: [['받는 피해', '늘 2 (치명타 4) · 지속 피해도 · 쉴드 · 받는 피해 증가 · 감소와 상관없이'], ['회복', '받을 수 없다 · 즉사는 그대로 받는다']],
   burner: [['일반 공격', '대상 주변 반경 1.9칸 광역'], ['공격력', '라운드 시작부터 8초에 걸쳐 0까지 · 일정하게 줄어든다 (1 − 지난 시간 / 8 배)'], ['꺼질 때', '반경 3.2칸 아군 (자신 제외) · [화상] 6초 · 1초마다 부루스타 공격력의 20% · [점화]'], ['꺼진 동안', '12초 · 움직이지도 공격하지도 않는다 → 공격력이 처음으로 돌아온다 (다시 8초)'], ['[점화]', '불타는 동안 ([화상] · [3도 화상]) 일반 공격이 대상에게 [3도 화상] · 불이 꺼지면 [점화]도 사라진다 · 화상 없이 [점화]만 있으면 다음 화상부터'], ['[3도 화상]', '라운드 끝까지 · 1초마다 [점화]된 지후 공격력의 10% · 중첩 없음 (센 쪽) · 공격력 −10% · 받는 피해 + (잃은 체력 비율 × 20%) · 해제하면 보통 [화상]']],
   rot: [['대상', '[부패]되지 않은 가장 가까운 적 먼저 (모두 부패했으면 보통 대상)'], ['[부패]', '일반 공격 · 라운드 끝까지 · 받는 피해 +10% · 2초마다 +1%p (최대 50%)'], ['[부식]', 'SP 5 · 자신 주위 반경 3칸 적 모두 · 5초 · 처음 받는 공격 피해 +100 (레벨마다 늘어난다) · 맞으면 사라진다']],
-  sans: [['[와! 샌즈]', '라운드 시작 3초 뒤 · 그 뒤 13초마다 (쿨타임) · 0.5초 간격으로 4번'], ['한 번에', '모든 적 · 상 · 하 · 좌 · 우 중 무작위 한 방향의 벽까지 밀쳐낸다 · 공격력의 75% (스킬 피해)'], ['일반 공격 · 이동', '하지 않는다 · 제자리'], ['스킬 면역', '스테인리스 지후와 같다 · 적의 스킬 피해 · 넉백 · 즉사 · 절상 · 아공간을 받지 않고 디버프는 반대로']],
+  sans: [['[와! 샌즈]', '라운드 시작 3초 뒤 · 그 뒤 13초마다 (쿨타임) · 0.5초 간격으로 4번'], ['한 번에', '모든 적 · 상 · 하 · 좌 · 우 중 무작위 한 방향의 벽까지 밀쳐낸다 · 공격력의 100% (스킬 피해)'], ['일반 공격 · 이동', '하지 않는다 · 제자리'], ['스킬 면역', '스테인리스 지후와 같다 · 적의 스킬 피해 · 넉백 · 즉사 · 절상 · 아공간을 받지 않고 디버프는 반대로']],
   stainless: [['[액티브 스킬]', '적의 스킬 피해 · 넉백 · 즉사 · 아공간을 받지 않는다'], ['디버프', '모두 면역 · 반대로: [동상] 공격력 +10% · 이동 +40% · 받는 피해 −10% / [취약] 받는 피해 감소 / [졸음] 공격력 +30% / [약화] 공격력 +15% · 이동 +20% · 받는 피해 −20% / [3도 화상] 공격력 +10% · 받는 피해 −20% / [부패] · [부식] 받는 피해 감소 / 공격력 · 공격속도 · 이동속도 감소는 증가로'], ['[흡수]', 'SP 7 · 2초 · 그 자리에 멈춘다 · 모든 피해 0 · 흡수한 피해 (줄기 전) 의 15% 회복']],
   gunq: [['일반 공격', '하지 않는다 · 가장 가까운 적 곁으로 걸어간다'], ['[탕!!]', '쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 쪽으로 쏜다 · 그 길에서 먼저 맞은 적 하나 (관통하지 않는다) · 피해는 없다 · 맞은 적 [고자] · 총알 방향으로 10칸 넉백 · 자신은 반동으로 반대로 날아가며 그대로 쓰러진다'], ['[고자]', '이번 라운드 동안 최대 체력 · 체력 1 (절상 풀림) · 스테인리스 · 무적 · 잠수는 튕겨 낸다']],
   taegeuk: [['색', '배치 중 무색 · 라운드 시작 1초 뒤 [적] · [청] 반반'], ['줄 판정', '색이 정해지고 1초 뒤 · 세로 3칸 (한 줄) 또는 가로 4칸 (전열 · 중열 · 후열) 이 모두 같은 색 태극 지후'], ['[붉은 힘]', '[적] 줄 · 그 줄의 태극 지후 공격력 400%'], ['[푸른 힘]', '[청] 줄 · 그 줄의 태극 지후 공격속도 400%'], ['[극의 조화]', '같은 색 줄과 태극 지후로 가득 찬 다른 방향 줄이 만나는 칸 · 공격력 · 공격속도 모두 400% · 최대 체력 +50% · 조화 폼']],
@@ -8207,10 +8216,10 @@ const CHAR_INFO = {
   curse: [['저주 스택', '공격마다 +1 · 저주 지후마다 따로 · 다른 적을 공격하면 처음부터'], ['[즉사]', '같은 대상 4번째 공격 · 모든 생존기 무시'], ['일반 공격', '공격력 100%']],
   hypno: [['[최면]', 'SP 4 · 대상 (없으면 가장 가까운 적) 자리 반경 1.7칸 적 · 1.7초'], ['[최면] 상태', '공격하지 못한다 · 가장 가까운 적의 반대쪽으로 걷는다']],
   voodoo: [['사슬 [저주]', '사거리 안에 처음 들어온 적 · 그 적이 쓰러질 때까지 그 자리에 멈춘다'], ['아군의 공격', '사슬 동안 아군이 부두술사를 노린다'], ['피해 이전', '사슬 동안 누구에게 맞든 · 부두술사는 25% 만 받고 · 저주한 적은 75% 를 받는다'], ['다시 사슬', '저주한 적이 쓰러지고 4초 뒤'], ['제작', '커뮤니티 제작 지후 · Kaden']],
-  stand: [['레모네이드', '반경 4.5칸 · 처음 들어온 아군 (움직이는 지후) 을 끌어와 체력 600 × 레벨 배율 회복 · 넘친 만큼 쉴드'], ['[리얼 탄산 레모네이드]', 'SP 10 · 초당 1 (다른 방법으로는 차지 않는다) · 자신 말고 아군이 없으면 쓰지 않는다 · 무작위 아군 자리 반경 3칸 · 5초 동안 아군 (자신 제외) 초당 100 회복 · 적 초당 50 피해 (레벨 배율)'], ['장사', '한 잔에 토큰 0.2 (다섯 잔마다 토큰 1) · 디펜스는 한 잔에 골드 1'], ['손님 적', '처음 들어온 적 10% · 끌려와 마시면 체력 가득 · 라운드 끝까지 [매혹]'], ['가판대 여럿', '한 지후는 가판대 하나에만 끌려간다']],
+  stand: [['레모네이드', '반경 4.5칸 · 처음 들어온 아군 (움직이는 지후) 을 끌어와 체력 400 × 레벨 배율 회복 · 넘친 만큼 쉴드'], ['[리얼 탄산 레모네이드]', 'SP 10 · 초당 1 (다른 방법으로는 차지 않는다) · 자신 말고 아군이 없으면 쓰지 않는다 · 무작위 아군 자리 반경 3칸 · 5초 동안 아군 (자신 제외) 초당 100 회복 · 적 초당 50 피해 (레벨 배율)'], ['장사', '한 잔에 토큰 0.2 (다섯 잔마다 토큰 1) · 디펜스는 한 잔에 골드 1'], ['손님 적', '처음 들어온 적 10% · 끌려와 마시면 체력 가득 · 상대 진영에서 사라지고 우리 진영으로 영구 전향 (배치 칸도 · 빈 칸이 없으면 이번 라운드만)'], ['NO U', '[NO U] 중인 NO U 지후가 마시면 가판대가 상대 진영으로 영구 전향'], ['가판대 여럿', '한 지후는 가판대 하나에만 끌려간다']],
   portal: [['쉴드', '1000'], ['이동', '라운드 시작 · 적을 노리지 않고 적진의 무작위 빈 칸으로 (빈 칸이 없거나 8초가 지나면 그 자리)'], ['포탈', '30초 · 노릴 수 없다 · 2.7초마다 차원체 지후 (살아 있는 차원체 6마리까지) (포탈 지후 체력 15% · 공격력 100% · 1초 · 근접)']],
   lurker: [['[놀래키기]', 'SP 4 · 아공간 잠수 (초당 2칸 · 맞지 않는다) → 무작위 적 곁 · 반경 2.5칸 적 공격력 120% · [공포] 3.5초'], ['납치', '그중 무작위 적 하나를 데리고 잠수해 제자리로 · 납치된 적은 1초마다 200 피해']],
-  radar: [['일반 공격', '8초마다 [불침번]과 함께'], ['[불침번]', '공격마다 · 감시구역 안 가장 가까운 적 최대 2기 · 1.5초 [기절] + [포착] · 2초 레이더가 한 바퀴 돈 뒤 포착한 적 자리 반경 1.5칸 적 공격력 250% · 구역 안 적 공격력 100%'], ['[포착]', '이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100%'], ['SP', '일반 방법으로는 차지 않는다']],
+  radar: [['일반 공격', '8초마다 [불침번]과 함께'], ['[불침번]', '공격마다 · 감시구역 안 가장 가까운 적 최대 3기 · 1.5초 [기절] + [포착] · 2초 레이더가 한 바퀴 돈 뒤 포착한 적 자리 반경 1.5칸 적 공격력 500% · 구역 안 적 공격력 100%'], ['[포착]', '이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100%'], ['SP', '일반 방법으로는 차지 않는다']],
   forge: [['검 강화', '레벨업 (같은 카드 겹치기 · 이벤트) 대신 · 최대 +10 · 경기 내내 유지'], ['성공 확률', '+0 → +1 90% · 강화마다 −7%p (+9 → +10 27%)'], ['실패', '그대로 · 30% 확률로 검 파괴 (+0)'], ['공격력', '강화마다 기본 공격력의 100% (선형)'], ['레벨', 'Lv1 고정 · 배치 칸을 누르면 다음 강화 확률']],
   litmus: [['[검출]', '일반 공격이 맞으면 · 전설 (한정 포함) 빨강 · 그 밖 파랑'], ['[중화]', 'SP 6 · 빨강 수만큼 공격력 높은 아군 공격력 +25% 7초 · 파랑 수만큼 체력 비율 낮은 아군 쉴드 600 × 레벨 배율 (7초 동안 1초마다 1/7씩 사라진다) · 쓰면 검출 수 0']],
   jason: [['공격 간격', '0.2초 · 치명타마다 −0.01초 · 최소 0.05초 · 2초 동안 공격하지 않으면 처음으로'], ['[공포]', '반경 2칸 안에 처음 들어온 적 0.7초 (적마다 한 번)']],
@@ -11281,7 +11290,7 @@ function tapTile(t) {
   if (S.moveSel == null) { if (p) { S.moveSel = t; renderField(); tip(p.id === 'forge' ? `<b>강화 지후</b> ${forgeTipTxt(p.fg | 0)} · 강화 지후 카드를 겹치면 강화` : `<b>${CHARS[p.id].name}</b> Lv${p.lv} 선택 — 옮길 칸을 누르세요 · 같은 지후 <b>Lv${p.lv}</b>(금색)에 놓으면 합쳐 Lv${p.lv + 1} (다시 누르면 상세 정보)`); } return; }
   if (S.moveSel === t) { S.moveSel = null; renderField(); tip(); if (p) charDetail(p.id, true); return; }
   const a = S.moveSel, fused = moveTile(me, a, t); S.ops.push([a, t]); S.moveSel = null; if (TUT.on) TUT.ev('move', { a, t, fused }); // 친선전: 다음 행동과 함께 보낸다 (상대 화면도 같은 규칙으로)
-  renderField(); if (fused === 'joker') { const j = S.place[me][a]; banner(`🃏 ${CHARS[j.id].name}!`); tip(`<b>조커</b>가 <b>${CHARS[j.id].name}</b> Lv${j.lv}(으)로 변했어요 · 체력 · 공격력 −10%`); return; }
+  renderField(); if (fused === 'joker') { const j = S.place[me][a]; banner(`🃏 ${CHARS[j.id].name}!`); tip(`<b>조커</b>가 <b>${CHARS[j.id].name}</b> Lv${j.lv}(으)로 변했어요 · 체력 · 공격력 −20%`); return; }
   const q = S.place[me][t]; if (fused) { banner(`${CHARS[q.id].name} Lv.${q.lv}!`); tip(`<b>${CHARS[q.id].name}</b> 합체 → <b>Lv${q.lv}</b>`); } else tip(`<b>${CHARS[q.id].name}</b> → ${ROW_LABEL[tileKind(t)]}`);
 }
 // 시간 초과: 고른 카드(없으면 놓을 수 있는 첫 카드) → 합칠 수 있으면 합치고, 아니면 역할에 맞는 줄에 놓는다 (전작 autoPlacePool)
@@ -11527,7 +11536,7 @@ function beginCombat() {
   uidSeq = 0; S.units = []; S.timed = []; S.rel = { a: {}, e: {} }; S.relAcc = 0; S.relLog = []; prophecyResolve(); S._ov = { a: overSet(S.place.a), e: overSet(S.place.e) }; // R2.17 유물은 라운드마다 새로 · R2.34 출격제한 초과 칸
   ['a', 'e'].forEach(side => S.place[side].forEach((p, t) => { if (!p) return; const { x, y } = tileXY(side, t); const u = makeUnit(side, p.id, p.lv, x, y); if (S._ov[side].has(t)) ovlUnit(u); u.tile = t; if (p.wn) u.wn = p.wn; if (p.wnL) u.wnL = p.wnL; if (p.wn6) u.wn6 = p.wn6; // 소믈리에 와인 (경기 내내)
     if (p.hb) { u.baseMaxHp = u.maxHp = u.hp = u.maxHp + p.hb; } // 힐 지후 랭크 6 [튼튼 처방] (경기 내내)
-    if (p.jk) { u.baseMaxHp = u.maxHp = u.hp = Math.round(u.maxHp * 0.9); u.atk = Math.round(u.atk * 0.9); } // 조커가 변한 지후: 체력 · 공격력 −10% (R2.36 build 6 · 예전 +10%)
+    if (p.jk) { u.baseMaxHp = u.maxHp = u.hp = Math.round(u.maxHp * 0.8); u.atk = Math.round(u.atk * 0.8); } // 조커가 변한 지후: 체력 · 공격력 −20% (R3.2 build 17 · R2.36 build 6 −10% · 예전 +10%)
     const pr = S.prop[side][t]; if (pr === 'on') { u.propMult = 2.5 + 0.2 * (p.arc || 0); // R2.8: +150%
     u.arcN = p.arc; u.st.arcana = 800; } else if (pr === 'buff') u.atk += 20; // 예언 (R2.7.1): 변신 (R2.8 +150% · 아르카나 하나당 +20%) · 다른 예언 지후는 공격력 +10
     evUnit(u, p);
@@ -14539,7 +14548,23 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 진영 3 × 5 · 픽업 개편', sections: [
+  { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 진영 3 × 5 · 픽업 개편 · 밸런스', sections: [
+    { title: '추가 패치 (build 17) · 밸런스 7종', items: [
+      { id: 'radar', name: '레이더 지후', tag: 'buff', desc: '[불침번] 폭발 <b>250% → 500%</b> · 대상 <b>2기 → 3기</b>' },
+      { id: 'rot', name: '부패 지후', tag: 'buff', desc: '공격 간격 <b>2.2 → 1.7초</b>' },
+      { id: 'sans', name: '샌즈 지후', tag: 'buff', desc: '[와! 샌즈] 피해 <b>75% → 100%</b>' },
+      { id: 'train', name: '신칸센 지후', tag: 'nerf', desc: '공격력 <b>400 → 340</b>' },
+      { id: 'train', name: '신칸센 지후', tag: 'buff', desc: '일반 공격 공격력의 <b>10% → 20%</b>' },
+      { id: 'joker', name: '조커 지후', tag: 'nerf', desc: '변신 능력치 <b>−10% → −20%</b>' },
+      { id: 'venom', name: '독 지후', tag: 'buff', desc: '[중독] <b>12 → 16초</b>' },
+      { id: 'stand', name: '가판대 지후', tag: 'nerf', desc: '레모네이드 회복 <b>600 → 400</b>' },
+      { id: 'stand', name: '가판대 지후', tag: 'rework', desc: '마신 적 [매혹] → <b>영구 전향</b> (상대 진영에서 사라지고 우리 진영으로)' },
+      { id: 'stand', name: '가판대 지후', tag: 'rework', desc: '[NO U] 중인 NO U 지후가 마시면 가판대가 상대 진영으로 영구 전향' },
+    ] },
+    { title: '추가 패치 (build 17) · 시스템', items: [
+      { icon: '⭐', name: '픽업 모집', tag: 'adjust', desc: '픽업 배너 천장 없음' },
+      { icon: '📱', name: '메인 화면', tag: 'fix', desc: '모바일에서 7일 이벤트와 열쇠 상자 버튼이 겹치던 문제' },
+    ] },
     { title: '추가 패치 (build 16) · 수정', items: [
       { icon: '📱', name: '모집 배너', tag: 'fix', desc: '모바일에서 아래쪽 배너가 하단 메뉴에 가려 누를 수 없던 문제' },
     ] },
@@ -17402,7 +17427,7 @@ function u3Units(v) { // 지후 탭: 왼쪽 덱 · 가운데 지후 격자 (등�
     rec: () => recRoll(), recT: profile.level <= REC_MAX_LV ? '덱 추천' : '랜덤 덱' };
 }
 // ═ R3.2 build 15 픽업 개편 (R3.1 build 2 픽업 모집을 갈아엎음): 특별 픽업 PU_SP (개발자가 정함 · 7일) · 오늘의 픽업 (한국 시간 0시마다 · 모두 같은 무작위 전설) · 신규 픽업 PU_NEW (최근 전설 · 지후마다 배너 · 48시간) · 커스텀 픽업 (전설 5종 profile.cuPick)
-// 픽업 배너 (특별 · 오늘 · 신규) 에서 전설이 나오면 PU_RATE 66.6% 픽업 지후 · 놓치면 다음 전설은 확정 (profile.puLost) · 천장 profile.puPity · 둘 다 배너끼리 같이 쓴다 · 커스텀은 전설이 고른 5종 안에서만
+// 픽업 배너 (특별 · 오늘 · 신규) 에서 전설이 나오면 PU_RATE 66.6% 픽업 지후 · 놓치면 다음 전설은 확정 (profile.puLost · 배너끼리 같이) · R3.2 build 17: 픽업 배너는 천장 없음 · 커스텀은 전설이 고른 5종 안에서만
 // 모든 모집 1회 = 마일리지 1 (profile.mile) → 마일리지 샵 (UI2.st.u3mile · u3OvD)
 const PU_DAY = 86400000, PU_KST = 9 * 3600000, PU_RATE = 0.666;
 const PU_SP = { id: 'orchestra', t0: Date.UTC(2026, 10, 16, 15), ms: 7 * PU_DAY }; /* 2026-11-17 0시 (KST) 부터 7일 */
@@ -17417,25 +17442,23 @@ const puTarget = k => (k === 'sp' ? PU_SP.id : k === 'td' ? puToday() : typeof k
 const puOk = k => (k === 'sp' ? puSpOn() : k === 'td' ? true : k === 'cu' ? !!cuPick() : typeof k === 'string' && k.startsWith('nw:') ? puNew().includes(k.slice(3)) : false);
 const puEnd = k => (k === 'sp' ? PU_SP.t0 + PU_SP.ms : k === 'td' ? (puDay() + 1) * PU_DAY - PU_KST : typeof k === 'string' && k.startsWith('nw:') ? PU_NEW.t0 + PU_NEW.ms : 0);
 const puLeft = k => { const ms = puEnd(k) - Date.now(); return ms <= 0 ? '' : ms >= 2 * PU_DAY ? `D-${Math.ceil(ms / PU_DAY) - 1}` : fmtLeft(ms); };
-function puRoll(k) { // 픽업 모집 한 번 (전설이면 픽업 판정 · 천장)
-  let id = (profile.puPity | 0) >= CFG.PITY ? null : rollOne();
-  if (!id || CHARS[id].rarity === 'legend') {
+function puRoll(k) { // 픽업 모집 한 번 (전설이면 픽업 판정 · R3.2 build 17: 천장 없음)
+  let id = rollOne();
+  if (CHARS[id].rarity === 'legend') {
     const C = k === 'cu' ? cuPick() : null, f = puTarget(k);
     if (C) id = C[Math.floor(Math.random() * C.length)];
     else if (f && CHARS[f]) { const L = puList().filter(x => x !== f); id = profile.puLost || Math.random() < PU_RATE || !L.length ? f : L[Math.floor(Math.random() * L.length)]; profile.puLost = id !== f; }
-    else id = id || rollLegend();
-    profile.puPity = 0;
-  } else profile.puPity = (profile.puPity | 0) + 1;
+  }
   return id;
 }
 function u3Pu(banners, tix, RC, k) { // 모집 탭 픽업 배너 값 (k: sp · td · nw:<id> · cu)
-  const pity = profile.puPity | 0, cu = k === 'cu', C = cuPick(), f = cu ? (C ? C[0] : 'fire') : puTarget(k) || 'fire', left = puLeft(k);
+  const cu = k === 'cu', C = cuPick(), f = cu ? (C ? C[0] : 'fire') : puTarget(k) || 'fire', left = puLeft(k);
   const EN = { sp: 'SPECIAL PICK UP', td: 'TODAY PICK UP', cu: 'CUSTOM PICK UP' }[k] || 'NEW PICK UP';
   const need = () => (cu && !cuPick() ? (cuOpen(), true) : false);
   return { hero: u2Img(f), ghost: 'PICK UP · '.repeat(10), banners, tix, odds: CFG.GACHA.slice().reverse().map(([r, p]) => ({ c: RC[r] || '#9b958a', t: `${RARITY[r]} ${p}%` })), std: false, nb: false, pu: true,
     en: EN + (left ? ' · ' + left : ''), title: cu ? '커스텀 픽업' : CHARS[f].name, sub: cu ? '전설은 고른 5종 중 하나' : profile.puLost ? '다음 전설은 픽업 지후 확정' : '전설이 나오면 66.6% 픽업 지후',
     cu, cuPics: cu ? (C || []).map(id => ({ src: u2Img(id) })) : [], cuT: C ? '5종 바꾸기' : '전설 5종 고르기', cuGo: () => cuOpen(),
-    barL: 'PITY · 천장', barN: pity, barMax: CFG.PITY, barW: Math.min(100, pity / CFG.PITY * 100) + '%',
+    barOn: false, /* R3.2 build 17: 픽업은 천장 없음 */
     p1: () => (need() ? null : !puOk(k) ? u2Toast('끝난 모집이에요') : profile.dia < CFG.PULL1 ? u2Toast('다이아가 부족해요') : (pull(1, false, false, k), u2Render())),
     p10: () => (need() ? null : !puOk(k) ? u2Toast('끝난 모집이에요') : pull10Go(k) === false ? u2Toast('다이아가 부족해요') : u2Render()) };
 }
@@ -17467,8 +17490,8 @@ function u3Recruit(v) { // 모집 탭: 상시 · 초보자 배너 · 천장 · �
   const odds = (ban === 'nb' ? CFG.NB_GACHA : CFG.GACHA).slice().reverse().map(([r, p]) => ({ c: RC[r] || '#9b958a', t: `${RARITY[r]} ${p}%` }));
   const pity = profile.pity || 0;
   if (pk.includes(ban)) return u3Pu(banners, tix, RC, ban); /* R3.2 build 15 */ return ban === 'nb'
-    ? { hero: u2Img(CHARS.water ? 'water' : hero), ghost: 'NEWCOMER · '.repeat(10), banners, tix, odds, std: false, nb: true, en: 'NEWCOMER', title: '초보자 모집', sub: `${CFG.NB_PULLS}회 · 마지막은 전설`, barL: 'PROGRESS', barN: profile.nbPulls | 0, barMax: CFG.NB_PULLS, barW: v.nbPct }
-    : { hero: u2Img(hero), ghost: 'RECRUIT · '.repeat(10), banners, tix, odds, std: true, nb: false, en: 'STANDARD', title: '상시 모집', sub: `${CFG.PITY}회 안에 전설 확정`, barL: 'PITY · 천장', barN: pity, barMax: CFG.PITY, barW: Math.min(100, pity / CFG.PITY * 100) + '%' };
+    ? { hero: u2Img(CHARS.water ? 'water' : hero), ghost: 'NEWCOMER · '.repeat(10), banners, tix, odds, std: false, nb: true, barOn: true, en: 'NEWCOMER', title: '초보자 모집', sub: `${CFG.NB_PULLS}회 · 마지막은 전설`, barL: 'PROGRESS', barN: profile.nbPulls | 0, barMax: CFG.NB_PULLS, barW: v.nbPct }
+    : { hero: u2Img(hero), ghost: 'RECRUIT · '.repeat(10), banners, tix, odds, std: true, nb: false, barOn: true, en: 'STANDARD', title: '상시 모집', sub: `${CFG.PITY}회 안에 전설 확정`, barL: 'PITY · 천장', barN: pity, barMax: CFG.PITY, barW: Math.min(100, pity / CFG.PITY * 100) + '%' };
 }
 // ═ R3.1 ui3 뽑기 연출 「봉인된 기록 열람」 (showReveal 대신 · GR 타이머 · grClose 그대로): 봉인 → 기밀 문서 카드 → 검열 막대가 걷히며 공개 → 전설은 화면 전체 금빛 사선
 function u3RvFit() { const st = document.querySelector('#reveal .u3rv-st'); if (!st) return; const s = Math.min(innerWidth / 1280, innerHeight / 720) || 1; st.style.setProperty('--rvs', String(s)); }
@@ -18463,7 +18486,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { tlgOpen, TLG, tlgRun, tlgAgg, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
