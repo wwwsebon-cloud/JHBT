@@ -12,7 +12,7 @@
 # 어긋나면 아래 SIG_FIX 에 손으로 적는다 (새 지후도 마찬가지 · 확인표를 보고)
 import re, base64, io, colorsys, json, sys
 
-SIG_FIX = { 'witch': '#ff4fe0', 'forge': '#e0b020', 'litmus': '#ff7a8c,#7f8cff', 'jason': '#3ecf6e',   # id: '#rrggbb' — 자동으로 뽑은 색이 그 지후의 색과 다를 때만
+SIG_FIX = { 'pknight': '#e8d36a', 'voodoo': '#5b1f8f', 'curse': '#a8703c,#e8202a', 'witch': '#ff4fe0', 'forge': '#e0b020', 'litmus': '#ff7a8c,#7f8cff', 'jason': '#3ecf6e',   # id: '#rrggbb' — 자동으로 뽑은 색이 그 지후의 색과 다를 때만
     'mercury': '#aab2c0',  # 은색 몸 + 빨간 뿔 → 자동은 빨강
     'antigrav': '#b48cff',  # 회색 몸 + 연보라 구슬 → 자동은 회색
     'joker': '#ff4d4d,#ffa63d,#ffe14d,#4ad66b,#4da6ff,#a46bff',  # 예외: 무지개 그라데이션 (사용자 요청)
