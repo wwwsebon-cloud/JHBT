@@ -16,4 +16,20 @@ for i, l in enumerate(L):
             print(f'{i + 1}: {tail[:140]}'); bad += 1
         break
 print('의심 0줄 · 통과' if not bad else f'의심 {bad}줄 — 주석을 /* … */ 로 바꾸거나 줄을 나누세요')
+# 2026-11-17: 패치노트 감시 — 예전 파일을 그대로 올려 (「Add files via upload」) R2.10.3 · R2.11.0 패치노트가 조용히 사라진 적이 있다.
+# 버전마다 항목 수를 tools/pn-count.json 에 기록해 두고, 줄어들면 실패한다 (늘어난 만큼은 저절로 기록 · 일부러 지울 때만 --pn-ok)
+import json, os
+if os.path.basename(path) == 'index.html':
+    src = '\n'.join(L); a = src.find('const PATCH_NOTES')
+    if a >= 0:
+        blk = src[a:src.find('\n];', a)]; vs = [(m.start(), m.group(1)) for m in re.finditer(r"^\s*\{ v: '([^']+)'", blk, re.M)]
+        now = {v: blk[p0:(vs[k + 1][0] if k + 1 < len(vs) else len(blk))].count("desc: '") for k, (p0, v) in enumerate(vs)}
+        snap = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pn-count.json')
+        old = json.load(open(snap, encoding='utf-8')) if os.path.exists(snap) else {}
+        lost = [f'{v} {n} → {now.get(v, 0)}' for v, n in old.items() if now.get(v, 0) < n]
+        if lost and '--pn-ok' not in sys.argv:
+            print('⚠ 패치노트가 줄었어요 (지워졌을 수 있음): ' + ' · '.join(lost)); print('  일부러 지운 거라면 --pn-ok 로 다시'); sys.exit(1)
+        new = {v: max(n, old.get(v, 0)) if '--pn-ok' not in sys.argv else n for v, n in now.items()}
+        if new != old: json.dump(new, open(snap, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+        print(f'패치노트 {len(now)}개 버전 · 줄어든 것 없음')
 sys.exit(1 if bad else 0)
