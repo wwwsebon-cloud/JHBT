@@ -7966,7 +7966,7 @@ function sansPush(u) { // 모든 적 · 상하좌우 중 무작위 한 벽까지
   if (!S.fast) { shake(true); if (CV.on) CVF.over.push({ k: 'sans', t0: performance.now(), ms: 520, x: 0, y: 0, a: Math.atan2(dy, dx) }); }
   const W = FW(), H = FH(), dmg = effAtk(u) * 0.75; /* R3.2 build 12: 50 → 75% */ /* R2.30 build 2: 150 → 50% */
   foes(u).forEach(e => { if (!e.alive) return; dealDamage(u, e, dmg, { skill: true, lite: true }); if (!e.alive) return;
-    const r = unitRadius(e), far = dx > 0 ? W - r - e.x : dx < 0 ? e.x - r : dy > 0 ? H - r - e.y : e.y - r; A.knock(u, e, Math.max(0.3, far / CFG.CELL), dx, dy); });
+    const r = unitRadius(e), far = dx > 0 ? W - r - e.x : dx < 0 ? e.x - r : dy > 0 ? H - r - e.y : e.y - r; A.knock(u, e, Math.max(0.3, far / CFG.CELL), dx, dy, { bounce: 0.8 }); }); /* R3.2 build 13: 벽에 부딪히면 0.8칸 튕겨 나온다 */
 }
 function gunqSteer(u) { const t = nearestFoe(u); if (!t) return true; if (dist(u, t) > unitRadius(u) + unitRadius(t) + 0.6 * CFG.CELL) moveToward(u, t.x, t.y, 1, t); return true; } // 총? 지후: 공격하지 않고 가장 가까운 적 곁으로
 function gunqFire(u) { // 총? 지후 [탕!!]: 쓰러지면 자신을 쓰러뜨린 적 (없으면 마지막으로 때린 적) 을 쏜다 · [고자] (이번 라운드 최대 체력 · 체력 1 · 죽이지 않는다 · R2.31 build 2 리워크) · 총알 방향 10칸 넉백 · 자신은 반동으로 반대로 날아가며 그대로 쓰러진다
@@ -9456,10 +9456,10 @@ const A = {
   fan: (u, cells, deg, fn) => { const t = nearestFoe(u); if (!t) return; const a0 = Math.atan2(t.y - u.y, t.x - u.x); foes(u).forEach(e => { if (inFan(u, e, a0, deg * Math.PI / 360, cells * CFG.CELL)) fn(e); }); },
   ring: (x, y, cells) => { if (CV.on) { CVF.under.push({ k: 'ring', t0: performance.now(), ms: 450, x, y, r: cells * CFG.CELL }); return; } /* R2.29 캔버스 */ const r = document.createElement('div'); r.className = 'fx-ring'; r.style.left = x + 'px'; r.style.top = y + 'px'; r.style.width = r.style.height = cells * CFG.CELL * 2 + 'px'; $('field').appendChild(r); setTimeout(() => r.remove(), 460); },
   shot: (u, e, onHit) => launchProjectile(u, e, onHit),
-  knock: (src, t, cells, dx, dy) => { // 넉백: dx, dy 방향 (없으면 src → t) 으로 cells 칸을 0.35초 동안 미끄러진다 (움직이지 않는 지후 · 무적은 그대로)
+  knock: (src, t, cells, dx, dy, o) => { /* o.bounce: 벽에 부딪히면 그만큼 (칸) 튕겨 나온다 (R3.2 build 13 · 샌즈) */ // 넉백: dx, dy 방향 (없으면 src → t) 으로 cells 칸을 0.35초 동안 미끄러진다 (움직이지 않는 지후 · 무적은 그대로)
     if (!t.alive || cells <= 0 || t.def.immobile || t.def.stainless || t.st.inv > 0 || t.st.dive > 0 || t.ghost) return; /* R2.30 스테인리스: 넉백 없음 */
     if (dx == null) { dx = t.x - src.x; dy = t.y - src.y; } const d = Math.hypot(dx, dy) || 1, T = 0.35;
-    t.kb = { dx: dx / d, dy: dy / d, v: 2 * cells * CFG.CELL / T, T, left: T };
+    t.kb = { dx: dx / d, dy: dy / d, v: 2 * cells * CFG.CELL / T, T, left: T, bn: (o && o.bounce) || 0 };
   },
   line: (u, x, y, ang, o) => { // 맵 끝까지 직진하는 관통탄 (해일 · 황금 화살 · 가시) · o: { speed 칸/초, hw 반폭 px, cls, skip, onHit(e, frac) }
     const el = document.createElement('div'); el.className = o.cls; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.transform = `translate(-50%,-50%) rotate(${ang}rad)`; if (o.h) el.style.height = o.h + 'px';
@@ -9670,9 +9670,13 @@ function moveToward(u, tx, ty, mul, tgt) {
 }
 
 // ── 물리: 전작 physIntegrate · physSolvePair · physWalls ──
+function kbBounce(u, k) { // R3.2 build 13 넉백 벽 튕김 (샌즈): 벽에 닿으면 벽 쪽으로 붙이고 반대로 k.bn 칸 (0.24초) · 맞은 자리 작은 고리
+  const r = unitRadius(u), W = FW(), H = FH(), hx = k.dx > 0 ? u.x > W - r : k.dx < 0 ? u.x < r : false, hy = k.dy > 0 ? u.y > H - r : k.dy < 0 ? u.y < r : false; if (!hx && !hy) return false;
+  u.x = clamp(u.x, r, W - r); u.y = clamp(u.y, r, H - r); const T = 0.24, ex = hx ? -k.dx : 0, ey = hy ? -k.dy : 0, d = Math.hypot(ex, ey) || 1;
+  u.kb = { dx: ex / d, dy: ey / d, v: 2 * k.bn * CFG.CELL / T, T, left: T, bn: 0 }; if (!S.fast) fxRing(u.x - ex / d * r, u.y - ey / d * r, r * 1.3, 'rgba(255,255,255,.9)', 240, 5); return true; }
 function physIntegrate(u, dt) {
   if (!u.alive || u.ghost) return; // 신칸센 돌진 중: 위치를 직접 옮긴다
-  if (u.kb) { const k = u.kb, v = k.v * (k.left / k.T); u.x += k.dx * v * dt; u.y += k.dy * v * dt; u.vx = u.vy = 0; k.left -= dt; if (k.left <= 0) u.kb = null; return; } // 넉백
+  if (u.kb) { const k = u.kb, v = k.v * (k.left / k.T); u.x += k.dx * v * dt; u.y += k.dy * v * dt; u.vx = u.vy = 0; k.left -= dt; if (k.bn && kbBounce(u, k)) return; if (k.left <= 0) u.kb = null; return; } // 넉백
   const frozen = u.st.freeze > 0, stunned = u.st.stun > 0, slow = u.st.frost > 0 ? 0.6 : 1; // [동상]: 이동속도 -40%
   const desX = frozen || stunned ? 0 : u.desVx * slow, desY = frozen || stunned ? 0 : u.desVy * slow;
   const k = 1 - Math.exp(-(frozen ? 22 : stunned ? 5 : PHYS.STEER) * dt);
@@ -14502,6 +14506,7 @@ const PATCH_NOTES = [
   { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 진영 3 × 5 · 밸런스 조정', sections: [
     { title: '추가 패치 (build 13)', items: [
       { icon: '💥', name: '디펜스 충격파', tag: 'nerf', desc: '72웨이브까지 <b>45%</b> (예전 36웨이브 60%) · 110웨이브 <b>50%</b> · 120웨이브 <b>55%</b>' },
+      { id: 'sans', name: '샌즈 지후', tag: 'adjust', desc: '[와! 샌즈] 벽에 부딪힌 적이 살짝 튕겨 나옴' },
     ] },
     { title: '진영 개편 (build 12)', items: [
       { icon: '🗺', name: '진영', tag: 'system', desc: '배치 칸 <b>3 × 4 → 3 × 5</b> (15칸 · 중열 한 줄 더)' },
