@@ -16,7 +16,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.2** (build 3).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.2** (build 4).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -128,7 +128,7 @@
 
 ## 최근 변경 (R3.2 · 2026-11-17)
 - **신규 지후 4종** (`// ── R3.2 신규 지후 도우미 ──` · 원본 `지후초상화/R3.2/`): 트리아지후 `triage` (`trgDrop` · 보급은 지후마다 한 번 `t.trgGot`) · 마녀 `witch` (`witchAttack` 물약 · 변이는 `A.transform(t, 'frog', lv, true)`) · 냉각 `frostj` (`frostShot` 관통 · [빙결] → [동상] · `polarZone`) · 낚시 `fisher` (`fishTick` 찌 · `fishAttack` 낚은 적만 100%). **받는 피해 버프 키 `tk`** (dealDamage 공통 · 예전 `taken` 은 스테인리스만) · 새 지후 토큰은 모두 2 (사용자가 안 정함).
-- **build 3 신규 지후 4종** (`// ── R3.2 build 3 신규 지후 도우미 ──`): 팔라딘 `paladin` (토큰 8 · `def.plCall` → dealDamage 맨 앞 `paladinCall` · SUMMONS `pknight` · 초상화는 R1 paladin · knight) · 저주 `curse` (`curseAttack` · `u.cuT` / `u.cuN`) · 최면 `hypno` (STATUS `hyp` · `aiSteerAndAttack` 의 `hypSteer`) · 부두술사 `voodoo` (커뮤니티 Kaden · `vdSteer` · `u.vdOn` 이면 `foeList` · `canTarget` 이 아군에게도 적 · dealDamage 맨 앞 25% / 25% 옮김 `opts.vdx` · `S.vdN`). 강화 지후 연출: 머리 위 `.xlv.fg` 흰 블록 글씨 (캔버스도 k2 'fg') · 배치 칸 누르기 `fgHoldOn` · 결과 `forgeFx` (S.fx 의 `fg` ok · fail · break).
+- **build 3 신규 지후 4종** (`// ── R3.2 build 3 신규 지후 도우미 ──`): 팔라딘 `paladin` (토큰 8 · `def.plCall` → dealDamage 맨 앞 `paladinCall` · SUMMONS `pknight` · 초상화는 R1 paladin · knight) · 저주 `curse` (`curseAttack` · `u.cuT` / `u.cuN`) · 최면 `hypno` (STATUS `hyp` · `aiSteerAndAttack` 의 `hypSteer`) · 부두술사 `voodoo` (커뮤니티 Kaden · `vdSteer` · `u.vdOn` 이면 `foeList` · `canTarget` 이 아군에게도 적 · dealDamage 맨 앞 · build 4: 누구에게 맞든 25% 만 받고 저주한 적에게 150% `opts.vdx` · `S.vdN`). 강화 지후 연출: 머리 위 `.xlv.fg` 흰 블록 글씨 (캔버스도 k2 'fg') · 배치 칸 누르기 `fgHoldOn` · 결과 `forgeFx` (S.fx 의 `fg` ok · fail · break).
 - **build 2**: 이동속도 0 지후 (낚시) — `makeUnit` 이 `b.speed || 1.6` 으로 0 을 1.6 으로 바꿨다 (이제 `!= null`) · `speed === 0` 이면 밀리지 않는다 (`invMass` 0 · `moveToward` 멈춤 · 넉백은 받는다) · 디펜스 적 풀 제외 · 극지방 게이지 = `monoDraw` 발밑 고리 (`u.buffs.polar` · `u.polarT / 10` · 버프가 끝나면 다시 0) · 흡혈 `u.vb.el` 10초 뒤 10초에 걸쳐 1까지 · 강화 지후 `forgeStart` 공격력 ×(1 + 강화).
 - R3.1.6 (같은 날): R3.1 잠수함 패치 모음 (새 로비 · 동접자 수 `pulse` · 토큰 5 · 조정).
 

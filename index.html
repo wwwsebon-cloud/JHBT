@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -7019,7 +7019,7 @@ const CHARS = {
     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[최면]</b>. 대상 주변 반경 <b>1.7칸</b> 적이 <b>2초</b> 동안 공격하지 못하고 가려던 반대쪽으로 걷습니다.', run(u) { hypCast(u); } } },
   voodoo: { name: '부두술사 지후', rarity: 'legend', role: '탱커', hp: 1666, atk: 0, atkSpeed: 1, range: 4.3, speed: 1.5, tok: 3, noAttack: true, portrait: PORTRAITS.voodoo, sfx: 'swing', color: '#3a1450',
     story: '할로윈 마을 끝자락 오두막에 사는 부두술사 지후입니다. 처음 마주친 지후를 사슬로 엮어 두고는 동료들에게 자기를 때려 보라고 권하는 이상한 버릇이 있어요. 동료들이 미안해하며 살살 때리면, 엉뚱하게도 사슬 끝에 묶인 적이 아파서 펄쩍 뜁니다. 덕분에 그의 팀은 회식 때마다 그를 두들기며 스트레스를 풀어요. 이웃인 마녀 지후는 그를 좋은 이웃이라고 생각하지만, 밤마다 오두막에서 들려오는 웃음소리 때문에 이사를 고민하고 있습니다. 그는 오늘도 맞으면서 웃고 있어요.',
-    passive: '공격하지 않습니다. 사거리에 처음 들어온 적을 사슬로 <b>[저주]</b>하고 멈춰 섭니다. 그동안 아군이 부두술사를 공격하는데, 아군에게 받은 피해는 <b>25%</b>만 받고 <b>25%</b>는 저주한 적에게 옮겨집니다.',
+    passive: '공격하지 않습니다. 사거리에 처음 들어온 적을 사슬로 <b>[저주]</b>하고 멈춰 섭니다. 그동안 아군이 부두술사를 공격합니다. 공격을 받으면 피해를 <b>25%</b>만 받고, 저주한 적에게 <b>150%</b>가 옮겨집니다.',
     onStart(u) { u.vd = { t: null, cd: 0 }; S.vdN = 0; vdHead(u); }, steer(u) { return vdSteer(u); }, tick(u, dt) { vdTick(u, dt); }, onDeath(u) { vdEnd(u, 0); } },
 };
 // ── R2.17 신규 지후 도우미 ──
@@ -7823,7 +7823,7 @@ function hypCast(u) { const c = u.tgt && canTarget(u, u.tgt) ? u.tgt : nearestFo
   if (!S.fast) { fxRing(x, y, R, 'rgba(190,60,230,.9)', 560, 8); dmgNum(u, '🌀 최면', { crit: true, stamp: true }); }
   foes(u).forEach(e => { if (e.alive && Math.hypot(e.x - x, e.y - y) <= R + unitRadius(e)) A.status(e, 'hyp', 2); }); }
 function hypSteer(u) { clearTelegraph(u); u._engaged = false; const n = nearestFoe(u); if (n) moveToward(u, u.x - (n.x - u.x) * 4, u.y - (n.y - u.y) * 4, 1); }
-// 부두술사 지후 (커뮤니티 Kaden): 공격하지 않는다 · 사거리에 처음 들어온 적에게 사슬 [저주] → 그 자리에 멈춘다 · 사슬 동안 아군이 부두술사를 적으로 보고 공격 (foeList · canTarget 의 u.vdOn)
+// 부두술사 지후 (커뮤니티 Kaden · build 4: 누구에게 맞든 25% 만 · 저주한 적 150%): 공격하지 않는다 · 사거리에 처음 들어온 적에게 사슬 [저주] → 그 자리에 멈춘다 · 사슬 동안 아군이 부두술사를 적으로 보고 공격 (foeList · canTarget 의 u.vdOn)
 //   아군에게 맞으면 25% 만 받고 25% 는 저주한 적에게 (dealDamage 맨 앞 · 50% 는 사라진다) · 적에게 맞으면 그대로 · 저주한 적이 쓰러지면 4초 뒤 다시 사슬
 function vdHead(u) { if (!u.el) return; const tx = u.vdOn ? '⛓ 저주' : ''; if (u.vdTx === tx) return; u.vdTx = tx; let b = u.el.querySelector('.xlv.vd'); if (!b) { b = document.createElement('span'); b.className = 'xlv vd'; u.el.appendChild(b); } b.textContent = tx; drawUnit(u); }
 function vdChain(u, t) { const v = u.vd; v.t = t; u.vdOn = true; S.vdN = (S.vdN || 0) + 1; A.status(t, 'vdc', 9999); vdHead(u); if (!S.fast) { dmgNum(t, '⛓ 저주!', { crit: true, stamp: true }); fxRing(t.x, t.y, 1.1 * CFG.CELL, 'rgba(120,40,170,.9)', 480, 7); } }
@@ -8130,7 +8130,7 @@ const CHAR_INFO = {
   paladin: [['쉴드', '400 (레벨 배율)'], ['기사단 소환', '처음 적에게 맞을 때 (쉴드에 막혀도) 한 번 · 맞은 쪽으로 1.3칸 앞에 한 줄로 5기'], ['팔라딘나이트 지후', '체력 100 · 쉴드 300 (10초 동안 서서히 사라짐) · 공격력 80 · 2.2초 · 근접 (팔라딘 레벨 배율)']],
   curse: [['저주 스택', '공격마다 +1 · 저주 지후마다 따로 · 다른 적을 공격하면 처음부터'], ['[즉사]', '같은 대상 4번째 공격 · 모든 생존기 무시'], ['일반 공격', '공격력 100%']],
   hypno: [['[최면]', 'SP 4 · 대상 (없으면 가장 가까운 적) 자리 반경 1.7칸 적 · 2초'], ['[최면] 상태', '공격하지 못한다 · 가장 가까운 적의 반대쪽으로 걷는다']],
-  voodoo: [['사슬 [저주]', '사거리 안에 처음 들어온 적 · 그 적이 쓰러질 때까지 그 자리에 멈춘다'], ['아군의 공격', '사슬 동안 아군이 부두술사를 노린다 · 받은 피해 25% → 부두술사 · 25% → 저주한 적 · 50% 사라짐'], ['적의 공격', '그대로 받는다'], ['다시 사슬', '저주한 적이 쓰러지고 4초 뒤'], ['제작', '커뮤니티 제작 지후 · Kaden']],
+  voodoo: [['사슬 [저주]', '사거리 안에 처음 들어온 적 · 그 적이 쓰러질 때까지 그 자리에 멈춘다'], ['아군의 공격', '사슬 동안 아군이 부두술사를 노린다'], ['피해 이전', '사슬 동안 누구에게 맞든 · 부두술사는 25% 만 받고 · 저주한 적은 150% 를 받는다'], ['다시 사슬', '저주한 적이 쓰러지고 4초 뒤'], ['제작', '커뮤니티 제작 지후 · Kaden']],
   stand: [['레모네이드', '반경 4.5칸 · 처음 들어온 아군 (움직이는 지후) 을 끌어와 체력 600 × 레벨 배율 회복 · 넘친 만큼 쉴드'], ['[리얼 탄산 레모네이드]', 'SP 10 · 초당 1 (다른 방법으로는 차지 않는다) · 자신 말고 아군이 없으면 쓰지 않는다 · 무작위 아군 자리 반경 3칸 · 5초 동안 아군 (자신 제외) 초당 100 회복 · 적 초당 50 피해 (레벨 배율)'], ['장사', '한 잔에 토큰 0.2 (다섯 잔마다 토큰 1) · 디펜스는 한 잔에 골드 1'], ['손님 적', '처음 들어온 적 10% · 끌려와 마시면 체력 가득 · 라운드 끝까지 [매혹]'], ['가판대 여럿', '한 지후는 가판대 하나에만 끌려간다']],
   portal: [['쉴드', '1000'], ['이동', '라운드 시작 · 적을 노리지 않고 적진의 무작위 빈 칸으로 (빈 칸이 없거나 8초가 지나면 그 자리)'], ['포탈', '30초 · 노릴 수 없다 · 2.7초마다 차원체 지후 (살아 있는 차원체 6마리까지) (포탈 지후 체력 15% · 공격력 100% · 1초 · 근접)']],
   lurker: [['[놀래키기]', 'SP 4 · 아공간 잠수 (초당 2칸 · 맞지 않는다) → 무작위 적 곁 · 반경 2.5칸 적 공격력 120% · [공포] 3.5초'], ['납치', '그중 무작위 적 하나를 데리고 잠수해 제자리로 · 납치된 적은 1초마다 200 피해']],
@@ -9248,7 +9248,7 @@ function recut(t) { const f = Math.min(0.9, t.cuts.reduce((n, c) => n + c.f, 0))
 // ── 피해 · 회복 · 상태이상 ──
 function dealDamage(src, t, amount, opts = {}) {
   if (!t.alive || amount <= 0) return 0;
-  if (t.vdOn && src && src !== t && src.side === t.side && !opts.vdx) { const c = t.vd && t.vd.t; if (c && c.alive) dealDamage(src, c, amount * 0.25, { lite: true, noCrit: true, vdx: true, dot: true }); amount *= 0.25; } /* R3.2 build 3 부두술사: 아군에게 맞으면 25% 만 · 25% 는 저주한 적에게 */
+  if (t.vdOn && src && src !== t && !opts.vdx) { const c = t.vd && t.vd.t; if (c && c.alive) dealDamage(src, c, amount * 1.5, { lite: true, noCrit: true, vdx: true, dot: true }); amount *= 0.25; } /* R3.2 build 4 부두술사: 누구에게 맞든 25% 만 받고 저주한 적에게 150% (build 3: 아군만 · 25%) */
   if (t.def.plCall && !t.plDone && src && src !== t && src.side !== t.side) paladinCall(t, src); /* R3.2 build 3 팔라딘 지후: 처음 적에게 맞으면 */
   if (t.dcStore) { t.dcStore.v += amount; return 0; } /* R3.1 build 5 오케스트라 [다카포]: 받는 피해를 모은다 */
   if (src && !opts.dot && (src.realm || 0) !== (t.realm || 0)) return 0; // R2.25 아공간: 다른 층끼리는 맞지 않는다
@@ -14432,6 +14432,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 밸런스 조정', sections: [
+    { title: '추가 패치 (build 4)', items: [
+      { id: 'voodoo', name: '부두술사 지후', tag: 'buff', desc: '적에게 맞아도 피해가 저주한 적에게 옮겨짐' },
+      { id: 'voodoo', name: '부두술사 지후', tag: 'buff', desc: '저주한 적이 받는 피해 <b>25% → 150%</b>' },
+    ] },
     { title: '신규 지후 (build 3)', items: [
       { id: 'paladin', name: '팔라딘 지후', tag: 'new', desc: '전설 · 토큰 8 · 쉴드 400 · 처음 맞으면 앞에 팔라딘나이트 지후 5기 소환' },
       { id: 'curse', name: '저주 지후', tag: 'new', desc: '전설 · 토큰 3 · 같은 대상을 4번 연속 공격하면 4번째에 [즉사]' },
