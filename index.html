@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="7"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -6993,7 +6993,7 @@ const CHARS = {
     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[놀래키기]</b>. 아공간으로 잠수해 무작위 적 곁에서 튀어나와 반경 <b>2.5칸</b> 적에게 공격력의 <b>120%</b> 피해와 <b>3.5초</b> [공포]를 주고, 그중 하나를 납치해 제자리로 돌아옵니다.', run(u) { lkGo(u); } } },
   radar: { name: '레이더 지후', rarity: 'legend', role: '컨트롤러', hp: 1500, atk: 100, atkSpeed: 8, range: 3, speed: 1.6, tok: 4, /* R3.2 build 5: 3 → 4 */ atkText: () => '100 · 반경 5.5칸', portrait: PORTRAITS.radar, sfx: 'shot', color: '#2b33c8',
     story: '왕궁 성벽 위 망루에서 밤새 불침번을 서는 지후입니다. 머리 위에 커다란 나침반을 쓰고 있어서 방향만큼은 절대 잃지 않지만, 정작 자기가 어디를 지키고 있는지는 자주 잊어버려요. 그의 감시구역에 허락 없이 발을 들인 지후는 레이더에 포착되어 그 자리에 얼어붙고 맙니다. 한번은 국왕 화염 지후 1호가 몰래 야식을 먹으러 나왔다가 포착되어 아침까지 얼어 있었던 적도 있어요. 그 뒤로 국왕의 야식은 물 지후가 대신 사 옵니다. 그는 오늘도 이상 없음이라고 보고하지만, 보고서 뒷면에는 늘 졸았다고 적혀 있어요.',
-    passive: '반경 <b>5.5칸</b>이 <b>[감시구역]</b>입니다. 일반 공격으로 구역 안 적을 모두 치고, <b>[불침번]</b>으로 구역 안 적을 <b>3초</b> 기절시키고, 레이더가 한 바퀴 돈 뒤 공격력의 <b>400%</b> 폭발을 일으킵니다.',
+    passive: '반경 <b>5.5칸</b>이 <b>[감시구역]</b>입니다. 일반 공격으로 구역 안 적을 모두 치고, <b>[불침번]</b>으로 구역 안 적 <b>2기</b>를 <b>1.5초</b> 기절시키고 <b>[포착]</b>한 뒤, 레이더가 한 바퀴 돌면 공격력의 <b>250%</b> 폭발을 일으킵니다.',
     customAttack(u) { return rdAttack(u); } },
   triage: { name: '트리아지후', rarity: 'epic', role: '하이브리드', hp: 1400, atk: 50, atkSpeed: 1, range: 5.8, speed: 1.6, tok: 2, portrait: PORTRAITS.triage, sfx: 'shot', color: '#3a3a3a',
     story: '왕궁 의원의 응급 구조대장 지후입니다. 무전기 너머로 위급하다는 소리만 들리면 하늘에서 보급상자를 떨어뜨리는데, 문제는 조준을 늘 환자 머리 위에 한다는 거예요. 상자에 맞은 적들은 그대로 기절하고, 환자는 쉴드를 두른 채 일어나 살았다며 고마워합니다. 주사 지후는 그의 방식을 의료가 아니라 폭격이라고 부르지만, 생존율만큼은 왕국 최고라 아무도 따지지 못해요. 상자는 한 지후에게 한 번만 주는 것이 원칙이라, 두 번째로 다친 지후는 상자 옆에서 서운한 표정으로 기다립니다. 그는 오늘도 선글라스를 낀 채 무전기에 대고 괜찮다고 말해요. 무전기는 사실 고장 나 있습니다.',
@@ -7758,14 +7758,16 @@ function lkScare(u) { const k = u.lk, R = 2.5 * CFG.CELL; u.realm = 0; if (u.el)
 function lkEnd(u) { const k = u.lk; u.lk = null; u.realm = 0; u.ghost = false; if (u.el) u.el.classList.remove('in-realm');
   if (k.prey) { const p = k.prey; p.realm = 0; p.ghost = false; if (p.el) p.el.classList.remove('in-realm'); if (p.alive) { physSnap(p, u.x + unitRadius(u) * 2, u.y); if (!S.fast) dmgNum(p, '😵', { crit: true }); } }
   physSnap(u, u.x, u.y); if (!S.fast) fxRing(u.x, u.y, 1.2 * CFG.CELL, 'rgba(47,107,102,.9)', 420, 6); drawUnit(u); }
-// 레이더 지후: 일반 공격 = 반경 5.5칸 [감시구역] 적 모두 공격력 100% · 공격마다 [불침번] (SP 는 일반 방법으로 안 찬다 · 사실상 매 공격) — 감시구역 안 우리 진영 쪽에 있는 적은 3초 [기절] 뒤 그 자리 반경 1.5칸 적에게 공격력 400%
+// 레이더 지후: 일반 공격 = 반경 5.5칸 [감시구역] 적 모두 공격력 100% · 공격마다 [불침번] — R3.2 build 8 리워크: 구역 안 가장 가까운 적 최대 2기 1.5초 [기절] + [포착] (이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100% t.spot1) → 2초 뒤 그 자리 반경 1.5칸 250%
 function rdAttack(u) { // R3.1 잠수함: 감시구역 안 적 모두 3초 [기절] · 2초 레이더 (바닥 원 · 반지름 선 한 바퀴 · 파란 스코프) 뒤 구역 안 적 공격력 100% · 스코프 자리 반경 1.5칸 400%
   const R = 5.5 * CFG.CELL, x0 = u.x, y0 = u.y; sfxAttack(u);
-  const H = foes(u).filter(e => e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)); H.forEach(e => A.status(e, 'stun', 3));
+  const H = foes(u).filter(e => e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)).sort((a, b) => Math.hypot(a.x - x0, a.y - y0) - Math.hypot(b.x - x0, b.y - y0)).slice(0, 2); /* R3.2 build 8: 최대 2기 */
+  H.forEach(e => { A.status(e, 'stun', 1.5); A.status(e, 'spot', 999); if (e.st.spot > 0) { e.spot1 = true; if (e.st.stealth > 0) { e.st.stealth = 0; drawUnit(e); } } });
   if (!S.fast && $('field')) { const el = document.createElement('div'); el.className = 'fx-radar'; el.style.left = x0 + 'px'; el.style.top = y0 + 'px'; el.style.setProperty('--rr', R.toFixed(0) + 'px'); el.innerHTML = '<i></i><b></b>'; $('field').appendChild(el); setTimeout(() => el.remove(), 2100 / (S.speed || 1));
     H.forEach(e => { const m = document.createElement('div'); m.className = 'fx-scope'; m.style.left = e.x + 'px'; m.style.top = e.y + 'px'; m.style.setProperty('--sr', (unitRadius(e) * 1.4).toFixed(0) + 'px'); $('field').appendChild(m); setTimeout(() => m.remove(), 2100 / (S.speed || 1)); }); }
-  A.later(2, () => { if (!u.alive) return; const atk = effAtk(u); let d = 0; foes(u).forEach(e => { if (e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)) d += dealDamage(u, e, atk, { lite: true }); });
-    H.forEach(e => { const x = e.x, y = e.y, r = 1.5 * CFG.CELL; if (!S.fast) fxRing(x, y, r, 'rgba(60,110,255,.95)', 520, 10); foes(u).forEach(f => { if (f.alive && Math.hypot(f.x - x, f.y - y) <= r + unitRadius(f) && dealDamage(u, f, atk * 4, { skill: true, noCrit: true }) > 0 && !S.fast) hitFx(u, f, true); }); });
+  A.later(2, () => { if (!u.alive) return; const atk = effAtk(u); let d = 0;
+    H.forEach(e => { const x = e.x, y = e.y, r = 1.5 * CFG.CELL; if (!S.fast) fxRing(x, y, r, 'rgba(60,110,255,.95)', 520, 10); foes(u).forEach(f => { if (f.alive && Math.hypot(f.x - x, f.y - y) <= r + unitRadius(f) && dealDamage(u, f, atk * 2.5, { skill: true, noCrit: true }) > 0 && !S.fast) hitFx(u, f, true); }); }); /* R3.2 build 8: 400 → 250% · 폭발이 먼저 ([포착] 첫 피해 +100%) */
+    foes(u).forEach(e => { if (e.alive && Math.hypot(e.x - x0, e.y - y0) <= R + unitRadius(e)) d += dealDamage(u, e, atk, { lite: true }); });
     afterHit(u, d); });
   return true; }
 // ── R3.2 신규 지후 도우미 ──
@@ -8140,7 +8142,7 @@ const CHAR_INFO = {
   stand: [['레모네이드', '반경 4.5칸 · 처음 들어온 아군 (움직이는 지후) 을 끌어와 체력 600 × 레벨 배율 회복 · 넘친 만큼 쉴드'], ['[리얼 탄산 레모네이드]', 'SP 10 · 초당 1 (다른 방법으로는 차지 않는다) · 자신 말고 아군이 없으면 쓰지 않는다 · 무작위 아군 자리 반경 3칸 · 5초 동안 아군 (자신 제외) 초당 100 회복 · 적 초당 50 피해 (레벨 배율)'], ['장사', '한 잔에 토큰 0.2 (다섯 잔마다 토큰 1) · 디펜스는 한 잔에 골드 1'], ['손님 적', '처음 들어온 적 10% · 끌려와 마시면 체력 가득 · 라운드 끝까지 [매혹]'], ['가판대 여럿', '한 지후는 가판대 하나에만 끌려간다']],
   portal: [['쉴드', '1000'], ['이동', '라운드 시작 · 적을 노리지 않고 적진의 무작위 빈 칸으로 (빈 칸이 없거나 8초가 지나면 그 자리)'], ['포탈', '30초 · 노릴 수 없다 · 2.7초마다 차원체 지후 (살아 있는 차원체 6마리까지) (포탈 지후 체력 15% · 공격력 100% · 1초 · 근접)']],
   lurker: [['[놀래키기]', 'SP 4 · 아공간 잠수 (초당 2칸 · 맞지 않는다) → 무작위 적 곁 · 반경 2.5칸 적 공격력 120% · [공포] 3.5초'], ['납치', '그중 무작위 적 하나를 데리고 잠수해 제자리로 · 납치된 적은 1초마다 200 피해']],
-  radar: [['일반 공격', '8초마다 [불침번]과 함께'], ['[불침번]', '공격마다 · 감시구역 안 적 모두 3초 [기절] · 2초 레이더가 한 바퀴 돈 뒤 구역 안 적 공격력 100% · 포착한 적 자리 반경 1.5칸 적 공격력 400%'], ['SP', '일반 방법으로는 차지 않는다']],
+  radar: [['일반 공격', '8초마다 [불침번]과 함께'], ['[불침번]', '공격마다 · 감시구역 안 가장 가까운 적 최대 2기 · 1.5초 [기절] + [포착] · 2초 레이더가 한 바퀴 돈 뒤 포착한 적 자리 반경 1.5칸 적 공격력 250% · 구역 안 적 공격력 100%'], ['[포착]', '이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100%'], ['SP', '일반 방법으로는 차지 않는다']],
   forge: [['검 강화', '레벨업 (같은 카드 겹치기 · 이벤트) 대신 · 최대 +10 · 경기 내내 유지'], ['성공 확률', '+0 → +1 90% · 강화마다 −7%p (+9 → +10 27%)'], ['실패', '그대로 · 30% 확률로 검 파괴 (+0)'], ['공격력', '강화마다 기본 공격력의 100% (선형)'], ['레벨', 'Lv1 고정 · 배치 칸을 누르면 다음 강화 확률']],
   litmus: [['[검출]', '일반 공격이 맞으면 · 전설 (한정 포함) 빨강 · 그 밖 파랑'], ['[중화]', 'SP 6 · 빨강 수만큼 공격력 높은 아군 공격력 +25% 7초 · 파랑 수만큼 체력 비율 낮은 아군 쉴드 600 × 레벨 배율 (7초 동안 1초마다 1/7씩 사라진다) · 쓰면 검출 수 0']],
   jason: [['공격 간격', '0.2초 · 치명타마다 −0.01초 · 최소 0.05초 · 2초 동안 공격하지 않으면 처음으로'], ['[공포]', '반경 2칸 안에 처음 들어온 적 0.7초 (적마다 한 번)']],
@@ -8194,6 +8196,7 @@ const STATUS = {
   addict: { name: '중독됨', icon: '🍰' },           // R2.25 케이크 지후: 케이크가 아닌 지후를 때리면 피해 −15% (addictX.by = 케이크)
   taunt: { name: '도발', icon: '📢' },              // R2.25 탄핵 지후: 도발한 지후만 노린다 (tauntX.by)
   fear: { name: '공포', icon: '😱' },
+  spot: { name: '포착', icon: '📡' }, // R3.2 build 8 레이더 지후: 이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100% (t.spot1)
   hyp: { name: '최면', icon: '🌀' }, // R3.2 build 3 최면 지후: 공격하지 못하고 가려던 반대쪽으로 걷는다
   vdc: { name: '저주', icon: '⛓️' }, // R3.2 build 3 부두술사 지후 사슬               // R2.25 차원 지후: 공격하지 못하고 도망친다 (fearX.by)
   goja: { name: '고자', icon: '🥚' },                 // R2.31 build 2 총? 지후: 이번 라운드 최대 체력 · 체력 1 (gojaOn · 표시용)
@@ -8207,7 +8210,7 @@ const STATUS = {
 };
 
 // 효과 아이콘 (R2.17 build 3 · 사용자가 직접 그린 icons/fx/<키>.png · 분류마다 바탕색) — 이름 있는 상태는 자기 아이콘 하나 · 능력치 변화는 화살표로 모은다 (fxList)
-const FX_OF = { hyp: 'drowsy', vdc: 'reaper', goja: 'goja', sear: 'sear', ignite: 'ignite', rot: 'corr', corr: 'corr', absorb: 'absorb', addict: 'addict', taunt: 'taunt', fear: 'fear', realm: 'realm', /* R2.36: 사용자가 그린 새 아이콘 (고자 · 점화 · 부식 · 흡수 · 중독됨 · 도발 · 공포 · 아공간 · 왜곡 · 탄핵 당함) */ noheal: 'noheal', c4: 'c4', stun: 'stun', freeze: 'freeze', burn: 'burn', poison: 'poison', blind: 'blind', silence: 'silence', stealth: 'stealth', lacer: 'lacer', wound: 'wound', inv: 'inv', rage: 'rage', frost: 'frost', dive: 'dive', alone: 'alone', charm: 'charm', bubble: 'bubble', dnote: 'dnote', arcana: 'arcana', ban: 'ban', seal: 'seal', guard: 'guard', feast: 'feast', drowsy: 'drowsy', sleep: 'sleep', nbfly: 'nbfly', nbdead: 'nbdead', lock: 'lock', pure: 'pure', antigrav: 'antigrav', nou: 'nou', card: 'card', doom: 'miscDown', warpUp: 'warp', warpDn: 'warp', /* R2.36: 왜곡은 아군 · 적 같은 아이콘 */ vuln: null, foxguard: null, vweak: null };
+const FX_OF = { spot: 'miscDown', hyp: 'drowsy', vdc: 'reaper', goja: 'goja', sear: 'sear', ignite: 'ignite', rot: 'corr', corr: 'corr', absorb: 'absorb', addict: 'addict', taunt: 'taunt', fear: 'fear', realm: 'realm', /* R2.36: 사용자가 그린 새 아이콘 (고자 · 점화 · 부식 · 흡수 · 중독됨 · 도발 · 공포 · 아공간 · 왜곡 · 탄핵 당함) */ noheal: 'noheal', c4: 'c4', stun: 'stun', freeze: 'freeze', burn: 'burn', poison: 'poison', blind: 'blind', silence: 'silence', stealth: 'stealth', lacer: 'lacer', wound: 'wound', inv: 'inv', rage: 'rage', frost: 'frost', dive: 'dive', alone: 'alone', charm: 'charm', bubble: 'bubble', dnote: 'dnote', arcana: 'arcana', ban: 'ban', seal: 'seal', guard: 'guard', feast: 'feast', drowsy: 'drowsy', sleep: 'sleep', nbfly: 'nbfly', nbdead: 'nbdead', lock: 'lock', pure: 'pure', antigrav: 'antigrav', nou: 'nou', card: 'card', doom: 'miscDown', warpUp: 'warp', warpDn: 'warp', /* R2.36: 왜곡은 아군 · 적 같은 아이콘 */ vuln: null, foxguard: null, vweak: null };
 const FX_NAME = { atkUp: '공격력 증가', atkDown: '공격력 감소', aspdUp: '공격속도 증가', aspdDown: '공격속도 감소', spdUp: '이동속도 증가', spdDown: '이동속도 감소', takenUp: '받는 피해 증가', takenDown: '받는 피해 감소', critUp: '치명타 확률 증가', critDmgUp: '치명타 피해 증가', dodgeUp: '회피율 증가', healDown: '회복 감소', regen: '지속 회복', lastBullet: '최후의 탄환', reaper: '사신강림', miscUp: '기타 버프', miscDown: '기타 디버프' };
 const fxSrc = k => 'icons/fx/' + k + '.png';
 const STL_FX = { vuln: 'takenUp', foxguard: 'takenDown', vweak: 'atkDown' }; // R2.37 build 2: 도움말 상태이상 표 · 자기 아이콘이 없는 상태는 화살표 아이콘
@@ -9266,8 +9269,9 @@ function dealDamage(src, t, amount, opts = {}) {
   if (t.def.stainless && opts.skill && src && src !== t && src.side !== t.side) { if (!opts.lite && !opts.dot) dmgNum(t, '🛡 면역', { crit: true }); return 0; } // R2.30 스테인리스: 적의 스킬 피해를 받지 않는다
   if (t.st.absorb > 0 && src !== t) { heal(t, t, amount * 0.15); return 0; } // R2.30 스테인리스 [흡수]: 모든 피해를 흡수 · 15% 회복
   if (src && src.st.blind > 0 && !opts.skill && !opts.dot && rng() < ((src.st.blindX && src.st.blindX.amt) || 0.4)) { /* 티모 지후: 50 · 75% (R2.10.2) */ dmgNum(t, '빗나감', { crit: true }); return 0; }
-  const dodge = Math.min(0.9, buffSum(t, 'dodge') + dfA(t, 'dodge') + evN(t.side, 'phys') / 100); if (dodge > 0 && src && !opts.dot && rng() < dodge) { dmgNum(t, '회피', { crit: true }); return 0; } // 황사 지대: 회피
-  if (t.id === 'arcane' && t.def.skill && src && src !== t && src.side !== t.side && !opts.dot && enh6(t) && rng() < 0.2) { if (!S.fast) dmgNum(t, '회피', { crit: true }); castSkill(t); return 0; } /* R2.37 build 3 랭크 6 아케인 [비전 반사]: 피하고 스킬 바로 (castSkill 이 SP 를 0 으로) */
+  const dodge = t.st.spot > 0 ? 0 : Math.min(0.9, buffSum(t, 'dodge') + dfA(t, 'dodge') + evN(t.side, 'phys') / 100); /* R3.2 build 8 [포착]: 회피 0% */ if (dodge > 0 && src && !opts.dot && rng() < dodge) { dmgNum(t, '회피', { crit: true }); return 0; } // 황사 지대: 회피
+  if (t.spot1 && src && src !== t && src.side !== t.side && !opts.dot) { t.spot1 = false; amount *= 2; } /* R3.2 build 8 [포착]: 다음 처음 받는 피해 +100% */
+  if (t.id === 'arcane' && !(t.st.spot > 0) && t.def.skill && src && src !== t && src.side !== t.side && !opts.dot && enh6(t) && rng() < 0.2) { if (!S.fast) dmgNum(t, '회피', { crit: true }); castSkill(t); return 0; } /* R2.37 build 3 랭크 6 아케인 [비전 반사]: 피하고 스킬 바로 (castSkill 이 SP 를 0 으로) */
   if (t.st.nou > 0 && !opts.reflect) { // NO U 지후 (R2.10.2): 받는 피해를 공격자에게 100% 돌려주고 자신은 받지 않는다
     if (src && src !== t && src.alive) { if (src.st.nou > 0 && !opts.dot) { nouClash(src, t); return 0; } t.nouFrom = src; if (!S.fast && !opts.dot) dmgNum(t, 'NO U', { crit: true }); dealDamage(t, src, amount, { reflect: true, noCrit: true, skill: true, dot: opts.dot }); }
     return 0;
@@ -9367,6 +9371,7 @@ function addStatus(t, key, sec, extra) {
   if (t.st.nou > 0 && !(STATUS[key] && STATUS[key].buff)) { const o = t.nouFrom; if (o && o.alive && o !== t && !(o.st.nou > 0)) addStatus(o, key, sec, extra); return; } /* NO U: 디버프는 마지막으로 나를 친 상대에게 */
   if ((t.st.inv > 0 || t.st.dive > 0 || t.st.pure > 0 || t.guardSh && t.shield > 0) && !(STATUS[key] && STATUS[key].buff)) return; /* 선율 종: 디버프 면역 (R2.10) */ /* 무적 · 잠수 · 보호막 쉴드 (R2.8) */
   if (STATUS[key] && STATUS[key].block && (blocked(t) || t._ccImm > 0)) return;
+  if (key === 'stealth' && t.st.spot > 0) return; /* R3.2 build 8 [포착]: 은신 불가 */
   if (extra && extra.stack) { const L = (t.stk || (t.stk = {}))[key] || (t.stk[key] = []); L.push({ left: sec, acc: 0, dps: extra.dps, src: extra.src || null }); t.st[key] = Math.max(t.st[key] || 0, sec); drawUnit(t); return; } // 중첩: 따로 계산
   t.st[key] = Math.max(t.st[key] || 0, sec); if (extra) t.st[key + 'X'] = extra; drawUnit(t);
 }
@@ -14011,6 +14016,9 @@ function e7Add(type, n = 1, max) { // 열린 날의 퀘스트에 진행도 (max:
 function e7Login() { if (!profile.ev7 || !e7Live()) return; const k = todayKey(); if (profile.ev7.lg === k) return; profile.ev7.lg = k; e7Add('login'); save(); } // 날마다 한 번 (켤 때 · 로비)
 const E7 = { sel: null };
 function openE7() { e7Login(); E7.sel = Math.min(6, e7Day()); renderE7(); openModal('e7Modal'); }
+function e7Pop() { // R3.2 build 8: 튜토리얼이 처음 끝나면 (마치거나 건너뛰고 로비에 오면) 7일간의 여정을 한 번 자동으로 · profile.e7Pop
+  if (!profile.e7Pop) return; profile.e7Pop = 0; save(); if (!profile.ev7 || !e7Live() || TUT.on) return;
+  if (u3On()) { e7Login(); u2Set({ u3e7: Math.min(6, e7Day()) + 1 }); } else openE7(); }
 function renderE7() { const e = profile.ev7, D = e7Day(), pts = e7Pts(), sel = E7.sel == null ? Math.min(6, D) : E7.sel, left = 14 - D;
   const bar = `<div class="e7-top"><div class="e7-pts"><b>${pts}</b>포인트</div><div class="e7-bar"><div class="e7-track"><i style="width:${Math.min(100, pts / E7_BOX[6] * 100)}%"></i></div>${E7_BOX.map((p, k) => { const got = e.box.includes(k), can = !got && pts >= p; return `<button class="e7-chest ${got ? 'got' : can ? 'can' : ''}${k <= 1 ? ' l' : k >= 5 ? ' r' : ''}" data-e7box="${k}" style="left:${(k + 1) / 7 * 100 - 3}%"><span class="ic">${got ? '📭' : can ? '🎁' : '📦'}</span><small>${p}</small><span class="tip"><b>${k + 1}번 상자 · ${p}P${got ? ' · 받음' : can ? ' · 받을 수 있어요' : ''}</b><br>${e7RwTxt(k).split(' · ').join('<br>')}</span></button>`; }).join('')}</div></div>`;
   const days = `<div class="e7-days">${E7_Q.map((L, d) => { const lock = d > D, dot = !lock && L.some((q, i) => { const id = e7Qid(d, i); return !e.got[id] && (e.q[id] || 0) >= q[1]; }); return `<button class="e7-day${d === sel ? ' on' : ''}${lock ? ' lock' : ''}" data-e7day="${d}">${lock ? '🔒' : ''}${d + 1}일${dot ? '<i></i>' : ''}</button>`; }).join('')}</div>`;
@@ -14441,6 +14449,11 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 밸런스 조정', sections: [
+    { title: '추가 패치 (build 8)', items: [
+      { id: 'radar', name: '레이더 지후', tag: 'rework', desc: '[불침번] 대상 최대 <b>2기</b> · 기절 <b>3 → 1.5초</b> · 폭발 <b>400 → 250%</b>' },
+      { id: 'radar', name: '레이더 지후', tag: 'rework', desc: '[포착] 추가: 이번 라운드 [은신] 불가 · 회피 <b>0%</b> · 다음 처음 받는 피해 <b>+100%</b>' },
+      { icon: '📅', name: '7일간의 여정', tag: 'system', desc: '튜토리얼이 끝나면 자동으로 열림' },
+    ] },
     { title: '추가 패치 (build 7)', items: [
       { icon: '🎓', name: '튜토리얼', tag: 'system', desc: '대사 개선 · 중요한 말은 노란색 강조' },
       { icon: '🎓', name: '튜토리얼', tag: 'system', desc: '처음 끝내면 첫 일반전으로 안내' },
@@ -16934,7 +16947,7 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
       await talk([f('이걸로 기초적인 강의는 끝났다'), f('뽑은 지후가 마음에 안든다고 접고 자러가지 말아라'), f('자 이제 실전이다 당장가자')]);
       profile.tutGo = 1; /* R3.2 build 7: 처음 끝낸 사람만 · 로비 일반전 버튼 강조 → 첫 일반전 안내 대사 (TUT.tgEnd) */
     } else await talk([f('그럼 기대하고 있을게! 바이~')]);
-    profile.tut = 1; save(); finish(); setTimeout(() => pushAsk(), 900); // R2.26: 튜토리얼이 끝나면 알림 허용 요청 (◆1,000)
+    if (!profile.tut && !profile.tutSkip) profile.e7Pop = 1; /* R3.2 build 8 */ profile.tut = 1; save(); finish(); setTimeout(() => pushAsk(), 900); // R2.26: 튜토리얼이 끝나면 알림 허용 요청 (◆1,000)
   }
 
   function cleanup() {
@@ -16943,7 +16956,7 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
     $('tut').hidden = true; $('tut').classList.remove('talk'); $('tutBox').hidden = true; hint('');
     document.body.classList.remove('tut-on', 'tut-gacha', 'tut-deck', 'tut-pend'); $('screen-battle').classList.remove('tutorial');
   }
-  function finish() { cleanup(); renderLobby(); if (!profile.nick) return nickStep(); show('lobby'); setTimeout(updCheck, 400); } // R2.13 build 3: 첫 실행이면 바로 닉네임
+  function finish() { cleanup(); renderLobby(); if (!profile.nick) return nickStep(); show('lobby'); setTimeout(updCheck, 400); setTimeout(e7Pop, 500); /* R3.2 build 8 (닉네임이 없으면 환영 카드가 닫힐 때) */ } // R2.13 build 3: 첫 실행이면 바로 닉네임
   function leaveBattle() { // 중간에 나갈 때: 진행 중이던 전투 · 연출 정리
     S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); clearTimeout(showIntro.t); S.units = [];
     $('intro').classList.remove('show'); mmStop(); $('dfPick').classList.remove('show'); clearTimeout(matchLoading.t); $('matchLoad').classList.remove('show'); $('lifeFx').className = ''; evHide(); dlgClose(false); if ($('reveal').className) grClose();
@@ -16956,7 +16969,7 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
     if (!TUT.on || TUT.skipAsk) return; TUT.skipAsk = true;
     const ok = await dlg({ icon: '⏭', title: '튜토리얼을 건너뛸셈이냐', html: profile.tutRw ? '튜토리얼 보상은 이미 받았어요.' : `건너뛰어도 <b>튜토리얼 보상(◆ ${TUT_DIA.toLocaleString()} · ● ${TUT_GOLD.toLocaleString()})</b>은 <b>우편함</b>으로 보내 드려요.<br><small>규칙은 나중에 <b>메뉴 → 튜토리얼</b>에서 다시 볼 수 있어요.</small>`, ok: '건너뛰기', cancel: '계속하기' });
     TUT.skipAsk = false; if (!ok || !TUT.on) return;
-    if (!profile.tut) profile.tutSkip = 1; const got = sendReward(); save(); leaveBattle(); finish(); if (got && profile.nick) banner('✉ 튜토리얼 보상을 우편함으로 보냈어요'); // 첫 실행이면 닉네임 → 환영 카드가 우편으로 안내한다
+    if (!profile.tut && !profile.tutSkip) profile.e7Pop = 1; /* R3.2 build 8 */ if (!profile.tut) profile.tutSkip = 1; const got = sendReward(); save(); leaveBattle(); finish(); if (got && profile.nick) banner('✉ 튜토리얼 보상을 우편함으로 보냈어요'); // 첫 실행이면 닉네임 → 환영 카드가 우편으로 안내한다
   }
 
   // 정해진 카드 · 칸만 받는다 (틀린 곳을 누르면 안내 줄이 흔들린다)
@@ -18064,7 +18077,7 @@ function nuWelcome(n) { // R2.13 build 3: 닉네임을 정하면 환영 카드 �
     <div class="u2-nuw-list">${m ? `<div><span>✉</span><b>튜토리얼 보상이 도착했어요</b><small>${rewardText(m.rewards)} · 우편함</small></div>` : ''}${nb ? `<div><span>🐣</span><b>초보자 보호 ${nb}판</b><small>봇이 왕초보 · 능력치 ${Math.round(CFG.EASY_MULT * 100)}%</small></div>` : ''}<div><span>📅</span><b>출석부</b><small>매일 접속하면 선물 · 7일째 선택 전설 모집권</small></div></div>
     <button class="gt-go" id="nuwGo">${m ? '✉ 보상 받으러 가기' : '시작하기'}</button>${m ? '<button class="gt-sub" id="nuwX">나중에</button>' : ''}</div>`;
   document.body.appendChild(el);
-  const close = then => { if (el.classList.contains('out')) return; el.classList.add('out'); setTimeout(() => { el.remove(); if (then) then(); else updCheck(); }, 260); };
+  const close = then => { if (el.classList.contains('out')) return; el.classList.add('out'); setTimeout(() => { el.remove(); e7Pop(); /* R3.2 build 8 */ if (then) then(); else updCheck(); }, 260); };
   $('nuwGo').onclick = () => close(m ? () => $('btnMail').click() : null); if ($('nuwX')) $('nuwX').onclick = () => close();
 }
 
