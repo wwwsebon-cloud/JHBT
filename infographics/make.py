@@ -356,6 +356,7 @@ def build_new(d):
 
 # ── R2.17.2 티어표 ──
 def short(n):
+    if n in ('트리아지후',): return n  # 이름 자체에 지후가 붙은 지후 (R3.2)
     return re.sub(r' ?지후$', '', n or '') or n
 
 
