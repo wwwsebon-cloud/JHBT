@@ -16,7 +16,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.2** (build 8).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.2** (build 9).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -129,6 +129,7 @@
 ## 최근 변경 (R3.2 · 2026-11-17)
 - **신규 지후 4종** (`// ── R3.2 신규 지후 도우미 ──` · 원본 `지후초상화/R3.2/`): 트리아지후 `triage` (`trgDrop` · 보급은 지후마다 한 번 `t.trgGot`) · 마녀 `witch` (`witchAttack` 물약 · 변이는 `A.transform(t, 'frog', lv, true)`) · 냉각 `frostj` (`frostShot` 관통 · [빙결] → [동상] · `polarZone`) · 낚시 `fisher` (`fishTick` 찌 · `fishAttack` 낚은 적만 100%). **받는 피해 버프 키 `tk`** (dealDamage 공통 · 예전 `taken` 은 스테인리스만) · 새 지후 토큰은 모두 2 (사용자가 안 정함).
 - **build 3 신규 지후 4종** (`// ── R3.2 build 3 신규 지후 도우미 ──`): 팔라딘 `paladin` (토큰 8 · `def.plCall` → dealDamage 맨 앞 `paladinCall` · SUMMONS `pknight` · 초상화는 R1 paladin · knight) · 저주 `curse` (`curseAttack` · `u.cuT` / `u.cuN`) · 최면 `hypno` (STATUS `hyp` · `aiSteerAndAttack` 의 `hypSteer`) · 부두술사 `voodoo` (커뮤니티 Kaden · `vdSteer` · `u.vdOn` 이면 `foeList` · `canTarget` 이 아군에게도 적 · dealDamage 맨 앞 · build 4: 누구에게 맞든 25% 만 받고 저주한 적에게 150% `opts.vdx` · `S.vdN`). 강화 지후 연출: 머리 위 `.xlv.fg` 흰 블록 글씨 (캔버스도 k2 'fg') · 배치 칸 누르기 `fgHoldOn` · 결과 `forgeFx` (S.fx 의 `fg` ok · fail · break).
+- **build 9 디펜스**: 4배속 (`dfSpd` 2 · 4 · `rejhbt-df-spd` · 배속 버튼이 꺼짐 → 2× → 4× → 꺼짐) · 보상표 `DF_RW` 웨이브 1.2배 (마지막 120) · 받은 기록은 새 칸 `profile.dfRw2` (예전 `dfRw` 는 그대로 두고 안 본다 → 모두 다시 받는다) · 핵 `DF.NUKE_P` 0.5 = 적마다 현재 체력 50% (`pctD`) · 배율 `dfKw` 에 5웨이브부터 `KADD5` 0.003 더 (아주 소폭 · 50웨이브 1.19 → 1.32 · 100웨이브 8.0 → 9.3).
 - **build 8**: 레이더 [불침번] 리워크 (`rdAttack` · 가장 가까운 적 최대 2기 · 기절 1.5초 · STATUS `spot` [포착] 999초 = 이번 라운드 · `addStatus` 가 은신을 막고 · `dealDamage` 회피 0% · `t.spot1` 다음 처음 받는 피해 ×2 · 폭발 250% 가 구역 100% 보다 먼저) · 튜토리얼이 처음 끝나면 `profile.e7Pop` → `e7Pop()` (tutorial `finish` · 환영 카드 닫힐 때) 가 7일간의 여정을 한 번 연다.
 - **build 7 튜토리얼**: 대사 · 안내 줄의 `@…@` 는 노란 강조 (`emSplit` · `emHtml`) · 튜토리얼 밖 말풍선 `TUT.guide(lines, pause)` (건너뛰기 · 안내 줄 숨김 · pause 면 봇전 `S.paused`) · 처음 끝낸 사람만 `profile.tutGo` → 로비 전투 시작 버튼 강조 (`u3.tgOn` · ui2 `tgHot`) → 첫 일반전 `S.tutGo` 첫 배치 대사 · `endMatch` 뒤 `TUT.tgEnd(win)` · 오류 때도 `TUT.guide`.
 - **build 6 ui3 지후 탭**: 덱 프리셋 `u3.un.presets` (`u2Preset` → `u2Render`) · 칸막이 `u3.un.groups` (보유는 등급별 · 역할군순은 `DECK_ROLES` 별 · 미보유 맨 아래 · ui2 `unitGroups` 와 같은 규칙).

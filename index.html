@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.2"><meta name="jihoo-build" content="9"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -6471,10 +6471,10 @@ const CHARS = {
     onStart(u, A) { const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.nk) { u.nkUsed = true; A.portrait(u, u.def.portraitUsed); } },
     tick(u, dt, A) { if (u.nkUsed || S.time < 1 || blocked(u)) return; // 라운드 시작 1초 뒤 (밴 · 기절 중이면 풀린 뒤)
       u.nkUsed = true; const p = u.tile != null && S.place[u.side][u.tile]; if (p && p.id === 'nuke') p.nk = 1; // 배치 기록에 남겨 경기 내내 [핵 다씀]
-      A.portrait(u, u.def.portraitUsed); const op = u.side === 'a' ? 'e' : 'a', c = midXY(op), dmg = S.cw && S.cw.df ? DF.NUKE : effAtk(u) * 999.99; /* R2.34 디펜스: 고정 500 */ u.nkAt = S.time + 30; // R2.18: 27 → 30초
+      A.portrait(u, u.def.portraitUsed); const op = u.side === 'a' ? 'e' : 'a', c = midXY(op), dmg = effAtk(u) * 999.99, dfN = !!(S.cw && S.cw.df); /* R3.2 build 9 디펜스: 적마다 현재 체력의 50% (예전 고정 500) */ u.nkAt = S.time + 30; // R2.18: 27 → 30초
       let mark = null, cd = null; if (!S.fast) { dmgNum(u, '☢ 핵 발사!', { crit: true, stamp: true }); shake(true); mark = fxAt('fx-nuke-mark', c.x, c.y, 30200); cd = fxAt('fx-nuke-cd', c.x, c.y, 30200); nukeCount(cd, u.nkAt); } // R2.18: 떨어질 자리에 남은 초
       A.later(30, () => { if (mark) mark.remove(); if (cd) cd.remove(); if (!S.fast) { fxAt('fx-nuke', c.x, c.y, 1400); shake(true); setTimeout(() => shake(true), 300); }
-        A.boom(u, c.x, c.y, 99, dmg); }); } },
+        if (dfN) foes(u).forEach(e => { if (e.alive) dealDamage(u, e, Math.max(1, pctD(e, e.hp * DF.NUKE_P)), { skill: true, noCrit: true, lite: true }); }); else A.boom(u, c.x, c.y, 99, dmg); }); } },
 
   // ── R2.10 신규 지후 8종 ──
   star: { name: '별 지후', rarity: 'legend', role: '어쌔신', hp: 1400, atk: 145, /* R3.2 build 5: 115 → 145 */ atkSpeed: 2.5, range: 5.7, speed: 1.6, splash: 2.5, tok: 3, portrait: PORTRAITS.star, sfx: 'shot', color: '#a46bff',
@@ -8067,7 +8067,7 @@ const CHAR_INFO = {
   tailwind: [['이동', '하지 않는다'], ['순풍', '맵 전체 · 아군 이동속도 +12% · 적 −24% · 레벨마다 +1% · 중첩'], ['공격', '순풍 지후마다 모든 적에게 1초마다 공격력 100% 피해 (중첩)']],
   lock: [['[잠금]', '일반 공격 27% · 2초 · 움직일 수 없음 (공격은 가능)']],
   bomb: [['이동', '가장 가까운 적에게 굴러간다 · 이동속도 3.3 · 공격하지 않는다'], ['폭발', '닿으면 반경 2.5칸 · 자신의 최대 체력만큼 (레벨 반영) · 3칸 넉백'], ['쓰러지면', '1초 뒤 그 자리에서 같은 폭발']],
-  nuke: [['[핵 발사]', '처음 출전한 라운드 시작 1초 뒤 · 경기에서 한 번'], ['핵', '30초 뒤 적진 · 반경 99칸 · 공격력 99999% · 떨어질 자리에 남은 초'], ['디펜스 모드', '핵 피해는 고정 500'], ['[핵 다씀]', '그 뒤로 영원히 스킬 없음 (레벨업 · 합체해도) · 근접 전사'], ['주의', '라운드가 30초 전에 끝나면 핵은 떨어지지 않는다']],
+  nuke: [['[핵 발사]', '처음 출전한 라운드 시작 1초 뒤 · 경기에서 한 번'], ['핵', '30초 뒤 적진 · 반경 99칸 · 공격력 99999% · 떨어질 자리에 남은 초'], ['디펜스 모드', '핵 피해는 적마다 현재 체력의 50%'], ['[핵 다씀]', '그 뒤로 영원히 스킬 없음 (레벨업 · 합체해도) · 근접 전사'], ['주의', '라운드가 30초 전에 끝나면 핵은 떨어지지 않는다']],
   lantern: [['공격속도', '어떤 효과로도 변하지 않는다'], ['공격 빔', '0.25초마다 공격력 150% · 5.5칸보다 멀면 희미해져 멈춤 · 2초 뒤 끊김'], ['회복 빔', '0.25초마다 공격력 60% · 사거리 안 체력 비율이 가장 낮은 아군 (자신 제외)'], ['동시에', '공격 빔 1 + 회복 빔 1'], ['자가 회복', '공격 빔이 맞을 때마다 5 (레벨과 상관없이)']],
   lightning: [['[낙뢰]', 'SP 5 · 공격력 570% · [기절] 0.5초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
   barrier: [['시작 쉴드', '십자 범위 아군 · 공격력 250% · 남아 있는 동안 디버프 무효'], ['쉴드 중첩', '한 아군에게 보호막 지후 둘 이상이 닿아 있으면 쉴드가 합쳐진다'], ['[배리어]', '반지름 2.2칸 · 3.5초 · 바깥에서 오는 투사체를 막는다'], ['못 막는 것', '근접 공격 · 투사체가 아닌 광역 공격']],
@@ -8503,7 +8503,7 @@ function normProfile(p) {
   p.giftSeen = Array.isArray(p.giftSeen) ? p.giftSeen.filter(x => typeof x === 'string').slice(-300) : [];
   p.codes = Array.isArray(p.codes) ? p.codes.map(String) : [];
   p.fr = Object.assign({ w: 0, l: 0 }, p.fr || {});
-  p.arc = Object.assign({ t: 0, p: 0, day: '', free: 0, buy: 0 }, p.arc && typeof p.arc === 'object' ? p.arc : {}); ['t', 'p', 'free', 'buy'].forEach(k => { p.arc[k] = nat(p.arc[k]); }); p.keys = nat(p.keys); p.dfBest = nat(p.dfBest); p.dfRw = Array.isArray(p.dfRw) ? [...new Set(p.dfRw.map(nat).filter(w => w > 0))] : []; p.dfDeck = Array.isArray(p.dfDeck) ? p.dfDeck.filter(id => typeof id === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(id)).slice(0, 5) : []; p.dfRk = Array.isArray(p.dfRk) ? p.dfRk.slice(0, 5).map(n => Math.min(6, Math.max(1, nat(n) || 1))) : []; /* R2.35 build 11: 디펜스 최고 기록을 세운 덱 · 그때 랭크 */ p.en = Object.assign({ n: 5, t: Date.now(), day: '', buy: 0 }, p.en && typeof p.en === 'object' ? p.en : {}); p.en.n = Math.min(99, nat(p.en.n)); p.en.t = nat(p.en.t) || Date.now(); p.en.buy = nat(p.en.buy); /* R2.35 build 6 에너지 */ p.ev7 = Object.assign({ s: 0, q: {}, got: {}, box: [], lg: '' }, p.ev7 && typeof p.ev7 === 'object' ? p.ev7 : {}); if (!p.ev7.s) p.ev7.s = dayStart(); if (!p.ev7.q || typeof p.ev7.q !== 'object') p.ev7.q = {}; if (!p.ev7.got || typeof p.ev7.got !== 'object') p.ev7.got = {}; if (!Array.isArray(p.ev7.box)) p.ev7.box = []; /* R2.35 build 6 7일 이벤트 (처음 켠 날이 1일) */ /* R2.35 build 4: 받은 디펜스 보상 (웨이브) */ /* R2.34 열쇠 · 디펜스 최고 웨이브 */
+  p.arc = Object.assign({ t: 0, p: 0, day: '', free: 0, buy: 0 }, p.arc && typeof p.arc === 'object' ? p.arc : {}); ['t', 'p', 'free', 'buy'].forEach(k => { p.arc[k] = nat(p.arc[k]); }); p.keys = nat(p.keys); p.dfBest = nat(p.dfBest); p.dfRw = Array.isArray(p.dfRw) ? [...new Set(p.dfRw.map(nat).filter(w => w > 0))] : []; p.dfRw2 = Array.isArray(p.dfRw2) ? [...new Set(p.dfRw2.map(nat).filter(w => w > 0))] : []; /* R3.2 build 9: 새 보상표 기록 (dfRw 는 예전 표 · 남겨 둔다) */ p.dfDeck = Array.isArray(p.dfDeck) ? p.dfDeck.filter(id => typeof id === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(id)).slice(0, 5) : []; p.dfRk = Array.isArray(p.dfRk) ? p.dfRk.slice(0, 5).map(n => Math.min(6, Math.max(1, nat(n) || 1))) : []; /* R2.35 build 11: 디펜스 최고 기록을 세운 덱 · 그때 랭크 */ p.en = Object.assign({ n: 5, t: Date.now(), day: '', buy: 0 }, p.en && typeof p.en === 'object' ? p.en : {}); p.en.n = Math.min(99, nat(p.en.n)); p.en.t = nat(p.en.t) || Date.now(); p.en.buy = nat(p.en.buy); /* R2.35 build 6 에너지 */ p.ev7 = Object.assign({ s: 0, q: {}, got: {}, box: [], lg: '' }, p.ev7 && typeof p.ev7 === 'object' ? p.ev7 : {}); if (!p.ev7.s) p.ev7.s = dayStart(); if (!p.ev7.q || typeof p.ev7.q !== 'object') p.ev7.q = {}; if (!p.ev7.got || typeof p.ev7.got !== 'object') p.ev7.got = {}; if (!Array.isArray(p.ev7.box)) p.ev7.box = []; /* R2.35 build 6 7일 이벤트 (처음 켠 날이 1일) */ /* R2.35 build 4: 받은 디펜스 보상 (웨이브) */ /* R2.34 열쇠 · 디펜스 최고 웨이브 */
   { const s = p.arc.shop && typeof p.arc.shop === 'object' ? p.arc.shop : {}, n = s.n && typeof s.n === 'object' ? s.n : {}; p.arc.shop = { day: typeof s.day === 'string' ? s.day.slice(0, 12) : '', season: nat(s.season), d: {}, n: {} }; for (const k in n) if (/^[a-zA-Z0-9]{1,20}$/.test(k)) p.arc.shop.n[k] = nat(n[k]); const d = s.d && typeof s.d === 'object' ? s.d : {}; for (const k in d) if (/^[a-zA-Z0-9]{1,20}$/.test(k)) p.arc.shop.d[k] = nat(d[k]); } // R2.12.1 아케이드 상점 (d 오늘 · n 이번 시즌) // 아케이드: 티켓 · 포인트 · 오늘 무료 · 구매 수
   p.tower = Object.assign({ on: false, deck: [], draft: null, floor: 1, lose: 0, best: 0 }, p.tower && typeof p.tower === 'object' ? p.tower : {}); p.tower.deck = (Array.isArray(p.tower.deck) ? p.tower.deck : []).filter(id => CHARS[id]).slice(0, 5); p.tower.floor = Math.max(1, nat(p.tower.floor)); p.tower.lose = nat(p.tower.lose); p.tower.best = nat(p.tower.best); // 지후의 탑
   p.tower.cl = Number.isInteger(p.tower.cl) ? clamp(p.tower.cl, 0, p.tower.floor - 1) : p.tower.floor - 1; p.tower.over = !!p.tower.over; // R2.12.1: 층 보상은 눌러서 받는다
@@ -9818,7 +9818,7 @@ const isCw = () => !!(S.arc && (S.arc.kind === 'castle' || S.arc.kind === 'defen
 const isDf = () => !!(S.arc && S.arc.kind === 'defense');
 const dfKeys = n => { let k = 0; for (let w = 5; w <= n; w += 5) k += w >= 30 ? 10 : 3; return k; }; // R2.36 열쇠: 깬 웨이브 n 까지 5웨이브마다 3 (30웨이브부터 10) · 예전 웨이브마다 1
 // R2.34 디펜스: 내 슬롯 지후는 WAVE (20초) 마다 · 적 웨이브는 EWAVE (20초 · build 3: 10 → 20 · 다시 1배) 마다 (둘 다 처음은 10초 뒤 · 적을 다 잡으면 다음 적 웨이브 바로) · 적 = 무작위 지후 Lv1 · 수 N0 + (웨이브 − 1) × NADD · 능력치 ×(K0 + (웨이브 − 1) × KADD) · 적이 내 진영 끝에 닿으면 라이프 −1 (10) · 보상 열쇠 = 지난 적 웨이브 수 · 열쇠 상자 BOX 개 · 핵은 고정 NUKE 피해
-const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 20, /* R2.36 build 5: 30 → 20 · build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QCAP: 20, /* build 10: 다시 20 (build 9 에 30) · build 6: 웨이브가 끝날 때 아군이 이 수를 넘으면 충격파 (예전 3웨이브마다) */ QD0: 0.25, QDADD: 0.01, QDMAX: 0.6, /* R2.36: 최대 80 → 60% */ QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 피해 · 5초 기절 · build 5: 피해 25% 에서 웨이브마다 +1%p · 최대 80% (예전 50% 고정) */ GOLD_K: 2, KILL_K: 1.25, /* R2.36: 처치 골드 2 → 5 (CW.KILL 4 × 1.25) */ UP_COST: [100, 200, 400, 800], UP_K: 0.25, /* R2.36 유닛 업그레이드: Lv5 까지 · 레벨마다 능력치 +25% (Lv5 = 2배) */ /* build 5: 웨이브 골드 ×2 · 처치 골드 ×0.5 */ N0: 2, NK: 0.6, /* build 7: 적 수 = 내 전장 지후 × 0.6 (+0~1 · 최소 2) · 예전 ±1 */ NADD: 0.13, NMAX: 24, K0: 0.6, KADD: 0.012, EXP_W: 50, EXP_A: 0.04, EXP_B: 0.1, /* R2.37 build 2 광폭 웨이브: 50웨이브 뒤 웨이브마다 배율 +0.04 (선형) · 2배가 된 뒤로는 +0.1 (예전: 30웨이브부터 ×1.035 곱) */ /* build 6: 0.022 → 0.019 · build 7: 0.7 / 0.019 → 0.6 / 0.012 */ RALLY: [5] /* R2.36 build 5: 20 · 10 → 5 (한 번) */, RALLY_GOLD: 300, RALLY_DMG: 2000, RALLY_STUN: 10, RALLY_KB: 4, /* build 7 반격: 라이프 20 · 10 이 될 때 */ /* build 5 상향: 0.016 → 0.022 · 적 수는 이제 내 전장 지후 수만큼 (dfSpawn) */ /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE: 500 };
+const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 20, /* R2.36 build 5: 30 → 20 · build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QCAP: 20, /* build 10: 다시 20 (build 9 에 30) · build 6: 웨이브가 끝날 때 아군이 이 수를 넘으면 충격파 (예전 3웨이브마다) */ QD0: 0.25, QDADD: 0.01, QDMAX: 0.6, /* R2.36: 최대 80 → 60% */ QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 피해 · 5초 기절 · build 5: 피해 25% 에서 웨이브마다 +1%p · 최대 80% (예전 50% 고정) */ GOLD_K: 2, KILL_K: 1.25, /* R2.36: 처치 골드 2 → 5 (CW.KILL 4 × 1.25) */ UP_COST: [100, 200, 400, 800], UP_K: 0.25, /* R2.36 유닛 업그레이드: Lv5 까지 · 레벨마다 능력치 +25% (Lv5 = 2배) */ /* build 5: 웨이브 골드 ×2 · 처치 골드 ×0.5 */ N0: 2, NK: 0.6, /* build 7: 적 수 = 내 전장 지후 × 0.6 (+0~1 · 최소 2) · 예전 ±1 */ NADD: 0.13, NMAX: 24, K0: 0.6, KADD: 0.012, KW5: 5, KADD5: 0.003, /* R3.2 build 9: 5웨이브부터 웨이브마다 +0.003 더 (출격제한이 없어져서 · 아주 소폭) */ EXP_W: 50, EXP_A: 0.04, EXP_B: 0.1, /* R2.37 build 2 광폭 웨이브: 50웨이브 뒤 웨이브마다 배율 +0.04 (선형) · 2배가 된 뒤로는 +0.1 (예전: 30웨이브부터 ×1.035 곱) */ /* build 6: 0.022 → 0.019 · build 7: 0.7 / 0.019 → 0.6 / 0.012 */ RALLY: [5] /* R2.36 build 5: 20 · 10 → 5 (한 번) */, RALLY_GOLD: 300, RALLY_DMG: 2000, RALLY_STUN: 10, RALLY_KB: 4, /* build 7 반격: 라이프 20 · 10 이 될 때 */ /* build 5 상향: 0.016 → 0.022 · 적 수는 이제 내 전장 지후 수만큼 (dfSpawn) */ /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE_P: 0.5 /* R3.2 build 9: 핵 = 적 현재 체력 비율 (예전 NUKE 500 고정) */ };
 const cwWv = () => (S.cw && S.cw.df ? DF.WAVE : CW.WAVE);
 const pctD = (t, v) => t.def.castle ? v * 0.05 : v; // 체력 비례 피해: 성은 95% 줄여 받는다
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
@@ -9950,7 +9950,7 @@ function dfInstant(id) { // 고르는 순간 효과
 }
 const dfPool = () => pubIds().filter(id => { const c = CHARS[id]; return c && !c.immobile && !c.noAttack && !c.deployLimit && c.speed !== 0; }); // 적 웨이브 지후: 움직이고 공격하는 지후 (출격제한 지후 · 고정형 제외)
 function dfExp(w) { const n = w - DF.EXP_W, k = Math.round(1 / DF.EXP_A); return n <= 0 ? 1 : n <= k ? 1 + n * DF.EXP_A : 2 + (n - k) * DF.EXP_B; } // R2.37 build 2: 광폭 배율 (EXP_W 웨이브 뒤 웨이브마다 +EXP_A · 2배부터 +EXP_B · 선형)
-function dfKw(w) { return (DF.K0 + (w - 1) * DF.KADD) * dfExp(w); } // 적 능력치 배율 = 직선 × 광폭
+function dfKw(w) { return (DF.K0 + (w - 1) * DF.KADD + Math.max(0, w - DF.KW5) * DF.KADD5) * dfExp(w); } // 적 능력치 배율 = 직선 (R3.2 build 9: 5웨이브부터 더 가파르게) × 광폭
 function cwFull(side) { return !!S.cw && sideIx()[side].filter(u => !u.def.castle).length >= CW.CAP; } // R2.35 build 3: 성뿌수기 · 디펜스에서 진영 지후 수 (소환체 포함) 가 CW.CAP 이면 소환 · 부활 · 분열도 막는다
 function dfSpawn(w) { // 적 웨이브 (상대 진영 무작위 칸 · 진영마다 살아 있는 지후 CW.CAP 기까지)
   const side = OPP(), mine = sideIx()[ME()].filter(u => !u.def.castle).length, n = Math.max(0, Math.min(DF.NMAX, Math.max(DF.N0, Math.round(mine * DF.NK) + Math.floor(rng() * 2)), CW.CAP - sideIx()[side].length)), /* build 7: 내 전장 지후 수 × NK (+0~1 · 최소 N0) */ k = dfKw(w), pool = dfPool(), f = S.fast ? null : $('field'), fresh = [];
@@ -11467,9 +11467,11 @@ function beginCombat() {
 }
 // 배속 버튼 (R2.19: 동그란 버튼 하나 · 누구나 1.5배속 · VIP 2배속 · 켜 두면 다음 전투도) · 친선전도 내 화면만 빨라진다 (결과는 같다)
 let speedPref = false; // 꺼 두어도 전투가 길어지면 자동 1.5배속
-const fastSpeed = () => vipOn() || isDf() ? 2 : CFG.FAST_SPEED; // R2.19: 누구나 1.5배속 · VIP 는 2배속 · R2.36: 디펜스는 누구나 2배속
-function renderSpeedBtn() { const b = $('speedSeg'), on = S.phase === 'combat' ? S.speed > 1 : speedPref, t = (vipOn() || isDf() ? '2' : '1.5') + '×'; b.classList.toggle('on', on); if (b.textContent !== t) b.textContent = t; }
-$('speedSeg').addEventListener('click', () => { const fast = !(S.phase === 'combat' ? S.speed > 1 : speedPref); // 켜짐 ↔ 꺼짐
+let dfSpd = (() => { try { return localStorage.getItem('rejhbt-df-spd') === '4' ? 4 : 2; } catch (e) { return 2; } })(); // R3.2 build 9 디펜스 배속 (2 · 4)
+const fastSpeed = () => isDf() ? dfSpd : vipOn() ? 2 : CFG.FAST_SPEED; // R2.19: 누구나 1.5배속 · VIP 는 2배속 · R2.36: 디펜스는 누구나 2배속 · R3.2 build 9: 디펜스 4배속
+function renderSpeedBtn() { const b = $('speedSeg'), on = S.phase === 'combat' ? S.speed > 1 : speedPref, t = (isDf() ? String(dfSpd) : vipOn() ? '2' : '1.5') + '×'; b.classList.toggle('on', on); if (b.textContent !== t) b.textContent = t; }
+$('speedSeg').addEventListener('click', () => { const was = S.phase === 'combat' ? S.speed > 1 : speedPref; let fast = !was; // 켜짐 ↔ 꺼짐
+  if (isDf()) { if (!was) dfSpd = 2; else if (dfSpd === 2) { dfSpd = 4; fast = true; } else dfSpd = 2; try { localStorage.setItem('rejhbt-df-spd', String(dfSpd)); } catch (err) {} } /* R3.2 build 9 디펜스: 꺼짐 → 2× → 4× → 꺼짐 */
   if (S.phase === 'combat') { S.speed = fast ? fastSpeed() : 1; S.speedManual = true; } speedPref = fast; renderSpeedBtn(); try { localStorage.setItem('rejhbt-speed', speedPref ? '1' : '0'); } catch (err) {} });
 $('btnDeployDone').addEventListener('click', () => { if (S.phase === 'deploy' && !(S.net && S.net.spec)) autoPlace(); }); // 자동 배치: 시간 초과 때와 같이
 // ── 라운드 끝 (전작 endRoundCombat): 시간 종료 50:50 은 같은 라운드를 처음 배치로 다시 · 양쪽 전멸은 라이프 그대로 다음 라운드 ──
@@ -13953,14 +13955,15 @@ $('mmCancel').addEventListener('click', mmCancel);
 function mmStop() { clearTimeout(mmShow.t); clearInterval(mmShow.iv); clearInterval(mmShow.fv); $('mmOv').classList.remove('show'); }
 
 // ═════════ 디펜스 로비: 보상 · 에너지 · 7일 이벤트 · 열쇠 상자 (전투 코드는 「성뿌수기 · 디펜스」 구간) ═════════
-// ── R2.35 build 4 디펜스 보상: 최고 웨이브 (profile.dfBest) 가 N 이상이면 한 번 받는다 (profile.dfRw) · 메뉴 「디펜스 보상」 ──
-const DF_RW = [[5, { dia: 100 }], [10, { gold: 1000 }], [15, { item: 'testKit' }], [20, { rand: 'epic' }], [25, { gold: 3000 }], [30, { dia: 500 }], [35, { tix: 5 }], [40, { item: 'kitPro' }], [45, { dia: 500 }], [50, { rand: 'legend' }],
-  [55, { item: 'glowLegend', n: 5 }], [60, { dia: 1000 }], [65, { gold: 20000 }], [70, { rand: 'legend' }], [75, { dia: 1000 }], [80, { item: 'glowLegend', n: 10 }], [85, { rand: 'epic', n: 5 }], [90, { rand: 'legend' }], [95, { rand: 'legend' }], [97, { item: 'glowLegend', n: 10 }], [100, { item: 'legendPick' }]];
+// ── R2.35 build 4 디펜스 보상: 최고 웨이브 (profile.dfBest) 가 N 이상이면 한 번 받는다 · 메뉴 「디펜스 보상」 ──
+// R3.2 build 9: 웨이브 간격 1.2배 (최고 보상 100 → 120웨이브) · 받은 기록은 새 칸 profile.dfRw2 (예전 profile.dfRw 로 받은 보상도 다시 받는다)
+const DF_RW = [[6, { dia: 100 }], [12, { gold: 1000 }], [18, { item: 'testKit' }], [24, { rand: 'epic' }], [30, { gold: 3000 }], [36, { dia: 500 }], [42, { tix: 5 }], [48, { item: 'kitPro' }], [54, { dia: 500 }], [60, { rand: 'legend' }],
+  [66, { item: 'glowLegend', n: 5 }], [72, { dia: 1000 }], [78, { gold: 20000 }], [84, { rand: 'legend' }], [90, { dia: 1000 }], [96, { item: 'glowLegend', n: 10 }], [102, { rand: 'epic', n: 5 }], [108, { rand: 'legend' }], [114, { rand: 'legend' }], [116, { item: 'glowLegend', n: 10 }], [120, { item: 'legendPick' }]];
 function dfRwLabel(r) { const n = r.n || 1, x = n > 1 ? ` ×${n}` : '';
   if (r.dia) return ['💎', `◆ ${r.dia.toLocaleString()}`]; if (r.gold) return ['🪙', `골드 ${r.gold.toLocaleString()}`]; if (r.tix) return ['🎟', `아케이드 티켓 ×${r.tix}`];
   if (r.rand) return [r.rand === 'legend' ? '🌟' : '🎫', `랜덤 ${r.rand === 'legend' ? '전설' : '영웅'} 지후${x}`];
   return [ITEMS[r.item].icon, (r.item === 'legendPick' ? '선택 전설 지후' : r.item === 'testKit' ? '임테기' : ITEMS[r.item].name) + x]; }
-const dfRwGot = w => (profile.dfRw || []).includes(w);
+const dfRwGot = w => (profile.dfRw2 || []).includes(w);
 const dfRwReady = () => DF_RW.filter(([w]) => (profile.dfBest | 0) >= w && !dfRwGot(w)).length;
 function renderDfRw() { const b = profile.dfBest | 0, n = dfRwReady();
   $('dfRwHead').innerHTML = `<span>최고 기록 <b>WAVE ${b}</b></span><span>${n ? `받을 보상 ${n}개` : '웨이브마다 처음 한 번'}</span>`;
@@ -13968,7 +13971,7 @@ function renderDfRw() { const b = profile.dfBest | 0, n = dfRwReady();
     return `<div class="dfrw ${got ? 'got' : can ? 'on' : 'lock'}"><span class="w">${w}<small>WAVE</small></span><span class="ic">${ic}</span><span class="tx">${tx}</span>${got ? '<span class="st">✔ 받음</span>' : can ? `<button data-dfrw="${w}">받기</button>` : '<span class="st">🔒</span>'}</div>`; }).join(''); }
 function openDfRw() { renderDfRw(); openModal('dfRwModal'); const el = $('dfRwList').querySelector('.dfrw.on') || $('dfRwList').querySelector('.dfrw.lock'); if (el) el.scrollIntoView({ block: 'center' }); }
 function dfRwClaim(w) { const e = DF_RW.find(x => x[0] === w); if (!e || dfRwGot(w) || (profile.dfBest | 0) < w) return; const r = e[1], tx = dfRwLabel(r)[1]; let res = null;
-  profile.dfRw = (profile.dfRw || []).concat(w);
+  profile.dfRw2 = (profile.dfRw2 || []).concat(w);
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold += r.gold; if (r.tix) profile.arc.t += r.tix; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + (r.n || 1);
   if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); } }
   save(); sfx('buy'); renderDfRw(); renderLobby();
@@ -14449,6 +14452,12 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.2', date: '2026.11.17', title: '신규 지후 8종 · 밸런스 조정', sections: [
+    { title: '추가 패치 (build 9)', items: [
+      { icon: '⏩', name: '디펜스', tag: 'system', desc: '<b>4배속</b> 추가' },
+      { icon: '📈', name: '디펜스', tag: 'adjust', desc: '<b>5웨이브</b>부터 적 체력 · 공격력이 조금 더 빨리 오름' },
+      { icon: '🎁', name: '디펜스 보상', tag: 'system', desc: '웨이브 간격 <b>1.2배</b> (마지막 보상 <b>120웨이브</b>) · 이미 받은 보상도 다시 받기' },
+      { id: 'nuke', name: '핵미사일 지후', tag: 'adjust', desc: '디펜스 핵 피해 고정 <b>500</b> → 현재 체력의 <b>50%</b>' },
+    ] },
     { title: '추가 패치 (build 8)', items: [
       { id: 'radar', name: '레이더 지후', tag: 'rework', desc: '[불침번] 대상 최대 <b>2기</b> · 기절 <b>3 → 1.5초</b> · 폭발 <b>400 → 250%</b>' },
       { id: 'radar', name: '레이더 지후', tag: 'rework', desc: '[포착] 추가: 이번 라운드 [은신] 불가 · 회피 <b>0%</b> · 다음 처음 받는 피해 <b>+100%</b>' },
@@ -17736,7 +17745,7 @@ function u2Extra(v) {
     modeClose: () => u2Set({ mode: null }), modeGo: () => { const k = s.mode; u2Set({ mode: null }); if (k === 'defense') return dfStart(); /* R2.34 · R2.35 build 6: 에너지 1 */ renderArcade(); const el = $('arcModes').querySelector(`[data-arc="${k}"]`); if (!el) return; ARC_SURE = true; try { el.click(); } finally { ARC_SURE = false; } },
     isMEvent: mk === 'event', isMRandom: mk === 'random' || mk === 'mirror', isMCastle: mk === 'castle', /* R2.33 */ isMDef: mk === 'defense', /* R2.34 */ dfKeys: fmt(profile.keys | 0), dfBoxCost: DF.BOX, dfBoxCls: (profile.keys | 0) >= DF.BOX ? 'k-gold' : 'k-off', dfOpenBox: () => keyBox(kbN()), dfKbN: kbN(), dfKbDec: () => u2Set({ kbN: Math.max(1, kbN() - 1) }), dfKbInc: () => u2Set({ kbN: Math.min(Math.max(1, kbMax()), kbN() + 1) }), dfKbAll: () => u2Set({ kbN: Math.max(1, kbMax()) }), /* R2.35 build 7 */
     dfChips: [[`라이프 ${DF.LIVES}`, '#ff4f5e', '#fff'], [`적 ${DF.EWAVE}초마다`, '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['입장 ⚡ 1', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
-    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 4) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `웨이브마다 (${DF.EWAVE}초 · 적을 다 잡으면 바로) 슬롯의 지후가 전장에 나가고 적 지후가 몰려와요 (내 전장 지후 수보다 적게 · 1랭크 · 처음엔 능력치 ×${DF.K0} · 웨이브마다 더 강해져요)`, `🔥 ${DF.EXP_W + 1}웨이브부터 광폭 — 적 능력치 배율이 웨이브마다 +${DF.EXP_A} (2배부터 +${DF.EXP_B})`, `핵미사일 지후의 핵은 고정 ${DF.NUKE} 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `전장의 내 지후는 소환체 · 부활한 지후까지 ${CW.CAP}기까지 (넘으면 소환 · 부활 · 분열이 안 돼요)`, `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, '고고학자 지후의 유물은 웨이브가 끝나면 모두 사라지고, 엑시노스 지후가 쓰러지면 그가 준 칩도 사라져요', `라이프가 ${DF.RALLY.join(' · ')} 남으면 반격 — 🪙 +${DF.RALLY_GOLD} · 내 진영의 적 모두 넉백 · ${DF.RALLY_DMG} 피해 · ${DF.RALLY_STUN}초 기절`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 웨이브가 끝날 때 전장의 내 지후가 ${DF.QCAP}기를 넘으면 다음 웨이브에 충격파 — 1초 전 빨간 경고 · 내 지후 모두 최대 체력 ${Math.round(DF.QD0 * 100)}% (점점 늘어 최대 ${Math.round(DF.QDMAX * 100)}%) 피해`, `5웨이브마다 🔑 3 (30웨이브부터 🔑 10) · 🔑 ${DF.BOX} 로 열쇠 상자`, `🪙 골드로 덱 지후를 업그레이드 (Lv5 까지 · ${DF.UP_COST.join(' · ')} · Lv5 는 능력치 2배)`].map(t => ({ t })),
+    dfRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 4) 무작위 칸에 덱의 지후가 나와요 · 같은 지후 · 같은 레벨을 합치면 레벨이 오르고 덱의 무작위 지후가 돼요', `웨이브마다 (${DF.EWAVE}초 · 적을 다 잡으면 바로) 슬롯의 지후가 전장에 나가고 적 지후가 몰려와요 (내 전장 지후 수보다 적게 · 1랭크 · 처음엔 능력치 ×${DF.K0} · 웨이브마다 더 강해져요)`, `🔥 ${DF.EXP_W + 1}웨이브부터 광폭 — 적 능력치 배율이 웨이브마다 +${DF.EXP_A} (2배부터 +${DF.EXP_B})`, `핵미사일 지후의 핵은 적마다 현재 체력의 ${DF.NUKE_P * 100}% 피해`, '웨이브의 적을 모두 잡으면 다음 웨이브가 바로 시작돼요', `전장의 내 지후는 소환체 · 부활한 지후까지 ${CW.CAP}기까지 (넘으면 소환 · 부활 · 분열이 안 돼요)`, `적이 내 진영 끝에 닿으면 라이프 −1 · 라이프 ${DF.LIVES} 이 모두 없어지면 끝`, '고고학자 지후의 유물은 웨이브가 끝나면 모두 사라지고, 엑시노스 지후가 쓰러지면 그가 준 칩도 사라져요', `라이프가 ${DF.RALLY.join(' · ')} 남으면 반격 — 🪙 +${DF.RALLY_GOLD} · 내 진영의 적 모두 넉백 · ${DF.RALLY_DMG} 피해 · ${DF.RALLY_STUN}초 기절`, `${DF.EV_EVERY}웨이브마다 정비 시간 — 이벤트 3장 중 하나를 골라요 (게임 내내 유지)`, `💥 웨이브가 끝날 때 전장의 내 지후가 ${DF.QCAP}기를 넘으면 다음 웨이브에 충격파 — 1초 전 빨간 경고 · 내 지후 모두 최대 체력 ${Math.round(DF.QD0 * 100)}% (점점 늘어 최대 ${Math.round(DF.QDMAX * 100)}%) 피해`, `5웨이브마다 🔑 3 (30웨이브부터 🔑 10) · 🔑 ${DF.BOX} 로 열쇠 상자`, `🪙 골드로 덱 지후를 업그레이드 (Lv5 까지 · ${DF.UP_COST.join(' · ')} · Lv5 는 능력치 2배)`].map(t => ({ t })),
     cwChips: [['성 HP 60,000', '#ff4f5e', '#fff'], ['20초마다 웨이브', '#0b0f20', '#c9d0e6'], ['시작 🪙 100', '#ffd234', '#3b2600'], ['내 덱 그대로', '#53d3c0', '#08342e']].map(([t, bg, fc]) => ({ t, bg, fc })),
     cwRules: ['🪙 골드로 「소환」하면 슬롯 (3 × 4) 무작위 칸에 덱의 지후가 나와요 · 처음 10 · 소환마다 +10', '20초마다 슬롯의 지후가 그대로 전장에 나가요 (웨이브 · 첫 웨이브는 10초 뒤) · 웨이브마다 골드를 받아요', '슬롯에서 같은 지후 · 같은 레벨을 눌러 합치면 레벨업', '적 처치 🪙 +4 · 내 성 체력이 40,000 · 20,000 이 되면 성 주변 적이 모두 쓰러지고 🪙 +300', '30웨이브까지 안 끝나면 서든 데스 — 먼저 전멸하면 패배', `입장료 🎟 ${fee}`].map(t => ({ t })),
     evCards: [['#ff8fb1,#c0408a', '브론즈'], ['#ffd76a,#e0a21c', '골드'], ['#7cc8ff,#3a78d0', '실버']].map(([c, t], i) => ({ bg: `linear-gradient(180deg,${c})`, t, zi: i === 1 ? 3 : 1, tf: ['rotate(-12deg) translateY(10px)', 'scale(1.08) translateY(-4px)', 'rotate(12deg) translateY(10px)'][i] })),
