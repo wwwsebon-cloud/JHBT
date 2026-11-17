@@ -130,12 +130,12 @@ body.dark .it p { color:var(--sub); }
 .tr { display:flex; align-items:stretch; margin-top:16px; border-radius:20px; overflow:hidden; background:var(--card); border:2px solid var(--edge); box-shadow:0 6px 0 #0f1424; }
 .tr .tl2 { flex:none; width:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#141a2b; background:var(--tc); }
 .tr .tl2 b { font-family:'Black Han Sans', sans-serif; font-weight:400; font-size:74px; line-height:1; } .tr .tl2 small { font-size:14px; font-weight:900; opacity:.75; }
-.tr.SS { --tc:linear-gradient(160deg,#ff7ae0,#b46bff); } .tr.SS .tl2 b { font-size:64px; letter-spacing:-.04em; } .tr.S { --tc:#ff5f5f; } .tr.A { --tc:#ffad33; } .tr.B { --tc:#ffd84a; } .tr.C { --tc:#7ee05a; } .tr.D { --tc:#6fb2ff; }
+.tr.SS { --tc:linear-gradient(160deg,#ff7ae0,#b46bff); } .tr.SS .tl2 b { font-size:64px; letter-spacing:-.04em; } .tr.S { --tc:#ff5f5f; } .tr.A { --tc:#ffad33; } .tr.B { --tc:#ffd84a; } .tr.C { --tc:#7ee05a; } .tr.D { --tc:#6fb2ff; } .tr.Ap { --tc:#ff8a4c; } .tr.Ap .tl2 b { font-size:66px; letter-spacing:-.04em; } .tr.Q { --tc:#9aa3b8; } /* 2026-11-17: A+ (S 를 나눔) · ? (시뮬로 잴 수 없음) */
 .tr .ps { flex:1; display:flex; flex-wrap:wrap; gap:16px 10px; padding:18px 20px; align-content:center; }
 .tc { width:112px; display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; }
 .tc .pp { width:88px; height:88px; border-radius:50%; overflow:hidden; background:#fff; border:4px solid var(--rc, #c9c9c6); box-shadow:0 0 0 3px #0c1020; }
 .tc.r-rare { --rc:#4f9dff; } .tc.r-epic { --rc:#b26bff; } .tc.r-legend { --rc:#ffc21a; } .tc.r-limited { --rc:#ff3d7f; }
-.tc .pp { position:relative; overflow:visible; } .tc .pp img { border-radius:50%; } .tc .mv { position:absolute; right:-8px; top:-6px; min-width:26px; height:26px; padding:0 5px; box-sizing:border-box; border-radius:13px; border:3px solid #0c1020; font-style:normal; font-size:13px; font-weight:900; line-height:20px; text-align:center; color:#fff; } .tc .mv.up { background:#3cc23a; } .tc .mv.down { background:#e8392f; } .tc .mv.new { background:#4f7cff; font-size:10px; } .tc.unsure .pp { border-style:dashed; opacity:.8; } /* R2.22.2: ▲ ▼ NEW · 경계 */
+.tc .pp { position:relative; overflow:visible; } .tc .pp img { border-radius:50%; } .tc .mv { position:absolute; right:-8px; top:-6px; min-width:26px; height:26px; padding:0 5px; box-sizing:border-box; border-radius:13px; border:3px solid #0c1020; font-style:normal; font-size:13px; font-weight:900; line-height:20px; text-align:center; color:#fff; } .tc .mv.up { background:#3cc23a; } .tc .mv.down { background:#e8392f; } .tc .mv.new { background:#4f7cff; font-size:10px; } .tc .mv.up2, .tc .mv.down2 { font-size:11px; letter-spacing:-2px; padding:0 6px 0 4px; } .tc .tk { position:absolute; left:-8px; top:-6px; min-width:26px; height:26px; padding:0 4px; box-sizing:border-box; border-radius:13px; border:3px solid #0c1020; background:linear-gradient(180deg,#ffe07a,#e0a414); color:#3b2600; font-style:normal; font-size:13px; font-weight:900; line-height:20px; text-align:center; } /* 토큰 5 이상 */ .tc.unsure .pp { border-style:dashed; opacity:.8; } /* R2.22.2: ▲ ▼ NEW · 경계 */
 .tc b { font-size:15px; font-weight:900; color:#fff; line-height:1.15; word-break:keep-all; } .tc small { font-size:13px; font-weight:800; color:var(--mut); }
 .tnote { margin-top:22px; font-size:15px; line-height:1.6; font-weight:600; color:var(--mut); }
 """
@@ -362,16 +362,17 @@ def short(n):
 
 def tier_card(c):  # 초상화 · 이름 · 표시 승률
     wr = f'<small>{c["wr"]:.1f}%</small>' if c.get('wr') is not None else ''
-    mv = {'up': '<i class="mv up">▲</i>', 'down': '<i class="mv down">▼</i>', 'new': '<i class="mv new">NEW</i>'}.get(c.get('mv'), '')  # R2.22.2: 지난 티어보다 오름 · 내림 · 처음
+    mv = {'up': '<i class="mv up">▲</i>', 'up2': '<i class="mv up up2">▲▲</i>', 'down': '<i class="mv down">▼</i>', 'down2': '<i class="mv down down2">▼▼</i>', 'new': '<i class="mv new">NEW</i>'}.get(c.get('mv'), '')
+    tk = f'<i class="tk">{int(c["tok"])}</i>' if (c.get('tok') or 0) >= 5 else ''  # 2026-11-17: 토큰 5 이상 딱지 (세도 괜찮다)  # R2.22.2: 지난 티어보다 오름 · 내림 · 처음
     un = ' unsure' if c.get('unsure') else ''  # 판을 다시 뽑으면 티어가 자주 바뀌는 경계 지후
-    return f'<div class="tc r-{c.get("rarity", "")}{un}"><span class="pp">{pic(c["id"])}{mv}</span><b>{e(short(c.get("name") or NAMES.get(c["id"], c["id"])))}</b>{wr}</div>'
+    return f'<div class="tc r-{c.get("rarity", "")}{un}"><span class="pp">{pic(c["id"])}{tk}{mv}</span><b>{e(short(c.get("name") or NAMES.get(c["id"], c["id"])))}</b>{wr}</div>'
 
 
 def build_tier(d):
     rows = []
     for t in d['tiers']:
         cards = ''.join(tier_card(c) for c in t['ids'])
-        rows.append(f'<div class="tr {e(t["t"])}"><div class="tl2"><b>{e(t["t"])}</b><small>{len(t["ids"])}기</small></div><div class="ps">{cards}</div></div>')
+        rows.append(f'<div class="tr {({"A+": "Ap", "?": "Q"}).get(t["t"], e(t["t"]))}"><div class="tl2"><b>{e(t["t"])}</b><small>{len(t["ids"])}기</small></div><div class="ps">{cards}</div></div>')
     note = f'<p class="tnote">{e(d["note"])}</p>' if d.get('note') else ''
     top = [c['id'] for c in d['tiers'][0]['ids'][:5]] if d['tiers'] else None
     return [doc(d, int(d.get('width', 1920)), head(d, '', top) + ''.join(rows) + note, '', 'dark')]
