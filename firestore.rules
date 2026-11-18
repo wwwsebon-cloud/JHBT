@@ -227,12 +227,21 @@ service cloud.firestore {
     // ── 운영: 점검 · 로비 공지 · 운영 우편 ──
     // config/maintenance = { on, msg, until, by, at } · config/announce = { on, msg, by, at } — 누구나 읽고(로그인 전에도) 운영자만 쓴다
     match /config/{docId} {
-      allow get: if docId == 'maintenance' || docId == 'announce';
+      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'tier';
       allow list: if false;
       allow write: if docId == 'announce' && isAdmin()
         && request.resource.data.keys().hasOnly(['on', 'msg', 'by', 'at'])
         && request.resource.data.on is bool
         && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+      // R3.2 build 15: config/tier = 티어리스트 생성기로 등재한 티어표 { on, sc (JSON 글 · id → 점수), n 판 수, ver, by, at }
+      allow write: if docId == 'tier' && isAdmin()
+        && request.resource.data.keys().hasOnly(['on', 'sc', 'n', 'ver', 'by', 'at'])
+        && request.resource.data.on is bool
+        && request.resource.data.sc is string && request.resource.data.sc.size() <= 20000
+        && request.resource.data.n is int
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 20
         && request.resource.data.by == request.auth.uid
         && request.resource.data.at == request.time;
       allow write: if docId == 'maintenance' && isAdmin()
