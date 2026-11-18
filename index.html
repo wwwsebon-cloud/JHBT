@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.3"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.3"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -3191,6 +3191,9 @@ html body #reveal.u3rv #revealStage { position:absolute; inset:0; padding:0; max
 #reveal .u3rv-card .ln { height:4px; flex-shrink:0; } #reveal .u3rv-card .tx { flex:1; padding:6px 10px; display:flex; flex-direction:column; justify-content:center; gap:4px; min-height:0; } #reveal .u3rv-card .tx span { font:600 10px/1 'Oswald', sans-serif; letter-spacing:3px; } #reveal .u3rv-card .tx b { font:400 17px/1 'Black Han Sans', sans-serif; color:#f3eee3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #reveal .u3rv-card.sm .tx { padding:3px 6px; } #reveal .u3rv-card.sm .tx span { font-size:8px; } #reveal .u3rv-card.sm .tx b { font-size:12px; }
 #reveal .u3rv-card .new { position:absolute; right:6px; top:6px; padding:2px 6px; background:#c8102e; font:600 10px/1.2 'Oswald', sans-serif; letter-spacing:2px; color:#fff; opacity:0; } #reveal .u3rv-card.open .new { animation:rvNew .35s .7s cubic-bezier(.2,.9,.3,1.3) both; }
+#reveal .gr-drop { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; margin:0 auto 10px; max-width:1100px; } #reveal .u3rv-cards .gr-drop { position:absolute; left:0; right:0; bottom:96px; margin:0; } /* R3.3 build 2 열쇠 상자 드롭 */
+#reveal .gr-drop .hd { font:400 12px/1 'Oswald', sans-serif; letter-spacing:4px; color:#9b958a; margin-right:4px; } #reveal .gr-drop i { font-style:normal; display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:rgba(13,12,14,.92); border:1px solid #e9c46a; color:#f3eee3; font:400 15px/1 'Black Han Sans', sans-serif; animation:grDropIn .35s cubic-bezier(.2,.8,.2,1) both; } #reveal .gr-drop i b { color:#e9c46a; font-weight:400; }
+@keyframes grDropIn { from { opacity:0; transform:translateY(10px) scale(.9); } to { opacity:1; transform:none; } }
 #reveal .u3rv-ft { position:absolute; left:0; right:0; bottom:34px; display:flex; justify-content:center; align-items:center; gap:12px; }
 #reveal .u3rv-ft button { height:50px; padding:0 26px; border:1px solid #4a4640; border-radius:0; background:rgba(13,12,14,.9); color:#e8e3d8; font:400 17px/1 'Black Han Sans', sans-serif; }
 #reveal .u3rv-ft .u3rv-skip { font:400 13px/1 'Oswald', sans-serif; letter-spacing:4px; } #reveal .u3rv-ft .ok { min-width:200px; background:#c8102e; border:0; color:#fff; clip-path:polygon(0 0, 100% 0, 93% 100%, 0 100%); } #reveal .u3rv-ft .sum { font:400 13px/1 'Oswald', sans-serif; letter-spacing:2px; color:#9b958a; margin-right:10px; }
@@ -12078,8 +12081,8 @@ function grGroup(res) { // R2.17.2: 같은 지후는 한 장으로 (n = 몇 장 
   return [...m.values()];
 }
 function showReveal(res, again = 0) { if (!again && $('reveal').classList.contains('show')) { GR.q.push(res); return; } /* R3.2 build 15: 보상 연출이 떠 있으면 기다렸다가 하나씩 (디펜스 보상 모두 받기가 겹쳐 고장) */ if (U3.on) return u3Reveal(res, again); /* R3.1 ui3 */ // again: 뽑기 횟수 (요약의 '한 번 더') · 'nb' 초보자 뽑기 10회 · 0 이면 상점 · 우편 · 보상처럼 한 번만
-  if (!again && new Set(res.map(r => r.id)).size < res.length) res = grGroup(res); // R2.17.2: 상자 · 패키지는 같은 지후를 ×N 으로 (뽑기 10회는 그대로)
-  grClear(); Object.assign(GR, { res, again, cut: null }); $('cutscene').className = ''; $('cutscene').innerHTML = '';
+  const drop = res.drop || null; if (!again && new Set(res.map(r => r.id)).size < res.length) res = grGroup(res); // R2.17.2: 상자 · 패키지는 같은 지후를 ×N 으로 (뽑기 10회는 그대로)
+  grClear(); Object.assign(GR, { res, again, cut: null, drop }); $('cutscene').className = ''; $('cutscene').innerHTML = '';
   const top = res.reduce((m, r) => Math.max(m, RARITY_ORDER[CHARS[r.id].rarity]), 0), [glow, ring, title] = GR_SIGN[Math.min(3, top)]; /* R2.31 한정 (4) 은 전설 연출 */
   $('reveal').className = 'show';
   $('revealStage').innerHTML = grTop(false) + `<button class="gr-sign" id="grSign"><div class="sg"><i class="halo" style="background:radial-gradient(circle, ${glow}, rgba(255,255,255,0) 65%)"></i><div class="ring" style="background:${ring}"><div class="gr-back"><i class="ln"></i><b>RE:</b><i class="sh"></i></div></div></div><div class="st"><b>${title}</b><span>화면을 눌러 열기</span></div></button>`;
@@ -12102,11 +12105,13 @@ function grNext() {
   grOpen(i); grLater(grNext, rr === 'epic' ? 520 : rr === 'rare' ? 300 : 220);
 }
 function grSkipAll() { grClear(); GR.res.forEach((r, i) => { if (CHARS[r.id].rarity !== 'legend') grOpen(i); }); grLater(grNext, 300); } // 전설 컷신은 건너뛰지 않는다
+function grDrop(el, at) { const L = GR.drop; if (!el || !L || !L.length || document.querySelector('#reveal .gr-drop')) return; /* R3.3 build 2 열쇠 상자 드롭 보상 */
+  el.insertAdjacentHTML(at, `<div class="gr-drop"><span class="hd">DROPS</span>${L.map(([ic, t], i) => `<i style="animation-delay:${(i * 0.08).toFixed(2)}s"><b>${esc(ic)}</b>${esc(t)}</i>`).join('')}</div>`); }
 function grDone() {
   if ($('grSkip')) $('grSkip').hidden = true; const n = GR.res.filter(r => r.isNew).length, tot = GR.res.reduce((s, r) => s + (r.n || 1), 0);
   const nb = GR.again === 'nb', cost = nb ? (nbLeft() >= 10 ? CFG.NB_PULL10 : 0) : GR.again === 10 ? CFG.PULL10 : GR.again ? CFG.PULL1 : 0; // 초보자 뽑기를 다 쓰면 '한 번 더' 는 없다
   $('grFoot').innerHTML = `<span class="sum">${tot > GR.res.length ? `${tot}장 · ` : ''}새 지후 ${n} · 조각 ${tot - n}</span>${cost ? `<button class="again" id="grAgain">${nb ? `초보자 한 번 더 (${nbLeft()}회 남음)` : '한 번 더'} · ◆${cost.toLocaleString()}</button>` : ''}<button class="ok" id="grOk">확인</button>`;
-  $('grOk').onclick = grClose;
+  $('grOk').onclick = grClose; grDrop($('grFoot'), 'beforebegin');
   if (cost) $('grAgain').onclick = () => { if (profile.dia < cost) return banner('다이아가 부족해요'); if (nb) pull(10, false, true); else pull(GR.again, false, false, GR.pu); };
 }
 function grClose() { grClear(); GR.cut = null; $('reveal').className = ''; document.body.classList.remove('u3rv-hit'); $('cutscene').className = ''; $('cutscene').innerHTML = ''; renderGacha(); renderInv(); renderMoney(); if (window.__u2 && UI2.on) u2Render(); if (TUT.on) TUT.ev('revealClosed'); if (GR.q.length) { const r = GR.q.shift(); setTimeout(() => showReveal(r), 120); } } // 새 로비: '한 번 더' 로 바뀐 천장 · 초보자 뽑기 칸도
@@ -14362,7 +14367,7 @@ function dfRwClaim(w, all) { const e = DF_RW.find(x => x[0] === w); if (!e || df
 }
 $('dfRwModal').addEventListener('click', e => { const b = e.target.closest('[data-dfrw]'); if (b) dfRwClaim(+b.dataset.dfrw); });
 // ── R2.35 build 6 에너지: 디펜스 1판 = ⚡1 · 20분마다 1 (최대 5) · ◆300 에 ⚡5 (하루 3번 · 최대치를 넘어 쌓인다) ──
-const EN = { MAX: 5, MS: 20 * 60 * 1000, BUY: 5, BUY_DIA: 300, BUY_DAY: 3 };
+const EN = { MAX: 5, MS: 20 * 60 * 1000, BUY: 1, /* R3.3 build 2: 5 → 1 */ BUY_DIA: 300, BUY_DAY: 3 };
 function enSync() { const e = profile.en, now = Date.now(); if (e.n >= EN.MAX || e.t > now) { e.t = now; return; } const k = Math.floor((now - e.t) / EN.MS); if (k > 0) { e.n = Math.min(EN.MAX, e.n + k); e.t = e.n >= EN.MAX ? now : e.t + k * EN.MS; save(); } }
 const enLeft = () => { const e = profile.en; return e.n >= EN.MAX ? 0 : Math.max(0, EN.MS - (Date.now() - e.t)); };
 const enBuyLeft = () => { const e = profile.en, d = todayKey(); if (e.day !== d) { e.day = d; e.buy = 0; } return EN.BUY_DAY - e.buy; };
@@ -14431,9 +14436,10 @@ function keyBox(n = 1) { alWhy('열쇠 상자 ×' + n); // R2.34 열쇠 상자 (
   for (let i = 0; i < n; i++) rs.push('common', 'common', 'rare', /* R3.2 build 14: 일반 5 · 희귀 3 → 일반 2 · 희귀 1 */ ...(Math.random() < 0.1 ? ['epic'] : []), ...(Math.random() < 0.01 ? ['legend'] : []));
   const res = rs.map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
   let g = 0; for (let i = 0; i < n; i++) g += 220 + Math.floor(Math.random() * 201); /* R2.35 build 6: 골드 1,000 ~ 2,000 · R3.2 build 14: 220 ~ 420 (추가 보상까지 상자 하나 평균 약 400) */
-  let d = 0; const got = {}; for (let i = 0; i < n; i++) { d += 23; /* R3.2 build 14: 늘 ◆23 (◆1,000 당첨까지 75상자 다이아 기댓값 약 1,800) */ for (const [p, r] of KB_EXTRA) if (Math.random() < p) { if (r.dia) d += r.dia; if (r.gold) g += r.gold; if (r.item) { profile.items[r.item] = (profile.items[r.item] || 0) + r.n; got[r.item] = (got[r.item] || 0) + r.n; } } } /* R3.2 build 14 추가 보상 */
+  let d = 0; const got = {}; for (let i = 0; i < n; i++) { if (Math.random() < 0.3) d += 23; /* R3.2 build 14: 늘 ◆23 · R3.3 build 2: 30% */ for (const [p, r] of KB_EXTRA) if (Math.random() < p) { if (r.dia) d += r.dia; if (r.gold) g += r.gold; if (r.item) { profile.items[r.item] = (profile.items[r.item] || 0) + r.n; got[r.item] = (got[r.item] || 0) + r.n; } } } /* R3.2 build 14 추가 보상 */
   profile.gold = (profile.gold || 0) + g; profile.dia += d; e7Add('keyBox', n); UI2.st.kbN = 1;
   const xt = Object.keys(got).map(k => `${ITEMS[k].name} ×${got[k]}`).join(' · ');
+  res.drop = [['🪙', '+' + g.toLocaleString()], ...(d ? [['◆', '+' + d.toLocaleString()]] : []), ...Object.keys(got).map(k => [ITEMS[k].icon || '🎁', `${ITEMS[k].name} ×${got[k]}`])]; /* R3.3 build 2: 드롭 보상도 연출에 (grDrop) */
   save(); sfx('buy'); renderMoney(); renderInv(); gachaLast = res; showReveal(res); u2Render(); banner(`🔑 열쇠 상자${n > 1 ? ' ×' + n : ''} · 🪙 +${g.toLocaleString()} · ◆ +${d.toLocaleString()}${xt ? ' · ' + xt : ''}`);
 }
 
@@ -14838,7 +14844,12 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.3', date: '2026.11.18', title: '신규 지후 2종 · 모집 연출', sections: [
+  { v: 'R3.3', date: '2026.11.18', title: '신규 지후 2종 · 모집 연출 · 열쇠 상자', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { icon: '⚡', name: '에너지 구매', tag: 'nerf', desc: '◆ 300 에 <b>⚡ 5 → 1</b>' },
+      { icon: '🔑', name: '열쇠 상자', tag: 'nerf', desc: '◆ 23 드롭 <b>100% → 30%</b>' },
+      { icon: '🔑', name: '열쇠 상자 연출', tag: 'system', desc: '모집 연출에 드롭 보상도 함께' },
+    ] },
     { title: '신규 지후', items: [
       { id: 'dryice', name: '드라이아이스 지후', tag: 'new', desc: '영웅 · 토큰 2 · 일반 공격 [빙결] · 풀리면 [승화] 광역 · [샤드]를 모아 고드름' },
       { id: 'dealer', name: '더블딜러 지후', tag: 'new', desc: '전설 · 토큰 4 · 3.2초마다 카드 두 장 · 공격 · 지원 · 회복 · 강화 · [블랙잭]' },
@@ -17965,8 +17976,8 @@ function u3Recruit(v) { // 모집 탭: 상시 · 초보자 배너 · 천장 · �
 function u3RvFit() { const st = document.querySelector('#reveal .u3rv-st'); if (!st) return; const s = Math.min(innerWidth / 1280, innerHeight / 720) || 1; st.style.setProperty('--rvs', String(s)); }
 addEventListener('resize', () => { if ($('reveal').classList.contains('u3rv')) u3RvFit(); });
 function u3Reveal(res, again = 0) {
-  if (!again && new Set(res.map(r => r.id)).size < res.length) res = grGroup(res);
-  grClear(); Object.assign(GR, { res, again, cut: null, shown: {} }); $('cutscene').className = ''; $('cutscene').innerHTML = '';
+  const drop = res.drop || null; if (!again && new Set(res.map(r => r.id)).size < res.length) res = grGroup(res);
+  grClear(); Object.assign(GR, { res, again, cut: null, shown: {}, drop }); $('cutscene').className = ''; $('cutscene').innerHTML = '';
   $('reveal').className = 'show u3rv';
   const n = res.length, top = res.reduce((m, r) => Math.max(m, RARITY_ORDER[CHARS[r.id].rarity]), 0);
   $('revealStage').innerHTML = `<div class="u3rv-st"><div class="u3rv-seal rv-shake"><span class="u3rv-t1 rv-ink">[ CLASSIFIED · JIHOO KINGDOM ARCHIVE ]</span><span class="u3rv-t2 rv-type">ACCESSING RECORDS · ${n} FILE${n > 1 ? 'S' : ''}</span>`
@@ -18007,7 +18018,7 @@ function u3RvDone() {
   const n = GR.res.filter(r => r.isNew).length, tot = GR.res.reduce((s, r) => s + (r.n || 1), 0), nb = GR.again === 'nb', cost = nb ? (nbLeft() >= 10 ? CFG.NB_PULL10 : 0) : GR.again === 10 ? (p10Free() > 0 ? 0 : CFG.PULL10) : GR.again ? CFG.PULL1 : 0, free10 = GR.again === 10 && p10Free() > 0;
   const ft = $('u3rvFt'); if (!ft) return;
   ft.innerHTML = `<span class="sum">${tot > GR.res.length ? `${tot}장 · ` : ''}새 지후 ${n} · 조각 ${tot - n}</span>${cost || free10 ? `<button class="again" id="u3rvAgain">${nb ? '초보자 한 번 더' : '한 번 더'} · ${free10 ? '무료' : '◆' + cost.toLocaleString()}</button>` : ''}<button class="ok" id="u3rvOk">확인</button>`;
-  $('u3rvOk').onclick = grClose;
+  $('u3rvOk').onclick = grClose; grDrop(ft, 'beforebegin');
   if ($('u3rvAgain')) $('u3rvAgain').onclick = () => { if (!free10 && profile.dia < cost) return banner('다이아가 부족해요'); if (nb) pull(10, false, true); else if (GR.again === 10) pull10Go(GR.pu); else pull(GR.again, false, false, GR.pu); };
 }
 function u3Shop(v) { // 상점: 오늘의 매물 (무료 + 매물) · 패키지 · 이모티콘 → 사면 영수증 + 인장 (u3BuyOpen)
