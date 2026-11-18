@@ -300,6 +300,14 @@ service cloud.firestore {
       allow create, update: if owner(userId) && request.resource.data.keys().hasOnly(['at']) && request.resource.data.at == request.time;
     }
 
+    // R3.3 build 3 지후 복권: 날마다 행운의 숫자 = lotto/<한국 날 번호> 의 서버 시각 at 으로 만든다 · 그날이 끝난 다음 날 (한국 시간) 에 처음 연 사람이 한 번만 만든다 · 고칠 수 없다
+    match /lotto/{day} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.keys().hasOnly(['at']) && request.resource.data.at == request.time
+        && int(day) == math.floor((request.time.toMillis() + 32400000) / 86400000) - 1;
+      allow update, delete: if false;
+    }
+
     // 잠수함 접속 중인 유저 (운영 도구): 접속자마다 1분마다 닉네임 · 화면 · 레벨 · 회원 여부 · 접속 횟수 · 지난 접속 · 기기 · 유입 · 운영자만 읽는다
     match /live/{userId} {
       allow get, list: if isAdmin();
