@@ -5832,6 +5832,7 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
   <div class="cr-progress" aria-hidden="true"><i id="crProg"></i></div></div>
 <!-- 인트로 만화 (R2.10.2 build 6): 처음 시작할 때 · 메뉴에서 다시 보기 -->
 <div class="comic" id="comic" hidden><div class="cm-top"><span class="eyebrow">RE:JHBT · PROLOGUE</span><button class="cm-skip" id="comicSkip">건너뛰기 ⏭</button></div><div class="cm-stage"><div class="cm-frame" id="comicFrame"><img id="comicImg" alt="인트로 만화"><span class="cm-cap" id="comicCap" hidden></span></div><div class="cm-card" id="comicCard" hidden></div></div><div class="cm-bot"><div class="cm-dots" id="comicDots"></div><span class="cm-hint" id="comicHint">눌러서 넘기기 ▸</span></div></div>
+<div class="modal pane" id="alModal"><div class="box"><h3>유저 탐색<button class="btn" data-close="alModal">✕</button></h3><div id="alBody"></div></div><style>#alModal .box { width:min(980px, 96vw); max-width:none; } #alBody .al-q { display:flex; gap:8px; } #alBody .al-q .accin { flex:1; margin:0; } #alBody .al-hd { margin:10px 0 2px; font-size:15px; } #alBody .al-st { font-size:12px; opacity:.85; margin:2px 0; } #alBody .al-bad { color:#e04a4a; } #alBody .al-ok { color:#3fbf6f; } #alBody .al-f { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 6px; } #alBody .al-f button { padding:4px 10px; font-size:12px; } #alBody .al-f button.on { background:#c8102e; color:#fff; border-color:#c8102e; } #alBody .al-sum { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; opacity:.9; margin:4px 0 8px; } #alBody .al-day { margin:12px 0 4px; font-size:12px; letter-spacing:1px; opacity:.6; } #alBody .al-r { display:grid; grid-template-columns:64px 150px 190px 1fr; gap:8px; align-items:start; padding:5px 6px; border-left:3px solid transparent; font-size:12px; border-bottom:1px solid rgba(128,128,128,.15); } #alBody .al-r.s1 { border-left-color:#e9a03b; } #alBody .al-r.s2 { border-left-color:#e04a4a; background:rgba(224,74,74,.08); } #alBody .al-t { font-family:monospace; opacity:.75; } #alBody .al-w { opacity:.8; } #alBody .al-y { font-weight:700; } #alBody .al-y.no { opacity:.45; font-weight:400; } #alBody .al-c { display:flex; flex-wrap:wrap; gap:4px; } #alBody .al-k { font-style:normal; padding:1px 6px; border:1px solid rgba(128,128,128,.35); white-space:nowrap; } #alBody .al-k.up { color:#3fbf6f; } #alBody .al-k.dn { color:#e07a6a; } #alBody .al-k.ch { color:var(--c); border-color:var(--c); font-weight:700; } #alBody .al-list { max-height:58vh; overflow-y:auto; } @media (max-width:700px) { #alBody .al-r { grid-template-columns:56px 1fr; } #alBody .al-w, #alBody .al-c { grid-column:2; } #alBody .al-y { grid-column:2; } }</style></div>
 <div class="modal pane" id="tlgModal"><div class="box"><h3>티어리스트 생성기<button class="btn" data-close="tlgModal">✕</button></h3><div id="tlgBody"></div></div><style>#tlgBody .tlg-set { display:flex; flex-wrap:wrap; gap:8px; } #tlgBody .tlg-set label { display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; } #tlgBody .tlg-set .accin { width:120px; margin:0; } #tlgBody .tlg-run { display:flex; gap:8px; align-items:center; margin:10px 0 4px; } #tlgBody .tlg-pg { flex:1; height:6px; background:rgba(128,128,128,.25); overflow:hidden; } #tlgBody .tlg-pg i { display:block; height:100%; background:#c8102e; transform:scaleX(0); transform-origin:left; } #tlgBody .tlg-meta { margin:10px 0 6px; font-size:12px; opacity:.8; } #tlgBody .tlg-wr { opacity:.85; } #tlgBody .tlg-wr.un { color:#e9a03b; } #tlgBody .tlg-wr .up { color:#3fbf6f; font-style:normal; } #tlgBody .tlg-wr .dn { color:#e04a4a; font-style:normal; } #tlgBody .tlg-wr .nw { color:#e9c46a; font-style:normal; font-size:9px; }</style></div>
 <div class="modal pane" id="cuModal"><div class="box"><h3><span>커스텀 픽업</span><button class="btn" data-close="cuModal">✕</button></h3><p class="note" id="cuNote" style="margin-top:0"></p><div class="pickgrid" id="cuGrid"></div><button class="k-btn wide" id="cuOk" style="margin-top:10px">확인</button></div><style>#cuGrid .ccard.cu-on { outline:3px solid #c8102e; outline-offset:-3px; } #cuGrid .ccard:not(.cu-on) .pic { opacity:.45; } #cuOk:disabled { opacity:.4; }</style></div>
 <div class="modal pane" id="pickModal"><div class="box"><h3><span id="pickTitle">선택 전설 지후 모집권</span><button class="btn" data-close="pickModal">✕</button></h3><p class="note" id="pickNote" style="margin-top:0">원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.</p><div class="pickgrid" id="pickGrid"></div></div></div>
@@ -8690,8 +8691,49 @@ function guardProfile(p) { // 프로필의 dia · gold 를 금고 접근자로 (
     set(x) { const w = CUR.get(p); curCheck(p, w); x = Math.max(0, Math.floor(Number(x) || 0)); if (x - w[k] > CUR_STEP[k]) acFlag(p, 'big-' + k, x - w[k]); const ch = w[k] !== x; w[k] = x; w.good[k] = x; w.sig = curSig(w); if (ch) { try { if (p === profile) econTouch(); } catch (e) {} } } }); } // R2.12.2: 바뀌면 백업 (profile 이 아직 없을 때는 건너뜀)
   return p;
 }
+// ═════════ 잠수함 · 활동 기록 (운영 도구 「유저 탐색」 · 부정행위 확인) ═════════
+// writeLocal (save · 금고 econTouch) 마다 alTick 이 지난 저장과의 차이 (◆ · 골드 · 열쇠 · 티켓 · 마일리지 · 모집 수 · 레벨 · 지후 · 조각 · 아이템 · 랭크) 를
+// profile.alog.L 에 [시각, 어디서 (화면 · 탭 · 창), 왜 (alWhy 로 붙인 이유 · 없으면 방금 누른 버튼 글자), 변화 코드, 고리] 로 남긴다 · 최대 AL.MAX · 서버 백업 payload 에 같이 올라간다
+// 고리 = 앞 기록의 고리로 이어 만든 해시 → 중간을 고치거나 지우면 끊긴다 · profile 객체가 바뀌면 (서버 기록과 맞춤) 그 차이를 「기록 맞춤」으로
+const AL = { p: null, s: null, why: '', whyAt: 0, whyUse: 0, tap: '', tapAt: 0, MAX: 400, v: null };
+const AL_TAB = { battle: '메인', units: '지후', recruit: '모집', shop: '상점', arcade: '아케이드', rank: '랭킹', quest: '퀘스트', online: '온라인', lobby: '로비', deck: '덱', gacha: '모집', inv: '가방', lb: '랭킹', tower: '탑', comp: '경쟁전', sandbox: '샌드박스', social: '친구', custom: '꾸미기', patch: '패치노트', welcome: '시작 화면', draft: '드래프트' };
+const AL_MD = { castle: '성뿌수기', defense: '디펜스', sandbox: '샌드박스', reels: '릴스', mirror: '미러전', random: '랜덤전', tower: '탑', comp: '경쟁전', tutorial: '튜토리얼', event: '이벤트' };
+const AL_PG = { inv: '가방', patch: '패치노트', social: '친구', tower: '탑', comp: '경쟁전', sandbox: '샌드박스', custom: '꾸미기' };
+const AL_OV = [['u3mail', '우편'], ['u3set', '환경설정'], ['u3help', '매거진'], ['u3e7', '7일 이벤트'], ['u3df', '디펜스 보상'], ['u3buy', '상점 구매'], ['u3mile', '마일리지 샵'], ['profile', '프로필'], ['sp', '시즌 패스'], ['arcShop', '아케이드 상점'], ['mode', ''], ['page', ''], ['detail', '지후 상세']];
+const AL_MOD = { charModal: '지후 정보', pickModal: '선택 창', codeModal: '쿠폰', mailModal: '우편', qsModal: '퀘스트', accModal: '계정', dfRwModal: '디펜스 보상', e7Modal: '7일 이벤트', rsModal: '초기화권', setModal: '환경설정', levelUp: '레벨업', dlg: '확인 창', cuModal: '커스텀 픽업', menuModal: '메뉴' };
+const alMode = () => { try { return S.net ? '친선전' : S.arc ? (AL_MD[S.arc.kind] || S.arc.kind) : '일반전'; } catch (e) { return ''; } };
+function alWhere() { try {
+  const id = document.body.dataset.scr || '', md = document.querySelector('.modal.show'), mt = md ? (AL_MOD[md.id] || md.id) : ''; /* show() 가 body data-scr 에 화면 이름 */
+  let w = AL_TAB[id] || id || '?';
+  if (id === 'battle' || id === 'result') w = (id === 'battle' ? '전투 · ' : '결과 · ') + alMode();
+  else if (UI2.on) { const st = UI2.st, o = AL_OV.find(([k]) => st[k]); w = o ? (o[0] === 'page' ? (AL_PG[st.page] || st.page) : o[0] === 'mode' ? '모드 · ' + (AL_MD[st.mode] || st.mode) : o[1]) : st.tab === 'shop' && st.u3store ? AL_TAB[st.u3store] || st.u3store : AL_TAB[st.tab] || st.tab || '로비'; }
+  return (w + (mt ? ' · ' + mt : '')).slice(0, 24);
+} catch (e) { return '?'; } }
+function alWhy(t) { AL.why = String(t || '').slice(0, 30); AL.whyAt = Date.now(); AL.whyUse = 0; } // 보상 · 소비 함수 맨 앞에서 이유를 붙인다 (8초 안의 첫 변화 · 그 뒤 0.6초 안의 변화까지 같은 이유)
+const alWhyNow = () => { const now = Date.now(); if (AL.why && (AL.whyUse ? now - AL.whyUse < 600 : now - AL.whyAt < 8000)) { if (!AL.whyUse) AL.whyUse = now; return AL.why; } AL.why = ''; return AL.tap && now - AL.tapAt < 4000 ? '누름 · ' + AL.tap : ''; };
+document.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('button, .btn, [role="button"], a'); if (!b) return; const t = String(b.getAttribute('aria-label') || b.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 20); if (t) { AL.tap = t; AL.tapAt = Date.now(); } }, true);
+const alSnap = p => ({ d: nat(p.dia), g: nat(p.gold), k: p.keys | 0, t: (p.arc && p.arc.t) | 0, m: p.mile | 0, n: p.pulls | 0, l: p.level | 0, o: Object.assign({}, p.owned), s: Object.assign({}, p.shards), i: Object.assign({}, p.items), e: Object.assign({}, p.enh) });
+function alDiff(a, b) {
+  const L = [], num = (k, x, y) => { if (x !== y) L.push(k + (y > x ? '+' : '') + (y - x)); };
+  num('d', a.d, b.d); num('g', a.g, b.g); num('k', a.k, b.k); num('t', a.t, b.t); num('m', a.m, b.m); num('n', a.n, b.n); if (a.l !== b.l) L.push('L' + b.l);
+  for (const id in b.o) if (!a.o[id]) L.push('c:' + id);
+  for (const id in a.o) if (!b.o[id]) L.push('c-:' + id);
+  for (const [k, A, B] of [['s', a.s, b.s], ['i', a.i, b.i]]) for (const id of new Set([...Object.keys(A), ...Object.keys(B)])) { const x = nat(A[id]), y = nat(B[id]); if (x !== y) L.push(k + ':' + id + (y > x ? '+' : '') + (y - x)); }
+  for (const id of new Set([...Object.keys(a.e), ...Object.keys(b.e)])) { const x = a.e[id] || 1, y = b.e[id] || 1; if (x !== y) L.push('e:' + id + ':' + y); }
+  return L.join(' ');
+}
+const alH = (prev, e) => acHash(AC_SALT + '|al|' + prev + '|' + e[0] + '|' + e[1] + '|' + e[2] + '|' + e[3]).slice(-6);
+function alPush(p, why, c) {
+  const g = p.alog && Array.isArray(p.alog.L) ? p.alog : (p.alog = { n: 0, L: [] }), L = g.L, e = [Date.now(), alWhere(), String(why || '').slice(0, 30), c.slice(0, 600), ''];
+  e[4] = alH(L.length ? L[L.length - 1][4] : '', e); L.push(e); g.n = (g.n | 0) + 1; if (L.length > AL.MAX) L.splice(0, L.length - AL.MAX);
+}
+function alTick() { try {
+  const p = profile; if (!p || typeof p !== 'object') return; const s = alSnap(p);
+  if (AL.p !== p) { const o = AL.p && AL.s; AL.p = p; AL.s = s; if (o) { const c = alDiff(o, s); if (c) alPush(p, '기록 맞춤 (서버 · 다른 기기)', c); } return; }
+  const c = alDiff(AL.s, s); AL.s = s; if (c) alPush(p, alWhyNow(), c);
+} catch (e) {} }
 let LOCAL_OK = false; // 이 기기 기록의 서명이 맞는가 (loadProfile · writeLocal)
-function writeLocal() { try { if (ACC.kicked) return; } catch (e) {} /* R2.20 build 3: 다른 창에 밀려 멈춘 창은 이 기기 기록(탭끼리 같이 쓴다)을 옛 기록으로 덮지 않는다 */ try { const j = JSON.stringify(profile); localStorage.setItem(SAVE_KEY, j); localStorage.setItem(SAVE_KEY + '.s', acHash(AC_SALT + j)); LOCAL_OK = true; } catch (e) {} }
+function writeLocal() { try { if (ACC.kicked) return; } catch (e) {} /* R2.20 build 3: 다른 창에 밀려 멈춘 창은 이 기기 기록(탭끼리 같이 쓴다)을 옛 기록으로 덮지 않는다 */ alTick(); /* 잠수함 활동 기록 */ try { const j = JSON.stringify(profile); localStorage.setItem(SAVE_KEY, j); localStorage.setItem(SAVE_KEY + '.s', acHash(AC_SALT + j)); LOCAL_OK = true; } catch (e) {} }
 function loadProfile() {
   let p = null; try { const j = localStorage.getItem(SAVE_KEY); p = JSON.parse(j || 'null'); LOCAL_OK = !!j && localStorage.getItem(SAVE_KEY + '.s') === acHash(AC_SALT + j); } catch (e) {}
   if (!p) { try { const r1 = JSON.parse(localStorage.getItem(R1_SAVE_KEY) || 'null'); if (r1 && typeof r1 === 'object' && r1.nickname) { p = importR1(r1); if (r1.ownerUid) p.ownerUid = r1.ownerUid; } } catch (e) {} } // 처음 켰을 때: 이 기기의 R1 기록
@@ -8716,6 +8758,7 @@ function normProfile(p) {
   p.enh = Object.fromEntries(Object.entries(p.enh && typeof p.enh === 'object' ? p.enh : {}).filter(([id, v]) => CHARS[id] && Number(v) > 1).map(([id, v]) => [id, clamp(Math.floor(Number(v)), 1, 12)])); // R2.15 지후 강화 (+1 은 적지 않는다)
   p.deck = (p.deck || []).filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5); STARTERS().forEach(id => { if (p.deck.length < 5 && !p.deck.includes(id)) p.deck.push(id); }); // 빠진 자리는 기본 지후
   p.preset = [1, 2, 3].includes(p.preset) ? p.preset : 1; p.decks = p.decks && typeof p.decks === 'object' ? p.decks : {}; [1, 2, 3].forEach(n => { p.decks[n] = Array.isArray(p.decks[n]) ? p.decks[n].filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5) : []; }); p.decks[p.preset] = p.deck; // 덱 프리셋 (R2.12): deck = 지금 프리셋의 배열로
+  p.alog = p.alog && typeof p.alog === 'object' && Array.isArray(p.alog.L) ? { n: nat(p.alog.n), L: p.alog.L.filter(e => Array.isArray(e) && e.length === 5).slice(-400) } : { n: 0, L: [] }; /* 잠수함 활동 기록 (AL.MAX) */
   p.level = Math.max(1, nat(p.level)); p.xp = nat(p.xp); /* R2.10: Lv1 부터 (예전 Lv0 은 Lv1 로) */ p.dia = nat(p.dia); p.gold = nat(p.gold);
   p.ach = Object.assign(freshAch(), p.ach || {}); p.ach.claimed = p.ach.claimed && typeof p.ach.claimed === 'object' ? p.ach.claimed : {};
   p.newbie = Object.assign({ on: false, days: 0, last: '' }, p.newbie || {}); p.nbPulls = clamp(nat(p.nbPulls), 0, CFG.NB_PULLS); // 초보자 뽑기 한 횟수
@@ -10208,7 +10251,7 @@ function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · �
   c.botT -= dt; if (c.botT <= 0) { c.botT = 0.7 + Math.random() * 0.9; if (c.auto) cwBot(ME()); } // auto: 시험용 (내 쪽도 봇)
   c.purgeT += dt; if (c.purgeT >= 2) { c.purgeT = 0; cwPurge(); }
 }
-function dfEnd(win, note) { // R2.34 디펜스 결과: 지난 웨이브 수만큼 열쇠
+function dfEnd(win, note) { alWhy('디펜스 끝 · ' + (S.cw ? S.cw.wave : 0) + '웨이브'); // R2.34 디펜스 결과: 지난 웨이브 수만큼 열쇠
   const c = S.cw, w = c ? c.wave : 0, keys = dfKeys(Math.max(0, w - 1)), best = w > (profile.dfBest | 0); profile.keys = (profile.keys | 0) + keys; if (best) profile.dfBest = w; if (best || !profile.dfDeck.length) { const dk = ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).slice(0, 5); if (dk.length) { profile.dfDeck = dk; profile.dfRk = dk.map(id => (owned(id) ? clamp(enhLv(id) | 0, 1, 6) : 1)); } } /* R2.35 build 11: 리더보드에 그 덱 */ e7Add('dfWave', w, true); postEvent('gacha', (((S.deck && S.deck[c ? c.me : ME()]) || []).find(id => CHARS[id]) || 'fire'), 'df' + w); /* R3.1 build 4 소식 */ discordNotify({ type: 'defense', wave: w, best: !!best, level: profile.level, myDeck: ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).map(id => CHARS[id].name) }); /* R3.1 build 3 */ /* R2.35 build 6: 한 판 최고 웨이브 */ save(); sfx('match_win'); if (best) dfPush(); /* R2.34 디펜스 리더보드 */
   $('dfPick').classList.remove('show'); $('screen-result').classList.add('win'); $('resTitle').textContent = `WAVE ${w}`; $('resMeta').textContent = `DEFENSE · 디펜스`; $('resSub').textContent = `웨이브 ${w} 도달 · 라이프 ${Math.max(0, c ? c.lives : 0)} / ${DF.LIVES}`;
   $('resBody').innerHTML = `${note ? `<div class="r"><span>${esc(note)}</span></div>` : ''}<div class="rchips"><span>🔑 +${keys}</span><span>보유 🔑 ${profile.keys}</span><span>${best ? '🏆 최고 기록!' : `최고 WAVE ${profile.dfBest | 0}`}</span><span>열쇠 상자 🔑 ${DF.BOX}</span>${dfRwReady() ? `<span>🎁 디펜스 보상 ${dfRwReady()}개</span>` : ''}</div>`;
@@ -11902,7 +11945,7 @@ function liveForfeit() { // 지난 판을 다 끝내지 않고 나갔으면 패�
   endMatch(false, '게임 도중 나가서 패배로 처리됐어요'); banner('🏳 지난 판을 끝내지 않고 나가서 패배로 처리됐어요'); return true;
 }
 function endMatch(win, note) {
-  evHide(); if (profile.live) delete profile.live; // 끝까지 한 판은 진행 중 기록을 지운다 (R2.13.1 build 2)
+  alWhy('경기 끝 · ' + alMode() + (win ? ' 승' : ' 패')); evHide(); if (profile.live) delete profile.live; // 끝까지 한 판은 진행 중 기록을 지운다 (R2.13.1 build 2)
   if (!TUT.on && !S.replay && !sandboxLike() && !(S.net && S.net.spec)) crRegister(); // R2.13.2: 한 판이라도 하면 크레딧 USERS
   const net = S.net, spec = !!(net && net.spec);
   S.phase = 'idle'; clearInterval(S.timer); clearTimeout(S.later); clearTimeout(newMatch.t); emoClear(); presencePing('lobby');
@@ -11976,7 +12019,7 @@ function renderGacha() {
   $('gachaTickets').innerHTML = its.length ? '<span class="eyebrow">내 모집권 · 아이템</span>' + its.map(k => `<div class="g-card ticket"><span class="ic">${ITEMS[k].icon}</span><span class="tx"><b>${ITEMS[k].name} <em>×${profile.items[k]}</em></b><small>${ITEMS[k].desc}</small></span>${ITEMS[k].use ? `<button class="k-btn" data-item="${k}">사용</button>` : ''}</div>`).join('') : '';
 }
 const BOX_RAR = { boxLow: () => ['common', 'common', 'common', 'rare'], boxMid: () => ['rare', 'rare', 'rare', 'epic'], boxHigh: () => ['epic', 'epic', 'epic', ...(Math.random() < 0.25 ? ['legend'] : [])] }; // 상자 구성
-function useItem(k) { // 뽑기 화면 · 가방: 10회 뽑기권 · 임테기 · 영웅 모집권 · 선택 전설 모집권
+function useItem(k) { alWhy('아이템 · ' + (ITEMS[k] ? ITEMS[k].name : k)); // 뽑기 화면 · 가방: 10회 뽑기권 · 임테기 · 영웅 모집권 · 선택 전설 모집권
   if (k === 'resetTicket') { if (profile.items.resetTicket > 0) { renderRs(); openModal('rsModal'); } return; } // R2.35 build 6: 가방에서 지후를 골라 초기화
   if (!(profile.items[k] > 0) || !ITEMS[k].use) return;
   if (k === 'r6Epic' || k === 'r6Legend') { // R3.2 build 14: 보유한 그 등급 지후 (랭크 6 아래) 를 골라 바로 랭크 6
@@ -12006,7 +12049,7 @@ function rollOne(T) { let r = rollRarity(T), pool = Object.keys(CHARS).filter(id
 const nbLeft = () => Math.max(0, CFG.NB_PULLS - (profile.nbPulls | 0)); // 초보자 뽑기 남은 횟수 (0 이면 사라진다)
 const p10Free = () => { const d = todayKey(), f = profile.p10f && typeof profile.p10f === 'object' ? profile.p10f : (profile.p10f = { day: '', n: 0 }); if (f.day !== d) { f.day = d; f.n = 0; } return Math.max(0, (vipOn() ? 2 : 1) - (f.n | 0)); }; // R2.37 build 3: 10회 모집 매일 1회 무료 (VIP 2회)
 function pull10Go(pu) { if (pu && !puOk(pu)) return; if (p10Free() > 0) { profile.p10f.n = (profile.p10f.n | 0) + 1; return pull(10, true, false, pu); } if (profile.dia < CFG.PULL10) return false; pull(10, false, false, pu); }
-function pull(n, free, nb, pu) { if (pu && !puOk(pu)) return; // R3.2 build 15 pu: 픽업 배너 키 // free: 10회 뽑기권 · nb: 초보자 뽑기 (10회만 · R2.20 build 5)
+function pull(n, free, nb, pu) { if (pu && !puOk(pu)) return; alWhy('모집 ' + n + '회' + (nb ? ' · 초보자' : '') + (free ? ' · 무료' : '') + (pu ? ' · ' + ({ sp: '특별 픽업', td: '오늘의 픽업', cu: '커스텀 픽업' }[pu] || (String(pu).startsWith('nw') ? '신규 픽업' : pu)) : '')); // R3.2 build 15 pu: 픽업 배너 키 // free: 10회 뽑기권 · nb: 초보자 뽑기 (10회만 · R2.20 build 5)
   if (nb && (free || n !== 10 || nbLeft() < n)) return;
   const cost = free ? 0 : nb ? CFG.NB_PULL10 : n === 10 ? CFG.PULL10 : CFG.PULL1; if (profile.dia < cost) return;
   profile.dia -= cost; profile.pulls += n; questAdd('gacha', n); profile.mile = (profile.mile | 0) + n; /* R3.1 build 2 마일리지 */
@@ -12128,7 +12171,7 @@ const colMet = id => owned(id); // R2.37 build 3: 얻기만 하면 (랭크 조�
 function colState(c) { const got = (profile.col && profile.col[c.k]) || [], full = !c.lock && c.ids.every(colMet), todo = c.ids.filter(id => !got.includes(id)); return { got, full, todo, ready: full && todo.length > 0, done: full && !todo.length, n: c.ids.filter(colMet).length }; }
 const colReady = () => colList().filter(c => colState(c).ready).length;
 function colClaim(k) { const c = colList().find(x => x.k === k); if (!c) return; const s = colState(c); if (!s.ready) return u2Toast(c.lock ? '곧 지후가 더해질 컬렉션이에요' : '모두 얻어야 받을 수 있어요');
-  const n = s.todo.length; profile.dia += COL_DIA * n; profile.items.glowLegend = (profile.items.glowLegend || 0) + COL_GLOW * n; (profile.col || (profile.col = {}))[k] = [...s.got, ...s.todo]; save(); renderMoney(); renderInv(); sfx('buy'); banner(`📚 ${c.name} 완성! · ◆${(COL_DIA * n).toLocaleString()} · ✦ 빛나는 전설조각 ×${COL_GLOW * n}`); if (window.__u2 && UI2.on) u2Render(); }
+  alWhy('컬렉션 · ' + c.name); const n = s.todo.length; profile.dia += COL_DIA * n; profile.items.glowLegend = (profile.items.glowLegend || 0) + COL_GLOW * n; (profile.col || (profile.col = {}))[k] = [...s.got, ...s.todo]; save(); renderMoney(); renderInv(); sfx('buy'); banner(`📚 ${c.name} 완성! · ◆${(COL_DIA * n).toLocaleString()} · ✦ 빛나는 전설조각 ×${COL_GLOW * n}`); if (window.__u2 && UI2.on) u2Render(); }
 function colView() { return colList().map(c => { const s = colState(c), mem = c.ids.map(id => { const have = owned(id), rk = have ? enhLv(id) : 0; return { img: CHARS[id].portrait || '', cls: (have ? '' : ' no') + (colMet(id) ? ' ok' : ''), rk: have ? 'R' + rk : '미보유', onClick: () => u2Set({ detail: id, story: false }) }; });
   if (c.lock) mem.push({ img: '', cls: ' lock', rk: '곧 추가', onClick: () => u2Toast('곧 이 컬렉션에 지후가 더해져요') });
   return { name: c.name, mem, prog: c.lock ? '🔒' : `${s.n}/${c.ids.length}`, cls: s.done ? ' done' : s.ready ? ' ready' : c.lock ? ' soon' : '', btn: s.done ? '완료' : s.ready ? '받기' : c.lock ? '준비 중' : '진행 중', btnK: s.ready ? 'k-gold' : 'k-off', onClick: () => colClaim(c.k), rw: c.lock ? '' : `◆${COL_DIA * c.ids.length} · ✦ 빛나는 전설조각 ×${COL_GLOW * c.ids.length}${s.got.length && !s.done ? ` (받은 ${s.got.length}기 몫 제외)` : ''}` }; }).sort((a, b) => (b.cls === ' ready') - (a.cls === ' ready')); }
@@ -12768,7 +12811,7 @@ function enhUp(id) {
   const lv = enhLv(id), c = enhCost(id, lv); if (!c) return u2Toast('이미 최대 랭크예요');
   if ((profile.shards[id] || 0) < c.sh) return u2Toast(`조각이 ${c.sh - (profile.shards[id] || 0)}개 모자라요`);
   if ((profile.gold || 0) < c.gold) return u2Toast(`골드가 ● ${(c.gold - (profile.gold || 0)).toLocaleString()} 모자라요`);
-  profile.shards[id] -= c.sh; profile.gold -= c.gold; profile.enh[id] = lv + 1; if ((lv + 1) % 3 === 0) postEvent('gacha', id, 'rank' + (lv + 1)); /* R3.1 build 4 소식 */ e7Add('rankUp'); /* R2.35 build 6 */ save(); renderMoney();
+  alWhy('랭크업 · ' + shortName(id) + ' ' + (lv + 1)); profile.shards[id] -= c.sh; profile.gold -= c.gold; profile.enh[id] = lv + 1; if ((lv + 1) % 3 === 0) postEvent('gacha', id, 'rank' + (lv + 1)); /* R3.1 build 4 소식 */ e7Add('rankUp'); /* R2.35 build 6 */ save(); renderMoney();
   const nx = lv + 1, mile = ENH_MILE.find(m => m.lv === nx), s6 = ENH_SKILL[id] && ENH_SKILL[id][6], s12 = ENH_SKILL[id] && ENH_SKILL[id][12]; sfx(mile ? 'match_win' : 'merge');
   rankUpFx(id, lv, nx); if (0) u2Toast(`${nx === 6 || nx === 12 ? '✨' : '⬆'} ${shortName(id)} 지후 랭크 ${nx}${nx === 6 ? ` · 고유능력${s6 ? ' [' + s6.name + ']' : ''} 해금!` : nx === 12 ? ` · 필살기${s12 ? ' [' + s12.name + ']' : ''} 해금!` : mile ? ' · ' + mile.txt.replace(/<[^>]+>/g, '').replace('증가합니다', '증가!') : '!'}`); u2Render();
 }
@@ -13335,7 +13378,7 @@ const mailLive = m => !m.claimed && !(m.exp > 0 && m.exp < Date.now());
 function renderMailDot() { const n = (profile.mail || []).filter(mailLive).length, d = $('mailDot'); if (d) { d.hidden = !n; d.textContent = n > 9 ? '9+' : n; } }
 function claimMail(m) { // 받은 지후는 뽑기 연출로
   if (!m || !mailLive(m)) return [];
-  m.claimed = true; const got = [];
+  alWhy('우편 · ' + String(m.title || '').slice(0, 20)); m.claimed = true; const got = [];
   (m.rewards || []).forEach(r => {
     if (r.kind === 'diamonds') profile.dia += r.amount; else if (r.kind === 'gold') profile.gold += r.amount;
     else if (r.kind === 'char' && CHARS[r.id]) { for (let i = 0; i < r.amount; i++) { const isNew = grantChar(r.id); got.push({ id: r.id, isNew, seenBefore: !isNew }); } } // 정해진 지후 (이미 있으면 조각)
@@ -13377,7 +13420,7 @@ function redeemCode(raw) {
   const code = String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
   if (!code) return '코드를 입력하세요.';
   if (!/^[A-Z0-9]+$/.test(code)) return '코드는 영어 대문자와 숫자로만 되어 있어요.';
-  const c = CODES[code]; if (!c) return '없는 코드예요. 다시 확인해 주세요.';
+  const c = CODES[code]; if (!c) return '없는 코드예요. 다시 확인해 주세요.'; alWhy('쿠폰 · ' + code);
   if (profile.codes.includes(code)) return '이미 사용한 코드예요.';
   if (!codeLive(c)) return '기한이 지난 코드예요.';
   profile.codes.push(code); if (c.dia) profile.dia += c.dia; if (c.gold) profile.gold += c.gold; if (c.ticket) arcDay().t += c.ticket;
@@ -13435,7 +13478,7 @@ function attBook() { const nb = profile.newbie;
   const a = profile.att, today = a.last !== todayKey(), wrap = a.days >= ATT_WEEK.length && today; // 다 채운 다음 날은 새 주
   return { kind: 'week', title: `주간 출석부 · ${a.cycle + (wrap ? 2 : 1)}주차`, list: ATT_WEEK, days: wrap ? 0 : a.days, ready: today }; }
 const attReady = () => attBook().ready;
-function attClaim() { const b = attBook(); if (!b.ready) return null; const i = b.days, r = b.list[i];
+function attClaim() { const b = attBook(); if (!b.ready) return null; const i = b.days, r = b.list[i]; alWhy('출석 ' + (i + 1) + '일차');
   if (b.kind === 'new') { const nb = profile.newbie; nb.days++; nb.last = todayKey(); if (nb.days >= NEWBIE.length) nb.on = false; }
   else { const a = profile.att; if (a.days >= ATT_WEEK.length) { a.days = 0; a.cycle++; } a.days++; a.last = todayKey(); }
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold = (profile.gold || 0) + r.gold; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + 1;
@@ -13747,7 +13790,7 @@ function renderAdmin(msg = '') {
     <button class="btn primary" id="admSend">우편 보내기</button>
     <input class="accin" id="admAnn" maxlength="200" placeholder="로비 공지 (비우면 내림)" value="${esc(ON.ann || '')}"><button class="btn" id="admAnnGo">공지 올리기 · 내리기</button>
     <button class="btn" id="admMaint">${ON.maint && ON.maint.on ? '점검 끝내기' : '점검 시작 (운영자 말고 모두 막힘)'}</button>
-    <b style="margin-top:6px">의심 계정 (핵 방지)</b><div style="display:flex;gap:8px"><button class="btn" id="admSus">의심 계정 불러오기</button><input class="accin" id="admWho" placeholder="닉네임으로 기록 보기" style="margin:0;flex:1"><button class="btn" id="admLook">보기</button></div>
+    <b style="margin-top:6px">의심 계정 (핵 방지)</b><div style="display:flex;gap:8px"><button class="btn" id="admSus">의심 계정 불러오기</button><input class="accin" id="admWho" placeholder="닉네임으로 기록 보기" style="margin:0;flex:1"><button class="btn" id="admLook">보기</button><button class="btn" id="admAl">활동 기록</button></div>
     <div id="admSusList" style="display:flex;flex-direction:column;gap:6px"></div>
     <div class="note" id="admMsg">${esc(msg)}</div></div>`;
 }
@@ -13756,6 +13799,7 @@ function susScore(d) { const lv = Math.max(1, Number(d.level) || 1), dia = Numbe
 function admSusRow(uid, d, extra = '') { const sc = susScore(d); return `<div class="accrow" style="flex-wrap:wrap"><b style="min-width:110px">${esc(String(d.nickname || '?'))}</b><span class="mono" style="font-size:11px">${esc(uid.slice(0, 8))}</span><span>Lv.${d.level | 0} · ◆${(Number(d.dia) || 0).toLocaleString()} · ●${(Number(d.gold) || 0).toLocaleString()} · 뽑기 ${d.pulls | 0} · 지후 ${d.own | 0} · 흔적 ${d.cheat | 0}${extra}</span><b style="color:${sc >= 60 ? 'var(--red)' : sc >= 20 ? 'var(--gold)' : 'var(--mute)'}">의심 ${sc}</b><button class="btn" data-ban="${uid}" data-nick="${esc(String(d.nickname || ''))}">7일 정지</button><button class="btn" data-ban="${uid}" data-nick="${esc(String(d.nickname || ''))}" data-perm="1">영구 정지</button></div>`; }
 function bindAdmin() {
   const say = t => { $('admMsg').textContent = t; };
+  $('admAl').onclick = () => alOpen($('admWho').value.trim()); /* 잠수함 유저 탐색 */
   $('admSus').onclick = async () => { say('불러오는 중…'); try { const snap = await FB.sdk.getDocs(FB.sdk.query(FB.sdk.collection(FB.db, 'r2lb'), FB.sdk.orderBy('dia', 'desc'), FB.sdk.limit(40))); const L = []; snap.forEach(d => L.push([d.id, d.data()])); L.sort((a, b) => susScore(b[1]) - susScore(a[1])); $('admSusList').innerHTML = L.map(([u, d]) => admSusRow(u, d)).join('') || '<div class="note">기록이 없어요</div>'; say(`재화가 많은 ${L.length}명 · 의심 점수 순`); } catch (e) { say('불러오지 못했어요: ' + (e.code || e.message) + ' (규칙을 게시했는지 확인)'); } };
   $('admLook').onclick = async () => { const n = $('admWho').value.trim(); if (!n) return; const d = await nickDoc(n); if (!d || !d.owner) return say('그 닉네임의 계정이 없어요.'); try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2_backups', d.owner)); if (!snap.exists()) return say('서버 기록이 없어요.'); const p = JSON.parse(snap.data().payload), c = p.cheat || {}; $('admSusList').innerHTML = admSusRow(d.owner, { nickname: p.nick, level: p.level, dia: p.dia, gold: p.gold, pulls: p.pulls, own: Object.keys(p.owned || {}).length, cheat: c.n | 0 }, c.kinds ? ' · ' + Object.entries(c.kinds).map(([k, v]) => k + ' ' + v).join(', ') : ''); say('서버 기록 (백업)');
     try { const hs = await FB.sdk.getDocs(FB.sdk.collection(FB.db, 'r2_backups', d.owner, 'hist')), H = []; hs.forEach(x => { try { H.push([x.id, Number(x.data().savedAt) || 0, JSON.parse(x.data().payload)]); } catch (e) {} }); H.sort((a, b) => b[1] - a[1]); // R2.20 build 3 서버 이력: 지금 기록에 없는 지후 → 「지후」 칸 우편으로 돌려준다
@@ -13775,6 +13819,64 @@ function bindAdmin() {
   };
   $('admAnnGo').onclick = async () => { const msg = $('admAnn').value.trim(); try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'config', 'announce'), { on: !!msg, msg, by: myUid(), at: FB.sdk.serverTimestamp() }); say(msg ? '공지를 올렸어요.' : '공지를 내렸어요.'); } catch (e) { say('실패: ' + (e.code || e.message)); } };
   $('admMaint').onclick = async () => { const on = !(ON.maint && ON.maint.on); if (on && !(await dlg({ icon: '🛠', title: '서버 점검을 시작할까요?', html: '운영자를 뺀 모든 유저의 화면이 막혀요.', ok: '시작', cancel: '취소' }))) return; try { await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'config', 'maintenance'), { on, msg: on ? '서버 점검 중이에요. 잠시 후 다시 접속해 주세요.' : '', until: 0, by: myUid(), at: FB.sdk.serverTimestamp() }); renderSettings(); } catch (e) { say('실패: ' + (e.code || e.message)); } };
+}
+
+// ═════════ 잠수함 · 유저 탐색 (운영자 · 개발자 설정 메뉴 · 운영 도구 「활동 기록」) ═════════
+// 닉네임 → nicknames → r2_backups/<uid> payload 의 alog (위 「활동 기록」) 를 시간순 목록으로 · 비우거나 내 닉네임이면 이 기기 기록
+// 표시: 변조 의심 (고리 끊김) · 큰 변화 (◆ 5,000 · 골드 100,000 · 열쇠 400 이상 · 전설 이상 지후를 이유 없이) 빨강 · 이유 없는 증가 주황
+function alOpen(nick = '') {
+  $('alBody').innerHTML = `<div class="al-q"><input class="accin" id="alNick" maxlength="20" placeholder="닉네임 (비우면 이 기기)" value="${esc(nick)}"><button class="btn primary" id="alGo">찾기</button></div><div id="alOut"></div>`;
+  openModal('alModal'); const go = () => alFind($('alNick').value.trim());
+  $('alGo').onclick = go; $('alNick').onkeydown = e => { if (e.key === 'Enter') go(); };
+  $('alOut').onclick = e => { const b = e.target.closest('[data-alf]'); if (b && AL.v) { AL.v.f = b.dataset.alf; alDraw(); } };
+  go();
+}
+async function alFind(n) {
+  const out = $('alOut'); if (!n || n === profile.nick) return alShow(profile, myUid ? (myUid() || '') : '', '이 기기 기록');
+  out.innerHTML = '<div class="note">찾는 중…</div>';
+  try {
+    const d = await nickDoc(n); if (!d || !d.owner) { out.innerHTML = '<div class="note">그 닉네임의 계정이 없어요.</div>'; return; }
+    const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2_backups', d.owner)); if (!snap.exists()) { out.innerHTML = '<div class="note">서버 기록이 없어요.</div>'; return; }
+    const x = snap.data(), at = Number(x.savedAt) || 0; alShow(JSON.parse(x.payload), d.owner, '서버 기록 · ' + (at ? new Date(at).toLocaleString() : '?'));
+  } catch (e) { out.innerHTML = `<div class="note">불러오지 못했어요: ${esc(e.code || e.message || String(e))}</div>`; }
+}
+function alShow(p, uid, src) { AL.v = { p, uid: String(uid || ''), src, f: 'all' }; alDraw(); }
+const alNm = id => CHARS[id] ? shortName(id) : id, alSg = v => (v > 0 ? '+' : '') + v.toLocaleString();
+function alChip(t) { let m; // [종류, 글자, 방향, 지후 id]
+  if ((m = /^([dgktmn])([+-]\d+)$/.exec(t))) { const v = +m[2]; return [m[1] === 'n' ? 'pull' : 'cur', ({ d: '◆ ', g: '🪙 ', k: '🔑 ', t: '🎟 ', m: '마일리지 ', n: '모집 ' })[m[1]] + alSg(v), v, '', m[1]]; }
+  if ((m = /^L(\d+)$/.exec(t))) return ['lv', 'Lv.' + m[1], 0];
+  if ((m = /^c(-?):([a-z0-9_]+)$/.exec(t))) return ['char', (m[1] ? '지후 잃음 · ' : '지후 획득 · ') + alNm(m[2]), m[1] ? -1 : 1, m[2]];
+  if ((m = /^s:([a-z0-9_]+)([+-]\d+)$/.exec(t))) return ['shard', alNm(m[1]) + ' 조각 ' + alSg(+m[2]), +m[2], m[1]];
+  if ((m = /^i:([A-Za-z0-9_]+)([+-]\d+)$/.exec(t))) return ['item', (ITEMS[m[1]] ? ITEMS[m[1]].name : m[1]) + ' ' + alSg(+m[2]), +m[2]];
+  if ((m = /^e:([a-z0-9_]+):(\d+)$/.exec(t))) return ['rank', alNm(m[1]) + ' 랭크 ' + m[2], 1, m[1]];
+  return ['etc', t, 0];
+}
+function alSus(T, why) { // 2 = 큰 변화 · 1 = 이유 없는 증가
+  const v = k => { const c = T.find(x => x[4] === k); return c ? c[2] : 0; };
+  if (v('d') >= 5000 || v('g') >= 100000 || v('k') >= 400) return 2;
+  const gain = T.some(x => x[2] > 0 && x[0] !== 'lv' && x[0] !== 'pull');
+  if (!why && T.some(x => x[0] === 'char' && x[2] > 0 && CHARS[x[3]] && (RARITY_ORDER[CHARS[x[3]].rarity] | 0) >= 3)) return 2;
+  return !why && gain ? 1 : 0;
+}
+function alDraw() {
+  const V = AL.v; if (!V) return; const p = V.p || {}, lg = p.alog && Array.isArray(p.alog.L) ? p.alog.L : [], ch = p.cheat || {}, out = $('alOut');
+  const rows = lg.map((e, i) => { const T = String(e[3] || '').split(' ').filter(Boolean).map(alChip), bad = i > 0 && alH(lg[i - 1][4], e) !== e[4]; return { e, T, bad, sus: bad ? 2 : alSus(T, e[2]) }; });
+  const brk = rows.filter(r => r.bad).length, s2 = rows.filter(r => r.sus === 2).length, s1 = rows.filter(r => r.sus === 1).length;
+  const sum = {}; rows.forEach(r => { const k = (r.e[2] || '(이유 없음)').replace(/^누름 · /, '누름 · ').split(' · ').slice(0, r.e[2] && r.e[2].startsWith('누름') ? 2 : 1).join(' · '); r.T.forEach(x => { if (x[4] === 'd' || x[4] === 'g') { const o = sum[k] || (sum[k] = { d: 0, g: 0 }); o[x[4]] += x[2]; } }); });
+  const SL = Object.entries(sum).filter(([, o]) => o.d > 0 || o.g > 0).sort((a, b) => b[1].d - a[1].d || b[1].g - a[1].g).slice(0, 10);
+  const F = { all: () => true, cur: r => r.T.some(x => x[0] === 'cur'), char: r => r.T.some(x => x[0] === 'char' || x[0] === 'shard' || x[0] === 'rank'), pull: r => r.T.some(x => x[0] === 'pull'), item: r => r.T.some(x => x[0] === 'item'), sus: r => r.sus > 0 };
+  const FN = [['all', '전체'], ['sus', `의심 ${s2 + s1}`], ['pull', '모집'], ['char', '지후 · 조각 · 랭크'], ['cur', '재화'], ['item', '아이템']];
+  const L = rows.filter(F[V.f] || F.all).reverse(); let day = '', h = '';
+  L.forEach(r => { const d = new Date(r.e[0]), dk = d.toLocaleDateString(); if (dk !== day) { day = dk; h += `<div class="al-day">${esc(dk)}</div>`; }
+    const chips = r.T.map(x => x[0] === 'char' || x[0] === 'rank' ? `<i class="al-k ch" style="--c:${CHARS[x[3]] ? RAR_C[CHARS[x[3]].rarity] || '#ccc' : '#ccc'}">${esc(x[1])}</i>` : `<i class="al-k ${x[2] > 0 ? 'up' : x[2] < 0 ? 'dn' : ''}">${esc(x[1])}</i>`).join('');
+    h += `<div class="al-r${r.sus ? ' s' + r.sus : ''}"><span class="al-t">${[d.getHours(), d.getMinutes(), d.getSeconds()].map(x => String(x).padStart(2, '0')).join(':')}</span><span class="al-w">${esc(r.e[1] || '')}</span><span class="al-y${r.e[2] ? '' : ' no'}">${r.bad ? '⚠ 고리 끊김 · ' : ''}${esc(r.e[2] || '이유 없음')}</span><span class="al-c">${chips}</span></div>`; });
+  const kinds = ch.kinds ? Object.entries(ch.kinds).map(([k, n]) => `${k} ${n}`).join(' · ') : '';
+  out.innerHTML = `<div class="al-hd"><b>${esc(String(p.nick || '?'))}</b> <span class="mono" style="font-size:11px;opacity:.7">${esc(V.uid.slice(0, 12))}</span> · <span style="font-size:12px;opacity:.75">${esc(V.src)}</span></div>
+    <div class="al-st">Lv.${p.level | 0} · ◆ ${nat(p.dia).toLocaleString()} · 🪙 ${nat(p.gold).toLocaleString()} · 🔑 ${p.keys | 0} · 모집 ${p.pulls | 0}회 · 지후 ${Object.keys(p.owned || {}).length}종 · 디펜스 최고 ${p.dfBest | 0}웨이브 · <span class="${ch.n ? 'al-bad' : ''}">핵 흔적 ${ch.n | 0}${kinds ? ' (' + esc(kinds) + ')' : ''}</span></div>
+    <div class="al-st">활동 기록 ${lg.length}개${p.alog && p.alog.n > lg.length ? ` · 오래된 ${(p.alog.n - lg.length).toLocaleString()}개는 지워짐` : ''}${lg.length ? ` · ${new Date(lg[0][0]).toLocaleString()} ~` : ''} · ${brk ? `<b class="al-bad">고리 끊김 ${brk}곳 (변조 의심)</b>` : '<span class="al-ok">고리 정상</span>'} · <span class="${s2 ? 'al-bad' : ''}">큰 변화 ${s2}</span> · 이유 없는 증가 ${s1}</div>
+    ${SL.length ? `<div class="al-sum"><b>얻은 곳</b>${SL.map(([k, o]) => `<span>${esc(k)}: ${o.d > 0 ? '◆ ' + o.d.toLocaleString() : ''}${o.d > 0 && o.g > 0 ? ' · ' : ''}${o.g > 0 ? '🪙 ' + o.g.toLocaleString() : ''}</span>`).join('')}</div>` : ''}
+    <div class="al-f">${FN.map(([k, t]) => `<button class="btn${V.f === k ? ' on' : ''}" data-alf="${k}">${t}</button>`).join('')}</div>
+    <div class="al-list">${h || `<div class="note">${lg.length ? '해당하는 기록이 없어요.' : '활동 기록이 없어요 (R3.3 이전 버전에서 저장한 기록).'}</div>`}</div>`;
 }
 
 // ═════════ 배경음악 (R2.13.2: 로비 lobby · 전투 battle · 크레딧 credits · 결과 화면은 조용히 — 곡마다 들은 위치를 기억한다) ═════════
@@ -13856,7 +13958,7 @@ function shopOffers(serial) {
   return out.sort((a, b) => offerT(a) - offerT(b)).map((o, i) => ({ ...o, id: `${serial}-${i}` })); // 등급이 높은 매물일수록 뒤쪽
 }
 async function buyShopItem(offerId) { // 아이템 매물 (R2.18 build 9)
-  const shop = ensureDaily(), o = shop.offers.find(x => x.id === offerId), it = o && SHOP_ITEMS[o.item]; if (!it || o.sold) return;
+  const shop = ensureDaily(), o = shop.offers.find(x => x.id === offerId), it = o && SHOP_ITEMS[o.item]; if (!it || o.sold) return; alWhy('상점 · ' + it.name);
   const dia = !!it.dia, cost = it.dia || it.gold, have = dia ? profile.dia : profile.gold || 0;
   if (it.pack && packDone(it.pack)) return u2Toast('이미 구매한 패키지예요 (계정당 1회)');
   if (have < cost) return u2Toast(`${dia ? '다이아' : '골드'}가 ${dia ? '◆' : '●'} ${(cost - have).toLocaleString()} 모자라요`);
@@ -14251,7 +14353,7 @@ function renderDfRw() { const b = profile.dfBest | 0, n = dfRwReady();
     return `<div class="dfrw ${got ? 'got' : can ? 'on' : 'lock'}"><span class="w">${w}<small>WAVE</small></span><span class="ic">${ic}</span><span class="tx">${tx}</span>${got ? '<span class="st">✔ 받음</span>' : can ? `<button data-dfrw="${w}">받기</button>` : '<span class="st">🔒</span>'}</div>`; }).join(''); }
 function openDfRw() { renderDfRw(); openModal('dfRwModal'); const el = $('dfRwList').querySelector('.dfrw.on') || $('dfRwList').querySelector('.dfrw.lock'); if (el) el.scrollIntoView({ block: 'center' }); }
 function dfRwClaim(w, all) { const e = DF_RW.find(x => x[0] === w); if (!e || dfRwGot(w) || (profile.dfBest | 0) < w) return; const r = e[1], tx = dfRwLabel(r)[1]; let res = null; /* R3.2 build 15 all: 모두 받기 (지후는 모아서 돌려주고 · 선택 전설 모집권은 가방에) */
-  profile.dfRw2 = (profile.dfRw2 || []).concat(w);
+  alWhy('디펜스 보상 ' + w + '웨이브'); profile.dfRw2 = (profile.dfRw2 || []).concat(w);
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold += r.gold; if (r.tix) profile.arc.t += r.tix; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + (r.n || 1);
   if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); } }
   save(); sfx('buy'); renderDfRw(); renderLobby();
@@ -14323,7 +14425,7 @@ $('e7Modal').addEventListener('click', e => { const d = e.target.closest('[data-
 // ── 열쇠 상자 (R2.34) ──
 const kbMax = () => Math.floor((profile.keys | 0) / DF.BOX), kbN = () => Math.max(1, Math.min(UI2.st.kbN || 1, Math.max(1, kbMax()))); // R2.35 build 7: 열쇠 상자 몇 개 열지 (UI2.st.kbN)
 const KB_EXTRA = [[0.025, { gold: 2500 }], [0.01, { item: 'glowEpic', n: 3 }], [0.005, { item: 'glowLegend', n: 10 }], [0.002, { item: 'r6Epic', n: 1 }], [0.001, { item: 'r6Legend', n: 1 }], [0.002, { item: 'resetTicket', n: 1 }], [0.001, { dia: 1000 }], [0.001, { gold: 20000 }]]; // R3.2 build 14 열쇠 상자 추가 보상 (상자마다 · 따로 굴린다 · ◆23 은 늘)
-function keyBox(n = 1) { // R2.34 열쇠 상자 (🔑 40): 일반 지후 2 · 희귀 지후 1 (R3.2 build 14: 5 · 3 →) · 10% 영웅 1 · 1% 전설 1 · R2.35 build 7: n 개 한 번에 (같은 지후는 한 장 ×N)
+function keyBox(n = 1) { alWhy('열쇠 상자 ×' + n); // R2.34 열쇠 상자 (🔑 40): 일반 지후 2 · 희귀 지후 1 (R3.2 build 14: 5 · 3 →) · 10% 영웅 1 · 1% 전설 1 · R2.35 build 7: n 개 한 번에 (같은 지후는 한 장 ×N)
   if ((profile.keys | 0) < DF.BOX) return u2Toast(`열쇠가 모자라요 (🔑 ${DF.BOX} 필요 · 보유 ${profile.keys | 0})`);
   n = Math.max(1, Math.min(Math.floor(n) || 1, Math.floor((profile.keys | 0) / DF.BOX))); profile.keys -= DF.BOX * n; const rs = [];
   for (let i = 0; i < n; i++) rs.push('common', 'common', 'rare', /* R3.2 build 14: 일반 5 · 희귀 3 → 일반 2 · 희귀 1 */ ...(Math.random() < 0.1 ? ['epic'] : []), ...(Math.random() < 0.01 ? ['legend'] : []));
@@ -18049,7 +18151,7 @@ function u3OvD(v, tabOf) {
     const cat = ['sound', 'battle', 'etc'].includes(s.u3set) ? s.u3set : 'sound', C = [['sound', '사운드', 'SOUND'], ['battle', '전투 화면', 'BATTLE'], ['etc', '계정 · 기타', 'ETC']];
     const sw = BSET_ROWS.map(([k, t, d]) => { const on = !!BSET[k]; return { t, d, track: on ? '#c8102e' : '#1d1b20', tb: on ? '#c8102e' : '#3a3631', knob: on ? '#fff' : '#6f6a62', x: on ? '24px' : '0px', bd: on ? 'rgba(200,16,46,.5)' : '#2a2723', go: () => u3BsetToggle(k) }; });
     const vols = [['효과음', sfxState.vol, e => { sfxSetVolume(e.target.value); sfx('buy'); u2Render(); }], ['배경음악', bgm.vol, e => { bgm.vol = clamp(Math.round(Number(e.target.value) || 0), 0, 100); try { localStorage.setItem(BGM_KEY, String(bgm.vol)); } catch (er) {} bgmTick(); u2Render(); }]].map(([t, val, set]) => ({ t, v: String(val), set }));
-    const etc = [['👤', 'JHBT 계정', isMember() ? 'UID ' + accCode() : '게스트 · 서버 백업 연결', () => { u2Set({ u3set: null }); openAccount(); }], ['🎟', '쿠폰 코드 입력', '', () => { u2Set({ u3set: null }); $('btnMenuCode').click(); }], ['🎓', '튜토리얼 다시 보기', '', () => { u2Set({ u3set: null }); setTimeout(() => TUT.start(), 150); }], ['📖', '인트로 만화', '', () => { u2Set({ u3set: null }); showComic(); }], ...(DEV.op ? [['🛠', '개발자 설정', '개발자 모드 · 운영 도구', () => { u2Set({ u3set: null }); renderSettings(); openModal('setModal'); }], ['📊', '티어리스트 생성기', '시뮬로 티어표 만들기 · 도움말 등재', () => { u2Set({ u3set: null }); tlgOpen(); }]] : [])].map(([ic, t, d, go]) => ({ ic, t, d, go })); /* R3.1 잠수함: 운영자만 · 예전 환경설정 창 (개발자 모드 · renderAdmin) */
+    const etc = [['👤', 'JHBT 계정', isMember() ? 'UID ' + accCode() : '게스트 · 서버 백업 연결', () => { u2Set({ u3set: null }); openAccount(); }], ['🎟', '쿠폰 코드 입력', '', () => { u2Set({ u3set: null }); $('btnMenuCode').click(); }], ['🎓', '튜토리얼 다시 보기', '', () => { u2Set({ u3set: null }); setTimeout(() => TUT.start(), 150); }], ['📖', '인트로 만화', '', () => { u2Set({ u3set: null }); showComic(); }], ...(DEV.op ? [['🛠', '개발자 설정', '개발자 모드 · 운영 도구', () => { u2Set({ u3set: null }); renderSettings(); openModal('setModal'); }], ['📊', '티어리스트 생성기', '시뮬로 티어표 만들기 · 도움말 등재', () => { u2Set({ u3set: null }); tlgOpen(); }], ['🔎', '유저 탐색', '닉네임으로 활동 기록 보기', () => { u2Set({ u3set: null }); alOpen(); }]] : [])].map(([ic, t, d, go]) => ({ ic, t, d, go })); /* R3.1 잠수함: 운영자만 · 예전 환경설정 창 (개발자 모드 · renderAdmin) */
     return { en: 'SETTINGS', t: '환경설정', close: () => u2Set({ u3set: null }), right: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || ''), tabs: [], set: { cats: C.map(([k, t, en]) => { const on = cat === k; return { t, en, on, bg: on ? '#c8102e' : 'rgba(13,12,14,.88)', bd: on ? '#c8102e' : '#2a2723', ec: on ? '#ffd0d6' : '#6f6a62', go: () => u2Set({ u3set: k }) }; }), isSound: cat === 'sound', isBattle: cat === 'battle', isEtc: cat === 'etc', sw, vols, etc } };
   }
   if (s.page === 'inv') {
@@ -18853,7 +18955,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { CVF, ddDrawFx, CV, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { CVF, ddDrawFx, CV, alOpen, alShow, AL, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
