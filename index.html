@@ -4894,7 +4894,7 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
               <span class="u3-bh" style="font-size:22px; color:#f3eee3;">1회 모집</span>
               <span class="u3-os" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:13px; color:#ff9aa6;"><span style="width:9px; height:9px; background:#ff5a6e; transform:rotate(45deg);"></span>{{ pull1Cost }}</span>
             </button>
-            <button type="button" onClick="{{ pull10 }}" class="u3-btn" style="position:relative; flex:1.35; height:78px; flex-direction:column; gap:4px; background:#c8102e; clip-path:polygon(0 0, 100% 0, 93% 100%, 0 100%);">
+            <button type="button" onClick="{{ pull10 }}" class="u3-btn{{ p10Hot }}" style="position:relative; flex:1.35; height:78px; flex-direction:column; gap:4px; background:#c8102e; clip-path:polygon(0 0, 100% 0, 93% 100%, 0 100%);">
               <span class="u3-bh" style="font-size:24px; color:#fff;">10회 모집</span>
               <span class="u3-os" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:13px; color:#ffe1e5;"><span style="width:9px; height:9px; background:#fff; transform:rotate(45deg);"></span>{{ pull10Cost }}</span>
             </button>
@@ -15282,6 +15282,7 @@ const PATCH_NOTES = [
   { v: 'R3.3', date: '2026.11.18', title: '신규 지후 2종 · 이벤트 · 밸런스 조정', sections: [
     { title: '추가 패치 (build 4)', items: [
       { icon: '🕹', name: '아케이드', tag: 'system', desc: '모든 지후 <b>랭크 1</b> 고정 · 지후의 탑 봇은 <b>랭크 3</b>' },
+      { icon: '🩹', name: '튜토리얼', tag: 'fix', desc: '10회 모집 단계가 예전 화면으로 나오던 문제' },
       { id: 'lantern', name: '랜턴 지후', tag: 'nerf', desc: '공격력 <b>15 → 10</b> · 자가 회복 <b>10 → 5</b> (build 3 롤백)' },
       { id: 'dealer', name: '더블딜러 지후', tag: 'nerf', desc: '토큰 <b>4 → 6</b>' },
       { id: 'shield', name: '쉴드 지후', tag: 'nerf', desc: '체력 <b>1600 → 1200</b>' },
@@ -18163,8 +18164,12 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
     } else await talk([f('보상은 처음 한 번만 준다. 복습하느라 수고했다!')]);
     if (doPull) {
       await talk([f('자 그럼 이제 새 지후들을 모집해야겠지?')]);
-      TUT.wantPull = true; renderGacha(); show('gacha'); document.body.classList.add('tut-gacha'); hint('무료 10회 뽑기를 눌러요 (전설 1개 + 일반 9개 확정!)'); setTarget(['#btnPull10']); // build 3: wantPull 을 먼저 켜야 버튼이 무료로 그려진다 (다이아가 모자라도)
-      await W('revealClosed'); setTarget(null); hint(''); document.body.classList.remove('tut-gacha');
+      TUT.wantPull = true; /* build 3: wantPull 을 먼저 켜야 버튼이 무료로 그려진다 (다이아가 모자라도) */
+      if (u3On()) { // R3.3 build 4: 새 로비 모집 탭 (상시 모집 · 10회 모집 버튼만 · 예전 뽑기 화면 대신)
+        TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'shop', u3store: 'recruit', u3ban: 'std', detail: null, equipId: null }); renderLobby(); show('lobby'); u2Render(); hint('@10회 모집@을 눌러요 (전설 1개 + 일반 9개 확정!)');
+        await W('revealClosed'); TUT.u3 = false; hint(''); document.body.classList.remove('tut-deck3'); u2Render();
+      } else { renderGacha(); show('gacha'); document.body.classList.add('tut-gacha'); hint('무료 10회 뽑기를 눌러요 (전설 1개 + 일반 9개 확정!)'); setTarget(['#btnPull10']);
+      await W('revealClosed'); setTarget(null); hint(''); document.body.classList.remove('tut-gacha'); }
       await talk([f('오 전설이다'), f('표정이 왜그래 컷신이 SSS급 뽑기에서 C급 뜬 기분이냐'), f('이번엔 방금 뽑은 지후를 장착해보자.')]);
       if (u3On()) { // R3.2 build 11: 새 로비 지후 탭에서 장착 (예전 덱 화면 대신)
         TUT.deckWant = TUT.legend; TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'units', equipId: null, detail: null, u3sel: TUT.legend, u3rar: 'all' }); renderLobby(); show('lobby'); u2Render();
@@ -19159,7 +19164,7 @@ function u2ValsBase() {
     odds: [...CFG.GACHA].reverse().map(([r, p]) => ({ c: U2_RAR[r].c, t: `${RARITY[r]} ${p}%` })), nbOdds: [...CFG.NB_GACHA].reverse().map(([r, p]) => ({ c: U2_RAR[r].c, t: `${RARITY[r]} ${p}%` })),
     nbOn: nbLeft() > 0, nbMax: CFG.NB_PULLS, nbDone: profile.nbPulls | 0, nbPct: (profile.nbPulls | 0) / CFG.NB_PULLS * 100 + '%', nbCost: fmt(CFG.NB_PULL10), nbImg: u2Img('dj'),
     nbNote: nbLeft() <= 10 ? '이번 10회의 마지막은 전설 확정!' : `${nbLeft()}회 남음 · 마지막은 전설`, pullNb: () => (profile.dia < CFG.NB_PULL10 ? u2Toast('다이아가 부족해요') : (pull(10, false, true), u2Render())),
-    pull1Cost: fmt(CFG.PULL1), pull10Base: fmt(CFG.PULL10), pull10Cost: p10Free() > 0 ? `무료 ${p10Free()}회` : fmt(CFG.PULL10), pull1: () => (profile.dia < CFG.PULL1 ? u2Toast('다이아가 부족해요') : (pull(1), u2Render())), pull10: () => (pull10Go() === false ? u2Toast('다이아가 부족해요') : u2Render()), p10Paid: p10Free() <= 0, /* R2.37 build 3 */
+    pull1Cost: fmt(CFG.PULL1), pull10Base: fmt(CFG.PULL10), pull10Cost: TUT.on && TUT.wantPull ? '무료' : p10Free() > 0 ? `무료 ${p10Free()}회` : fmt(CFG.PULL10), p10Hot: TUT.on && TUT.wantPull ? ' tut-hot' : '', /* R3.3 build 4 튜토리얼 */ pull1: () => (profile.dia < CFG.PULL1 ? u2Toast('다이아가 부족해요') : (pull(1), u2Render())), pull10: () => (TUT.on ? (TUT.wantPull && TUT.pull()) : pull10Go() === false ? u2Toast('다이아가 부족해요') : u2Render()), p10Paid: p10Free() <= 0, /* R2.37 build 3 */
     hasTickets: tickets2.length > 0, tickets2, resetIn: pad(Math.floor(ms / 3600000)) + ':' + pad(Math.floor(ms / 60000) % 60) + ':' + pad(Math.floor(ms / 1000) % 60), offers,
     rerollTxt: $('btnShopReroll').textContent, rerollBg: shop.rerolls >= SHOP_REROLL_MAX ? '#1a2034' : '#3b466b', rerollFc: shop.rerolls >= SHOP_REROLL_MAX ? '#6b7493' : '#f2f4fa', reroll: () => { if (!$('btnShopReroll').disabled) u2After(() => $('btnShopReroll').click()); },
     emoItems, emoNote: shop.emo.length ? `하나에 ◆${EMO_PRICE} · 리롤하면 바뀌어요` : '모든 이모티콘을 모았어요!',
