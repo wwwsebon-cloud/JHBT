@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.3"><meta name="jihoo-build" content="7"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.3"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -7294,7 +7294,7 @@ const CHARS = {
     story: '기상캐스터 지후가 일기예보를 틀릴 때마다 생긴다는 소문이 있는 지후입니다. 사실은 회오리 지후의 사촌인데, 회오리 지후가 블랙홀 지후 안에 갇혀 있는 동안 대신 바람을 맡게 됐어요. 재채기를 세게 할 때마다 작은 태풍이 튀어나와서, 감기에 걸린 날에는 왕궁 빨래가 모조리 이웃 나라로 날아갑니다. 물 지후는 그가 지나간 뒤 젖은 바닥을 닦느라 늘 바쁘고, 우산 장수만 그를 반겨요. 기상캐스터 지후는 그를 볼 때마다 오늘의 날씨를 다시 녹음합니다. 정작 본인은 바람 부는 날을 제일 싫어한대요.',
     passive: '치명타를 낼 때마다 그 자리에 <b>[태풍]</b>을 소환합니다. 태풍은 적을 따라가며 닿은 적에게 계속 피해를 줍니다.',
     onCrit(u) { tyCrit(u); }, tick(u, dt) { tyTick(u, dt); },
-    skill: { type: 'hit', need: 32, desc: '<b>SP 32</b> · <b>[폭풍]</b>. <b>3초</b> 동안 치명타 확률이 <b>8%</b> 오릅니다. 그동안 SP 가 차지 않습니다.', run(u) { tyStorm(u); } } },
+    skill: { type: 'hit', need: 32, desc: '<b>SP 32</b> · <b>[폭풍]</b>. <b>3초</b> 동안 치명타 확률이 <b>4%</b> 오릅니다. 그동안 SP 가 차지 않습니다.', run(u) { tyStorm(u); } } },
   volcano: { name: '화산 지후', rarity: 'legend', role: '탱커', hp: 2400, atk: 100, atkSpeed: 1, range: 1.5, speed: 1.6, tok: 5, noAttack: true, noSpGive: true, atkText: () => '100 · 공격 안 함', portrait: PORTRAITS.volcano, sfx: 'bash', color: '#e0471b',
     story: '왕궁 뒷산에 사는 화산 지후입니다. 평소에는 꾹 참는 성격이라 누가 때려도 조용히 연기만 뿜지만, 너무 세게 맞으면 참았던 게 한꺼번에 터져요. 화염 지후 1호 국왕은 그를 왕궁 난방 담당으로 임명했는데, 겨울마다 왕궁이 너무 따뜻해져서 블리자드 지후가 녹아내릴 뻔했습니다. 그가 뿌리는 화산재 때문에 왕궁 빨래는 늘 회색이고, 세탁을 맡은 물 지후는 그와 말을 섞지 않아요. 부루스타 지후는 그를 보고 자기가 너무 작게 느껴진다며 사흘 동안 불을 껐습니다. 요즘은 분노 조절 교실에 다니는데, 선생님이 광폭화 지후라서 별 효과가 없대요.',
     passive: '공격하지 않습니다. 적에게 맞으면 SP 가 찹니다. 큰 스킬 피해를 받으면 <b>분화</b>해 가장 먼 적들에게 마그마를 쏩니다.',
@@ -8137,8 +8137,8 @@ function fishAttack(u, t) { const caught = u.fs && u.fs.caught.has(t), d = dealD
 // ── R3.3 build 7 신규 지후 도우미 ──
 // 태풍 지후: 치명타 (def.onCrit) 마다 자기 자리에 [태풍] u.tys { x · y · a 방향 · r 반지름 (= 몸) · t · acc · c 적마다 닿은 시간 } · 1칸/초로 곧게 · 가까운 적 쪽으로 조금씩 휘고 붙으면 느려져 따라간다 (뒤로도) · 5초
 // 닿은 적 0.25초마다 공격력 300% × (1 + 0.1 × 닿아 있던 초 · 떨어지면 처음부터) · [폭풍] (SP 32) 3초: 치명타 확률 +8% (critB) · 그동안 SP 0 · 태풍은 monoDraw 캔버스
-const TY = { SPD: 1, SLOW: 0.45, LIFE: 5, IV: 0.25, K: 3, UP: 0.1, MAX: 12, TURN: 0.9 };
-function tyCrit(u) { if (!u.alive) return; const L = u.tys || (u.tys = []); if (L.length >= TY.MAX) L.shift(); const f = nearestFoe(u), a = f ? Math.atan2(f.y - u.y, f.x - u.x) : (u.side === 'a' ? 0 : Math.PI); L.push({ x: u.x, y: u.y, a, r: unitRadius(u), t: 0, acc: 0, c: new Map() }); }
+const TY = { SPD: 1, SLOW: 0.45, LIFE: 7.5, /* R3.3 build 8: 5 → 7.5 · 반지름 몸 × 2 · 폭풍 8 → 4% */ IV: 0.25, K: 3, UP: 0.1, MAX: 12, TURN: 0.9 };
+function tyCrit(u) { if (!u.alive) return; const L = u.tys || (u.tys = []); if (L.length >= TY.MAX) L.shift(); const f = nearestFoe(u), a = f ? Math.atan2(f.y - u.y, f.x - u.x) : (u.side === 'a' ? 0 : Math.PI); L.push({ x: u.x, y: u.y, a, r: unitRadius(u) * 2, t: 0, acc: 0, c: new Map() }); }
 function tyTick(u, dt) {
   if (u.tyS > S.time) u.sk = 0; /* [폭풍]: SP 가 차지 않는다 */
   const L = u.tys; if (!L || !L.length) return; const W = FW(), H = FH(), F = foes(u);
@@ -8150,10 +8150,10 @@ function tyTick(u, dt) {
     const hit = []; for (const f of F) { if (!f.alive) continue; if (Math.hypot(f.x - q.x, f.y - q.y) <= q.r + unitRadius(f)) { hit.push(f); q.c.set(f, (q.c.get(f) || 0) + dt); } else q.c.delete(f); }
     q.acc += dt; if (q.acc >= TY.IV) { q.acc -= TY.IV; const atk = effAtk(u); hit.forEach(f => dealDamage(u, f, atk * TY.K * (1 + TY.UP * (q.c.get(f) || 0)), { skill: true, lite: true, noCrit: true })); } }
 }
-function tyStorm(u) { u.tyS = S.time + 3; u.sk = 0; A.buff(u, 'tyStorm', { critB: 0.08 }, 3); if (!S.fast) { dmgNum(u, '🌀 폭풍', { crit: true, stamp: true }); fxRing(u.x, u.y, 3 * CFG.CELL, 'rgba(140,210,255,.85)', 600, 8); } drawUnit(u); }
+function tyStorm(u) { u.tyS = S.time + 3; u.sk = 0; A.buff(u, 'tyStorm', { critB: 0.04 }, 3); if (!S.fast) { dmgNum(u, '🌀 폭풍', { crit: true, stamp: true }); fxRing(u.x, u.y, 3 * CFG.CELL, 'rgba(140,210,255,.85)', 600, 8); } drawUnit(u); }
 // 화산 지후: 공격하지 않는다 (noSpGive · 적에게 맞을 때마다 SP +1) · [화산재] SP 16: 자기 자리부터 적진 끝까지 · 폭 = 몸 지름 2배 · 6초 (S.vAsh) · 안의 적 일반 공격 25% 빗나감 (dealDamage) · SP 충전 −50% (evSp)
 // [분화] 한 번에 600 이상 스킬 피해 (onDamaged opts.skill · 1초에 한 번) → 가장 먼 적 3기 [마그마] ([화상] 5초 · 초당 70%) + 그 자리 반경 2칸 [용암 지대] 5초 (S.vLava · 초당 60% · 벗어나거나 끝나면 [화상] 3초 · 초당 50%)
-const VC = { ASH: 6, MISS: 0.25, SPK: 0.5, ER: 600, ER_CD: 1, LAVA: 5, LAVA_R: 2, MAGMA: 0.7, LAVA_K: 0.6, BURN: 0.5 };
+const VC = { ASH: 6, MISS: 0.25, SPK: 0.5, ER: 200, ER_CD: 2.5, /* R3.3 build 8: 600 → 200 · 1 → 2.5초 */ LAVA: 5, LAVA_R: 2, MAGMA: 0.7, LAVA_K: 0.6, BURN: 0.5 };
 const vcKey = () => (S.rk || 0) + ':' + S.round;
 function vcStart(u) { if (S.vcK !== vcKey()) { S.vcK = vcKey(); S.vAsh = []; S.vLava = []; } }
 const ashIn = p => !!(S.vAsh && S.vAsh.length && S.vcK === vcKey() && S.vAsh.some(z => S.time < z.t1 && z.side !== p.side && p.x >= z.x0 - unitRadius(p) && p.x <= z.x0 + z.w + unitRadius(p) && p.y >= z.y0 - unitRadius(p) && p.y <= z.y0 + z.h + unitRadius(p)));
@@ -8198,12 +8198,12 @@ function mutSkill(u) {
   else { u.mutStun = true; if (!S.fast) dmgNum(u, '⚡ 다음 공격 기절', { crit: true }); }
 }
 // 먹구름 지후: 공격하지 않는다 · 반경 2.7칸 [먹구름 지대] · 자신이 적에게 맞을 때마다 (onDamaged) 지대 안 적 무작위 1기 (rng) 공격력 100% 번개 · 에너지 u.rcE 12 로 시작 · 초당 1 (최대 12) · 번개마다 1 · 1 이하에서 친 번개는 −65% · 게이지 = 에너지
-const RC = { R: 2.7, E: 12, LOW: 0.35 };
+const RC = { R: 2.7, E: 15, /* R3.3 build 8: 12 → 15 · 번개는 지대 안 모든 적 */ LOW: 0.35 };
 function rcHit(t, src) {
   if (!src || src.side === t.side || !t.alive || t.rcE == null) return; const R = RC.R * CFG.CELL, L = foes(t).filter(f => f.alive && (f.realm || 0) === (t.realm || 0) && dist(t, f) <= R + unitRadius(f)); if (!L.length) return;
-  const f = L[Math.floor(rng() * L.length)], low = t.rcE <= 1; t.rcE = Math.max(0, t.rcE - 1);
-  if (!S.fast) { FXC.beams.push({ x0: f.x - 0.4 * CFG.CELL, y0: f.y - 2.6 * CFG.CELL, x1: f.x, y1: f.y, t0: performance.now(), ms: 260, c1: 'rgba(160,170,255,.45)', w1: 14, c2: 'rgba(255,250,200,1)', w2: 4 }); fxRing(f.x, f.y, 0.8 * CFG.CELL, 'rgba(255,240,150,.9)', 320, 6); }
-  dealDamage(t, f, effAtk(t) * (low ? RC.LOW : 1), { skill: true, noCrit: true });
+  L.forEach(f => { const low = t.rcE <= 1; t.rcE = Math.max(0, t.rcE - 1); /* R3.3 build 8: 지대 안 모든 적 · 한 기마다 에너지 1 */
+    if (!S.fast) { FXC.beams.push({ x0: f.x - 0.4 * CFG.CELL, y0: f.y - 2.6 * CFG.CELL, x1: f.x, y1: f.y, t0: performance.now(), ms: 260, c1: 'rgba(160,170,255,.45)', w1: 14, c2: 'rgba(255,250,200,1)', w2: 4 }); fxRing(f.x, f.y, 0.8 * CFG.CELL, 'rgba(255,240,150,.9)', 320, 6); }
+    dealDamage(t, f, effAtk(t) * (low ? RC.LOW : 1), { skill: true, noCrit: true }); });
 }
 // ── R3.3 신규 지후 도우미 ──
 // 드라이아이스 지후: 일반 공격 [빙결] 0.8초 → 빙결이 풀리면 [승화] (그 자리 반경 2칸 적 공격력 80% · 승화한 적 말고 맞은 적 35% 다시 빙결 → 또 승화) · 승화마다 [샤드] (2초 뒤 드라이아이스에게 날아와 먹으면 가장 가까운 적에게 고드름 160% + 받는 피해 +20% 4초) · 랭크 6: 샤드마다 기본 공격력 +5% (선형) · 샤드는 monoDraw 캔버스
@@ -8574,10 +8574,10 @@ const CHAR_INFO = {
   fisher: [['이동', '직접 움직이지 않는다 (밀려나기는 한다)'], ['찌', '적진 무작위 자리 · 초당 1.1칸으로 당긴다 · 반경 1.7칸 적을 찌로 끌어온다 · 닿으면 입질 → 그 적을 걸고 초당 2.2칸'], ['낚은 적', '낚시 지후 앞에서 [잠금] 2.5초 · 받는 피해 +20% 2.5초'], ['공격', '낚은 적이 아니면 피해 −50%']],
   dryice: [['일반 공격', '맞은 적 [빙결] 0.8초'], ['[승화]', '빙결이 풀릴 때 · 그 자리 반경 2칸 적 공격력 80% · 승화한 적 말고 맞은 적은 35% 다시 [빙결] (또 승화)'], ['[샤드]', '승화마다 그 자리에 · 2초 뒤 드라이아이스 지후에게 날아온다'], ['샤드를 먹으면', '가장 가까운 적에게 고드름 · 공격력 160% · 받는 피해 +20% 4초']],
   dealer: [['카드', '3.2초마다 두 장 (0.5초 간격) · 모양 ♠ ♣ ♥ ♦ × 색 검정 · 빨강 · 그 뒤 SP +1'], ['♠ 공격 (가장 가까운 적)', '♠ 150% ×2 · 쉴드 제거 / ♣ 120% ×2 · 독 3초 (초당 30%) / ♥ 100% ×2 · 입힌 피해 30% 회복 / ♦ 75% ×2 · 받는 피해 +15% 5초'], ['♣ 아군 2기 (가장 가까운)', '♠ 공격력 +25% 5초 / ♣ 치명타 확률 +15% 5초 / ♥ 공격력 400% 회복 / ♦ 공격력 400% 쉴드'], ['♥ 자신 회복', '♠ 공격력 400% / ♣ 공격력 100% 5초 동안 1초마다 / ♥ 최대 체력 35% / ♦ 현재 체력 50%'], ['♦ 자신 강화', '♠ 쉴드 400 (깨지면 반경 2칸 공격력 150%) / ♣ 쉴드 600 (10초 동안 사라짐) / ♥ 쉴드 400 + 디버프 면역 10초 / ♦ 받는 피해 −70% 8초'], ['배율', '빨간 카드 장마다 +50% · 두 장 모양이 같으면 +50% 더'], ['[잭팟]', '두 장의 모양과 색이 모두 같으면 · 자신 포함 모든 아군 공격력 +77% 7초 · 현재 체력 77% 회복'], ['[블랙잭]', 'SP 3 · 1~10 을 3~5번 더한다 · 21 반경 8칸 적 기절 3초 + 최대 체력 80% · 20 반경 8칸 적 공격력 200% · 19 반경 8칸 아군 회복 (자신 최대 체력 19%) · 18 자신 최대 체력 18% 회복 · 22 이상 자신 기절 2초 · 그 밖 모든 적 현재 체력 (합 / 2)%']],
-  typhoon: [['[태풍]', '치명타마다 자기 자리에 · 반지름 = 자기 몸 · 1칸/초로 곧게 · 5초 · 가까운 적 쪽으로 조금씩 휜다 · 적과 붙으면 느려져 그 적을 따라간다'], ['태풍 피해', '닿은 적 0.25초마다 공격력 300% · 그 적과 닿아 있던 시간 1초마다 +10% (떨어지면 처음부터)'], ['[폭풍]', 'SP 32 · 3초 · 치명타 확률 +8% · 그동안 SP 가 차지 않는다']],
-  volcano: [['SP', '적에게 맞을 때마다 1 · 다른 방법으로는 차지 않는다'], ['[화산재]', 'SP 16 · 자기 자리부터 적진 끝까지 · 폭 = 몸 지름의 2배 · 6초 · 안의 적 일반 공격 25% 빗나감 · SP 충전 −50%'], ['분화', '한 번에 600 이상 스킬 피해를 받으면 (1초에 한 번) · 가장 먼 적 3기에게 [마그마]'], ['[마그마]', '[화상] 5초 · 1초마다 공격력 70% · 맞은 자리 반경 2칸 [용암 지대] 5초'], ['[용암 지대]', '안의 적 1초마다 공격력 60% · 벗어나거나 끝나면 [화상] 3초 · 1초마다 공격력 50%']],
+  typhoon: [['[태풍]', '치명타마다 자기 자리에 · 반지름 = 자기 몸의 2배 · 1칸/초로 곧게 · 7.5초 · 가까운 적 쪽으로 조금씩 휜다 · 적과 붙으면 느려져 그 적을 따라간다'], ['태풍 피해', '닿은 적 0.25초마다 공격력 300% · 그 적과 닿아 있던 시간 1초마다 +10% (떨어지면 처음부터)'], ['[폭풍]', 'SP 32 · 3초 · 치명타 확률 +4% · 그동안 SP 가 차지 않는다']],
+  volcano: [['SP', '적에게 맞을 때마다 1 · 다른 방법으로는 차지 않는다'], ['[화산재]', 'SP 16 · 자기 자리부터 적진 끝까지 · 폭 = 몸 지름의 2배 · 6초 · 안의 적 일반 공격 25% 빗나감 · SP 충전 −50%'], ['분화', '한 번에 200 이상 스킬 피해를 받으면 (2.5초에 한 번) · 가장 먼 적 3기에게 [마그마]'], ['[마그마]', '[화상] 5초 · 1초마다 공격력 70% · 맞은 자리 반경 2칸 [용암 지대] 5초'], ['[용암 지대]', '안의 적 1초마다 공격력 60% · 벗어나거나 끝나면 [화상] 3초 · 1초마다 공격력 50%']],
   mutant: [['변이', '전투가 시작될 때마다 75% 실패작 · 25% 성공작'], ['실패작', 'HP 500 · ATK 20 · 2초 · 사거리 3 · SP 4: 가장 가까운 적 공격력 110% · 자신 체력 −100'], ['성공작', 'HP 1500 · ATK 180 · 1.5초 · 사거리 5.7 · SP 4: 다음 공격이 대상 [기절] 1초'], ['성공작 면역', '이번 라운드에 한 번이라도 걸린 디버프는 다시 걸리지 않는다']],
-  raincloud: [['[먹구름 지대]', '반경 2.7칸'], ['번개', '자신이 적에게 맞을 때마다 · 지대 안 적이 있으면 무작위 1기 공격력 100%'], ['에너지', '12로 시작 · 1초마다 1 (최대 12) · 번개마다 1 · 1 이하일 때 친 번개는 피해 −65%']],
+  raincloud: [['[먹구름 지대]', '반경 2.7칸'], ['번개', '자신이 적에게 맞을 때마다 · 지대 안 모든 적 공격력 100%'], ['에너지', '15로 시작 · 1초마다 1 (최대 15) · 번개 한 기마다 1 · 1 이하일 때 친 번개는 피해 −65%']],
   paladin: [['쉴드', '400 (레벨 배율)'], ['기사단 소환', '처음 적에게 맞을 때 (쉴드에 막혀도) 한 번 · 맞은 쪽으로 1.3칸 앞에 한 줄로 5기'], ['팔라딘나이트 지후', '체력 100 · 쉴드 300 (10초 동안 서서히 사라짐) · 공격력 80 · 2.2초 · 근접 (팔라딘 레벨 배율)']],
   curse: [['저주 스택', '공격마다 +1 · 저주 지후마다 따로 · 다른 적을 공격하면 처음부터'], ['[즉사]', '같은 대상 4번째 공격 · 모든 생존기 무시'], ['일반 공격', '공격력 100%']],
   hypno: [['[최면]', 'SP 4 · 대상 (없으면 가장 가까운 적) 자리 반경 1.7칸 적 · 1.7초'], ['[최면] 상태', '공격하지 못한다 · 가장 가까운 적의 반대쪽으로 걷는다']],
@@ -15388,6 +15388,12 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.3', date: '2026.11.18', title: '신규 지후 6종 · 이벤트 · 밸런스 조정', sections: [
+    { title: '추가 패치 (build 8)', items: [
+      { id: 'typhoon', name: '태풍 지후', tag: 'buff', desc: '[태풍] 반지름 <b>×2</b> · 지속 <b>5 → 7.5초</b>' },
+      { id: 'typhoon', name: '태풍 지후', tag: 'nerf', desc: '[폭풍] 치명타 확률 <b>+8 → +4%</b>' },
+      { id: 'raincloud', name: '먹구름 지후', tag: 'buff', desc: '번개 <b>무작위 1기 → 지대 안 모든 적</b> (한 기마다 에너지 1) · 에너지 <b>12 → 15</b>' },
+      { id: 'volcano', name: '화산 지후', tag: 'buff', desc: '[분화] 조건 스킬 피해 <b>600 → 200</b> 이상 · 쿨타임 <b>2.5초</b>' },
+    ] },
     { title: '신규 지후 (build 7)', items: [
       { id: 'typhoon', name: '태풍 지후', tag: 'new', desc: '전설 · 토큰 4 · 치명타마다 [태풍] 소환 · [폭풍]' },
       { id: 'volcano', name: '화산 지후', tag: 'new', desc: '전설 · 토큰 5 · 맞으면 SP · [화산재] · 큰 스킬 피해에 분화 [마그마] · [용암 지대]' },
