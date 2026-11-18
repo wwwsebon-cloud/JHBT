@@ -5884,6 +5884,7 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
 .bg-c.pz.p1 .fr { background:#3a2a08; border-color:#ffc94a; } .bg-c.pz.p1 .rk { color:#ffc94a; }
 .bg-c.pz.p2 .fr { background:#24163d; border-color:#b07cff; } .bg-c.pz.p2 .rk { color:#c9a2ff; }
 .bg-c.pz.p3 .fr { background:#3a0d14; border-color:#ff5c7a; } .bg-c.pz.p3 .rk { color:#ff8095; }
+.bg-c.ln .fr { border-color:#ffc94a; background:#2a2208; } .bg-c.ln.pz .fr { border-width:2px; }
 .bg-c.ghost .fr { opacity:.7; outline:2px dashed rgba(255,255,255,.45); outline-offset:-5px; }
 .bg-c:disabled { cursor:default; }
 .bg-side { flex:1; min-width:220px; display:flex; flex-direction:column; gap:12px; }
@@ -14176,7 +14177,8 @@ function evBuy(id) {
   profile.items.fw = (profile.items.fw | 0) - o.c; B[id] = used + 1; alWhy('이벤트 상점 · ' + o.t); sfx('buy'); evDone(evGive(o.rw));
 }
 // ── 지후 빙고: 6 × 6 · 한 판에 18번 · 판마다 1 · 2 · 3등 한 칸씩 · 판 5개까지 (칸은 뒤집을 때 남은 칸에서 정한다 → 미리 엿볼 수 없다 · 끝나면 못 찾은 1 · 2 · 3등 자리를 남은 칸에 공개) ──
-const BG = { N: 36, FLIPS: 18, BOARDS: 5 };
+const BG = { N: 36, FLIPS: 18, BOARDS: 5, LINE: 50 }; // LINE: 한 줄 (가로 6 · 세로 6 · 대각선 2) 을 모두 뒤집으면 ◆
+const BG_LN = (() => { const L = [], k = [0, 1, 2, 3, 4, 5]; k.forEach(r => L.push(k.map(c => r * 6 + c))); k.forEach(c => L.push(k.map(r => r * 6 + c))); L.push(k.map(i => i * 7), k.map(i => 5 + i * 5)); return L; })();
 const BG_CELLS = { d1: 5, d50: 4, g500: 5, kit: 2, mile: 3, tix: 2, key40: 2, fw1: 3, fw3: 2, fw5: 1, gE: 1, gR: 2, epT: 1, p1: 1, p2: 1, p3: 1 };
 const BG_RW = { d1: ['◆', '1', { dia: 1 }], d50: ['◆', '50', { dia: 50 }], g500: ['🪙', '500', { gold: 500 }], kit: ['🧪', '임테기', { items: { testKit: 1 } }], mile: ['Ⓜ', '마일리지', { mile: 1 }], tix: ['🎟', '티켓', { tix: 1 }], key40: ['🔑', '40', { keys: 40 }],
   fw1: ['🎆', '×1', { items: { fw: 1 } }], fw3: ['🎆', '×3', { items: { fw: 3 } }], fw5: ['🎆', '×5', { items: { fw: 5 } }], gE: ['✦', '영웅조각', { items: { glowEpic: 1 } }], gR: ['✦', '희귀조각', { items: { glowRare: 1 } }], epT: ['🎫', '영웅권', { items: { epicTicket: 1 } }],
@@ -14188,7 +14190,9 @@ function bgFlip(i) {
   let tot = 0; for (const k in b.rem) tot += b.rem[k]; let r = Math.random() * tot, k = 'd1'; for (const x in b.rem) { r -= b.rem[x]; if (r < 0) { k = x; break; } }
   b.rem[k]--; b.o[i] = k; profile.items.bingoT--; alWhy('지후 빙고 · ' + (k[0] === 'p' ? k[1] + '등' : BG_RW[k][1]));
   if (Object.keys(b.o).length >= BG.FLIPS) { b.end = 1; const left = []; for (let j = 0; j < BG.N; j++) if (!b.o[j]) left.push(j); ['p1', 'p2', 'p3'].forEach(p => { if (b.rem[p] > 0 && left.length) b.show[left.splice(Math.floor(Math.random() * left.length), 1)[0]] = p; }); }
-  EVH.flip = i; sfx(k[0] === 'p' ? 'gacha_legend' : 'ev_land'); evDone(evGive(BG_RW[k][2]), 'late');
+  const ln = b.ln || (b.ln = []), nw = BG_LN.map((_, j) => j).filter(j => !ln.includes(j) && BG_LN[j].every(x => b.o[x])); ln.push(...nw); /* 빙고 줄 */
+  const g = evGive(BG_RW[k][2]); if (nw.length) { profile.dia += BG.LINE * nw.length; g.T.push(['🎯', `빙고 ${nw.length}줄 · ◆ ${BG.LINE * nw.length}`]); }
+  EVH.flip = i; sfx(nw.length ? 'match_win' : k[0] === 'p' ? 'gacha_legend' : 'ev_land'); evDone(g, 'late');
 }
 function bgNext() { const e = evt(); if (!e.bg.b || !e.bg.b.end || e.bg.n >= BG.BOARDS || !evtLive()) return; e.bg.b = null; bgBoard(); EVH.flip = -1; sfx('merge'); evhDraw(); }
 // ── 지후 복권: 날마다 1 ~ 77 하나 (바꿀 수 없다) · 다음 날 0시에 행운의 숫자 · 숫자는 lotto/<한국 날 번호> 문서의 서버 시각 at 으로 만든다 (그날이 끝난 뒤 처음 연 사람이 한 번만 만든다 · firestore.rules lotto) ──
@@ -14264,11 +14268,11 @@ function evhDraw(first) {
   const m = $('evhMain'); m.innerHTML = ({ bingo: evhBingo, lotto: evhLotto, cap: evhCap, shop: evhShop, quest: evhQuest }[EVH.tab] || (() => ''))(); if (first) { m.classList.remove('in'); void m.offsetWidth; m.classList.add('in'); }
 }
 function evhBingo() { const e = evt(), b = bgBoard(), tk = profile.items.bingoT | 0; if (!b) return `<div class="evh-empty">빙고판 ${BG.BOARDS}개를 모두 끝냈어요</div>`;
-  const n = Object.keys(b.o).length, found = ['p1', 'p2', 'p3'].map(p => Object.values(b.o).includes(p));
-  const cells = Array.from({ length: BG.N }, (_, i) => { const k = b.o[i] || b.show[i], r = k && BG_RW[k], pz = k && k[0] === 'p'; return `<button type="button" class="bg-c${b.o[i] ? ' open' : b.show[i] ? ' open ghost' : ''}${pz ? ' pz ' + k : ''}${EVH.flip === i ? ' now' : ''}" data-bg="${i}" ${b.o[i] || b.end ? 'disabled' : ''}><span class="bk">?</span><span class="fr">${r ? (pz ? `<b class="rk">${r[0]}</b><small>${r[1]}</small>` : `<b>${r[0]}</b><small>${r[1]}</small>`) : ''}</span></button>`; }).join('');
-  return `<div class="evh-hd"><div><span class="en">JIHOO BINGO</span><h3>지후 빙고</h3></div><div class="evh-st"><span>판 <b>${e.bg.n}</b> / ${BG.BOARDS}</span><span>뒤집기 <b>${n}</b> / ${BG.FLIPS}</span><span>🔢 빙고 티켓 <b>${tk}</b></span></div></div>`
+  const n = Object.keys(b.o).length, found = ['p1', 'p2', 'p3'].map(p => Object.values(b.o).includes(p)), LN = new Set(); (b.ln || []).forEach(j => BG_LN[j].forEach(x => LN.add(x)));
+  const cells = Array.from({ length: BG.N }, (_, i) => { const k = b.o[i] || b.show[i], r = k && BG_RW[k], pz = k && k[0] === 'p'; return `<button type="button" class="bg-c${b.o[i] ? ' open' : b.show[i] ? ' open ghost' : ''}${LN.has(i) ? ' ln' : ''}${pz ? ' pz ' + k : ''}${EVH.flip === i ? ' now' : ''}" data-bg="${i}" ${b.o[i] || b.end ? 'disabled' : ''}><span class="bk">?</span><span class="fr">${r ? (pz ? `<b class="rk">${r[0]}</b><small>${r[1]}</small>` : `<b>${r[0]}</b><small>${r[1]}</small>`) : ''}</span></button>`; }).join('');
+  return `<div class="evh-hd"><div><span class="en">JIHOO BINGO</span><h3>지후 빙고</h3></div><div class="evh-st"><span>판 <b>${e.bg.n}</b> / ${BG.BOARDS}</span><span>뒤집기 <b>${n}</b> / ${BG.FLIPS}</span><span>빙고 <b>${(b.ln || []).length}</b>줄</span><span>🔢 빙고 티켓 <b>${tk}</b></span></div></div>`
     + `<div class="bg-wrap"><div class="bg-board">${cells}</div><div class="bg-side"><div class="bg-pz">${[['p1', '1등', '랜덤 전설 지후'], ['p2', '2등', '빛나는 전설조각 ×3'], ['p3', '3등', '폭죽 ×10']].map(([k, r, t], j) => `<div class="${k}${found[j] ? ' got' : ''}"><b>${r}</b><span>${t}</span>${found[j] ? '<i>획득</i>' : ''}</div>`).join('')}</div>`
-    + (b.end ? `<div class="bg-end"><b>판 끝</b>${e.bg.n < BG.BOARDS ? `<button type="button" class="evh-btn" data-bgnext="1">새 빙고판 (${e.bg.n + 1} / ${BG.BOARDS})</button>` : '<span>모든 판을 끝냈어요</span>'}</div>` : `<div class="bg-tip">칸을 눌러 뒤집기 · 🔢 1장</div>`)
+    + (b.end ? `<div class="bg-end"><b>판 끝</b>${e.bg.n < BG.BOARDS ? `<button type="button" class="evh-btn" data-bgnext="1">새 빙고판 (${e.bg.n + 1} / ${BG.BOARDS})</button>` : '<span>모든 판을 끝냈어요</span>'}</div>` : `<div class="bg-tip">칸을 눌러 뒤집기 · 🔢 1장 · 한 줄 ◆ ${BG.LINE}</div>`)
     + `<div class="bg-src">🔢 일반전 승리 55% · 열쇠 상자 10% · 상점 매일 1장</div></div></div>`; }
 function evhLotto() { const e = evt(), d = stDay(), g = e.lot.g[d], last = e.lot.last, mn = Math.max(0, Math.ceil(((d + 1) * 86400000 - ST_KST - tNow()) / 60000));
   const head = `<div class="evh-hd"><div><span class="en">JIHOO LOTTERY · DAILY</span><h3>지후 복권</h3></div><div class="evh-st">${last ? `<span>${esc(lotDate(last.d))} 행운의 숫자 <b>${last.n}</b></span>` : ''}<span>발표까지 <b>${Math.floor(mn / 60)}시간 ${mn % 60}분</b></span></div></div>`;
@@ -14296,7 +14300,7 @@ document.addEventListener('click', e => { const h = e.target.closest && e.target
 // ── 켤 때: 복권 발표 → 이벤트 공지 (오늘 하루 보지 않기 rejhbt-evnote = 날짜) · 날이 바뀌면 복권만 다시 ──
 const EVB = { busy: false, note: false, lotDay: -1 };
 function evNoteShow() { return new Promise(res => { if (!evtLive()) return res(); let skip = ''; try { skip = localStorage.getItem('rejhbt-evnote') || ''; } catch (er) {} if (skip === todayKey()) return res();
-  const el = $('evNote'), L = [['🎯', '지후 빙고', '빙고 티켓으로 칸을 뒤집어 1 · 2 · 3등 찾기 · 1등 랜덤 전설 지후'], ['🎫', '지후 복권', '매일 1 ~ 77 숫자 하나 · 1등 ◆ 7,777'], ['🥚', '캡슐 뽑기', '노란 캡슐 2% · 선택 전설 지후 모집권'], ['🎆', '이벤트 상점 · 퀘스트', '폭죽을 모아 전설 지후 · 캡슐 뽑기권']];
+  const el = $('evNote'), L = [['🎯', '지후 빙고', '칸을 뒤집어 한 줄 ◆ 50 · 1등 랜덤 전설 지후'], ['🎫', '지후 복권', '매일 1 ~ 77 숫자 하나 · 1등 ◆ 7,777'], ['🥚', '캡슐 뽑기', '노란 캡슐 2% · 선택 전설 지후 모집권'], ['🎆', '이벤트 상점 · 퀘스트', '폭죽을 모아 전설 지후 · 캡슐 뽑기권']];
   el.className = 'evnote on'; el.innerHTML = `<div class="en-card"><div class="en-top"><span>EVENT · ${new Date(EVT.t0 + ST_KST).getUTCMonth() + 1}/${new Date(EVT.t0 + ST_KST).getUTCDate()} ~ ${new Date(EVT.t0 + EVT.ms - 1 + ST_KST).getUTCMonth() + 1}/${new Date(EVT.t0 + EVT.ms - 1 + ST_KST).getUTCDate()}</span><b>지후왕국 축제</b><em>${evtLeft()}</em><img class="evh-art" src="${u2Img('gift')}" alt="" aria-hidden="true"></div>`
     + `<div class="en-list">${L.map(([ic, t, d], i) => `<div style="--i:${i}"><i>${ic}</i><b>${t}</b><span>${d}</span></div>`).join('')}</div><div class="en-bt"><label><input type="checkbox" id="enSkip"> 오늘 하루 보지 않기</label><button type="button" id="enNo">닫기</button><button type="button" class="go" id="enGo">이벤트 보러 가기</button></div></div>`;
   const done = go => { try { if ($('enSkip').checked) localStorage.setItem('rejhbt-evnote', todayKey()); } catch (er) {} el.className = 'evnote'; el.innerHTML = ''; if (go) evOpen(); res(); };
@@ -15271,7 +15275,7 @@ const PATCH_NOTES = [
     { title: '이벤트 (build 3)', items: [
       { icon: '🎉', name: '이벤트 탭', tag: 'system', desc: '7일간의 여정 → <b>이벤트</b> 탭 · 받을 보상 🎁 표시' },
       { icon: '📢', name: '이벤트 공지', tag: 'system', desc: '게임을 켜면 이벤트 공지 · 오늘 하루 보지 않기' },
-      { icon: '🎯', name: '지후 빙고', tag: 'new', desc: '6 × 6 · 한 판 <b>18번</b> · 1등 랜덤 전설 지후 · 판 <b>5개</b> · 14일' },
+      { icon: '🎯', name: '지후 빙고', tag: 'new', desc: '6 × 6 · 한 판 <b>18번</b> · 한 줄 <b>◆ 50</b> · 1등 랜덤 전설 지후 · 판 <b>5개</b>' },
       { icon: '🎫', name: '지후 복권', tag: 'new', desc: '매일 1 ~ 77 · 0시 발표 · 1등 <b>◆ 7,777</b>' },
       { icon: '🥚', name: '캡슐 뽑기', tag: 'new', desc: '회색 59 · 파랑 29 · 보라 10 · 노랑 <b>2%</b>' },
       { icon: '🎆', name: '이벤트 상점', tag: 'new', desc: '폭죽으로 골드 · 전설 지후 · ◆ · 캡슐 뽑기권 · 빙고 티켓 매일 무료' },
