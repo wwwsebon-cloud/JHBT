@@ -311,12 +311,13 @@ service cloud.firestore {
     // 잠수함 접속 중인 유저 (운영 도구): 접속자마다 1분마다 닉네임 · 화면 · 레벨 · 회원 여부 · 접속 횟수 · 지난 접속 · 기기 · 유입 · 운영자만 읽는다
     match /live/{userId} {
       allow get, list: if isAdmin();
-      allow create, update: if owner(userId) && request.resource.data.keys().hasOnly(['n', 'w', 'lv', 'm', 'at', 'vn', 'pv', 'gp', 'f', 'old', 'pf', 'ap', 'src'])
+      allow create, update: if owner(userId) && request.resource.data.keys().hasOnly(['n', 'w', 'lv', 'm', 'at', 'vn', 'pv', 'gp', 'f', 'old', 'pf', 'ap', 'src', 'tst'])
         && request.resource.data.n is string && request.resource.data.n.size() <= 12
         && request.resource.data.w is string && request.resource.data.w.size() <= 16
         && request.resource.data.lv is int && request.resource.data.m is bool
         && (!('vn' in request.resource.data) || (request.resource.data.vn is int && request.resource.data.pv is int && request.resource.data.gp is int && request.resource.data.f is int && request.resource.data.old is bool && request.resource.data.ap is bool))
         && (!('pf' in request.resource.data) || (request.resource.data.pf is string && request.resource.data.pf.size() <= 24 && request.resource.data.src is string && request.resource.data.src.size() <= 32))
+        && (!('tst' in request.resource.data) || request.resource.data.tst is bool)
         && request.resource.data.at == request.time;
     }
 
