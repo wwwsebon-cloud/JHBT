@@ -9370,7 +9370,7 @@ function show(name) {
   if (name !== 'battle' && document.getElementById('bsetFull') && !document.getElementById('bsetFull').hidden) bsetToggle(false); /* R3.1 전투 설정 창 */
   if (window.__u2 && !AUTH.ok && name !== 'welcome' && !(name === 'battle' && S.replay)) { renderGate('loading'); name = 'welcome'; } // accBoot 전에는 연결 중 화면만 (R2.13 build 2: 로그인 화면 없음 · R2.14: 공유 리플레이는 전투 화면)
   document.body.dataset.scr = name; // R2.12 테마: 전투 화면만 밝은 바탕
-  if (window.__u2 && !TUT.on && (U2_TAB[name] || U2_PAGE[name])) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); if (name === 'gacha' || name === 'shop') UI2.st.u3store = name === 'gacha' ? 'recruit' : 'shop'; /* R3.1 ui3 */ u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
+  if (window.__u2 && (!TUT.on || TUT.u3) && (U2_TAB[name] || U2_PAGE[name])) { /* R3.3 build 4: 튜토리얼 새 로비 단계 (TUT.u3) 도 새 로비로 */ document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); if (name === 'gacha' || name === 'shop') UI2.st.u3store = name === 'gacha' ? 'recruit' : 'shop'; /* R3.1 ui3 */ u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
   if (window.__u2) u2Hide();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $('screen-' + name).classList.add('active'); window.scrollTo(0, 0);
   document.body.dataset.chrome = CHROME.includes(name) ? '1' : '0'; $('tabbar').querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === (name === 'tower' || name === 'comp' || name === 'sandbox' ? 'arcade' : name)));
@@ -18166,13 +18166,13 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
       await talk([f('자 그럼 이제 새 지후들을 모집해야겠지?')]);
       TUT.wantPull = true; /* build 3: wantPull 을 먼저 켜야 버튼이 무료로 그려진다 (다이아가 모자라도) */
       if (u3On()) { // R3.3 build 4: 새 로비 모집 탭 (상시 모집 · 10회 모집 버튼만 · 예전 뽑기 화면 대신)
-        TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'shop', u3store: 'recruit', u3ban: 'std', detail: null, equipId: null }); renderLobby(); show('lobby'); u2Render(); hint('@10회 모집@을 눌러요 (전설 1개 + 일반 9개 확정!)');
+        TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'shop', u3store: 'recruit', u3ban: 'std', detail: null, equipId: null }); show('gacha'); u2Render(); hint('@10회 모집@을 눌러요 (전설 1개 + 일반 9개 확정!)');
         await W('revealClosed'); TUT.u3 = false; hint(''); document.body.classList.remove('tut-deck3'); u2Render();
       } else { renderGacha(); show('gacha'); document.body.classList.add('tut-gacha'); hint('무료 10회 뽑기를 눌러요 (전설 1개 + 일반 9개 확정!)'); setTarget(['#btnPull10']);
       await W('revealClosed'); setTarget(null); hint(''); document.body.classList.remove('tut-gacha'); }
       await talk([f('오 전설이다'), f('표정이 왜그래 컷신이 SSS급 뽑기에서 C급 뜬 기분이냐'), f('이번엔 방금 뽑은 지후를 장착해보자.')]);
       if (u3On()) { // R3.2 build 11: 새 로비 지후 탭에서 장착 (예전 덱 화면 대신)
-        TUT.deckWant = TUT.legend; TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'units', equipId: null, detail: null, u3sel: TUT.legend, u3rar: 'all' }); renderLobby(); show('lobby'); u2Render();
+        TUT.deckWant = TUT.legend; TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'units', equipId: null, detail: null, u3sel: TUT.legend, u3rar: 'all' }); show('deck'); u2Set({ u3sel: TUT.legend }); u2Render();
         let ht = ''; while (!profile.deck.includes(TUT.legend)) { const t = UI2.st.equipId ? '② 바꿀 자리를 눌러요' : '① @덱에 넣기@를 눌러요'; if (t !== ht) { ht = t; hint(t); } if (!UI2.st.equipId && UI2.st.u3sel !== TUT.legend) u2Set({ u3sel: TUT.legend }); await sleep(250); }
         TUT.deckWant = null; TUT.u3 = false; hint(''); document.body.classList.remove('tut-deck3'); u2Render();
       } else { deckSel = TUT.legend; pendingEquip = null; TUT.deckWant = TUT.legend; document.body.classList.add('tut-deck'); show('deck'); renderDeck();
