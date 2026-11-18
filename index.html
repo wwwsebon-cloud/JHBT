@@ -11378,10 +11378,10 @@ function sameCount(side, id) { return S.place[side].filter(p => p && (id === 'jo
 const stackable = (p, id) => !!(p && p.id === id && (p.lv < maxLv(id) || (id === 'forge' && (p.fg | 0) < FORGE_MAX))); /* R3.1 build 5 강화 지후: 겹치면 검 강화 */ // 새 카드는 전장의 같은 지후 위에 레벨 상관없이 겹쳐 +1 (2렙 + 카드 = 3렙 · 최대 Lv5)
 function mergeTile(side, id) { let best = null; S.place[side].forEach((p, i) => { if (stackable(p, id) && (best == null || p.lv > S.place[side][best].lv)) best = i; }); return best; } // 자동 · 봇: 가장 높은 레벨에
 // ═════════ R3.1 build 2 토큰제 (출격제한 대신) ═════════
-// 라운드마다 토큰 S.inc (기본 5 · 업그레이드 3 · 6 · 8토큰에 +1 · 최대 8) 이 쌓이고 (남으면 다음 라운드로) 지후를 놓거나 겹칠 때 그 지후 값 (tokCost) 만큼 쓴다 · 리롤 판마다 2번 1토큰 · 「전투 시작」 = 남은 배치 건너뛰기
+// 라운드마다 토큰 S.inc (기본 5 · 업그레이드 4 · 6 · 8토큰에 +1 · 최대 8 · 내 레벨 5부터 봇은 7) 이 쌓이고 (남으면 다음 라운드로) 지후를 놓거나 겹칠 때 그 지후 값 (tokCost) 만큼 쓴다 · 리롤 판마다 2번 1토큰 · 「전투 시작」 = 남은 배치 건너뛰기
 // 친선전: 행동 act 에 up (업그레이드 수) · rr (리롤 수) · end (배치 끝) 를 같이 보내 두 화면이 같은 토큰을 센다 · 디펜스 · 성뿌수기 · 샌드박스는 쓰지 않는다
 // 새 지후는 CHARS 에 tok (1~4) 를 적는다 · 없으면 TOK_COST · 그것도 없으면 2
-const TOK = { INC: 5, /* R3.1 잠수함: 4 → 5 (다시) · build 4: 5 → 4 */ MAX_INC: 8, UPS: [3, 6, 8], /* R3.3 build 3: 4토큰 고정 → 단계마다 3 · 6 · 8 */ RR: 2, RR_COST: 1, DM: 2 };
+const TOK = { INC: 5, /* R3.1 잠수함: 4 → 5 (다시) · build 4: 5 → 4 */ MAX_INC: 8, UPS: [4, 6, 8], /* R3.3 build 3: 4토큰 고정 → 단계마다 3 · 6 · 8 · 잠수함: 4 · 6 · 8 */ BOT_INC: 7, BOT_LV: 5, /* 잠수함: 내 레벨 5부터 봇은 라운드마다 토큰 7 (업그레이드로 더 오르면 그 값) */ RR: 2, RR_COST: 1, DM: 2 };
 const upCost = side => TOK.UPS[clamp(S.inc[side] - TOK.INC, 0, TOK.UPS.length - 1)]; // 다음 업그레이드 값
 const TOK_COST = { train: 5, sun: 6, tyrant: 5, dj: 5, weather: 5, monolith: 5, dragon: 4, phoenix: 4, gumiho: 4, lonely: 4, stopj: 4, slot: 4, scythe: 4, nuke: 4, barrier: 4, wolf: 4, biker: 4, cactus: 3, jaws: 3, revive: 3, reaper: 3, /* R3.1 build 4: 3 → 4 · 4 → 5 · 폭주족 4 · 선인장 · 죠스 · 부활 · 사신 3 */ taegeuk: 1, radiation: 1, growth: 1, gift: 1, archaeo: 1, god: 3, /* R3.2 build 12: 갓 1 → 3 · 태양 5 → 6 */ burglar: 1, phase: 1, frog: 1, ruin: 1 };
 const TOK_ONCE = ['orchestra']; // R3.1 잠수함: 경기에서 한 번 놓으면 빈 칸에 새로 놓을 때 토큰 99 (S.placedOnce)
@@ -11395,13 +11395,14 @@ function tokAct(side, up, rr) { // 상대 (친선전 · 관전) 행동의 업그
   for (let i = 0; i < Math.min(4, up | 0); i++) if (canUp(side)) { S.tok[side] -= upCost(side); S.inc[side]++; }
   for (let i = 0; i < Math.min(TOK.RR, rr | 0); i++) if (canRr(side)) { S.rr[side]--; S.tok[side] -= TOK.RR_COST; }
 }
+const botTokUp = () => !S.net && !TUT.on && !(S.arc && S.arc.kind === 'tutorial') && (profile.level | 0) >= TOK.BOT_LV; // 잠수함: 봇 토큰 상향 (봇전 · 튜토리얼 제외)
 function tokRound() { // 라운드 시작: 토큰 지급 (50:50 재경기면 그 라운드 시작 때로 되돌린다)
   S.end = { a: false, e: false }; S.pendUp = S.pendRr = 0; if (!tokOn()) return;
   if (S.reTok) { const o = JSON.parse(S.reTok); S.tok = o.tok; S.inc = o.inc; S.rr = o.rr; S.reTok = null; }
-  else ['a', 'e'].forEach(s => { S.tok[s] += S.inc[s] + (isDeathmatch() ? TOK.DM : 0); });
+  else ['a', 'e'].forEach(s => { S.tok[s] += (s === 'e' && botTokUp() ? Math.max(TOK.BOT_INC, S.inc[s]) : S.inc[s]) + (isDeathmatch() ? TOK.DM : 0); });
   S.tokRS = JSON.stringify({ tok: S.tok, inc: S.inc, rr: S.rr });
 }
-function tokUp() { // 업그레이드: 3 · 6 · 8토큰 → 라운드당 토큰 +1 (최대 8)
+function tokUp() { // 업그레이드: 4 · 6 · 8토큰 → 라운드당 토큰 +1 (최대 8)
   const me = ME(); if (S.phase !== 'deploy' || !canUp(me)) return;
   if (TUT.on) { if (TUT.allow !== 'up') return; TUT.ev('tokUp'); }
   S.tok[me] -= upCost(me); S.inc[me]++; S.pendUp = (S.pendUp | 0) + 1; sfx('merge'); banner(`토큰 수입 ${S.inc[me]} / ${TOK.MAX_INC}`); renderPool(); r3Dep();
