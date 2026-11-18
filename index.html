@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.3"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.3"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -6322,7 +6322,7 @@ const CHARS = {
     story: '갈색으로 염색해 달라고 했다가 형광 핑크 머리로 나온 지후입니다. 미용사는 이게 요즘 유행하는 갈색이라며 계산서를 내밀었고, 그날 그는 암살자가 되기로 결심했어요. 그 미용실이 서쪽 마을에 있다는 소문을 듣자마자 반란군 소탕대에 가장 먼저 이름을 적었습니다. 나라를 위해서냐는 질문에는 끝까지 눈을 피했다고 해요. 소문으로는 그 미용사가 얼굴을 바꾸는 조커 지후라서, 그는 요즘 만나는 모든 지후의 머리부터 확인합니다. 정작 본인 머리가 너무 눈에 띄어서 몰래 다가가는 데는 늘 애를 먹어요.',
     passive: '게임이 시작되면 가장 멀리 있는 적의 뒤로 순간이동해 잠시 숨습니다. 순간이동 뒤 첫 공격은 공격력의 <b>900%</b> 피해를 입힙니다.',
     tick(u, dt, A) { if (u.blinked) return; u.blinkT = (u.blinkT || 0) + dt; if (u.blinkT >= 2) { u.blinked = true; A.blinkBehindFarthest(u); A.status(u, 'stealth', enh6(u) ? 2 : 1); u.nextHitPct = 900; u.nextHitSingle = true; } } },
-  shield: { name: '쉴드 지후', rarity: 'common', role: '탱커', hp: 1600, shield: 500, atk: 120, /* R3.2 build 5: 1950 → 1600 · 150 → 120 */ atkSpeed: 3, range: 'melee', speed: 0.7, /* R3.3 build 3: 1.6 → 0.7 */ portrait: PORTRAITS.shield, portraitBroken: PORTRAITS.shield_broken, starter: true, sfx: 'bash', color: '#4f7cff',
+  shield: { name: '쉴드 지후', rarity: 'common', role: '탱커', hp: 1200, shield: 500, atk: 120, /* R3.3 build 4: 1600 → 1200 · R3.2 build 5: 1950 → 1600 · 150 → 120 */ atkSpeed: 3, range: 'melee', speed: 0.7, /* R3.3 build 3: 1.6 → 0.7 */ portrait: PORTRAITS.shield, portraitBroken: PORTRAITS.shield_broken, starter: true, sfx: 'bash', color: '#4f7cff',
     story: '스스로 고기방패가 되기로 한 근위대 막내 지후입니다. 놀이터 보안관 시절의 수호자 지후에게 몸으로 받아 내는 법을 배웠는데, 수업은 첫날 맞으면 아프다는 결론으로 끝났어요. 그래도 그는 자기가 아픈 것보다 동료가 다치는 게 더 싫어서 언제나 맨 앞에 섭니다. 소탕대 지원서의 특기 칸에는 잘 맞음이라고 적었어요. 최근 그가 맞을 때마다 살짝 웃는다는 소문이 돌자 본인은 착해서 그렇다고 해명했습니다. 해명하는 동안에도 웃고 있었대요.',
     passive: '쉴드가 남아 있는 동안 상태이상에 걸리지 않고, 받는 피해가 <b>25%</b> 줄어듭니다.',
     immune(u) { return u.shield > 0; }, takenMult(u) { return u.shield > 0 ? 0.75 : 1; } },
@@ -6633,9 +6633,9 @@ const CHARS = {
       run(u, A) { const L = A.enemies(u).sort((x, y) => dist(u, x) - dist(u, y)).slice(0, enh6(u) ? 7 : 5); /* 랭크 6 [여분의 촉수] */ dmgNum(u, '촉수 내려치기!', { crit: true }); A.portrait(u, u.def.portraitAtk); u.atkPicT = 0.8;
         L.forEach(e => { if (A.dmg(u, e, 120) > 0) { hitFx(u, e, true); if (!S.fast) A.ring(e.x, e.y, 0.7); } if (e.alive) A.status(e, 'blind', 2.5); }); } } },
   // ── R2.8 신규 지후 9종 ──
-  lantern: { name: '랜턴 지후', rarity: 'epic', role: '하이브리드', hp: 980, /* R2.36 build 6: 1280 → 980 */ atk: 15, /* R3.3 build 3: 10 → 15 · 자가 회복 5 → 10 · R2.36 build 7: 16 → 10 · 공격속도 고정 */ fixAspd: true, atkSpeed: 1, range: 4.7, /* R2.36 build 5: 5.2 → 4.7 */ speed: 1.6, /* R2.26: 흡혈 30% → 공격 빔이 맞을 때마다 5 × 레벨 회복 (beam tick) · R2.22.3: lifesteal 0.3 */ portrait: PORTRAITS.lantern, sfx: 'shot', color: '#ff9f1c',
+  lantern: { name: '랜턴 지후', rarity: 'epic', role: '하이브리드', hp: 980, /* R2.36 build 6: 1280 → 980 */ atk: 10, /* R3.3 build 4: build 3 (15 · 자가 회복 10) 롤백 · R2.36 build 7: 16 → 10 · 공격속도 고정 */ fixAspd: true, atkSpeed: 1, range: 4.7, /* R2.36 build 5: 5.2 → 4.7 */ speed: 1.6, /* R2.26: 흡혈 30% → 공격 빔이 맞을 때마다 5 × 레벨 회복 (beam tick) · R2.22.3: lifesteal 0.3 */ portrait: PORTRAITS.lantern, sfx: 'shot', color: '#ff9f1c',
     story: '정전이 잦은 왕국 변두리 마을에서 자란 지후입니다. 정전의 원인은 대부분 옥상에서 하늘과 대화하던 번개 지후였어요. 할머니가 물려준 낡은 랜턴을 켜자, 빛이 닿은 친구는 상처가 아물고 빛이 닿은 적은 눈이 부셔 비명을 질렀습니다. 그 뒤로 그는 한 손으로는 친구를, 다른 손으로는 적을 비추며 다녀요. 배터리는 충전 지후가 공짜로 채워 주는데, 대신 콘센트만 보면 멈춰 서는 충전 지후를 끌고 다니는 건 그의 몫입니다. 여름밤엔 벌레가 너무 몰려와서 그의 주변에만 축제가 열려요.',
-    passive: '적에게는 공격 빔을, 체력이 가장 낮은 아군에게는 회복 빔을 동시에 이어 줍니다. 공격 빔이 맞을 때마다 자신도 <b>10</b>씩 회복합니다.',
+    passive: '적에게는 공격 빔을, 체력이 가장 낮은 아군에게는 회복 빔을 동시에 이어 줍니다. 공격 빔이 맞을 때마다 자신도 <b>5</b>씩 회복합니다.',
     customAttack(u, t) { if (!u.beam || u.beam.t !== t) u.def.beamOn(u, 'beam', t); return true; }, // 일반 공격 = 빔을 (다시) 꽂는다
     beamOn(u, k, t) { const old = u[k]; if (old && old.el) old.el.remove(); u[k] = null; if (!t) return; let el = null;
       if (!S.fast) { el = document.createElement('div'); el.className = 'fx-beam' + (k === 'hbeam' ? ' heal' : ''); $('field').appendChild(el); (u.fx || (u.fx = [])).push(el); }
@@ -6644,7 +6644,7 @@ const CHARS = {
     tick(u, dt) { if (enh6(u)) lanAura(u); const D = u.def, off = blocked(u), b = u.beam;
       if (b) { if (!b.t.alive) D.beamOn(u, 'beam', null); else { // 공격 빔: 5.5칸보다 멀면 희미해져 공격하지 않고, 2초가 지나면 끊긴다
         const far = dist(u, b.t) - unitRadius(b.t) > 5.5 * CFG.CELL; b.faint = far ? b.faint + dt : 0;
-        if (b.faint >= 2) D.beamOn(u, 'beam', null); else { if (!far && !off) { b.acc += dt; while (b.acc >= 0.25 && b.t.alive) { b.acc -= 0.25; if (dealDamage(u, b.t, effAtk(u) * 1.5 /* R2.25.4: 100 → 150% */, {}) > 0) { if (!S.fast) hitFx(u, b.t, false); if (u.hp < u.maxHp) heal(u, u, 10); /* R3.3 build 3: 5 → 10 · R2.26: 맞을 때마다 5 × 레벨 · R2.32: 레벨과 상관없이 5 */ } } } D.beamDraw(u, b); } } }
+        if (b.faint >= 2) D.beamOn(u, 'beam', null); else { if (!far && !off) { b.acc += dt; while (b.acc >= 0.25 && b.t.alive) { b.acc -= 0.25; if (dealDamage(u, b.t, effAtk(u) * 1.5 /* R2.25.4: 100 → 150% */, {}) > 0) { if (!S.fast) hitFx(u, b.t, false); if (u.hp < u.maxHp) heal(u, u, 5); /* R3.3 build 4: build 3 롤백 · R2.26: 맞을 때마다 5 × 레벨 · R2.32: 레벨과 상관없이 5 */ } } } D.beamDraw(u, b); } } }
       u.hpick = (u.hpick || 0) - dt; if (u.hpick <= 0) { u.hpick = 0.5; const R = 5.2 * CFG.CELL; let best = null; // 회복 빔: 사거리 안 체력 비율이 가장 낮은 아군 (자신 제외)
         friends(u).forEach(a => { if (a === u || a.hp >= a.maxHp || a.st.dive > 0 || dist(u, a) - unitRadius(a) > R) return; if (!best || a.hp / a.maxHp < best.hp / best.maxHp) best = a; });
         if ((u.hbeam && u.hbeam.t) !== best) D.beamOn(u, 'hbeam', best); }
@@ -6858,7 +6858,7 @@ const CHARS = {
         if (!S.fast) { dmgNum(u, '🏎 부릉!', { crit: true, stamp: true }); const k = document.createElement('div'); k.className = 'fx-skid'; k.style.left = u.x + 'px'; k.style.top = u.y + 'px'; k.style.height = unitRadius(u) * 1.4 + 'px'; k.style.transform = `translate(0,-50%) rotate(${b.ang}rad)`; $('field').appendChild(k); setTimeout(() => k.remove(), 2600); b.skid = k; b.sx = u.x; b.sy = u.y; }
         return; }
       bikerRush(u, dt); } },
-  lament: { name: '솔렘라멘트 지후', rarity: 'legend', role: '딜러', hp: 744, /* R2.26: 1144 → 744 */ atk: 80, /* R2.26: 96 → 80 · R2.25.4: 66 → 96 */ atkSpeed: 0.9, range: 7, speed: 1.6, portrait: PORTRAITS.lament, sfx: 'shot', color: '#3a3a44',
+  lament: { name: '솔렘라멘트 지후', rarity: 'legend', role: '딜러', hp: 744, /* R2.26: 1144 → 744 */ atk: 50, /* R3.3 build 4: 80 → 50 · R2.26: 96 → 80 · R2.25.4: 66 → 96 */ atkSpeed: 0.9, range: 7, speed: 1.6, portrait: PORTRAITS.lament, sfx: 'shot', color: '#3a3a44',
     story: '장례식장 앞 꽃집에서 일하던 지후입니다. 매일 국화를 다듬다 보니 언제부턴가 가게 안을 흰 나비와 검은 나비가 함께 날아다니기 시작했어요. 흰 나비는 아직 전하지 못한 인사를, 검은 나비는 이미 떠나보낸 이름을 싣고 다닌다고 합니다. 그는 두 나비를 나란히 담아 쏘며, 슬픔은 나눠 들수록 가벼워진다고 믿어요. 문제는 나비들이 탄창에 안 들어가려고 버텨서 장전이 오래 걸린다는 겁니다. 강령술사 지후와는 장례식장에서 서로 손님을 뺏는다며 늘 눈치를 봐요.',
     passive: '두 가지 나비 탄을 쏩니다. 산나비로 표식을 쌓고, 죽은나비로 그동안 받은 피해에 비례한 피해를 줍니다.',
     ammoFull() { return { live: 6, dead: 6, fly: 0 }; }, // 산나비 6 · 죽은나비(검은나비) 6 · fly = 날아가는 중인 탄 수
@@ -7277,7 +7277,7 @@ const CHARS = {
     story: '왕궁 급식실 아이스크림 냉동고를 지키던 드라이아이스 지후입니다. 냉각 지후의 창고에서 일하다가 너무 차갑다는 이유로 쫓겨났는데, 사실은 냉각 지후가 아이스크림을 몰래 먹는 걸 들켰기 때문이에요. 그는 늘 연기를 뿜으며 다녀서 처음 보는 지후들은 그가 불이 난 줄 알고 물 지후를 부릅니다. 물 지후가 물을 끼얹을 때마다 그는 더 신나게 연기를 뿜어서 왕궁 복도가 안개로 가득 차요. 얼음 지후와는 서로 누가 더 차가운지 내기를 하다가 둘 다 감기에 걸렸습니다. 지금은 연기 효과가 필요하다는 DJ 지후의 공연에 무대 장치로 출연하고 있어요.',
     passive: '일반 공격이 대상을 잠깐 <b>[빙결]</b>시킵니다. 빙결이 풀리면 <b>[승화]</b>하며 주변에 피해를 주고, 떨어진 <b>[샤드]</b>를 모으면 고드름을 쏩니다.',
     onHit(u, t) { diFreeze(u, t); }, tick(u, dt) { diTick(u, dt); } },
-  dealer: { name: '더블딜러 지후', rarity: 'legend', role: '딜러', hp: 1440, atk: 100, atkSpeed: 1, range: 6.4, speed: 1.6, tok: 4, noAttack: true, atkText: () => '100 · 카드', portrait: PORTRAITS.dealer, sfx: 'shot', color: '#d4a72c',
+  dealer: { name: '더블딜러 지후', rarity: 'legend', role: '딜러', hp: 1440, atk: 100, atkSpeed: 1, range: 6.4, speed: 1.6, tok: 6, /* R3.3 build 4: 4 → 6 */ noAttack: true, atkText: () => '100 · 카드', portrait: PORTRAITS.dealer, sfx: 'shot', color: '#d4a72c',
     story: '왕궁 카지노에서 카드를 섞는 더블딜러 지후입니다. 한 손으로는 손님에게, 다른 한 손으로는 자기에게 카드를 나눠 주는 바람에 늘 두 판을 동시에 하고 있어요. 조커 지후가 슬롯머신을 털던 날 그는 옆 테이블에서 카드를 섞고 있었지만, 블랙잭이 나와서 신나는 바람에 아무것도 보지 못했다고 증언했습니다. NO U 지후는 그가 카드를 뒤집을 때마다 같은 카드를 내밀어 판을 무효로 만들어요. 그래서 카지노 지배인은 둘을 절대 같은 테이블에 앉히지 않습니다. 그가 스물하나를 외치면 손님들은 박수를 치지만, 스물둘을 외치면 그는 조용히 퇴근해요.',
     passive: '공격하지 않습니다. <b>3.2초</b>마다 카드 두 장을 뽑아 공격 · 아군 지원 · 회복 · 강화 중 하나를 씁니다. 붉은 카드가 많을수록 효과가 커집니다.',
     steer(u) { return ddSteer(u); }, onStart(u) { u.dd = { t: 0, wait: false }; }, tick(u, dt) { ddTick(u, dt); },
@@ -7698,16 +7698,22 @@ function burglarSteal(u, t) {
   u.st.stealth = 0; u.range = 3.2 * CFG.CELL; u.melee = false; /* R3.1 build 2: [절도] 뒤 사거리 3.2칸 */ if (!S.fast) A.ring(u.x, u.y, 0.6); physSnap(u, g.home.x, g.home.y); if (!S.fast) A.ring(u.x, u.y, 0.6);
   const sk = t.def.skill; // 쓰러뜨렸어도 훔친다
   if (sk) {
-    const kit = burglarKit(t.def, u.def);
+    const kit = burglarKit(t.def, u.def), tDef0 = t.def, uDef0 = u.def, tOwn0 = t.bgOwn; /* R3.3 build 4: 돌려줄 때 쓴다 */
     t.def = Object.assign(Object.create(t.def), { skill: null }); t.sk = 0; if (t.el && !t.def.gauge) { const w = t.el.querySelector('.unit-cdbar-wrap'); if (w) w.remove(); t.el.classList.remove('has-cd'); } t.bars = null;
     u.bgOwn = t.bgOwn || { id: t.id, src: t.picSrc }; t.bgOwn = null; bgPic(u); bgPic(t); // build 3: 머리 위 초상화 = 스킬 주인 (도둑에게서 훔치면 원래 주인)
     const need = sk.type === 'cooldown' ? Math.max(1, Math.round(sk.cd)) : (t.need || sk.need); // R2.22.2: 필요 SP = 원래 주인과 같게 (쿨타임 스킬은 쿨타임 초만큼)
     const hs = need ? Object.assign(Object.create(sk), { type: 'hit', need, once: false }) : sk; // 쿨타임 · 초당 · 아군이 쓰러질 때 스킬도 일반 공격으로만 SP 가 찬다 (SP 가 없는 핵미사일은 그대로)
-    u.def = Object.assign(Object.create(u.def), kit, { skill: hs }); u.sk = 0; // 스킬이 부르는 주인의 도우미 함수 (번개 bolt · 충전 chExcl 등) 도 같이
+    u.def = Object.assign(Object.create(u.def), kit, { skill: hs }); u.sk = 0; const tDef1 = t.def, uDef1 = u.def; A.later(BG_BACK, () => burglarBack(u, t, uDef0, uDef1, tDef0, tDef1, tOwn0)); /* R3.3 build 4: 12초 뒤 돌려준다 */ // 스킬이 부르는 주인의 도우미 함수 (번개 bolt · 충전 chExcl 등) 도 같이
     if (u.el && !u.el.querySelector('.unit-cdbar-wrap')) { u.el.classList.add('has-cd'); u.el.insertAdjacentHTML('beforeend', `<div class="unit-cdbar-wrap"><div class="unit-cdbar ${hs.type === 'cooldown' ? 'cd' : 'sk'}"></div></div>`); } u.bars = null;
     if (!S.fast) { const nm = ((sk.desc || '').replace(/<[^>]+>/g, '').match(/\[([^\]]+)\]/) || [])[1] || '스킬'; dmgNum(u, `💰 [${nm}] 절도!`, { crit: true, stamp: true }); if (t.alive) dmgNum(t, '스킬 도둑맞음!', { crit: true }); }
   } else if (!S.fast) dmgNum(u, '💰 훔칠 게 없다…', { crit: true });
   drawUnit(u); drawUnit(t);
+}
+const BG_BACK = 12; // R3.3 build 4: [절도]한 스킬은 12초 뒤 주인에게 돌아간다 (그 라운드에는 다시 훔치지 않는다 · u.bg.done)
+function burglarBack(u, t, uDef0, uDef1, tDef0, tDef1, tOwn0) { // 그사이 다른 도둑이 다시 훔쳤으면 (def 가 바뀜) 그쪽은 건드리지 않는다
+  const cdbar = (x, on, k) => { if (!x.el) return; const w = x.el.querySelector('.unit-cdbar-wrap'); if (on && !w) { x.el.classList.add('has-cd'); x.el.insertAdjacentHTML('beforeend', `<div class="unit-cdbar-wrap"><div class="unit-cdbar ${k}"></div></div>`); } else if (!on && w && !x.def.gauge) { w.remove(); x.el.classList.remove('has-cd'); } };
+  if (u.def === uDef1) { u.def = uDef0; u.sk = 0; u.bars = null; u.bgOwn = null; cdbar(u, !!u.def.skill, 'sk'); bgPic(u); if (u.alive && !S.fast) dmgNum(u, '💰 스킬 반납', { crit: true }); drawUnit(u); }
+  if (t.def === tDef1) { t.def = tDef0; t.sk = 0; t.bars = null; t.bgOwn = tOwn0 || null; const sk = t.def.skill; cdbar(t, !!sk, sk && sk.type === 'cooldown' ? 'cd' : 'sk'); bgPic(t); if (t.alive && !S.fast) dmgNum(t, '스킬 되찾음!', { crit: true }); drawUnit(t); }
 }
 const BG_HOOKS = new Set(['onStart', 'tick', 'onHit', 'onAttack', 'customAttack', 'pickTarget', 'steer', 'takenMult', 'atkMult', 'onKill', 'onUnitDeath', 'onDeath', 'onLethal', 'onDamaged', 'gauge', 'immune', 'bonus', 'atkText', 'shot']);
 function burglarKit(src, mine) { const k = {}; for (let o = src; o && o !== Object.prototype; o = Object.getPrototypeOf(o)) for (const key of Object.keys(o)) { if (key in k || key in mine || BG_HOOKS.has(key)) continue; const v = o[key]; if (typeof v === 'function' || /^portrait./.test(key)) k[key] = v; } return k; } // 훅이 아닌 함수 · 그림만 (도둑의 패시브는 그대로)
@@ -8396,7 +8402,7 @@ const CHAR_INFO = {
   lock: [['[잠금]', '일반 공격 27% · 2초 · 움직일 수 없음 (공격은 가능)']],
   bomb: [['이동', '가장 가까운 적에게 굴러간다 · 이동속도 3.3 · 공격하지 않는다'], ['폭발', '닿으면 반경 2.5칸 · 자신의 최대 체력만큼 (레벨 반영) · 3칸 넉백'], ['쓰러지면', '1초 뒤 그 자리에서 같은 폭발']],
   nuke: [['[핵 발사]', '처음 출전한 라운드 시작 1초 뒤 · 경기에서 한 번'], ['핵', '30초 뒤 적진 · 반경 99칸 · 공격력 99999% · 떨어질 자리에 남은 초'], ['디펜스 모드', '핵 피해는 적마다 최대 체력의 10%'], ['[핵 다씀]', '그 뒤로 영원히 스킬 없음 (레벨업 · 합체해도) · 근접 전사'], ['주의', '라운드가 30초 전에 끝나면 핵은 떨어지지 않는다']],
-  lantern: [['공격속도', '어떤 효과로도 변하지 않는다'], ['공격 빔', '0.25초마다 공격력 150% · 5.5칸보다 멀면 희미해져 멈춤 · 2초 뒤 끊김'], ['회복 빔', '0.25초마다 공격력 60% · 사거리 안 체력 비율이 가장 낮은 아군 (자신 제외)'], ['동시에', '공격 빔 1 + 회복 빔 1'], ['자가 회복', '공격 빔이 맞을 때마다 10 (레벨과 상관없이)']],
+  lantern: [['공격속도', '어떤 효과로도 변하지 않는다'], ['공격 빔', '0.25초마다 공격력 150% · 5.5칸보다 멀면 희미해져 멈춤 · 2초 뒤 끊김'], ['회복 빔', '0.25초마다 공격력 60% · 사거리 안 체력 비율이 가장 낮은 아군 (자신 제외)'], ['동시에', '공격 빔 1 + 회복 빔 1'], ['자가 회복', '공격 빔이 맞을 때마다 5 (레벨과 상관없이)']],
   lightning: [['[낙뢰]', 'SP 5 · 공격력 600% · [기절] 0.5초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
   barrier: [['시작 쉴드', '십자 범위 아군 · 공격력 250% · 남아 있는 동안 디버프 무효'], ['쉴드 중첩', '한 아군에게 보호막 지후 둘 이상이 닿아 있으면 쉴드가 합쳐진다'], ['[배리어]', '반지름 2.2칸 · 3.5초 · 바깥에서 오는 투사체를 막는다'], ['못 막는 것', '근접 공격 · 투사체가 아닌 광역 공격']],
   revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 포함)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위 (소환체 · 분열체는 쓰러질 때 체력 · 공격력으로) · 부활 지후 제외']],
@@ -8433,7 +8439,7 @@ const CHAR_INFO = {
   // ── R2.22 신규 ──
   mafia: [['위기', '체력 50% 이하가 되는 순간 (라운드마다 한 번) · 3초 동안 받는 피해 −40%'], ['부하 지후', 'HP 마피아 지후 체력의 125% · ATK 마피아 지후 공격력의 40% · 1.25초 · 근접 · 이동 1.2 · 바로 앞 (적 진영 쪽) · 라운드가 끝나면 사라진다'], ['넉백', '부하가 나타난 자리 반경 3칸 안 적 → 3칸 밖까지']],
   c4: [['대상', '무작위 적 · 내 C4 가 붙지 않은 적 먼저 (붙으면 다른 적으로) · 다 붙었으면 아무나'], ['일반 공격', '피해 없음 · 맞으면 75% [C4] (터뜨릴 때까지)'], ['기폭', '공격할 때 35% (붙여 둔 C4 가 있을 때만) · C4 마다 그 자리 반경 2.5칸 적 모두 공격력 100% (치명타 없음 · 겹치면 여러 번) · C4 가 붙어 있던 적은 무작위 방향 3칸 넉백']],
-  burglar: [['은신', '라운드 시작부터 대상을 칠 때까지'], ['대상', '스킬이 있는 적 중 가장 가까운 적 · 없으면 가장 가까운 적'], ['기습', '공격력 200% · 은신이 풀리고 처음 자리로 순간이동 · 그 뒤로는 보통 지후처럼 움직이고 공격 (0.75초)'], ['[절도]', '사거리 3.2칸이 된다 · 대상은 이번 라운드 동안 스킬을 못 쓴다 · 도둑이 같은 스킬을 자기 공격력으로 쓴다 · SP 는 일반 공격이 맞을 때마다 1 · 필요 SP 는 원래 주인과 같다 (쿨타임 스킬은 쿨타임 초만큼)'], ['SP', '공격이 맞을 때만 찬다 · 충전 지후 · 유물 등 다른 SP 회복은 받지 않는다'], ['[아공간] 절도', '차원 지후처럼 SP 가 차면 다음 공격 때 대상과 6초 [아공간] · 대상 [공포] 0.7초'], ['표시', '[절도]한 뒤 머리 위에 스킬 주인의 초상화 (💰) · 도둑에게서 훔치면 원래 주인']],
+  burglar: [['은신', '라운드 시작부터 대상을 칠 때까지'], ['대상', '스킬이 있는 적 중 가장 가까운 적 · 없으면 가장 가까운 적'], ['기습', '공격력 200% · 은신이 풀리고 처음 자리로 순간이동 · 그 뒤로는 보통 지후처럼 움직이고 공격 (0.75초)'], ['[절도]', '사거리 3.2칸이 된다 · 12초 동안 대상은 스킬을 못 쓰고 도둑이 같은 스킬을 자기 공격력으로 쓴다 · 12초 뒤 스킬은 주인에게 돌아가고 이번 라운드에는 다시 훔치지 않는다 · SP 는 일반 공격이 맞을 때마다 1 · 필요 SP 는 원래 주인과 같다 (쿨타임 스킬은 쿨타임 초만큼)'], ['SP', '공격이 맞을 때만 찬다 · 충전 지후 · 유물 등 다른 SP 회복은 받지 않는다'], ['[아공간] 절도', '차원 지후처럼 SP 가 차면 다음 공격 때 대상과 6초 [아공간] · 대상 [공포] 0.7초'], ['표시', '[절도]한 뒤 머리 위에 스킬 주인의 초상화 (💰) · 도둑에게서 훔치면 원래 주인']],
   blackhole: [['[중력장]', '4.4초마다 (일반 공격 대신 · 사거리 5칸 안에 적이 있을 때) · 반경 10칸 적 모두 공격력 100% · 자신과의 거리의 10% 만큼 끌어당긴다 (움직이지 않는 지후 · 무적 · 잠수 제외)']],
   mercury: [['[수은 보호막]', 'SP 6 · 최대 체력 35% · 8초 동안 일정하게 녹는다 · 일반 쉴드보다 먼저 막는다 · 체력바 은색 (흰색 = 일반 쉴드) · 다시 쓰면 새로 (터지지 않는다)'], ['터질 때', '다 녹거나 깨지면 반경 2.5칸 적: [중독] 5초 (1초마다 공격력 70%) · [취약] 받는 피해 +15% 5초 · SP −50% (최대 SP 기준)']],
   spy: [['SP', '일반 공격 · 피격 · 충전 등으로 차지 않는다'], ['치명타', '일반 공격의 17% · 공격력 250% · 대상을 날려 보낸다 · SP 가득 → 바로 [변장] · 지금 자기 모습과 같은 지후를 칠 때는 발동하지 않는다'], ['날려 보냄', '3초 동안 전장에서 사라진다 (피해 · 상태이상 · 행동 없음) · 3초 뒤 그 자리로 돌아온다 · 무적 · 잠수 · 면역은 날아가지 않는다'], ['[변장]', 'SP 1 · 방금 날려 보낸 지후 (같은 레벨) 로 변신 · 체력 비율 그대로 · 이번 라운드 동안 · 변신한 뒤에도 17% 치명타 · 날려 보내기 · 치명타마다 또 [변장] (변신한 지후의 스킬도 그대로 · 이중 스킬)'], ['표시', '[변장]하면 유닛 테두리가 보라색 (스파이 지후 색) · 아군 · 적은 체력바 색으로']],
@@ -12942,7 +12948,8 @@ const enhLv = id => clamp(Math.floor(Number(profile.enh && profile.enh[id]) || 1
 const enhCost = (id, lv) => lv >= ENH_MAX || !CHARS[id] ? null : { sh: ENH_SHARD[CHARS[id].rarity][lv - 1], gold: ENH_GOLD[lv - 1] };
 function enhOf(side, id) { const E = S.enh && S.enh[side]; return E ? clamp((E[id] || E._ || 1) | 0, 1, ENH_MAX) : 1; }
 function enhMatch(o) { // 판 시작 (newMatch): 내 쪽 = 내 강화 · 봇 = 내 덱 랭크를 섞어 지후마다 ±2 (botRanks) · 튜토리얼 · 샌드박스 · 릴스 · 미러전 · 친선전(matchBase 기본 null)은 모두 +1
-  const k = o && o.arc && o.arc.kind; if (['tutorial', 'sandbox', 'reels', 'mirror'].includes(k)) return null;
+  const k = o && o.arc && o.arc.kind; if (['tutorial', 'sandbox', 'reels', 'mirror', 'random', 'comp', 'castle'].includes(k)) return null; /* R3.3 build 4: 아케이드는 모두 랭크 1 */
+  if (k === 'tower') return { a: {}, e: { _: 3 } }; /* R3.3 build 4: 지후의 탑은 내 지후 랭크 1 · 봇 랭크 3 */
   const a = {}, L = (S.deck.a || []).filter(id => CHARS[id]); L.forEach(id => { if (owned(id)) a[id] = enhLv(id); });
   return { a, e: botRanks(L.map(id => a[id] || 1), S.deck.e || [], S.persona) };
 }
@@ -15273,6 +15280,14 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.3', date: '2026.11.18', title: '신규 지후 2종 · 이벤트 · 밸런스 조정', sections: [
+    { title: '추가 패치 (build 4)', items: [
+      { icon: '🕹', name: '아케이드', tag: 'system', desc: '모든 지후 <b>랭크 1</b> 고정 · 지후의 탑 봇은 <b>랭크 3</b>' },
+      { id: 'lantern', name: '랜턴 지후', tag: 'nerf', desc: '공격력 <b>15 → 10</b> · 자가 회복 <b>10 → 5</b> (build 3 롤백)' },
+      { id: 'dealer', name: '더블딜러 지후', tag: 'nerf', desc: '토큰 <b>4 → 6</b>' },
+      { id: 'shield', name: '쉴드 지후', tag: 'nerf', desc: '체력 <b>1600 → 1200</b>' },
+      { id: 'lament', name: '솔렘라멘트 지후', tag: 'nerf', desc: '공격력 <b>80 → 50</b>' },
+      { id: 'burglar', name: '도둑 지후', tag: 'nerf', desc: '[절도] 스킬 <b>12초</b> 뒤 주인에게 반환 · 그 라운드 다시 절도 불가' },
+    ] },
     { title: '이벤트 (build 3)', items: [
       { icon: '🎉', name: '이벤트 탭', tag: 'system', desc: '7일간의 여정 → <b>이벤트</b> 탭 · 받을 보상 🎁 표시' },
       { icon: '📢', name: '이벤트 공지', tag: 'system', desc: '게임을 켜면 이벤트 공지 · 오늘 하루 보지 않기' },
@@ -15303,7 +15318,7 @@ const PATCH_NOTES = [
     ] },
     { title: '신규 지후', items: [
       { id: 'dryice', name: '드라이아이스 지후', tag: 'new', desc: '영웅 · 토큰 2 · 일반 공격 [빙결] · 풀리면 [승화] 광역 · [샤드]를 모아 고드름' },
-      { id: 'dealer', name: '더블딜러 지후', tag: 'new', desc: '전설 · 토큰 4 · 3.2초마다 카드 두 장 · 공격 · 지원 · 회복 · 강화 · [블랙잭]' },
+      { id: 'dealer', name: '더블딜러 지후', tag: 'new', desc: '전설 · 토큰 6 · 3.2초마다 카드 두 장 · 공격 · 지원 · 회복 · 강화 · [블랙잭]' },
     ] },
     { title: '모집', items: [
       { icon: '🎲', name: '전설 확률', tag: 'adjust', desc: '전설 <b>2.7 → 2.5%</b> (일반 62.5 → 62.7%)' },
