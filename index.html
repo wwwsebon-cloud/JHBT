@@ -3297,6 +3297,25 @@ html body.u3-on #dlg .bd { color:#b8b2a6; }
 html body.u3-on #dlg .bt { gap:8px; } html body.u3-on #dlg .bt button { height:50px; font-family:'Black Han Sans', var(--font); font-weight:400; font-size:17px; }
 html body.u3-on #levelUp .box { background:#0a090b; border:1px solid rgba(233,196,106,.5); border-top:4px solid #e9c46a; }
 html body.u3-on #levelUp h3 { font-family:'Cinzel', serif; font-weight:900; letter-spacing:.4em; color:#e9c46a; font-size:18px; }
+/* ui3 통일: JHBT 계정 창 (#accModal) · 인게임 유닛 정보 (#charModal .cdp) */
+html body.u3-on #accModal .box.u2-ac { background:#121115; color:#e8e3d8; border:1px solid #3a3631; border-top:4px solid #c8102e; border-radius:0; }
+html body.u3-on #accModal .u2-ac-hero, html body.u3-on #accModal .u2-ac-card, html body.u3-on #accModal .u2-ac-bk, html body.u3-on #accModal .u2-ac-gift { border-radius:0; background:#19171d; border:1px solid #2e2b27; }
+html body.u3-on #accModal .u2-ac-bk.ok { border-color:#2f7d72; background:#13211f; } html body.u3-on #accModal .u2-ac-bk.ok b { color:#7fe3d3; }
+html body.u3-on #accModal .u2-ac-bk.fail, html body.u3-on #accModal .u2-ac-bk.guest { border-color:#7a2433; background:#211317; } html body.u3-on #accModal .u2-ac-bk.fail b, html body.u3-on #accModal .u2-ac-bk.guest b { color:#ff8a9a; }
+html body.u3-on #accModal .u2-ac-bk.conflict { border-color:#a87900; background:#211c11; } html body.u3-on #accModal .u2-ac-bk.conflict b { color:#e9c46a; }
+html body.u3-on #accModal .u2-ac-bk small, html body.u3-on #accModal .u2-ac-h, html body.u3-on #accModal .u2-ac-row .k { color:#9b958a; }
+html body.u3-on #accModal .u2-ac-row { border-top-color:#2a2723; color:#f3eee3; }
+html body.u3-on #accModal .accsw-row, html body.u3-on .u2-ac-sum { border-radius:0; background:#0d0c0e; border:1px solid #2e2b27; color:#f3eee3; }
+html body.u3-on #accModal .accsw-row.on { border-color:#c8102e; background:rgba(200,16,46,.12); }
+html body.u3-on #charModal .box.cdp { background:#121115; color:#e8e3d8; border:1px solid #3a3631; border-top:4px solid #c8102e; border-radius:0; }
+html body.u3-on #charModal .cdp .x { border-radius:0; background:#1d1b20; border:1px solid #3a3631; color:#f3eee3; }
+html body.u3-on #charModal .cdp .p { border-radius:0; background:#e9e4d8; box-shadow:0 0 0 2px #3a3631, 0 10px 24px rgba(0,0,0,.45); }
+html body.u3-on #charModal .cdp h3 { font-family:'Black Han Sans', var(--font); font-weight:400; color:#f3eee3; letter-spacing:0; }
+html body.u3-on #charModal .cdp .tags span { border-radius:0; background:#1d1b20; border:1px solid #3a3631; color:#d8d2c6; }
+html body.u3-on #charModal .cdp .tags .r { background:#c8102e; border-color:#c8102e; color:#fff; }
+html body.u3-on #charModal .cdp .stats div, html body.u3-on #charModal .cdp .ability { border-radius:0; background:#19171d; border:1px solid #2e2b27; color:#9b958a; }
+html body.u3-on #charModal .cdp .stats b, html body.u3-on #charModal .cdp .ability b, html body.u3-on #charModal .cdp .info b { color:#f3eee3; }
+html body.u3-on #charModal .cdp .info em, html body.u3-on #charModal .cdp .story { color:#9b958a; }
 html body.u3-on #levelUp .num { font-family:'Cinzel', serif; font-weight:900; color:#fff7dc; background:none; -webkit-text-fill-color:#fff7dc; text-shadow:none; }
 html body.u3-on #levelUp .rw { border-radius:0; background:#121115; border:1px solid #3a3631; color:#f3eee3; }
 html body.u3-on #levelUp .shock { display:none; }
@@ -9082,6 +9101,8 @@ function importR1(raw) { // R1 기록 → R2 프로필 (처음 한 번)
 }
 let profile = loadProfile();
 function save() { profile.savedAt = Date.now(); writeLocal(); queueBackup(); } // 로그인했으면 서버에도 (1.5초 모아서)
+function needOnline(msg) { if (TUT.on) return false; if (OFF.on || !navigator.onLine) { banner(msg || '🌐 온라인 연결이 필요해요'); return true; } return false; } /* 오프라인 리세마라 · 날짜 조작 방지 */
+function saveNow() { save(); if (isMember() && !ACC.kicked && !ACC.conflict) backupSafe(); } /* 뽑기 · 상자 · 아이템 직후 즉시 백업 */
 function xpNeed(lv) { return Math.round(100 * Math.pow(1.15, Math.max(1, lv) - 1)); } // R2.10: Lv1 부터 · Lv1→2 100 XP · 그 뒤 15% 씩 복리
 function addXp(n) { profile.xp += n; let up = 0; while (profile.xp >= xpNeed(profile.level)) { profile.xp -= xpNeed(profile.level); profile.level++; up++; } if (up) { postEvent('level', String(profile.level), ''); discordNotify({ type: 'level', level: profile.level }); } return up; }
 function owned(id) { return devOn() || (profile.owned[id] || 0) > 0; }
@@ -9325,10 +9346,30 @@ async function syncAfterLogin(fromStart) { // R2 기록이 있으면 맞추고, 
   const nick = await claimNick(); if (nick === 'taken') banner('닉네임이 다른 계정에 등록돼 있어요 · 환경설정에서 바꿔 주세요');
   await migrateR22(); lbPush(); updCheck();
 }
-async function accBoot() { // 켤 때: 남아 있는 로그인이면 서버 기록과 맞추고 로비로 · 없으면 게스트로 첫 실행 (R2.13: 만화 → 튜토리얼 → 닉네임)
-  if (!(await fbInit())) { renderAccPill(); if (!AUTH.ok) { if (profile.ownerUid) renderGate('offline'); else { offMode(); gateDone(); } } return; } // 계정 기록이 있으면 오프라인으로 할지 묻고 (R2.24 build 4), 게스트 · 처음이면 바로 오프라인 모드 (만화 · 튜토리얼도)
-  if (isMember()) { try { await syncAfterLogin(true); } catch (e) { console.warn('[rejhbt] 계정 동기화 실패', e); } migrateR22(); gateDone(); return; }
-  renderAccPill(); migrateR22(); if (!AUTH.ok) { const was = !!profile.ownerUid; gateDone(); if (was) setTimeout(() => { ACC.tab = 'login'; ACC.msg = '로그인이 풀렸어요. 다시 로그인하면 계정 기록을 이어서 해요.'; openAccount(); }, 800); return; } // R2.13 build 2: 로그인 화면 없음 · 로그인이 풀린 계정은 환경설정 → 계정 창으로: 로그인 없이 게스트로 시작 (만화 → 튜토리얼 → 닉네임) · 로그인 · 가입은 환경설정 → 계정
+async function accBoot() { // 5단계 순차 부팅: 1 인터넷 연결 → 2 로그인 → 3 데이터 → 4 에셋 → 5 진입 (막히면 입장 차단 · 오프라인만 예외 선택)
+  const step = (idx, note) => { if (!AUTH.ok) renderGate('loading', { idx, note }); };
+  const fail = (idx, msg) => { if (!AUTH.ok) renderGate('error', { idx, msg }); };
+  step(0, '인터넷 연결을 확인하는 중…');
+  if (!navigator.onLine || !(await fbInit())) { renderAccPill(); if (!AUTH.ok) renderGate('offline'); return; } // 인터넷 연결 불가 → 오프라인 모드 여부 선택창
+  step(1, '로그인 상태를 확인하는 중…');
+  if (!FB.auth || !FB.auth.currentUser) { fail(1, '로그인 인증을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
+  step(2, '계정 데이터를 불러오는 중…');
+  if (isMember()) {
+    try { await syncAfterLogin(true); } catch (e) { console.warn('[rejhbt] 계정 동기화 실패', e); fail(2, (e && e.message) || '계정 데이터를 불러오지 못했어요.'); return; }
+  }
+  renderAccPill(); migrateR22();
+  step(3, '게임 에셋을 확인하는 중…');
+  try {
+    if (!CHARS || !Object.keys(CHARS).length || !$('ui3Tpl')) throw new Error('필수 게임 에셋이 비어 있어요.');
+    await new Promise(res => { const img = new Image(); img.onload = img.onerror = res; img.src = u2Img(myPhoto()); setTimeout(res, 1500); });
+  } catch (e) { fail(3, (e && e.message) || '게임 에셋을 불러오지 못했어요.'); return; }
+  step(4, '지후왕국으로 입장하는 중…');
+  if (!AUTH.ok) {
+    const was = !isMember() && !!profile.ownerUid;
+    gateDone();
+    if (was) setTimeout(() => { ACC.tab = 'login'; ACC.msg = '로그인이 풀렸어요. 다시 로그인하면 계정 기록을 이어서 해요.'; openAccount(); }, 800);
+    return;
+  }
   onlineStart(); updCheck(); // 벤치 (?bench=) 만
 }
 async function signUp(pw, pw2) {
@@ -9406,6 +9447,7 @@ async function logOut() {
   await FB.sdk.signOut(FB.auth); await FB.sdk.signInAnonymously(FB.auth); FB.uid = myUid();
   ACC.restoring = true; profile = normProfile(null); writeLocal(); ACC.restoring = false; // 이 기기 기록은 비운다 (계정 기록은 서버에 있다)
   await accForget(code); // R2.12: 이 기기의 계정 목록에서도
+  location.reload(); // 로그아웃 후 메모리 · UI 상태 초기화 → 신규 게스트 · 인트로 만화부터
 }
 // ── 계정 창 ──
 function renderAccPill() { const t = $('lobbyAcc'); if (t) t.textContent = `LV.${profile.level} · ${isMember() ? 'UID ' + accCode() : '게스트'}`; }
@@ -9477,7 +9519,7 @@ function show(name) {
   if (name !== 'battle' && document.getElementById('bsetFull') && !document.getElementById('bsetFull').hidden) bsetToggle(false); /* R3.1 전투 설정 창 */
   if (window.__u2 && !AUTH.ok && name !== 'welcome' && !(name === 'battle' && S.replay)) { renderGate('loading'); name = 'welcome'; } // accBoot 전에는 연결 중 화면만 (R2.13 build 2: 로그인 화면 없음 · R2.14: 공유 리플레이는 전투 화면)
   document.body.dataset.scr = name; // R2.12 테마: 전투 화면만 밝은 바탕
-  if (window.__u2 && (!TUT.on || TUT.u3) && (U2_TAB[name] || U2_PAGE[name])) { /* R3.3 build 4: 튜토리얼 새 로비 단계 (TUT.u3) 도 새 로비로 */ document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); if (name === 'gacha' || name === 'shop') UI2.st.u3store = name === 'gacha' ? 'recruit' : 'shop'; /* R3.1 ui3 */ u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
+  if (window.__u2 && (U2_TAB[name] || U2_PAGE[name])) { /* ui3 고정: 튜토리얼 중에도 예전 로비로 빠지지 않는다 */ document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.dataset.chrome = '0'; window.scrollTo(0, 0); if (name === 'gacha' || name === 'shop') UI2.st.u3store = name === 'gacha' ? 'recruit' : 'shop'; /* R3.1 ui3 */ u2Show(U2_TAB[name] || UI2.st.tab, U2_PAGE[name] ? name : null); bgmTick(); if (name !== 'social') dmClose(); return; } // R2.12 새 로비 (탭 · 하위 화면 페이지)
   if (window.__u2) u2Hide();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $('screen-' + name).classList.add('active'); window.scrollTo(0, 0);
   document.body.dataset.chrome = CHROME.includes(name) ? '1' : '0'; $('tabbar').querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === (name === 'tower' || name === 'comp' || name === 'sandbox' ? 'arcade' : name)));
@@ -12284,7 +12326,7 @@ function renderGacha() {
   $('gachaTickets').innerHTML = its.length ? '<span class="eyebrow">내 모집권 · 아이템</span>' + its.map(k => `<div class="g-card ticket"><span class="ic">${ITEMS[k].icon}</span><span class="tx"><b>${ITEMS[k].name} <em>×${profile.items[k]}</em></b><small>${ITEMS[k].desc}</small></span>${ITEMS[k].use ? `<button class="k-btn" data-item="${k}">사용</button>` : ''}</div>`).join('') : '';
 }
 const BOX_RAR = { boxLow: () => ['common', 'common', 'common', 'rare'], boxMid: () => ['rare', 'rare', 'rare', 'epic'], boxHigh: () => ['epic', 'epic', 'epic', ...(Math.random() < 0.25 ? ['legend'] : [])] }; // 상자 구성
-function useItem(k) { alWhy('아이템 · ' + (ITEMS[k] ? ITEMS[k].name : k)); // 뽑기 화면 · 가방: 10회 뽑기권 · 임테기 · 영웅 모집권 · 선택 전설 모집권
+function useItem(k) { if (needOnline('🌐 아이템 사용은 온라인 연결이 필요해요')) return; alWhy('아이템 · ' + (ITEMS[k] ? ITEMS[k].name : k)); // 뽑기 화면 · 가방: 10회 뽑기권 · 임테기 · 영웅 모집권 · 선택 전설 모집권
   if (k === 'bingoT' || k === 'capT') { if (profile.items[k] > 0) evOpen(k === 'bingoT' ? 'bingo' : 'cap'); return; } /* R3.3 build 3 이벤트 */
   if (k === 'resetTicket') { if (profile.items.resetTicket > 0) { renderRs(); openModal('rsModal'); } return; } // R2.35 build 6: 가방에서 지후를 골라 초기화
   if (!(profile.items[k] > 0) || !ITEMS[k].use) return;
@@ -12295,11 +12337,11 @@ function useItem(k) { alWhy('아이템 · ' + (ITEMS[k] ? ITEMS[k].name : k)); /
   if (k === 'legendPick') { PICK_K = 'legendPick'; $('pickTitle').textContent = ITEMS.legendPick.name; $('pickNote').textContent = '원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.'; $('pickGrid').innerHTML = byRarity('legend').map(id => `<button class="ccard r-legend${owned(id) ? '' : ' locked'}" data-pick="${id}"><div class="pic">${pic(id)}</div><b>${shortName(id)}</b><small>${owned(id) ? '보유 · 조각 +1' : '새로 얻기'}</small></button>`).join(''); openModal('pickModal'); return; }
   profile.items[k]--;
   if (k === 'pull10') return pull(10, true);
-  if (BOX_RAR[k]) { const res = BOX_RAR[k]().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; }); save(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); return; } // 지후 상자
-  if (k === 'testKit') { const x = Math.random() * 100, r = x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') { discordNotify({ type: 'legend', name: CHARS[id].name }); } save(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast); return; } // 임테기: 전설 1 · 영웅 14 · 희귀 · 일반 각 42.5
+  if (BOX_RAR[k]) { const res = BOX_RAR[k]().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; }); saveNow(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); return; } // 지후 상자
+  if (k === 'testKit') { const x = Math.random() * 100, r = x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') { discordNotify({ type: 'legend', name: CHARS[id].name }); } saveNow(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast); return; } // 임테기: 전설 1 · 영웅 14 · 희귀 · 일반 각 42.5
   const rar = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(Math.random() * 4)] : k === 'legendRand' ? 'legend' : 'epic'; // 고급 임테기: 등급마다 25% · 랜덤 전설 모집권 · 영웅 모집권
   const pool = byRarity(rar), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar');
-  save(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast);
+  saveNow(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast);
 }
 // ── 지후 받기 · 뽑기 · 뽑기 연출 ──
 // 지후 받기 (뽑기 · 상점 · 우편 · 보상): 처음이면 보유, 이미 있으면 조각 10개 (R2.15 · 예전 1개) · 새 영웅 · 전설은 업적에 센다
@@ -12316,7 +12358,7 @@ const nbLeft = () => Math.max(0, CFG.NB_PULLS - (profile.nbPulls | 0)); // 초�
 const p10Free = () => { const f = profile.p10f && typeof profile.p10f === 'object' ? profile.p10f : (profile.p10f = { k: 0, n: 0 }), cap = vipOn() ? 2 : 1; if (stWait()) return 0; /* 잠수함: 서버 시간을 알기 전에는 무료 없음 (오프라인은 기기 시각) */ const k = stDay();
   if (typeof f.k !== 'number') { f.k = k; if (f.day !== todayKey()) f.n = 0; delete f.day; } /* 예전 기록 { day: 날짜 글자 } */ if (k > f.k) { f.k = k; f.n = 0; } else if (k < f.k) return 0; return Math.max(0, cap - (f.n | 0)); }; // R2.37 build 3: 10회 모집 매일 1회 무료 (VIP 2회)
 function pull10Go(pu) { if (pu && !puOk(pu)) return; if (stWait()) { stSync(); return u2Toast('서버 시간을 확인하는 중이에요. 잠시 뒤 다시 눌러 주세요'); } if (p10Free() > 0) { profile.p10f.n = (profile.p10f.n | 0) + 1; return pull(10, true, false, pu); } if (profile.dia < CFG.PULL10) return false; pull(10, false, false, pu); }
-function pull(n, free, nb, pu) { if (pu && !puOk(pu)) return; alWhy('모집 ' + n + '회' + (nb ? ' · 초보자' : '') + (free ? ' · 무료' : '') + (pu ? ' · ' + ({ sp: '특별 픽업', td: '오늘의 픽업', cu: '커스텀 픽업' }[pu] || (String(pu).startsWith('nw') ? '신규 픽업' : pu)) : '')); // R3.2 build 15 pu: 픽업 배너 키 // free: 10회 뽑기권 · nb: 초보자 뽑기 (10회만 · R2.20 build 5)
+function pull(n, free, nb, pu) { if (needOnline('🌐 모집은 온라인 연결이 필요해요')) return; if (pu && !puOk(pu)) return; alWhy('모집 ' + n + '회' + (nb ? ' · 초보자' : '') + (free ? ' · 무료' : '') + (pu ? ' · ' + ({ sp: '특별 픽업', td: '오늘의 픽업', cu: '커스텀 픽업' }[pu] || (String(pu).startsWith('nw') ? '신규 픽업' : pu)) : '')); // R3.2 build 15 pu: 픽업 배너 키 // free: 10회 뽑기권 · nb: 초보자 뽑기 (10회만 · R2.20 build 5)
   if (nb && (free || n !== 10 || nbLeft() < n)) return;
   const cost = free ? 0 : nb ? CFG.NB_PULL10 : n === 10 ? CFG.PULL10 : CFG.PULL1; if (profile.dia < cost) return;
   profile.dia -= cost; profile.pulls += n; questAdd('gacha', n); profile.mile = (profile.mile | 0) + n; /* R3.1 build 2 마일리지 */
@@ -12330,7 +12372,7 @@ function pull(n, free, nb, pu) { if (pu && !puOk(pu)) return; alWhy('모집 ' + 
   mqEvent('newChar', res.filter(r => r.isNew).length);
   { const top = res.slice().sort((a, b) => RARITY_ORDER[CHARS[b.id].rarity] - RARITY_ORDER[CHARS[a.id].rarity])[0]; if (top && CHARS[top.id].rarity === 'epic') postEvent('gacha', top.id, 'epic'); } /* R3.1 build 3 상단 소식 */
   res.forEach(r => { if (CHARS[r.id].rarity === 'legend') { discordNotify({ type: 'legend', name: CHARS[r.id].name }); } });
-  save(); renderGacha(); gachaLast = res; $('reveal').classList.remove('show'); /* 「한 번 더」 (무료 10회 포함) 는 줄 서지 않고 바로 */ showReveal(res, free ? 0 : nb ? 'nb' : n); GR.pu = pu || false;
+  saveNow(); renderGacha(); gachaLast = res; $('reveal').classList.remove('show'); /* 「한 번 더」 (무료 10회 포함) 는 줄 서지 않고 바로 */ showReveal(res, free ? 0 : nb ? 'nb' : n); GR.pu = pu || false;
 }
 // 연출 (R2.4 · 서브컬처식 순차 공개): ① 봉인 카드(최고 등급 색 · 문구) → ② 카드 딜(70ms 간격) → ③ 자동으로 한 장씩 뒤집기 → 전설은 ④ 컷신(대사 한 글자씩 → 섬광 → 등장) → ⑤ 요약 · 한 번 더
 // 뒷면 색이 등급 힌트 (전설은 영웅과 같은 보라로 끝까지 숨긴다) · 타이머는 GR 한 곳에서 관리 · 확률 · 천장 · 저장은 pull() 그대로
@@ -13646,7 +13688,7 @@ async function checkGiftMail() {
 setInterval(() => { if (document.visibilityState === 'visible') checkGiftMail(); }, 5 * 60 * 1000);
 const mailLive = m => !m.claimed && !(m.exp > 0 && m.exp < Date.now());
 function renderMailDot() { const n = (profile.mail || []).filter(mailLive).length, d = $('mailDot'); if (d) { d.hidden = !n; d.textContent = n > 9 ? '9+' : n; } }
-function claimMail(m) { // 받은 지후는 뽑기 연출로
+function claimMail(m) { if (needOnline('🌐 우편 수령은 온라인 연결이 필요해요')) return; // 받은 지후는 뽑기 연출로
   if (!m || !mailLive(m)) return [];
   alWhy('우편 · ' + String(m.title || '').slice(0, 20)); m.claimed = true; const got = [];
   (m.rewards || []).forEach(r => {
@@ -13748,7 +13790,7 @@ function attBook() { const nb = profile.newbie;
   const a = profile.att, today = a.last !== todayKey(), wrap = a.days >= ATT_WEEK.length && today; // 다 채운 다음 날은 새 주
   return { kind: 'week', title: `주간 출석부 · ${a.cycle + (wrap ? 2 : 1)}주차`, list: ATT_WEEK, days: wrap ? 0 : a.days, ready: today }; }
 const attReady = () => attBook().ready;
-function attClaim() { const b = attBook(); if (!b.ready) return null; const i = b.days, r = b.list[i]; alWhy('출석 ' + (i + 1) + '일차');
+function attClaim() { if (needOnline('🌐 출석 보상은 온라인 연결이 필요해요')) return null; const b = attBook(); if (!b.ready) return null; const i = b.days, r = b.list[i]; alWhy('출석 ' + (i + 1) + '일차');
   if (b.kind === 'new') { const nb = profile.newbie; nb.days++; nb.last = todayKey(); if (nb.days >= NEWBIE.length) nb.on = false; }
   else { const a = profile.att; if (a.days >= ATT_WEEK.length) { a.days = 0; a.cycle++; } a.days++; a.last = todayKey(); }
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold = (profile.gold || 0) + r.gold; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + 1;
@@ -14300,7 +14342,7 @@ const BG_RW = { d1: ['◆', '1', { dia: 1 }], d50: ['◆', '50', { dia: 50 }], g
   fw1: ['🎆', '×1', { items: { fw: 1 } }], fw3: ['🎆', '×3', { items: { fw: 3 } }], fw5: ['🎆', '×5', { items: { fw: 5 } }], gE: ['✦', '영웅조각', { items: { glowEpic: 1 } }], gR: ['✦', '희귀조각', { items: { glowRare: 1 } }], epT: ['🎫', '영웅권', { items: { epicTicket: 1 } }],
   p1: ['1', '전설 지후', { legend: 1 }], p2: ['2', '전설조각 ×3', { items: { glowLegend: 3 } }], p3: ['3', '폭죽 ×10', { items: { fw: 10 } }] };
 function bgBoard() { const e = evt(); if (!e.bg.b && e.bg.n < BG.BOARDS && evtLive()) { e.bg.b = { o: {}, rem: Object.assign({}, BG_CELLS), end: 0, show: {} }; e.bg.n++; save(); } return e.bg.b; }
-function bgFlip(i) {
+function bgFlip(i) { if (needOnline('🌐 지후 빙고는 온라인 연결이 필요해요')) return;
   const e = evt(), b = bgBoard(); if (!b || b.end || b.o[i] || i < 0 || i >= BG.N || !evtLive()) return;
   if ((profile.items.bingoT | 0) < 1) return u2Toast('빙고 티켓이 없어요');
   let tot = 0; for (const k in b.rem) tot += b.rem[k]; let r = Math.random() * tot, k = 'd1'; for (const x in b.rem) { r -= b.rem[x]; if (r < 0) { k = x; break; } }
@@ -14350,7 +14392,7 @@ const CAP_RW = { gray: [() => ({ dia: evRnd(1, 500) }), () => ({ gold: evRnd(1, 
   blue: [() => ({ dia: evRnd(250, 750) }), () => ({ gold: evRnd(4000, 12000) }), () => ({ items: { kitPro: 1 } }), () => ({ items: { glowLegend: 1 } })],
   purple: [() => ({ items: { legendRand: 1 } }), () => ({ items: { bingoT: 10 } }), () => ({ dia: evRnd(800, 1500) })], gold: [() => ({ items: { legendPick: 1 } })] };
 const CAP_TXT = { gray: '◆ 1~500 · 🪙 1~10,000 · 🔑 1~100 · 임테기 ×1~5', blue: '◆ 250~750 · 🪙 4,000~12,000 · 고급 임테기 · 빛나는 전설조각', purple: '랜덤 전설 지후 모집권 · 빙고 티켓 ×10 · ◆ 800~1,500', gold: '선택 전설 지후 모집권' };
-function capPull() {
+function capPull() { if (needOnline('🌐 캡슐 뽑기는 온라인 연결이 필요해요')) return;
   if (EVH.cap || (profile.items.capT | 0) < 1) return (profile.items.capT | 0) < 1 ? u2Toast('캡슐 뽑기권이 없어요') : 0;
   let r = Math.random() * 100, t = CAP_T[0]; for (const x of CAP_T) { r -= x[1]; if (r < 0) { t = x; break; } }
   const L = CAP_RW[t[0]], rw = L[Math.floor(Math.random() * L.length)](); profile.items.capT--; alWhy('캡슐 뽑기 · ' + t[3]);
@@ -14972,7 +15014,7 @@ $('e7Modal').addEventListener('click', e => { const d = e.target.closest('[data-
 // ── 열쇠 상자 (R2.34) ──
 const kbMax = () => Math.floor((profile.keys | 0) / DF.BOX), kbN = () => Math.max(1, Math.min(UI2.st.kbN || 1, Math.max(1, kbMax()))); // R2.35 build 7: 열쇠 상자 몇 개 열지 (UI2.st.kbN)
 const KB_EXTRA = [[0.025, { gold: 2500 }], [0.01, { item: 'glowEpic', n: 3 }], [0.005, { item: 'glowLegend', n: 10 }], [0.002, { item: 'r6Epic', n: 1 }], [0.001, { item: 'r6Legend', n: 1 }], [0.002, { item: 'resetTicket', n: 1 }], [0.001, { dia: 1000 }], [0.001, { gold: 20000 }]]; // R3.2 build 14 열쇠 상자 추가 보상 (상자마다 · 따로 굴린다 · ◆23 은 늘)
-function keyBox(n = 1) { alWhy('열쇠 상자 ×' + n); // R2.34 열쇠 상자 (🔑 40): 일반 지후 2 · 희귀 지후 1 (R3.2 build 14: 5 · 3 →) · 10% 영웅 1 · 1% 전설 1 · R2.35 build 7: n 개 한 번에 (같은 지후는 한 장 ×N)
+function keyBox(n = 1) { if (needOnline('🌐 열쇠 상자는 온라인 연결이 필요해요')) return; alWhy('열쇠 상자 ×' + n); // R2.34 열쇠 상자 (🔑 40): 일반 지후 2 · 희귀 지후 1 (R3.2 build 14: 5 · 3 →) · 10% 영웅 1 · 1% 전설 1 · R2.35 build 7: n 개 한 번에 (같은 지후는 한 장 ×N)
   if ((profile.keys | 0) < DF.BOX) return u2Toast(`열쇠가 모자라요 (🔑 ${DF.BOX} 필요 · 보유 ${profile.keys | 0})`);
   n = Math.max(1, Math.min(Math.floor(n) || 1, Math.floor((profile.keys | 0) / DF.BOX))); profile.keys -= DF.BOX * n; const rs = [];
   for (let i = 0; i < n; i++) rs.push('common', 'common', 'rare', /* R3.2 build 14: 일반 5 · 희귀 3 → 일반 2 · 희귀 1 */ ...(Math.random() < 0.1 ? ['epic'] : []), ...(Math.random() < 0.01 ? ['legend'] : []));
@@ -18298,14 +18340,14 @@ $('btnResOk').addEventListener('click', () => { const b = resBack; resBack = nul
       TUT.wantPull = true; /* build 3: wantPull 을 먼저 켜야 버튼이 무료로 그려진다 (다이아가 모자라도) */
       if (u3On()) { // R3.3 build 4: 새 로비 모집 탭 (상시 모집 · 10회 모집 버튼만 · 예전 뽑기 화면 대신)
         TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'shop', u3store: 'recruit', u3ban: 'std', detail: null, equipId: null }); show('gacha'); u2Render(); hint('@10회 모집@을 눌러요 (전설 1개 + 일반 9개 확정!)');
-        await W('revealClosed'); TUT.u3 = false; hint(''); document.body.classList.remove('tut-deck3'); u2Render();
+        await W('revealClosed'); hint(''); document.body.classList.remove('tut-deck3'); u2Render();
       } else { renderGacha(); show('gacha'); document.body.classList.add('tut-gacha'); hint('무료 10회 뽑기를 눌러요 (전설 1개 + 일반 9개 확정!)'); setTarget(['#btnPull10']);
       await W('revealClosed'); setTarget(null); hint(''); document.body.classList.remove('tut-gacha'); }
       await talk([f('오 전설이다'), f('표정이 왜그래 컷신이 SSS급 뽑기에서 C급 뜬 기분이냐'), f('이번엔 방금 뽑은 지후를 장착해보자.')]);
       if (u3On()) { // R3.2 build 11: 새 로비 지후 탭에서 장착 (예전 덱 화면 대신)
         TUT.deckWant = TUT.legend; TUT.u3 = true; document.body.classList.add('tut-deck3'); Object.assign(UI2.st, { tab: 'units', equipId: null, detail: null, u3sel: TUT.legend, u3rar: 'all' }); show('deck'); u2Set({ u3sel: TUT.legend }); u2Render();
         let ht = ''; while (!profile.deck.includes(TUT.legend)) { const t = UI2.st.equipId ? '② 바꿀 자리를 눌러요' : '① @덱에 넣기@를 눌러요'; if (t !== ht) { ht = t; hint(t); } if (!UI2.st.equipId && UI2.st.u3sel !== TUT.legend) u2Set({ u3sel: TUT.legend }); await sleep(250); }
-        TUT.deckWant = null; TUT.u3 = false; hint(''); document.body.classList.remove('tut-deck3'); u2Render();
+        TUT.deckWant = null; hint(''); document.body.classList.remove('tut-deck3'); u2Render();
       } else { deckSel = TUT.legend; pendingEquip = null; TUT.deckWant = TUT.legend; document.body.classList.add('tut-deck'); show('deck'); renderDeck();
       await W('deckDone'); setTarget(null); hint(''); document.body.classList.remove('tut-deck', 'tut-pend'); }
       await talk([f('이걸로 기초적인 강의는 끝났다'), f('뽑은 지후가 마음에 안든다고 접고 자러가지 말아라'), f('자 이제 실전이다 당장가자')]);
@@ -18465,9 +18507,9 @@ function u2Attach() { // 페이지 칸에 기존 화면을 옮긴다 · 페이�
 function u2Set(up) { Object.assign(UI2.st, up); u2Render(); }
 // ═════════ R3.1 새 로비 ui3 (가로 · 크림슨 레저) — 기본으로 켜짐 · ?ui3=0 이면 예전 ui2 (localStorage rejhbt-ui3 '0') · 튜토리얼 중에는 예전 로비 ═════════
 // 템플릿 <template id="ui3Tpl"> 은 ui2 와 같은 엔진 (u2Walk · u2Morph) · 값은 u2Vals() + u3Extra (v.u3.*) · 아직 옮기지 않은 탭 · 창 (U3_TABS · U3_OV) 은 예전 ui2 로 그린다
-const U3 = { shop: false, on: (() => { try { const q = new URLSearchParams(location.search).get('ui3'); if (q === '1') localStorage.removeItem('rejhbt-ui3'); if (q === '0') localStorage.setItem('rejhbt-ui3', '0'); return localStorage.getItem('rejhbt-ui3') !== '0'; } catch (e) { return true; } })() };
+const U3 = { shop: false, on: true }; /* ui3 고정 */
 const U3_TABS = new Set(['battle', 'units', 'shop', 'arcade', 'rank']), U3_OV = ['confirm', 'uinfo', 'rec', 'detail', 'profile', 'arcShop', 'hist', 'comm', 'qs', 'sp', 'att', 'mode'];
-const u3Use = () => U3.on && (!TUT.on || TUT.u3) && U3_TABS.has(UI2.st.tab); /* R3.2 build 11: 튜토리얼 장착 단계 (TUT.u3) 는 새 로비 지후 탭 */
+const u3Use = () => true; /* ui3 고정: 예전 ui2 로비로 돌아가지 않는다 */
 function u3Mob() { try { return matchMedia('(pointer:coarse)').matches && Math.min(innerWidth, innerHeight) < 560; } catch (e) { return false; } } /* R3.1 build 3 폰: 무대를 높이가 아니라 폭에 맞춰 크게 (논리 높이 540 까지) */
 function u3Fit() { const b = $('ui2'); if (!b) return; const w = innerWidth, h = innerHeight, mob = u3Mob(), s = (mob ? Math.min(w / 1280, h / 540) : Math.min(w / 1280, h / 720)) || 1; b.classList.toggle('u3mob', mob); b.style.setProperty('--u3s', String(s)); b.style.setProperty('--u3w', (w / s).toFixed(1) + 'px'); b.style.setProperty('--u3h', (h / s).toFixed(1) + 'px'); }
 addEventListener('resize', u3Fit); if (U3.on) document.body.classList.add('u3-on'); /* 공통 테마 */
@@ -19422,10 +19464,16 @@ function gateDone() { // 로그인 끝 → 로비
   if (!profile.nick && isMember()) profile.nick = '지후' + (accCode() || '').slice(-4); // 게스트는 튜토리얼 뒤 닉네임 단계 (nickStep)
   closeModal('setModal'); renderLobby(); show('lobby'); setTimeout(updCheck, 400);
 }
-function renderGate(state) { // 시작 화면 (#screen-welcome): 연결 중 · 오프라인만 (R2.13 build 2: 로그인은 환경설정 → 계정에서만)
-  const box = $('screen-welcome');
-  if (state === 'loading') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">서버에 연결하는 중…</div></div></div>`; return; }
-  if (state === 'offline') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">온라인에 연결할 수 없어요<br><small>이 기기에 저장된 기록으로 <b>오프라인 플레이</b>를 할 수 있어요. 인터넷이 다시 연결되면 새로고침해서 서버 기록과 맞춰요.</small></div><button class="gt-go" id="gtOff">📴 오프라인으로 플레이</button><button class="u2-ns-acc" id="gtRetry" type="button">🔄 다시 연결</button></div></div>`; $('gtRetry').onclick = () => location.reload(); $('gtOff').onclick = () => { offMode(); gateDone(); }; return; } // R2.24 build 4: 오프라인 모드
+function renderGate(state, opt = {}) { // 시작 화면 (#screen-welcome): 5단계 순차 로딩 · 오류 차단 · 오프라인 선택
+  const box = $('screen-welcome'), STEPS = ['인터넷 연결 확인', '로그인 확인', '데이터 불러오기 확인', '에셋 불러오기 확인', '진입'];
+  const stepsHtml = (cur, errIdx = -1) => `<div style="display:flex;flex-direction:column;gap:6px;text-align:left;margin:10px 0 4px;font-size:13px">${STEPS.map((lb, i) => {
+    const st = i === errIdx ? '❌' : i < cur ? '✅' : i === cur ? '⏳' : '⬜';
+    const col = i === errIdx ? '#ff6b7a' : i < cur ? '#7ee787' : i === cur ? '#f3eee3' : '#8b92a8';
+    return `<div style="color:${col};font-weight:${i === cur || i === errIdx ? 700 : 400}">${st} ${i + 1}. ${lb}</div>`;
+  }).join('')}</div>`;
+  if (state === 'loading') { const idx = opt.idx | 0; box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">${esc(opt.note || '게임을 준비하는 중…')}</div>${stepsHtml(idx)}</div></div>`; return; }
+  if (state === 'error') { const idx = opt.idx | 0; box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait" style="color:#ff8a9a">입장을 중단했어요<br><small>${esc(opt.msg || '단계 확인 중 문제가 생겼어요.')}</small></div>${stepsHtml(idx, idx)}<button class="gt-go" id="gtRetry" type="button">🔄 다시 시도</button></div></div>`; $('gtRetry').onclick = () => location.reload(); return; }
+  if (state === 'offline') { box.innerHTML = `<div class="gt"><div class="gt-logo"><small>RE:JHBT</small><b>RE : 지후배틀</b><span>${gameVersion()}</span></div><div class="gt-card"><div class="gt-wait">인터넷에 연결할 수 없어요<br><small>오프라인 모드로 입장할까요? (모집 · 상자 · 이벤트 보상은 온라인에서만 가능해요)</small></div>${stepsHtml(0, 0)}<button class="gt-go" id="gtOff">📴 오프라인 모드로 입장</button><button class="u2-ns-acc" id="gtRetry" type="button">🔄 다시 연결</button></div></div>`; $('gtRetry').onclick = () => location.reload(); $('gtOff').onclick = () => { offMode(); gateDone(); }; return; }
 }
 const NS_A = ['용감한', '졸린', '배고픈', '빛나는', '수상한', '느긋한', '전설의', '불타는', '차가운', '번쩍이는', '귀여운', '엉뚱한', '무적의', '은밀한', '행복한', '잠꾸러기', '반짝이는', '성실한', '위풍당당'], NS_B = ['지후', '화염', '얼음', '검객', '방패', '암살자', '기사', '용사', '지휘관', '왕자', '요리사', '마법사', '궁수', '선인장', '슬라임', '별'];
 function nickStep() { // R2.13 첫 실행 마지막 단계 (build 3 새 화면): 닉네임만 정하고 시작 · 프로필 미리보기 · 🎲 무작위 이름 · 바로 검사 (#screen-welcome 을 다시 쓴다)
