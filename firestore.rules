@@ -414,5 +414,51 @@ service cloud.firestore {
         && request.resource.data.body is string && request.resource.data.body.size() <= 4000
         && request.resource.data.at == request.time;
     }
+    // R3.4 build 7 일반전 온라인 매칭: 대기열 mmq/<uid> · 경기 omatch/<id> (+ msgs)
+    function mmDoc(d) {
+      return d.keys().hasOnly(['n', 'deck', 'lv', 'fr', 'ph', 'st', 'mid', 'by', 'at'])
+        && d.n is string && d.n.size() <= 12 && validDeck(d.deck) && d.lv is int
+        && d.st in ['wait', 'matched'] && d.at == request.time;
+    }
+    match /mmq/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && !banned() && request.auth.uid == uid && mmDoc(request.resource.data) && request.resource.data.st == 'wait';
+      allow update: if request.auth != null && !banned() && (
+        (request.auth.uid == uid && mmDoc(request.resource.data))
+        || (resource.data.st == 'wait' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st', 'mid', 'by', 'at'])
+          && request.resource.data.st == 'matched' && request.resource.data.by == request.auth.uid && request.resource.data.at == request.time));
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+    function omMember(id) {
+      let m = get(/databases/$(database)/documents/omatch/$(id));
+      return request.auth.uid == m.data.host || request.auth.uid == m.data.guest;
+    }
+    match /omatch/{id} {
+      allow get: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest);
+      allow create: if request.auth != null && !banned()
+        && request.resource.data.keys().hasOnly(['host', 'guest', 'hostName', 'guestName', 'hostDeck', 'guestDeck', 'status', 'seed', 'cs', 'at'])
+        && request.resource.data.host == request.auth.uid
+        && request.resource.data.guest is string && request.resource.data.guest != request.auth.uid
+        && getAfter(/databases/$(database)/documents/mmq/$(request.resource.data.guest)).data.mid == id
+        && request.resource.data.hostName is string && request.resource.data.hostName.size() <= 12
+        && request.resource.data.guestName is string && request.resource.data.guestName.size() <= 12
+        && validDeck(request.resource.data.hostDeck) && validDeck(request.resource.data.guestDeck)
+        && request.resource.data.status == 'playing' && request.resource.data.seed is int
+        && (!('cs' in request.resource.data) || request.resource.data.cs is int)
+        && request.resource.data.at == request.time;
+      allow update: if request.auth != null && (request.auth.uid == resource.data.host || request.auth.uid == resource.data.guest)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'guestDeck', 'at'])
+        && request.resource.data.status in ['playing', 'done']
+        && validDeck(request.resource.data.guestDeck)
+        && request.resource.data.at == request.time;
+    }
+    match /omatch/{id}/msgs/{msgId} {
+      allow read: if request.auth != null && omMember(id);
+      allow create: if request.auth != null && omMember(id)
+        && request.resource.data.keys().hasOnly(['from', 'body', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.body is string && request.resource.data.body.size() <= 4000
+        && request.resource.data.at == request.time;
+    }
   }
 }
