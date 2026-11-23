@@ -17,7 +17,7 @@
 10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.4** (build 1).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.4** (build 6).
 - **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
@@ -128,6 +128,7 @@
 - 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
 
 ## 최근 변경 (R3.4 · 2026-11-23)
+- **build 6 유물** (`// ═════════ R3.4 build 6 유물` · 일일 퀘스트 앞): `ART` [id, 아이콘, 이름, 기본값, 레벨마다, 설명] 34종 · `profile.art[id]` = 모은 개수 (= 레벨 · `ART_MAX` 10 · 최대면 안 나온다) · 곡괭이 `items.pickaxe` (`ART_PK` 일반전 승리 30% · 열쇠 상자 4%) · 화면 `#artPg` (`artOpen` · body 에 붙는다 · ui3 nav `relic` → ui4 nav 도) · 발굴 `artPull`. 전투: `startRound` → `artRoundSet` (`S.art` = { id: 레벨 } · `S.artSide` · 친선전 · 튜토리얼 · 샌드박스 · 빠른 시뮬 null · 리플레이는 스냅숏 그대로) · `av(id)` 이번 판 값 · `artPV(id)` 계정 값 (보상 · 모집). 훅: effAtk `artAtkM` · aspdRate `artAspd` · moveToward `artSpd` · 치명타 `artCrit` · dealDamage `artTaken` · `artKill` · heal `artHealM` · evSp `artSpM` · addStatus `artStatus` (지금 움직이는 지후 `artCur` 가 컨트롤러면) · makeUnit `artUnit` · beginCombat `artCombat` · stepCombat `artStep` (0.25초 · 고기 · 레벨 합 · 오라 클래스 `art-on` → 캔버스 `_cvArt`) · tokRound `artRoundTok` · roundResult `artLoss` · applyAct `artPlaced` · 모집 `artGacha` · 지후 정보 `artInfoHtml`. 소수 토큰은 `S.artTF` 에 모았다가 1개씩.
 - **새 로비 ui4** (화이트 · 그레이 · 블랙 미니멀 · 시안 https://claude.ai/artifact/MoANyspuDcKw89oyi4VN7r · `// u4-js-begin` ~ `// u4-js-end` · CSS `/* u4-css-begin */` ~ `/* u4-css-end */` · 템플릿 `<template id="ui4Tpl">` `<!-- ui4-begin -->`): 기본 켜짐 · `?ui4=0` 이면 ui3 (localStorage `rejhbt-ui4`) · `?ui4=dark` / `light` (`rejhbt-ui4-theme` · `u4Theme`). **값은 ui3 것을 그대로** — `u2Render` 가 `u3Vals()` 를 부르고 `u4Extra(v)` 가 `v.u4.*` 와 색 대신 쓰는 클래스 (`cls` · `u4UnitsFix` · `u4ShopFix` …) 를 덧붙인다 (`u4Extra` 가 오류를 내면 그 차례는 ui3 템플릿). 뿌리 클래스 `u3 u4` — ui3 의 창 · 메뉴 · 시트 · 튜토리얼 훅 (`.tut-hot` · `TUT.u3`) 은 템플릿 뒤쪽을 그대로 복사해 쓴다 (아직 크림슨 레저 테마 · 글자색은 `.u4 .u3-ovl` 등에서 따로).
 - 화면: 메인 (왼쪽 바로가기 · 열쇠 상자 · 가운데 덱 무대 · 오른쪽 이벤트 · 오늘의 픽업 · 아래 메뉴 6칸 + 모드 · 전투 시작) · 지후 (덱 · 목록 · 상세 · 컬렉션 · 이모티콘) · 모집 (배너 · 영웅 무대 · 모집 버튼) · 상점 (카드 · 영수증) · 아케이드 (모드 목록 + 상세) · 랭킹 (단상 · 목록). 친구 · 탑 · 경쟁전 · 샌드박스 · 꾸미기는 ui3 틀 (`u3.pg2`) 에 ui4 색 (build 3) · 햄버거 · 우편 · 환경설정 등 창은 아직 ui3 마크업.
 - 새 지후 · 색은 CSS 변수 `--u4-*` (`#ui2.u4m` · 다크 `body.u4-dark`) · 글꼴 Do Hyeon (제목) · Chakra Petch (숫자) · Noto Sans KR (글) · 모양: 모서리 괄호 · 깎인 모서리 큰 버튼 · 등급 = 테두리 굵기 (일반 1 · 희귀 2 · 영웅 3 검정 · 전설 3 주황).
