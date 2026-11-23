@@ -9541,8 +9541,7 @@ function monoDraw() { // 아군과 잇는 빛줄기 · 큰 원 · 레이저: 전
   if (VZ) { for (const z of S.vAsh || []) if (S.time < z.t1) { c.fillStyle = 'rgba(96,94,100,.24)'; c.fillRect(z.x0, z.y0, z.w, z.h); c.strokeStyle = 'rgba(150,146,150,.45)'; c.lineWidth = 3; c.strokeRect(z.x0, z.y0, z.w, z.h); }
     for (const z of S.vLava || []) { c.fillStyle = 'rgba(255,80,20,.26)'; c.beginPath(); c.arc(z.x, z.y, z.r, 0, Math.PI * 2); c.fill(); c.strokeStyle = 'rgba(255,170,60,.85)'; c.lineWidth = 4; c.stroke(); } } /* R3.3 build 7 [화산재] · [용암 지대] */
   for (const u of RCU) { const r = RC.R * CFG.CELL; c.fillStyle = 'rgba(40,44,64,.2)'; c.beginPath(); c.arc(u.x, u.y, r, 0, Math.PI * 2); c.fill(); c.strokeStyle = u.rcE <= 1 ? 'rgba(120,120,140,.5)' : 'rgba(150,160,230,.6)'; c.lineWidth = 3; c.stroke(); } /* [먹구름 지대] */
-  for (const u of TYU) for (const q of u.tys) { const rot = now / 110, al = q.t > (q.life || TY.LIFE) - 0.6 ? ((q.life || TY.LIFE) - q.t) / 0.6 : 1; c.globalAlpha = al; c.fillStyle = 'rgba(150,205,255,.16)'; c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI * 2); c.fill();
-    for (let k = 0; k < 3; k++) { c.strokeStyle = k ? 'rgba(200,235,255,.7)' : 'rgba(120,190,255,.95)'; c.lineWidth = 6 - k * 1.5; c.beginPath(); c.arc(q.x, q.y, q.r * (1 - k * 0.27), rot + k * 2.1, rot + k * 2.1 + 3.9); c.stroke(); } c.globalAlpha = 1; } /* [태풍] */
+  for (const u of TYU) for (const q of u.tys) tyDraw(c, q, now); /* [태풍] R3.4 build 10: 두 겹 나선 · 눈 · 파편 (tyDraw) */
   monoCvOn = true;
 }
 function monoFire(u) { // 무작위 적 5기 · 현재 체력의 (레벨 × 10)% (R2.21.1: 현재 × 10% → 최대 × 12% · R2.22: 다시 현재 체력 × 10%)
@@ -10076,10 +10075,26 @@ function tyTick(u, dt) {
   for (let i = L.length - 1; i >= 0; i--) { const q = L[i]; q.t += dt; if (q.t >= q.life || S.phase !== 'combat') { L.splice(i, 1); continue; }
     let e = null, ed = Infinity; for (const f of F) { const d = Math.hypot(f.x - q.x, f.y - q.y); if (d < ed) { ed = d; e = f; } }
     if (e) { let d = Math.atan2(e.y - q.y, e.x - q.x) - q.a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; q.a += clamp(d, -TY.TURN * dt, TY.TURN * dt); }
-    const inside = F.some(f => Math.hypot(f.x - q.x, f.y - q.y) <= q.r + unitRadius(f)); if (inside) q.ramp += q.rs * dt;
+    const inside = F.some(f => Math.hypot(f.x - q.x, f.y - q.y) <= q.r + unitRadius(f)); q.hit = inside; if (inside) q.ramp += q.rs * dt;
     const sp = TY.SPD * CFG.CELL * (inside ? 1 - TY.SLOW : 1) * dt; q.x = clamp(q.x + Math.cos(q.a) * sp, 0, W); q.y = clamp(q.y + Math.sin(q.a) * sp, 0, H);
     q.acc += dt; while (q.acc >= TY.IV) { q.acc -= TY.IV; for (const f of F) if (f.alive && Math.hypot(f.x - q.x, f.y - q.y) <= q.r + unitRadius(f)) dealDamage(u, f, q.dmg + q.ramp, { skill: true, lite: true, noCrit: true }); } }
 }
+// R3.4 build 10 [태풍] 그리기 (monoDraw 캔버스 · 세계 좌표): 반지름마다 한 번 굽는 나선 그림 두 장 (바깥 5갈래 · 안쪽 3갈래 + 눈) 을 서로 다른 속도로 반시계 회전 · 파편 6개 · 적을 갈고 있으면 붉은 테
+const TY_SPR = new Map();
+function tySpr(r, kind) { const key = kind + Math.round(r); let cv = TY_SPR.get(key); if (cv) return cv; const R = r * 1.35, Q = 1.5, W = Math.ceil(R * 2 * Q); cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d'); g.scale(Q, Q); g.translate(R, R);
+  if (kind === 'a') { const gr = g.createRadialGradient(0, 0, 0, 0, 0, R); gr.addColorStop(0, 'rgba(18,52,82,.42)'); gr.addColorStop(0.55, 'rgba(80,160,225,.2)'); gr.addColorStop(1, 'rgba(120,200,255,0)'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fill(); }
+  const arms = kind === 'a' ? 5 : 3, R0 = kind === 'a' ? R : R * 0.6, tw = kind === 'a' ? 3.4 : 2.6, N = 36;
+  for (let k = 0; k < arms; k++) for (let j = 0; j < N; j++) { const t0 = j / N, t1 = (j + 1) / N, p = (t, rr) => { const a = k * Math.PI * 2 / arms + t * tw; return [Math.cos(a) * rr, Math.sin(a) * rr]; }, [x0, y0] = p(t0, R0 * (0.12 + 0.88 * t0)), [x1, y1] = p(t1, R0 * (0.12 + 0.88 * t1));
+    g.strokeStyle = kind === 'a' ? `rgba(215,240,255,${(0.7 * (1 - t0)).toFixed(3)})` : `rgba(255,255,255,${(0.85 * (1 - t0 * 0.8)).toFixed(3)})`; g.lineWidth = (kind === 'a' ? R * 0.15 : R * 0.1) * (1 - t0 * 0.8) + 1.5; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+  if (kind === 'b') { g.fillStyle = 'rgba(8,22,36,.85)'; g.beginPath(); g.arc(0, 0, r * 0.17, 0, Math.PI * 2); g.fill(); g.strokeStyle = 'rgba(235,250,255,.95)'; g.lineWidth = 2.5; g.stroke(); }
+  if (TY_SPR.size > 40) TY_SPR.delete(TY_SPR.keys().next().value); TY_SPR.set(key, cv); return cv; }
+function tyDraw(c, q, now) { const life = q.life || TY.LIFE, al = q.t > life - 0.6 ? Math.max(0, (life - q.t) / 0.6) : 1, gp = Math.min(1, q.t / 0.3), s = 0.45 + 0.55 * (1 - Math.pow(1 - gp, 3)), R = q.r * 1.35 * s;
+  c.save(); c.translate(q.x, q.y); c.globalAlpha = al * Math.min(1, gp * 1.6);
+  c.save(); c.rotate(-now / 320); c.drawImage(tySpr(q.r, 'a'), -R, -R, R * 2, R * 2); c.restore();
+  c.save(); c.rotate(-now / 140); c.drawImage(tySpr(q.r, 'b'), -R, -R, R * 2, R * 2); c.restore();
+  c.lineCap = 'round'; for (let k = 0; k < 6; k++) { const a = -(now / (150 + k * 23)) + k * 1.7, rr = q.r * s * (0.45 + 0.09 * k); c.strokeStyle = k % 2 ? 'rgba(255,255,255,.75)' : 'rgba(150,210,255,.8)'; c.lineWidth = 2 + (k % 3); c.beginPath(); c.arc(0, 0, rr, a, a + 0.45); c.stroke(); }
+  if (q.hit) { c.globalAlpha = al * (0.45 + 0.25 * Math.sin(now / 70)); c.strokeStyle = 'rgba(255,80,60,1)'; c.lineWidth = 4; c.beginPath(); c.arc(0, 0, q.r * s * 1.02, 0, Math.PI * 2); c.stroke(); }
+  c.restore(); }
 function tyStorm(u) { u.tyS = S.time + 3; u.sk = 0; A.buff(u, 'tyStorm', { critB: 0.04 }, 3); if (!S.fast) { dmgNum(u, '🌀 폭풍', { crit: true, stamp: true }); fxRing(u.x, u.y, 3 * CFG.CELL, 'rgba(140,210,255,.85)', 600, 8); } drawUnit(u); }
 // 화산 지후: 공격하지 않는다 (noSpGive · 적에게 맞을 때마다 SP +1) · [화산재] SP 16: 자기 자리부터 적진 끝까지 · 폭 = 몸 지름 2배 · 6초 (S.vAsh) · 안의 적 일반 공격 25% 빗나감 (dealDamage) · SP 충전 −50% (evSp)
 // [분화] 한 번에 600 이상 스킬 피해 (onDamaged opts.skill · 1초에 한 번) → 가장 먼 적 3기 [마그마] ([화상] 5초 · 초당 70%) + 그 자리 반경 2칸 [용암 지대] 5초 (S.vLava · 초당 60% · 벗어나거나 끝나면 [화상] 3초 · 초당 50%)
