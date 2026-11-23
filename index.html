@@ -7172,52 +7172,217 @@ body.u4-on #screen-battle.cw:not(.reels) .cw-u { border:1px solid rgba(var(--qk)
 <div class="modal pane" id="tlgModal"><div class="box"><h3>티어리스트 생성기<button class="btn" data-close="tlgModal">✕</button></h3><div id="tlgBody"></div></div><style>#tlgBody .tlg-set { display:flex; flex-wrap:wrap; gap:8px; } #tlgBody .tlg-set label { display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; } #tlgBody .tlg-set .accin { width:120px; margin:0; } #tlgBody .tlg-run { display:flex; gap:8px; align-items:center; margin:10px 0 4px; } #tlgBody .tlg-pg { flex:1; height:6px; background:rgba(128,128,128,.25); overflow:hidden; } #tlgBody .tlg-pg i { display:block; height:100%; background:#c8102e; transform:scaleX(0); transform-origin:left; } #tlgBody .tlg-meta { margin:10px 0 6px; font-size:12px; opacity:.8; } #tlgBody .tlg-wr { opacity:.85; } #tlgBody .tlg-wr.un { color:#e9a03b; } #tlgBody .tlg-wr .up { color:#3fbf6f; font-style:normal; } #tlgBody .tlg-wr .dn { color:#e04a4a; font-style:normal; } #tlgBody .tlg-wr .nw { color:#e9c46a; font-style:normal; font-size:9px; }</style></div>
 <div class="modal pane" id="cuModal"><div class="box"><h3><span>커스텀 픽업</span><button class="btn" data-close="cuModal">✕</button></h3><p class="note" id="cuNote" style="margin-top:0"></p><div class="pickgrid" id="cuGrid"></div><button class="k-btn wide" id="cuOk" style="margin-top:10px">확인</button></div><style>#cuGrid .ccard.cu-on { outline:3px solid #c8102e; outline-offset:-3px; } #cuGrid .ccard:not(.cu-on) .pic { opacity:.45; } #cuOk:disabled { opacity:.4; }</style></div>
 <div class="modal pane" id="pickModal"><div class="box"><h3><span id="pickTitle">선택 전설 지후 모집권</span><button class="btn" data-close="pickModal">✕</button></h3><p class="note" id="pickNote" style="margin-top:0">원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.</p><div class="pickgrid" id="pickGrid"></div></div></div>
-<!-- R3.2 build 11 스튜디오 로고 (흑백 시안 B · Invert · https://claude.ai/artifact/XMGX1qHKVWjFLMNX75U8bJ): 켤 때마다 약 2.8초 · 누르면 건너뜀 · 부팅 (#boot) 위에 뜨고 끝나면 지운다 · 흰 화면 → 검은 원이 덮고 → 이름이 올라오고 → 흰 띠가 지나가며 글자를 반전 · 움직임은 transform · opacity 만 -->
+<!-- R3.4 build 2 실행 인트로 (시안 https://claude.ai/artifact/HeQnT45JKhkNxDKAh4PriG): 스튜디오 로고 #studio (3.2초 · 원이 점으로 접히면 지운다) → 부팅 #boot 에 .go (시스템 → 타이틀 → 로스터 → 로딩) → runBoot 이 끝나면 .ready (터치하여 시작) → 누르면 셔터 .b4o → 지운다 · 움직임은 transform · opacity 만 · 색은 ui4 (다크는 html.b4-dk) -->
 <div id="studio" aria-hidden="true"><div class="st-stage">
 <i class="st-dot"></i><i class="st-disc"></i>
 <div class="st-col"><b class="st-team">TEAM</b><div class="st-name"><span><b class="st-w1">Sebon</b></span><span><b class="st-w2">Studio</b></span></div><i class="st-rule"></i><b class="st-by">BY SOLYENING</b></div>
 <div class="st-band"><i></i></div>
 </div></div>
 <style>
-#studio { position:fixed; inset:0; z-index:9999; background:#f4f4f4; overflow:hidden; cursor:pointer; animation:stOut 2.8s cubic-bezier(.6,0,.4,1) both; }
-#studio.skip { animation:stSkip .25s linear both; }
+#studio { position:fixed; inset:0; z-index:9999; background:#ecece9; overflow:hidden; cursor:pointer; }
+html.b4-dk #studio { background:#0b0b0c; }
 #studio .st-stage { position:absolute; left:50%; top:50%; width:1280px; height:720px; transform:translate(-50%, -50%) scale(var(--ss, 1)); font-family:'Inter Tight', 'Oswald', sans-serif; color:#fff; }
-#studio .st-dot { position:absolute; left:634px; top:354px; width:12px; height:12px; border-radius:50%; background:#000; animation:stDot 2.8s cubic-bezier(.3,1.6,.5,1) both; }
-#studio .st-disc { position:absolute; left:-860px; top:-1140px; width:3000px; height:3000px; border-radius:50%; background:#000; animation:stDisc 2.8s cubic-bezier(.8,0,.15,1) both; } /* 넓은 화면에서도 무대 밖까지 덮게 크게 */
-#studio .st-col { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#studio .st-dot { position:absolute; left:634px; top:354px; width:12px; height:12px; border-radius:50%; background:#000; animation:b4stDot .4s cubic-bezier(.3,1.5,.5,1) .1s both; }
+#studio .st-disc { position:absolute; left:-860px; top:-1140px; width:3000px; height:3000px; border-radius:50%; background:#000; animation:b4stDisc 2.85s linear .35s both; } /* 넓은 화면에서도 무대 밖까지 덮게 크게 */
+#studio .st-col { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; animation:b4stOut .3s cubic-bezier(.7,0,.84,0) 2.7s both; }
 #studio b { display:block; }
 #studio .st-team, #studio .st-by { font:400 13px/1 'JetBrains Mono', monospace; color:#a8a8a8; }
-#studio .st-team { letter-spacing:.8em; padding-left:.8em; margin-bottom:20px; animation:stTop 2.8s cubic-bezier(.2,.9,.2,1) both; }
-#studio .st-name { display:flex; align-items:baseline; font-size:112px; line-height:1; letter-spacing:.02em; }
+#studio .st-team { letter-spacing:.8em; padding-left:.8em; margin-bottom:20px; animation:b4rise .5s cubic-bezier(.16,1,.3,1) .95s both; }
+#studio .st-name { display:flex; align-items:baseline; font-size:112px; line-height:1; letter-spacing:.01em; }
 #studio .st-name > span { display:block; overflow:hidden; padding-bottom:8px; }
-#studio .st-w1 { font-weight:700; animation:stW1 2.8s cubic-bezier(.2,.9,.2,1) both; }
-#studio .st-w2 { font-weight:200; animation:stW2 2.8s cubic-bezier(.2,.9,.2,1) both; }
-#studio .st-rule { display:block; width:560px; height:1px; margin-top:26px; background:#fff; animation:stRule 2.8s cubic-bezier(.7,0,.2,1) both; }
-#studio .st-by { margin-top:18px; letter-spacing:.55em; padding-left:.55em; animation:stBot 2.8s cubic-bezier(.2,.9,.2,1) both; }
-#studio .st-band { position:absolute; left:0; top:270px; width:100%; height:170px; overflow:hidden; mix-blend-mode:difference; }
-#studio .st-band i { display:block; width:100%; height:100%; background:#fff; animation:stBar 2.8s cubic-bezier(.7,0,.25,1) both; }
-@keyframes stDot { 0%, 4% { transform:scale(0); } 10%, 100% { transform:scale(1); } }
-@keyframes stDisc { 0%, 12% { transform:scale(.004); } 30%, 100% { transform:scale(1); } }
-@keyframes stW1 { 0%, 30% { transform:translateY(110%); } 44%, 100% { transform:translateY(0); } }
-@keyframes stW2 { 0%, 34% { transform:translateY(110%); } 48%, 100% { transform:translateY(0); } }
-@keyframes stBar { 0%, 48% { transform:translateX(-110%); } 70%, 100% { transform:translateX(110%); } }
-@keyframes stTop { 0%, 60% { transform:translateY(-10px); opacity:0; } 72%, 100% { transform:translateY(0); opacity:1; } }
-@keyframes stBot { 0%, 62% { transform:translateY(10px); opacity:0; } 74%, 100% { transform:translateY(0); opacity:1; } }
-@keyframes stRule { 0%, 58% { transform:scaleX(0); } 74%, 100% { transform:scaleX(1); } }
-@keyframes stOut { 0%, 86% { opacity:1; visibility:visible; } 99% { opacity:0; visibility:visible; } 100% { opacity:0; visibility:hidden; } }
-@keyframes stSkip { 0% { opacity:1; visibility:visible; } 99% { opacity:0; visibility:visible; } 100% { opacity:0; visibility:hidden; } }
-@media (prefers-reduced-motion: reduce) { #studio .st-stage * { animation:none !important; } #studio .st-band i { transform:translateX(110%); } }
+#studio .st-w1 { font-weight:700; animation:b4up .7s cubic-bezier(.16,1,.3,1) .9s both; }
+#studio .st-w2 { font-weight:200; animation:b4up .7s cubic-bezier(.16,1,.3,1) 1s both; }
+#studio .st-rule { display:block; width:560px; height:1px; margin-top:26px; background:#fff; animation:b4wipeX .6s cubic-bezier(.7,0,.2,1) 1.25s both; }
+#studio .st-by { margin-top:18px; letter-spacing:.55em; padding-left:.55em; animation:b4rise .5s cubic-bezier(.16,1,.3,1) 1.35s both; }
+#studio .st-band { position:absolute; left:0; top:285px; width:100%; height:150px; overflow:hidden; mix-blend-mode:difference; }
+#studio .st-band i { display:block; width:100%; height:100%; background:#fff; transform:translateX(101%); animation:b4wipe .95s cubic-bezier(.7,0,.25,1) 1.75s both; }
+@keyframes b4stDot { from { transform:scale(0); } 60% { transform:scale(1.3); } to { transform:scale(1); } }
+@keyframes b4stDisc { 0% { transform:scale(.004); animation-timing-function:cubic-bezier(.8,0,.15,1); } 21% { transform:scale(1); } 84% { transform:scale(1); animation-timing-function:cubic-bezier(.75,0,.9,.35); } 100% { transform:scale(.004); } }
+@keyframes b4stOut { to { opacity:0; transform:scale(.965); } }
+@keyframes b4rise { from { opacity:0; transform:translateY(14px); } }
+@keyframes b4sink { to { opacity:0; transform:translateY(12px); } }
+@keyframes b4fade { from { opacity:0; } }
+@keyframes b4up { from { transform:translateY(110%); } }
+@keyframes b4wipe { 0% { transform:translateX(-101%); } 45%, 55% { transform:translateX(0); } 100% { transform:translateX(101%); } }
+@keyframes b4wipeX { from { transform:scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { #studio .st-stage * { animation:none !important; } #studio .st-disc { transform:scale(.004); } }
 </style>
 <script>
-(function () { // R3.2 build 11 스튜디오 로고: 화면에 맞춰 키우고 · 끝나면 (또는 누르면) 지운다
+(function () { // R3.4 build 2 스튜디오 로고: 화면에 맞춰 키우고 · 끝나면 (또는 누르면) 지우고 부팅 화면을 시작한다
+  try { if (localStorage.getItem('rejhbt-ui4-theme') === 'dark') document.documentElement.classList.add('b4-dk'); } catch (e) {}
   var el = document.getElementById('studio'); if (!el) return;
   var fit = function () { el.style.setProperty('--ss', Math.min(innerWidth / 1280, innerHeight / 720).toFixed(4)); }; fit(); addEventListener('resize', fit);
-  var done = function () { removeEventListener('resize', fit); if (el.parentNode) el.parentNode.removeChild(el); };
-  setTimeout(done, 2900); el.addEventListener('animationend', function (ev) { if (ev.target === el) done(); });
-  el.addEventListener('pointerdown', function () { el.classList.add('skip'); setTimeout(done, 300); });
+  var over = false;
+  var done = function () {
+    if (over) return; over = true; removeEventListener('resize', fit); if (el.parentNode) el.parentNode.removeChild(el);
+    window.__b4go = Date.now(); var b = document.getElementById('boot'); if (b) b.classList.add('go');
+  };
+  var rm = false; try { rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  setTimeout(done, rm ? 500 : 3250);
+  el.addEventListener('pointerdown', done);
 })();
 </script>
-<div id="boot"><i class="bt-grid"></i><span class="bt-re" aria-hidden="true">RE</span><div class="bt-band" aria-hidden="true"><span class="p" id="bootHero"></span><i class="bt-scan"></i></div><i class="bt-edge"></i><div class="bt-top"><span class="bt-seq"><i></i>SEQ. 0001<em></em><b>SYNCING</b></span><span class="bver" id="bootVer"></span></div><div class="bt-title"><span class="bt-ey">[ JIHOO KINGDOM ARCHIVE ]</span><h1>RE<i> : </i>지후배틀</h1><div class="bt-sub"><span></span>RE:JHBT</div><div class="nm" id="bootRing"><b id="bootName">지후</b><i id="bootRar">전설</i></div></div><button class="b-skip" id="bootSkip" type="button">SKIP ›</button><div class="bt-low"><div class="bt-row"><div class="b-tip"><span class="tg">TIP</span><p id="bootTip">지후를 깨우고 있어요</p><div class="tn" id="bootTipN"></div></div><div class="bt-pctw"><span class="ldmsg" id="bootMsg">지후 깨우는 중</span><span class="ldpct" id="bootPct">000<small>%</small></span></div></div><div class="ldbar"><i id="bootBar"></i></div></div><i class="bt-cn tl"></i><i class="bt-cn br"></i><i class="bt-vig"></i></div>
+<div id="boot" class="b4"><div class="b4-bg" aria-hidden="true"><i class="b4-dots"></i></div><div class="b4-st" id="b4St">
+<i class="b4-cn tl i4" aria-hidden="true"></i><i class="b4-cn tr i4" aria-hidden="true"></i><i class="b4-cn bl i4" aria-hidden="true"></i><i class="b4-cn br i4" aria-hidden="true"></i>
+<i class="b4-xh i4" aria-hidden="true"></i><i class="b4-xv i4" aria-hidden="true"></i><i class="b4-anc i4" aria-hidden="true"></i>
+<div class="b4-top i4"><span class="b4-logo">RE:JHBT</span><div class="b4-steps" aria-hidden="true"><i class="b4-ln"></i><i class="b4-fl"></i><i class="b4-fl2"></i><div class="b4-nd n0" style="left:0%"><i class="b4-dm"><i></i></i><span>01 SYSTEM</span></div><div class="b4-nd n1" style="left:25%"><i class="b4-dm"><i></i></i><span>02 TITLE</span></div><div class="b4-nd n2" style="left:50%"><i class="b4-dm"><i></i></i><span>03 ROSTER</span></div><div class="b4-nd n3" style="left:75%"><i class="b4-dm"><i></i></i><span>04 LOADING</span></div><div class="b4-nd n4" style="left:100%"><i class="b4-dm"><i></i></i><span>05 READY</span></div></div><span class="b4-ver" id="bootVer"></span></div>
+<div class="b4-log i4" aria-hidden="true"><div><span>&gt; KINGDOM.SYS</span><i></i><b>OK</b></div><div><span>&gt; PORTRAITS</span><i></i><b>OK</b></div><div><span>&gt; BATTLE ENGINE R3</span><i></i><b>OK</b></div><div><span>&gt; SERVER SYNC</span><i></i><b>OK</b></div></div>
+<div class="b4-ttl i4"><div class="b4-ey"><i></i><span>JIHOO KINGDOM</span><i></i></div><div class="b4-hw"><h1><span class="b4-gm"><b style="animation-delay:1.65s">R</b></span><span class="b4-gm"><b style="animation-delay:1.7s">E</b></span><span class="b4-gs"></span><span class="b4-gm"><b style="animation-delay:1.75s">:</b></span><span class="b4-gs"></span><span class="b4-gm"><b style="animation-delay:1.8s">지</b></span><span class="b4-gm"><b style="animation-delay:1.85s">후</b></span><span class="b4-gm"><b style="animation-delay:1.9s">배</b></span><span class="b4-gm"><b style="animation-delay:1.95s">틀</b></span></h1><div class="b4-wp" aria-hidden="true"><i></i></div></div><div class="b4-sub">RE:JHBT</div></div>
+<div class="b4-rail l i4" aria-hidden="true"><i></i></div><div class="b4-rail r i4" aria-hidden="true"><i></i></div>
+<div class="b4-deck i4" id="b4Deck"></div>
+<div class="b4-load"><div class="b4-in i4"><div class="b4-l"><div class="b4-msg"><span id="bootMsg">지후 깨우는 중</span></div><div class="b4-bar"><i id="bootBar"></i></div></div><div class="b4-pct"><span id="bootPct">0</span><small>%</small></div></div></div>
+<div class="b4-tip"><div class="b4-in i4"><span class="b4-tg">TIP</span><p id="bootTip">지후를 깨우고 있어요</p></div></div>
+<div class="b4-go"><button class="b4-btn" id="b4Go" type="button"><i class="b4-bgd" aria-hidden="true"></i><i class="b4-sh" aria-hidden="true"></i><span class="b4-tx"><span class="b4-gm"><b>터치하여 시작</b></span><span class="b4-ar" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="square"><path d="M4 12h15"></path><path d="M13 5l7 7-7 7"></path></svg></span></span></button><span class="b4-tap"><span>TAP TO START</span></span></div>
+<button class="b4-skip" id="bootSkip" type="button">SKIP ›</button>
+</div><div class="b4-sl" aria-hidden="true"><i style="animation-delay:0s"></i><i style="animation-delay:.035s"></i><i style="animation-delay:.07s"></i><i style="animation-delay:.105s"></i><i style="animation-delay:.14s"></i><i style="animation-delay:.175s"></i><i style="animation-delay:.21s"></i><i style="animation-delay:.245s"></i></div></div>
+<style>
+html body #boot.b4 { --b4bg:#ecece9; --b4ink:#0d0d0d; --b4mute:#55554f; --b4line:rgba(13,13,13,.2); --b4tile:#fff; --b4acc:#f04a14; --b4off:rgba(13,13,13,.1); --b4inv:#fff; --b4dot:rgba(13,13,13,.09); --b4sh:rgba(255,255,255,.28); display:block; padding:0; background:var(--b4bg); color:var(--b4ink); font-family:'Noto Sans KR', var(--font); transition:opacity .35s ease; }
+html.b4-dk body #boot.b4 { --b4bg:#0b0b0c; --b4ink:#f4f4f2; --b4mute:#a5a5a0; --b4line:rgba(244,244,242,.2); --b4tile:#18181a; --b4acc:#ff5a3c; --b4off:rgba(244,244,242,.12); --b4inv:#0b0b0c; --b4dot:rgba(244,244,242,.08); --b4sh:rgba(11,11,12,.18); }
+html body #boot.b4.b4x { opacity:0; pointer-events:none; }
+#boot.b4 .b4-bg { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+#boot.b4 .b4-dots { position:absolute; inset:-24px; background-image:radial-gradient(var(--b4dot) 1px, transparent 1.3px); background-size:24px 24px; animation:b4drift 6s linear infinite; }
+#boot.b4 .b4-st { position:absolute; left:50%; top:50%; width:var(--bw, 1280px); height:var(--bh, 720px); transform:translate(-50%, -50%) scale(var(--bs, 1)); }
+#boot.b4 .b4-st > * { position:absolute; }
+#boot.b4 .b4-cn { width:28px; height:28px; border:0 solid var(--b4ink); }
+#boot.b4 .b4-cn.tl { left:24px; top:24px; border-left-width:2px; border-top-width:2px; --bx:-16px; --by:-16px; } #boot.b4 .b4-cn.tr { right:24px; top:24px; border-right-width:2px; border-top-width:2px; --bx:16px; --by:-16px; }
+#boot.b4 .b4-cn.bl { left:24px; bottom:24px; border-left-width:2px; border-bottom-width:2px; --bx:-16px; --by:16px; } #boot.b4 .b4-cn.br { right:24px; bottom:24px; border-right-width:2px; border-bottom-width:2px; --bx:16px; --by:16px; }
+#boot.b4 .b4-xh { left:0; right:0; top:50%; height:1px; background:var(--b4ink); opacity:.28; transform:scaleX(0); }
+#boot.b4 .b4-xv { top:0; bottom:0; left:50%; width:1px; background:var(--b4ink); opacity:.28; transform:scaleY(0); }
+#boot.b4 .b4-anc { left:calc(50% - 7px); top:calc(50% - 7px); width:14px; height:14px; background:var(--b4acc); transform:scale(0); }
+#boot.b4 .b4-top { left:72px; right:72px; top:34px; height:48px; display:flex; align-items:flex-start; gap:32px; }
+#boot.b4 .b4-logo { margin-top:4px; font:700 14px 'Chakra Petch', sans-serif; letter-spacing:.18em; white-space:nowrap; }
+#boot.b4 .b4-ver { margin-top:4px; font:500 13px 'Chakra Petch', sans-serif; letter-spacing:.14em; color:var(--b4mute); white-space:nowrap; text-align:right; }
+#boot.b4 .b4-steps { position:relative; flex:1; height:48px; }
+#boot.b4 .b4-ln { position:absolute; left:0; right:0; top:12px; height:1px; background:var(--b4line); transform-origin:left; }
+#boot.b4 .b4-fl { position:absolute; left:0; right:0; top:11px; height:3px; background:var(--b4acc); transform-origin:left; transform:scaleX(.75); }
+#boot.b4 .b4-fl2 { position:absolute; left:75%; right:0; top:11px; height:3px; background:var(--b4acc); transform-origin:left; transform:scaleX(0); transition:transform .45s cubic-bezier(.7,0,.3,1); }
+#boot.b4.ready .b4-fl2 { transform:scaleX(1); }
+#boot.b4 .b4-nd { position:absolute; top:0; width:0; height:48px; }
+#boot.b4 .b4-dm { position:absolute; left:-6px; top:6px; width:12px; height:12px; }
+#boot.b4 .b4-dm::before, #boot.b4 .b4-dm i { content:''; position:absolute; inset:1px; transform:rotate(45deg); box-sizing:border-box; }
+#boot.b4 .b4-dm::before { background:var(--b4bg); border:1.5px solid var(--b4ink); }
+#boot.b4 .b4-dm i { background:var(--b4acc); }
+#boot.b4 .b4-nd span { position:absolute; left:-60px; width:120px; top:26px; text-align:center; font:700 10px 'Chakra Petch', sans-serif; letter-spacing:.2em; white-space:nowrap; }
+#boot.b4 .n4 .b4-dm i { opacity:0; transition:opacity .25s .35s; } #boot.b4 .n4 span { opacity:.3; transition:opacity .3s .35s; }
+#boot.b4.ready .n4 .b4-dm i, #boot.b4.ready .n4 span { opacity:1; }
+#boot.b4 .b4-log { left:96px; bottom:128px; width:340px; display:flex; flex-direction:column; gap:6px; font:400 12px 'JetBrains Mono', monospace; color:var(--b4mute); opacity:0; }
+#boot.b4 .b4-log > div { display:flex; gap:10px; align-items:baseline; white-space:nowrap; }
+#boot.b4 .b4-log i { flex:1; border-bottom:1px dotted var(--b4line); transform:translateY(-3px); }
+#boot.b4 .b4-log b { font-weight:400; color:var(--b4ink); }
+#boot.b4 .b4-ttl { left:0; right:0; top:112px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+#boot.b4 .b4-ey { display:flex; align-items:center; gap:14px; font:700 14px 'Chakra Petch', sans-serif; letter-spacing:.3em; color:var(--b4mute); }
+#boot.b4 .b4-ey span { margin-right:-.3em; } #boot.b4 .b4-ey i { width:8px; height:8px; background:var(--b4acc); }
+#boot.b4 .b4-hw { position:relative; }
+#boot.b4 .b4-hw h1 { margin:0; font:400 104px/1 'Do Hyeon', var(--font); color:var(--b4ink); white-space:nowrap; letter-spacing:0; }
+#boot.b4 .b4-gm { display:inline-block; overflow:hidden; vertical-align:top; padding:0 .02em .08em; margin-bottom:-.08em; }
+#boot.b4 .b4-gm > b { display:inline-block; font-weight:400; }
+#boot.b4 .b4-gs { display:inline-block; width:.24em; }
+#boot.b4 .b4-wp { position:absolute; left:-16px; right:-16px; top:-4px; bottom:-4px; overflow:hidden; }
+#boot.b4 .b4-wp i { position:absolute; inset:0; background:var(--b4acc); transform:translateX(101%); }
+#boot.b4 .b4-sub { font:700 20px 'Chakra Petch', sans-serif; letter-spacing:.5em; margin-right:-.5em; }
+#boot.b4 .b4-rail { top:474px; width:210px; height:8px; overflow:hidden; }
+#boot.b4 .b4-rail.l { left:96px; transform-origin:right; } #boot.b4 .b4-rail.r { right:96px; transform-origin:left; }
+#boot.b4 .b4-rail i { position:absolute; left:0; top:0; bottom:0; width:240px; background:repeating-linear-gradient(90deg, var(--b4ink) 0 1px, transparent 1px 12px); opacity:.35; animation:b4tick .9s linear infinite; }
+#boot.b4 .b4-deck { left:0; right:0; top:300px; display:flex; justify-content:center; align-items:flex-end; gap:14px; perspective:900px; }
+#boot.b4 .b4-cd { display:flex; flex-direction:column; gap:8px; }
+#boot.b4 .b4-cv { position:relative; }
+#boot.b4 .b4-pf { width:var(--w); height:var(--h); box-sizing:border-box; background:var(--b4tile); border:var(--cb) solid var(--bc); overflow:hidden; animation:b4float 3.4s ease-in-out var(--fd) infinite; }
+#boot.b4 .b4-pf img { width:100%; height:100%; object-fit:contain; display:block; }
+#boot.b4 .b4-bu { position:absolute; inset:-8px; border:2px solid var(--bc); opacity:0; }
+#boot.b4 .b4-cnm { display:flex; justify-content:space-between; align-items:baseline; gap:6px; white-space:nowrap; }
+#boot.b4 .b4-cnm b { font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+#boot.b4 .b4-cnm span { font:700 10px 'Chakra Petch', sans-serif; letter-spacing:.08em; color:var(--b4mute); }
+#boot.b4 .b4-load { left:96px; right:96px; bottom:128px; }
+#boot.b4 .b4-in { display:flex; align-items:flex-end; gap:40px; }
+#boot.b4 .b4-l { flex:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
+#boot.b4 .b4-msg { height:24px; font-size:17px; font-weight:700; white-space:nowrap; }
+#boot.b4 .b4-msg span { display:inline-block; } #boot.b4 .b4-msg span.sw { animation:b4rise .4s cubic-bezier(.16,1,.3,1) both; }
+#boot.b4 .b4-bar { position:relative; height:12px; background:var(--b4off); overflow:hidden; }
+#boot.b4 .b4-bar i { position:absolute; inset:0; background:var(--b4ink); transform-origin:left; transform:scaleX(0); transition:transform .25s linear; }
+#boot.b4 .b4-bar::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(90deg, transparent 0 calc(2.5% - 3px), var(--b4bg) calc(2.5% - 3px) 2.5%); }
+#boot.b4 .b4-pct { display:flex; align-items:flex-end; justify-content:flex-end; min-width:190px; font:700 76px/.8 'Chakra Petch', sans-serif; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+#boot.b4 .b4-pct small { font-size:30px; margin-left:4px; color:var(--b4acc); }
+#boot.b4 .b4-tip { left:96px; right:96px; bottom:40px; }
+#boot.b4 .b4-tip .b4-in { align-items:center; gap:16px; padding-top:16px; border-top:1px solid var(--b4line); }
+#boot.b4 .b4-tg { flex-shrink:0; font:700 12px 'Chakra Petch', sans-serif; letter-spacing:.2em; padding:4px 10px; background:var(--b4ink); color:var(--b4bg); }
+#boot.b4 .b4-tip p { flex:1; min-width:0; margin:0; font-size:15px; line-height:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#boot.b4 .b4-tip p.fade { animation:b4rise .45s cubic-bezier(.16,1,.3,1) both; }
+#boot.b4 .b4-go { left:0; right:0; bottom:116px; display:flex; flex-direction:column; align-items:center; gap:14px; visibility:hidden; pointer-events:none; }
+#boot.b4.ready .b4-go { visibility:visible; pointer-events:auto; }
+#boot.b4 .b4-btn { appearance:none; border:0; padding:0; cursor:pointer; position:relative; overflow:hidden; width:440px; height:76px; background:transparent; color:var(--b4inv); clip-path:polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); }
+#boot.b4 .b4-bgd { position:absolute; inset:0; background:var(--b4ink); transform-origin:left; }
+#boot.b4 .b4-sh { position:absolute; top:0; bottom:0; left:0; width:90px; background:linear-gradient(100deg, transparent, var(--b4sh), transparent); transform:translateX(-140px); }
+#boot.b4 .b4-tx { position:relative; display:flex; align-items:center; justify-content:space-between; height:100%; padding:0 36px 0 44px; box-sizing:border-box; font:400 32px 'Do Hyeon', var(--font); }
+#boot.b4 .b4-ar { display:flex; } #boot.b4 .b4-ar svg { stroke:var(--b4acc); }
+#boot.b4 .b4-tap span { display:block; font:700 12px 'Chakra Petch', sans-serif; letter-spacing:.34em; margin-right:-.34em; color:var(--b4mute); }
+#boot.b4 .b4-skip { right:72px; top:96px; height:36px; padding:0 14px; border:1.5px solid var(--b4ink); background:transparent; color:var(--b4ink); font:700 12px 'Chakra Petch', sans-serif; letter-spacing:.2em; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .3s; }
+#boot.b4 .b4-skip.on { opacity:1; pointer-events:auto; } #boot.b4.ready .b4-skip { opacity:0; pointer-events:none; }
+#boot.b4 .b4-sl { position:absolute; inset:0; z-index:5; display:flex; pointer-events:none; }
+#boot.b4 .b4-sl i { flex:1; background:var(--b4ink); transform:scaleY(0); transform-origin:bottom; }
+#boot.b4.b4o .b4-sl i { animation:b4drop .5s cubic-bezier(.7,0,.2,1) both; }
+/* 시스템 · 타이틀 · 로스터 · 로딩: #boot.go (스튜디오가 끝난 때) 기준 시각 · 기본 모양 = 마지막 모양 (스튜디오가 없거나 SKIP 의 .fast 면 그대로 보인다) */
+#boot.b4.go .b4-cn { animation:b4brk .6s cubic-bezier(.16,1,.3,1) .2s both; } #boot.b4.go .b4-cn.tr { animation-delay:.26s; } #boot.b4.go .b4-cn.bl { animation-delay:.32s; } #boot.b4.go .b4-cn.br { animation-delay:.38s; }
+#boot.b4.go .b4-xh { animation:b4xh 1.5s cubic-bezier(.7,0,.2,1) .05s both; } #boot.b4.go .b4-xv { animation:b4xv 1.5s cubic-bezier(.7,0,.2,1) .1s both; }
+#boot.b4.go .b4-anc { animation:b4anc 1.5s cubic-bezier(.3,1.4,.5,1) both; }
+#boot.b4.go .b4-logo { animation:b4rise .7s cubic-bezier(.16,1,.3,1) .35s both; } #boot.b4.go .b4-ver { animation:b4rise .7s cubic-bezier(.16,1,.3,1) .42s both; }
+#boot.b4.go .b4-ln { animation:b4wipeX .8s cubic-bezier(.7,0,.2,1) .3s both; }
+#boot.b4.go .b4-fl { animation:b4step 4.2s cubic-bezier(.7,0,.3,1) .2s both; }
+#boot.b4.go .b4-nd { animation:b4fade .7s ease .5s both; } #boot.b4.go .n1 { animation-delay:.56s; } #boot.b4.go .n2 { animation-delay:.62s; } #boot.b4.go .n3 { animation-delay:.68s; } #boot.b4.go .n4 { animation-delay:.74s; }
+#boot.b4.go .b4-nd:not(.n4) .b4-dm i { animation:b4fade .25s ease .2s both; } #boot.b4.go .b4-nd:not(.n4) span { animation:b4lit .3s ease .2s both; }
+#boot.b4.go .n1 .b4-dm i, #boot.b4.go .n1 span { animation-delay:1.4s; } #boot.b4.go .n2 .b4-dm i, #boot.b4.go .n2 span { animation-delay:3.5s; } #boot.b4.go .n3 .b4-dm i, #boot.b4.go .n3 span { animation-delay:4.4s; }
+#boot.b4.go .b4-log { animation:b4log 3.6s linear both; }
+#boot.b4.go .b4-log > div { animation:b4rise .4s cubic-bezier(.16,1,.3,1) .55s both; } #boot.b4.go .b4-log > div:nth-child(2) { animation-delay:.71s; } #boot.b4.go .b4-log > div:nth-child(3) { animation-delay:.87s; } #boot.b4.go .b4-log > div:nth-child(4) { animation-delay:1.03s; }
+#boot.b4.go .b4-log b { animation:b4fade .15s step-end .77s both; } #boot.b4.go .b4-log > div:nth-child(2) b { animation-delay:.93s; } #boot.b4.go .b4-log > div:nth-child(3) b { animation-delay:1.09s; } #boot.b4.go .b4-log > div:nth-child(4) b { animation-delay:1.25s; }
+#boot.b4.go .b4-ttl { animation:b4settle .9s cubic-bezier(.76,0,.24,1) 3s both; }
+#boot.b4.go .b4-ey { animation:b4rise .7s cubic-bezier(.16,1,.3,1) 1.3s both; }
+#boot.b4.go .b4-wp i { animation:b4wipe .8s cubic-bezier(.7,0,.3,1) 1.35s both; }
+#boot.b4.go .b4-hw .b4-gm > b { animation-name:b4up; animation-duration:.75s; animation-timing-function:cubic-bezier(.16,1,.3,1); animation-fill-mode:both; }
+#boot.b4.go .b4-sub { animation:b4track .8s cubic-bezier(.16,1,.3,1) 2.15s both; }
+#boot.b4.go .b4-rail { animation:b4wipeX .7s cubic-bezier(.7,0,.2,1) 3.7s both; }
+#boot.b4.go .b4-cv { animation:b4card .8s cubic-bezier(.16,1,.3,1) var(--cd) both; }
+#boot.b4.go .b4-bu { animation:b4burst .8s cubic-bezier(.16,1,.3,1) 4.15s both; }
+#boot.b4.go .b4-cnm { animation:b4rise .5s cubic-bezier(.16,1,.3,1) calc(var(--cd) + .5s) both; }
+#boot.b4.go .b4-load .b4-in { animation:b4rise .5s cubic-bezier(.16,1,.3,1) 4.15s both; } #boot.b4.go .b4-tip .b4-in { animation:b4rise .5s cubic-bezier(.16,1,.3,1) 4.25s both; }
+#boot.b4.fast .i4, #boot.b4.fast .i4 * { animation:none !important; }
+/* 터치하여 시작: .ready (runBoot 이 끝난 뒤) 기준 시각 */
+#boot.b4.ready .b4-load, #boot.b4.ready .b4-tip { animation:b4sink .45s cubic-bezier(.7,0,.84,0) both; pointer-events:none; }
+#boot.b4.ready .b4-bgd { animation:b4wipeX .45s cubic-bezier(.7,0,.2,1) .25s both; }
+#boot.b4.ready .b4-btn .b4-gm > b { animation:b4up .6s cubic-bezier(.16,1,.3,1) .5s both; }
+#boot.b4.ready .b4-ar { animation:b4fade .3s ease .65s both; } #boot.b4.ready .b4-ar svg { animation:b4nudge 1.2s ease-in-out .95s infinite; }
+#boot.b4.ready .b4-sh { animation:b4sheen 2.6s cubic-bezier(.6,0,.3,1) 1.25s infinite; }
+#boot.b4.ready .b4-tap { animation:b4fade .4s ease .75s both; } #boot.b4.ready .b4-tap span { animation:b4pulse 1.6s ease-in-out 1.15s infinite; }
+@keyframes b4drift { to { transform:translate(24px, 24px); } }
+@keyframes b4brk { from { opacity:0; transform:translate(var(--bx), var(--by)); } }
+@keyframes b4xh { 0% { transform:scaleX(0); } 30%, 72% { transform:scaleX(1); } 100% { transform:scaleX(0); } }
+@keyframes b4xv { 0% { transform:scaleY(0); } 30%, 72% { transform:scaleY(1); } 100% { transform:scaleY(0); } }
+@keyframes b4anc { 0% { transform:scale(0) rotate(90deg); } 18%, 80% { transform:scale(1) rotate(0deg); } 100% { transform:scale(0) rotate(-90deg); } }
+@keyframes b4step { 0%, 21.4% { transform:scaleX(0); } 28.6%, 71.4% { transform:scaleX(.25); } 78.6%, 92.9% { transform:scaleX(.5); } 100% { transform:scaleX(.75); } }
+@keyframes b4lit { from { opacity:.3; } }
+@keyframes b4log { 0% { opacity:1; transform:none; } 92% { opacity:1; transform:none; } 100% { opacity:0; transform:translateY(12px); } }
+@keyframes b4settle { from { transform:translateY(var(--sy, 164px)) scale(1.22); } }
+@keyframes b4track { from { opacity:0; transform:scaleX(1.35); } }
+@keyframes b4card { from { opacity:0; transform:translateY(46px) rotateY(-75deg) scale(.9); } }
+@keyframes b4burst { from { opacity:1; transform:scale(.94); } to { opacity:0; transform:scale(1.32); } }
+@keyframes b4float { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+@keyframes b4tick { to { transform:translateX(-12px); } }
+@keyframes b4nudge { 0%, 100% { transform:translateX(0); } 50% { transform:translateX(6px); } }
+@keyframes b4pulse { 50% { opacity:.3; } }
+@keyframes b4sheen { 0% { transform:translateX(-140px); } 45%, 100% { transform:translateX(560px); } }
+@keyframes b4drop { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { #boot.b4 *, #boot.b4 *::before { animation:none !important; } #boot.b4.ready .b4-load, #boot.b4.ready .b4-tip { opacity:0; } #boot.b4.b4o .b4-sl i { transform:scaleY(1); } }
+</style>
+<script>
+(function () { // R3.4 build 2 부팅 무대: 1280 × 720 기준 · 화면 비율에 맞춰 무대를 넓히거나 높인다 (--bw · --bh) · 타이틀이 가운데에서 올라가는 거리 --sy
+  var b = document.getElementById('boot'), s = document.getElementById('b4St'); if (!b || !s) return;
+  var fit = function () {
+    if (!b.isConnected) { removeEventListener('resize', fit); return; }
+    var w = innerWidth, h = innerHeight, k = Math.min(w / 1280, h / 720);
+    s.style.setProperty('--bs', k.toFixed(4)); s.style.setProperty('--bw', (w / k).toFixed(1) + 'px'); s.style.setProperty('--bh', (h / k).toFixed(1) + 'px'); s.style.setProperty('--sy', (h / k / 2 - 196).toFixed(1) + 'px');
+  };
+  fit(); addEventListener('resize', fit);
+  if (!document.getElementById('studio')) { window.__b4go = Date.now(); b.classList.add('go'); }
+})();
+</script>
 <div id="dfPick" aria-hidden="true"><div class="dfp-box"><div class="evp-head"><span class="evp-pill">이벤트 카드 선택</span><span class="evp-sub" id="dfpTitle">WAVE 10 · 정비 시간</span></div><div class="evp-list" id="dfpCards"></div><div class="dfp-own" id="dfpOwn"></div></div></div><!-- R2.34 build 2 디펜스 이벤트 -->
 <div id="mmOv" aria-hidden="true"><div class="mm-side a" id="mmA"></div><div class="mm-side b" id="mmB"></div><div class="cpm-card"><span class="eyebrow" id="mmMode">NORMAL MATCH</span><b id="mmTitle">매칭 중</b><div class="cpm-radar"><i class="r1"></i><i class="r2"></i><i class="sweep"></i><span class="cpm-face" id="mmPic"></span></div><small id="mmName"></small><em id="mmTime">00:00</em><button type="button" class="mm-cancel" id="mmCancel">매칭 취소</button></div></div><!-- R2.34 매칭 연출 -->
 <div id="matchLoad"><i class="ml-glow"></i><div class="ml-head"><span class="ml-ey">[ DEPLOYMENT ]</span><h2 id="mlTitle">전장 진입</h2><span class="ml-en" id="mlMode">NORMAL MATCH</span></div><div class="ml-cd"><span>BATTLE BEGINS IN</span><b id="mlCd">03</b></div><div class="ml-field" aria-hidden="true"><div class="ml-plane"><div class="ml-g a"><i style="animation-delay:0.00s"></i><i style="animation-delay:0.05s"></i><i style="animation-delay:0.10s"></i><i style="animation-delay:0.15s"></i><i style="animation-delay:0.20s"></i><i style="animation-delay:0.25s"></i><i style="animation-delay:0.30s"></i><i style="animation-delay:0.35s"></i><i style="animation-delay:0.40s"></i><i style="animation-delay:0.45s"></i><i style="animation-delay:0.50s"></i><i style="animation-delay:0.55s"></i></div><i class="ml-mid"></i><div class="ml-g e"><i style="animation-delay:0.15s"></i><i style="animation-delay:0.20s"></i><i style="animation-delay:0.25s"></i><i style="animation-delay:0.30s"></i><i style="animation-delay:0.35s"></i><i style="animation-delay:0.40s"></i><i style="animation-delay:0.45s"></i><i style="animation-delay:0.50s"></i><i style="animation-delay:0.55s"></i><i style="animation-delay:0.60s"></i><i style="animation-delay:0.65s"></i><i style="animation-delay:0.70s"></i></div></div><i class="ml-sweep"></i></div><div class="ml-low"><div id="mlPf"></div><i class="ml-dot"></i><div class="tip" id="mlTip"></div><div class="ldbar"><i id="mlBar"></i></div></div><i class="ml-vig"></i></div>
@@ -16059,22 +16224,40 @@ const TIPS_MORE = [ // R2.12.3 build 10: 팁 100종 추가 — 접속 로딩 (BO
 BOOT_TIPS.push(...TIPS_MORE);
 const evTipOff = L => { if (!CFG.EV_ENABLED) for (let i = L.length - 1; i >= 0; i--) if (/이벤트/.test(L[i])) L.splice(i, 1); return L; }; evTipOff(BOOT_TIPS); // R2.13 build 3: 랜덤 이벤트 임시 삭제 → 이벤트 팁도
 const RAR_C = { common: '#c9d0e6', rare: '#5fb4ff', epic: '#b07cff', legend: '#ffc94a', limited: '#ff5c95' };
-function runBoot(acc) { // R2.12.3: 단계마다 실제 일을 기다린다 · 바는 단계 안에서 천천히 차오르다가 끝나면 다음 단계로
+function b4Deck() { // R3.4 build 2 인트로 로스터: 내 덱 5칸 (가운데가 큼 · 테두리 = 등급 · 일반 1 · 희귀 2 · 영웅 3 · 전설 3 주황) · 늦게 그리면 (스튜디오가 끝난 지 오래) 바로 들어온다
+  const el = $('b4Deck'); if (!el) return;
+  const W = [96, 110, 148, 110, 96], CD = [3.55, 3.73, 3.94, 3.82, 3.64], IN = [0, 2, 4, 3, 1], BW = { common: 1, rare: 2, epic: 3, legend: 3, limited: 3 };
+  const late = !!window.__b4go && Date.now() - window.__b4go > 2500;
+  el.innerHTML = W.map((w, i) => {
+    const id = (profile.deck || [])[i], c = id && CHARS[id]; if (!c) return '';
+    const leg = c.rarity === 'legend' || c.rarity === 'limited', cd = late ? 0.1 + IN[i] * 0.09 : CD[i];
+    return `<div class="b4-cd" style="--w:${w}px;--h:${Math.round(w * 1.22)}px;--cb:${BW[c.rarity] || 1}px;--bc:${leg ? 'var(--b4acc)' : 'var(--b4ink)'};--cd:${cd.toFixed(2)}s;--fd:${(4.6 + i * 0.35).toFixed(2)}s"><div class="b4-cv"><div class="b4-pf">${pic(id)}</div>${i === 2 ? '<i class="b4-bu"></i>' : ''}</div><div class="b4-cnm"><b>${c.name.replace(/ 지후$/, '')}</b><span>RANK ${enhLv(id)}</span></div></div>`;
+  }).join('');
+}
+function runBoot(acc) { // R2.12.3: 단계마다 실제 일을 기다린다 · 바는 단계 안에서 천천히 차오르다가 끝나면 다음 단계로 · R3.4 build 2: 새 인트로 — 끝나면 .ready (터치하여 시작) → 누르면 셔터 → 지운다
   const B = $('boot'); if (!B) return;
-  const ids = pubIds().filter(id => !CHARS[id].special && CHARS[id].portrait), tips = BOOT_TIPS.slice(); for (let i = tips.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tips[i], tips[j]] = [tips[j], tips[i]]; } // 섞기
-  let hi = Math.floor(Math.random() * ids.length), ti = 0;
-  const hero = () => { const id = ids[hi++ % ids.length], c = CHARS[id], r = $('bootRing'); B.style.setProperty('--bc', RAR_C[c.rarity] || '#ffc94a'); $('bootHero').innerHTML = pic(id); $('bootName').textContent = c.name; $('bootRar').textContent = RARITY[c.rarity]; r.classList.remove('swap'); void r.offsetWidth; r.classList.add('swap'); };
-  const tip = () => { const p = $('bootTip'); p.innerHTML = tips[ti % tips.length]; p.classList.remove('fade'); void p.offsetWidth; p.classList.add('fade'); $('bootTipN').textContent = `${ti % tips.length + 1} / ${tips.length}`; ti++; };
-  hero(); tip(); const rot = setInterval(() => { hero(); tip(); }, 2300); // R2.12.3: 2.8 → 2.3초 (로딩이 길어져 덜 심심하게)
-  let pct = 0, cap = 0, k = -1;
-  const draw = () => { $('bootBar').style.width = pct.toFixed(1) + '%'; $('bootPct').innerHTML = String(Math.floor(pct)).padStart(3, '0') + '<small>%</small>'; }; /* R3.0 build 4: 068% 모양 */
+  const tips = BOOT_TIPS.slice(); for (let i = tips.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tips[i], tips[j]] = [tips[j], tips[i]]; } // 섞기
+  let ti = 0;
+  const tip = () => { const p = $('bootTip'); p.innerHTML = tips[ti % tips.length]; p.classList.remove('fade'); void p.offsetWidth; p.classList.add('fade'); ti++; };
+  tip(); const rot = setInterval(tip, 3200);
+  try { b4Deck(); } catch (e) { console.error('b4Deck', e); }
+  let pct = 0, cap = 0;
+  const draw = () => { $('bootBar').style.transform = `scaleX(${(pct / 100).toFixed(4)})`; $('bootPct').textContent = String(Math.floor(pct)); };
+  const msg = t => { const m = $('bootMsg'); if (m.textContent === t) return; m.textContent = t; m.classList.remove('sw'); void m.offsetWidth; m.classList.add('sw'); };
   const creep = setInterval(() => { if (pct < cap - 0.5) { pct += (cap - pct) * 0.06; draw(); } }, 60); // 단계 안에서는 끝 직전까지만 천천히
   const sleep = ms => new Promise(r => setTimeout(r, ms)), cap_ = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), sleep(ms)]);
-  const phase = async (i, work, min) => { if (over) return; k = i; $('bootMsg').textContent = BOOT_STEPS[i][0];
+  const phase = async (i, work, min) => { if (over) return; msg(BOOT_STEPS[i][0]);
     const from = i ? BOOT_STEPS[i - 1][1] : 0; cap = from + (BOOT_STEPS[i][1] - from) * 0.85; await Promise.all([work, sleep(min)]); if (over) return; pct = BOOT_STEPS[i][1]; cap = pct; draw(); };
   const img = src => new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = src; });
-  let over = false; const finish = () => { if (over) return; over = true; clearInterval(creep); clearInterval(rot); clearTimeout(skT); pct = 100; draw(); setTimeout(() => { B.classList.add('out'); setTimeout(() => B.remove(), 520); }, 260); };
-  const skT = setTimeout(() => $('bootSkip').classList.add('on'), 3000); $('bootSkip').onclick = finish; // R2.12.3: 3초 뒤 건너뛰기 → 바로 100% (accBoot 는 뒤에서 계속)
+  const auto = (() => { try { return !!navigator.webdriver || /[?&](bench|test)=/.test(location.search); } catch (e) { return false; } })(); // 자동화 브라우저 · 벤치는 터치를 기다리지 않는다
+  let over = false, left = false;
+  const leave = () => { if (left) return; left = true; removeEventListener('keydown', key); B.classList.add('b4o'); setTimeout(() => { B.classList.add('b4x'); setTimeout(() => B.remove(), 380); }, auto ? 0 : 650); };
+  const key = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); leave(); } };
+  const ready = () => { if (B.classList.contains('ready')) return; msg('준비 완료'); B.classList.add('ready'); if (auto) { leave(); return; } B.addEventListener('click', leave); addEventListener('keydown', key); };
+  const finish = fast => { if (over) return; over = true; clearInterval(creep); clearInterval(rot); clearTimeout(skT); pct = 100; draw(); if (fast) B.classList.add('fast');
+    const wait = () => { const g = window.__b4go; if (!g) { setTimeout(wait, 150); return; } setTimeout(ready, fast ? 0 : Math.max(250, g + 5200 - Date.now())); }; wait(); }; // 연출 (로딩 막대가 보이기까지) 이 끝난 뒤에 터치하여 시작
+  setTimeout(() => { if (!window.__b4go) { window.__b4go = Date.now(); B.classList.add('go'); } }, 4000); // 스튜디오 로고가 끝나지 않았으면 (없음 · 오류) 그냥 시작
+  const skT = setTimeout(() => $('bootSkip').classList.add('on'), 3000); $('bootSkip').onclick = e => { e.stopPropagation(); finish(true); }; // R2.12.3: 3초 뒤 건너뛰기 → 바로 100% (accBoot 는 뒤에서 계속)
   (async () => {
     await phase(0, cap_(Promise.all(['fire', 'ice', 'shield', 'assassin', 'sword'].filter(id => CHARS[id]).map(id => img(CHARS[id].portrait))), 2500), 1700); // 지후 깨우기: 첫 덱 초상화
     await phase(1, cap_(Promise.all([document.fonts ? document.fonts.ready : null, ...EMO_START.map(k => img(`emo/thumb/${k}.png`)), ...(profile.comic ? [] : [img('comic/1.png'), img('comic/2.png')])]), 3500), 1800); // 데이터: 글꼴 · 이모티콘 · 첫 실행이면 만화 첫 장 (R2.13 build 3)
@@ -16634,8 +16817,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.4', date: '2026.11.23', title: '새 로비 UI4', sections: [
+  { v: 'R3.4', date: '2026.11.23', title: '새 로비 UI4 · 실행 인트로', sections: [
     { title: '추가 패치 (build 2)', items: [
+      { icon: '🎬', name: '실행 인트로', tag: 'rework', desc: '스튜디오 로고 → 타이틀 → 내 덱 → 로딩 → <b>터치하여 시작</b>' },
       { icon: '🔧', name: '게임이 켜지지 않던 문제', tag: 'fix', desc: '로딩 중 멈추던 오류 수정' },
     ] },
     { title: '새 로비 UI4', items: [
