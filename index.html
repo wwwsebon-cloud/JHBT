@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.4"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.4"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -16635,6 +16635,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.4', date: '2026.11.23', title: '새 로비 UI4', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { icon: '🔧', name: '게임이 켜지지 않던 문제', tag: 'fix', desc: '로딩 중 멈추던 오류 수정' },
+    ] },
     { title: '새 로비 UI4', items: [
       { icon: '🎨', name: '새 로비 UI4', tag: 'system', desc: '<b>화이트 · 그레이 · 블랙</b> 미니멀 테마 · 글자 · 버튼을 크게 · 메인 · 지후 · 모집 · 상점 · 아케이드 · 랭킹' },
       { icon: '🌗', name: '라이트 · 다크', tag: 'system', desc: '환경설정의 <b>라이트 모드</b> 하나로 로비와 전투 화면이 같이 바뀌어요' },
@@ -19233,8 +19236,11 @@ function helpBodyHtml(tab) {
 }
 // 환경설정: 효과음 음량 · 배속 기억 · 닉네임
 // ═════════ 인게임 설정 (R2.12.1) — 이 기기에만 저장 ═════════
+/* R3.4 build 2: U4 는 bsetApply() 가 처음 불리기 전에 선언해야 한다 (const 를 선언 전에 읽으면 typeof 도 오류 → 첫 로딩이 멈췄다) */
+const U4 = { on: true, dark: false };
+(function () { try { const q = new URLSearchParams(location.search).get('ui4'); if (q === '0') localStorage.setItem('rejhbt-ui4', '0'); else if (q) localStorage.removeItem('rejhbt-ui4'); if (q === 'dark' || q === 'light') localStorage.setItem('rejhbt-ui4-theme', q); U4.on = localStorage.getItem('rejhbt-ui4') !== '0'; U4.dark = localStorage.getItem('rejhbt-ui4-theme') === 'dark'; } catch (e) {} })();
 const BSET_KEY = 'rejhbt-bset', BSET = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem(BSET_KEY) || '{}') || {}; } catch (e) {} return { dark: !!o.dark, light: !!o.light, cam3d: !!o.cam3d, fs: o.fs !== false, gl: o.gl !== false, ubar: o.ubar !== false, low: !!o.low, grid: o.grid !== false, hpnum: o.hpnum !== false, dmg: o.dmg !== false }; })();
-function bsetApply() { const c = document.body.classList; c.toggle('b-dark', BSET.dark); if (typeof U4 !== 'undefined' && U4.on) BSET.light = !U4.dark; /* R3.4: ui4 가 켜져 있으면 ui4 테마와 같이 */ if (typeof U4 !== 'undefined' && U4.on) BSET.light = !U4.dark; /* R3.4: ui4 가 켜져 있으면 ui4 테마와 같이 */ c.toggle('b-light', BSET.light); /* R3.0 전투 화면 라이트 */ c.toggle('b-low', BSET.low); c.toggle('b-noubar', !BSET.ubar); /* R3.0 build 6 */ c.toggle('b-nogrid', !BSET.grid); c.toggle('b-nohp', !BSET.hpnum); try { localStorage.setItem(BSET_KEY, JSON.stringify(BSET)); } catch (e) {} }
+function bsetApply() { const c = document.body.classList; c.toggle('b-dark', BSET.dark); if (U4.on) BSET.light = !U4.dark; /* R3.4: ui4 가 켜져 있으면 ui4 테마와 같이 */ c.toggle('b-light', BSET.light); /* R3.0 전투 화면 라이트 */ c.toggle('b-low', BSET.low); c.toggle('b-noubar', !BSET.ubar); /* R3.0 build 6 */ c.toggle('b-nogrid', !BSET.grid); c.toggle('b-nohp', !BSET.hpnum); try { localStorage.setItem(BSET_KEY, JSON.stringify(BSET)); } catch (e) {} }
 bsetApply();
 const BSET_ROWS = [['light', '라이트 모드', '전투 화면을 밝게'], ['cam3d', '회전 카메라 (실험)', '전투 중 카메라가 비스듬히 돌아간다'], ['fs', '전체화면', '폰 위 · 아래 막대를 숨긴다'], ['gl', 'WebGL 그리기', 'GPU 로 지후를 그린다 · 이상하면 끄기'], ['ubar', '지후 카드 줄', '전투 중 아래 체력 · SP 카드'], ['low', '저전력 모드', '초당 30프레임 · 효과 줄임 · 발열 ↓'], ['grid', '격자 보기', '전장 격자'], ['hpnum', '체력 숫자', '체력바에 남은 체력'], ['dmg', '피해 숫자', '맞을 때 뜨는 숫자']];
 // ═ R3.0 build 2 전체화면: 폰 브라우저는 화면을 누를 때 Fullscreen API (사용자 동작이 있어야 한다 · 나가면 다음에 누를 때 다시) · 홈 화면 앱은 매니페스트 display fullscreen · APK 는 네이티브 몰입 모드 (MainActivity)
@@ -19727,8 +19733,7 @@ const u3Use = () => true; /* ui3 고정: 예전 ui2 로비로 돌아가지 않�
 // ═════════ R3.4 새 로비 ui4 (화이트 · 그레이 · 블랙 미니멀) — 기본으로 켜짐 · ?ui4=0 이면 ui3 (localStorage rejhbt-ui4 '0') · ?ui4=dark / light 로 색 (localStorage rejhbt-ui4-theme) ═════════
 // 템플릿 <template id="ui4Tpl"> 은 ui3 와 같은 엔진 (u2Walk · u2Morph) · 값은 u3Vals() 그대로 + u4Extra (v.u4.*) → 데이터 계산 (u3Units · u3Shop …) 은 ui3 것을 다시 쓰고 마크업 · CSS 만 새로 (.u4 / u4- · 색은 CSS 변수)
 // 뿌리 클래스는 `u3 u4` — ui3 의 창 · 시트 (메뉴 · 우편 · 설정 …) 가 그대로 돌고 (아직 크림슨 레저 테마 · 차례로 옮긴다) 튜토리얼 훅 (.tut-hot · TUT.u3) 도 그대로
-const U4 = { on: true, dark: false };
-(function () { try { const q = new URLSearchParams(location.search).get('ui4'); if (q === '0') localStorage.setItem('rejhbt-ui4', '0'); else if (q) localStorage.removeItem('rejhbt-ui4'); if (q === 'dark' || q === 'light') localStorage.setItem('rejhbt-ui4-theme', q); U4.on = localStorage.getItem('rejhbt-ui4') !== '0'; U4.dark = localStorage.getItem('rejhbt-ui4-theme') === 'dark'; } catch (e) {} })();
+/* U4 선언은 bsetApply 앞으로 옮김 (R3.4 build 2) */
 const u4Use = () => !!U4.on;
 function u4Theme(dark) { U4.dark = !!dark; try { localStorage.setItem('rejhbt-ui4-theme', dark ? 'dark' : 'light'); } catch (e) {} document.body.classList.toggle('u4-dark', U4.dark); BSET.light = !U4.dark; bsetApply(); try { CV.spr.clear(); (S.units || []).forEach(u => { u._cvB = null; }); } catch (e) {} if (UI2.on) u2Render(); } /* 전투 화면도 같이 (BSET.light = ui4 가 켜져 있으면 !U4.dark) */
 document.body.classList.toggle('u4-dark', U4.on && U4.dark);
