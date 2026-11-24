@@ -5,7 +5,7 @@
 import os, re
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-DIRS = ['icons', 'icons/fx', 'sfx', 'comic', 'emo/thumb']
+DIRS = ['icons', 'icons/fx', 'icons/art', 'sfx', 'comic', 'emo/thumb']  # R3.5 build 2: 유물 그림
 EXT = ('.png', '.jpg', '.webp', '.gif', '.mp3', '.svg')
 
 files = []
