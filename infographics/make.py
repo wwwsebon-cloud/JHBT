@@ -362,7 +362,24 @@ body.wd { --tb:#3cc23a; --ta:#f6b318; --tn:#e8392f; --ol:#121316; }
 .who div { width:118px; display:flex; flex-direction:column; align-items:center; gap:8px; }
 .who .pp { width:112px; height:112px; border-radius:50%; overflow:hidden; background:#fff; border:5px solid #121316; box-shadow:0 5px 0 #121316; }
 .who small { font-size:19px; font-weight:900; text-align:center; word-break:keep-all; line-height:1.15; }
+/* 표지 아래 「그 밖에」 칩 */
+.cv-v.sm { font-size:196px; }
+.cv-mo { margin-top:auto; padding-top:26px; } .cv-mo h3 { font-size:34px; line-height:1; margin-bottom:14px; }
+.cv-mo .cc { display:flex; flex-wrap:wrap; gap:10px 10px; }
+.cv-mo .cc span { display:inline-flex; align-items:center; gap:8px; height:48px; padding:0 16px; border:3px solid #121316; border-radius:12px; background:#fff; font-size:22px; font-weight:800; box-shadow:0 3px 0 #121316; white-space:nowrap; }
+.cv-mo .cc i { font-style:normal; font-size:24px; }
+/* 큰 사건 두 개 한 장 */
+.hp { flex:1; min-height:0; margin-top:26px; display:flex; flex-direction:column; gap:34px; }
+.hh { flex:1; min-height:0; display:flex; flex-direction:column; }
+.hh .hb { margin-top:0; padding:24px 30px 26px; border-radius:22px; box-shadow:0 8px 0 #121316; display:flex; align-items:center; gap:24px; }
+.hh .hb .ic { flex:none; width:84px; height:84px; font-size:46px; border-radius:18px; }
+.hh .hb .tx { min-width:0; } .hh .hb h1 { margin-top:0; } .hh .hb p { margin-top:8px; font-size:24px; }
+.hh .pts { margin-top:22px; grid-template-columns:repeat(var(--pc, 2), minmax(0, 1fr)); gap:16px; }
+.hh .pt { padding:14px 18px; border-radius:18px; box-shadow:0 6px 0 #121316; align-items:center; text-align:center; } .hh .pt span { margin-top:10px; font-size:21px; }
+.hh .who { padding-top:18px; gap:12px; } .hh .who div { width:86px; } .hh .who .pp { width:78px; height:78px; border-width:4px; box-shadow:0 4px 0 #121316; } .hh .who small { font-size:15px; }
+.hh .who.solo { padding-top:16px; gap:14px 20px; flex-wrap:nowrap; } .hh .who.solo div { width:136px; } .hh .who.solo .pp { width:124px; height:124px; border-width:6px; } .hh .who.solo small { font-size:21px; }
 /* 밸런스 */
+.wd .tg.c3 { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px 18px; }
 .bh-t { margin-top:30px; display:flex; align-items:center; gap:20px; } .bh-t h2 { font-size:76px; line-height:1; } .bh-t .lg { margin:0; }
 .wd .tg { margin-top:30px; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-flow:row; gap:22px 26px; zoom:1.1; }
 .wd .lg span { font-size:22px; padding:6px 16px 5px; }
@@ -393,9 +410,28 @@ def hl_style(h):
     return f'--c:{HL_C.get(c, c)};' + (f' --fg:{fg};' if fg else '')
 
 
-def deck_cover(d, hls, today=True):
+def deck_cover(d, hls, today=True, chips=None):
     rows = ''.join(f'<div class="tk" style="{hl_style(h)}"><span class="c">{e(h.get("icon", "✦"))}</span><div class="t"><b class="bh">{e(h["title"])}</b><span>{e(h.get("lead", ""))}</span></div></div>' for h in hls[:6])
-    return f'<div class="cv-v bh">{e(d["version"])}</div><div class="cv-l bh">{"오늘 " if today else ""}바뀐 것 {len(hls)}가지</div><div class="cv-ls">{rows}</div>'
+    mo = ''.join(f'<span><i>{e(m.get("icon") or "✦")}</i>{e(m["title"])}</span>' for m in (chips or []))
+    mo = f'<div class="cv-mo"><h3 class="bh">그 밖에</h3><div class="cc">{mo}</div></div>' if mo else ''
+    return f'<div class="cv-v bh{" sm" if mo else ""}">{e(d["version"])}</div><div class="cv-l bh">{"오늘 " if today else ""}바뀐 것 {len(hls)}가지</div><div class="cv-ls">{rows}</div>{mo}'
+
+
+def deck_half(h):  # 큰 사건 두 개를 한 장에 (위 · 아래 반씩)
+    t = h['title']
+    hs = 72 if len(t) <= 7 else 60 if len(t) <= 10 else 50
+    pts = h.get('points', [])[:4]
+    pc = max(1, len(pts))
+    longest = max((len(str(p.get('big', ''))) for p in pts), default=0)
+    base = {1: 110, 2: 92, 3: 74, 4: 62}[pc]
+    bs = base if longest <= 3 else int(base * .82) if longest <= 5 else int(base * .64) if longest <= 7 else int(base * .5)
+    dk = ' dk' if h.get('color') == 'yellow' else ''
+    pt = ''.join(f'<div class="pt"><b class="bh">{e(str(p.get("big", "")))}</b><span>{e(p.get("small", ""))}</span></div>' for p in pts)
+    who = ''.join(f'<div><span class="pp">{pic(i)}</span><small>{e(short(NAMES.get(i, i)))}</small></div>' for i in h.get('chars', [])[:7])
+    return (f'<div class="hh" style="{hl_style(h)}"><div class="hb{dk}" style="--hs:{hs}px; --st:7px"><span class="ic">{e(h.get("icon", "✦"))}</span><div class="tx"><h1 class="bh">{e(t)}</h1>'
+            + (f'<p>{e(h["lead"])}</p>' if h.get('lead') else '') + '</div></div>'
+            + (f'<div class="pts" style="--pc:{pc}; --bs:{bs}px; --ps:{6 if bs >= 70 else 5}px">{pt}</div>' if pt else '')
+            + (f'<div class="who{"" if pt else " solo"}">{who}</div>' if who else '') + '</div>')
 
 
 def deck_headline(h):
@@ -420,8 +456,14 @@ def deck_more(rows, cont):
     return f'<div class="mo-t bh">그 밖에{" (계속)" if cont else ""}</div><div class="mo">{r}</div>'
 
 
+BAL_COLS, BAL_ROWS = 3, 11  # 밸런스 한 장에 3열 × 11줄 (촘촘하게 · 사용자 요청) · 줄 수에 맞춰 zoom 으로 장을 채운다
+
+
 def deck_balance(chunk, all_tiles, cont):
-    return f'<div class="bh-t"><h2 class="bh">밸런스{" (계속)" if cont else ""}</h2>{legend(all_tiles) if not cont else ""}</div>{tile_grid(chunk).replace("grid-template-rows", "data-r")}'
+    rows = max(1, math.ceil(len(chunk) / BAL_COLS))
+    z = min(.78, 1090 / (rows * 158 - 16))  # 타일 한 줄 142 + 간격 16 · 남는 높이 약 1090
+    g = tile_grid(chunk).replace('class="tg"', f'class="tg c3" style="zoom:{z:.3f}"', 1).replace('style="grid-template-rows', 'data-r="')
+    return f'<div class="bh-t"><h2 class="bh">밸런스{" (계속)" if cont else ""}</h2>{legend(all_tiles) if not cont else ""}</div>{g}'
 
 
 def build_deck(d):
@@ -440,19 +482,23 @@ def build_deck(d):
         cover_only = True
     else:
         cover_only = False
-    tiles = sorted(split_tiles(tiles), key=lambda t: TAG_ORDER.get(t.get('tag'), 2))  # 쪼갠 뒤 정렬 (하향 → 조정 → 상향 · 같은 지후는 그대로 붙어 있다)
+    tiles = sorted(split_tiles(tiles), key=lambda t: TAG_ORDER.get(t.get('tag'), 2))  # 변경 하나 = 타일 하나 (R2.22.1) · 쪼갠 뒤 정렬 (하향 → 조정 → 상향 · 같은 지후는 붙어 있다)
+    chips, more = more[:10], more[10:]  # 작은 변경은 표지 아래 칩으로 (10개까지 · 나머지는 「그 밖에」 장)
     pages = [('cover', None)]
     if not cover_only:
-        pages += [('hl', h) for h in hls]
-    for i in range(0, len(tiles), 12):
-        pages.append(('bal', (tiles[i:i + 12], i > 0)))
+        pages += [('pair', hls[i:i + 2]) for i in range(0, len(hls), 2)]  # 큰 사건 두 개씩 한 장
+    per = BAL_COLS * BAL_ROWS
+    for i in range(0, len(tiles), per):
+        pages.append(('bal', (tiles[i:i + per], i > 0)))
     for i in range(0, len(more), 7):
         pages.append(('more', (more[i:i + 7], i > 0)))
     out = []
     for k, (kind, v) in enumerate(pages):
         top = wtop(d, k + 1, len(pages))
         if kind == 'cover':
-            body = deck_cover(d, hls, not cover_only)
+            body = deck_cover(d, hls, not cover_only, chips)
+        elif kind == 'pair':
+            body = '<div class="hp">' + ''.join(deck_half(h) for h in v) + '</div>'
         elif kind == 'hl':
             body = f'<div style="display:contents; {hl_style(v)}">{deck_headline(v)}</div>'
         elif kind == 'bal':
