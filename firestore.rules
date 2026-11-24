@@ -227,12 +227,20 @@ service cloud.firestore {
     // ── 운영: 점검 · 로비 공지 · 운영 우편 ──
     // config/maintenance = { on, msg, until, by, at } · config/announce = { on, msg, by, at } — 누구나 읽고(로그인 전에도) 운영자만 쓴다
     match /config/{docId} {
-      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'tier';
+      allow get: if docId == 'maintenance' || docId == 'announce' || docId == 'tier' || docId == 'bcast';
       allow list: if false;
       allow write: if docId == 'announce' && isAdmin()
         && request.resource.data.keys().hasOnly(['on', 'msg', 'by', 'at'])
         && request.resource.data.on is bool
         && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+      // R3.5: config/bcast = 운영자 메시지 (모든 화면 맨 위 띠) { on, msg, sec (띄울 초), by, at }
+      allow write: if docId == 'bcast' && isAdmin()
+        && request.resource.data.keys().hasOnly(['on', 'msg', 'sec', 'by', 'at'])
+        && request.resource.data.on is bool
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
+        && request.resource.data.sec is int && request.resource.data.sec >= 5 && request.resource.data.sec <= 60
         && request.resource.data.by == request.auth.uid
         && request.resource.data.at == request.time;
       // R3.2 build 15: config/tier = 티어리스트 생성기로 등재한 티어표 { on, sc (JSON 글 · id → 점수), n 판 수, ver, by, at }
