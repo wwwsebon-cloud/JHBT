@@ -14,6 +14,7 @@ const CFG = path.join(os.homedir(), 'Documents', 'jhbt-app', 'rules.json');
 let cfg = {}; try { cfg = JSON.parse(fs.readFileSync(CFG, 'utf8')); } catch (e) {}
 const keyPath = opt('key') || process.env.JHBT_SA || cfg.key;
 if (!keyPath) { console.error('처음 한 번: node tools/rules-deploy.js --key <서비스 계정 JSON 경로>'); process.exit(1); }
+if (!fs.existsSync(keyPath)) { console.error('✘ 키 파일이 없어요: ' + keyPath + ' · 파일 탐색기에서 키 파일을 우클릭 → 「경로로 복사」 한 뒤 --key 뒤에 붙여 넣어 주세요.'); process.exit(1); }
 if (opt('key')) { fs.mkdirSync(path.dirname(CFG), { recursive: true }); fs.writeFileSync(CFG, JSON.stringify({ ...cfg, key: path.resolve(opt('key')) }, null, 1)); console.log('키 경로를 기억했어요: ' + CFG); }
 const sa = JSON.parse(fs.readFileSync(keyPath, 'utf8')), PID = sa.project_id;
 const RULES = fs.readFileSync(path.join(__dirname, '..', 'firestore.rules'), 'utf8');
