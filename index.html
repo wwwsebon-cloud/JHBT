@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.5"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.5"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -13748,7 +13748,7 @@ function matchBase(extra) { // 봇전 · 친선전 공통 경기 상태
   if (!(extra && extra.replay)) { RP.rounds = []; S.replay = null; document.body.classList.remove('replaying'); }
   Object.assign(S, { phase: 'intro', round: 1, rk: 0, maxLives: CFG.LIVES, lives: { a: CFG.LIVES, e: CFG.LIVES }, place: { a: emptyPlace(), e: emptyPlace() },
     units: [], shots: [], lines: [], zones: [], time: 0, pool: [], pick: null, moveSel: null, ops: [], speed: 1, speedManual: false, hist: [], stats: [], net: null, coinSlot: Math.floor(Date.now() / 600000) /* R2.29: 봇전도 경기 시작 시세로 고정 (리플레이가 다시 볼 때 시세로 바뀌던 것) */, dmShown: false, fast: false, specWinner: null,
-    arc: null, enh: null, quit: false, evOn: false, ev: { a: [], e: [] }, evc: { a: {}, e: {} }, evf: { a: { ban: [], fuse: 0 }, e: { ban: [], fuse: 0 } }, evRound: 0, evCards: null, evPending: false, bench: null, weak: false, clover: { a: 0, e: 0 }, rel: null, ptK: null, ptKR: null, /* R3.5 포탈 랭크 6 */ cw: null, tok: { a: 0, e: 0 }, inc: { a: 0, e: 0 } /* R3.4 build 7: 업그레이드 단계 */, rr: { a: TOK.RR, e: TOK.RR }, end: { a: false, e: false }, reTok: null, tokRS: null, placedOnce: { a: {}, e: {} } }, extra); /* R3.1 build 2 토큰제 */ // ev: 얻은 랜덤 이벤트 · evc: 개수 · evf: 다음 이벤트 · 밴 · 합체 수
+    arc: null, enh: null, quit: false, evOn: false, ev: { a: [], e: [] }, evc: { a: {}, e: {} }, evf: { a: { ban: [], fuse: 0 }, e: { ban: [], fuse: 0 } }, evRound: 0, evCards: null, evPending: false, bench: null, weak: false, botD: 0, _pe: null, clover: { a: 0, e: 0 }, rel: null, ptK: null, ptKR: null, /* R3.5 포탈 랭크 6 */ cw: null, tok: { a: 0, e: 0 }, inc: { a: 0, e: 0 } /* R3.4 build 7: 업그레이드 단계 */, rr: { a: TOK.RR, e: TOK.RR }, end: { a: false, e: false }, reTok: null, tokRS: null, placedOnce: { a: {}, e: {} } }, extra); /* R3.1 build 2 토큰제 */ // ev: 얻은 랜덤 이벤트 · evc: 개수 · evf: 다음 이벤트 · 밴 · 합체 수
 }
 let EV_NEXT = false; // R2.26: 아케이드 「이벤트 모드」를 누르면 다음 일반전 한 판만 이벤트 모드 (보상 그대로 · 입장료 없음)
 const deckNeedMsg = () => `덱에 지후 5기를 채워야 시작할 수 있어요 (지금 ${profile.deck.filter(owned).length} / 5)`;
@@ -13756,9 +13756,9 @@ function newMatch(o) { // o: 아케이드 { arc, decks() } — 내 덱 대신 �
   const deck = profile.deck.filter(owned);
   if (!o && deck.length < 5) { banner(deckNeedMsg()); show('deck'); renderDeck(); return; } // 덱 5기를 채워야 시작 (R2.3 build 2)
   rng = mulberry32((Date.now() ^ 0x9e3779b9) >>> 0);
-  const nb = o ? 0 : newbieLeft(), persona = !o ? botPersonaPick(nb > 0) : o.arc && o.arc.kind === 'tower' ? towerPersona(o.arc.floor) : 'std'; // R2.12.2 봇 페르소나 (비공개) · R2.13.1: 아케이드(튜토리얼 · 미러전 · 경쟁전 …)는 전형적만
-  matchBase(o ? { deck: o.decks(), evOn: false, arc: o.arc, persona, ...(o.lives ? { maxLives: o.lives, lives: { a: o.lives, e: o.lives } } : {}) } : { deck: { a: deck.slice(0, 5), e: nb > 0 ? botPersonaDeck(persona, true) : (profile.level | 0) >= 5 ? botTierDeck(persona) : botDeckRamp(persona) /* R3.4 build 7 */ }, ...(CFG.EV_ENABLED && (EV_NEXT || profile.evOn) ? { evOn: true, maxLives: CFG.EV_LIVES, lives: { a: CFG.EV_LIVES, e: CFG.EV_LIVES } } : profile.level >= CFG.LIVES4_LV ? { maxLives: 4, lives: { a: 4, e: 4 } } : {}), /* R2.37 build 3: Lv5 부터 일반전 라이프 4 */ persona, weak: nb > 0 }); EV_NEXT = false; // R2.23 이벤트 모드: 하트 4 · R2.26: 일반전은 늘 클래식 · 이벤트 모드는 아케이드에서 (EV_NEXT)
-  if (DEV_HOST) console.info('[bot] persona', persona, BOT_P[persona] && BOT_P[persona].name);
+  const nb = o ? 0 : newbieLeft(), bd = !o ? (nb > 0 ? 1 : botDPick()) : 0, persona = !o ? botStylePick(bd) : o.arc && o.arc.kind === 'tower' ? towerPersona(o.arc.floor) : 'std'; // R2.12.2 봇 페르소나 (비공개) · R2.13.1: 아케이드(튜토리얼 · 미러전 · 경쟁전 …)는 전형적만
+  matchBase(o ? { deck: o.decks(), evOn: false, arc: o.arc, persona, ...(o.lives ? { maxLives: o.lives, lives: { a: o.lives, e: o.lives } } : {}) } : { deck: { a: deck.slice(0, 5), e: nb > 0 ? botPersonaDeck(persona, true) : botTierDeck(persona, bd) /* R3.5 build 6: 모든 레벨 난이도로 */ }, ...(CFG.EV_ENABLED && (EV_NEXT || profile.evOn) ? { evOn: true, maxLives: CFG.EV_LIVES, lives: { a: CFG.EV_LIVES, e: CFG.EV_LIVES } } : profile.level >= CFG.LIVES4_LV ? { maxLives: 4, lives: { a: 4, e: 4 } } : {}), /* R2.37 build 3: Lv5 부터 일반전 라이프 4 */ persona, botD: bd, weak: nb > 0 }); EV_NEXT = false; // R2.23 이벤트 모드: 하트 4 · R2.26: 일반전은 늘 클래식 · 이벤트 모드는 아케이드에서 (EV_NEXT)
+  if (DEV_HOST) console.info('[bot] 난이도', bd, 'persona', persona, BOT_P[persona] && BOT_P[persona].name);
   if (o && o.setup) o.setup(); // 샌드박스: 배치를 미리 채운다
   S.enh = enhMatch(o); // R2.15 지후 강화 (리플레이는 시작 상태에 같이 남는다)
   S.nick = { a: profile.nick || '나', e: (o && o.nick) || BOT_NAMES[Math.floor(rng() * BOT_NAMES.length)] };
@@ -13887,7 +13887,7 @@ const botTokUp = () => !S.net && !TUT.on && !(S.arc && S.arc.kind === 'tutorial'
 function tokRound() { // 라운드 시작: 토큰 지급 (50:50 재경기면 그 라운드 시작 때로 되돌린다)
   S.end = { a: false, e: false }; S.pendUp = S.pendRr = 0; if (!tokOn()) return;
   if (S.reTok) { const o = JSON.parse(S.reTok); S.tok = o.tok; S.inc = o.inc; S.rr = o.rr; S.reTok = null; }
-  else { ['a', 'e'].forEach(s => { S.tok[s] = r1(S.tok[s] + tokBase(S.round | 0) + (S.inc[s] | 0) + (s === 'e' && botTokUp() ? TOK.BOT_ADD : 0) + (isDeathmatch() ? TOK.DM : 0) + ((S.round | 0) <= 1 && S.art && s === S.artSide ? av('wallet') : 0) /* 지후의 지갑 */); }); artRoundTok(); } /* R3.4 build 6 적금통장 */
+  else { ['a', 'e'].forEach(s => { S.tok[s] = r1(S.tok[s] + tokBase(S.round | 0) + (S.inc[s] | 0) + (s === 'e' ? botTokAdd() : 0) + (isDeathmatch() ? TOK.DM : 0) + ((S.round | 0) <= 1 && S.art && s === S.artSide ? av('wallet') : 0) /* 지후의 지갑 */); }); artRoundTok(); } /* R3.4 build 6 적금통장 */
   S.tokRS = JSON.stringify({ tok: S.tok, inc: S.inc, rr: S.rr });
 }
 function tokUp() { // 업그레이드: 4 · 6 · 8토큰 → 라운드당 토큰 +1 (최대 8)
@@ -13907,8 +13907,8 @@ function tokSkip() { // 전투 시작: 이번 라운드 배치를 끝낸다 (남
 }
 function botTok() { // 봇 한 번: (가끔) 업그레이드 → 배치 하나 · 토큰을 썼으면 true · 못 쓰면 이번 라운드 끝
   if (!tokOn()) { botDeployOne(); return false; }
-  if (S.end.e) return false; const Pp = BOT_P[S.persona] || BOT_P.std;
-  if (!Pp.noob && S.round <= 4 && S.tok.e >= upCost('e') + 2 && canUp('e') && rng() < (Pp.pro ? 0.7 : 0.4)) { S.tok.e -= upCost('e'); S.inc.e++; }
+  if (S.end.e) return false; const Pp = botEff();
+  if (!Pp.noob && S.round <= 4 && S.tok.e >= upCost('e') + 2 && canUp('e') && rng() < (S.botD ? BOT_D[S.botD].up : Pp.pro ? 0.7 : 0.4)) { S.tok.e -= upCost('e'); S.inc.e++; }
   S._bp = 0; botDeployOne(); if (!S._bp && !(Pp.noob && S.deck.e.some(id => canPay('e', id)) && rng() < 0.85)) S.end.e = true; return !!S._bp || !S.end.e; /* 왕초보는 멍때려도 바로 끝내지 않는다 */
 }
 const botPay = (id, nw) => { tokPay('e', id, nw); S._bp = 1; };
@@ -14238,18 +14238,50 @@ const BOT_P = {
   gambler: { name: '도박사', pick: botRarest, row: () => null, fuse: 0.8, miss: 0.15, deck: id => ({ legend: 4, epic: 2, rare: 1, common: 0.5 })[CHARS[id].rarity] || 1 },
 };
 const towerPersona = f => (f | 0) <= 1 ? 'rookie' : (f | 0) >= 10 ? 'pro' : (f | 0) >= 5 && Math.random() < 0.5 ? 'pro' : 'std'; // R2.26 봇 상향: 1층만 초보 → 2층부터 전형적 → 5층부터 초고수 반반 → 10층부터 초고수만 (R2.13.1: 1 · 2층 초보 · 9층부터 반반)
-function botPersonaPick(newbie) { if (newbie) return 'noob'; // 초보자 보호 중엔 늘 왕초보 (R2.13) · 레벨이 낮으면 초보가 많고 · 연승 중이면 초고수가 나온다 · 같은 성격 연속은 피한다
-  const L = profile.level | 0, st = profile.streak | 0, OTHERS = ['swarm', 'merger', 'shuffler', 'aggro', 'back', 'front', 'defense', 'gambler'];
-  let w;
-  if (L >= 10) { // R2.13.2: Lv.10 부터는 전형적 · 초고수가 80% · 초고수 몫은 Lv.10 25% → 레벨마다 +3%p (최대 85%) · 5연승 이상 +10%p · 나머지 20% 는 다른 성격 (초보 없음)
-    const pk = Math.min(0.85, 0.25 + (L - 10) * 0.03 + (st >= 5 ? 0.1 : 0)); w = { std: 80 * (1 - pk), pro: 80 * pk }; OTHERS.forEach(k => { w[k] = 20 / OTHERS.length; });
-    if (botPersonaPick.last && OTHERS.includes(botPersonaPick.last)) w[botPersonaPick.last] *= 0.15; // 전형적 · 초고수는 연속으로 나와도 된다
-  } else {
-    w = { std: 18, rookie: L < 5 ? 30 : 16, pro: st >= 5 ? 16 : st >= 3 ? 8 : L >= 8 ? 2 : 0.5, gambler: 6 }; ['swarm', 'merger', 'aggro', 'back', 'front', 'defense'].forEach(k => { w[k] = 8; }); w.shuffler = 7; // R2.13.2: 따라쟁이 삭제
-    if (botPersonaPick.last && w[botPersonaPick.last]) w[botPersonaPick.last] *= 0.15;
-  }
-  const ks = Object.keys(w), tot = ks.reduce((s, k) => s + w[k], 0); let r = Math.random() * tot;
-  for (const k of ks) { r -= w[k]; if (r <= 0) return (botPersonaPick.last = k); } return 'std'; }
+// ═════════ R3.5 build 6 봇 난이도 1~10 (일반전 · 온라인 매칭 대기열 봇 · 아케이드 · 탑 · 디펜스 · 성뿌수기는 예전 방식 그대로) ═════════
+// 난이도 D (BOT_D) 가 봇의 덱 (sk 티어 쏠림 · wild 아무 지후 칸 · ss SS 최대 수) · 랭크 (sk) · 실수 (miss) · 합체 (mf · fuse) · 업그레이드 (up) · 라운드 추가 토큰 (tok) 을 정하고, 성격 (BOT_P · 물량 · 공격적 …) 은 취향만 정한다
+// 유저 레벨 1~19 마다 난이도 비율표 BOT_LV_D (한 줄 = D1 … D10 · 합 100) 에서 뽑는다 · 연승 3 이상은 한 단계 · 5 이상은 두 단계 위로 · 초보자 보호 중에는 D1 (왕초보 · 능력치 ×0.75)
+const BOT_D = [null,
+  { base: 'noob',   sk: 0,    wild: 0.5,  ss: 0, miss: 0.35, mf: 0,    fuse: 0,   tok: 0,   up: 0,    pro: false },
+  { base: 'rookie', sk: 0.1,  wild: 0.45, ss: 0, miss: 0.35, mf: 0.1,  fuse: 0,   tok: 0,   up: 0.3,  pro: false },
+  { base: 'std',    sk: 0.25, wild: 0.35, ss: 0, miss: 0.22, mf: 0.3,  fuse: 0.4, tok: 0,   up: 0.3,  pro: false },
+  { base: 'std',    sk: 0.35, wild: 0.3,  ss: 1, miss: 0.16, mf: 0.35, fuse: 0.5, tok: 0.5, up: 0.35, pro: false },
+  { base: 'std',    sk: 0.45, wild: 0.24, ss: 1, miss: 0.12, mf: 0.4,  fuse: 0.55, tok: 1,  up: 0.4,  pro: false },
+  { base: 'std',    sk: 0.55, wild: 0.2,  ss: 2, miss: 0.08, mf: 0.45, fuse: 0.6, tok: 1.5, up: 0.45, pro: false },
+  { base: 'std',    sk: 0.65, wild: 0.16, ss: 2, miss: 0.05, mf: 0.5,  fuse: 0.7, tok: 2,   up: 0.5,  pro: false },
+  { base: 'std',    sk: 0.75, wild: 0.12, ss: 2, miss: 0.03, mf: 0.5,  fuse: 0.8, tok: 2,   up: 0.6,  pro: true },
+  { base: 'std',    sk: 0.87, wild: 0.1,  ss: 3, miss: 0.01, mf: 0.45, fuse: 0.9, tok: 2.5, up: 0.7,  pro: true },
+  { base: 'pro',    sk: 1,    wild: 0.08, ss: 3, miss: 0,    mf: 0.25, fuse: 1,   tok: 2.5, up: 0.8,  pro: true }
+];
+const BOT_LV_D = [
+  [39, 39, 18, 4, 0, 0, 0, 0, 0, 0], /* Lv1 */
+  [26, 38, 26, 9, 1, 0, 0, 0, 0, 0], /* Lv2 */
+  [15, 33, 33, 15, 4, 0, 0, 0, 0, 0], /* Lv3 */
+  [8, 24, 35, 24, 8, 1, 0, 0, 0, 0], /* Lv4 */
+  [3, 15, 32, 32, 15, 3, 0, 0, 0, 0], /* Lv5 */
+  [1, 8, 24, 35, 24, 7, 1, 0, 0, 0], /* Lv6 */
+  [0, 3, 15, 32, 32, 15, 3, 0, 0, 0], /* Lv7 */
+  [0, 1, 8, 24, 35, 24, 7, 1, 0, 0], /* Lv8 */
+  [0, 0, 3, 15, 32, 32, 15, 3, 0, 0], /* Lv9 */
+  [0, 0, 1, 8, 24, 35, 24, 7, 1, 0], /* Lv10 */
+  [0, 0, 0, 4, 17, 33, 30, 13, 3, 0], /* Lv11 */
+  [0, 0, 0, 2, 10, 27, 34, 20, 6, 1], /* Lv12 */
+  [0, 0, 0, 1, 6, 20, 34, 27, 10, 2], /* Lv13 */
+  [0, 0, 0, 0, 3, 13, 30, 33, 17, 4], /* Lv14 */
+  [0, 0, 0, 0, 1, 8, 24, 35, 24, 8], /* Lv15 */
+  [0, 0, 0, 0, 1, 5, 19, 34, 29, 12], /* Lv16 */
+  [0, 0, 0, 0, 0, 3, 14, 32, 34, 17], /* Lv17 */
+  [0, 0, 0, 0, 0, 2, 11, 29, 36, 22], /* Lv18 */
+  [0, 0, 0, 0, 0, 1, 9, 26, 38, 26] /* Lv19 */
+];
+function botDPick() { const L = clamp(profile.level | 0, 1, BOT_LV_D.length), st = profile.streak | 0, sh = st >= 5 ? 2 : st >= 3 ? 1 : 0, w = Array(10).fill(0); BOT_LV_D[L - 1].forEach((x, i) => { w[Math.min(9, i + sh)] += x; });
+  let r = Math.random() * 100, d = 0; while (d < 9 && r >= w[d]) r -= w[d++]; return d + 1; } // 난이도 1~10 (연승이면 위로)
+function botStylePick(d) { const D = BOT_D[d]; if (D.base === 'noob' || D.base === 'rookie') return D.base; /* D1 왕초보 · D2 초보는 그 모습 그대로 */
+  const OTHERS = ['swarm', 'merger', 'shuffler', 'aggro', 'back', 'front', 'defense', 'gambler'], L = clamp(profile.level | 0, 1, BOT_LV_D.length), pt = 0.5 - 0.3 * (L - 1) / (BOT_LV_D.length - 1); /* 테마 성격 확률 Lv1 50% → Lv19 20% */
+  if (Math.random() >= pt) return D.base; const w = OTHERS.map(k => (k === botStylePick.last ? 0.15 : 1)), tot = w.reduce((x, y) => x + y, 0); let r = Math.random() * tot, i = 0; while (i < w.length - 1 && r >= w[i]) r -= w[i++]; return (botStylePick.last = OTHERS[i]); }
+function botEff() { const d = S.botD | 0, P = BOT_P[S.persona] || BOT_P.std; if (!d || P.noob || S.persona === 'rookie') return P; /* 난이도가 없으면 (아케이드 · 탑 …) 예전 성격 그대로 */
+  const k = d + S.persona; if (S._pe && S._pe.k === k) return S._pe.v; const D = BOT_D[d], v = { ...P, miss: D.miss, pro: D.pro }; if (S.persona === 'std') { v.mf = D.mf; v.fuse = D.fuse; } else if (v.mf == null) v.mf = D.mf; S._pe = { k, v }; return v; }
+const botTokAdd = () => (S.botD ? BOT_D[S.botD].tok : botTokUp() ? TOK.BOT_ADD : 0); // 봇 라운드 추가 토큰 (난이도마다)
 function botDeckRamp(key) { // R2.17.2: Lv.10 전에는 봇 덱 세기를 레벨에 맞춰 천천히 올린다 — 후보 16개를 티어 점수 합으로 줄 세워 분위 q (Lv.5 이하 10% → Lv.10 50% = 무작위와 같음) · 초고수(연승)는 그대로
   const L = profile.level | 0; if (L >= 10 || key === 'pro') return botPersonaDeck(key, false);
   const q = 0.1 + 0.4 * clamp((L - 5) / 5, 0, 1), sc = d => d.reduce((s, id) => s + (TIER_SC[id] ?? 50), 0);
@@ -14258,9 +14290,9 @@ function botDeckRamp(key) { // R2.17.2: Lv.10 전에는 봇 덱 세기를 레벨
 }
 // R3.4 build 7 봇 덱 = 티어리스트 학습 (내 레벨 5 이상 · 그 아래는 botDeckRamp 그대로): 실력 (BOT_SKILL) 이 높을수록 티어 점수 쪽으로 강하게 기운 가중 추첨
 // SS 는 최대 3기 · 실력이 낮을수록 아무 지후나 고르는 칸 (와일드) 이 섞인다 → A A B B B · SS SS A C D 처럼 여러 모양 · 테마 페르소나는 자기 취향 (P.deck) 을 곱한다
-function botTierDeck(key) { const P = BOT_P[key] || BOT_P.std, sk = BOT_SKILL[key] ?? 0.45, k = 1 + 3.4 * sk, pool = pubIds().filter(id => !CHARS[id].special), out = [];
-  const w0 = id => Math.exp(k * ((TIER_SC[id] ?? 50) - 60) / 25) * (P.deck ? P.deck(id) : 1), wild = 0.08 + (1 - sk) * 0.4;
-  while (out.length < 5 && out.length < pool.length) { const ss = out.filter(id => tierOf(id) === 'SS').length, c = pool.filter(id => !out.includes(id) && !(ss >= 3 && tierOf(id) === 'SS'));
+function botTierDeck(key, d) { const P = BOT_P[key] || BOT_P.std, D = d ? BOT_D[d] : null, sk = D ? D.sk : BOT_SKILL[key] ?? 0.45, k = D ? 4.4 * Math.pow(sk, 0.85) : 1 + 3.4 * sk, pool = pubIds().filter(id => !CHARS[id].special), out = [];
+  const w0 = id => Math.exp(k * ((TIER_SC[id] ?? 50) - 60) / 25) * (P.deck ? P.deck(id) : 1), wild = D ? D.wild : 0.08 + (1 - sk) * 0.4;
+  while (out.length < 5 && out.length < pool.length) { const ss = out.filter(id => tierOf(id) === 'SS').length, c = pool.filter(id => !out.includes(id) && !(ss >= (D ? D.ss : 3) && tierOf(id) === 'SS'));
     if (!c.length) break; if (Math.random() < wild) { out.push(c[Math.floor(Math.random() * c.length)]); continue; }
     const w = c.map(w0), tot = w.reduce((s, x) => s + x, 0); let r = Math.random() * tot, i = 0; while (r > w[i] && i < w.length - 1) r -= w[i++]; out.push(c[i]); }
   return out; }
@@ -14288,7 +14320,7 @@ function botTile(side, id, row) { // 빈 칸마다: 인접 가치가 얼마나 �
   return best;
 }
 function botDeployOne() { // R2.12.2: 페르소나대로 (예전 규칙 = std)
-  const Pp = BOT_P[S.persona] || BOT_P.std, pool = botPool(); if (!pool.length) return; /* R3.1 build 2: 토큰 */
+  const Pp = botEff(), pool = botPool(); if (!pool.length) return; /* R3.1 build 2: 토큰 */
   if (Pp.mv && rng() < Pp.mv) { const own = S.place.e.map((p, t) => p ? t : -1).filter(t => t >= 0); if (own.length) { const a = botRand(own), b = Math.floor(rng() * TILES), L = S.place.e, T = L.slice(); T[a] = L[b]; T[b] = L[a]; if (a !== b && (Pp.noob || adjScore(T) >= adjScore(L))) moveTile('e', a, b); } } // 자리 바꾸기 (R2.21: 왕초보가 아니면 인접 가치를 깨는 자리 바꾸기는 하지 않는다)
   { const jt = pool.includes('joker') ? mergeTile('e', 'joker') : null; if (jt != null) { botPay('joker'); levelUp('e', jt); return; } } // R2.21.1: 조커는 (왕초보 포함) 무조건 합친다 — 변신은 전투 직전 botJoker
   if (Pp.noob) { if (rng() < Pp.noob) return; const pl = pool.filter(id => botPlace('e', id)); if (!pl.length) return; const id = Pp.pick(pl), t = pickTile('e', Pp.row(id)); if (t != null) { botPay(id, true); placeAt('e', t, id); } return; } // 왕초보: 놓기만 (합체 · 레벨업 안 함)
@@ -14611,11 +14643,11 @@ function lifeFx(loser) {
 const LIVE_SKIP = ['tutorial', 'sandbox', 'reels'];
 function liveMark() {
   if (S.net || S.replay || TUT.on || (S.arc && LIVE_SKIP.includes(S.arc.kind))) { if (profile.live) { delete profile.live; save(); } return; }
-  profile.live = { at: Date.now(), arc: S.arc ? JSON.parse(JSON.stringify(S.arc)) : null, deck: { a: S.deck.a.slice(), e: S.deck.e.slice() }, nick: { ...S.nick }, lvl: { ...S.lvl }, pf: S.pf, maxLives: S.maxLives || CFG.LIVES, lives: { ...S.lives }, hist: [], round: 1, persona: S.persona }; save();
+  profile.live = { at: Date.now(), arc: S.arc ? JSON.parse(JSON.stringify(S.arc)) : null, deck: { a: S.deck.a.slice(), e: S.deck.e.slice() }, nick: { ...S.nick }, lvl: { ...S.lvl }, pf: S.pf, maxLives: S.maxLives || CFG.LIVES, lives: { ...S.lives }, hist: [], round: 1, persona: S.persona, botD: S.botD | 0 }; save();
 }
 function liveForfeit() { // 지난 판을 다 끝내지 않고 나갔으면 패배로 정산 (항복과 같다 · 결과 화면)
   const L = profile.live; if (!L || !L.deck) { delete profile.live; return false; }
-  const ml = L.maxLives || CFG.LIVES; matchBase({ deck: L.deck, evOn: false, arc: L.arc || null, persona: L.persona, maxLives: ml, lives: { a: 0, e: (L.lives && L.lives.e) || ml } });
+  const ml = L.maxLives || CFG.LIVES; matchBase({ deck: L.deck, evOn: false, arc: L.arc || null, persona: L.persona, botD: L.botD | 0, maxLives: ml, lives: { a: 0, e: (L.lives && L.lives.e) || ml } });
   Object.assign(S, { nick: L.nick || { a: profile.nick, e: '봇' }, lvl: L.lvl || { a: profile.level, e: profile.level }, pf: L.pf || { a: {}, e: {} }, hist: Array.isArray(L.hist) ? L.hist : [], round: L.round || 1, boost: false, quit: true }); RP.rounds = [];
   endMatch(false, '게임 도중 나가서 패배로 처리됐어요'); banner('🏳 지난 판을 끝내지 않고 나가서 패배로 처리됐어요'); return true;
 }
@@ -15499,11 +15531,11 @@ function enhMatch(o) { // 판 시작 (newMatch): 내 쪽 = 내 강화 · 봇 = �
   const k = o && o.arc && o.arc.kind; if (['tutorial', 'sandbox', 'reels', 'mirror', 'random', 'comp', 'castle'].includes(k)) return null; /* R3.3 build 4: 아케이드는 모두 랭크 1 */
   if (k === 'tower') return { a: {}, e: { _: (o.arc.floor | 0) >= 15 ? 5 : 3 } }; /* R3.3 build 4: 지후의 탑은 내 지후 A · R3.5 build 2: 봇 S · 15층부터 SSS */
   const a = {}, L = (S.deck.a || []).filter(id => CHARS[id]); L.forEach(id => { if (owned(id)) a[id] = enhLv(id); });
-  return { a, e: botRanks(L.map(id => a[id] || 1), S.deck.e || [], S.persona) };
+  return { a, e: botRanks(L.map(id => a[id] || 1), S.deck.e || [], S.botD ? BOT_D[S.botD].sk : S.persona) };
 }
 const BOT_SKILL = { noob: 0, rookie: 0.15, std: 0.55, pro: 1 }; // R2.36 build 3: 봇 실력 (나머지 페르소나 0.45) → 랭크가 위로 갈 확률
 function botRanks(mine, ids, persona) { // 내 덱 랭크 (예: 3 5 4 12 1) 를 무작위 순서로 봇 지후에 하나씩 · 지후마다 −2 ~ +2 (고수일수록 + 쪽) · 이상치는 고루 나눈다
-  const sk = BOT_SKILL[persona] ?? 0.45, R = mine.length ? mine.slice() : [1], out = {}, got = [];
+  const sk = typeof persona === 'number' ? persona : BOT_SKILL[persona] ?? 0.45, R = mine.length ? mine.slice() : [1], out = {}, got = [];
   for (let i = R.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [R[i], R[j]] = [R[j], R[i]]; }
   const w = [-1, 0, 1].map(d => Math.pow(4, (sk - 0.5) * d)), tot = w.reduce((x, y) => x + y, 0); /* R3.5 build 2 5랭크: −1 ~ +1 · 보통 (0.5) 이면 고르게 · 초고수는 +1 이 −1 의 4배 */
   const delta = () => { let x = Math.random() * tot; for (let k = 0; k < 3; k++) { x -= w[k]; if (x <= 0) return k - 1; } return 1; };
@@ -18164,6 +18196,10 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.5', date: '2026.11.24', title: '랭크 개편 · 필살기 · 토큰 리워크 · 운영자 메시지 · 리워크 · 고유능력 16종', sections: [
+    { title: '추가 패치 (build 6)', items: [
+      { icon: '🤖', name: '봇 난이도 1~10단계', tag: 'system', desc: '일반전 봇이 <b>난이도 1~10</b>로 나뉘어요 · 단계가 높을수록 덱이 티어 상위 지후 위주 · 지후 랭크 · 합체 · 업그레이드 · 라운드 추가 토큰이 오르고 실수가 줄어요' },
+      { icon: '📈', name: '레벨별 난이도 비율', tag: 'system', desc: '유저 <b>Lv1~19</b> 마다 만나는 난이도 비율이 달라져요 · Lv1 은 1~3단계 · Lv10 은 4~7단계 · Lv19 는 7~10단계가 중심 · 연승하면 한두 단계 위' },
+    ] },
     { title: '추가 패치 (build 5)', items: [
       { icon: '👥', name: '접속 중인 유저', tag: 'fix', desc: '표기 수치와 목록의 <b>실제 접속 유저 수</b>가 다르던 문제 수정 · 같은 기준으로 셉니다' },
       { icon: '🎁', name: '업데이트 보상', tag: 'system', desc: '다이아 500 · 임테기 → <b>다이아 300 + 곡괭이 1개</b>' },
@@ -22736,7 +22772,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { updDraw, PATCH_NOTES, bcShow, ultInit, ultCast, ULT, rkN, /* R3.5 build 2 시험 */ /* R3.5 운영자 메시지 시험 */ artOpen, artPull, artList, artNow, ART, artS: () => S, /* R3.4 build 6 시험 */ uInfoHtml, charDetail, A, botTierDeck, tierOf, /* build 7 */ ruAdd, /* build 9 */ U4, showComic, comicGo, CVF, ddDrawFx, CV, renderBlock, evOpen, evt, EVT, EVH, bgFlip, capPull, lotShow, lotPick, evNoteShow, evhDraw, evBuy, LOT, alOpen, alShow, AL, liveOpen, liveDraw, LIVE, opOpen, opTab, OP, ST, DEV, visitMark, VS, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { BOT_D, BOT_LV_D, botDPick, botStylePick, botTierDeck, botEff, TIER_SC, tierOf, /* R3.5 build 6 봇 난이도 시험 */ updDraw, PATCH_NOTES, bcShow, ultInit, ultCast, ULT, rkN, /* R3.5 build 2 시험 */ /* R3.5 운영자 메시지 시험 */ artOpen, artPull, artList, artNow, ART, artS: () => S, /* R3.4 build 6 시험 */ uInfoHtml, charDetail, A, botTierDeck, tierOf, /* build 7 */ ruAdd, /* build 9 */ U4, showComic, comicGo, CVF, ddDrawFx, CV, renderBlock, evOpen, evt, EVT, EVH, bgFlip, capPull, lotShow, lotPick, evNoteShow, evhDraw, evBuy, LOT, alOpen, alShow, AL, liveOpen, liveDraw, LIVE, opOpen, opTab, OP, ST, DEV, visitMark, VS, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
