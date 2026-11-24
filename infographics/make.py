@@ -342,8 +342,8 @@ body.wd { --tb:#3cc23a; --ta:#f6b318; --tn:#e8392f; --ol:#121316; }
 .cv-v { margin-top:34px; font-size:236px; line-height:.86; color:#121316; text-shadow:10px 10px 0 #f04a14; }
 .cv-l { margin-top:34px; font-size:44px; }
 .cv-ls { margin-top:26px; display:flex; flex-direction:column; gap:16px; }
-.tk { display:flex; align-items:stretch; min-height:104px; border:5px solid #121316; border-radius:18px; background:#fff; box-shadow:0 7px 0 #121316; overflow:hidden; }
-.tk .c { flex:none; width:104px; display:flex; align-items:center; justify-content:center; background:var(--c); border-right:5px solid #121316; font-size:50px; }
+.tk { display:flex; align-items:stretch; min-height:92px; border:5px solid #121316; border-radius:18px; background:#fff; box-shadow:0 7px 0 #121316; overflow:hidden; }
+.tk .c { flex:none; width:92px; display:flex; align-items:center; justify-content:center; background:var(--c); border-right:5px solid #121316; font-size:50px; }
 .tk .t { min-width:0; display:flex; flex-direction:column; justify-content:center; gap:4px; padding:12px 24px; }
 .tk .t b { font-size:42px; line-height:1.05; }
 .tk .t span { font-size:21px; font-weight:700; color:#6b6d74; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -483,7 +483,7 @@ def build_deck(d):
     else:
         cover_only = False
     tiles = sorted(split_tiles(tiles), key=lambda t: TAG_ORDER.get(t.get('tag'), 2))  # 변경 하나 = 타일 하나 (R2.22.1) · 쪼갠 뒤 정렬 (하향 → 조정 → 상향 · 같은 지후는 붙어 있다)
-    chips, more = more[:10], more[10:]  # 작은 변경은 표지 아래 칩으로 (10개까지 · 나머지는 「그 밖에」 장)
+    chips, more = more[:8], more[8:]  # 작은 변경은 표지 아래 칩으로 (8개까지 · 칩이 3줄이 되면 표지 아래로 넘친다 · 나머지는 「그 밖에」 장)
     pages = [('cover', None)]
     if not cover_only:
         pages += [('pair', hls[i:i + 2]) for i in range(0, len(hls), 2)]  # 큰 사건 두 개씩 한 장
