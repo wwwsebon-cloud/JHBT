@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.5"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.5"><meta name="jihoo-build" content="7"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -14240,41 +14240,41 @@ const BOT_P = {
 const towerPersona = f => (f | 0) <= 1 ? 'rookie' : (f | 0) >= 10 ? 'pro' : (f | 0) >= 5 && Math.random() < 0.5 ? 'pro' : 'std'; // R2.26 봇 상향: 1층만 초보 → 2층부터 전형적 → 5층부터 초고수 반반 → 10층부터 초고수만 (R2.13.1: 1 · 2층 초보 · 9층부터 반반)
 // ═════════ R3.5 build 6 봇 난이도 1~10 (일반전 · 온라인 매칭 대기열 봇 · 아케이드 · 탑 · 디펜스 · 성뿌수기는 예전 방식 그대로) ═════════
 // 난이도 D (BOT_D) 가 봇의 덱 (sk 티어 쏠림 · wild 아무 지후 칸 · ss SS 최대 수) · 랭크 (sk) · 실수 (miss) · 합체 (mf · fuse) · 업그레이드 (up) · 라운드 추가 토큰 (tok) 을 정하고, 성격 (BOT_P · 물량 · 공격적 …) 은 취향만 정한다
-// 유저 레벨 1~19 마다 난이도 비율표 BOT_LV_D (한 줄 = D1 … D10 · 합 100) 에서 뽑는다 · 연승 3 이상은 한 단계 · 5 이상은 두 단계 위로 · 초보자 보호 중에는 D1 (왕초보 · 능력치 ×0.75)
+// 유저 레벨 1~19 마다 난이도 비율표 BOT_LV_D (한 줄 = D1 … D10 · 합 100 · Lv5 까지는 D1~4 만 · 천천히 오른다) 에서 뽑는다 · 연승 3 이상은 한 단계 · 5 이상은 (Lv10 부터) 두 단계 위로 (Lv5 까지는 없음) · 초보자 보호 중에는 D1 (왕초보 · 능력치 ×0.75) · k 는 덱의 티어 쏠림 (음수 = 약한 지후 쪽)
 const BOT_D = [null,
-  { base: 'noob',   sk: 0,    wild: 0.5,  ss: 0, miss: 0.35, mf: 0,    fuse: 0,   tok: 0,   up: 0,    pro: false },
-  { base: 'rookie', sk: 0.1,  wild: 0.45, ss: 0, miss: 0.35, mf: 0.1,  fuse: 0,   tok: 0,   up: 0.3,  pro: false },
-  { base: 'std',    sk: 0.25, wild: 0.35, ss: 0, miss: 0.22, mf: 0.3,  fuse: 0.4, tok: 0,   up: 0.3,  pro: false },
-  { base: 'std',    sk: 0.35, wild: 0.3,  ss: 1, miss: 0.16, mf: 0.35, fuse: 0.5, tok: 0.5, up: 0.35, pro: false },
-  { base: 'std',    sk: 0.45, wild: 0.24, ss: 1, miss: 0.12, mf: 0.4,  fuse: 0.55, tok: 1,  up: 0.4,  pro: false },
-  { base: 'std',    sk: 0.55, wild: 0.2,  ss: 2, miss: 0.08, mf: 0.45, fuse: 0.6, tok: 1.5, up: 0.45, pro: false },
-  { base: 'std',    sk: 0.65, wild: 0.16, ss: 2, miss: 0.05, mf: 0.5,  fuse: 0.7, tok: 2,   up: 0.5,  pro: false },
-  { base: 'std',    sk: 0.75, wild: 0.12, ss: 2, miss: 0.03, mf: 0.5,  fuse: 0.8, tok: 2,   up: 0.6,  pro: true },
-  { base: 'std',    sk: 0.87, wild: 0.1,  ss: 3, miss: 0.01, mf: 0.45, fuse: 0.9, tok: 2.5, up: 0.7,  pro: true },
-  { base: 'pro',    sk: 1,    wild: 0.08, ss: 3, miss: 0,    mf: 0.25, fuse: 1,   tok: 2.5, up: 0.8,  pro: true }
+  { base: 'noob',   k: -0.5, sk: 0,    wild: 0.1,  ss: 0, miss: 0.35, mf: 0,    fuse: 0,    tok: 0,   up: 0,    pro: false },
+  { base: 'rookie', k: -0.3, sk: 0.1,  wild: 0.1,  ss: 0, miss: 0.35, mf: 0.1,  fuse: 0,    tok: 0,   up: 0.3,  pro: false },
+  { base: 'std',    k: -0.1,    sk: 0.25, wild: 0.1,  ss: 0, miss: 0.22, mf: 0.3,  fuse: 0.4,  tok: 0,   up: 0.3,  pro: false },
+  { base: 'std',    k: 0.2,  sk: 0.35, wild: 0.1,  ss: 0, miss: 0.16, mf: 0.35, fuse: 0.5,  tok: 0,   up: 0.35, pro: false },
+  { base: 'std',    k: 0.5,  sk: 0.45, wild: 0.12, ss: 1, miss: 0.12, mf: 0.4,  fuse: 0.55, tok: 0.5, up: 0.4,  pro: false },
+  { base: 'std',    k: 0.8,  sk: 0.55, wild: 0.14, ss: 1, miss: 0.08, mf: 0.45, fuse: 0.6,  tok: 1,   up: 0.45, pro: false },
+  { base: 'std',    k: 1.5,  sk: 0.65, wild: 0.14, ss: 2, miss: 0.05, mf: 0.5,  fuse: 0.7,  tok: 1.5, up: 0.5,  pro: false },
+  { base: 'std',    k: 2.3,  sk: 0.75, wild: 0.12, ss: 2, miss: 0.03, mf: 0.5,  fuse: 0.8,  tok: 2,   up: 0.6,  pro: true },
+  { base: 'std',    k: 3.3,  sk: 0.87, wild: 0.1,  ss: 3, miss: 0.01, mf: 0.45, fuse: 0.9,  tok: 2.5, up: 0.7,  pro: true },
+  { base: 'pro',    k: 4.6,  sk: 1,    wild: 0.08, ss: 3, miss: 0,    mf: 0.25, fuse: 1,    tok: 2.5, up: 0.8,  pro: true }
 ];
 const BOT_LV_D = [
-  [39, 39, 18, 4, 0, 0, 0, 0, 0, 0], /* Lv1 */
-  [26, 38, 26, 9, 1, 0, 0, 0, 0, 0], /* Lv2 */
-  [15, 33, 33, 15, 4, 0, 0, 0, 0, 0], /* Lv3 */
-  [8, 24, 35, 24, 8, 1, 0, 0, 0, 0], /* Lv4 */
-  [3, 15, 32, 32, 15, 3, 0, 0, 0, 0], /* Lv5 */
-  [1, 8, 24, 35, 24, 7, 1, 0, 0, 0], /* Lv6 */
-  [0, 3, 15, 32, 32, 15, 3, 0, 0, 0], /* Lv7 */
-  [0, 1, 8, 24, 35, 24, 7, 1, 0, 0], /* Lv8 */
-  [0, 0, 3, 15, 32, 32, 15, 3, 0, 0], /* Lv9 */
-  [0, 0, 1, 8, 24, 35, 24, 7, 1, 0], /* Lv10 */
-  [0, 0, 0, 4, 17, 33, 30, 13, 3, 0], /* Lv11 */
-  [0, 0, 0, 2, 10, 27, 34, 20, 6, 1], /* Lv12 */
-  [0, 0, 0, 1, 6, 20, 34, 27, 10, 2], /* Lv13 */
-  [0, 0, 0, 0, 3, 13, 30, 33, 17, 4], /* Lv14 */
-  [0, 0, 0, 0, 1, 8, 24, 35, 24, 8], /* Lv15 */
-  [0, 0, 0, 0, 1, 5, 19, 34, 29, 12], /* Lv16 */
-  [0, 0, 0, 0, 0, 3, 14, 32, 34, 17], /* Lv17 */
-  [0, 0, 0, 0, 0, 2, 11, 29, 36, 22], /* Lv18 */
-  [0, 0, 0, 0, 0, 1, 9, 26, 38, 26] /* Lv19 */
+  [62, 33, 5, 0, 0, 0, 0, 0, 0, 0], /* Lv1 */
+  [55, 38, 7, 0, 0, 0, 0, 0, 0, 0], /* Lv2 */
+  [44, 43, 13, 0, 0, 0, 0, 0, 0, 0], /* Lv3 */
+  [32, 46, 20, 2, 0, 0, 0, 0, 0, 0], /* Lv4 */
+  [22, 45, 28, 5, 0, 0, 0, 0, 0, 0], /* Lv5 */
+  [11, 39, 39, 11, 0, 0, 0, 0, 0, 0], /* Lv6 */
+  [5, 27, 44, 21, 3, 0, 0, 0, 0, 0], /* Lv7 */
+  [2, 16, 42, 33, 7, 0, 0, 0, 0, 0], /* Lv8 */
+  [0, 12, 30, 34, 19, 5, 0, 0, 0, 0], /* Lv9 */
+  [0, 7, 23, 35, 26, 9, 0, 0, 0, 0], /* Lv10 */
+  [0, 0, 14, 33, 35, 18, 0, 0, 0, 0], /* Lv11 */
+  [0, 0, 7, 23, 35, 26, 9, 0, 0, 0], /* Lv12 */
+  [0, 0, 0, 14, 33, 35, 18, 0, 0, 0], /* Lv13 */
+  [0, 0, 0, 7, 23, 35, 26, 9, 0, 0], /* Lv14 */
+  [0, 0, 0, 0, 14, 33, 35, 18, 0, 0], /* Lv15 */
+  [0, 0, 0, 0, 7, 23, 35, 26, 9, 0], /* Lv16 */
+  [0, 0, 0, 0, 0, 14, 33, 35, 18, 0], /* Lv17 */
+  [0, 0, 0, 0, 0, 7, 23, 35, 26, 9], /* Lv18 */
+  [0, 0, 0, 0, 0, 0, 14, 33, 35, 18] /* Lv19 */
 ];
-function botDPick() { const L = clamp(profile.level | 0, 1, BOT_LV_D.length), st = profile.streak | 0, sh = st >= 5 ? 2 : st >= 3 ? 1 : 0, w = Array(10).fill(0); BOT_LV_D[L - 1].forEach((x, i) => { w[Math.min(9, i + sh)] += x; });
+function botDPick() { const L = clamp(profile.level | 0, 1, BOT_LV_D.length), st = profile.streak | 0, sh = L < 6 ? 0 : st >= 5 ? (L < 10 ? 1 : 2) : st >= 3 ? 1 : 0, w = Array(10).fill(0); /* 연승 보정: Lv5 까지는 없고 Lv10 전에는 한 단계까지 */ BOT_LV_D[L - 1].forEach((x, i) => { w[Math.min(9, i + sh)] += x; });
   let r = Math.random() * 100, d = 0; while (d < 9 && r >= w[d]) r -= w[d++]; return d + 1; } // 난이도 1~10 (연승이면 위로)
 function botStylePick(d) { const D = BOT_D[d]; if (D.base === 'noob' || D.base === 'rookie') return D.base; /* D1 왕초보 · D2 초보는 그 모습 그대로 */
   const OTHERS = ['swarm', 'merger', 'shuffler', 'aggro', 'back', 'front', 'defense', 'gambler'], L = clamp(profile.level | 0, 1, BOT_LV_D.length), pt = 0.5 - 0.3 * (L - 1) / (BOT_LV_D.length - 1); /* 테마 성격 확률 Lv1 50% → Lv19 20% */
@@ -14290,7 +14290,7 @@ function botDeckRamp(key) { // R2.17.2: Lv.10 전에는 봇 덱 세기를 레벨
 }
 // R3.4 build 7 봇 덱 = 티어리스트 학습 (내 레벨 5 이상 · 그 아래는 botDeckRamp 그대로): 실력 (BOT_SKILL) 이 높을수록 티어 점수 쪽으로 강하게 기운 가중 추첨
 // SS 는 최대 3기 · 실력이 낮을수록 아무 지후나 고르는 칸 (와일드) 이 섞인다 → A A B B B · SS SS A C D 처럼 여러 모양 · 테마 페르소나는 자기 취향 (P.deck) 을 곱한다
-function botTierDeck(key, d) { const P = BOT_P[key] || BOT_P.std, D = d ? BOT_D[d] : null, sk = D ? D.sk : BOT_SKILL[key] ?? 0.45, k = D ? 4.4 * Math.pow(sk, 0.85) : 1 + 3.4 * sk, pool = pubIds().filter(id => !CHARS[id].special), out = [];
+function botTierDeck(key, d) { const P = BOT_P[key] || BOT_P.std, D = d ? BOT_D[d] : null, sk = D ? D.sk : BOT_SKILL[key] ?? 0.45, k = D ? D.k : 1 + 3.4 * sk, pool = pubIds().filter(id => !CHARS[id].special), out = [];
   const w0 = id => Math.exp(k * ((TIER_SC[id] ?? 50) - 60) / 25) * (P.deck ? P.deck(id) : 1), wild = D ? D.wild : 0.08 + (1 - sk) * 0.4;
   while (out.length < 5 && out.length < pool.length) { const ss = out.filter(id => tierOf(id) === 'SS').length, c = pool.filter(id => !out.includes(id) && !(ss >= (D ? D.ss : 3) && tierOf(id) === 'SS'));
     if (!c.length) break; if (Math.random() < wild) { out.push(c[Math.floor(Math.random() * c.length)]); continue; }
@@ -18196,6 +18196,12 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.5', date: '2026.11.24', title: '랭크 개편 · 필살기 · 토큰 리워크 · 운영자 메시지 · 리워크 · 고유능력 16종', sections: [
+    { title: '추가 패치 (build 7)', items: [
+      { icon: '🌱', name: '초반 봇 난이도', tag: 'adjust', desc: 'Lv5 까지는 봇 난이도가 <b>1~4단계</b> 안에서만 · 초반 봇 덱이 실제로 약해졌어요 · Lv5 에서 갑자기 강한 덱을 만나지 않아요' },
+      { icon: '📉', name: '레벨별 난이도 곡선', tag: 'adjust', desc: '난이도 상승을 <b>완만하게</b> · Lv10 은 평균 4단계 · Lv15 는 6~7단계 · 가장 어려운 10단계는 <b>Lv18</b> 부터' },
+      { icon: '🔥', name: '연승 보정', tag: 'adjust', desc: '연승하면 난이도가 오르는 보정이 <b>Lv6 부터</b> · Lv10 전에는 한 단계까지만' },
+      { icon: '🪙', name: '봇 추가 토큰', tag: 'nerf', desc: '난이도 1~4단계 봇은 라운드 추가 토큰 <b>없음</b> (예전 Lv5 부터 일괄 +2)' },
+    ] },
     { title: '추가 패치 (build 6)', items: [
       { icon: '🤖', name: '봇 난이도 1~10단계', tag: 'system', desc: '일반전 봇이 <b>난이도 1~10</b>로 나뉘어요 · 단계가 높을수록 덱이 티어 상위 지후 위주 · 지후 랭크 · 합체 · 업그레이드 · 라운드 추가 토큰이 오르고 실수가 줄어요' },
       { icon: '📈', name: '레벨별 난이도 비율', tag: 'system', desc: '유저 <b>Lv1~19</b> 마다 만나는 난이도 비율이 달라져요 · Lv1 은 1~3단계 · Lv10 은 4~7단계 · Lv19 는 7~10단계가 중심 · 연승하면 한두 단계 위' },
