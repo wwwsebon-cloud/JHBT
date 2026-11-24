@@ -296,13 +296,25 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['uid', 'nickname', 'type', 'a', 'b', 'at'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
-        && request.resource.data.type in ['level', 'join', 'gacha']
+        && request.resource.data.type in ['level', 'join', 'gacha', 'login']
         && request.resource.data.a is string && request.resource.data.a.size() <= 40
         && request.resource.data.b is string && request.resource.data.b.size() <= 40
         && request.resource.data.at == request.time;
     }
 
     // R3.1 실시간 동접 (로비 소식 줄): 접속자마다 1분마다 at 만 · 수를 세려면 list
+    // R3.5 build 3: 접속 중인 유저 목록 (누구나 읽는다) pres/<uid> = { n 닉네임, lv, fav 대표 지후, fr 테두리, dk 덱 (5개 이하), at }
+    match /pres/{userId} {
+      allow list: if request.auth != null;
+      allow create, update: if owner(userId) && request.resource.data.keys().hasOnly(['n', 'lv', 'fav', 'fr', 'dk', 'at'])
+        && request.resource.data.n is string && request.resource.data.n.size() <= 12
+        && request.resource.data.lv is int
+        && request.resource.data.fav is string && request.resource.data.fav.size() <= 24
+        && request.resource.data.fr is string && request.resource.data.fr.size() <= 24
+        && request.resource.data.dk is list && request.resource.data.dk.size() <= 5
+        && request.resource.data.at == request.time;
+    }
+
     match /pulse/{userId} {
       allow list: if request.auth != null;
       allow create, update: if owner(userId) && request.resource.data.keys().hasOnly(['at']) && request.resource.data.at == request.time;
