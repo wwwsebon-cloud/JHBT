@@ -1,427 +1,180 @@
 # RE : 지후배틀 (RE:JHBT) — 작업 규칙
 
+> 이 파일은 매 턴 통째로 읽힌다 → **규칙 · 방법 · 경고만** 둔다. 버전별 연혁 · 함수 이름 · 예전 수치는
+> `docs/CLAUDE-history-2.md` (R2.21 ~ R3.5 build 13) · `docs/CLAUDE-history.md` (R2.18 까지) 에서 **필요한 부분만 grep** 해서 본다.
+> 정리: 2026-11-25 (예전 148KB → 요약 · 옮긴 원문은 손대지 않았다).
+
 ## 꼭 지킬 것
 1. **한국어를 쓴다** — 대답 · 코드 주석 · 커밋 메시지 · 패치노트 모두.
-2. **작업 전에 이 파일을 꼭 읽는다.** 함수 이름 · 예전 수치 · 연혁이 필요하면 `docs/CLAUDE-history.md` (R2.18 까지의 자세한 기록)에서 필요한 부분만 검색해서 본다.
-3. **작업이 끝나면 디스코드 공지용 인포그래픽을 꼭 만든다** (아래 「인포그래픽」).
-4. **신규 지후가 나오면 신규 지후 인포그래픽도 만든다. 서사(`story`)가 없으면 서사도 쓴다** (아래 「신규 지후」).
-5. 기본적으로 **main 에 머지까지** 한다 (작업 브랜치 → 커밋 → main 에 머지 → 푸시). 푸시는 사용자 터미널에서.
-6. 테스트할 때 실서버 Firebase 에 테스트 계정을 만들거나 로그인하지 않는다. 실제 계정 데이터를 건드리지 않는다 (`?bench=` · 로컬 프로필 · 헤드리스는 Firebase 주소를 막고).
-7. 올리기 전에 빈 브라우저로 첫 로딩을 확인한다 (오류 없이 로비까지).
-8. **브라우저로 테스트할 때는 반드시 소리를 끈다** (사용자 요청 · 시끄럽다): 페이지를 열자마자 `localStorage` 의 `rejhbt-sfx-vol` · `rejhbt-bgm-vol` 을 `'0'` 으로 두고 새로고침 (효과음 볼륨은 켤 때만 읽는다) · 헤드리스 크롬은 `--mute-audio`.
-9. **⚠️ 주석은 각별히 조심한다 (여러 번 사고남)** — 한 줄에 코드가 길게 이어지는 곳 (`u2Vals` 의 값 객체 · 한 줄 함수 · 템플릿 문자열) 에서 `// 설명` 을 줄 중간에 넣으면 **그 뒤 코드가 통째로 주석이 되어 조용히 사라진다** (오류도 안 난다). 예: R2.26 「1랭크 기준」 주석이 지후 상세의 `heroH` · `picD` 를 삼켜 초상화 · 이름이 사라졌고, R2.27 build 2 에서도 `u2FanFit` 의 `if` 를 삼켰다.
-   - 줄 중간 · 코드 앞에는 **반드시 `/* … */`** 만 쓴다. `//` 는 그 줄의 **진짜 맨 끝**에만.
-   - 기존 줄 끝 `//` 주석 뒤에 코드를 덧붙이지 않는다 (덧붙일 땐 주석을 `/* */` 로 바꾸거나 줄을 나눈다).
-   - 수정 뒤 **`python tools/comment-check.py`** 를 꼭 돌려 「의심 0줄」을 확인한다.
-11. **⚠️ 패치노트를 지우지 않는다 (2026-11-17 사용자 요청)** — 예전 파일을 그대로 올린 커밋 (「Add files via upload」) 에 R2.10.3 build 2 칸 · R2.11.0 이 조용히 사라졌었다 (git 기록에서 되살림). `comment-check.py` 가 버전마다 항목 수를 `tools/pn-count.json` 에 기록하고 **줄어들면 실패**한다 (일부러 지울 때만 `--pn-ok`).
-10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다 — 꼭 필요한 것만 (R2.36 build 2 사용자 요청)**: 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (예: 이벤트 카드의 「골드 전용」 같은 등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
+2. **작업 전에 이 파일을 읽는다.** 함수 이름 · 예전 수치 · 연혁은 위 두 기록 파일에서 grep.
+3. **작업이 끝나면 디스코드 공지용 인포그래픽을 만든다** (아래 「인포그래픽」). 잠수함 패치는 제외.
+4. **신규 지후가 나오면 신규 지후 인포그래픽도 · 서사(`story`)가 없으면 서사도** (아래 「신규 지후」).
+5. 기본은 **main 에 머지까지** (작업 브랜치 → 커밋 → main 머지). 푸시는 보통 사용자 터미널에서 (사용자가 「푸시해줘」라고 하면 내가 해도 된다). **끝나면 `main` 으로 돌아와 둔다** (작업 브랜치에서 사용자가 `git push` 하면 upstream 없음 오류).
+6. 테스트할 때 **실서버 Firebase 에 테스트 계정을 만들거나 로그인하지 않는다.** 실제 계정 데이터를 건드리지 않는다 (`?bench=` · 로컬 프로필 · 헤드리스는 Firebase 주소를 막고).
+7. 올리기 전에 **빈 브라우저로 첫 로딩**을 확인한다 (오류 없이 로비까지).
+8. **브라우저 테스트는 소리를 끈다** (사용자 요청 · 시끄럽다): `localStorage` 의 `rejhbt-sfx-vol` · `rejhbt-bgm-vol` 을 `'0'` 으로 두고 새로고침 · 헤드리스 크롬은 `--mute-audio`.
+9. **⚠️ 주석 사고 주의 (여러 번 남)** — 한 줄에 코드가 길게 이어지는 곳 (`u2Vals` 값 객체 · 한 줄 함수 · 템플릿 문자열) 에 `// 설명` 을 줄 중간에 넣으면 **그 뒤 코드가 통째로 주석이 되어 조용히 사라진다** (오류도 안 난다 · R2.26 초상화 · 이름 실종 · R2.27 `u2FanFit` 의 `if` · R2.31 도움말 티어표).
+   - 줄 중간 · 코드 앞에는 **반드시 `/* … */`**. `//` 는 그 줄의 **진짜 맨 끝**에만.
+   - 기존 줄 끝 `//` 주석 뒤에 코드를 덧붙이지 않는다 (주석을 `/* */` 로 바꾸거나 줄을 나눈다).
+   - 수정 뒤 **`python tools/comment-check.py`** → 「의심 0줄」 확인.
+10. **⚠️ 인게임에 쓸데없는 서술을 하지 않는다** (R2.36 사용자 요청): 카드 · 설명 · 배너 · 도감 글에 플레이에 필요 없는 말 (등급 전용 표시 · 부연 설명 · 괄호 속 덧말) 을 붙이지 않는다. 짧게 · 핵심 수치만.
+11. **⚠️ 패치노트를 지우지 않는다** (2026-11-17 · 「Add files via upload」 커밋에 R2.10.3 build 2 · R2.11.0 이 조용히 사라졌었다). `comment-check.py` 가 버전마다 항목 수를 `tools/pn-count.json` 에 기록하고 **줄어들면 실패** (일부러 지울 때만 `--pn-ok`).
+12. **요청이 모호하면 정해서 하고, 정한 것을 대답에 적는다** (예: 「나머지 전설」 → 일반으로 읽음 · 쿨타임이 다음 라운드로 이어지는지 · 봇이 쓰는지). 되돌리기 어려운 것 (서버 · 계정 데이터 · 공지 올리기) 만 묻는다.
 
 ## 이름 · 버전 · 구조
 - 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.5** (build 13).
-- **⚠️ 버전은 하루에 한 번만 올린다 (R2.35 · 2026-11-11 사용자 요청 · 버전을 너무 많이 올렸다)**: 그날 첫 업데이트에 둘째 자리 +1 (R2.35 → R2.36) · **「하루」는 달력 날짜가 아니라 사용자가 잠들기 전까지** (자정을 넘겨도 밤샘 작업이면 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 버전 그대로 `jihoo-build` +1 (특별한 경우가 아니면 셋째 자리 R2.xx.1 도 쓰지 않는다). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 (title 은 그날 내용을 아우르게 고친다) · 인포그래픽은 `<버전>-bN` · 하루가 끝날 무렵엔 `today-<날짜>.json` 총정리 (예: `today-2026-11-11` · 새 모드는 최종 상태로 · 밸런스는 `balance-sum.js` 결과에서 고친 타일).
-- 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
-- **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
-- `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
-- `firestore.rules` 는 R2 전체 규칙 · 게시는 사용자 PC 에서 **`node tools/rules-deploy.js`** (서비스 계정 키 · 경로는 `문서/jhbt-app/rules.json` · `--dry` 로 차이만 · 서버와 같으면 안 함 · 서비스 계정에 「Firebase 규칙 관리」 역할) · 예전처럼 콘솔에 파일 전체를 붙여 넣어도 된다.
-- R1 (v8.1) 코드는 `archive/v8.1` 브랜치.
-- **사이트 배포 (GitHub Pages)**: `_config.yml` 의 `exclude` 로 게임에 안 쓰는 폴더 (인포그래픽 · tools · docs · app · 지후초상화 …) 를 뺀다 — 배포물이 225MB (그중 인포그래픽 204MB) 가 되자 Pages 배포가 10분 제한을 넘겨 실패했다 (R2.28 · R2.30). 큰 폴더를 새로 올리면 여기에 더한다. 배포 상태: `https://api.github.com/repos/wwwsebon-cloud/JHBT/actions/runs` · 사이트 버전 `curl jihoobattle.kr` 의 `jihoo-version`. **작업이 끝나면 `main` 으로 돌아와 둔다** (작업 브랜치에서 사용자가 `git push` 하면 upstream 없음 오류).
+- **⚠️ 버전은 하루에 한 번만 올린다** (R2.35 사용자 요청): 그날 첫 업데이트에 둘째 자리 +1 (R3.5 → R3.6) · **「하루」는 달력이 아니라 사용자가 잠들기 전까지** (자정을 넘긴 밤샘은 같은 버전 · 자고 일어난 다음 작업부터 새 버전 · 애매하면 묻는다) · 같은 날 이어지는 패치는 `<meta name="jihoo-build">` +1 (셋째 자리 R3.5.1 은 특별한 경우만). 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 title 은 그날 내용을 아우르게 고친다.
+- 버전 메타 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움).
+- **⚠️ 같은 build 번호로 두 번 올리면 열려 있던 앱은 업데이트를 모른다** (버전 · build 비교) → 이미 푸시한 것을 고쳐 다시 올릴 때는 build 를 올린다.
+- **잠수함 패치** (사용자가 「잠수함 패치」라고 하면): 패치노트 · 인포그래픽 없이 · build 도 안 올리고 코드만 커밋 · 머지 (커밋 메시지 머리 「잠수함:」).
+- `index.html` 하나가 게임 전체 (빌드 없음 · 약 10MB · 초상화 base64 포함). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수 `window.__rejhbt` · 개발 주소에서만).
+- R1 (v8.1) 코드는 원격 브랜치 `origin/archive/v8.1` (`git show origin/archive/v8.1:index.html` · 로컬 브랜치 없음).
+- **사이트 배포 (GitHub Pages · jihoobattle.kr)**: `_config.yml` 의 `exclude` 로 게임에 안 쓰는 폴더 (infographics · tools · docs · app · 지후초상화 …) 를 뺀다 — 배포물이 225MB 가 되자 10분 제한으로 실패했었다 (R2.28 · R2.30). 큰 폴더를 새로 올리면 여기에 더한다. 상태: `https://api.github.com/repos/wwwsebon-cloud/JHBT/actions/runs` · 사이트 버전 `curl jihoobattle.kr` 의 `jihoo-version`.
+- **서버 규칙** `firestore.rules` (R2 전체 규칙): 사용자 PC 에서 **`node tools/rules-deploy.js`** (서비스 계정 키 · 경로는 `문서/jhbt-app/rules.json` · `--dry` 로 차이만 · 서버와 같으면 안 함 · 계정에 「Firebase 규칙 관리」 역할) · 콘솔에 파일 전체를 붙여 넣어도 된다. **규칙을 바꾼 작업은 끝날 때 「규칙 게시 필요」를 사용자에게 꼭 말한다** (게시를 잊어 기능이 안 보인 적이 많다 · r2def · bcast · pres …).
 
 ## 업데이트 때 할 일
 1. `index.html` 수정 — `CHARS` 수치와 함께 `passive` · `skill.desc` · `atkText` · `CHAR_INFO` (도감 상세) · 팁 (`TIPS_MORE` · `BOOT_TIPS`) 에 적힌 숫자도 같이.
 2. 버전 / build 메타.
 3. `PATCH_NOTES` 맨 위에 새 항목 (tag: new · buff · nerf · adjust · rework · fix · system).
-4. 인포그래픽 (아래).
-5. 이 파일에 바뀐 규칙이 있으면 짧게 갱신 (긴 연혁은 적지 않는다).
+4. `python tools/comment-check.py` · 스크립트 문법 (`node --check`) · 헤드리스 전투 · 첫 로딩.
+5. 인포그래픽 (아래) → 커밋 · 머지 → 사용자에게 PNG 보내기.
+6. 이 파일의 「최근 변경」에 한두 줄 (긴 연혁은 적지 않는다 · 오래된 것은 `docs/CLAUDE-history-2.md` 로 옮긴다).
 
 ## 인포그래픽 (저장소 `infographics/`)
-- 로컬 서버를 켠 뒤: `node infographics/extract.js` → `node infographics/notes2json.js <버전>` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py "infographics/<버전>*.html"`.
-- 레이아웃은 늘 최신 **남색 · 타일** (R2.20 부터 · `notes2json.js` `TILE_MIN` 1 · `theme: 'dark'`) — 밸런스 지후는 5칸 타일 (많으면 여러 장 `<버전>-2.png` …) · **R2.22.1 타일 개편**: 변경 하나 = 타일 하나 (같은 지후는 연달아 · `split_tiles`) · 단색 (상향 `--tb` · 조정 `--ta` · 하향 `--tn`) · 글꼴 **Lilita One (숫자 · 영문) + Do Hyeon (한글)** (사용자가 고름) + 검은 외곽선 · 한 줄 4칸 · 높이 모두 같게 · 색은 지후 태그 (조정 지후만 수치 방향 `line_dir`). **같은 지후라도 패치노트 항목마다 tag 를 따로** (너프 항목 'nerf' 빨강 · 버프 'buff' 초록 · 'adjust' 는 방향 없는 글 타일만 주황 · R2.36 build 5 사용자 요청) · 설명에 ` · ` 를 쓰면 타일이 나뉜다 · 타일 글자가 넘치면 패치노트 문구를 짧게 (예: 「[최후의 탄환] 체력 손실 16% → 19%」).
-- **2026-11-24 리디자인 (사용자 요청 · 업데이트 노트 기본 = 덱 레이아웃)**: 흰 바탕 · **1080 × 1350 (4:5) 장 여러 개** (`make.py` `build_deck` · 예전 남색 한 장은 JSON 에 `"layout": "classic"`) · 표지 (버전 크게 · 「오늘 바뀐 것 N가지」 색 띠 목록 · 아래에 「그 밖에」 칩 10개까지) → **큰 사건 두 개씩 한 장** (`deck_half`) (`"headlines": [{title, icon, color: orange|blue|purple|green|yellow|ink, lead 한 줄, points: [{big 큰 값, small 짧은 설명}] 4개까지, chars 지후}]` · 두꺼운 검정 외곽선 색 띠 · 큰 숫자 칸) → 밸런스 (빨강 · 노랑 · 초록 타일 · 변경 하나 = 타일 하나 · **3열 × 11줄** 촘촘하게 · zoom 으로 장을 채운다) → 「그 밖에」 (`"more": [{icon, title, line}]` · 칩 10개를 넘을 때만 7줄씩 장) · 「사건 한 장에 하나 · 글은 한 칸에 한 줄 · 숫자는 크게」. **큰 사건은 내가 직접 고른다** (예: 랭크 개편 · 필살기 · 지후 탭 리뉴얼 · 봇 난이도 · 토큰 · 리워크 — 같은 주제의 여러 build 항목을 하나로 묶는다) · `headlines` 가 없으면 (build 마다의 작은 인포그래픽) 표지 한 장에 변경을 보여 주고 7개 넘으면 「그 밖에」. `shot.py` 는 `info-height` 가 있으면 자르지 않는다. 하루 총정리 예: `infographics/today-2026-11-24.json` (7장 · 사용자가 7장 정도는 괜찮다고 함 · **인스타그램 캐러셀은 10장까지**).
-- **신규 지후**: `node infographics/notes2json.js <버전> --new` (그 버전 패치노트의 tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make.py · shot.py.
-- **인포그래픽 안에 게임 스크린샷을 넣지 않는다** (R2.29 사용자 요청 · make.py 의 `"shots"` 칸은 쓰지 않는다 · 눈으로 보이는 변화도 글 타일로만). 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 를 붙인 래퍼를 준다 (extract.js).
-- 여러 버전 밸런스 총정리: `node infographics/balance-sum.js <처음 버전> <마지막 버전>` (지후별 처음 → 지금 · 랭크 6 제외 · 지저분하게 합쳐지는 지후는 파일 안 `OVERRIDE`) → `balance-<처음>-<마지막>.json` → make.py · shot.py.
-- 티어표: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (시뮬 결과로). **2026-11-17 보완 (사용자 요청 · `apply.py` · make.py)**: 표에서만 S 를 1차원 k-평균으로 **S · A+** 로 나눈다 (게임 `TIER_SC` · `tierOf` 는 6티어 그대로) · **? 티어** = 한 판 시뮬로 잴 수 없는 지후 `UNKNOWN` (포식 · 소믈리에 · 예언 · 핵미사일 · 괴도 · 슬롯머신) · 지난 티어보다 2티어 이상 변동은 ▲▲ · ▼▼ (기본 6티어 기준) · 토큰 5 이상 (`tok` / `TOK_COST`) 은 왼쪽 위 금색 숫자 딱지 (세도 괜찮다).
-- 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도 넣는다.
-- 만든 PNG 는 커밋하고 사용자에게 보낸다.
-- **공지 자동 올리기 (R2.36 build 2)**: `node tools/post-patch.js` — 맨 위 패치노트 (그날 마지막 build 칸 · `--all` 은 버전 전체) 글 + 인포그래픽을 **디스코드 (웹후크 · 임베드 갤러리 4장)** 와 **Threads (공식 API · 500자 → 항목 이름만 · 여러 장이면 캐러셀)** 에. Threads 는 이미지를 GitHub raw 주소로 받으니 **푸시한 뒤** · `--dry` 로 글 · 주소 확인 · 설정 (웹후크 · Threads 토큰 · 올린 기록 `posted`) 은 저장소 밖 `문서/jhbt-app/post.json` (`--init` · `--threads-token <토큰>` (토큰 생성기 토큰은 이미 60일짜리 · 짧은 토큰이면 `--secret`) · 토큰은 20일마다 알아서 갱신 · 디스코드 역할 핑 `--discord-role <역할 ID>` → 올릴 때마다 핑 · 빼려면 `--no-ping`). **인스타그램 (R3.0)**: `--ig-token <토큰>` (프로페셔널 계정 · Instagram 로그인 API · 토큰이 있으면 기본으로 같이 올린다 · `--only instagram`) · JPEG 4:5 만 받으니 `tools/ig-slices.py` 가 인포그래픽을 빈 줄에서 잘라 `infographics/ig/<이름>-ig<N>.jpg` (최대 10장 캐러셀) → **조각도 커밋 · 푸시한 뒤** 올린다 · 캡션 2,200자 + 해시태그. **매일 마지막 패치만 내가 올린다 (2026-11-12 사용자 허락 · 그 밖엔 사용자가 올리라고 할 때만)**: build 마다 올리지 않는다 · 하루가 끝날 때 (사용자가 오늘은 끝 · 잔다고 하거나 총정리를 하라고 할 때) `today-<날짜>` 총정리 인포그래픽 → 커밋 · 푸시 → **`node tools/post-patch.js --day`** (그 버전 항목 전체 + today 이미지 · 디스코드 @update 핑) · 다음 날 첫 작업에서 어제 버전의 `<버전>-day` 가 `post.json` 의 `posted` 에 없으면 먼저 올린다 · 잠수함 패치는 올리지 않는다.
+- **만드는 순서** (로컬 서버를 켠 뒤): `node infographics/extract.js` → `node infographics/notes2json.js <버전>` → `python infographics/make.py infographics/<버전>.json` → `CHROME=<크롬 경로> python infographics/shot.py "infographics/<버전>*.html"` (크롬 `C:/Program Files/Google/Chrome/Application/chrome.exe`).
+- **build 마다**: `<버전>.json` 의 맨 위 칸만 남긴 사본 `<버전>-bN.json` 을 만들어 make · shot (`<버전>-bN.png`).
+- **2026-11-24 리디자인 (업데이트 노트 기본 = 덱 레이아웃)**: 흰 바탕 · **1080 × 1350 (4:5) 장 여러 개** (`make.py` `build_deck` · 예전 남색 한 장은 JSON 에 `"layout": "classic"`) · 표지 (버전 크게 · 「오늘 바뀐 것 N가지」 색 띠 · 「그 밖에」 칩 10개까지) → **큰 사건 두 개씩 한 장** (`deck_half` · `"headlines": [{title, icon, color: orange|blue|purple|green|yellow|ink, lead 한 줄, points: [{big, small}] 4개까지, chars}]`) → 밸런스 (빨강 · 노랑 · 초록 타일 · 변경 하나 = 타일 하나 · 3열 × 11줄 · zoom) → 「그 밖에」 (`"more": [{icon, title, line}]` · 칩 10개를 넘을 때만). 「사건 한 장에 하나 · 글은 한 칸에 한 줄 · 숫자는 크게」. **큰 사건은 내가 고른다** (같은 주제의 여러 build 항목을 하나로 묶는다) · `headlines` 가 없으면 표지 한 장 + 7개 넘으면 「그 밖에」. `shot.py` 는 `info-height` 가 있으면 자르지 않는다. 예: `infographics/today-2026-11-24.json` (7장 · 사용자 OK · **인스타그램 캐러셀은 10장까지**).
+- **타일 규칙**: 같은 지후라도 패치노트 항목마다 tag 를 따로 (nerf 빨강 · buff 초록 · adjust 는 방향 없는 글 타일만 주황) · 설명에 ` · ` 를 쓰면 타일이 나뉜다 (나뉘면 안 되는 문구는 「와」 · 「(…)」 로) · 타일 글자가 넘치면 패치노트 문구를 짧게 · 글꼴 Lilita One + Do Hyeon (사용자가 고름).
+- **하루 총정리** `today-<날짜>.json` (사용자가 오늘은 끝 · 잔다 · 총정리하라고 할 때 · 새 모드는 최종 상태 · 밸런스는 `node infographics/balance-sum.js <처음> <마지막>` 결과에서 고친 타일 · 지저분한 지후는 파일 안 `OVERRIDE`).
+- **신규 지후**: `node infographics/notes2json.js <버전> --new` (tag 'new' 지후 · 직접 고르려면 id 를 뒤에) → make · shot. 새 지후는 make.py 의 `NAMES` 와 `infographics/portraits.json` 에도.
+- **티어표**: make.py `"type": "tierlist"` · `infographics/tier-<버전>.json` (아래 「시뮬 · 티어」가 만든다).
+- **인포그래픽에 게임 스크린샷을 넣지 않는다** (R2.29 · `"shots"` 칸은 안 쓴다 · 눈에 보이는 변화도 글 타일로).
+- 리눅스(클라우드)에서는 `CHROME` 에 `--no-sandbox` 래퍼 (extract.js).
+- 만든 PNG 는 커밋하고 사용자에게 보낸다 (`SendUserFile`).
+
+## 공지 올리기 (디스코드 · Threads · 인스타그램)
+- `node tools/post-patch.js` — 맨 위 패치노트 (그날 마지막 build 칸 · `--all` 은 버전 전체) 글 + 인포그래픽 → **디스코드** (웹후크 · 임베드 갤러리 4장) · **Threads** (공식 API · 500자 → 항목 이름만 · 여러 장이면 캐러셀) · **인스타그램** (`--ig-token` 이 있으면 기본으로 같이 · `--only instagram` · JPEG 4:5 → `tools/ig-slices.py` 가 `infographics/ig/<이름>-ig<N>.jpg` 최대 10장 · 캡션 2,200자 + 해시태그).
+- **이미지는 GitHub raw 주소로 받으니 인포그래픽 · ig 조각을 커밋 · 푸시한 뒤에** 올린다 · `--dry` 로 글 · 주소 확인.
+- 설정은 저장소 밖 `문서/jhbt-app/post.json` (웹후크 · 토큰 · 올린 기록 `posted`) · `--init` · `--threads-token` (20일마다 알아서 갱신) · `--discord-role <역할 ID>` (핑) · `--no-ping`.
+- **매일 마지막 패치만 내가 올린다** (2026-11-12 사용자 허락 · 그 밖엔 사용자가 올리라고 할 때만): build 마다 올리지 않는다 · 하루가 끝날 때 `today-<날짜>` 총정리 → 커밋 · 푸시 → **`node tools/post-patch.js --day`** · 다음 날 첫 작업에서 어제 버전의 `<버전>-day` 가 `post.json` 의 `posted` 에 없으면 먼저 올린다 · 잠수함 패치는 올리지 않는다.
+- 웹 푸시 알림 (버전을 올린 업데이트만): 배포 뒤 사용자 PC 에서 `node tools/push-send.js --key <서비스 계정 JSON>` (`--dry` 로 기기 수만).
+
+## 시뮬 · 티어
+- **로컬 윈도우 (playwright 없음)**: 서버를 켜고 `node tools/tierlist/run-cdp.js <폴더> <번호> <일꾼 수> <판수>` 를 일꾼 수만큼 (**일꾼 1~2개** · 12개는 PC 가 멈췄다 · 한 일꾼이 시작할 때 페이지가 늦어 죽으면 그 일꾼만 다시 · 이어하기 됨) → `node tools/tierlist/agg.js <폴더> 100` → `python tools/tierlist/apply.py <폴더> <버전> <날짜>` → make · shot.
+- **클라우드 (리눅스)**: `tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]` (4코어 1,600판 약 11분).
+- 방식: 무작위 10기 5:5 · Lv1 · 60초 판정 · 남은 체력 차이 점수 · Bradley-Terry · k-평균 · 진영 바꿔 두 번 · 부트스트랩 안정도 · 지난 `TIER_SC` 와 비교 ▲▼ → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다. 자세한 건 `tools/tierlist/README.md`.
+- `TIER_SC`: SS 90~100 · S 80~89 · A 65~79 · B 40~64 · C 20~39 · D 0~19 (6티어) · 없으면 50 (B). 표에서만 S 를 S · A+ 로 나누고 · 한 판으로 못 재는 지후는 ? 티어 (`UNKNOWN`: 포식 · 소믈리에 · 예언 · 핵미사일 · 괴도 · 슬롯머신) · 2티어 이상 변동 ▲▲ · ▼▼ · 토큰 5 이상은 금색 딱지.
+- 같은 버전을 이어서 돌리면 agg 전에 `TIER_SC` 를 지난 티어표 값으로 되돌려야 ▲▼ 가 맞다. **메커니즘을 바꾸는 중에 돌린 시뮬은 무효** — 마지막 코드로 다시.
+- 지금 `TIER_SC` · `tier-R3.5` = R3.5 build 13 코드 · 1,600판 (1위 더블딜러 66.6% · 꼴찌 조커).
+- 고정 시드 전투 120판 비교 (`tools/tierlist/run.js`) 는 「동작을 안 바꾸는 정리」 확인용 (아래 리팩터링).
 
 ## 신규 지후 체크리스트
 - 초상화: **흰 배경 256×256 PNG** (투명 금지) → `PORTRAITS` (base64) · 원본은 `지후초상화/` 또는 사용자가 준 폴더.
-- **시그니처 색 (R2.28)**: 초상화를 넣은 뒤 **`python tools/sig-color.py --sheet <확인표.png>`** → `SIG_C` 한 줄이 갱신된다 · 확인표를 **눈으로 꼭 보고** 그 지후 색과 다르면 (몸은 회색인데 작은 소품 색이 뽑힘 · 연한 색연필이 회색으로 · 두 색인데 한 색) 파일 안 `SIG_FIX` 에 `'id': '#색'` 또는 두 색 `'#색1,#색2'` 를 적고 다시 돌린다.
-- **토큰 값 `tok` (R3.1 build 2 · 사용자 규칙)**: 사용자는 토큰 3~4 지후만 정해 준다 · 나머지는 내가 정해 `CHARS[id].tok` 에 적는다 (없으면 `TOK_COST` → 2). 1 = Lv1 물량이 아무리 많아도 판도를 흔들지 않는 지후 (태극 · 방사능 · 성장 · 선물 · 고고학자 · 갓 · 도둑 · 페이즈 · 개구리 · 파멸) · 2 = 대부분 · 3 = 살짝 비싼 지후 · 4 = 하나로 판을 크게 바꾸는 지후. 정한 값은 알린다.
-- `CHARS` 끝에 추가 (도우미 함수는 `reapFx` 바로 앞 `// ── R2.xx 신규 지후 도우미 ──`). 사용자가 안 준 역할군 · 사거리 등은 정하고 알린다.
-- `passive` · `skill.desc` 는 **쉽게 · 존댓말 ~니다 · 한두 문장** (중요한 숫자만 · 조건 · 예외 · 세부 수치는 넣지 않는다 · 예: 황사 · 슬라임 지후) · 자세한 숫자는 `CHAR_INFO[id]`.
-- **서사 `story`**: ~입니다 · ~해요 체 · 5~7문장 · **개그 · 병맛 톤** (외양 묘사는 줄이고, 말도 안 되는 사건 · 반전 · 마지막 한 줄 펀치라인) · 지후왕국 세계관과 다른 지후를 엮는다 (아래 「세계관」 · 기존 연결을 깨지 않게). **R2.30 build 3 글 오버홀 규칙 (AI 티가 나는 것들 · 사용자 요청)**:
-  - **인용문을 넣지 않는다** (「…」 · "…" 대사 금지 · 말한 내용은 서술로 풀어 쓴다).
-  - **실제 능력과 관련된 숫자를 넣지 않는다** (초 · % · 횟수 · 발 수 · 체력 등 · 한글로 쓴 숫자도). 세계관 숫자 (1호 · 314호 · 3년 등) 는 괜찮다.
-  - **능력 서술은 최소한** (능력은 passive · CHAR_INFO 가 말한다 · 서사는 이야기).
-  - 밸런스로 바뀌면 핑계를 넣어도 되지만 숫자 없이 (예: 근위대 예산이 깎여 총알이 싸구려가 됐다).
-- **도감 상세 `CHAR_INFO`**: 버전명 (R2.x · build) 을 쓰지 않는다 · 예전에 비해 바뀐 것을 쓰지 않는다 (지금 규칙만) · 불필요한 서술 (~이 아니라 · 없음 · 하지 않음 같은 부정 설명은 꼭 필요할 때만) 은 뺀다. 버전 기록은 코드 주석 · 패치노트에만.
-- 뽑기 · 덱 · 도감에 안 나오는 변신 지후 (왕자 지후 `prince`) 는 `Object.defineProperty(CHARS, id, { enumerable: false })` — `Object.keys(CHARS)` 에는 없고 `CHARS[id]` 로는 찾는다 (배치 기록 · 친선전 · 이름 표시가 그대로 돈다).
-- 새 상태 · 버프는 `STATUS` · `FX_OF` / `fxList` (효과 아이콘) · `BUFF_SRC` (버프 출처 이름).
-- 배치 기록에 새 필드를 넣으면 친선전 `packPlace` 에도.
-- `TIER_SC` 에 없으면 50 (B) 으로 본다 → 티어 시뮬 뒤 넣는다.
-- 헤드리스로 전투 테스트 (오류 · 이펙트가 남지 않는지 · 스크린샷).
-- **렉이 거의 없게 만든다 — 유닛 50기 이상에서도 프레임 드랍이 전혀 없어야 한다** (아래 「성능 규칙」 · 벤치로 확인).
+- **시그니처 색**: 초상화를 넣은 뒤 `python tools/sig-color.py --sheet <확인표.png>` → `SIG_C` 갱신 · **확인표를 눈으로 보고** 다르면 파일 안 `SIG_FIX` 에 `'id': '#색'` (두 색 `'#a,#b'`) 후 다시.
+- **토큰 `tok`**: 사용자는 3~4 지후만 정해 준다 · 나머지는 내가 정해 `CHARS[id].tok` (없으면 `TOK_COST` → 2) · 1 = Lv1 물량이 많아도 판도를 안 흔드는 지후 · 2 = 대부분 · 3 = 살짝 비싼 · 4 = 하나로 판을 바꾸는. 정한 값은 알린다.
+- `CHARS` 끝에 추가 (도우미 함수는 `reapFx` 바로 앞 `// ── R3.x 신규 지후 도우미 ──`). 안 준 역할군 · 사거리 등은 정하고 알린다.
+- `passive` · `skill.desc` 는 **쉽게 · ~니다 · 한두 문장** (중요한 숫자만 · 예: 황사 · 슬라임) · 자세한 숫자는 `CHAR_INFO[id]`.
+- **서사 `story`**: ~입니다 · ~해요 체 · 5~7문장 · **개그 · 병맛 톤** (말도 안 되는 사건 · 반전 · 마지막 한 줄 펀치라인 · 외양 묘사는 줄인다) · 지후왕국 세계관과 다른 지후를 엮는다 (아래 「세계관」). **AI 티 금지**: 인용문 (「…」 · "…") 금지 · 능력과 관련된 숫자 금지 (세계관 숫자 1호 · 314호 · 3년은 괜찮다) · 능력 서술은 최소 · 밸런스 핑계는 숫자 없이.
+- **도감 `CHAR_INFO`**: 버전명 · 「예전엔」 쓰지 않는다 (지금 규칙만) · 부정 설명은 꼭 필요할 때만.
+- 뽑기 · 덱 · 도감에 안 나오는 변신 지후 (`prince` 등) 는 `Object.defineProperty(CHARS, id, { enumerable: false })`.
+- 새 상태 · 버프는 `STATUS` · `FX_OF` / `fxList` · `BUFF_SRC` · 지후 매거진 `MZ_STC` · `MZ_STD` · 스테인리스 반전 `ST_REV` 를 정할지.
+- 배치 기록 (`S.place[side][t]`) 에 새 필드를 넣으면 친선전 `packPlace` / `unpackPlace` 와 합체 (`moveTile` 의 `canFuse` 줄) 에도.
+- 불 · 얼음 지후는 `FIRE_T` · `ICE_T` · 새 컬렉션은 `COLS` · 인접 버프 지후는 `ADJ_BUFF`.
+- 헤드리스 전투 테스트 (오류 · 이펙트 잔상 · 스크린샷) · **50기 이상에서도 프레임 드랍이 없게** (아래 「성능 규칙」 · 벤치).
 
 ## 성능 규칙 (새 지후 · 새 이펙트)
-- 전투 중 **화면이 다시 그려지는 일 (레이아웃 · 리페인트)을 최소로**: 이펙트는 `transform` · `opacity` 애니메이션만 (`box-shadow` · `filter` · `border-color` · `background` · `width` 를 애니메이션하지 않는다 · 큰 반투명 그라데이션 원을 매번 새로 만들지 않는다).
-- CSS 에 `[style*=…]` 같은 **style 속성 선택자를 쓰지 않는다** — 하나만 있어도 전투 중 인라인 style (위치 · 체력바) 이 바뀔 때마다 자식 요소를 모두 다시 계산한다 (R2.18 build 5 · 새 로비 그리드는 `U2_GRID_TAG` 가 붙이는 클래스 `u2-gr` 로). 쓰러진 유닛은 효과 아이콘 줄 `ufxOf` 을 다시 만들지 않는다.
-- DOM 위치 · 크기는 프레임마다 한 번 이하로 (`tick` 은 한 프레임에 여러 번 돈다 · 그리기는 바뀐 값만 · `translate` 로).
-- 매 스텝 `A.status` · `A.buff` 를 다시 걸지 않는다 (걸 때마다 `drawUnit` → 상태 아이콘을 다시 그린다) — 이미 걸려 있으면 남은 시간만 늘린다.
-- 이펙트 DOM 은 `S.fast` 일 때 만들지 않고, 끝나면 꼭 지운다 (`u.fx` 에 넣으면 쓰러질 때 · 라운드 끝에 지워진다). **R2.29 부터 자주 생기는 이펙트는 `CV.on` 이면 전장 캔버스 (`CVF`)** — 아래 「최근 변경」.
-- 여러 유닛을 잇는 선 · 빛줄기는 유닛마다 DOM 을 만들지 않는다 → 전장 캔버스 하나에 프레임마다 한 번 (모노리스 `monoDraw` · R2.20 · DOM 으로는 50기 벤치 FPS 46 → 36).
-- **큰 원 · 긴 빛줄기도 DOM 으로 만들지 않는다** — 반경 15칸 원 (지름 2,250px) · 대각선 레이저는 폰 GPU 에 거대한 레이어가 된다 (헤드리스로는 안 보인다) → `fxRing(x, y, R, 색, ms, 테두리)` · `FXC.beams` (monoDraw 캔버스 · R2.20 build 3 DJ · 모노리스).
-- 넓은 범위 스킬 피해 숫자는 `dealDamage(..., { skill: true, lite: true })` (처음 몇 개만 크게) — 스킬 피해 숫자는 원래 한도(FX_CAP)를 무시한다.
-- 전장 격자는 `#fieldGrid` 를 transform 으로만 옮긴다 (`applyCamera`) — fieldWrap 의 background-position 을 매 프레임 바꾸면 화면 전체를 다시 그린다.
-- 확인: `?bench=50&ids=<지후,…>` (왼쪽 위 FPS · 최악 프레임 · 계산 ms) · 헤드리스 `Performance.getMetrics` 의 RecalcStyle · Layout 횟수를 다른 지후와 비교.
+- 이펙트는 **`transform` · `opacity` 애니메이션만** (`box-shadow` · `filter` · `border-color` · `background` · `width` 를 애니메이션하지 않는다 · 큰 반투명 그라데이션 원을 매번 새로 만들지 않는다).
+- CSS 에 **`[style*=…]` 같은 style 속성 선택자 금지** (인라인 style 이 바뀔 때마다 자식 전체 재계산).
+- DOM 위치 · 크기는 프레임마다 한 번 이하 (`tick` 은 한 프레임에 여러 번 · 바뀐 값만 · `translate`).
+- 매 스텝 `A.status` · `A.buff` 를 다시 걸지 않는다 (이미 걸려 있으면 남은 시간만 늘린다).
+- 자주 생기는 이펙트는 `CV.on` 이면 **전장 캔버스** (`CVF.under/over` · `fxRing` · `FXC.beams`) · 큰 원 · 긴 빛줄기 · 여러 유닛을 잇는 선은 DOM 금지 · 이펙트 DOM 은 `S.fast` 일 때 만들지 않고 끝나면 지운다 (`u.fx` 에 넣으면 자동).
+- WebGL 층 (`GLC`) 은 원 · 빛 · 글씨만 그린다 → 경로 · 그라데이션 · clip 을 쓰는 이펙트는 2D 층. **새 이펙트 좌표는 `W.x(x, y)` · `W.y(x, y)`** (3D 원근).
+- 넓은 범위 스킬 피해 숫자는 `dealDamage(..., { skill: true, lite: true })`.
+- **`will-change` · transform 붙은 요소를 전장 좌표 크기로 크게 만들지 않는다** (폰 GPU 메모리 초과 깜빡임) · **전장 위 HUD 에 반투명 opacity 를 주지 않는다** (폰에서 깜빡임).
+- 확인: `?bench=50&ids=<지후,…>` (FPS · 최악 프레임 · 계산 ms) · 데스크톱은 렉이 안 보이니 CPU 스로틀 ×4 · ×6 으로 비교.
 
 ## 전투 엔진 핵심
-- 전투 난수는 `rng` 하나만 (친선전 두 화면이 같아야 한다) · 전투 코드에 `Math.random` · `Date.now` 금지. 연출 · 뽑기는 `Math.random`.
-- 스킬 도우미 `A` (`A.dmg` %피해 · `A.status` · `A.buff` · `A.line` 관통탄 · `A.zone` · `A.boom` · `A.knock` · `A.later` 전투 시간 예약 · `A.transform` · `A.summon` · `A.spawnChild`). 훅: `onStart` · `tick` · `customAttack` · `onHit` · `onKill` · `onUnitDeath` · `steer` · `takenMult` · `atkMult` · `pickTarget` · `gauge`.
-- 즉사는 `instaKill(src, t, label)` 하나로 (모든 생존기 무시). 피해는 `dealDamage` (받는 피해 감소 최대 90% · 최소 1 · 죽인 쪽 `t.killer`).
-- 투사체 `S.shots` · 관통탄 `S.lines` 는 맞는 순간 새로 쏜 것도 남도록 목록을 비우고 돈다 (R2.18 수정 · 다시 `filter` 한 번으로 바꾸지 말 것).
-- 전투 중 `drawUnit` 은 모았다가 프레임마다 한 번 그린다. 화면 효과 DOM 은 `S.fast` (시뮬) 일 때 만들지 않는다.
-- 전장 (R3.0): **가로 전장** `isEW()` (릴스만 예전 세로) · 왼쪽 아군 · 오른쪽 적 · 진영마다 세로 3 (`CFG.COLS`) × 가로 4 (`CFG.ROWS`) = `TILES` 12 · 줄 종류 `CFG.ROW_KIND` [0 전열, 1, 1 중열, 2 후열] (`tileKind` · `rowGap`) · 칸 자리 `CFG.DEPTH_EW` (가운데 선에서 px · 전열 사이 4칸) · 전장 `CFG.MAP_EW` 1260 × 750 · `CFG.CELL` 75 · 라운드 60초 · 같은 지후 제한 없음 (출격제한 `deployLimit` ≤ 2 지후는 넘으면 패시브 · 스킬 없음) · 레벨은 경기 안에서만 (최대 Lv5 · 갓지후는 Lv5 에 트루폼 · `CFG.LEVEL_ADD` 0.25).
+- 전투 난수는 `rng` 하나만 (친선전 두 화면 · 리플레이가 같아야 한다) · **전투 코드에 `Math.random` · `Date.now` 금지**. 연출 · 뽑기는 `Math.random`.
+- 스킬 도우미 `A` (`A.dmg` · `A.status` · `A.buff` · `A.line` · `A.zone` · `A.boom` · `A.knock` · `A.later` 전투 시간 예약 · `A.transform` · `A.spawnChild`) · 훅: `onStart` · `tick` · `customAttack` · `onHit` · `onKill` · `onUnitDeath` · `onLethal` · `onDamaged` · `onCrit` · `steer` · `takenMult` · `atkMult` · `ivOf` (공격 간격) · `pickTarget` · `gauge` (**스킬 있는 지후에 gauge 를 달면 SP 막대 대신 그게 보인다**).
+- 즉사는 `instaKill(src, t, label)` · 피해는 `dealDamage` (받는 피해 감소 최대 90% · 최소 1) · 체력 비례 피해는 `pctD(t, v)` 로 감싼다 (성 5% 한도) · 받는 피해 버프 키 `tk` · SP 는 `skNeed(u)`.
+- 투사체 `S.shots` · 관통탄 `S.lines` 는 맞는 순간 새로 쏜 것도 남도록 목록을 비우고 돈다 (다시 `filter` 한 번으로 바꾸지 말 것).
+- **`u.ghost` 면 물리가 안 움직인다** → ghost 이동은 위치를 직접 바꾼다 · 성뿌수기 · 디펜스는 쓰러진 유닛을 2.5초 뒤 `S.units` 에서 치운다 (오래 들고 있는 코드는 깨진다 · 새 소환은 `cwFull` 확인).
+- 전장: 가로 (`isEW()` · 릴스만 세로) · 진영마다 세로 3 (`CFG.COLS`) × 가로 5 (`CFG.ROWS`) = 15칸 · `ROW_KIND` [0 전열, 1, 1, 1 중열, 2 후열] · `MAX_UNITS` 15 · 라운드 60초 · 레벨은 경기 안에서만 (최대 Lv5 · `CFG.LEVEL_ADD` 0.25) · 출격제한 `OVL_LIM` (넘치면 패시브 · 스킬 없음).
+- 랭크 (A · A+ · S · SS · SSS · `ENH_MAX` 5 · 이름 `rkN` · **숫자로 보여 주지 않는다**) · S 고유능력 `enh6(u)` (이름은 그대로 · 랭크 3 이상) · SSS 필살기 `ULT` · 「랭크마다」 수치는 `rkX(u)`.
 
-## 게임 규칙 요약
-- 모드: 일반전 (봇 · 라이프 3) · 친선전 (온라인 1:1) · 아케이드 (미러전 · 지후의 탑 · 경쟁전) · 샌드박스. **이벤트 모드** (R2.23 · 일반전만 · 로비 토글 `profile.mode` · `CFG.EV_ENABLED`) — 아래 「최근 변경」.
-- 덱 5기 · 등급 일반 / 희귀 / 영웅 / 전설 · 뽑기 62.5 / 30 / 5 / 2.5 (`CFG.GACHA` · 새 로비 칩은 여기서) · 천장 80 · 초보자 모집 (R2.20 build 5) · 중복은 조각 · 랭크 (조각 + 골드 · 랭크 6 고유능력 `enh6`).
-- 봇 배치 `botDeployOne`: 둘 수도 · 합칠 수도 있으면 페르소나의 합체 확률 `mf` (없으면 **50%** · R2.19) 로 레벨업 · 아니면 새로 놓기. 칸은 `botTile` (R2.21 · 왕초보는 예전 `pickTile`): 인접 가치 `adjScore` (십자 버프 `ADJ_BUFF` 가속 · 보호막 · 수호자 · 소믈리에(2명 이상 · 1명은 0.6) · 엑시노스 / 고독한 지후 8칸이 비면 +4) 오름 × 1.2 − 원하는 줄과의 거리 − 가운데에서 먼 만큼 × 0.15 + 무작위 0.4 · 자리 바꾸기 페르소나도 인접 가치가 내려가면 안 바꾼다. 새 인접 지후를 만들면 `ADJ_BUFF` 에도.
-- 배속 (R2.19): 전투 화면 동그란 버튼 `#speedSeg` 하나 · 누구나 1.5배속 · VIP 는 2배속 (`fastSpeed`) · 꺼 두어도 25초 뒤 자동 1.5배속.
-- 봇: 초보자 보호 (5판 · 봇 ×0.75) → Lv.5~10 사이 봇 덱이 서서히 강해진다 (`botDeckRamp` · `TIER_SC`).
-- 화면: 새 로비 `#ui2` (어두운 남색 디자인 · 템플릿 `ui2Tpl` · `u2Vals` / `u2Render`). 새 CSS 는 `u2-` 접두사.
+## 게임 규칙 요약 (수치는 코드가 기준 · 여기 숫자가 낡으면 코드를 믿는다)
+- 모드: 일반전 (봇 · 온라인 대기열) · 친선전 (온라인 1:1) · 아케이드 (미러전 · 랜덤전 · 지후의 탑 · 경쟁전) · 샌드박스 · 이벤트 모드 (일반전 토글). 디펜스 · 성뿌수기는 임시로 숨김 (코드는 있다).
+- 덱 5기 · 등급 일반 / 희귀 / 영웅 / 전설 · 모집 `CFG.GACHA` (지금 전설 2.5 · 영웅 4 · 희귀 10 · 일반 83.5) · 천장 80 · 픽업 · 중복은 조각 · 랭크업 = 조각 + 골드 (`RK5.SH` · `RK5.G`).
+- 토큰제 (`TOK` · 라운드 지급 `TOK.BASE` · 업그레이드 `TOK.UPS` · `tokCost` · `TOK_COST`) · 봇 난이도 1~10 (`BOT_D` · 유저 MMR `mmr()` · `botDPick`) · 봇 덱 `botTierDeck` · 봇 랭크 `botRanks`.
+- 배속: 누구나 1.5배 · VIP 2배 · 25초 뒤 자동 1.5배.
+- 화면: 로비는 **ui4** (화이트 · 그레이 · 블랙 미니멀 · 기본 켜짐 · `?ui4=0` 이면 ui3) · 값은 ui3 것 (`u3Vals` → `u4Extra`) · 템플릿 `ui4Tpl` · CSS 는 `--u4-*` 변수와 `u4-` 클래스 (**새 UI 에 인라인 색을 쓰지 않는다**) · `#ui2` 밖 창은 `body.u3-on` 테마를 ui4 로 덮어 쓴다.
 
 ## 세계관 (서사를 쓸 때)
 - 지후들이 사는 **지후왕국**. 국왕 **화염 지후 1호** · 오른팔 **물 지후**. 같은 종류도 1호 · 2호 … 여럿.
 - 메인 스토리: 황사 지후의 「황사회주의」 지령으로 서쪽 마을 **화염 지후 314호**가 반란 → 소탕군 지원자는 암살 · 쉴드 · 검 · 얼음 넷뿐.
 - 자주 쓰는 연결: 왕궁 (근위대장 수호자 · 의원 주사 · 금고 티타늄 · 시계방 시계 · 천문대 별) · 블리자드 ↔ 태양 · 얼음 ↔ 블리자드 (펜팔) · 촉수 ↔ 죠스 · 라이플의 러시안룰렛 트라우마 · 포식이 남의 음식을 먹어 치움 · 조커가 슬롯머신을 털었음.
-- 지후마다 자세한 서사 연결은 `docs/CLAUDE-history.md` 의 「세계관 · 서사」와 각 버전 서사 항목.
-
-## 시뮬 · 티어
-- **`tools/tierlist/run.sh <버전> [판수=1600] [병렬=4] [부트스트랩=100]`** (R2.22.2 · R1 `archive/v8.1` 의 tools/tierlist 방식을 옮기고 강화 · 자세한 건 `tools/tierlist/README.md`): 무작위 10기 5:5 · Lv1 · 60초 판정 · 결과 점수 (남은 체력 차이) · Bradley-Terry · k-평균 S~D · **진영 바꿔 두 번 · 고르게 뽑기 · 판마다 jsonl (이어서 돌리기) · 부트스트랩 안정도 (60% 아래 경계) · 지난 TIER_SC 와 비교 ▲▼** → `apply.py` 가 `TIER_SC` · `infographics/tier-<버전>.json` · `tools/tierlist/history/` 를 쓴다 → make.py · shot.py 까지. 클라우드 4코어에서 1,600판 약 11분. 지금 `TIER_SC` · `infographics/tier-R3.5` 는 R3.5 build 13 코드 · 1,600판 (로컬 윈도우 일꾼 2개 · 일꾼 하나가 시작할 때 페이지가 늦어 죽으면 그 일꾼만 다시 돌린다 · 이어하기 · 1위 더블딜러 66.6% · 꼴찌 조커 · SS 8 · S 7 · A+ 23 · A 44 · B 22 · C 23 · D 7 · ? 6) · 예전: tier-R2.37 은 R2.37 build 2 코드 · 1,600판 (클라우드 4코어 일꾼 4개 · 약 30분 · 1위 태양 62.3% · 꼴찌 조커) · 예전: tier-R2.36 은 R2.36 build 6 코드 · 예전: tier-R2.26 은 R2.26 코드 · 1,600판 · 예전: tier-R2.25.4 는 R2.25.4 코드 · 1,258판 (1,600판 중 · 로컬 윈도우에서 일꾼 12개가 PC 를 멈출 만큼 무거워 중간에 끊고 그대로 집계 · **로컬에서는 일꾼 1~2개로**). (예전 콘솔용 `tools/tier-5v5.js` 도 남겨 둠)
-- 로컬 윈도우: playwright 없음 → `node tools/tierlist/run-cdp.js <폴더> <번호> <일꾼 수> <판수>` 를 일꾼 수만큼 띄운 뒤 `node tools/tierlist/agg.js <폴더> 100` → `python tools/tierlist/apply.py <폴더> <버전> <날짜>`.
-- 결과로 `TIER_SC` (**SS 90~100** · S 80~89 · A 65~79 · B 40~64 · C 20~39 · D 0~19 · R2.26 부터 6티어 — 지후 100종이 넘어서) 를 갱신한다 · 게임 `tierOf` · `TIER_C` · 도움말 티어리스트 · make.py `.tr.SS` 도 SS ~ D.
-- 메커니즘을 바꾸는 중에 돌린 시뮬은 무효 — 마지막 코드로 다시 돌린다.
-
-## 주기적 코드 리뷰 · 리팩터링 (R2.36 · `tools/review/` · 자세한 순서는 그 폴더 README)
-- **동작을 바꾸지 않는 정리만** (재배열 · 머리말 · 죽은 코드): 고치기 전 고정 시드 전투 120판 (`tools/tierlist/run.js`) 을 저장 → 정리 → 같은 시드 결과가 `cmp` 로 완전히 같아야 한다 + 첫 로딩 · 벤치 · `comment-check.py`.
-- `python tools/review/survey.py` (안 쓰는 함수 · 변수 · CSS 클래스 · 머리말 없는 긴 구간 — 고치지 않고 알려만 준다) · `css-prune.py [--dry] <클래스 …>` (안 쓰는 CSS 규칙 삭제 · `<style>` 밖에 낱말로 나오면 멈춘다) · `toc.py` (스크립트 맨 위 **목차** 를 `// ═════════ 제목` 머리말에서 다시 쓴다 — 큰 구간을 만들면 머리말을 달고 돌린다).
-- R2.36 정리로 옮긴 곳: 디펜스 보상 · 에너지 · 7일 이벤트 · 열쇠 상자 → `═ 디펜스 로비` (일일 퀘스트 앞 · 전투 코드는 `═ R2.33 성뿌수기 · R2.34 디펜스`) · 지후 받기 · 뽑기 · 뽑기 연출 → `═ 가차` · `stepCombat` · `loop` → `═ 전투 루프`. 남은 CSS 후보 (`r-<등급>` · `tier-<티어>` · `g1` 등) 는 이름을 조립해 쓰는 것이라 지우지 않는다.
+- 지후마다 자세한 연결은 기록 파일의 「세계관 · 서사」와 각 지후의 `story` 를 grep.
 
 ## 계정 · 서버 (짧게)
 - Firebase 프로젝트 `jihoobattle` · 게스트는 익명 인증 · 기록 `r2_backups/<uid>` · 이 기기 `rejhbt.profile.v1`.
-- **켤 때 서버 기록과 맞추기 (R2.18 build 6)**: 저장 시각(`savedAt`)은 켜는 동안 `save()` 가 바꿔 버리니 비교에 쓰지 않는다 — 백업마다 기록 안에 저장 번호 `profile.bkWid` 를 넣고, 이 기기는 마지막으로 맞춘 번호 `profile.syncWid` 를 기억 → `serverNewer(b)`: 번호가 다르면 서버 기록 · 번호가 없으면 진행도(레벨 → 경험치 → 판 수) 앞선 쪽. 서버 규칙(`r2_backups` 는 payload · savedAt · updatedAt 만)을 안 바꾸려고 번호는 payload 안에.
-- **백업 강화 (R2.20 build 3)**: `backupNow` 는 이 창이 BK_TRUST(60초) 안에 저장 · 확인하지 않았으면 `runTransaction` 으로 서버 `bkWid` 가 `profile.syncWid` 와 같을 때만 쓴다 (다르면 `bkConflict` → `bkPick`: 진행도 `bkSum` 이 한쪽이 모두 같거나 앞서면 그쪽 · 엇갈리면 묻는다). 숨었다 돌아옴 · 잠들었다 깸 · 다른 탭이 기록을 바꿈 → `ACC.vAt = 0`. 멈춘 창(`ACC.kicked`)은 `writeLocal` 도 안 한다. 다시 로그인해도 이 계정 기록이면 비교 (예전엔 서버로 무조건). 게스트 진행이 있으면 로그인 전에 `guestLoginOk`. 서버 이력 `r2_backups/<uid>/hist/{t0~t7 · x0~x3}` (3시간마다 · 버린 기록) → 운영 도구 「보기」가 지금 없는 지후를 보여 준다 (rules 게시 필요). 상태는 `bkState` · 메뉴 점 `bkWarn`.
-- 계정 창: 햄버거 → **JHBT 계정** (`#accModal` · `renderAccount` · `openAccount(tab)`) · 환경설정 맨 위는 요약 한 줄 (`renderSetAcc`) · 튜토리얼 `#tutAcc` · 닉네임 단계 `#nsAcc` 「이미 계정이 있나요?」 (로그인하면 `TUT.abort`). 가입 보상 `joinReward` = **선택 전설 모집권** (`signRw` 로 계정당 한 번).
-- `dlg` 가 다른 dlg 에 밀리면 `null` (예전 false) — 꼭 골라야 하는 창은 null 이면 다시 묻는다.
-- 운영 우편 `giftMail` 보상: ◆ · ● · 랜덤 영웅/전설 · **정해진 지후** `{ kind: 'char', id, amount }` (R2.20 build 2 · 운영 도구 「지후」 칸에 이름) · 이 버전이 모르는 보상이 든 우편은 받은 것으로 치지 않고 남겨 둔다 (`giftOk`).
-- 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 공지 `config/announce` · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
-- 프로필 정규화가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ`) 는 `let profile = loadProfile()` 보다 앞에.
+- 서버 기록 맞추기: 저장 번호 `profile.bkWid` / `profile.syncWid` (`serverNewer` · `bkConflict` · `bkPick`) · 저장 시각은 비교에 쓰지 않는다.
+- **프로필 정규화 (`normProfile`) 가 보는 데이터 (`ITEMS` · `FRAMES` · `MQ` · `RK5` …) 는 `let profile = loadProfile()` 보다 앞에** 둔다 (뒤에 두면 TDZ 오류로 켜지지 않는다).
+- 프로필을 한 번 옮기는 변환은 플래그로 (`p.rk5` · `profile.artC` · …) — 서버의 옛 기록이 들어와도 다시 맞게 바뀐다.
+- 매일 보상 · 날짜는 **`todayKey()` · `stDay()` (한국 시간 · 서버 시간)** 로 (`new Date()` 로 날짜를 만들지 않는다 · 기기 시간대를 바꿔 무료 모집을 무한으로 돈 유저가 있었다).
+- 보상 · 소비 함수를 새로 만들면 맨 앞에 `alWhy('이유')` (활동 기록).
+- 운영: 운영자 `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 로비 공지 `config/announce` · 화면 위 띠 `config/bcast` · 운영 우편 `giftMail` (모르는 보상이 든 우편은 남겨 둔다 · `giftOk`) · 개발자 도구 `#opModal` (`opOpen(탭)` · 새 운영 기능은 여기에 탭으로) · 욕설 검사 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
+- `dlg` 가 다른 dlg 에 밀리면 `null` — 꼭 골라야 하는 창은 null 이면 다시 묻는다.
 
-## 안드로이드 앱 (APK · R2.26 부터)
-- **Capacitor 7** · `app/` (패키지 `kr.jihoobattle.app` · 바꿀 수 없음) · 게임 파일을 **APK 안에** 넣는다 (사용자가 고름 · 사이트를 감싸는 TWA 아님) → 업데이트마다 새 APK.
-- 만들기: `cd app` → `npm run sync` (`tools/app-sync.js` 가 index.html · manifest · icons · sfx · bgm · comic · emo · r1jihoo 를 `app/www` 로 복사 + `cap sync`) → `cd android` → `JAVA_HOME=<JDK 21> ./gradlew.bat assembleRelease` → `app/android/app/build/outputs/apk/release/app-release.apk`.
-- **새 APK 마다 `app/android/app/build.gradle` 의 `versionCode` +1 · `versionName` = 게임 버전** (낮으면 폰이 업데이트로 받지 않는다).
-- 도구 (저장소 밖 · 관리자 권한 없이): JDK 21 `C:/Users/User/AppData/Local/jhbt-android/jdk` · Android SDK 35 `…/jhbt-android/sdk` (`android/local.properties` 의 `sdk.dir`).
-- **서명 키** `C:/Users/User/Documents/jhbt-app/jhbt-release.jks` + `keystore.properties` (비밀번호 · `app/android/keystore.properties` 로 복사해 쓴다 · git 에 안 올림) — **잃어버리면 같은 앱으로 업데이트를 못 낸다** (유저가 지우고 다시 설치해야 함).
-- 게임 안 `IS_APP` (Capacitor 네이티브): 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` (jihoobattle.kr) 의 meta 와 비교 → 업데이트 창이 「새 APK 받기」(`CFG.APP_DL`) · 「나중에」 · 구글 로그인 막음 (구글이 앱 안 로그인 창을 막는다 → UID · 비밀번호) · `appStandalone()` 참 · 안드로이드 뒤로 가기 (`@capacitor/app` · 창 → 모달 → u2 시트 → 로비 탭 → 끌까요?) · 웹 푸시는 앱 WebView 에 없다 (앱 알림은 나중에 네이티브 FCM 으로).
-- 앱의 저장 (localStorage) 은 브라우저와 따로 — 계정으로 로그인하면 서버 기록과 맞춘다.
+## 안드로이드 앱 (APK)
+- **Capacitor 7** · `app/` (패키지 `kr.jihoobattle.app` · 바꿀 수 없음) · 게임 파일을 APK 안에 넣는다 → 업데이트마다 새 APK.
+- 만들기: `cd app` → `npm run sync` (`tools/app-sync.js`) → `cd android` → `JAVA_HOME=<JDK 21> ./gradlew.bat assembleRelease` → `app/android/app/build/outputs/apk/release/app-release.apk`.
+- **새 APK 마다 `app/android/app/build.gradle` 의 `versionCode` +1 · `versionName` = 게임 버전.**
+- 도구 (저장소 밖): JDK 21 `C:/Users/User/AppData/Local/jhbt-android/jdk` · Android SDK 35 `…/jhbt-android/sdk`.
+- **서명 키** `C:/Users/User/Documents/jhbt-app/jhbt-release.jks` + `keystore.properties` (git 에 안 올림) — **잃어버리면 같은 앱으로 업데이트를 못 낸다.**
+- 게임 안 `IS_APP`: 서비스 워커 없음 · 새 버전 확인은 `APP_SITE` 와 비교 · 구글 로그인 막음 · 앱 저장은 브라우저와 따로.
+- 로컬 파일 (아이콘 · 효과음 · 유물 그림 …) 을 더하면 `python tools/sw_assets.py` 로 오프라인 CORE 를 다시 만들고 `sw.js` 의 `CACHE` 끝 숫자를 올린다.
 
-## 최근 변경 (R3.5 · 2026-11-24)
-- **build 13**: 필살기 지후 카드 `.u4-cc.ult::after` = 아래 테두리 한 줄에만 좌우 대칭 보라 그라데이션 + 옅은 글로우 (오른쪽 모서리 번짐은 멍든 것 같다고 해서 바꿨다) (예전 보라 고리는 모든 지후에 필살기가 생기면 어색해서).
-- **build 12 지후 탭 다듬기**: 그림 바탕은 중립 회색 `--u4-cbg` (등급색 섞은 바탕은 누렇다고 해서 뺐다 · 등급색은 테두리 · 딱지 · 게이지에만) · 모서리 2~4px (사용자: 각진 게 좋다 · 아주 살짝만) · `.u4-mid-un` 은 grid (`.u4-unw` display:contents) = 왼쪽 무대 + 아래 덱 상자 `.u4-tray` (grid 영역 hd · cp · rec / hand 5칸) · 오른쪽 목록 전체 높이.
-- **build 11 지후 탭 리뉴얼** (CSS 머리 `R3.5 build 11 지후 탭 리뉴얼` · 템플릿 `u3.isUnits`): 왼쪽 무대 `.u4-stg` (고른 지후 · `p.role` `tk` `rank` `rkFT` `shT` `goldT` `ggCls` · 능력은 `u4UnitsFix` 가 한 문장씩 `p.pasL` / `p.skL` 로 나누고 `[키워드]` → `.kw` · 스킬 머리 `p.skN` · `p.skSp` = desc 맨 앞 `<b>SP n</b> · <b>[이름]</b>.`) · 오른쪽 카드 `.u4-cc` (`auto-fill minmax(124px)` · 등급색 테두리 `--rc` · 토큰 `.tok` · 덱 `.dk` · 미보유 `.lk` / `g.no`) · 아래 덱 트레이 `.u4-tray` > `.u4-hand` 카드 5장 기울임 `.u4-hc` (장착 모드 `.eq`) · 반경 위계 무대 22 · 카드 16 · 칩 10 + 흐림 없는 그림자 `0 4px 0` · 필살기 카드 `.u4-cc.ult` 보라 고리. 시안 캔버스 https://claude.ai/artifact/BS6o92pT3GQdQ2cTtKM55L 은 앞 단계 시안 (게임 화면과 다르다).
-- **build 10 지후 탭 2차**: 등급색 CSS 변수 `--u4-r0~r4` (일반 회색 · 희귀 파랑 · 영웅 보라 · 전설 노랑 · 한정 분홍 · 다크는 밝게) + 클래스 `.r-<등급>` 가 `--rc` 를 정한다 (카드 · 덱 칸 · 상세 · 등급 필터 점 `.rc-<키>`) · 아래 메뉴 숨김 `u4-nodock` (`u4.cls` · 지후 탭 + 컬렉션 · 이모티콘 · 기기 뒤로가기는 원래 로비로) · 덱은 오른쪽 위 `.u4-unr` > `.u4-un-dk` + 상세 · 목록 `.u4-un-ls` 는 전체 높이 · 카드 게이지 `.gg` (`g.gt` 조각 / 필요 · `gcls` rdy 초록 · mx MAX) · 카드 칸 `auto-fill minmax(84px)` (폰 70px) · 낮은 화면 (높이 560 이하) 은 상세가 스크롤 + 버튼 고정 · **브라우저 확인은 크기를 바꾼 뒤 새로 불러와야 한다** (바로 찍으면 옛 배치가 찍힌다).
-- **build 9 지후 탭 디자인 다시** (ui4 템플릿 `u3.isUnits` · CSS 머리 `R3.5 build 9 지후 탭 다시`): 왼쪽 `.u4-unl` (위 덱 줄 `.u4-un-dk` · 아래 목록) + 오른쪽 상세 전체 높이 (`.u4-un-det r-<등급>` · `p.gr`) · 카드 `.u4-uc` 테두리 없이 초상화 아래 한 변이 등급 (일반 2 선 · 희귀 2 · 영웅 4 검정 · 전설 4 주황) · 덱 ✓ `.bd` · 토큰 `.tk` · 등급 필터 `.u4-rseg` (기존 `.u4-seg` 는 위 탭 스위치라 이름을 나눴다) · 역할군 · 상태는 「필터」 `.ftg` (켜진 수 `foN`) 뒤 `.u4-fls` · 처음엔 접힘 (`rejhbt-u4-fil` '1' 이면 펼침).
-- **build 8 암묵적 MMR · 봇 덱 통계** (`// 유저 MMR` 블록 · `MMR` · `mmr()` · `mmrUpdate` · `botDPick`): 유저마다 `profile.mmr` { r · n · ls } (화면에 안 보임 · 없으면 레벨 곡선 `mmrInit` 으로 시작 · normProfile) · 봇 D 레이팅 고정 (D1 1000 · +100) · Elo (K 32 → 20판 뒤 16) · 다음 난이도 = 기대 승률 `MMR.TARGET` 65% 가 되는 D 근처 가우시안 (`SD` 1.0) · 레벨이 범위 (`BOT_LV_C` 중심 −3 ~ +2 · Lv5 까지 D1~4) · 연패 3 → −1단계 · 5 → −2단계 · 초보자 보호 · 친선전 · 아케이드는 갱신 안 함 (예전 `BOT_LV_D` 표 · 연승 보정은 없앴다). **봇 덱 통계** `botStat(win)` (경기 끝 `endMatch` · 서버 익명 집계 `botstats/<지후>` · `b_<덱 평균 티어 5점 구간>` { g<D> 판 · w<D> 봇 승 } increment · 개발 · 자동화 접속 (`liveTest`) · 이벤트 모드 · 초보자 보호 · 항복은 뺀다 · permission-denied 면 `NOW.bsErr` 로 끈다) → 개발자 도구 「봇 통계」 탭 (`opBotLoad` · 난이도 효과를 뺀 지후별 초과 승률) · **firestore.rules `botstats` 게시 필요** (`node tools/rules-deploy.js`) · 시험 `__rejhbt.MMR` · `mmr` · `mmrUpdate` · `botDPick`.
-- **build 7 봇 난이도 곡선 다시**: 덱의 티어 쏠림을 표 값 `BOT_D[d].k` 로 (음수 = 약한 지후 · 실측으로 평균 덱 티어 D1 53 → D10 88 을 맞춤 — 균등 무작위도 풀 평균이 64.6 이라 약하지 않았다) · `BOT_LV_D` 는 Lv5 까지 D1~4 만 · Lv10 평균 D4 · Lv19 평균 D8.6 · 연승 보정은 Lv6 부터 (Lv10 전에는 한 단계) · 남은 Lv5 경계: 일반전 라이프 4 (`CFG.LIVES4_LV` 5) · 초보자 보호 끝 (5판).
-- **build 6 봇 난이도 1~10** (`// ═════════ R3.5 build 6 봇 난이도` · `BOT_D` 난이도 표 · `BOT_LV_D` 레벨 1~19 비율표 (한 줄 합 100) · `botDPick` (연승 3 · 5 → 한 · 두 단계 위) · `botStylePick` 테마 성격 확률 Lv1 50% → Lv19 20% · `botEff` 난이도 합친 성격 · `botTokAdd`): 일반전 · 온라인 대기열 봇만 (`S.botD` · 아케이드 · 탑 · 디펜스 · 성뿌수기는 `botD` 0 = 예전 성격 그대로 · 초보자 보호는 D1) · 덱 `botTierDeck(key, d)` (모든 레벨 · 예전 `botDeckRamp` 는 디펜스 · 성뿌수기만) · 랭크 `botRanks` (sk) · 시험 `__rejhbt.BOT_D` · `botDPick` · `botTierDeck`. 밸런스 시뮬은 안 돌렸다 (난이도 수치는 손으로 정한 값 — 판을 돌려 보며 `BOT_D` · `BOT_LV_D` 를 고친다).
-- **build 5**: 접속 중 유저 수는 목록과 같은 `pres` 에서 센다 (`nowCount` · 예전엔 `pulse` 라 닉네임 없는 접속 · 예전 버전까지 세서 달랐다 · 목록을 열면 `NOW.n` 을 목록 수로) · 업데이트 보상 `CFG.UPD_DIA` 300 + `UPD_ITEM` 'pickaxe' · 지후 탭 덱은 위 가로 줄 `.u4-un-dk` (아이콘 5 + 랭크 칩 `.rkc` · `d.chip`) · 아래 `.u4-un-row` 가 목록 + 상세.
-- **build 4 지후 탭 필터** (`u3Units` · ui4): 등급 · 역할군 · 상태 (`STT` 보유 · 미보유 · 랭크업 · 덱에 없음) 칩을 겹쳐 거른다 (`pass(id, skip)` 으로 칩마다 개수 · 같은 칩 다시 누르면 풀림) · 이름 · 역할군 검색 `UI2.st.u3q` (입력창이 포커스면 u2Morph 가 값을 안 바꾸므로 초기화 때 값을 직접 비운다) · 칸막이 접기 `u3fold` (ui4 만) · 상태 `u3rar` · `u3role` · `u3stat` · CSS `.u4-fl` · `.u4-srch` · `.u4-ghb`.
-- **build 3**: 토큰 `TOK.BASE` [6, 5, 5, 6, 6, 7, 7] · `UPS` [2, 3, 5, 8, 11] · `DM` 0 · 모집 `CFG.GACHA` 2.5 / 4 / 10 / 83.5 (초보자 `NB_GACHA` 는 그대로) · 희귀 랭크업 조각 50 · 75 · 100 · 125 · **유물은 모은 개수 `profile.art` (Lv n → n+1 에 n+1 개 · `artCum` · `artLv` · `artProg` · 예전 레벨은 `artC` 로 한 번 바꿈)** · 발굴 연출 `artDig` 2초 · 지후 유적 Lv1 부터 (`ruGive`) · 7일 여정 종료 (`e7Live` false) · **접속 중인 유저 `pres/<uid>` (`presBeat` · `presOpen` · 소식 창 탭) · 접속 소식 events `login` → firestore.rules 게시 필요** · 내 테두리 (`v.myPfL` · `myPfS` · 인게임 `.r3pf .av .pf-photo`) · 덱 설정 필살기 지후 `.u4-uc.ult` · 로비 파티클 `.u4-ptc` · 마탄 리워크 (`MG` · `mgShot` · `mgEmpty` · `mgDrain` · 최대 체력 `p.mgp` · 상태 `mgmk`) · 솔렘 합체 토큰은 `r6Grow` 맨 앞.
-- **build 2 랭크 개편**: `ENH_MAX` 5 · 이름 `rkN` (A · A+ · S · SS · SSS · **숫자로 보여 주지 않는다**) · 비용 `RK5.SH` / `RK5.G` (= `ENH_SHARD` · `ENH_GOLD` · normProfile 보다 앞) · `ENH_MILE` A+ 체력 · 공격력 10% · S 고유능력 (`enh6` = 랭크 3 이상 · 키 이름은 그대로) · SS 15% 셋 · SSS 필살기 (`ENH_SKILL[id][12]` = ULT) · 예전 「랭크마다」 수치는 `rkX(u)` (× 2.75) · 옮기기 `rk5Move` (normProfile · `p.rk5` 한 번 · 남는 조각 · 골드 환급) · 우편 `rk5Mail` (초기화권 · `RK5.END` 12월 8일 · 우편 보상 `{ kind: 'item', key }`) · 봇 `botRanks` ±1 · 탑 S · 15층부터 SSS · S랭크권 (`r6Epic` · `r6Legend` 이름 그대로).
-- **build 2 필살기** (`// ═════════ R3.5 build 2 필살기` · `ULT` · reapFx 도우미 앞): SSS · `u.ult` { cd, t } · 남은 쿨타임 배치 기록 `p.ut` (다음 라운드로 · 합체는 덜 남은 쪽) · `ultStep` (stepCombat 맨 앞) · 내 지후는 `#ubar` 카드 (`.hu` · 준비 `.ur`) 를 눌러 `ultTap` · 카드 줄이 없으면 자동 · 봇 · 시뮬 자동 (`bot: false` 제외) · 리플레이는 RP 라운드 `u` 기록 · 캔버스 SP 막대 밑 빨간 막대 · 컷인 `ultCut` (모서리만 자르고 왼쪽 아래 띠 · 사용자 요청) · 성뿌수기 · 디펜스 · 친선전은 없음. 트리아지후 최대 체력 `p.tpa` · 광폭화 `p.rgp`.
-- build 2 유물 화면 리뉴얼: 그림 `icons/art/<id>.png` (사용자 그림 · 192px · sw CORE `core-7`) · 카드 `artCardHtml` · 상세 창 `#artDt` (`artDetail` · 효과 + 다음 레벨 증가량 `artFx` 는 설명 함수 a[5] 의 첫 번째로 달라지는 숫자를 찾는다) · 새 유물은 그림도 넣는다.
-- build 2 기타: 변이 R1 로직 (성공작 = 기본 3200 · 260 · 실패작 `MUT` · 스킬 없음) · 낚시 찌는 무작위 적 근처 · **솔렘 모드 버튼은 머리 위** (발밑이면 3D 전장의 바닥 칸이 덮어 PC · 모바일 모두 안 눌렸다) · 화산 `vcLavaTick` 빈 칸 방어.
-- **토큰**: `TOK.BASE` [6, 6, 6, 8, 8, 10, 10] · 8라운드부터 10 (`tokBase`). 곡괭이 일반전 승리 `ART_PK.WIN` 45% · 일일 상점 `SHOP_ITEMS.pickaxeD` (◆200) · `pickaxeG` (●6,000).
-- **운영자 메시지** (`// ═════════ R3.5 운영자 메시지` · `bcShow`): `config/bcast` { on · msg · sec · by · at } 을 `watchConfig` 가 구독 → 모든 화면 맨 위 띠 `#bcBand` (z-index 100000 · 같은 메시지 한 번 `rejhbt-bc` · 보낸 지 sec + 60초 지나면 안 띄움) · 개발자 도구 「공지 · 점검」 탭에서 보낸다 · **firestore.rules `bcast` 게시 필요**.
-- 리워크: 더블딜러 [잭팟] buff `ddJack` { aspd 0.77 } + 최대 체력 17% · 카드 2.8초 · 부두술사 `dealDamage` 맨 앞 (아군 공격 10 / 90% · 적 50 / 50%) · 낚시 `fishAttack` 140° 부채꼴 + [회치기] `u.fk` (`FK` · `fkTick` · 다음 라운드 절반은 배치 기록 `p.fk` · `packPlace` 16번째 칸 · 합체는 큰 쪽) · 엑시노스 `gpuTick` 계단식 (2.5초 − 레벨 0.2 − 랭크 6 0.3).
-- 랭크 6 16종 (`ENH_SKILL` `// ── R3.5 ──`): 공격 간격은 `def.ivOf` (도둑 · 리트머스 · 낚시) · 포탈 `S.ptK` / `S.ptKR` (matchBase 에서 null) · 부루스타 `burnOn` · `burnP` · 샌즈 `sansMore` · 스테인리스 buff `st6` · 블랙홀 buff `bh6`. **`buffSum` 은 이제 스테인리스의 음수 `tk` 도 뒤집지 않는다** (받는 피해 감소가 증가로 바뀌던 것).
+## 주기적 코드 리뷰 · 리팩터링 (`tools/review/` · 자세한 순서는 그 폴더 README)
+- **동작을 바꾸지 않는 정리만**: 고치기 전 고정 시드 전투 120판 (`tools/tierlist/run.js`) 을 저장 → 정리 → 같은 시드 결과가 `cmp` 로 완전히 같아야 한다 + 첫 로딩 · 벤치 · `comment-check.py`.
+- `python tools/review/survey.py` (안 쓰는 함수 · 변수 · CSS 클래스 · 머리말 없는 구간 — 알려만 준다) · `css-prune.py [--dry] <클래스 …>` · `toc.py` (스크립트 맨 위 목차를 `// ═════════ 제목` 머리말로 다시 쓴다 — 큰 구간을 만들면 머리말을 달고 돌린다).
+- 이름을 조립해 쓰는 CSS (`r-<등급>` · `tier-<티어>` · `g1` 등) 는 안 쓰는 것처럼 보여도 지우지 않는다.
 
-## 최근 변경 (R3.4 · 2026-11-23)
-- **build 10**: 효과 아이콘 타이머는 아이콘 줄 그림에 굽지 않고 프레임마다 위에 (`cvTimers` · `fxFracNow` · 부채꼴 72단계 `cvPie` 전역 캐시 · 상태 아이콘은 `x.sk`) · 더블딜러 ♠ → ♦ = `ddSlash` (대상 앞 130° · 2.4칸 · 75% ×2 · buff `ddCut` tk 0.12 4초 · 붉은 부채꼴은 `tgfire` fx) · 오케스트라 `ocSet` 그림 (페르마타 ↔ 다카포) 바로잡음. **`fxLive` 는 이미 있는 이름 (불꽃 수 한도)** — 새 함수 이름이 겹치지 않게.
-- **build 9 지후 유적** (이벤트 탭 `ruins` · `evhRuins`): `evt().ru` { k 처치 · g 받은 레벨 } · `ruAdd` (killUnit · 일반전 · 온라인 일반전만) · 100마리마다 Lv +1 (`RU` 최대 30) · 오를 때 곡괭이 바로 지급.
-- **build 8 솔렘라멘트 리워크** (`// ── R3.4 build 8 솔렘라멘트 리워크` · `SL` · reapFx 앞): 탄 산나비 · 죽은나비 5 / 5 번갈아 (`u.am.next`) · [침잠] `e.sinkN` (STATUS `sink` · 아이콘 nbdead) 은 `dealDamage` 끝 `slSinkPop` 이 소모해 고정 피해 (`opts.pure` = 받는 피해 감소 · 쉴드 무시 · `opts.sink` 은 다시 소모 안 함 · `slX` 배율 · `slHalf` 소모 없이 절반) · 패시브는 레벨 상관없이 모두 ([애도] · [구원] · [장례] `u.slFun` · [죽음을 찾는 자] · [죽은 나비의 장례식]) · 공격 간격 훅 `def.ivOf` (`baseInterval`) · 모드 `p.bm` 0 흰 · 1 검 · 2 슬픔 = 배치 단계 칸의 `.bm-btn` (`lamentMode` → `S.bmOps` → 행동 `act.bm` → `bmApply`) · 봇은 `slBotMode` · 랭크 6 즉시 재장전. **변이** 실패작 · 성공작 = 놓을 때 `p.mu` ('s' · 'f' · `placeExtra` · 친선전은 해시) · **강화** 단계 진영 공유 (`forgeSync` · 새로 놓으면 같은 단계) · `packPlace` 14번째 칸 `bm` · 15번째 `mu`. **태풍** [태풍] = R1 `tickTyphoons` 로직 (`TY` · 가장 가까운 적에게 3.2 rad/s · 2.4칸/s · 겹치면 −60% · `q.ramp` 초당 공격력 200% · 0.4초마다 700% + ramp · 5초 + 레벨 0.5). **출격제한 다시** `OVL_LIM` (모노리스 · DJ · 오케스트라 · 기상캐스터 · 샌즈 · 더블딜러 = 1 · 토큰 4 · `overSet` · `wouldOver`). 스파이 날려 보냄은 캔버스 `u._yf` 로 그린다. 밸런스 수치는 패치노트 (티어 시뮬은 아직).
-- **build 7 온라인 매칭** (`// ═════════ R3.4 build 7 일반전 온라인 매칭` · `MM`): 로비 모드 버튼 일반전 · 이벤트 모드 · **온라인** (`profile.mmOn` · `mmModeSet` · 예전 디펜스 자리) → `mmStart` 대기열 `mmq/<uid>` (st wait · 15초마다 at) → 3초마다 `mmTick` 이 기다리는 사람을 `mmGrab` 트랜잭션 (내 문서 · 상대 문서 둘 다 wait) 으로 `omatch/<id>` 를 만들고 둘 다 matched → 잡힌 쪽은 자기 문서 구독 → `mmJoin` · 경기는 `startFriendly(m, role, { col: 'omatch', ranked: true })` (`S.net.col` · `S.net.ranked` → `endMatch` 일반전 보상) · 최근 상대 3명 (`profile.mmRecent`) 은 25초 전까지 건너뜀 · 대기열 봇 `MM.botAt` (반은 12~40초에 나타남 → `newMatch`) · 50초 `MM_ASK` 에 봇과 할지 물음 · **firestore.rules `mmq` · `omatch` 게시 필요** (실서버로는 시험 못 함). **봇 덱** `botTierDeck` (내 레벨 5 이상 · 실력 `BOT_SKILL` 이 높을수록 TIER_SC 쪽 가중 · SS 최대 3 · 와일드 칸 8% + (1 − 실력) × 40%). **토큰**: `S.inc` = 업그레이드 단계 (0~5 · `TOK.UPS` 2·4·6·8·10) · 지급 `tokBase(라운드)` + 단계 · 소수 첫째 자리 `r1` · 표시 `tokF` · 다음 수입 `tokInc` · 토큰 1 지후 없음 · 유물 지갑 (1라운드). **인게임 HUD** (`h4Ensure` · show('battle') 에서 · `.r3pf` 를 `.hud` 로 · `.r1acts` 를 `#screen-battle` 로 옮기고 `#screen-battle.h4` · ID 그대로 · 토큰판은 `tokBar` 의 h4 판 + `#h4go` 전투 시작 · 전투 중 `#h4mini` · `.b-cfull` 이면 위 덱 정보를 치우고 얇게 · CSS 블록 `R3.4 build 7 인게임 HUD`). 지후 정보 `uInfoHtml` (같은 종류 버프 합산 · 출처 구분 없음) · 간략 도감 `charDetail(id, true)` 은 ui4 면 `.c4m` · 효과 아이콘: 상태 · 버프가 바뀌면 `u._fxT = null` (예전 0.2초 묶음 지연) · 타이머 `fxFrac` / `fxBufFrac` (12단계 · 캔버스 `cvIcons` 부채꼴). 그 밖: 탭 전환 `u4TabFx` = 화면을 덮은 채 시작해 쓸려 나감 · 버튼 손맛 (`scale` 속성) · 무료 10회 `p10Free` = VIP 매일 1 · 일반 토요일 1 · VIP 일일 우편은 그날만 (`exp`) · 커스텀 픽업 5회 · 뽑기 묶기 `grGroup` 은 10장 넘을 때만 · 디펜스 보상 · 디펜스 버튼 임시 삭제 · 소식 줄 접속 아이콘 · 핑 (`NOW.ping` · 테스트 접속은 pulse 안 씀) · 유물 서사 `ART_STORY` · 친구 화면 `.u3-pgfull[data-screen-label="u3pg-social"]`.
-- **build 6 유물** (`// ═════════ R3.4 build 6 유물` · 일일 퀘스트 앞): `ART` [id, 아이콘, 이름, 기본값, 레벨마다, 설명] 34종 · `profile.art[id]` = 모은 개수 (= 레벨 · `ART_MAX` 10 · 최대면 안 나온다) · 곡괭이 `items.pickaxe` (`ART_PK` 일반전 승리 30% · 열쇠 상자 4%) · 화면 `#artPg` (`artOpen` · body 에 붙는다 · ui3 nav `relic` → ui4 nav 도) · 발굴 `artPull`. 전투: `startRound` → `artRoundSet` (`S.art` = { id: 레벨 } · `S.artSide` · 친선전 · 튜토리얼 · 샌드박스 · 빠른 시뮬 null · 리플레이는 스냅숏 그대로) · `av(id)` 이번 판 값 · `artPV(id)` 계정 값 (보상 · 모집). 훅: effAtk `artAtkM` · aspdRate `artAspd` · moveToward `artSpd` · 치명타 `artCrit` · dealDamage `artTaken` · `artKill` · heal `artHealM` · evSp `artSpM` · addStatus `artStatus` (지금 움직이는 지후 `artCur` 가 컨트롤러면) · makeUnit `artUnit` · beginCombat `artCombat` · stepCombat `artStep` (0.25초 · 고기 · 레벨 합 · 오라 클래스 `art-on` → 캔버스 `_cvArt`) · tokRound `artRoundTok` · roundResult `artLoss` · applyAct `artPlaced` · 모집 `artGacha` · 지후 정보 `artInfoHtml`. 소수 토큰은 `S.artTF` 에 모았다가 1개씩.
-- **새 로비 ui4** (화이트 · 그레이 · 블랙 미니멀 · 시안 https://claude.ai/artifact/MoANyspuDcKw89oyi4VN7r · `// u4-js-begin` ~ `// u4-js-end` · CSS `/* u4-css-begin */` ~ `/* u4-css-end */` · 템플릿 `<template id="ui4Tpl">` `<!-- ui4-begin -->`): 기본 켜짐 · `?ui4=0` 이면 ui3 (localStorage `rejhbt-ui4`) · `?ui4=dark` / `light` (`rejhbt-ui4-theme` · `u4Theme`). **값은 ui3 것을 그대로** — `u2Render` 가 `u3Vals()` 를 부르고 `u4Extra(v)` 가 `v.u4.*` 와 색 대신 쓰는 클래스 (`cls` · `u4UnitsFix` · `u4ShopFix` …) 를 덧붙인다 (`u4Extra` 가 오류를 내면 그 차례는 ui3 템플릿). 뿌리 클래스 `u3 u4` — ui3 의 창 · 메뉴 · 시트 · 튜토리얼 훅 (`.tut-hot` · `TUT.u3`) 은 템플릿 뒤쪽을 그대로 복사해 쓴다 (아직 크림슨 레저 테마 · 글자색은 `.u4 .u3-ovl` 등에서 따로).
-- 화면: 메인 (왼쪽 바로가기 · 열쇠 상자 · 가운데 덱 무대 · 오른쪽 이벤트 · 오늘의 픽업 · 아래 메뉴 6칸 + 모드 · 전투 시작) · 지후 (덱 · 목록 · 상세 · 컬렉션 · 이모티콘) · 모집 (배너 · 영웅 무대 · 모집 버튼) · 상점 (카드 · 영수증) · 아케이드 (모드 목록 + 상세) · 랭킹 (단상 · 목록). 친구 · 탑 · 경쟁전 · 샌드박스 · 꾸미기는 ui3 틀 (`u3.pg2`) 에 ui4 색 (build 3) · 햄버거 · 우편 · 환경설정 등 창은 아직 ui3 마크업.
-- 새 지후 · 색은 CSS 변수 `--u4-*` (`#ui2.u4m` · 다크 `body.u4-dark`) · 글꼴 Do Hyeon (제목) · Chakra Petch (숫자) · Noto Sans KR (글) · 모양: 모서리 괄호 · 깎인 모서리 큰 버튼 · 등급 = 테두리 굵기 (일반 1 · 희귀 2 · 영웅 3 검정 · 전설 3 주황).
-- **모집 연출 `u4Reveal`** (`showReveal` 이 `u4Use()` 면): 충전 (빛줄기 28 · 고리) → 폭발 (섬광 · 충격파) → 카드 한 장씩 뒤집기 (`.u4rv-card`) · 전설 차례에 풀스크린 한 컷 (`u4RvLegend` · 탭 또는 3초) 뒤 카드가 쾅 · 요약 + 한 번 더 · `GR` 타이머 · `grClose` 는 ui3 것 그대로 (`#reveal.show.u3rv.u4rv`).
-- **전투 · 디펜스 HUD**: 구조 · ID 는 그대로, `hud.css` (`body.u4-on #screen-battle`) 가 R3.0 HUD 변수 (`--qk` `--qi` … ) 와 색 · 글꼴 · 배치 버튼 · 토큰 줄 · 디펜스 슬롯판을 덮는다. **테마는 하나**: ui4 가 켜져 있으면 `BSET.light = !U4.dark` (`bsetApply` · 환경설정 「라이트 모드」 = `u4Theme`).
-- **build 5**: 메인 전용 CSS 가 `.u4 .u4-main …` (자손) 이라 하나도 안 먹었다 → `.u4.u4-main` (루트에 같이 붙는다) · 독 오른쪽 `u4-dockR` = 오른쪽 열 폭 284 (폰 233) · `.u4-mid` z-index 를 풀었다 (배경 없는 쌓임 맥락이라 초상화 multiply 가 흰 배경 그대로) · 이벤트 모드 버튼 `evModeTog` (예전 `v.evTog` 는 클릭 이벤트를 받는다) · **아직 ui3 마크업인 창 (햄버거 · 프로필 · 우편 · 환경설정 · 가방 · 매거진 …) 은 `u4Recolor` 가 그린 HTML 의 인라인 색을 속성별로 ui4 변수로 바꾼다** (`U4_RCOL` · `u4Rgba` · 크림슨 배경 → 주황 · 어두운 배경 → 패널) + 틀 클래스 CSS (`.u4 .u3-ovl` 등) · 랭크업 칸 `.u4-dup .u2-rk-*` · 매칭 `#mmOv` 는 `html body.u4-on.u3-on #mmOv` (변수 `--m-*` · 낮은 화면 `max-height:520px`) · 탭 전환 `u4TabFx` (Web Animations · body 에 `.u4-tfx` 띠) · 부팅 「터치하여 시작」 오른쪽 아래 · 축제 알림 `rejhbt-evnote` = 날 또는 `u:<시각>` (1주일). **브라우저 확인은 다시 허용** (CDP 스크린샷 · 새 프로필로 서비스 워커 캐시를 피한다).
-- **build 5 튜토리얼 리뉴얼** (`tutScript` · 사용자 틀 대본): 3챕터 (1 배치와 기본 규칙 · 2 합체 · 3 토큰) · 라이프 2 · 결과 승 → 패 → 승 (`TUT_EBUFF` { 2: 1.8 } · `TUT_STATS.sword`) · 챕터 카드 `chapter(n, 제목)` · 대사창은 위 (`#tutBox` top) · **어두운 막 `#tutDim` (SVG · evenodd 구멍)** = `.tut-hot` + 대사가 가리키는 곳 (`talk` 줄의 셋째 칸 = 선택자 → `TUT.look`) · 전투 중 (`TUT.noDim`) · 뽑기 연출 · 확인 창에서는 걷는다 · 합체 화살표 `TUT.arrow` [선택자 A, B] · 화자 `unk` (??? · 「?」) · `leg` (뽑은 전설) · `tokSet(n)` 그 단계 토큰 · 건너뛰기 버튼 `boxPos` (전투 화면 오른쪽 34% · 그 밖 오른쪽 아래 · 마지막 장면 숨김). 확인: scratchpad `shot/tut.js` (자동 진행 · 라운드 결과 · 장면 스크린샷). **인트로 만화** `COMIC` = 페이지 (컷 숫자 배열 · 글자 장면은 문자열) · `CM_SHAPE` 사선 컷 (1200 × 640 · `--cms`) · 누르면 한 컷씩 (`comicGo`) · 호출: 부팅 「터치하여 시작」 뒤 `profile.comic` 이 없으면 바로 (처음 켬 · 로그아웃 = 기록 초기화 → 다시) · 예전 `updCheck` 호출도 그대로.
-- **build 5 (뒤 커밋 · 조언 리뷰)**: `u3OldInit` 이 ui4 의 `.u3-oldapp` 칸도 채운다 (ui4 에 이미 있는 칸 = 확인 창은 빼고) · `u4Extra` 오류로 ui3 로 폴백하면 개발 주소에서 화면 왼쪽 아래 빨간 `#u4FailNote` (`U4.fail`) · `u4Recolor` 가 못 바꾼 인라인 색은 개발 주소에서 `U4.miss` + 콘솔 `[ui4] 바뀌지 않은 인라인 색` (`__rejhbt.U4`) — 남은 것은 등급 · 테두리 · 지후 색처럼 일부러 둔 밝은 색. **새 UI 에는 인라인 색 대신 `u4-*` 클래스.** `body.u3-on` 은 ui4 에서도 떼지 않는다 — `#ui2` 밖 화면 (결과 · 확인 창 · 레벨업 · 매칭) 의 유일한 테마라 떼면 ui2 남색으로 돌아간다 (하나씩 ui4 로 덮은 뒤에 뗀다). **덮은 것**: 모달 공통 (`.modal .box` · `.btn` · `.k-btn` · `.g-card` · `.seg`) · 확인 창 `#dlg` · 레벨업 `#levelUp` · 결과 창 `#u3res` (`u3Res` 의 innerHTML 도 `u4Recolor`) · 경기 통계 `.ms-*` · 매칭 `#mmOv` — 블록 `R3.4 build 6 #ui2 밖 화면` (`html body.u4-on.u3-on` 에 `--m-*` 와 `--u4-*` 를 정의해 #ui2 밖에서도 `u4Recolor` 가 먹는다). **남은 크림슨**: 매치 인트로 `#intro` · 전장 로딩 `#matchLoad` · 계정 `#accModal` · 지후 받기 `#charModal` · 드래프트 `#screen-draft` · 환영 `#screen-welcome` · 축제 알림 `#evNote`.
-- **build 3**: 메인 덱 무대 칸 `.u4-sqc` 너비 = `U4_W` (없어서 초상화가 원본 크기로 화면을 덮었다) · **지후 상세는 ui4 마크업** `u4.det` (`u4Extra` 가 `u3.ov.det` 이 있으면 `u3.ov` 를 `u4.det` 로 옮기고 `u3.ov = null` · 랭크업 칸만 예전 enhHtml 을 어두운 칸 `.u4-dup` 에) · 친구 · 탑 · 경쟁전 · 샌드박스 · 꾸미기 전체 화면은 ui3 틀 그대로 색만 `#ui2.u4m.u3m .u3-pgfull` / `.u3-host` 덮어쓰기 · `devCheck` 끝에 `u2Render`.
-- **build 2 실행 인트로** (시안 https://claude.ai/artifact/HeQnT45JKhkNxDKAh4PriG · `<!-- R3.4 build 2 실행 인트로` 블록): 스튜디오 로고 `#studio` 3.2초 (원이 점으로 접히면 지우고 `window.__b4go` · `#boot.go`) → 부팅 `#boot.b4` 연출 (시스템 · 타이틀 · 로스터 `b4Deck` = 내 덱 · 로딩) 은 `.go` 기준 CSS 시각 · 기본 모양 = 마지막 모양 (SKIP 은 `.fast`) → `runBoot` 이 끝나면 (`.go` + 5.2초 이후) `.ready` 터치하여 시작 → 누르기 · Enter → 셔터 `.b4o` → `.b4x` → 지운다 · 자동화 (`navigator.webdriver` · `?bench=` · `?test=`) 는 기다리지 않는다 · 무대는 1280 × 720 기준 `--bs` · `--bw` · `--bh` · 다크는 `html.b4-dk` (`rejhbt-ui4-theme`) · 키프레임 `b4*` · id `bootMsg` · `bootBar` (scaleX) · `bootPct` · `bootTip` · `bootSkip` · `bootVer` 그대로.
-- **이 작업은 브라우저로 확인하지 못했다** (사용자 요청 · 브라우저 테스트 금지) — 점검은 `comment-check.py` · 스크립트 `node --check` · 템플릿 태그 짝 맞춤 (scratchpad `u4check.py`) 뿐. 사용자가 보고 알려 주는 화면 문제를 고친다.
-- 패치 도구: 조각 파일 (scratchpad `u4/*.css · *.html · *.js`) 을 `apply_u4.py` 가 index.html 에 마커 사이로 갈아 끼웠다 — 이후에는 index.html 의 마커 안을 바로 고쳐도 된다.
+## ⚠️ 작업하다 겪은 함정 (꼭 읽기)
+- **`index.html` 은 줄바꿈이 섞여 있다 (CRLF · LF).** 파이썬으로 고칠 때 반드시 `open(P, encoding='utf-8', newline='')` 로 읽고 쓴다 (안 그러면 diff 가 2만 줄). **Edit 도구도 섞인 줄바꿈을 한쪽으로 바꿔 버린다** → `index.html` 은 파이썬 치환으로 고친다 (작은 파일 · 도구 스크립트는 Edit 써도 된다).
+- **치환 스크립트 패턴**: `r(old, new, cnt=1)` 목록을 만들고 `s.count(old) == cnt` 를 확인한 뒤 바꾼다 (하나라도 안 맞으면 아무것도 쓰지 않고 멈춘다) · 여러 줄 old 는 `\n` 이 안 맞으면 `\r\n` 으로 한 번 더 찾는다. **치환은 순서대로 적용되니 앞 치환이 바꾼 줄을 뒤 치환이 원래 문자열로 찾으면 MISMATCH** → 같은 줄을 바꾸는 치환은 하나로 합친다.
+- **⚠️ bash heredoc 함정**: `python - <<'EOF'` 안에 따옴표 · `\n` · 백틱이 많은 긴 파이썬을 넣으면 깨진다 (「unexpected EOF while looking for matching」 · `'\\n'` 이 진짜 줄바꿈이 되어 문자열이 끊김). **긴 패치 스크립트는 Write 도구로 scratchpad 에 `.py` 파일로 쓰고 실행**한다 · JS / CSS 덩어리도 따로 파일에 쓰고 스크립트가 읽어 넣는다.
+- **`sleep` 을 앞에 붙인 명령은 막힌다** → 기다릴 일은 `run_in_background` 나 조건 반복으로.
+- **커밋에 시험용 PNG 가 섞이지 않게** — 헤드리스 스크린샷은 scratchpad 에 저장한다 (cwd 가 저장소로 돌아오면 저장소에 떨어진다 · `git status` 로 확인).
+- **3D 전장 위의 DOM 버튼은 바닥 칸에 가려질 수 있다** (솔렘 모드 버튼이 발밑이라 PC · 모바일 모두 안 눌렸다) → 버튼은 지후 머리 위 · 헤드리스에서 `elementFromPoint` 로 확인.
+- **벤치 (`?bench=`) 시험의 한계**: 벤치 루프가 전장을 계속 다시 그려 실제 클릭 시험이 안 될 때가 있다 (`el.click()` 으로 핸들러만 확인) · `#boot` 를 지우면 부팅 코드 오류가 콘솔에 찍힌다 (시험 탓 · 무시) · 벤치 인트로 · 배너가 스크린샷에 겹친다.
+- 헤드리스 시험 도구는 `tools/tierlist/run-cdp.js` 의 `open()` 을 가져다 쓴다 (소리 끔 · 바깥 주소 차단 · 새 프로필). 함수는 `window.__rejhbt` 에 개발 주소에서만 내보낸다 (필요하면 시험용으로 더한다).
+- 서버에 쓰는 기능 (우편 · 매칭 · 접속자 · 공지 띠) 은 실서버로 시험하지 않는다 → 코드 · 규칙만 맞추고 「실서버 미확인 · 규칙 게시 필요」를 알린다.
 
-## 최근 변경 (R3.3 · 2026-11-18)
-- **신규 지후 2종** (`// ── R3.3 신규 지후 도우미 ──` · 원본 `지후초상화/R3.3/` · 바탕화면 new7jigu): 드라이아이스 `dryice` (영웅 · 토큰 2 · `onHit` → `diFreeze` 빙결 0.8초 · `diTick` 이 빙결이 풀린 대상을 `diSub` [승화] (반경 2칸 80% · 35% 다시 빙결 · rng) · 샤드 `u.dis` (monoDraw 캔버스 마름모 · 2초 뒤 날아와 `diGet` 고드름 160% + buff `diTk` tk 0.2 4초) · 랭크 6 샤드마다 기본 공격력 +5% · `ICE_T` 에 넣음) · 더블딜러 `dealer` (전설 · 토큰 6 · noAttack + `ddSteer` · `ddTick` 3.2초마다 카드 두 장 (rng · 0~7 = 모양 c % 4 · c >= 4 빨강) → `ddPlay` (배율 m = 빨강 장마다 +50% × 같은 모양 1.5) · 모양 · 색 모두 같으면 `ddJackpot` · 뒤에 `spGive(u, 1)` · 스킬 [블랙잭] `ddBJ` / `ddBJGo` SP 3) · 치명타 확률 버프 키 `critB` (dealDamage 치명타 줄) · 버프 `ddTk` · `ddAtk` · `ddCrit` · `ddDef` · `ddJack`.
-- **더블딜러 연출** (전장 캔버스 위층 `CVF.over` · `ddFx` · `ddDrawFx` · cvFxDraw 의 `dd…` 종류 · 2D · 실제 시간 ms): `ddc` 머리 위 카드 두 장 (뒤집기 · 빨강 · 같은 모양 · 잭팟 글로우 · 배율 ×N) · `ddthrow` 던진 카드 → X 베기 · `ddlink` ♣ 아군 연결 · `ddheal` 하트 · `dddia` 다이아 쉴드 · `ddjack` 금빛 · `ddbj` 숫자 카드 부채 + 합 (21 BLACKJACK 금빛 고리 · BUST 빨강). 위치는 `e.fu` · `e.tu` 를 그릴 때마다 따라간다.
-- **잠수함 활동 기록 · 유저 탐색** (`// ═════════ 잠수함 · 활동 기록` · `AL`): `writeLocal` 맨 앞 `alTick` 이 지난 저장과의 차이를 `profile.alog.L` [시각, 어디서 `alWhere`, 왜, 변화 코드 (`d` ◆ · `g` 골드 · `k` 열쇠 · `t` 티켓 · `m` 마일리지 · `n` 모집 · `L` 레벨 · `c:` 지후 · `s:` 조각 · `i:` 아이템 · `e:id:랭크`), 고리 `alH`] 로 (최대 400 · 서버 payload 에 같이) · 이유는 `alWhy(글)` (그 뒤 첫 변화 + 0.6초) 없으면 방금 누른 버튼 글자 — **보상 · 소비 함수를 새로 만들면 맨 앞에 `alWhy`** · 운영자 메뉴 「유저 탐색」 `alOpen(닉네임)` (`#alModal` · 비우면 이 기기 기록).
-- **build 3 이벤트** (`// ═════════ R3.3 build 3 이벤트` · 기간 `EVT` { t0 · ms 14일 } · `evtLive` (서버 시간 `tNow`) · 상태 `profile.evt` (`evt()` · 시즌 `s` 가 다르면 새로 · 날 `stDay` 마다 sd · qd · qg 초기화)): 메인 「이벤트」 카드 (ui3 `u3.evOn` · 딱지 `.u3-gift` 🎁 = `evtReadyN`) → 이벤트 탭 `#evHub` (`evOpen(탭)` · `evhList` · `evhDraw` · 클릭 위임 `data-evt` 등) · 탭: 지후 빙고 (`bgFlip` · 칸은 뒤집을 때 남은 칸 `rem` 에서 정한다 · 18번이면 끝 · 못 찾은 1 · 2 · 3등은 `show` · 판 5개 · 한 줄 (`BG_LN` 14줄) 을 모두 뒤집으면 ◆ `BG.LINE` 50 · `b.ln`) · 지후 복권 (`lotPick` → `profile.evt.lot.g[날]` · 숫자 = `lotto/<날>` 문서 서버 시각 `at` 의 해시 `lotN` · 다음 날 처음 연 사람이 만든다 · **firestore.rules `lotto` 게시 필요** · 켤 때 `lotCheck` → `lotShow` 발표 · 정산) · 캡슐 뽑기 (`capPull` · `CAP_T` · `CAP_RW`) · 이벤트 상점 (`EVT_SHOP` · 폭죽) · 이벤트 퀘스트 (`EVT_Q` · `e7Add` 가 `evqAdd` 로) · 7일간의 여정 (예전 u3e7). 아이템 `fw` 폭죽 · `bingoT` · `capT` (가방에서 쓰면 그 탭) · 보상은 `evGive` · 빙고 티켓 드롭: 일반전 승리 55% (`endMatch`) · 열쇠 상자 10%. 켤 때 공지 `#evNote` (오늘 하루 보지 않기 `rejhbt-evnote`) — 로비가 뜨면 1.5초마다 보는 `EVB` (복권 발표 → 공지). 다음 이벤트는 `EVT.t0` 를 바꾸면 상태가 새로 시작된다.
-- **build 5**: 튜토리얼 모집 · 장착 단계를 새 로비로 — `show()` 가 튜토리얼 중 (`TUT.on`) 새 로비를 건너뛰었다 → `TUT.u3` 면 새 로비 (모집 `show('gacha')` · 장착 `show('deck')` · 10회 모집 버튼 `p10Hot`). **같은 build 번호로 두 번 올리면 열려 있던 앱은 업데이트를 모른다** (새 버전 확인은 version · build 비교) → 고친 것을 다시 올릴 때는 build 를 올린다.
-- **build 4**: 아케이드 랭크 고정 (`enhMatch`: 미러 · 랜덤 · 경쟁전 · 성뿌수기 null = 모두 랭크 1 · 지후의 탑 `{ a: {}, e: { _: 3 } }`) · 도둑 [절도] 12초 뒤 반환 (`BG_BACK` · `burglarBack` · `A.later` · 그사이 def 가 바뀌었으면 그쪽은 그대로 · `u.bg.done` 이라 다시 훔치지 않는다) · 랜턴 build 3 롤백 · 더블딜러 토큰 6 · 쉴드 HP 1200 · 솔렘라멘트 ATK 50.
-- **build 3 밸런스**: 토큰 업그레이드 `TOK.UPS` [3, 6, 8] → 잠수함 [4, 6, 8] (`upCost`) · 잠수함: 내 레벨 `TOK.BOT_LV` 5부터 봇은 라운드마다 토큰 `TOK.BOT_INC` 7 (`botTokUp` · 봇전만 · 튜토리얼 제외 · 업그레이드로 더 오르면 그 값) · 갓지후 `maxLv` 삭제 → Lv5 트루폼 (`makeUnit` · `godAwake`) · 나머지 수치는 패치노트.
-- **build 2**: 에너지 구매 `EN.BUY` 1 (◆300) · 열쇠 상자 ◆23 은 30% · 열쇠 상자 드롭 (골드 · ◆ · 아이템) 은 `res.drop` [[아이콘, 글]] → 연출 `GR.drop` → 끝에 `grDrop` (ui3 `u3RvDone` · 예전 `grDone`) — 다른 보상 연출에 드롭을 붙일 때도 `res.drop`.
-- **잠수함 접속 중인 유저 · 접속 기록**: `nowPulse` 가 `liveBeat` → `live/<uid>` { n 닉네임 · w 화면 (`alWhere`) · lv · m 회원 · vn 접속 횟수 · pv 지난 접속 · gp 몇 만에 · f 처음 본 시각 · old · pf 기기 · ap APK 쓴 적 · src 유입 · at } (1분마다 + 화면이 바뀌면 · 운영자만 읽는다 · **firestore.rules `live` 게시 필요** · 게시 전이면 `NOW.liveErr` 로 조용히 끈다) · 접속 기록 `visitMark` → `profile.visit` { n · last · prev · f · old · sid } (페이지를 열거나 30분 넘게 숨었다 돌아오면 `VS.sid` 새로) · `profile.plat` { a · h · w } · 신규만 `profile.src` (`utm_source` · `src` · `ref` · `from` → 링크 / 다른 사이트 referrer / APK / 홈 화면 앱 / 직접) · 테스트 접속 `tst` (`liveTest` = 개발 주소 DEV_HOST · 자동화 브라우저 navigator.webdriver · ?bench= · ?test= → 목록에 파란 「테스트」 · 맨 아래 · 수에서 뺀다 · 예전 규칙이면 `NOW.noTst` 로 빼고 다시) · 운영자 메뉴 「접속 중인 유저」 `liveOpen` (`#liveModal` · 10초마다 · 닉네임 → 유저 탐색).
-- **잠수함 개발자 도구** (`// ═════════ 잠수함 · 개발자 도구` · `#opModal` · `opOpen(탭)` · 햄버거 · 환경설정 「개발자 도구」 하나 · 예전 `renderAdmin` · `bindAdmin` · `#liveModal` · `#alModal` 은 없앴다): 탭 `OP_TABS` 접속 중 (`liveLoad`) · 유저 (`alInit` · 카드 `opCard` = 정지 상태 딱지 · 정지 1 · 7 · 30일 · 영구 (`opBan`) · 해제 (`opUnban`) 뒤 `opBanGet` 으로 다시 읽어 확인 · 우편 · 기록 이력 `opHist`) · 의심 계정 `opSusLoad` · 정지 목록 `opBanDraw` (`OP.bans` = bans list) · 우편 `opSend` (받는 사람 닉네임 `toN` · 최근 보낸 우편) · 공지 · 점검 · 설정 (개발자 모드 · 티어리스트 생성기 · 서버 시간). 새 운영 기능은 여기에 탭으로.
-- **잠수함 정지 화면** (`renderBlock`): 「로그아웃 · 새 계정으로 시작」 두 번 누르면 `banRestart` (로그아웃 · 새 익명 계정 · 이 기기 기록 비움 · 새로고침 → 닉네임 · 튜토리얼부터 · 정지된 계정 기록은 서버에 그대로).
-- **잠수함 서버 시간** `ST` (`tNow` · `stDay` · `stSync` = pulse 에 serverTimestamp 를 쓰고 다시 읽어 차이 · 10분마다): **`todayKey()` 는 이제 한국 시간 · 서버 시간 기준** (기기 시간대를 바꿔 매일 무료 10회 모집을 무한으로 돌린 유저) · `p10Free` 는 `profile.p10f` { k 날 번호 · n } · 날이 뒤로 가면 무료 없음 · 서버 시간을 모르면 (`stWait`) 10회 모집 버튼이 잠깐 막힌다 · 오프라인은 기기 시각. **매일 보상을 새로 만들면 `todayKey` · `stDay` 를 쓴다** (`new Date()` 로 날짜를 만들지 않는다).
-- 모집: 전설 `CFG.GACHA` 2.5% (일반 62.7) · 도장 파동 `.u3rv-shock.k1~k3` = 결과 최고 등급 색 글로우 (일반만이면 파동 없음).
-- R3.2 는 build 18 까지 (다른 세션 · 픽업 개편 · 지후 매거진 · 티어리스트 생성기) · 어제 총정리 `today-2026-11-17` 은 R3.3 첫 작업에서 올렸다.
+## 토큰 아끼기 (작업 방식)
+- **작업 하나 = 세션 하나.** 대화가 길수록 모든 턴이 비싸진다. 주제가 바뀌면 새 세션 · 이어서 할 일이 남으면 `docs/next.md` 에 할 일 · 함수 이름 · 막힌 점을 적어 두고 다음 세션은 그것부터 읽는다.
+- **`index.html` 을 통째로 읽지 않는다** (10MB). 찾을 때는:
+  - `grep -n "^function 이름\|^const 이름"` 으로 줄 번호만 → 필요한 줄만 `sed -n 'a,bp' | cut -c1-600`.
+  - 긴 한 줄은 `grep -o ".\{0,80\}찾는말.\{0,120\}"` 처럼 앞뒤만.
+  - **초상화 base64 줄 (`PORTRAITS` · 대략 8000~8300 줄 근처 · `data:image`) 은 grep 결과에서 빼거나 `cut -c` 로 자른다** — 한 번 걸리면 수천 자가 쏟아진다.
+  - 여러 곳을 볼 때는 한 번의 명령으로 모아서 (`for` · `awk 'NR==a||NR==b'`).
+  - 개수만 필요하면 `grep -c` · 존재만 필요하면 python `s.count(...)`.
+- 지후 정의 · 도우미는 `CHARS` 의 그 지후 줄 + 이름으로 grep 한 함수만 본다 (전체 덤프 금지).
+- 스크린샷은 꼭 필요할 때만 (한 장에 1,000~2,000 토큰) · 같은 화면을 반복해서 찍지 않는다.
+- 사용자에게 받는 요청은 갈래가 섞여 있을 수 있다 → 패치 스크립트를 갈래별로 나눠 실패 범위를 줄인다.
+- UI 리디자인: 작은 것은 레퍼런스 이미지 → 게임 코드 → 스크린샷 (캔버스 생략) · 큰 것만 디자인 캔버스 (ui4 변수 · 글꼴 · 1280×720 그대로 · 한 장만).
 
-## 최근 변경 (R3.2 · 2026-11-17)
-- **신규 지후 4종** (`// ── R3.2 신규 지후 도우미 ──` · 원본 `지후초상화/R3.2/`): 트리아지후 `triage` (`trgDrop` · 보급은 지후마다 한 번 `t.trgGot`) · 마녀 `witch` (`witchAttack` 물약 · 변이는 `A.transform(t, 'frog', lv, true)`) · 냉각 `frostj` (`frostShot` 관통 · [빙결] → [동상] · `polarZone`) · 낚시 `fisher` (`fishTick` 찌 · `fishAttack` 낚은 적만 100%). **받는 피해 버프 키 `tk`** (dealDamage 공통 · 예전 `taken` 은 스테인리스만) · 새 지후 토큰은 모두 2 (사용자가 안 정함).
-- **build 3 신규 지후 4종** (`// ── R3.2 build 3 신규 지후 도우미 ──`): 팔라딘 `paladin` (토큰 8 · `def.plCall` → dealDamage 맨 앞 `paladinCall` · SUMMONS `pknight` · 초상화는 R1 paladin · knight) · 저주 `curse` (`curseAttack` · `u.cuT` / `u.cuN`) · 최면 `hypno` (STATUS `hyp` · `aiSteerAndAttack` 의 `hypSteer`) · 부두술사 `voodoo` (커뮤니티 Kaden · `vdSteer` · `u.vdOn` 이면 `foeList` · `canTarget` 이 아군에게도 적 · dealDamage 맨 앞 · build 4: 누구에게 맞든 25% 만 받고 저주한 적에게 150% `opts.vdx` · `S.vdN`). 강화 지후 연출: 머리 위 `.xlv.fg` 흰 블록 글씨 (캔버스도 k2 'fg') · 배치 칸 누르기 `fgHoldOn` · 결과 `forgeFx` (S.fx 의 `fg` ok · fail · break).
-- **build 15 픽업 개편** (`// ═ R3.2 build 15 픽업 개편`): 배너 키 `sp` 특별 픽업 `PU_SP` { id · t0 · ms } (개발자가 정함 · 지금 오케스트라 7일) · `td` 오늘의 픽업 `puToday()` (한국 시간 날짜 해시 · 모두 같다) · `nw:<id>` 신규 픽업 `PU_NEW` { ids · t0 · ms 48시간 · 새 지후와 상관없이 시간으로 끝남 — 다음 신규 픽업은 이 줄을 손으로 바꾼다 } · `cu` 커스텀 픽업 (`profile.cuPick` 전설 5종 · `#cuModal` `cuOpen`) · `pull(n, free, nb, 배너 키)` → `puRoll(k)` (전설이면 `PU_RATE` 66.6% · 놓치면 다음 전설 확정 `profile.puLost` · 천장 `puPity` · 배너끼리 같이) · `puOk(k)` 끝난 배너는 못 뽑는다 · 마일리지 샵 `MILE()` 은 지금 픽업 중인 지후 (M150). 모집 탭 배너 줄은 스크롤 칸. **보상 뽑기 연출 대기열** `GR.q` (`showReveal(res, 0)` 이 연출이 떠 있으면 줄 서고 `grClose` 가 다음 · 뽑기 `pull` 은 바로 바꾼다) · 디펜스 보상 모두 받기 `dfRwClaim(w, true)` 는 지후를 모아 연출 한 번 · 선택 전설 모집권은 가방에. **티어리스트 생성기** (`// ═════════ R3.2 build 15 티어리스트 생성기` · `TLG` · `#tlgModal` · 운영자 환경설정): harness · agg · apply 를 게임 안으로 (`tlgFight` · `tlgAgg`) · 로비에서만 · 덩어리마다 S 를 되돌리고 그동안 `beginFinalMoment` · `endRound` 를 갈아 끼운다 · 판 수 / 시간 · 레벨 · 부트스트랩 · 시드 · 「도움말에 등재」 = `config/tier` (**firestore.rules 게시 필요**) → `ON.tier` → `helpTierHtml` 이 TIER_SC 대신.
-- **build 18 지후 매거진** (`// ═════════ R3.2 build 18 지후 매거진` · 시안 https://claude.ai/artifact/Cp2VdSQrkH1L5zdxN8ytvF): 도움말 탭 이름이 **지후 매거진** (햄버거 · ui3 `u3help` · 예전 `#helpModal` · 탭 `MZ_TABS` cover · rule · status · grow · tier · dict · online · guin) · `mzHtml(tab)` 이 쪽을 만든다 (글은 예전 `helpBodyHtml` · `helpDictHtml` 그대로 · 모양만 · 상태이상 갈래 `MZ_STC` · 설명 `MZ_STD` — **새 상태를 만들면 여기에도**, 없으면 「차원 · 기타」 칸에 이름만) · 기네스북 `mzGuinData` 30개 부문 = 지금 CHARS + PATCH_NOTES 로 계산 (부문을 늘리면 `add(…)`) · CSS `.mz.mz` (ui3 도움말 금색 · `.help p` 를 이긴다) · 제목 크기는 `cqi` · 명조 · Playfair · 블랙레터는 처음 열 때 `mzFont` · 쪽 이동 `[data-mz]` · 부록 `[data-mzx]` (튜토리얼 · 만화 · 크레딧).
-- **잠수함 (build 17 뒤)**: 도움말 **밸런스 사전** (`helpDictHtml` · `BD` · `bdIndex` 가 PATCH_NOTES 의 buff · nerf · adjust · rework 항목을 지후별로 (id 또는 이름) · 패치 횟수 = (버전 · 칸) 수 · `bdTiles` 가 설명을 「 · 」 로 나눠 `<b>A → B</b>` 를 큰 숫자 타일로 · 누르기는 `[data-bd]` 위임) · 크레딧 이름 흰색 · 가판대 서사 리워크판 · 패치노트 복구 (R2.10.3 build 2 · R2.11.0).
-- **build 14 열쇠 상자 개편**: ui3 메인 메뉴 `u3.kb` (KEY BOX 카드 · 게이지 · 모두 열기 · 디펜스 모드 화면에서는 뺐다 · ui2 는 그대로) · `KB_EXTRA` [확률, 보상] 상자마다 따로 굴림 + 늘 ◆23 (75상자 다이아 기댓값 약 1,800) · 기본 일반 2 · 희귀 1 · 골드 220~420 (75상자 골드 기댓값 약 30,000) · 새 아이템 `r6Epic` · `r6Legend` (6랭크권 · `useItem` → `#pickModal` 을 `PICK_K` 로 같이 쓴다 · `profile.enh[id] = 6`).
-- **build 13**: 디펜스 충격파 `dfQk(웨이브)` = `QDMAX` 0.45 · `QDADD` 0.2 / 71 (25% 에서 72웨이브에 45%) · `QSTEP` 110웨이브 50% · 120웨이브 55%. · 넉백 `A.knock(…, { bounce: 칸 })` → `kbBounce` 가 벽에 닿으면 반대로 튕긴다 (샌즈 0.8칸). · 샌즈 `speed` 0 (제자리) · `stainless: true` (스테인리스와 같은 스킬 면역).
-- **build 12 진영 3 × 5**: `CFG.ROWS` 5 · `ROW_KIND` [0, 1, 1, 1, 2] (중열 9칸) · `DEPTH_EW` 에 750 (앞 4줄 자리 · 칸 번호 0~11 그대로 → 튜토리얼 · 예전 리플레이 그대로) · `MAP_EW` 1740 × 840 · `MAX_UNITS` 15 · `midXY` 는 줄 수에 맞춰 · 슬롯판 · 편성판 CSS 5열 · 케이크 조각은 맨 뒤 줄. **서포터 어드밴티지**: 힐 랭크마다 회복 +15% · 가속 `accelAdd` (레벨 +2% · 랭크 +0.2% · 예전 effMult 대신) · 시계 랭크 +0.3% · 충전 랭크 +0.3% · 레벨 +0.2% · 소믈리에 배치 기록 `wnL` (와인마다 소믈리에 레벨 − 1 · packPlace 13번째 칸). 샌즈 한정 → 전설 (이제 한정 지후 없음) · 갓지후 TOK_COST 3 · 태양 6.
-- **build 11 튜토리얼 장착**: 덱 장착 단계는 새 로비 지후 탭 (`TUT.u3` 이면 `u3Use` 가 튜토리얼 중에도 ui3 · `body.tut-deck3` 는 `.tut-hot` 만 누를 수 있다 · 누를 곳은 템플릿 `u3.un.p.tutHot` · `d.tut` · 끝났는지는 대본이 0.25초마다 `profile.deck` 확인) · ui3 를 끈 사람은 예전 덱 화면.
-- **build 11 스튜디오 로고** `#studio` (`<div id="boot">` 바로 앞 · 자기 `<style>` · 작은 인라인 `<script>` · 흑백 시안 https://claude.ai/artifact/XMGX1qHKVWjFLMNX75U8bJ 의 B Invert · 예전 크림슨 시안 https://claude.ai/artifact/1jABaNcoMaLbzyWBcd9pXc): 켤 때마다 2.8초 (흰 화면 → 검은 원 `.st-disc` 3000px → 이름 → `mix-blend-mode: difference` 흰 띠 · transform · opacity · 마지막에 visibility hidden · 글꼴 Inter Tight · JetBrains Mono 를 맨 위 Google Fonts 줄에) · 1280 × 720 무대를 `--ss` 로 맞춤 · 누르면 0.25초 페이드 뒤 지운다 · z-index 9999.
-- **build 10**: 최면 1.3초 · [최면] 1.7초 · 늑대 `u.critDCap` (= 1000 × `lvMult`) — `dealDamage` 치명타 줄에서 `critD` 로 늘어난 피해를 한 번에 최대 critDCap 까지 · 디펜스 핵 `DF.NUKE_P` 0.1 = 적마다 최대 체력 10% (적 웨이브의 핵미사일도 같은 규칙).
-- **build 9 디펜스**: 4배속 (`dfSpd` 2 · 4 · `rejhbt-df-spd` · 배속 버튼이 꺼짐 → 2× → 4× → 꺼짐) · 보상표 `DF_RW` 웨이브 1.2배 (마지막 120) · 받은 기록은 새 칸 `profile.dfRw2` (예전 `dfRw` 는 그대로 두고 안 본다 → 모두 다시 받는다) · 핵 `DF.NUKE_P` 0.5 = 적마다 현재 체력 50% (`pctD`) · 배율 `dfKw` 에 5웨이브부터 `KADD5` 0.003 더 (아주 소폭 · 50웨이브 1.19 → 1.32 · 100웨이브 8.0 → 9.3).
-- **build 8**: 레이더 [불침번] 리워크 (`rdAttack` · 가장 가까운 적 최대 2기 · 기절 1.5초 · STATUS `spot` [포착] 999초 = 이번 라운드 · `addStatus` 가 은신을 막고 · `dealDamage` 회피 0% · `t.spot1` 다음 처음 받는 피해 ×2 · 폭발 250% 가 구역 100% 보다 먼저) · 튜토리얼이 처음 끝나면 `profile.e7Pop` → `e7Pop()` (tutorial `finish` · 환영 카드 닫힐 때) 가 7일간의 여정을 한 번 연다.
-- **build 7 튜토리얼**: 대사 · 안내 줄의 `@…@` 는 노란 강조 (`emSplit` · `emHtml`) · 튜토리얼 밖 말풍선 `TUT.guide(lines, pause)` (건너뛰기 · 안내 줄 숨김 · pause 면 봇전 `S.paused`) · 처음 끝낸 사람만 `profile.tutGo` → 로비 전투 시작 버튼 강조 (`u3.tgOn` · ui2 `tgHot`) → 첫 일반전 `S.tutGo` 첫 배치 대사 · `endMatch` 뒤 `TUT.tgEnd(win)` · 오류 때도 `TUT.guide`.
-- **build 6 ui3 지후 탭**: 덱 프리셋 `u3.un.presets` (`u2Preset` → `u2Render`) · 칸막이 `u3.un.groups` (보유는 등급별 · 역할군순은 `DECK_ROLES` 별 · 미보유 맨 아래 · ui2 `unitGroups` 와 같은 규칙).
-- **build 5 밸런스 31종**: 토큰 (`tok`) 레이더 4 · 냉각 4 · 케이크 4 · 가판대 5 · NO U · 수은 · 별 · 암살 · 블랙홀 3 (사용자 문구 「소환 SP」 = 소환 토큰으로 읽음 · 케이크 · 블랙홀은 스킬이 없다) · 부두술사 전달 75% · 엔지니어 설치 10초 (`g.t` 10 → 여전히 20초마다) · 마피아 위기 50% · 부하 이동 1.2 · 신칸센 `atkText` 삭제 (도감에 실제 공격력) · 나머지 수치는 패치노트.
-- **build 2**: 이동속도 0 지후 (낚시) — `makeUnit` 이 `b.speed || 1.6` 으로 0 을 1.6 으로 바꿨다 (이제 `!= null`) · `speed === 0` 이면 밀리지 않는다 (`invMass` 0 · `moveToward` 멈춤 · 넉백은 받는다) · 디펜스 적 풀 제외 · 극지방 게이지 = `monoDraw` 발밑 고리 (`u.buffs.polar` · `u.polarT / 10` · 버프가 끝나면 다시 0) · 흡혈 `u.vb.el` 10초 뒤 10초에 걸쳐 1까지 · 강화 지후 `forgeStart` 공격력 ×(1 + 강화).
-- R3.1.6 (같은 날): R3.1 잠수함 패치 모음 (새 로비 · 동접자 수 `pulse` · 토큰 5 · 조정).
-
-## 최근 변경 (R3.1 · 2026-11-16)
-- **build 5 신규 지후 4종** (`// ── R3.1 build 5 신규 지후 도우미 ──`): 강화 `forge` (영웅 · 토큰 1 · `maxLv` 1 · 배치 칸 `p.fg` 검 강화 0~10 · `levelUp` → `forgeTry` (친선전은 해시 난수) · `stackable` 이 강화 지후를 받는다 · 공격력 ×(1 + 5 × 강화) · 초상화 단계 `forgePic`) · 리트머스 `litmus` (`lmHit` · `lmSkill` [중화]) · 제이슨 `jason` (새 훅 `def.onCrit` (dealDamage 치명타) · `jsTick` [공포]) · 오케스트라 `orchestra` (커뮤니티 METAL · 토큰 6 · `OC` · `ocTick` 상태 base → cresc ↔ ferm · `ocLethal` → wait → dc (`u.dcStore` 가 dealDamage 맨 앞에서 피해를 모은다) → fin `ocFinHit` · `OC_FINALE` 연출 그림). 원본 그림 `지후초상화/R3.1/`. 둘째 묶음: 가판대 `stand` (`lmnTick` 끌어와 레모네이드 · 다섯 잔에 토큰 1 · 적 10% [매혹]) · 포탈 `portal` (`ptStart` 적진 빈 칸 → `ptOpen` 30초 · SUMMONS `dimkin`) · 럴커 `lurker` (`lkGo` 아공간 층 `u.realm` 으로 잠수 · 납치) · 레이더 `radar` (`rdAttack` 반경 5.5칸 · 우리 진영 쪽 적 기절 → 400%).
-- **build 2 토큰제** (`// ═════════ R3.1 build 2 토큰제` · `TOK` · `TOK_COST` · `tokCost`): 출격제한 삭제 (`overSet` 빈 집합 · `wouldOver` false · `deployLimit` 값은 디펜스 적 풀 `dfPool` 거르기에만 남음) · `S.tok` / `S.inc` (기본 5 · `tokUp` 4토큰에 +1 · 최대 8) / `S.rr` (리롤 판마다 2 · 1토큰) / `S.end` (라운드 배치 끝) · `tokRound` (startRound · 남은 토큰은 이월 · 데스매치 +2 · 50:50 재경기는 `S.reTok` 로 되돌림) · `playable` 이 `canPay` 를 본다 · `applyAct` 가 `tokPay` · 상대 행동의 `up` · `rr` · `end` (`tokAct`) · 배치는 양쪽이 `end` 일 때 전투 (예전 3번 고정 `deployChances` 는 토큰이 없을 때만) · 봇 `botTok` (내가 끝내면 남은 토큰을 다 쓴다 · `botPay` · `botPool`) · 친선전은 끝낸 쪽이 `{ k: 's', end: 1 }` 를 계속 보낸다 · 화면 `#tokBar` (`tokBar` · 업그레이드 · 리롤 · 전투 시작) · 카드 `.tkc` · 디펜스 · 성뿌수기 · 샌드박스 제외 (`tokOn`). 튜토리얼: `upStep` · `skipStep` (`TUT.allow`).
-- **build 2 기타**: 픽업 모집 (`puId` 주마다 · `puRoll` 50% · `profile.puLost` · `puPity`) · 마일리지 (`profile.mile` 모집 1회 1 · `u3MileOv` · `MILE`) · 전장 `MAP_EW` 1440 × 840 · `DEPTH_EW` 줄 간격 2칸 · 로비도 가로 전용 `#rotAll` · 매니페스트 landscape · APK `sensorLandscape` · 앱 권장 `appNag` (하루 한 번) · 탄환 리워크 `bulletFire` · `bulletFx` (`.bl-flash`) · 후라이팬은 `#field` 바닥 (`.fp-g`).
-- **전투 설정 = 화면 전체 창** `#bsetFull` (`bsetToggle` · 예전 말풍선 `#bsetPop` 은 안 쓴다 · body 에 붙고 z-index 66 = 전투 화면 위 · `.modal` 70 아래): 검은 반투명 (.94) · 크림슨 레저 · 사운드 막대 + `BSET_ROWS` 토글 (`bsetBind` 그대로 · `.bf-row.on`) · 계속하기 · ✕ · Esc · 화면을 떠나면 `show()` 가 닫는다. **봇전 (`!S.net`) 은 여는 동안 `S.paused`** → `loopBody` 의 acc · 배치 타이머 `S.timer` · `botMind.pulse` 가 멈춘다 (친선전은 LIVE 표시만). 새로 멈춰야 하는 타이머가 생기면 `S.paused` 를 본다.
-- **새 로비 ui3** (시안 https://claude.ai/artifact/TVMC4Mv4z2xHyHj7DmmUFm · `// ═════════ R3.1 새 로비 ui3`): 기본 켜짐 · `?ui3=0` 이면 예전 ui2 (`localStorage rejhbt-ui3`) · 튜토리얼 중엔 ui2. 같은 엔진 (`u2Walk` · `u2Morph`) 으로 `<template id="ui3Tpl">` 을 그리고 값은 `u2Vals()` + `u3Extra` (`v.u3.*`) · 1280 × 720 무대를 `u3Fit` 이 확대 (`--u3s`) · 가운데 1280 칸 `.u3c` · CSS 는 `.u3` / `u3-` 접두사.
-  - 옮긴 화면: 메인 · 햄버거 · 지후 (`u3Units`) · 모집 (`u3Recruit`) + 뽑기 연출 `u3Reveal` (showReveal 대신 · GR 타이머 · grClose) · 상점 (`u3Shop` · 영수증 인장 `u3BuyOpen`) · 아케이드 · 랭킹 · 퀘스트 · 출석부 (`u3AttClaim` 도장) · 디펜스 보상 (`UI2.st.u3df`) · 지후 상세 (`u3Det`) — 전체 창은 `u3Ov`.
-  - 그 밖의 전체 창도 `u3Ov` / `u3OvD` (프로필 · 시즌 패스 · 모드 로비 · 커뮤니티 · 전투기록 · 유저 정보 · 덱 추천 · 아케이드 상점 · 우편 `u3mail` · 환경설정 `u3set` · 가방 (page inv) · 패치노트 (page patch) · 도움말 `u3help` · 7일 이벤트 `u3e7`) · 확인 창 · 컬렉션 · 이모티콘 (`u3UnSub`). 친구 · 탑 · 경쟁전 · 샌드박스 · 꾸미기는 기존 화면을 전체 틀 `.u3-pgfull` (`u3Pg2` · 확대 없음 · `.u3-host`) 에 담고 크림슨 테마. 나머지 예전 페이지는 `u3OldInit` 가운데 칸 `.u3-old`.
-  - DOM 모달 · 화면 (우편 · 환경설정 · 도움말 · 확인 dlg · 레벨업 · 매칭 #mmOv · 결과) 은 공통 테마 `body.u3-on` (`html body.u3-on …`) 으로 크림슨 레저.
-
-## 최근 변경 (R3.0 · 새 전투 시스템 · 2026-11-14)
-- **build 6 지후 카드 줄 리디자인**: 작게 (`.ub-c` 34px) · 머리줄 `.ub-hd` (SQUAD 생존 / 전체 · SKILL READY 수) · 초상화 잘린 모서리 (img clip-path · SVG path `M0 0H100V78L78 100H0Z`) · 체력 숫자 `.ub-n` (35% 아래 `.low` 빨강) · 전투 설정 `BSET.ubar` (기본 켬 · 끄면 `body.b-noubar`) · 시안 https://claude.ai/artifact/AnWVFDLaTQLRggboAXGdQz .
-- **build 5 전투 전체화면 + 지후 카드 줄**: `ubSync` (loopBody) 가 전투 · 마지막 순간 (가로 · 성뿌수기/디펜스 · 릴스 제외) 에 `#screen-battle.b-cfull` → 트레이 숨김 (viewInsets 아래 0) · `#ubar` 내 지후 카드 (소환체 빼고 최대 15) = 초상화 · SVG 네모 SP 게이지 (`rect.sp` pathLength 100 · dashoffset) · 체력 (scaleX) · 효과 아이콘 4개 · 0.15초마다 바뀐 것만 · 라운드마다 `UB.key` 로 새로. build 4: 마지막 순간도 캔버스 (`cvAllowed` · 루프 · `CV_CLS` 의 `final-drift`) · 가로 3D 전장은 마지막 순간 카메라를 옮기지 않는다 · 결과 창 `r3Result(…, loser)` 안에 라이프 마름모 (예전 `lifeFx` 는 결과 창이 없을 때만) · 다음 배치는 2.7초 뒤.
-- **build 4 인트로 · 로딩 리워크 (크림슨 레저 · 림버스풍 · 시안 디자인 캔버스 https://claude.ai/artifact/Cd16DXPEADsadTmqxoFLjJ)**: CSS 블록 `R3.0 build 4 인트로 · 로딩 리워크` (`html body #…` 로 예전 규칙 · `body.u2-theme #intro` 를 이긴다) · 부팅 `#boot` (`bt-*` · JS 가 쓰는 id 그대로 · 퍼센트 `068%` 모양) · 매치 인트로 `showIntro` (`it-*` · 양쪽 판 · VS 도장 · 덱 카드 `.rkd` = RANK n) · 전장 로딩 `#matchLoad` (`ml-*` · 3D 칸 · 카운트다운 `mlCount`) · 세로 화면은 `@media (max-aspect-ratio: 1/1)` · 글꼴 Cinzel · Oswald (Google Fonts 줄) · 지후 스케치는 `grayscale(1) invert(1) brightness(2~2.6)` + `mix-blend-mode:screen` (contrast 를 쓰면 연한 선 지후가 까맣게 사라진다) · 움직임은 transform · opacity 만.
-- **build 3 WebGL 전장** (`// ═════════ R3.0 build 3 WebGL 전장` · `GL` · `GLC`): cvDraw 의 지후 부분 (몸통 · 체력바 · 글씨 · 아이콘) 과 자주 생기는 이펙트 (`GL_FX` spark · muzzle · ring · dust · num) · 투사체 (`GL_SHOT`) 를 2D 캔버스 API 흉내 `GLC` (drawImage · fillRect · arc fill/stroke · fillText/strokeText) 로 WebGL 층 `GL.el` 에 그린다 · 층: 2D `CV.el` (아래 이펙트 · 공격 예고) → WebGL → 2D `CV.el2` (베기 · 부채꼴 · 샌즈 같은 복잡한 모양) · 그림은 아틀라스 한 장 (`glSrc` 선반식 · 4096 · 메모리 적은 폰 2048 · 가득 차면 비움) · 숫자는 글자판 `glGlyphs` (체력이 바뀌어도 새 그림 없음) · 그 밖의 글씨 크기는 `GL.tm` 캐시 · 원 · 고리는 `glArcSpr` · 끄기: 전투 설정 `BSET.gl` (기본 켬) · `?gl=0` · WebGL 이 없거나 실패 · 컨텍스트를 잃으면 2D. **새 이펙트를 cvFxDraw 에 넣을 때 원 · 빛(`cvGlow`) · 글씨만 쓰면 `GL_FX` 에 넣고, 경로 (moveTo · lineTo · 곡선 · 그라데이션 · clip) 를 쓰면 2D 로 둔다** (GLC 는 그런 호출을 무시한다). 측정 (헤드리스 + 실제 GPU · CPU ×4 · 50기): FPS 2D 10.1~11 → WebGL 13~20 · 벤치 `BENCH.cv` (그리기 ms) · 프로파일 도구 scratch `perfgl.js`.
-- **build 2 전체화면**: 폰 브라우저는 화면을 누를 때 `fsGo` (Fullscreen API · `navigationUI: 'hide'` · 사용자 동작이 있어야 해서 `touchend` · `click` 캡처 · 나가면 다음 탭에 다시 · 전투 설정 `BSET.fs` 기본 켬 · 끄면 `fsExit`) · 아이폰 Safari 는 문서 전체화면을 지원하지 않는다 (홈 화면 앱 + `apple-mobile-web-app-status-bar-style` black-translucent 로 막대 위에 그린다) · 매니페스트 `display: fullscreen` (`appStandalone` 은 fullscreen 도 본다) · **APK** 는 `MainActivity` 몰입 모드 (`WindowInsetsControllerCompat` systemBars 숨김 · 쓸어내리면 잠깐 · 노치 `SHORT_EDGES`) · versionCode 3.
-- **가로 3D 전장**: 세계 좌표는 2D 그대로 · 그리기만 3D — `applyCamera` 가 `#field` 에 `perspective(vh × CFG.PERSP) … scale3d … rotateX(CFG.TILT_DEG)` (바닥을 위쪽 끝 축으로 눕힌다 · `#field.tilt` preserve-3d · DOM 지후 · 글씨는 `rotate x` / `--rx` · `--rz` 로 일어선다) · 행렬 `P3.m` (DOMMatrix) → `proj3(x, y)` = 화면 px · 원근 배율 s. 캔버스 (`cvDraw`) 는 3D 일 때 `#fieldWrap` 에 붙고 지후 위치 · 크기 · 이펙트 (`W.x` / `W.y`) · 누르기 (`cvPick`) 모두 `proj3`. 카메라 보기 좌표 `camV(x, y)` (반전 · 회전 · y × `TILT()` = cos) · `fitZoom` 은 원근 확대만큼 덜 당긴다. **새 이펙트 좌표는 `W.x(x, y)` · `W.y(x, y)` 로** (y 를 빼먹으면 원근이 틀린다).
-- **회전 카메라 (실험)**: 전투 설정 `BSET.cam3d` · 전투 중 `camYaw` 가 `CAM.yaw` → `CFG.YAW` (−28°) · 기본 꺼짐.
-- **전투 HUD (Limbus 풍 시안 · 디자인 handoff)**: 다크 기본 · 전투 설정 「라이트 모드」 `BSET.light` (`body.b-light`) · 크기는 1920 × 1080 기준 × `--u` (`r3Fit` 의 `--k`) · CSS 변수는 `--q*` (전장 안 `.fieldwrap` 이 `--ink` · `--gold` 를 다시 정해서 이름을 바꿨다) · 위 바 (`.r3top` · 모드 `#r3Mt`) · 둘째 줄 (하트 SVG `R3_HEART` · 예상 승률 `#hudOdds` — 배치 단계는 `r3Odds` 티어 점수 추정) · 아래 (`.r3bot`: 프로필 `.r3pf` · 카드 `.pcard` (등급 `--rr` · 레벨 칸 `.r3lv`) · 배치 버튼 `r3Dep`) · 처치 피드 `r3Kill` · 지후는 원래처럼 **동그란 테두리** (사용자 요청 · 시안의 사각 그림 아님) · 진영색 아군 `#8fc6dd` · 적 `#d6382c`.
-- **전투 연출** (`// ═════════ R3.0 전투 연출` · `#bfx`): 스킬 컷인 `r3Skill` (castSkill · 아군 왼쪽 위 · 상대 오른쪽 위 · 1.5초 · 같은 쪽은 교체) · 라운드 전환 `r3Round` (beginCombat · 2.1초 · 그동안 `S.fxHold` 로 전투 멈춤) · 라운드 결과 `r3Result` (roundResult · 승리 · 패배 · 무승부 · 누르면 닫힘). 키프레임 `cin*` · `bfx*` (transform · opacity 만 · `--U` 로 크기).
-- **편성판** `#fmBoard` (`fmb*`) 은 시안 카드 줄과 겹쳐 숨겨 두었다 (코드 그대로).
-- **디펜스 · 성뿌수기**: 가로 화면은 늘 왼쪽 슬롯판 (`--cwW`) · 오른쪽 전장 (`viewInsets` 의 side) · 슬롯판 `CW_ORD` (가로 4 × 세로 3).
-- **인게임은 가로 전용**: 폰 세로면 `#rotOv` 「화면을 가로로 돌려 주세요」 · `screen.orientation.lock('landscape')` 시도 · 낮은 화면 (높이 520px 이하) 은 위 · 아래를 줄인다.
-- **튜토리얼**: 칸 번호 7→4 · 6→3 · 8→5 · 2→1 (시뮬 100판 1승 · 2패 · 3패 · 4승 그대로) · 안내는 위 HUD 아래 · 건너뛰기 버튼은 위 바 오른쪽.
-- **호환**: 친선전 'lv' 메시지에 `gv` → 큰 버전이 다르면 `netVerBad` (rules 는 그대로) · 리플레이 `rec.b` 가 R2 면 재생 막음 · 티어 하네스 `tools/tierlist/harness.js` 3 × 4 판.
-- **로비 톤 (Lobby v2)**: R2.27 로비 CSS · `ui2Tpl` 의 남색 · 금색을 숯색 (`#050506` 외곽선 · `#1a1a1d` 패널) · 크림슨 (주요 강조) 으로 치환 + `R3.0 로비 톤` 덮어쓰기 블록 (레일 채도 낮춤 · 덱 뒤 붉은 사선 `.k-stg-x` · `K_MI` 색). 금색은 재화 · 레벨에만.
-- 티어 시뮬: `TIER_SC` · `infographics/tier-R3.2` 는 **R3.2 build 14 코드** · **4,600판** (클라우드 4코어 일꾼 4개 · 1,600판 79초 + 3,000판 174초 · 2026-11-17 · ▲▼ 는 build 4 티어표와 비교 — 같은 버전을 이어서 돌리면 agg 전에 `TIER_SC` 를 지난 티어표 값으로 되돌려야 비교가 맞다) · 1위 태양 66.7% · 2위 오케스트라 · 꼴찌 조커 34.1% · SS 6 · S 46 · A 32 · B 28 · C 16 · D 6 (▲44 ▼17) · 예전: build 4 코드 (1위 레이더 67.0%)
-
-## 최근 변경 (R2.37 · 태극 지후 리워크)
-- **build 3 규칙**: 레벨마다 체력 · 공격력 `CFG.LEVEL_ADD` 0.25 (`lvMult` · 튜토리얼만 예전 0.6) · 공격속도 `CFG.LV_ASPD` 0.25 (`lvAspd` → `aspdRate` · `fixAspd` 는 제외) · 일반전 라이프 4 는 내 레벨 `CFG.LIVES4_LV` 5 부터 (`newMatch` · 이벤트 모드는 그대로 4) · 미러전 · 랜덤전 `lives: 4` · 경쟁전 `COMP.LIVES` 3 (5판 3선승) · 10회 모집 매일 무료 `p10Free` (`profile.p10f` { day · n } · VIP 2회 · `pull10Go`) · 7일 이벤트 기간 제한 없음 (`e7Live` = 상자 7개 전까지) · 컬렉션 `colMet` = 보유만 · **출격제한 `overSet` 은 조커가 변한 지후를 그 지후로 센다** (조커 출격제한이 없어서 조커 변신으로 넘겼다).
-- **build 3 지후**: 레벨업 리워크 `levelupKill` (처치 → `lvShift` +1 · 이번 라운드 · 최대 Lv5 · 랭크 6 15% 한 번 더 · 예전 형태 3단계 `onKillOld` 는 안 쓴다) · 갓지후 일반 공격 `godBeam` (즉시 일자 레이저 · `FXC.beams`) · 페이즈 물러나기는 `phaseSteer` 가 직접 옮긴다 (**`u.ghost` 면 `physIntegrate` 가 움직이지 않는다** — ghost 로 움직이는 이동은 위치를 직접 바꿔야 한다) · 호박 `customAttack` 은 폭발 스껄이 나오는 중 (`u.pkBusy`) · 살아 있으면 공격 안 함 · 순풍 피해는 순풍마다 (중첩) · 티타늄 쉴드 최대 체력 2% · 랭크 6 11종 (늑대 `wolf6` · 수은 `hgCast` · 마피아 기절 · DJ `u.need` 10 · 아케인 `dealDamage` 회피 → `castSkill` · 회오리 +1.5초 · 빠따 `batDr` · 블리자드 0.1 × 레벨 · 불사조 4.2초 · 시계 `clock6` · 폭주족 `instaKill`) · 닭 랭크 6 10% 닭 지후.
-- **build 2**: 새 로비 지후 탭 스위치에 「이모티콘」 (`uSub 'emo'` · `u2EmoVals` · 장착 규칙은 예전 `emoEquip` / `emoUi.pick` 그대로 · `.k-emos` · `.k-emoo`) · 도움말 상태이상 표는 `fxSrc(FX_OF[k] || STL_FX[k])` 그림 (`.stl-ic`) · 디펜스 광폭 `dfExp` = `EXP_W` 50 뒤 웨이브마다 +`EXP_A` 0.04 · 2배부터 +`EXP_B` 0.1 (선형) · 충격파 기절 삭제 (`QSTUN` 은 안 쓴다) · 태극 [극의 조화] 최대 체력 +50% (`tgPower` · 새로 조화가 될 때 한 번) · 불사조 쉴드 · 버팀 4.5초 · 포식 ATK 200 · [포식]당 12.5% · 4.1칸 · DJ ATK 30 · 스킬 파동 3번 · 메탈 HP 50.
-- **태극 지후** (HP 1250 · ATK 70): 배치 중 **무색** (`portraitN` = `PORTRAITS.taegeuk_n` · 원본 `지후초상화/R2.30/taegeuk_n.png` · 배치 기록 `p.tg` 는 이제 안 쓴다 · tgRoll · tgFill · tgFlip · tgPowers · tgFlash 삭제) → `tgStart` (onStart · 같은 때 나온 태극은 진영마다 `S.tgQ` 키로 한 번) 가 `A.later(1)` `tgColor` (전투 난수 `rng` · `u.tgCol`) · `A.later(2)` `tgPower` (`tgLines`: 세로 3 · 가로 5 가 모두 같은 색이면 그 줄 [적] `atkMult` 4 · [청] buff 'tg' aspd 3 = 400% · 같은 색 줄과 태극으로 가득 찬 다른 방향 줄의 교차 칸 = [극의 조화] 둘 다 · `u.tgP`) · 성뿌수기 · 디펜스는 출격마다. 라운드 끝 색 다시 · 레벨업 색 다시 (잠수함) 는 없어졌다.
-
-## 최근 변경 (R2.36 · 디펜스 업그레이드 · 이벤트 카드 · 상태 아이콘)
-- **build 7**: 랜턴 · 빔 지후 `fixAspd` (`aspdRate` 1 고정 · 광폭화 간격도 무시 · 효과 아이콘 줄 공격속도 화살표 없음 · 공격속도 버프를 새로 만들어도 이 둘은 안 변한다) · 태극 [푸른 힘] 공격속도 ×2 · [극의 조화] 공격력 · 공격속도 ×3 (체력 증가 삭제) · 부루스타 12초 감소 · 12초 꺼짐 · 불사조 쉴드 = 부활까지 5초 (`left` · `life`) · 오늘 총정리 밸런스는 build 5 ~ 7 타일을 (지후, 항목) 마다 처음 → 마지막으로 합쳤다.
-- **build 6 긴급**: 바로 앞 배치 지후를 다음 카드에서 빼던 규칙 (`S.lastPut`) 삭제 · 조커 출격제한 삭제 · 변신 체력 · 공격력 −10% · 태극 HP 1500 · ATK 75 · `renderField` 맨 앞에서 `tgFill` (조커 · 이벤트로 온 태극이 색 없이 조화 폼 그림으로 보였다) · 늑대 `gauge` 삭제 (순간이동 게이지가 SP 막대를 덮었다 · **스킬이 있는 지후에 `gauge` 를 달면 SP 막대 대신 그게 보인다**) · 모노리스 레벨 × 15% · 힐 7.5칸 · 1600% · 돌진 400% · EMP 자기장 100% · 호박 폭발 스껄 50% · 포식 흡혈 삭제 · 밸런스 수치는 패치노트.
-- **build 5**: 밸런스 28종 (얼음 리워크 `iceSlow` buff `iceSlow` { spd −0.7 · ice6 } 5초 · `icePick` 느려지지 않은 적 먼저 · 튜토리얼은 예전 빙결 그대로 · 스껄 `skulP` 50% + 레벨마다 1.5% · `skulDown` 이 날려 보냄 `yeetT` 2초 (클래스 `skul-under` 숨김 · `fx-pk-rise`) → `yeetBack` → `skulRise` · 페이즈 1.2초 · `ghost` + [무적] · 5칸 · 총? `gunqRay` 길 위 첫 적 · 태극 색 고정 (`tgFlip` 호출 막음) · 포식 체력 증가 · 회복 삭제 · 탄환 최후의 탄환 처치 회복 `b.kc` …) · **랭크 6 9종** (태극 · 갓지후는 배치 단계 `r6Grow` (합체 `moveTile` · `levelUp`) · 고독 `immune` · 광폭화 `onKill` · 신칸센 SP 0 · 솔렘라멘트 `u.lf2` · 차원 `dimClose` 회복 · 멈춰 `stopSlow` · 스껄 +2%) · 얼음 [한파주의보] = 느려진 적 받는 피해 +7%.
-- **build 5 컬렉션** (`COLS` [id, 이름, 지후들] · `colList` (어디에도 없는 공개 지후는 「준비 중」 자물쇠 칸 · 받을 수 없음) · 조건 보유 + 랭크 `COL_RK` 2 · 지후마다 ◆100 + 빛나는 전설조각 1 · 받은 지후 `profile.col[id]` → 새 지후를 넣으면 그 컬렉션은 미완료 · 새 지후 몫만): 새 로비 지후 탭 위 스위치 `uSub` (보유 지후 | 컬렉션) · 탭 점 `colReady()`. **새 지후를 만들면 어울리는 `COLS` 에 넣는다** (없으면 자동으로 준비 중).
-- **build 5 기타**: 이벤트 모드는 아케이드에서 빼고 (`ARC_MODES0` 의 `hide`) 로비 일반전 버튼 위 토글 `profile.evOn` (`.k-ctatop` · 켜면 `.k-cta-ev` 초록) → `newMatch` 가 `EV_NEXT || profile.evOn` · 디펜스 라이프 20 · 반격 `RALLY` [5] · 디펜스는 매칭 · 인트로 없이 `matchLoading` 만 · 로딩 끝 페이드 (`.out`) · 가방 임테기 「모두 사용」 `useKitAll` (최대 100) · 전투 중 상대 덱 깜빡임: `.flab.e` 의 opacity .9 를 없애고 `.flab` 에 `translateZ(0)` (**전장 위에 겹친 HUD 에 반투명 opacity 를 주지 않는다** — 흔들림 · 이펙트 레이어가 생길 때마다 폰에서 다시 그려 깜빡인다).
-- **디펜스 유닛 업그레이드**: 경기마다 `S.cw.up[id]` (Lv1~5 · 내 덱 지후만) · `DF.UP_COST` [100, 200, 400, 800] · 배율 `dfUpM` = 1 + (Lv − 1) × `DF.UP_K` 0.25 (Lv5 = 2배) · 출격할 때 `dfMod` → `dfUpApply` · 올리면 전장의 그 지후도 바로 (`dfUp`) · 트레이 아래 줄 `#cwUp` (`cwUpRender` · 골드가 바뀔 때만 `cwUpHud`) · 자동 봇은 업그레이드하지 않는다.
-- **디펜스 수치**: 열쇠 `dfKeys(깬 웨이브)` = 5웨이브마다 3 · 30웨이브부터 10 · 처치 골드 `KILL_K` 1.25 (= 5) · 충격파 `QDMAX` 0.6 · [금고] 최대 500 · [큰돈] 500 · **디펜스는 누구나 2배속** (`fastSpeed` · `renderSpeedBtn` 의 `isDf()`).
-- **이벤트 카드 고르기 = 세로 목록** (`.evp-*` · 육각 아이콘 `.evp-hx` 등급 색 g0~g2 · 주황 이름 · 흰 설명): 디펜스 `#dfPick` (`dfPickOpen`) · 이벤트 모드 `evShow` (`evRowHtml` · R2.23 build 2 슬롯머신 릴은 걷어 냄 · 타이머 · 상대 선택 `evMiniHtml` 은 그대로).
-- **build 2 이벤트 모드 개편** (`EVENTS` 30종): 이름 변경 (하드코어 → 케인인님 한판해요 · 광란 → 배먹어 배 · fast as f boi → 누구보다빠르게남들과는다르게 · 피의 갈증 → 에드게이 · 천살성 → 개싸움 · 레벨업 → 강해져서 돌아왔다 · 단체 레벨업 → 단체 월반 · 베테랑 → 할렐야루 (칸마다 +200% · 공격속도 +100%)) · 공격속도 강화 `deckS` · 평준화 `equal` 삭제 · 농민봉기 = 전설 · 한정이 아닌 지후 · 신규 인해전술 `horde` (Lv1) · 약점공략 `weak` = 치명타 피해 (`dealDamage` 치명타 줄 · `evTaken` 은 개싸움만) · 개쩌는 피지컬 `phys` (치명타 확률 · 회피) · 크고 단단한 `tough` (`evCombat` 쉴드) · 기저귀 `diaper` (`evDiaper` · 소환체 뺀 지후 ≤ 3 · 라운드마다 한 번 `S.evf[s].dp`) · 카드 태그는 「즉시」만 (등급 전용 표시 없음) · 효과 아이콘 줄 회피 증가 (`dodgeUp`) 가 주석에 묻혀 있던 것도 풀었다.
-- **build 3 봇**: 봇 덱 랭크 `botRanks` (`enhMatch` 의 e) = 내 덱 랭크를 섞어 봇 지후마다 하나씩 −2 ~ +2 (`BOT_SKILL` noob 0 · rookie 0.15 · std 0.55 · pro 1 · 나머지 0.45 → 가중치 3^((실력 − 0.5) × d)) · 평균 + 3 넘는 이상치는 그 선까지 내리고 남은 만큼 낮은 지후부터 +1 (합 그대로) · 덱 밖 지후는 평균 `_`. 봇 이벤트 점수 `evBotPick` 을 새 수치 기준으로 (배치에 따라 오르는 카드 · 지후 강화는 전장의 그 지후 수).
-- **build 4 폰 깜빡임 (백그라운드에 다녀온 뒤 배치 · 전투 화면 전체가 불규칙하게 깜빡임)**: 원인 후보 = `#fieldGrid` 가 전장 좌표 크기 (화면 / 배율) 로 만들어져 배치 화면에서 2,100 × 4,400px · `will-change:transform` 이라 기기 배율 3 그대로 래스터 (GPU 300MB 이상 → 타일 메모리 초과). 이제 화면 크기로 그린다 (`applyCamera` · 기준 배율 `g._z` · `scale(z / g._z)` · 0.8 ~ 1.6 을 벗어나면 다시 · 선 굵기 `--gl` · 565 × 1,155px). **`will-change` · transform 이 붙은 요소를 전장 좌표 크기로 크게 만들지 않는다** (레이어 크기 확인: CDP `LayerTree` · 폰 390 × 844 · 배율 3). 헤드리스로는 깜빡임이 재현되지 않는다 (폰 확인 필요).
-- **상태 아이콘 10종** (사용자가 그린 `icons/fx/`): goja · fear · taunt · corr · realm · warp (warpUp · warpDn 같은 아이콘) · ignite · addict · absorb (`FX_OF`) · impeached (`fxList` 가 `u.ipDone` 이면) · 원본 `바탕화면/newicon` (고자는 사진을 정사각형으로 잘랐다) · `tools/sw_assets.py` · `sw.js` CACHE core-6.
-
-## 최근 변경 (R2.35 · 밸런스 8종)
-- 부루스타 ATK 225 · 공격력 선형 감소 (`atkMult` 1 − t/15) · `splash` 1.9 · 꺼짐 7초 · 차원 ATK 140 · 늑대 스킬 [포효] `wolfRoar` (SP 6 · 반경 2칸 넉백 2.5칸 · buff `wroar` 공격력 −15% 5초) · 불사조 쉴드 400 · 블랙홀 ATK 100 · 홍명보 패스 회복 40% · 빔 ATK 25 · 사거리 5.3 · 죠스 공격 회복 30%. 티어 시뮬은 돌리지 않았다 (사용자 요청).
-- **build 2 디펜스 광폭 웨이브**: 적 배율 `dfKw(w)` = 직선 (`K0 + (w − 1) × KADD`) × `dfExp(w)` (`DF.EXP_W` 30 웨이브 뒤 웨이브마다 `EXP_R` 1.035 곱 · 반복 곱셈) — 직선만이면 포식 · 합체처럼 계속 커지는 덱이 끝나지 않았다 (라이플만으로 141웨이브). 50웨이브 2.4 · 100웨이브 19.9 · 141웨이브 104배. HUD `oddsLabE` 에 `🔥×M` · 31웨이브 배너. 스택 한도는 사용자가 원하지 않는다.
-- **build 3**: 부활 지후는 부활 지후를 되살리지 않는다 (`onUnitDeath` 에서 revL 에 안 넣음 · SP 는 그대로 · 모든 모드 — 부활끼리 서로 되살리는 연쇄로 디펜스에서 아군이 500기를 넘었다) · 성뿌수기 · 디펜스는 `cwFull(side)` (소환체 포함 살아 있는 지후 ≥ `CW.CAP` 40) 이면 `A.spawnChild` (전장에 없는 쓰러진 사본을 돌려준다 · 부르는 쪽이 c 를 쓴다) · 부활 · 반중력 분열을 막는다. 새 소환 경로를 만들면 `cwFull` 을 본다.
-- **build 4 디펜스 보상**: 로비 전투 탭 왼쪽 레일 일일 퀘스트 아래 「디펜스 보상」 (`ui2Tpl` `.k-rb` · 값 `dfRwOpen` · 숫자 점 `dfRwN` = `dfRwReady()` · build 5 에 메뉴에서 옮김 · 높이 700px 이하는 레일 간격 · 버튼을 줄인다) → `#dfRwModal` (`openDfRw` · `renderDfRw` · 스크롤 목록) · 보상표 `DF_RW` [웨이브, { dia · gold · tix (아케이드 티켓 `profile.arc.t`) · item (+n) · rand 등급 (+n · 바로 지급 + `showReveal`) }] · 받는 조건 `profile.dfBest` ≥ 웨이브 · 받은 웨이브 `profile.dfRw` (계정당 한 번 · normProfile) · 선택 전설은 `legendPick` 을 넣고 바로 `useItem` · 디펜스 결과 화면에 받을 보상 수 칩.
-- **build 6 에너지**: `profile.en` { n · t (충전 기준 시각) · day · buy } · `EN` (최대 5 · 20분마다 1 · ◆300 에 5 · 하루 3번 · 산 것은 최대를 넘어 쌓인다) · `enSync` (로비 값 계산마다) · 로비 상단 골드 앞 `.k-cur` `enTap` · **디펜스 입장은 `dfStart`** (덱 확인 → 에너지 1 · 없으면 사기 창) — `dfGo` 는 에너지를 안 본다 (시험 · 시뮬용).
-- **build 6 7일 이벤트**: `profile.ev7` { s 시작일 0시 (처음 켠 날 = 1일 · `dayStart`) · q 진행도 · got 받은 퀘스트 · box 연 상자 · lg 마지막 접속일 } · 퀘스트 `E7_Q[날][i] = [종류, 목표, P, 이름]` · 진행은 `e7Add(종류, n, max)` (열린 날 퀘스트 모두 · 지난 날도) — 부르는 곳: `questAdd` (login · games · wins · kills · gacha · shopBuy) · 일퀘 모두 완료 · `applyAct` / `cwSummon` (deploy) · `levelUp` / `cwFuse` (merge) · `keyBox` · `enhUp` (rankUp) · `arcEnd` (arcade) · `dfEnd` (dfWave 최고) · 상자 `E7_BOX` 포인트 · 보상 `E7_ADD` 가 쌓인다 (`e7Rw(k)`) · 14일 뒤 또는 상자 7개를 다 열면 버튼이 사라진다 (`e7Live`) · 로비 오른쪽 레일 출석부 아래.
-- **build 6 기타**: 열쇠 상자 골드 1,000 ~ 2,000 · 지후 초기화권은 쓴 조각을 같은 등급 빛나는 조각 (`GLOW_OF` · 한정은 그 지후 조각) 으로 · 가방에서 사용 → `#rsModal` (`renderRs`).
-- **build 7**: 전투 화면 버튼 · 배치 카드 · 디펜스 트레이를 로비 톤으로 (CSS 블록 `R2.35 build 7 전투 화면 버튼` · `body #screen-battle …` 로 R2.26 의 !important 를 이긴다 · 전장 · 위 HUD 바탕은 흰색 그대로 · 움직이는 효과 없음) · `.banner` 와 경기 통계 (`.ms-seg` · `.ms-mvp`) 는 새 테마에서 `var(--ink)` 가 밝은 글자색이라 흰 바탕 흰 글씨였다 → 고정 남색 (**`var(--ink)` 를 배경으로 쓰는 예전 규칙은 새 테마에서 흰색이 된다**) · 열쇠 상자 `keyBox(n)` 여러 개 (`UI2.st.kbN` · `kbN` · `kbMax`) · 7일 상자 말풍선 `.e7-chest .tip` (hover · 누르면 `e7Tip` · transform 쌓임 맥락 때문에 hover 때 z-index) · 폰 상단 재화 줄: 에너지 필은 + 없이 (`.k-cen`) · 440px 이하에서 닉네임 · 경험치 (`.k-pfx`) 숨김 · 프로필 칸 min-width 50px.
-- **build 8 리더보드**: `dfPush` · `towerPush` 는 거절되면 테두리 없이 한 번 더 · 오류 코드 `FB.defErr` · `FB.towerErr` · 탭을 열 때마다 `FB.noDef` / `noTower` 를 지우고 다시 올린다 (예전엔 규칙 게시 전에 판이 끝나 한 번 거절되면 새로고침할 때까지 「규칙 게시 안 됨」) · 내 기록이 실패해도 순위는 읽는다 (토스트) · 읽기도 막히면 (permission-denied) 「규칙이 아직 반영되지 않았어요」. 시험: dev 훅 `FB` · `lbDef()` + 가짜 `FB.sdk` (`FB.ready = Promise.resolve(true)`).
-- **build 9**: 새 로비 랭킹 탭 강조는 탭 객체의 키 `t.k` 로 (예전 순서 배열 `LBK` 가 디펜스 탭 자리와 어긋나 한 칸씩 밀려 켜졌다 · 새 탭은 `u2ValsBase` 의 `lbTabs` 한 곳에만 넣는다). **2026-11-12 확인: 서버에 게시된 규칙에 `r2def` 가 없다** (익명 REST 읽기로 r2tower 200 · r2def 403) — 사용자가 firestore.rules 전체를 다시 게시해야 디펜스 리더보드가 나온다.
-- **build 10**: 메탈 지후 HP 70 → 35 · 녹슬기 (`metalTick` · 1초마다 최대 체력 2%) 삭제 (받는 피해 2 · 회복 불가는 그대로) · 서사도 녹이 멈춘 이야기로.
-- **build 11 리더보드**: 덱 초상화 `.k-lbpic` 아담하게 (`clamp(38px, 10.5vw, 46px)` · flex · 테두리 2.5) · 덱 · 레벨이 없는 기록 (디펜스 · 탑) 은 기본 덱 · Lv.0 대신 비우고 내 줄 (`(나)`) 만 내 덱 · 디펜스 최고 기록 덱 `profile.dfDeck` · `dfRk` (`dfEnd` 가 최고 기록이거나 비어 있으면 그 판 `S.deck`) → `dfPush` 가 `deck` · `rk` 를 올린다 (예전 규칙이면 덱 없이 → 테두리 없이 다시 · `FB.noDfDeck`) · **firestore.rules `r2def` 에 deck · rk (validDeck · rkOk) 추가 → 게시 필요** · rkI · rkOk 는 r2def 위로 옮겼다.
-
-## 최근 변경 (R2.34 · 디펜스 모드 · 출격제한 개편 · 연출)
-- **출격제한 개편**: `canPlaceNew` 는 같은 지후 수를 보지 않는다 (`CFG.SAME_LIMIT` Infinity · `limitOf` 는 deployLimit 또는 Infinity) · `overSet(L)` = deployLimit ≤ 2 지후의 초과 칸 (레벨 높은 순 → 칸 번호 순으로 제한 안 · 조커가 변한 지후는 조커로 · 이벤트 'b' 제외) → 전투 시작 (`S._ov` · `cwSpawn`) 에 `ovlUnit` = `plainDef` (함수 훅 · skill 을 뺀 def · atkText 만 남김) · 배치 화면 · 슬롯판은 회색 `.ovl` · 봇은 `botPlace` 로 넘기지 않는다 · 내가 넘기면 배너 경고.
-- **디펜스 모드** (`arc.kind 'defense'` · 성뿌수기 틀 재사용 `isCw()` · `S.cw.df` · 상수 `DF`): 로비 일반전 오른쪽 버튼 → 모드 로비 `K_MODE.defense` (`isMDef` · 열쇠 상자) → `dfGo` (무료). 내 슬롯 출격 `dfWave` 20초 (`c.t` · 골드 `cwIncome(c.mw)`) · 적 웨이브 `dfFoeWave` 10초 (`c.et` · 적을 다 잡으면 바로 · `dfSpawn` 무작위 지후 `dfPool` Lv1 · 수 3 + 0.3 × (웨이브 − 1) · 능력치 ×(0.7 + 0.04 × (웨이브 − 1)) · `u.dfE`) · 노릴 아군이 없으면 `dfMarch` (aiSteerAndAttack) · 내 진영 끝 `dfAtEnd` → `dfLeak` 라이프 −1 (10) · 끝 `dfEnd` 열쇠 = 웨이브 − 1 · 최고 웨이브 `profile.dfBest` → `dfPush` (`r2def` · **firestore.rules 게시 필요**) · 핵 지후는 고정 `DF.NUKE` 500 · PC (900px `DF_SPLIT`) 는 `#screen-battle.cw.df` 왼쪽 트레이 380px · 오른쪽 전장 (`viewInsets` 아래 가림 0).
-- **build 11**: 폰에서 다른 탭에 다녀오면 전투가 깜빡이던 것 — 화면이 다시 보이면 (`visibilitychange` · `pageshow` · 캔버스 `contextlost/restored`) `cvReset` 이 캔버스 · 그림 캐시 (`CV.spr` · `u._cvB/_cvI`) 를 버리고 새로 · ResizeObserver 는 전투 중 따라가는 카메라면 `fitCamera` 로 튀지 않는다. + `animReset` (돌아오면 무한 반복 애니메이션 `getAnimations` 을 cancel → play · R1 7.1.2 「다른 앱 · 탭에 다녀오면 배경 애니메이션을 새로 만든다」 와 같은 고전 버그). 헤드리스로는 재현이 안 됐다 (폰 확인 필요).
-- **build 10** (디펜스만): `QCAP` 다시 20 · 웨이브가 끝날 때 (`dfFoeWave`) `dfRelReset` = 고고학자 유물 `S.rel` · 클로버 · 랭크 6 · 유물 쉴드 (`u.relSh`) · 토템 · 가호 초기화 · 엑시노스가 쓰러지면 `gpuDrop` (칩 `a.gpu.by`).
-- **build 9**: 충격파 기준 `DF.QCAP` 20 → 30 (위 게이지 n/30).
-- **build 8**: 내 출격 `dfWave` 는 이제 웨이브 시작 (`dfFoeGo`) 에 적과 같이 (따로 돌던 `c.t` 타이머 없음 · 막대는 `c.et`) · 충격파 판정 `c.qNext` 는 `dfFoeWave` 맨 앞 (이전 웨이브가 끝난 때 · 새 지후 전) — 예전엔 타이머가 어긋나 막 출격한 지후로 바로 터졌다.
-- **build 7**: 적 수 = 내 전장 지후 × `DF.NK` 0.6 (+0~1 · 최소 2) · `K0` 0.6 · `KADD` 0.012 · 반격 `dfRally` (`dfRallyCheck` · 라이프 `RALLY` 20 · 10 에서 한 번씩: 🪙 +300 · 전장의 내 쪽 절반에 있는 적 넉백 4칸 · 2000 피해 · 10초 기절) · 사망 이펙트 `spawnDeathEffect` 에 연기 + 해골 (반전 화면은 해골만 되돌림).
-- **build 6**: 위 게이지 = 승률 (`allyOdds`) · 라벨 `❤ 라이프 · 👥 아군/20` (`cwHud` · 20 초과면 `.over` 빨강) · 충격파는 3웨이브마다 → 웨이브가 끝날 때 `dfAllies()` > `DF.QCAP` 20 이면 매번 (`dfStep` 이 적 웨이브를 내 출격보다 먼저) · 피해 25% + (웨이브 − 1) × 1%p · `KADD` 0.019.
-- **build 5**: 웨이브 골드 ×`DF.GOLD_K` 2 · 처치 골드 ×`KILL_K` 0.5 · 적은 1랭크 고정 (`makeUnit`) · 적 수 = 내 전장 지후 수 ±1 (최소 3 · `dfSpawn`) · `KADD` 0.022 · 충격파는 1초 전 `dfWarn` (.df-warn) 뒤 `A.later(1)` · 피해 `QD0` 25% + 웨이브마다 1%p · 최대 80% · 글 없음. 시뮬은 돌리지 않았다 (사용자 요청).
-- **build 4**: 이벤트 다시 10웨이브마다 (`EV_EVERY` 10) · 충격파 `dfQuake` (`dfFoeGo` 끝 · `DF.QUAKE` 3웨이브마다 내 진영 지후 모두 최대 체력 `QDMG` 50% 피해 (자기 자신이 준 dot) · `QSTUN` 5초 기절 · 면역 무시).
-- **build 3**: 이벤트 `DF.EV_EVERY` 10 → 5웨이브 · 적 웨이브 `DF.EWAVE` 10 → 20초 (내 출격과 같게). 아래 build 2 의 시뮬 수치 (평균 42웨이브) 는 적 10초 기준이다.
-- **build 2**: 라이프 30 · 들어오면 흔들림만 · 난이도 하향 (`DF.NADD` 0.13 · `KADD` 0.016 · 시뮬 `cwBot` 은 디펜스에서 슬롯이 꽉 찼을 때만 합친다 → 기본 덱 자동 봇 평균 42웨이브 · 예전 수치 16) · **디펜스 이벤트** `DF_EV` 39종 (`[아이콘, 이름, 설명, p 게임 내내 | i 바로]`): `DF.EV_EVERY` 10웨이브마다 `dfFoeWave` → `dfPickOpen` (#dfPick · `S.cw.pick` 동안 `loopBody` 가 멈춘다 · 자동 · 빠른 시뮬은 무작위) → `dfTake` → `dfInstant` / `c.evs`. 수치는 `dfStats` → `c.k` → `dfA` · `dfK` (effAtk · aspdRate · 회피 · 치명타 · 받는 피해 · moveToward) · `dfHas` (피의 갈증 · 마력의 힘 · 강약약강 · 멀티샷) · 웨이브 시작 `dfWaveEv` · 출격 `dfMod` · 합체 `dfFused` · `dfCan` (자유합성). 새 디펜스 이벤트는 `DF_EV` + 효과 자리에.
-- **열쇠** `profile.keys` · `keyBox()` 🔑 40 = 일반 5 · 희귀 3 · 10% 영웅 · 1% 전설. **성뿌수기는 임시 삭제** (`ARC_MODES` 에서만 뺐다 · 코드 그대로).
-- **시작 연출**: `newMatch` 안에서 매칭 창 `mmShow` (#mmOv · 2~4초 · 경쟁전은 자기 매칭 창이 있어 건너뜀) → 인트로 3초 → 전장 로딩 `matchLoading` (#matchLoad · 3초 · 팁) → `startRound` · 튜토리얼 · 샌드박스 · 릴스 · 친선전은 그대로.
-- **AUTO 카메라** `CAM.auto` (`rejhbt-cam-auto` · 기본 켬 · 버튼 `#btnCamAuto`): `camFollow` → `camAuto` (교전 중 지후 4기 이상이면 그쪽만 · 위아래 8% 빼고 · 여백 2칸 · 전장 전체 ~ 125% · 10% 안 흔들림 무시). 손으로 옮기면 `CAM.user` → 버튼을 누르면 다시 따라간다. 성뿌수기 · 디펜스도 이제 따라간다.
-- 시험 훅 `__rejhbt.keyBox · dfGo · DF · prof()` (`profile` 은 동기화로 바뀌니 `prof()` 로).
-
-## 지난 변경 (R2.33 · 성뿌수기 모드 · R2.33.1 밸런스)
-- **R2.33.1**: 성 HP 24,000 · 사거리 6 · 웨이브 30초 (첫 웨이브 10초) · 성의 분노 16,000 · 8,000 = 모든 적 지후 기절 10초 (면역 · 쉴드 무시 · 스테인리스만 버팀 · 골드 +300 그대로) · 합체 `cwFuse` (같은 지후 · 같은 레벨 → 레벨 +1 · **덱의 무작위 지후** · 출격제한 지킴 · 조커 변신은 그대로) · 자리 옮기기 없음 · 입장 무료 (확인 창 없이) · 보상 경험치 `cwXp` (승리 100 · 패배 = 상대 성 피해 비율 × 50 · 항복 0 · 아케이드 포인트 없음) · PC (700px 이상) 는 `#screen-battle.cw:not(.reels)` 폭 520px 가운데 (`:not(.reels)` 는 뒤의 `inset:0` 을 이기려고 · `cwUi(true)` 를 `fitField` 앞에서).
-- **성뿌수기** (아케이드 `ARC_MODES.castle` · `arc.kind 'castle'` · 참고: 랜덤다이스 워즈 · 코드 블록 `// ═════════ R2.33 성뿌수기` · 상수 `CW`): 내 덱 vs 봇 덱 (`botDeckRamp('std')`) · `startRound` → `cwStart` (배치 단계 없음 · 리플레이 기록 없음). `S.cw = { gold · cost · wave · t · sd · rage · castle · gone · sel }`.
-  - 성 = `SUMMONS.castle` (HP 60,000 · 사거리 3 · ATK 300 / 1초 · `immobile` · `immune` · `noHeal` · `u.big` 큰 몸 `cvD` 150) · `friends()` 에서 뺀다 (아군 버프 · 회복 대상 아님) · `instaKill` 무시 · 체력 비례 피해는 `pctD(t, v)` 로 5% (체력 비례 피해를 새로 만들면 `pctD` 로 감싼다) · 한 번에 최대 체력의 5% 까지 (핵 등) · 왜곡 · 고자 무시 · 슬롯머신 잭팟은 적 지후 전멸 + 성 피해.
-  - 웨이브 `cwWave` (20초 `CW.WAVE` · 첫 웨이브 10초 `CW.FIRST` · 골드 `cwIncome` · `cwSpawn` 이 슬롯 `S.place` 의 지후를 칸 자리에 · 진영마다 살아 있는 지후 `CW.CAP` 40기까지 · 유물은 웨이브마다 새로) · 소환 `cwSummon` (10 · +10 · 덱 무작위 · 출격제한은 지킨다) · 합체는 `moveTile` (개구리 · 조커 규칙 그대로) · 성의 분노 `cwRage` (40,000 · 20,000 · 반경 6칸 즉사 · +300) · 처치 +4 (`u.cwU` 웨이브 지후만) · 30웨이브 서든 데스 · 봇 `cwBot` · 끝 `cwEnd` → `endMatch` (아케이드 포인트).
-  - `stepCombat` 은 `S.cw` 면 `cwStep` 으로 (전멸 · 60초 · 무피해 판정 없음) · 쓰러진 유닛은 `cwPurge` 가 2.5초 뒤 `S.units` 에서 치운다 (통계는 `gone`) → **`S.units` 의 쓰러진 유닛을 오래 들고 있는 코드는 성뿌수기에서 깨진다** (부활 지후는 `{ id, lv }` 기록이라 괜찮다).
-  - 화면: 트레이 `#cwPanel` (웨이브 막대 · 골드 · 소환 · 슬롯판 `#cwGrid`) · `#screen-battle.cw` 가 배치 카드 · 덱 줄 · 안내 칩을 숨긴다 · 위 승률 막대는 성 체력 (`cwHud`) · 타이머 고리는 다음 웨이브 · 로비 모드 화면 `K_MODE.castle` · `isMCastle`.
-  - 시험: 빠른 시뮬 양쪽 봇 `S.cw.auto` (스크래치 `cwfuzz.js` · 24판 오류 0) · 빠른 시뮬에서 스파이 `getAnimations` 가 수 초 걸리는 건 화면을 안 그려서 생기는 시뮬 전용 현상.
-
-## 지난 변경 (R2.32 · 밸런스 15종)
-- 일반 랭크업 조각 2배 (`ENH_SHARD.common` 합계 2000) · 얼음 사거리 5.5 · 활 HP 1,010 · 보호막 HP 2,040 · 멈춰! HP 2,980 · SP 4 · 촉수 ATK 140 · 랜턴 자가 회복 5 고정 · 마탄 ATK 140 · 빠따 ATK 240 · 신칸센 HP 1,460 · 수은 HP 2,260 · 스파이: 지금 모습과 같은 id 를 치면 치명타 없음 · 불사조 쉴드 350 고정 · 부활 폭발 3칸 · 기상캐스터 ATK 15 · 스테인리스 HP 1,750.
-- build 2: 버섯 지후 독버섯 → `mushEat` 이 [침묵] 4초 (독버섯 피해가 끝날 때까지).
-- `fxList`: `immune(u)` (쉴드 지후 쉴드) · 보호막 쉴드 (`guardSh`) 가 있으면 [디버프 면역] 아이콘 `pure`.
-
-## 지난 변경 (R2.31 · 한정 등급 · 밸런스 · 전투 화질)
-- **한정 등급** `rarity: 'limited'` (한정 · 분홍 `#ff3d7f` · RARITY_ORDER 4 · 랭크 조각은 전설과 같다 · CP 800): 뽑기 (`rollOne` 은 CFG.GACHA 등급만) · 상점 · 봇 덱 · 미러 · 랜덤 · 선물 변신 · 이벤트 지원요청 · 샌드박스 무작위 · 부팅 · 크레딧에 안 나온다 (`pubIds()`) · 미보유자 목록 · 도감 수 · 티어표에서 숨긴다 (`seeId(id)`) · 지후 탭은 보유하면 맨 위에 한정 칸. 주는 방법은 운영 우편 `{ kind: 'char', id }`. 지금 한정: 없음 (R3.2 build 12 에 샌즈가 전설로).
-- 새 등급을 만들면 `RARITY` · `RARITY_ORDER` · `CP_RAR` · `ENH_SHARD` · `RAR_C` · `U2_RAR` · `DOTS` · `SHOP_PRICE` · CSS `.r-<등급>` · make.py `RARITY` 를 같이.
-- build 2: 총? 지후 리워크 — [탕!!] 은 피해 없이 `gojaOn` [고자] (이번 라운드 최대 체력 · 체력 1 · 스테인리스 · 무적 · 잠수는 튕겨 냄) + 10칸 넉백 · ATK 0 (도감 —).
-- 전장 캔버스 해상도: 기기 배율 그대로 (최대 3 · 저전력 1.5 · 예전 최대 2 라 폰에서 흐렸다) · 그림 캐시 `cvQ` 는 올림 · 50기 ×4 벤치 차이 없음.
-- 글자 `dmgNum(u, '…', { stamp: true })` 는 이제 노란 스킬 글씨 (`crit` + `big`) — stamp 의 빨간 CRITICAL 은 숫자 (치명타) 에만.
-- `tools/comment-check.py` 가 괄호가 든 호출 · 화살표 함수도 잡는다 (도움말 티어표 `helpTierHtml` 의 `.forEach` 가 R2.26 부터 주석에 묻혀 비어 있었다).
-
-## 지난 변경 (R2.30 · 신규 지후 11종 · 속성)
-- 신규: 스껄 `skul` · 멈춰! `stopj` · 페이즈 `phase` (전설 → 영웅) · 부패 `rot` · 메탈 `metal` · 부루스타 `burner` · 샌즈 `sans` · 스테인리스 `stainless` · 총? `gunq` · 태극 `taegeuk` · 호박 `pumpkin` (도우미 `// ── R2.30 신규 지후 도우미 ──`) · SUMMONS 폭발 스껄 `pkskul` · 병아리 `chick` (닭 지후 부화가 이제 병아리). 초상화 원본 `지후초상화/R2.30/` · **오케스트라 지후는 그림만 받고 능력이 없어서 아직 안 넣었다** (바탕화면 new7).
-- **속성** `FIRE_T` (화염 · 태양 · 불사조 · 각성 불사조 · 드래곤 · 태극 · 부루스타): [화상] · [3도 화상] 피해 없음 (`fireImm`) · 대신 공격력 +20% (`burnK`) · `ICE_T` (얼음 · 블리자드): `addStatus` 가 빙결 · 동상을 막는다. 새 불 · 얼음 지후는 여기에.
-- 새 상태 `sear` [3도 화상] (아이콘 `icons/fx/sear.png` · 해제되면 보통 화상 `searCleanse`) · `ignite` [점화] (`igniteTick` · 일반 공격 `hitOne` 이 `searOn`) · `rot` (`rotK`) · `corr` · `absorb`. 받는 피해 계산 한 줄 (`dealDamage` 의 rot · sear · 스테인리스) · 메탈은 그 뒤 `d = 2 / 4`.
-- 스테인리스 `def.stainless`: 적의 `opts.skill` 피해 · 넉백 (`A.knock`) · 즉사 (`instaKill`) · 절상 · 아공간 무시 · 디버프는 `stRev` (반대로 걸 것만 `ST_REV` · 버프 `rv_…`) · `buffSum` 이 음수 버프를 뒤집는다 (`taken` 제외). 새 디버프를 만들면 `ST_REV` 에 반대 효과를 넣을지 정한다.
-- 태극: 배치 기록 `p.tg` ('r' · 'b' · `tgRoll` 친선전은 해시) · `packPlace` 12번째 칸 · 라운드 끝 `tgFlip` · 줄 판정 `tgPowers` (교차 칸은 두 색으로 친다 = [극의 조화] · 조화 폼 = 기본 초상화) · 배치 화면 `renderField` 가 아우라 클래스 `tg-r/b/h` + 줄 번쩍임 `tgFlash` · 캔버스 `CV_RING` · `_cvTgH`.
-- build 2: 샌즈 한 번에 공격력 150 → 50% · 총? [탕!!] 즉사 → 공격력 (ATK 99,999) 피해 · 버티면 총알 방향 10칸 넉백 (`gunqFire`) · 인포그래픽 `R2.30-b2` (`R2.30.json` 에서 build 2 칸만 골라 만든다).
-- build 3: 서사 120개 · 도감 상세 글 오버홀 (위 규칙) · 전투 HUD — 버튼은 아래 줄 (상대 이름 오른쪽 · 크기 고정 · 예전엔 단계 글자를 덮었다) · **배속 버튼 `#speedSeg` 가 R2.26 부터 안 보였다** (예전 CSS `#speedSeg { display:none }` 이 `.tbar` 밖이면 숨겼다 → `.r1acts #speedSeg` 로 보이게) · 이모티콘 자리는 `emoPlace` 가 덱 줄 (`#flabE` · `#flabA`) 을 재서 겹치지 않게.
-- 샌즈 화살표는 캔버스 `CVF.over` 의 `k: 'sans'` (화면 가운데 `W.hw/hh`) · 총? 빛줄기 `FXC.beams`.
-- 티어: `TIER_SC` · `infographics/tier-R2.30` 은 R2.30 코드 · 1,600판 · **로컬 윈도우에는 playwright 가 없다 → `tools/tierlist/run-cdp.js` (시스템 크롬 · 일꾼 2개 약 3분)** 뒤 `agg.js` · `apply.py` · make.py · shot.py. 샌즈가 SS 1위 (65.8%) · 메탈 · 태극 D.
-- dev 전용 `window.__rejhbt` 에 `effAtk` · `rotK` · `tgPowers` · `instaKill` · `renderField` · `charDetail` 를 더했다 (헤드리스 확인용).
-
-## 지난 변경 (R2.29 · 전장 캔버스 · 버그 수정)
-- **전장 캔버스** (`// ═════════ R2.29 전장 캔버스` · `CV` · `cvDraw`): 전투 중 유닛은 `#field` 안 캔버스 `.fx-ucv` 하나에 그린다 (z-index 5 · 카메라의 반대 변환 `cvPlace` 로 화면 크기 그대로). 유닛 DOM `u.el` 은 상태 모델로 남겨 `display:none` (스킬 코드가 classList · 자식을 그대로 쓴다). 몸통 · 체력바 · 레벨 · 효과 아이콘 줄은 미리 그린 그림 `cvSprite` (배율 `cvQ` √2 단계) · 클래스 · 자식은 MutationObserver (`cvWatch`) 가 바뀔 때만 `cvPlain` 으로 다시 본다.
-  - **새 유닛 클래스 · 머리 위 요소를 만들면**: 캔버스가 모르는 클래스 · 자식이 붙은 동안 그 지후는 DOM 으로 보인다 (자동 · 안전). 자주 쓰는 상태면 `CV_CLS` (빛나는 둘레는 `CV_RING`) 에 넣고 `cvDraw` 에 그리기를 더한다. 머리 위 글씨는 `span.xlv` 면 캔버스가 읽는다 (`XLV_C` 색).
-  - 이펙트: 피해 숫자 `cvNum` · 불꽃 · 총구 · 베기 · 고리 (`A.ring`) · 먼지 · 공격 예고 (`u.tgc` · `cvFan`) · 투사체 (`CV_SHOT` 종류는 `el = CV_STUB` · `cvShot`) 는 `CV.on` 이면 `CVF.under / over` 에. 새 이펙트도 `CV.on` 일 때 캔버스로 (드문 것은 DOM 그대로 돼도 된다). 사망 이펙트는 결정적 순간 슬로 모션 때문에 DOM.
-  - 결정적 순간 (`beginFinalMoment`) · 라운드 끝 · 화면 이동 → `cvEnd` 가 유닛을 DOM 으로 되돌리고 떠 있던 피해 숫자는 DOM 으로 다시 띄운다. 비교용 `?dom=1` (예전 DOM 렌더링). 누르기는 `cvPick`.
-  - 측정 (CPU ×4 · 50기 · 사용자 PC 가 다른 게임으로 바빠 절대값은 흔들림): FPS 11~14 → 15 · 스타일 + 레이아웃 260 → 85ms/초. 남은 병목은 **전투 계산** (×4 에서 스텝당 약 8ms · 따라잡기 4스텝).
-- `loop`: 다음 프레임을 맨 앞에서 걸고 몸통 `loopBody` 는 try · 유닛 스텝 · `A.later` · 투사체 맞음은 `stepErr` (같은 오류는 한 번만) — 한 지후의 오류로 전투가 멈추지 않는다. 프레임 제한은 예정 시각 `frameDue` (90 · 144Hz 도 60번).
-- 도둑 [아공간] 절도: `dimReady` (차원 · 훔친 도둑 공용 · 스킬 없으면 2연발만) · 도둑 `tick` / `onDeath` 가 `dimTick` / `dimClose` · 도둑 패시브 `noSpGive` (공격으로만 SP · `spGive` · 충전 `chExcl`) · `spGive` 재귀 막기 `a.spIn` · `skNeed` 는 스킬이 없으면 Infinity.
-- 친선전 `packPlace` 10번째 칸 = 늑대 `wf` · 봇전 `S.coinSlot` 도 경기 시작 시세 (`matchBase`).
-- 기록 보호: `xkStash` (normProfile 맨 앞) — 이 버전이 모르는 지후 (owned · shards · enh) · 아이템 · 테두리는 `p.xk` 에 맡겨 두고 아는 버전이 되돌린다 · 백업 기록에 `profile.gv` (게임 버전) · 서버 기록이 더 새 버전이면 `backupNow` 가 쓰지 않고 업데이트 창.
-- 햄버거 점 `menuDot` = 메뉴 항목 점 (`MENU.some`) · 아케이드 상점은 시트 `hasArcShop` (`UI2.st.arcShop`) · 우편 받기 → `mailSummary` 정리 창 (새 지후만 뽑기 연출) · 로비 1초 타이머 `u2Render(true)` 는 HTML 이 같으면 건너뛴다.
-- 주석 검사 `tools/comment-check.py` 가 「주석 뒤에 묻힌 호출 · 선언 · if」 도 잡는다 (R2.25.4 부터 차원 지후 아공간 초상화가 묻혀 있었다). 티어 하네스는 판 사이에 `#field` 를 비운다.
-
-## 지난 변경 (R2.28 · 리더보드 · 시그니처 색)
-- **시그니처 색** `SIG_C` (PORTRAITS 바로 뒤 한 줄 · `tools/sig-color.py` 가 쓴다 · 손으로 고치지 말고 `SIG_FIX`) · 값은 `'#hex'` 또는 두 색 `'#a,#b'` · `sigC(id)` 한 색 · `sigBg(id)` 늘 `linear-gradient(...)` (두 색이면 135° 그라데이션) · 숨은 지후는 `rankOf` → `CHARS.color`.
-- **덱 설정 화면 (지후 탭 덱 슬롯 · 카드) 은 등급색 그대로**, 그 밖의 덱 표시 (로비 부채꼴 · 프로필 대표 덱 `pfDeck` · 리더보드 · 전장 덱 `.fdeck span.sg` · 전투기록 · 유저 정보 · 탑 덱 `.pic.sg`) 는 시그니처 색. 그라데이션 테두리는 `border: transparent` + `background: linear-gradient(#fff,#fff) padding-box, <sigBg> border-box` (둥근 모서리 그대로).
-- 리더보드 기본 탭 `lbTab = 'cp'` (레벨은 두 번째) · 줄을 높게 (`k-lbfav` · `k-lbpic` · 랭크 `k-lbrk`) · `lbPush` 가 덱 랭크 `rk` (1~6 배열) 를 올린다 → **firestore.rules `rkOk` 게시 필요** (예전 규칙이면 `FB.noRk` 로 빼고 다시).
-
-## 지난 변경 (R2.27 · 로비 UI 리뉴얼 · 애니메이션)
-- 시안 「네이비 리파인 v2」 (사용자 바탕화면 zip · 캐주얼 모바일 문법): `ui2Tpl` 마크업 + CSS 블록 `/* R2.27 로비 UI 리뉴얼 */` · `/* R2.27 모드 화면 */` · `/* R2.27 화려한 애니메이션 */` (`#ui2` 안 `k-` 접두사 · **버튼 클래스는 `kb`** — `k-btn` 은 예전 게임 클래스라 겹친다). 잉크 `#0e1226` · `.k-ol` 글자 외곽선 · `.k-pnl` 패널 · `.kb.k-gold/k-mint/k-navy/k-dia/k-off` · `.k-seg > .on` · `.k-pc` 초상화 카드.
-- 값은 `u2Vals()` = `u2ValsBase()` (예전 그대로) + **`u2Extra(v)`** (새 마크업 값 · 덮어쓰기) · 프로필은 `u2PfExtra` (정보 · 전적 · 아바타(`fav`) · 테두리). 로비 덱 부채꼴 `K_FAN` · 높이 맞춤 `u2FanFit` (예전 `u2ArenaFit` 이 부른다).
-- 온라인 탭 = 랭킹 (`u2Go('rank')`) · 위 스위치 `onSw` 로 친구 · 친선전 (`openSocial` · `UI2.st.onSub` 기억). 탑 · 경쟁전 · 샌드박스는 전체 화면 페이지 (`K_PAGE` 색 · `.k-hostfull` 안 기존 화면 · 안쪽 `.ph` 숨김). 이벤트 · 랜덤전 · 미러전은 모드 로비 `UI2.st.mode` (`K_MODE`) → 시작 버튼 `modeGo` 는 `ARC_SURE` 로 티켓 확인 창 없이.
-- 경쟁전 로비 `renderComp` hero 를 시안대로 (`kc-*` · R1 검은 화면 `r1c` 은 지운다) · 탑 진행 `kt-hero` (현재 층 · 하트).
-- 애니메이션은 **transform · opacity 만** (로비 전용 · 전투 중엔 `#ui2` 가 숨어 멈춘다 · 50기 벤치 변화 없음) · 탭 효과 `K_TAP` → `.k-tapfx` (링 + 별 · 0.52초) · `prefers-reduced-motion` 이면 끔 · `:has()` 는 쓰지 않는다.
-- 보조 문구는 시안대로 Pretendard (`.k-sub`) · 제목 · 버튼은 Black Han Sans 그대로.
-
-## 지난 변경 (R2.26 · 화면 개편 · 밸런스 35종)
-- **로비** (`ui2Tpl` 전투 탭): 스크롤 없이 한 화면 · 친선전 버튼 · 모드 토글 · 부스트 줄 삭제 · 부스트 배지는 `.u2-cta` 밖 (overflow:hidden 에 잘렸다) · 아레나는 `u2ArenaFit` 이 남는 높이만큼 scale.
-- **일반전은 늘 클래식** (`profile.mode` 안 씀) · 이벤트 모드는 아케이드 `ARC_MODES.event` → `EV_NEXT = true` 뒤 일반전 한 판 (보상 그대로 · 무료) · **랜덤전** `random` (미러전과 같은 요금 · 서로 다른 무작위 덱).
-- **햄버거 `MENU`**: 퀘스트 · 업적 삭제 · 랭킹 / 전투기록 / 가방 / 패치노트 / 도움말 / 크레딧 따로 · 코드 입력은 환경설정 `#setCode` · 튜토리얼 · 인트로 만화 · 티어리스트 (`helpTierHtml` · TIER_SC) 는 도움말 안.
-- **전투 화면 R1 처럼**: `.hud.r1hud` (라운드 배지 · 단계 · `.r1acts` 에 EMOTE `#btnEmo` · 배속 `#speedSeg` · 스탯 `#btnStatsHud` · 설정 · 항복 `#btnQuit` · 타이머) · 아래 줄 상대 · 트레이는 흰색 · 자동 배치 버튼 「배치」 · 덮어쓰는 CSS 는 `/* ═══ R2.26 전투 화면 */` 블록 (!important · 예전 u2 남색 규칙을 덮는다) · 전장 덱 `.fdeck` 네모 40px.
-- **경쟁전 로비 R1 처럼**: `#screen-comp.r1c` · `renderComp` 의 `hero` (육각 `.hex` · TP 링 · 사다리 · `#cpStart` 금색) · 아래 규칙 · 보상 카드는 그대로.
-- 도감 능력치 줄을 누르면 1랭크 기준 (`s.statR1`) · 덱 추천: Lv.10 까지 추천 · 그 뒤 랜덤 덱 · 둘 다 `recRoll` 2초 연출.
-- 배치 카드: 바로 앞 배치 기회에 놓은 지후 (`S.lastPut[진영]`, `applyAct`) 는 `rollPool` 에서 뺀다 (덱에 그것뿐이면 그대로).
-- 뽑기 `CFG.GACHA` 전설 2.7 · 영웅 7 · 희귀 27.8 · 일반 62.5 · 일반 · 희귀 `ENH_SHARD` 2배 (초기화권 환급도 새 값 기준이라 예전에 싸게 올린 랭크를 초기화하면 더 돌려받는다 — 알고 둠).
-- 지후의 탑: `TOWER_LIVES` 2 · `towerPersona` 1층만 초보 · 5층부터 초고수 반반 · 10층부터 초고수 · 봇 덱은 같은 등급이면 TIER_SC 높은 지후 · 15층부터 `makeUnit` 이 봇 체력 · 공격력 ×(1 + 0.1 × (층 − 14)).
-- 개구리: 25% (랭크 6 27.5%) · 결과는 `S.fx` 의 `txt` → `renderField` 가 그 칸 위 `.fx-tiletxt` (배너 아님) · 이벤트 · 괴도로 오른 레벨은 그냥 레벨 (빈 함수 `frogSweep` 은 R2.36 정리 때 삭제).
-- 엔지니어 포탑 `c.tdecay` (20초 수명 · `stepUnit`) · EMP 패시브 `empDrain` · 수은 보호막 막대는 체력바 밖 (`.unit-hpbar-wrap` 에 붙여 `left = 체력 비율`) · 성검 현재 체력 5% + 레벨마다 1% · 괴도 `onStart` 예고장 · 랜턴 흡혈 대신 빔이 맞을 때 5 × 레벨.
-- **업데이트 알림 (웹 푸시)**: `pushAsk` (튜토리얼 끝 · 기존 유저 로비 한 번 `profile.pushAsk` · 환경설정 `#setPush`) → 허용하면 ◆`CFG.PUSH_DIA` (`profile.pushRw`) → `pushRegister` 가 firebase-messaging 토큰을 `push_tokens/<uid>` 에 (`CFG.PUSH_VAPID` 가 비어 있으면 저장 안 함) · `sw.js` push / notificationclick · **보내기**: 버전을 올린 업데이트 (잠수함 패치 제외) 를 배포한 뒤 사용자 PC 에서 `node tools/push-send.js --key <서비스 계정 JSON>` (제목 · 내용은 버전 · 패치노트에서 · `--dry` 로 기기 수만).
-- 글꼴은 Black Han Sans 그대로 (R2.26 에 리틱체 · 송명체를 시험했다가 사용자 요청으로 되돌림 — 다시 바꾸지 않는다).
-
-## 최근 변경 (R2.25 · 신규 지후 5종)
-- **케이크** `cake` (영웅 · 커뮤니티 Kaden · 사용자가 준 두 능력치 중 첫 줄 HP 2250 · ATK 120 · 3초 + 이동 1.8): `onHit` → [중독됨] `addict` (300초 · `addictX.by` · `dealDamage` 에서 그 케이크가 아닌 대상에게 −15%) · 체력 25% `cakeCall` → 맨 뒤 줄 조각 케이크 8기 (SUMMONS `cakeslice` · `sliceSteer` 다친 가장 가까운 아군에게 → 자기 현재 체력만큼 회복 → 사라짐).
-- **흡혈** `vampire` (영웅 · 사거리 5.7): [흡혈] 리워크 — 대상이 쓰러질 때까지 `vampTick` 0.2초마다 대상 최대 체력 2.2% · 대상 SP −2.2% · 자신 최대 체력 2.2% 회복 · 자신 최대 SP 2.2% 흡수 (build 3 · 직접 `u.sk` 에 채움) · 멈추고 공격 안 함 · 빔은 `FXC.beams`. (스킬 훅 `skill.hold(u)` 는 `afterHit` · `spGive` 에 남아 있지만 지금 쓰는 지후 없음)
-- **파멸** `ruin` (전설 · id 는 STATUS `doom` 천살성과 겹치지 않게): 11초 `ruinGo` → 레벨 −1 · `S.deck` 무작위 지후로 `A.transform(…, true)` (이번 라운드만) · 변이할 때 반경 10칸 공격력 4444% (`ruinBoom`) · Lv1 이면 대신 반경 10칸 **적 최대 체력 25%** + 소멸.
-- **탄핵** `impeach` (전설 · 공격 간격 1.5초는 내가 정함): `onDamaged` 적에게 맞은 횟수 18 → `impeachGo` 쉴드 1500 × 레벨 · 공격력 · 사거리 2배 · 모든 적 [도발] `taunt` 7초 (`aiSteerAndAttack` 이 `tauntX.by` 를 먼저 노린다).
-- **차원** `dimension` (전설 · R1 로직): 2연발 · 3번 뒤 [아공간] 3초 — **`u.realm` 층 번호**: `foes` · `friends` · `canTarget` · `dealDamage` · `physSolvePair` 가 같은 층만 본다 · [공포] `fear` 0.7초 (`aiSteerAndAttack` 맨 앞 · 공격 안 하고 도망). R1 아공간 초상화 `dimension_realm` 은 archive/v8.1 에서.
-- 새 상태 `addict` · `taunt` · `fear` · `realm` (`STATUS` · `FX_OF` · 도움말). 인포그래픽 extract.js 도 `--mute-audio`.
-- build 2: 덱 설정 정렬 `u2Sorted` — 칸 (등급 · 역할군) 안은 늘 출시 순 (`Object.keys(CHARS)` 순서 · 방향 `sortDir` 은 칸 순서만 · 이름순은 가나다).
-
-## 지난 변경 (R2.24 · 신규 지후 4종)
-- **불사조** `phoenix` (전설): `onLethal` → `phxLethal` 체력 1 + [불사조 쉴드] `u.phx` (350 × 레벨 · `dealDamage` 에서 수은 다음 · 일반 쉴드보다 먼저 · 깨지면 `phxBreak` 뒤 쓰러짐) → 3초 뒤 `phxRise` = `A.transform(u, 'phoenix2', lv, keepSlot)` (**배치 기록은 그대로** · 이번 라운드만) · 반경 4칸 넉백. **각성 불사조** `phoenix2` 는 숨은 항목 (`rankOf: 'phoenix'` → `makeUnit` 이 불사조 랭크로) · `phx2Attack` 6% [비행] `phxFly` (ghost · 적진 끝 → 우리 진영 맨 뒤 → 제자리) · 4% [업화] `phxBlaze` (12.6칸 · 화상).
-- **버섯** `mushroom` (영웅): `mushEat` · 최대 체력 +35% · 공격력 +12.5% 모두 **처음 최대 체력 · 공격력 기준 선형** (`u.msN`) · 독버섯은 1초마다 최대 체력 15% × 4 (합 60% · 사용자 문구 「15% 를 4번」으로 읽음).
-- **늑대** `wolf` (전설): `wolfTick` · 대상 없음 0.5초 → 무작위 적 등 뒤로 · `u.critP` (치명타 확률 · 부상보다 우선) · `u.critD` (치명타 피해 +) 는 `dealDamage` 범용 필드 · 순간이동 수는 배치 칸 `p.wf` (경기 내내 · 합체는 큰 쪽).
-- **기상캐스터** `weather` (전설 · 커뮤니티 Kaden · 출격제한 1): `wxSet` / `wxTick` · `WX` 폭염 (3초마다 모든 적 200% · 공격력 증가 없음 · 버프 `heat` 둔화 · `performAttack` 맨 앞에서 25% 로 `heatAlly` 사거리 안 자기 아군) · 태풍 (`A.line` 이 이제 관통탄 객체를 돌려준다 · `.fx-wx-obj` · 처음 맞은 적에서 사라진다 `ln.done`) · 낙뢰 (`fx-bolt`). 늑대 ATK 100 (출시 전 40 → 100).
-- 탄환 [최후의 탄환] 체력 손실 16 → 10% · 간격 0.6 → 0.25초.
-- build 4 **오프라인 모드**: `sw.js` 가 설치할 때 CORE (아이콘 · 효과 아이콘 · 효과음 · 만화 · 이모티콘 썸네일 · 약 2.2MB) 를 받고, 배경음악 (범위 요청 → 처음 한 번 통째로) · 큰 이모티콘 · 글꼴은 쓸 때 `rejhbt-r2-rt` 에 · **로컬 파일을 더하면 `python tools/sw_assets.py` 로 CORE 를 다시 만들고 `CACHE` 끝 숫자를 올린다**. 켤 때 서버에 못 붙으면 게스트는 바로 `offMode()` · 계정 기록이 있으면 `renderGate('offline')` 의 「오프라인으로 플레이」 → `OFF.on` · `body.off-mode` · 로비 `#offPill` · `online` 이벤트에 새로고침 안내 (서버와 맞추기는 기존 `bkWid` · `serverNewer`). 확인: `node tools/offline-test.js` (임시 서버 8781 → 끄고 새로고침 · 바깥 주소 모두 막음 · 소리 끔).
-- build 7: 부스트 하루 3번 · 30분 (`CFG.BOOST_*`) · 일반전 버튼 오른쪽 위 빨간 배지 (u2 `boostBadge` · `.u2-bb` 는 1초 타이머가 글자만) · 상점 빛나는 조각 가중치 절반 (`SHOP_ITEMS.glow*.w`) · 이벤트 등급 `EV_GRADE` [45, 35, 20] · 관통탄 `stepLines` 는 이제 `translate` 로 옮긴다 (처음 자리만 left/top). 렉 확인 `node tools/perf-typhoon.js` (헤드리스라 폰 GPU 렉은 안 보인다 · 상대 비교만).
-- build 5 **앱 다운로드**: 햄버거 `MENU` 「앱 다운로드」 → `appInstall()` (`beforeinstallprompt` 를 `APP.evt` 에 받아 두었으면 `prompt()` · 아니면 기기별 안내 dlg · 앱으로 실행 중이면 `appStandalone()` 「설치됨」). 예전 주소 `wwwsebon-cloud.github.io/JHBT` 에 설치된 앱은 오프라인이면 그 주소의 옛 사본 (5.7.6 무렵 · 10/2 도메인 이전 전) 이 뜬다 — 서버에서는 못 고친다 (지우고 jihoobattle.kr 에서 다시 설치).
-- build 2: 덱 설정 5열 (`gridTpl` · 긴 이름 `nmFs`) · 서버로 보내는 지후 id 는 `CID_RE` `^[a-z][a-z0-9_]{0,23}$` (예전 `^[a-z_]` 가 c4 를 뺐다 · `firestore.rules` 도 · 예전 규칙이면 `FB.oldIds` 로 다시). build 3: 태풍 0.6초 · 무작위 방향 · `A.line` 의 `home` · `turn` 살짝 유도 (`lineHome`) · 관통 · 낙뢰 2초 600% (build 6: 태풍 200% · 낙뢰 300% · 폭염 짜증 10% · **build 7 최종안**: 폭염 300% · 짜증 20% · 공격속도 −10% · 이동 −25% · 낙뢰 400% · 태풍 0.9초 · 맵 둘레 무작위 자리 → 맵 안 무작위 자리 · `turn` 0.2 · 0.6칸 · 맞을 때 `hitFx(…, false)` (예전 big = 큰 불꽃 + 화면 흔들림이 관통마다 겹쳐 렉)) · 늑대 HP 1450 · 1.25초 · `lifesteal` 0.2 · `gauge` · `wolfBlinkFx` (캔버스 줄기 `FXC.beams` 의 `c1 · w1 · c2 · w2`) · 불사조 ATK 110 · 각성 140.
-- 패치 스크립트로 `index.html` 을 고칠 때 **줄바꿈이 섞여 있다** (i/mixed) — 파이썬으로 통째로 읽고 쓰면 CRLF 가 LF 로 바뀌어 diff 가 2만 줄이 된다 (원래 줄바꿈을 지킬 것: `open(..., newline='')` 로 읽고 쓰기). **Edit 도구도 index.html 의 섞인 줄바꿈을 한쪽으로 바꿔 버린다** (R2.29) — index.html 은 `newline=''` 파이썬 치환으로 고친다.
-
-## 그 전 변경 (R2.23.1 · 밸런스)
-- EMP 파동 `empWave` 50 → 35% · 엑시노스 `gpuTick` 오르는 양 2배 (최대 50% 그대로) · 화염 공격력 140 → 120.
-- 탄환 공격력 135 → 100 · 사거리 6.2 → 6.4 · [최후의 탄환] `bulletLast` 간격 0.45 → 0.6초 · `bulletCost` 24 → 16% · 처치 회복 50 → 65%.
-
-## 그 전 변경 (R2.23)
-- **이벤트 모드** (예전 랜덤 이벤트를 갈아엎음 · 옛 목록은 `EV_OLD` 로 R2.6.1 패치노트에만): 일반전 로비 토글 (🎴 이벤트 모드 / 클래식) · 하트 `CFG.EV_LIVES` 4 · 보상 (승리 XP · 골드 · 부스트 ◆) ×`EV_REWARD` 1.3 · 친선전 · 아케이드 · 튜토리얼 · 벤치는 `evOn: false` (matchBase 기본도 false).
-- 짝수 라운드 `evRoll`: 등급 `EV_GRADE` [50, 35, 15] (양쪽 같다) → `evDeal` 카드 3장씩 (따로) → 봇은 `evBotPick` 바로 · 나는 `evShow` (#evPop · 15초 `EV_PICK_SEC` · 시간 초과 무작위 · S.fast / 리플레이는 바로 무작위).
-- 고른 이벤트 `S.ev[진영] = [{ id, g, c }]` → `evRecount` → `evN(진영, id)` = 수치 합 (%) · 덱 강화는 `'deckA:<id>'` · `'deckS:<id>'`. 이벤트 데이터 `EVENTS[id].v` = [브론즈, 실버, 골드] (0 = 그 등급엔 없음).
-- 적용: 체력 · 공격력 `evUnit` (전투 시작 · 하드코어는 `S.lives` 가 `S.maxLives` 일 때 · 소수정예는 배치 4기 이하) · 공격속도 `u.evAspd` → `evCombat` 버프 'ev' · 피의 갈증 `dealDamage` · 마력의 힘 `evSp(u)` (SP 를 채우는 곳마다 곱한다 · hit SP 가 소수가 될 수 있다) · 합체 / 합성마스터 `evMerge` (`levelUp` · 합체 뒤 · 소환은 `f: 'b'`).
-- build 2: 카드 화면 = 슬롯머신 (`evShow` · `.evx` · 등급 릴 → 카드 릴 3개를 WAAPI `strip.animate` 로 위에서 아래로 · 차례로 멈춤 · 효과음 `ev_tick` · `ev_land` · 도는 중 누르면 `a.finish()` · 상대 선택 `evMiniHtml` · 카드 앞면 `evFaceHtml` 과 릴 CSS 는 R2.36 정리 때 삭제) · 설명 줄은 사용자 요청으로 없음.
-- build 2 이벤트 13종 추가 (fast as f boi · 속전속결 · 레벨업 · 스피드 콤보 · 중앙 Good · 선봉대 · 천살성 · 단체 레벨업 · 모 아니면 도 · 지원요청 · 베테랑 · 평준화 · 자힐 · 약점공략) · 마력의 힘 실버 12 · 골드 25%. 고르는 순간 효과 (`ins`) 는 `evInstant` → `evSnap` (S.roundStart 다시) · 레벨업 `evRoundWin` (roundResult) · 자힐 `evTick` · 받는 피해 `evTaken` (약점공략 · 천살성) · 스피드 콤보 스택 `S.evf[진영].combo` (`evMerge`) · 베테랑 칸 `S.evf[진영].vet` (renderField `.tile.ev-vet`).
-- **배치 기회 (모든 게임 · build 2)**: 라운드마다 `CFG.DEPLOYS` 3 · 데스매치 `CFG.DM_DEPLOYS` 4.
-- 새 이벤트를 만들면 `EVENTS` · `evUnit` / `evCombat` / `evInstant` 등 적용 · `evBotPick` 의 W · 패치노트.
-
-## 그 전 변경 (R2.22.3)
-- 밸런스 8종: 모노리스 아군 충전 1.5% (`monoTick` 아군마다 초당 6) · DJ HP 1600 · EMP ATK 75 · 파동 50% · 달 2.2초 · 순풍 ATK 15 · 카우보이 골드 8% · 40~199 · 마피아 4.1초 · 랜턴 회복 빔 60% + `lifesteal: 0.3` (아케인과 같은 흡혈).
-
-## 그 전 변경 (R2.22.2)
-- 도둑 지후 리워크: HP 1200 · ATK 100 · 0.75초 · 이동 3 · 첫 공격만 [절도] (`customAttack` 은 `u.bg.done` 이면 false → 일반 공격) · 훔친 뒤 제자리 고정 (`steer`) 과 시간 SP (`burglarTick`) 삭제 · 훔친 스킬은 `type: 'hit'` 사본 (`need` = 주인 `t.need || sk.need` · 쿨타임 스킬은 `cd` 초 · SP 없는 핵미사일은 그대로) → `afterHit` 이 공격마다 SP +1.
-- build 2: 도둑 이동 3.3 · 스파이 변장한 뒤에도 치명타마다 또 변장 (`spyCrit` 이 스킬이 spy 가 아니면 `spyMorph` 를 바로 · 변장한 지후의 스킬도 그대로 = 이중 스킬) · C4 폭발 35% · 수은 1.5초 · 부하 지후 `goon` 1.25초.
-- build 3: 마피아 역할군 딜러 → 소환형 (배치 줄 `roleRow` · 봇 칸 고르기도 역할군을 본다).
-- build 4: 도둑 ATK 50 · 이동 2.8.
-- build 6 (잠수함 · 시뮬 · 인포그래픽 없이): 돌격 ATK 205 · 1.65초 · 돌진 기절 2초 기본 (랭크 6 +1초) · 포탑 ATK 40 · C4 사거리 7 · 일반 공격 탄 `fx-projectile.c4` + `shotSpeed` 10 · 아케인 HP 1050 · 물 2초 · [해일] 30% + 잃은 체력 20% · **도감 능력 설명 오버홀 54종** (핵심만 한두 문장 · 자세한 수치는 `CHAR_INFO` — 새 지후 설명도 이 기준으로: 황사 · 슬라임처럼).
-
-## 그 전 변경 (R2.22.1)
-- 코인 지후 시세 리워크 (`coinState` · `coinStep` · `COIN_RG` · `COIN`): 10분 칸 · 배율 **0.3 ~ 4배** · 장세 4개 (상승 · 하락 · 횡보 · 광기 · 몇 시간씩 · 바뀔 확률 `stay`) · 비율로 오르내림 (복리) · 칸마다 1% 펌핑 +30~80% / 떡락 −30~60% · 기준 0.85 쪽으로 약하게 끌림 (5년 시뮬 평균 1.00배) · 친선전 두 화면이 같아야 해서 **덧셈 · 곱셈 · 나눗셈만** (Math.log · exp 금지) · 마지막 칸 상태 `coinSt` 에서 이어서 계산 · 배너는 없음 (사용자 요청 · 수치만).
-- 도감 · 덱 공격력 칸 = 지금 시세 (`dexAtk(c)` · `enhStat` 이 코인이면 `coinMult()` 를 곱한다) · 랭크 6 [존버 정신] 피해 감소 최대 50%.
-- build 2 밸런스: 화염 HP 1440 · ATK 140 · 검 HP 1530 · 암살 HP 580 · ATK 156 (튜토리얼은 `TUT_STATS` 라 그대로).
-
-## 그 전 변경 (R2.22)
-- 밸런스: 비 ATK 35 → 25 · 콤보 공격마다 10 → 7% · 저격 ATK 1000 → 800 · 거리 감소를 **반대로** (`sniperCut` = 가까울수록 · 바로 앞 50% · 사거리 끝 0% · 서사: 근시 → 원시).
-- 랭크 6 고유능력 32종 추가 (`ENH_SKILL` · 도우미는 `reapFx` 앞 `// ── R2.22 랭크 6 고유능력 도우미 ──`): 비 SP 7 (유닛별 SP `u.need` → **`skNeed(u)`** · SP 를 읽는 곳은 `sk.need` 대신 이것) · 주사 새 상태 **`noheal` [회복 불가]** (`heal` · 유물 회복이 막는다 · 아이콘은 healDown) · 독 [신경독] `u.vAtk` (venom 중독 X 의 `v6` · 틱마다 +1 · 공격력 −0.5% · 중독이 끝나면 0) · 소믈리에 와인 랭크 6 분은 `wn6` (배치 기록 · 합체 · 반중력 분열에도) · 고고학자 `S.arch6[진영]` (낡은 → 다음 전설 · 클로버보다 먼저) · 홍명보 `t.ballBy` + `hongHold` · 랜턴 `lanAura` (buff `lanUp` · `lanDn` 0.5초씩 늘림) · 죠스 `jawsStack` (buff `jaws6`) · 개구리는 배치 단계라 `enhOf(side, 'frog')`.
-- build 3 (추가 패치 · 표시만): 도둑 지후 [절도] 뒤 머리 위에 스킬 주인 초상화 — `u.bgOwn = { id, src }` (도둑에게서 훔치면 원래 주인) · `bgPic(u)` 가 효과 아이콘 줄 레이어 `u.ufxEl` 안에 `.bg-pic` (아이콘이 있으면 `.status-icons:not(:empty) + .bg-pic` 로 그 위 · `ufxOf` 가 레이어를 새로 만들 때도) · 스파이 [변장] 뒤 `u.spyDis` → `unitEl` 이 `spy-dis` (보라 테두리 #5b2a6e · 진영은 체력바 색) · C4 공격 간격 6.2 → 4초 (서사: 인사를 「나중에 펑」으로 줄임) · **튜토리얼은 고정 수치 `TUT_STATS`** (화염 · 얼음 · 물 · 쉴드 체력 · 공격력 · 간격 · 사거리 · 이동 · 쉴드 · `makeUnit` 이 튜토리얼 판에서 CHARS 대신) + 봇 배율 `TUT_EBUFF` { 2: 1.35, 3: 1.8 } — 밸런스를 바꿔도 튜토리얼은 안 건드린다 (스킬 · 패시브 동작을 바꿀 때만 1~4라운드 승패를 시뮬로 확인).
-- build 4: 코인 도감 상세의 「반전 확률 55%」 줄 삭제 (반전은 R2.17.2 에 이미 삭제 · `coinMult` 는 반반).
-
-## 지난 변경 (R2.21.2)
-- 밸런스 11종: 충전 SP 2.5% · 반경 3.6칸 · [급속 충전] SP 13 · 태양 HP 2200 · 모노리스 아군 충전 3배 (`monoTick` 안 6 · 밖 3 %/초) · 사신 · 부활 SP 와 부활 대상에 소환체 · 분열체 포함 (부활은 `revL` 에 `ch` = 쓰러질 때 체력 · 공격력 · 분열 깊이 · 소환자로 되살린다) · 최후의 탄환 쓰러질 때까지 (`bulletLastEnd` 안 부름) · 24% · 고고학자 유물 45 · 30 · 20 · 5 (`RELIC_TIER` · 클로버는 전설 + 개쩌는 합 안에서) · 폭주족 최대 체력 75% · 소믈리에 ATK 115 · 포식 **전설** · ATK 100 · [포식]당 25% · 광폭화 ATK 170 · 3초.
-
-## 그 전 변경 (R2.21.1)
-- 밸런스 12종: DJ ATK 25 · 드래곤 ATK 50 · [비행] 5% · 불길 50% · 태양 ATK 20 · 블리자드 [빙결] 2초 · BB탄 ATK 140 · 모노리스 HP 2300 · 레이저 **최대 체력** × 레벨 × 12% (`monoFire`) · 왜곡 50% (`warpOn`) · ATK 50 · 저격 ATK 1000 · 7.5초 · 거리 감소 최대 50% (`sniperCut`) · 마탄 550% · 2.6초 · 탄환 ATK 135 · 슬라임 HP 1200 · 죠스 ATK 200.
-- 봇 조커 (모든 페르소나 · 왕초보 포함): `botDeployOne` 맨 앞에서 조커 카드가 나오면 무조건 합친다 · 변신 `botJoker` 는 배치마다 50% → **`beginCombat` 맨 앞에서 무조건** (등급 · 레벨 · TIER_SC 높은 지후로 · 친선전 · 리플레이 · 튜토리얼 · 샌드박스 제외).
-- 모바일 스크롤: 새 로비 세로 스크롤 칸 (`flex:1; min-height:0; overflow-y:auto` 인 칸) 에 `.u2-scroll` → 자식 `flex-shrink:0` — overflow:hidden 카드가 flex 안에서 줄어 글이 잘리고 스크롤이 안 됐다 (지후 상세). **새 스크롤 칸을 만들면 `class="u2-scroll"` 을 붙인다.**
+## 최근 변경 (R3.5 · 2026-11-24 · build 1~13) — 자세한 내용은 `docs/CLAUDE-history-2.md`
+- **토큰**: `TOK.BASE` [6, 5, 5, 6, 6, 7, 7] (그 뒤 7) · `UPS` [2, 3, 5, 8, 11] · 데스매치 추가 없음 (`DM` 0).
+- **랭크 개편 (build 2)**: 5랭크 · 비용 `RK5` · 옮기기 `rk5Move` (`p.rk5`) · 초기화권 우편 `rk5Mail` (`RK5.END` 12월 8일 · 우편 보상 `{ kind: 'item', key }`) · 봇 ±1 · 탑 봇 S · 15층부터 SSS.
+- **필살기 (build 2)** `// ═════════ R3.5 build 2 필살기` · `ULT` · `u.ult` · 남은 쿨타임 `p.ut` · `ultStep` (stepCombat 맨 앞) · 내 지후는 아래 카드 줄 (`#ubar` `.hu` · 준비 `.ur`) 을 눌러 `ultTap` · 카드 줄이 없으면 자동 · 봇 · 시뮬 자동 · 리플레이는 RP 라운드 `u` 기록 · 컷인 `ultCut` (모서리만 자르고 왼쪽 아래 띠 · 사용자 요청) · 친선전 · 성뿌수기 · 디펜스는 없음.
+- **유물**: 그림 `icons/art/<id>.png` · 카드 격자 + 상세 창 (`artDetail` · 다음 레벨 증가량 `artFx`) · **모은 개수 `profile.art`** (Lv n → n+1 에 n+1 개 · `artCum` · `artLv` · `artProg` · `artC` 변환) · 발굴 연출 `artDig` 2초.
+- **운영자 메시지** `bcShow` (`config/bcast` · 보낸 운영자 화면에도) · **접속 중인 유저** `pres/<uid>` (`presBeat` · `presOpen` · 소식 창 탭 · 접속 수도 `pres` 로) · 접속 소식 events `login`.
+- **업데이트 안내 창** `updDraw` (가로 2단 · 분류 탭 · 하이라이트 · 보상 칸 · 보상 `CFG.UPD_DIA` 300 + 곡괭이).
+- **봇 난이도 1~10 (build 6~8)**: `BOT_D` · 유저 MMR (`profile.mmr` · Elo · 기대 승률 65%) · `botDPick` · 봇 덱 통계 `botstats` (개발자 도구 「봇 통계」 · 규칙 게시 필요).
+- **지후 탭 리뉴얼 (build 9~13)**: 왼쪽 무대 `.u4-stg` · 오른쪽 카드 `.u4-cc` (등급색 `--rc` · `--u4-r0~r4`) · 아래 덱 트레이 `.u4-tray` · 필터 (등급 · 역할군 · 상태 · 검색 `u3q`) · 필살기 카드 `.u4-cc.ult::after` (아래 테두리 보라 그라데이션) · 모서리 2~4px (사용자: 각진 게 좋다).
+- 리워크 · 밸런스: 더블딜러 · 부두술사 · 낚시 ([회치기] `p.fk`) · 변이 (R1 로직) · 솔렘라멘트 (합체 토큰은 `r6Grow` 맨 앞 · [구원] Lv2 · [장례] Lv3) · 마탄 (`MG` · 표식 `mgmk` · 최대 체력 `p.mgp`) · 엑시노스 칩 주기 · 랭크 6 (= S) 고유능력 16종.
+- `buffSum` 은 스테인리스의 음수 `tk` 를 뒤집지 않는다.
 
 ## 미뤄 둔 일
-- 길드는 사용자 요청으로 아직 만들지 않았다 (만들 때: 생성 ●20,000 · 탈퇴 뒤 24시간 재가입 · 생성 금지 · 최대 5명 · 길드마스터 / 부길드마스터 · 폭파 · 길드 랭킹은 길드원 전투력 합). 전투력 · 리더보드 cp 탭 (R2.21) 자세한 내용은 docs/CLAUDE-history.md 「R2.21」.
+- 길드는 사용자 요청으로 아직 만들지 않았다 (만들 때: 생성 ●20,000 · 탈퇴 뒤 24시간 재가입 · 최대 5명 · 길드마스터 / 부길드마스터 · 폭파 · 길드 랭킹은 길드원 전투력 합). 전투력 · 리더보드 cp 탭 내용은 `docs/CLAUDE-history.md` 「R2.21」.
+- 「build 는 배포 때만 올리기 · 맘에 안 드는 것은 `docs/next.md` 에 쌓기」 규칙은 사용자가 보류 중 (2026-11-25).
