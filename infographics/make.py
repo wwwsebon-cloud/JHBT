@@ -28,6 +28,7 @@ JSON 형식
 티어표 (R2.17.2): { "type": "tierlist", "version", "date", "title", "subtitle", "note": "아래 설명",
   "tiers": [ { "t": "S", "ids": [ { "id": "fire", "wr": 64.5, "rarity": "common" } ] } ] } — 줄마다 티어 칸 + 초상화 (이름 · 표시 승률)
 "headline" (예전 상단 요약 카드) 는 더 이상 그리지 않는다 (있어도 무시).
+2026-11-24: 업데이트 노트는 기본이 덱 레이아웃 (흰 바탕 · 1080 × 1350 장 여러 개 · 아래 build_deck · "headlines" / "more" / "tiles") · 예전 남색 한 장은 "layout": "classic"
 """
 import base64
 import html
@@ -286,6 +287,8 @@ def build(d):  # → [html, ...] (장마다 하나)
         return build_new(d)
     if d.get('type') == 'tierlist':
         return build_tier(d)
+    if d.get('layout', 'deck') == 'deck':  # 2026-11-24 리디자인: 흰 바탕 · 4:5 카드 여러 장 (예전 한 장 레이아웃은 "layout": "classic")
+        return build_deck(d)
     w, cols = int(d.get('width', 1080)), int(d.get('cols', 1))
     style = f'--cols:{cols}; --tw:168px; --nw:{120 if cols == 1 else 140}px;'
     tiles, other = [], []
@@ -314,6 +317,149 @@ def build(d):  # → [html, ...] (장마다 하나)
         sh = f'<div class="sec"><div class="sh"><span class="k balance">BALANCE</span><h2>{e(lab)}{" (계속)" if k else ""}</h2><span class="n">{len({t["id"] for t in tiles})}</span></div>{legend(tiles) if k == 0 else ""}{tile_grid(ch)}</div>'
         body = head(d, page, [t['id'] for t in ch[:5]] if k else None) + (''.join(section(s, 2) for s in other) if k == 0 else '') + sh
         out.append(doc(d, w, body, style, 'dark'))
+    return out
+
+
+# ── 2026-11-24 덱 레이아웃 (흰 바탕 · 1080 × 1350 카드 여러 장) ──
+# 표지 (버전 · 오늘 바뀐 것 N가지) → 사건마다 한 장 (색 띠 · 큰 제목 · 한 줄 · 큰 숫자 칸 · 관련 지후) → 밸런스 (타일 2열 × 6줄) → 그 밖에 (작은 변경 7줄씩)
+# JSON 에 "headlines": [ { "title", "icon", "color": "orange|blue|purple|green|yellow|ink", "lead": "한 줄",
+#                          "points": [ { "big": "SSS", "small": "필살기" } ], "chars": ["fire", …] } ]   ← 큰 사건 (직접 고른다 · 6개까지 표지에)
+#             "more": [ { "icon", "title", "line" } ]   ← 그 밖의 작은 변경 (없으면 sections 의 타일이 아닌 항목 전부)
+# 밸런스 타일은 sections 의 tiles (+ "tiles": [...] 를 바로 써도 된다)
+DW, DH = 1080, 1350
+HL_C = {'orange': '#f04a14', 'blue': '#2f7de0', 'purple': '#8a4fe6', 'green': '#1fa64a', 'yellow': '#f2b01e', 'ink': '#121316'}
+HL_FG = {'yellow': '#121316'}  # 노랑 띠는 검은 글씨 (흰 글씨는 안 읽힌다)
+TILE_CSS = DARK[DARK.index('/* 밸런스 타일'):DARK.index('/* 신규 지후 카드')]
+DECK_CSS = r"""
+html { background:#fff; }
+body.wd { position:relative; width:1080px; height:1350px; overflow:hidden; padding:58px 64px 60px; display:flex; flex-direction:column; color:#121316;
+  background-color:#fff; background-image:linear-gradient(#f2f2f0 1px, transparent 1px), linear-gradient(90deg, #f2f2f0 1px, transparent 1px); background-size:36px 36px; }
+body.wd { --tb:#3cc23a; --ta:#f6b318; --tn:#e8392f; --ol:#121316; }
+.wtop { display:flex; align-items:center; gap:14px; font-size:21px; font-weight:800; color:#6b6d74; }
+.wtop b { color:#121316; font-weight:900; } .wtop .sp { flex:1; } .wtop .pg { padding:4px 14px; border:3px solid #121316; border-radius:10px; color:#121316; font-weight:900; background:#fff; }
+.bh { font-family:'Black Han Sans', 'Pretendard Variable', sans-serif; font-weight:400; letter-spacing:-.01em; }
+/* 표지 */
+.cv-v { margin-top:34px; font-size:236px; line-height:.86; color:#121316; text-shadow:10px 10px 0 #f04a14; }
+.cv-l { margin-top:34px; font-size:44px; }
+.cv-ls { margin-top:26px; display:flex; flex-direction:column; gap:16px; }
+.tk { display:flex; align-items:stretch; min-height:104px; border:5px solid #121316; border-radius:18px; background:#fff; box-shadow:0 7px 0 #121316; overflow:hidden; }
+.tk .c { flex:none; width:104px; display:flex; align-items:center; justify-content:center; background:var(--c); border-right:5px solid #121316; font-size:50px; }
+.tk .t { min-width:0; display:flex; flex-direction:column; justify-content:center; gap:4px; padding:12px 24px; }
+.tk .t b { font-size:42px; line-height:1.05; }
+.tk .t span { font-size:21px; font-weight:700; color:#6b6d74; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* 사건 한 장 */
+.hb { margin-top:30px; padding:40px 44px 42px; border:6px solid #121316; border-radius:26px; background:var(--c); color:var(--fg, #fff); box-shadow:0 11px 0 #121316; }
+.hb .ic { width:104px; height:104px; display:flex; align-items:center; justify-content:center; border:5px solid #121316; border-radius:20px; background:#fff; font-size:58px; box-shadow:0 5px 0 #121316; }
+.hb h1 { margin-top:26px; font-size:var(--hs, 112px); line-height:1.02; color:#fff; -webkit-text-stroke:var(--st, 10px) #121316; paint-order:stroke fill; word-break:keep-all; }
+.hb p { margin-top:18px; font-size:31px; line-height:1.35; font-weight:800; word-break:keep-all; }
+.hb.dk p { color:#121316; }
+.pts { flex:1; min-height:0; margin-top:38px; display:grid; grid-template-columns:repeat(var(--pc, 2), minmax(0, 1fr)); grid-auto-rows:minmax(0, 1fr); gap:24px; }
+.pt { min-width:0; display:flex; flex-direction:column; justify-content:center; padding:24px 28px; border:5px solid #121316; border-radius:22px; background:#fff; box-shadow:0 8px 0 #121316; }
+.pt b { display:block; font-size:var(--bs, 64px); line-height:1; color:var(--c); -webkit-text-stroke:var(--ps, 6px) #121316; paint-order:stroke fill; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:4px 2px; }
+.pt span { display:block; margin-top:14px; font-size:27px; line-height:1.3; font-weight:800; color:#3b3d44; word-break:keep-all; }
+.who { display:flex; flex-wrap:wrap; justify-content:center; gap:18px; padding-top:34px; }
+.who.solo { flex:1; align-content:center; gap:34px 30px; padding-top:20px; } .who.solo div { width:250px; } .who.solo .pp { width:220px; height:220px; border-width:7px; box-shadow:0 8px 0 #121316; } .who.solo small { font-size:30px; }
+.who div { width:118px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.who .pp { width:112px; height:112px; border-radius:50%; overflow:hidden; background:#fff; border:5px solid #121316; box-shadow:0 5px 0 #121316; }
+.who small { font-size:19px; font-weight:900; text-align:center; word-break:keep-all; line-height:1.15; }
+/* 밸런스 */
+.bh-t { margin-top:30px; display:flex; align-items:center; gap:20px; } .bh-t h2 { font-size:76px; line-height:1; } .bh-t .lg { margin:0; }
+.wd .tg { margin-top:30px; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-flow:row; gap:22px 26px; zoom:1.1; }
+.wd .lg span { font-size:22px; padding:6px 16px 5px; }
+/* 그 밖에 */
+.mo-t { margin-top:30px; font-size:76px; line-height:1; }
+.mo { margin-top:30px; display:flex; flex-direction:column; gap:16px; }
+.mo > div { display:flex; align-items:center; gap:22px; padding:16px 22px; border:4px solid #121316; border-radius:16px; background:#fff; box-shadow:0 5px 0 #121316; }
+.mo .i { flex:none; width:70px; height:70px; display:flex; align-items:center; justify-content:center; border-radius:14px; background:#f3f3f1; font-size:38px; overflow:hidden; }
+.mo .i.p { border:4px solid #121316; border-radius:50%; background:#fff; }
+.mo .x { min-width:0; } .mo .x b { display:block; font-size:34px; line-height:1.1; } .mo .x span { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:6px; font-size:21px; line-height:1.35; font-weight:700; color:#55575e; word-break:keep-all; }
+"""
+
+
+def wdoc(body):
+    css = FONTS + CSS + TILE_CSS + DECK_CSS
+    return f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="info-width" content="{DW}"><meta name="info-height" content="{DH}"><style>{css}</style></head><body class="wd">
+  {body}
+</body></html>"""
+
+
+def wtop(d, k, n):
+    return f'<div class="wtop"><b>RE : 지후배틀</b><span>{e(d["version"])} 업데이트</span><span class="sp"></span><span>{e(d["date"])}</span><span class="pg">{k} / {n}</span></div>'
+
+
+def hl_style(h):
+    c = h.get('color', 'orange')
+    fg = HL_FG.get(c)
+    return f'--c:{HL_C.get(c, c)};' + (f' --fg:{fg};' if fg else '')
+
+
+def deck_cover(d, hls, today=True):
+    rows = ''.join(f'<div class="tk" style="{hl_style(h)}"><span class="c">{e(h.get("icon", "✦"))}</span><div class="t"><b class="bh">{e(h["title"])}</b><span>{e(h.get("lead", ""))}</span></div></div>' for h in hls[:6])
+    return f'<div class="cv-v bh">{e(d["version"])}</div><div class="cv-l bh">{"오늘 " if today else ""}바뀐 것 {len(hls)}가지</div><div class="cv-ls">{rows}</div>'
+
+
+def deck_headline(h):
+    t = h['title']
+    hs = 112 if len(t) <= 7 else 92 if len(t) <= 10 else 74
+    pts = h.get('points', [])[:4]
+    longest = max((len(str(p.get('big', ''))) for p in pts), default=0)
+    bs = 120 if longest <= 3 else 100 if longest <= 5 else 78 if longest <= 7 else 62 if longest <= 9 else 50  # 칸을 꽉 채우게 (긴 값은 작게)
+    if h.get('chars'): bs = min(bs, 92)  # 아래 초상화 줄이 있으면 칸이 낮다
+    pc = 1 if len(pts) == 1 else 2
+    dk = ' dk' if h.get('color') == 'yellow' else ''
+    pt = ''.join(f'<div class="pt"><b class="bh">{e(str(p.get("big", "")))}</b><span>{e(p.get("small", ""))}</span></div>' for p in pts)
+    who = ''.join(f'<div><span class="pp">{pic(i)}</span><small>{e(short(NAMES.get(i, i)))}</small></div>' for i in h.get('chars', [])[:7])
+    return (f'<div class="hb{dk}" style="--hs:{hs}px; --st:{10 if hs > 80 else 8}px"><span class="ic">{e(h.get("icon", "✦"))}</span><h1 class="bh">{e(t)}</h1>'
+            + (f'<p>{e(h["lead"])}</p>' if h.get('lead') else '') + '</div>'
+            + (f'<div class="pts" style="--pc:{pc}; --bs:{bs}px; --ps:{7 if bs >= 90 else 6}px">{pt}</div>' if pt else '')
+            + (f'<div class="who{"" if pt else " solo"}">{who}</div>' if who else ''))
+
+
+def deck_more(rows, cont):
+    r = ''.join(f'<div><span class="i{" p" if m.get("id") else ""}">{pic(m["id"]) if m.get("id") else e(m.get("icon", "✦"))}</span><div class="x"><b class="bh">{e(m["title"])}</b>{f"<span>{e(m.get("line", ""))}</span>" if m.get("line") else ""}</div></div>' for m in rows)
+    return f'<div class="mo-t bh">그 밖에{" (계속)" if cont else ""}</div><div class="mo">{r}</div>'
+
+
+def deck_balance(chunk, all_tiles, cont):
+    return f'<div class="bh-t"><h2 class="bh">밸런스{" (계속)" if cont else ""}</h2>{legend(all_tiles) if not cont else ""}</div>{tile_grid(chunk).replace("grid-template-rows", "data-r")}'
+
+
+def build_deck(d):
+    hls = d.get('headlines') or []
+    tiles = list(d.get('tiles') or [])
+    items = []
+    for s in d.get('sections', []):
+        tiles += s.get('tiles', []) or []
+        items += s.get('items', []) or []
+    more = d.get('more')
+    if more is None:
+        more = [{'icon': it.get('icon'), 'id': it.get('id'), 'title': it['title'], 'line': ' · '.join(it.get('lines', []))} for it in items]
+    if not hls:  # 고른 사건이 없으면 표지는 작은 변경 앞 몇 개
+        hls = [{'title': m['title'], 'icon': m.get('icon') or '✦', 'lead': m.get('line', ''), 'color': c} for m, c in zip(more[:6], ['orange', 'blue', 'purple', 'green', 'yellow', 'ink'])]
+        more = more[6:]  # 표지에 나온 항목은 「그 밖에」 에 다시 넣지 않는다
+        cover_only = True
+    else:
+        cover_only = False
+    tiles = sorted(split_tiles(tiles), key=lambda t: TAG_ORDER.get(t.get('tag'), 2))  # 쪼갠 뒤 정렬 (하향 → 조정 → 상향 · 같은 지후는 그대로 붙어 있다)
+    pages = [('cover', None)]
+    if not cover_only:
+        pages += [('hl', h) for h in hls]
+    for i in range(0, len(tiles), 12):
+        pages.append(('bal', (tiles[i:i + 12], i > 0)))
+    for i in range(0, len(more), 7):
+        pages.append(('more', (more[i:i + 7], i > 0)))
+    out = []
+    for k, (kind, v) in enumerate(pages):
+        top = wtop(d, k + 1, len(pages))
+        if kind == 'cover':
+            body = deck_cover(d, hls, not cover_only)
+        elif kind == 'hl':
+            body = f'<div style="display:contents; {hl_style(v)}">{deck_headline(v)}</div>'
+        elif kind == 'bal':
+            body = deck_balance(v[0], tiles, v[1])
+        else:
+            body = deck_more(v[0], v[1])
+        out.append(wdoc(top + body))
     return out
 
 
