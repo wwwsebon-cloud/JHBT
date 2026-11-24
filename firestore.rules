@@ -302,6 +302,15 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
     }
 
+    // R3.5 build 8 봇 덱 통계 (익명 집계): botstats/<지후 id 또는 b_<덱 평균 티어 구간>> = { g1~g10 판 수 · w1~w10 봇이 이긴 판 수 } · 쓰기는 한 번에 키마다 +1 까지만 (increment) · 읽기는 운영자만
+    function bsStep(k) { return request.resource.data.get(k, 0) - (resource == null ? 0 : resource.data.get(k, 0)); }
+    match /botstats/{id} {
+      allow get, list: if isAdmin();
+      allow create, update: if request.auth != null && id.matches('^[a-z_][a-z0-9_]{0,23}$')
+        && request.resource.data.keys().hasOnly(['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9', 'g10', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10'])
+        && bsStep('g1') >= 0 && bsStep('g1') <= 1 && bsStep('g2') >= 0 && bsStep('g2') <= 1 && bsStep('g3') >= 0 && bsStep('g3') <= 1 && bsStep('g4') >= 0 && bsStep('g4') <= 1 && bsStep('g5') >= 0 && bsStep('g5') <= 1 && bsStep('g6') >= 0 && bsStep('g6') <= 1 && bsStep('g7') >= 0 && bsStep('g7') <= 1 && bsStep('g8') >= 0 && bsStep('g8') <= 1 && bsStep('g9') >= 0 && bsStep('g9') <= 1 && bsStep('g10') >= 0 && bsStep('g10') <= 1 && bsStep('w1') >= 0 && bsStep('w1') <= 1 && bsStep('w2') >= 0 && bsStep('w2') <= 1 && bsStep('w3') >= 0 && bsStep('w3') <= 1 && bsStep('w4') >= 0 && bsStep('w4') <= 1 && bsStep('w5') >= 0 && bsStep('w5') <= 1 && bsStep('w6') >= 0 && bsStep('w6') <= 1 && bsStep('w7') >= 0 && bsStep('w7') <= 1 && bsStep('w8') >= 0 && bsStep('w8') <= 1 && bsStep('w9') >= 0 && bsStep('w9') <= 1 && bsStep('w10') >= 0 && bsStep('w10') <= 1;
+    }
+
     // R3.1 실시간 동접 (로비 소식 줄): 접속자마다 1분마다 at 만 · 수를 세려면 list
     // R3.5 build 3: 접속 중인 유저 목록 (누구나 읽는다) pres/<uid> = { n 닉네임, lv, fav 대표 지후, fr 테두리, dk 덱 (5개 이하), at }
     match /pres/{userId} {
