@@ -22,7 +22,7 @@
 - 버전은 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움). 같은 날 이어지는 추가 패치는 `<meta name="jihoo-build">` +1.
 - **잠수함 패치 (R2.36 사용자 규칙)**: 사용자가 「잠수함 패치」라고 하면 **패치노트 · 인포그래픽에 쓰지 않고 build 번호도 올리지 않는다** (코드만 고쳐 커밋 · 머지 · 커밋 메시지 머리 「잠수함:」).
 - `index.html` 하나가 게임 전체 (빌드 없음). 로컬 테스트: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 테스트 함수는 `window.__rejhbt`).
-- `firestore.rules` 는 R2 전체 규칙 · 콘솔에는 파일 전체를 게시 (사용자가 직접).
+- `firestore.rules` 는 R2 전체 규칙 · 게시는 사용자 PC 에서 **`node tools/rules-deploy.js`** (서비스 계정 키 · 경로는 `문서/jhbt-app/rules.json` · `--dry` 로 차이만 · 서버와 같으면 안 함 · 서비스 계정에 「Firebase 규칙 관리」 역할) · 예전처럼 콘솔에 파일 전체를 붙여 넣어도 된다.
 - R1 (v8.1) 코드는 `archive/v8.1` 브랜치.
 - **사이트 배포 (GitHub Pages)**: `_config.yml` 의 `exclude` 로 게임에 안 쓰는 폴더 (인포그래픽 · tools · docs · app · 지후초상화 …) 를 뺀다 — 배포물이 225MB (그중 인포그래픽 204MB) 가 되자 Pages 배포가 10분 제한을 넘겨 실패했다 (R2.28 · R2.30). 큰 폴더를 새로 올리면 여기에 더한다. 배포 상태: `https://api.github.com/repos/wwwsebon-cloud/JHBT/actions/runs` · 사이트 버전 `curl jihoobattle.kr` 의 `jihoo-version`. **작업이 끝나면 `main` 으로 돌아와 둔다** (작업 브랜치에서 사용자가 `git push` 하면 upstream 없음 오류).
 
