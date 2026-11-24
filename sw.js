@@ -2,7 +2,7 @@
 // 항상 네트워크를 먼저 쓰고, 연결이 없을 때만 받아 둔 사본을 보여준다 (새 버전 배포가 늦게 보이는 일이 없다).
 // 설치할 때 게임에 꼭 필요한 파일(CORE · 약 2.5MB)을 미리 받아 두고, 배경음악 · 큰 이모티콘 · 글꼴처럼 큰 것은 한 번 쓸 때 받아 둔다 (RT).
 // 버전 확인 요청(?vc=)과 Firebase 는 건드리지 않는다. 파일을 더하면 python tools/sw_assets.py 로 CORE 목록을 다시 만든다.
-const CACHE = 'rejhbt-r2-core-6'; // 미리 받는 사본 (목록이 바뀌면 이름을 바꾼다 · 예전 사본은 지운다)
+const CACHE = 'rejhbt-r2-core-7'; // 미리 받는 사본 (목록이 바뀌면 이름을 바꾼다 · 예전 사본은 지운다)
 const RT = 'rejhbt-r2-rt'; // 쓸 때 받아 두는 사본 (버전이 바뀌어도 남긴다)
 const SHELL = ['./', 'manifest.webmanifest'];
 // ── CORE (tools/sw_assets.py 가 만든다 · 손으로 고치지 않는다) ──
@@ -73,6 +73,41 @@ const CORE = [
   'icons/fx/taunt.png',
   'icons/fx/warp.png',
   'icons/fx/wound.png',
+  'icons/art/bag.png',
+  'icons/art/battery.png',
+  'icons/art/bible.png',
+  'icons/art/cCtl.png',
+  'icons/art/cDeal.png',
+  'icons/art/cSup.png',
+  'icons/art/cTank.png',
+  'icons/art/capital.png',
+  'icons/art/card.png',
+  'icons/art/clock.png',
+  'icons/art/clover.png',
+  'icons/art/dice.png',
+  'icons/art/gaegi.png',
+  'icons/art/glasses.png',
+  'icons/art/insure.png',
+  'icons/art/jumadeung.png',
+  'icons/art/knee.png',
+  'icons/art/magic.png',
+  'icons/art/mat.png',
+  'icons/art/meat.png',
+  'icons/art/mk1.png',
+  'icons/art/mk2.png',
+  'icons/art/nanocam.png',
+  'icons/art/protein.png',
+  'icons/art/ring.png',
+  'icons/art/saving.png',
+  'icons/art/sbreak.png',
+  'icons/art/slipper.png',
+  'icons/art/sword.png',
+  'icons/art/tanghulu.png',
+  'icons/art/ticket.png',
+  'icons/art/victory.png',
+  'icons/art/wallet.png',
+  'icons/art/whet.png',
+  'icons/art/xp.png',
   'sfx/attack.mp3',
   'comic/1.png',
   'comic/10.png',
