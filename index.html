@@ -12956,8 +12956,8 @@ function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도
   return true;
 }
 DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.hp0 = f.hp; f.hp = Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: df2Pic(f), color: f.col, dfFoe: true }; });
-// 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 1~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
-const DF2_TOK = { atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3, sniper: 1, mutant: 1, nuke: 1, shield: 1, moon: 1, bubble: 1, stopj: 1, ice: 1, water: 1, cake: 1, sommelier: 1, thief: 1, god: 1, rot: 1, guardian: 1, titanium: 1, heal: 1, charge: 1, exynos: 1, pumpkin: 1, barrier: 1, frog: 1, typhoon: 1, nou: 1, portal: 1, hypno: 1, reaper: 1, stand: 1, tailwind: 1, spy: 1, growth: 1, hong: 1, joker: 1, antigrav: 1, gift: 1, slot: 1, monolith: 1, cowboy: 1, sans: 1, gunq: 1, volcano: 1, raincloud: 1, voodoo: 1 };
+// 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 2~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
+const DF2_TOK = { atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
 const df2Cost = id => DF2_TOK[id] || 2;
 const df2R1 = v => Math.round(v * 10) / 10;
 const df2Rew = hp => clamp(df2R1(0.1 + 0.4 * Math.log(Math.max(1, hp / 50)) / Math.log(120)), DF2.REW[0], DF2.REW[1]); // 처치 보상: 체력 비례 (로그 · 0.1 단위)
@@ -13051,7 +13051,7 @@ function df2Summon(id, t) { // 토큰을 내고 칸 t 에 새로 소환 (같은 
   const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || !CHARS[id]) return false; const cost = df2Cost(id);
   if (c.ros.length >= DF2.MAX) { if (!S.fast && !c.auto) banner(`지후는 ${DF2.MAX}기까지`); return false; }
   if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto) banner(`🪙 ${cost} 이 필요해요`); return false; }
-  const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); df2Put(r, q.x, q.y); e7Add('deploy');
+  const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); const nu = df2Put(r, q.x, q.y); e7Add('deploy'); df2Ovl(); if (nu.ovl && !S.fast && !c.auto) banner('출격제한 · 패시브 · 스킬 없음');
   if (!S.fast) { sfx('place'); df2Render(); } return true;
 }
 function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.sum = c.sum === id ? null : id; df2Render(); } // 타일 누르기: 고르기 · 다시 누르면 취소
@@ -13060,7 +13060,7 @@ function df2Up(u) { // 전장의 지후 업그레이드: Lv+1 (그 자리 · 체
   const c = S.cw, r = c.ros.find(x => x.uid === u.uid); if (!r) return false;
   if (r.lv >= maxLv(r.id)) { if (!S.fast && !c.auto) banner('최대 레벨'); return false; }
   const cost = df2UpCost(r.id, r.lv); if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto) banner(`🪙 ${cost} 이 필요해요`); return false; }
-  const x = u.x, y = u.y; c.tok = df2R1(c.tok - cost); df2Pull(r); r.lv++; df2Put(r, x, y); e7Add('merge'); if (!S.fast) { sfx('merge'); df2Render(); } return true;
+  const x = u.x, y = u.y; c.tok = df2R1(c.tok - cost); df2Pull(r); r.lv++; df2Put(r, x, y); df2Ovl(); e7Add('merge'); if (!S.fast) { sfx('merge'); df2Render(); } return true;
 }
 function df2Field(e) { // 전장 누르기 (전투 중 · 지후를 골랐을 때만): 내 칸을 누르면 (그 자리에 지후가 있어도) 새로 소환 · 칸 밖의 같은 지후를 누르면 업그레이드 (토큰이 남으면 계속 고른 채)
   const c = S.cw; if (!c.sum) return false;
@@ -13101,6 +13101,7 @@ function df2Tiles() { // 내 칸: 카드를 골랐으면 모두 밝게 (hot) · 
   f.querySelectorAll('.tile.ally').forEach(el => { el.style.opacity = ''; if (el.classList.contains('hot') !== hot) el.classList.toggle('hot', hot); });
 }
 function df2Render() { const c = S.cw; if (!c || S.fast) return; if (!D2B.cs) df2BarInit(); c._pk = null; df2BarHud(); df2Tiles(); cwHud(true); } // cwRender 대신
+function df2Ovl() { const c = S.cw, ov = overSet(c.ros); c.ros.forEach((r, i) => { const u = S.units.find(x => x.uid === r.uid && x.alive); if (u && !!u.ovl !== ov.has(i)) df2Reborn(r); }); } // 출격제한 (OVL_LIM) 다시 판정: 레벨 높은 순 → 먼저 놓은 순 · 바뀐 지후만 다시 만든다 (쓰러진 지후도 자리를 차지)
 function df2Reborn(r) { // 디펜스 규칙: 웨이브가 바뀌면 지후가 새로 태어난다 (쌓인 공격력 · 치명타 · 레벨 등 초기화) · 위치 · 체력 비율 · 스킬 게이지 · 필살기 쿨타임은 그대로 · 쓰러졌으면 소환 자리에서
   const old = S.units.find(x => x.uid === r.uid && x.alive);
   if (!old) { const q = tileXY(S.cw.me, r.t); df2Put(r, q.x, q.y); return; }
@@ -18477,7 +18478,7 @@ const PATCH_NOTES = [
     { title: '새 디펜스', items: [
       { icon: '🛡', name: '새 디펜스', tag: 'new', desc: '카드를 고르고 전장의 <b>3×5칸</b>을 누르면 소환 · 지후는 자유롭게 움직여요 · 최대 <b>15기</b> · 웨이브 <b>무한</b> · 10웨이브마다 <b>보스</b>' },
       { icon: '🚪', name: '디펜스 입구', tag: 'system', desc: '로비 오른쪽 아래 <b>디펜스</b> 탭 → 전투 시작 (⚡ 1)' },
-      { icon: '🏷', name: '디펜스 토큰표', tag: 'system', desc: '지후마다 디펜스 전용 비용 <b>1~15</b> (화력 · 광역 점수) · 원자 15 · 태양 12 · 낫 · 저주 · 제이슨 10' },
+      { icon: '🏷', name: '디펜스 토큰표', tag: 'system', desc: '지후마다 디펜스 전용 비용 <b>2~15</b> (화력 · 광역 점수) · 원자 15 · 태양 12 · 낫 · 저주 · 제이슨 10' },
       { icon: '🪙', name: '토큰', tag: 'system', desc: '시작 <b>5</b> · 처치 <b>0.1~0.5</b> (적 체력 비례) · 웨이브 클리어 <b>+0.2</b>' },
       { icon: '⬆', name: '업그레이드', tag: 'system', desc: '지후를 고른 채 <b>전장의 같은 지후</b>를 누르면 Lv+1 (비용 ×2씩) · 칸을 누르면 언제나 새로 소환 · 쓰러진 지후는 다음 웨이브에 다시' },
       { icon: '👾', name: '한철 15종', tag: 'new', desc: '흑화 한철은 기절 · 명중률 감소 · 가속 · 회복 · 소환 · 근접 공격 · 플라잉한철은 사거리 6칸 이상만 맞혀요' },
