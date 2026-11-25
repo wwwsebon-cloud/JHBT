@@ -14,6 +14,7 @@ import re, base64, io, colorsys, json, sys
 
 SIG_FIX = { 'typhoon': '#5fb8ff', 'volcano': '#e0471b,#3a2a26', 'mutant': '#7bd64a', 'raincloud': '#5b6178', 'dryice': '#8fdcff', 'dealer': '#7a1010,#e0262b', 'pknight': '#e8d36a', 'voodoo': '#5b1f8f', 'curse': '#a8703c,#e8202a', 'witch': '#ff4fe0', 'forge': '#e0b020', 'litmus': '#ff7a8c,#7f8cff', 'jason': '#3ecf6e',   # id: '#rrggbb' — 자동으로 뽑은 색이 그 지후의 색과 다를 때만
     'mercury': '#aab2c0',  # 은색 몸 + 빨간 뿔 → 자동은 빨강
+    'duelist': '#5d5a2c',  # R3.6 짙은 국방색 옷 → 자동은 회색
     'antigrav': '#b48cff',  # 회색 몸 + 연보라 구슬 → 자동은 회색
     'joker': '#ff4d4d,#ffa63d,#ffe14d,#4ad66b,#4da6ff,#a46bff',  # 예외: 무지개 그라데이션 (사용자 요청)
     'cake': '#e6010f,#ff8ccf', 'cakeslice': '#e6010f,#ff8ccf',  # 빨간 모자 + 분홍 크림 (색상이 가까워 자동으로는 한 색)

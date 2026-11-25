@@ -1,0 +1,248 @@
+From 903016aa4d9885f5034e9c527f2e4a36802c53b4 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Wed, 25 Nov 2026 09:55:50 +0000
+Subject: [PATCH] =?UTF-8?q?R3.6=20build=206:=20=EC=86=8C=EC=9A=B8=EC=8A=A4?=
+ =?UTF-8?q?=ED=8B=B8=EB=9F=AC=20=EB=84=88=ED=94=84=20=C2=B7=20=EA=B0=93?=
+ =?UTF-8?q?=EC=A7=80=ED=9B=84=20=EB=A6=AC=EC=9B=8C=ED=81=AC=20=C2=B7=20?=
+ =?UTF-8?q?=EC=82=AC=EC=9D=B4=EB=B3=B4=EA=B7=B8=20=C2=B7=20=EB=8F=84?=
+ =?UTF-8?q?=EA=B9=A8=EB=B9=84=EB=B6=88=20=EB=B2=84=ED=94=84?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ CLAUDE.md           |  3 +-
+ index.html          | 79 ++++++++++++++++++++++++++++-----------------
+ tools/pn-count.json |  2 +-
+ 3 files changed, 52 insertions(+), 32 deletions(-)
+
+diff --git a/CLAUDE.md b/CLAUDE.md
+index f851ff0..8e0e8a4 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -163,7 +163,8 @@
+ - 사용자에게 받는 요청은 갈래가 섞여 있을 수 있다 → 패치 스크립트를 갈래별로 나눠 실패 범위를 줄인다.
+ - UI 리디자인: 작은 것은 레퍼런스 이미지 → 게임 코드 → 스크린샷 (캔버스 생략) · 큰 것만 디자인 캔버스 (ui4 변수 · 글꼴 · 1280×720 그대로 · 한 장만).
+ 
+-## 최근 변경 (R3.6 · 2026-11-25 · build 1~3)
++## 최근 변경 (R3.6 · 2026-11-25 · build 1~6)
++- **build 6 밸런스**: 소울스틸러 영혼 공격력 +10% · 최대 체력 +2% (`SS.KA` · `KH`) · 여러 기면 `ssDrop` 이 맨 앞 한 기만 `rng()` 로 한 기에게 나눠 준다 · 디펜스 웨이브마다 `SS.LOSE` 75% 잃음 / 갓지후 토큰 4 · 트루폼 [심판의 빛] 삭제 → `godBeamTF` (`GOD_TF` · 폭 0.45칸 · 맵 끝까지 · `pure` 9999 · 공격속도 `ivOf` + `fixAspd` 1.6초) · `godRay*` 는 안 쓴다 / 사이보그 공격력 75 · `CB.T` 22 (랭크 S 20) · 광자포 뒤 `LOCK` · 가속 초기화 삭제 / 도깨비불 `DK.STEAL` 22%. 디펜스 비용 `DF2_TOK` 갓지후 25.
+ - **새 디펜스 (타워디펜스형 · 초안)** `// ═════════ R3.6 새 디펜스` · 설정 `DF2` · 적 도감 `DF2_FOES` (SUMMONS 에 등록 · 얼굴은 `df2Pic` SVG) · 구성 `df2Plan` · 한 스텝 `df2Step` (`dfStep` 맨 앞에서 `S.cw.v2` 로 갈라짐 · 예전 DF 코드는 남아 있지만 안 쓴다) · 적은 아군과 부딪히지만 `invMass 0` (무한 질량). build 2: 클리어 0.5 · 1~20웨이브 예산 ×0.6 → 1 (`DF2.EASY` · 적 수가 준다) · 두꺼운한철 `hpSet` 2,000 · 보스 쿨타임 2배. build 3: 클리어 1 · 처치 최소 0.2 · 10 · 20웨이브 보스 체력 절반.
+ - **build 3**: 도둑 리워크 (`burglarTake` · `onUnitDeath` 로 쓰러진 적의 스킬 · 기다리는 동안 `steer` 로 멈춤 · `burglarWait` 은신한 도둑만 남으면 풀림 · 예전 `burglarSteal` 은 안 쓴다) · 필살기 버프 `ULT_BUFF` 7.5 · 7.5 · −10% · `ULT_T` 5 · iPad 지후 탭: 로비 1초 `u2Render` 를 스크롤 · 터치 1.2초 안에는 쉰다 (`UI2.busy`).
+ - 화면은 성뿌수기 틀 (`cw` 클래스 · 왼쪽 패널) 이 아니라 **일반전 h4 화면 + `df2` 클래스** (`h4On` · `ubWant` 가 새 디펜스를 허용) · **전용 바 `#df2Hud`** (`df2BarInit` · `df2BarHud` · 토큰 · 지후 수 · 소환 타일 5개 · 숫자키 1~5 · Esc · 일반전 #pool · #tokBar 는 숨김 · `viewInsets` 가 바 높이만큼 전장을 올린다 · ⚠️ 일반전 부품을 가져다 쓰지 말 것 — 사용자: 새 게임처럼) → 전장 내 칸 (`df2Field`) = 소환 자리 · 지후는 자유롭게 움직인다 · 로스터 `c.ros` 최대 15 (쓰러진 지후 포함 · 다음 웨이브 부활) · 고른 타일 `c.sum` (⚠️ `c.pick` 은 예전 정비 시간 = 루프가 시간을 멈춘다) · 칸 = 언제나 새로 소환 · 칸 밖의 같은 지후를 누르면 업그레이드 `df2Up` (비용 × 2^(Lv−1)) · 적 체력 모두 ×3 (`DF2.HPA`) · 두꺼운한철부터는 거기에 ×2.5 (`DF2.HPK` · 구성 · 보상은 원래 체력 `hp0`) · **베타** (보상 · 리더보드 · 7일 퀘스트 없음 · 입장 무료 · 처음 한 번 안내 `df2Start` (`profile.dfBetaOk`) · 결과 `df2End` · 최고 기록은 `profile.dfBeta` — 정식 `dfBest` · `DF_RW` 와 따로) · 도감은 만난 적만 공개 (`profile.dfSeen` · 나머지는 실루엣 `DF2_SIL` · 운영자 `DEV.op` 는 전부 공개) · 디펜스 개발자 바 `df2Dev` (아무 지후 · 토큰 +50) 는 운영자 개발자 모드 `devOn()` 에서만 · 디펜스 전용 토큰 `DF2_TOK` · `df2Cost` (최소 2 · 표에 없으면 2) · 출격제한 (`OVL_LIM`) 은 로스터 기준 `df2Ovl` (소환 · 업그레이드마다 다시 판정 · 쓰러진 지후도 자리 차지) (측정 방법 · 전체 점수 `docs/defense-scores.md` · 새 지후를 더하면 같은 방법으로 재서 넣는다) · 라이프 5 · 위 기지 게이지 `#df2Base` (`#hudOdds` 숨김) · 충격파 `df2Quake` (내 유닛 15 초과 → 3초 → 1/3 · 쿨 5초) · 웨이브마다 새로 태어나기 `df2Reborn` (위험군 누적 초기화) · 체력 비례 ×0.25 (`pctD`) · 즉사 → 최대 체력 20% (`instaKill`) · 플라잉 공중 그리기 (`cvDraw0` · `df2FlyShadow`) · 보스 지후 10종 `DF2_BOSS` (10웨이브마다 무작위 · 스킬 `df2BossCast` · 2초 뒤 · 쿨타임 · 받는 피해 `df2Taken` (dealDamage) · SP 감소 `u.dfSpT` (evSp) · 그림 `DF2_PIC` (사용자 그림 24장 · 흰 배경 256 · 원본 `지후초상화/디펜스/<id>.png` · 이미 왼쪽을 보는 그림은 미리 좌우 반전 — 적은 전장에서 뒤집혀 그려진다) · 흑화 검은 삭제 (라이플이 15웨이브)) · 적 도감 `df2CodexOpen` (햄버거 메뉴 「적 도감」 · 서사 `DF2_STORY` · 메인 스토리 = 한철 마을 · 한철 1호 · 친철파) · 오른쪽 아래 SQUAD (#ubar) · 필살기 있음.
+diff --git a/index.html b/index.html
+index 27e3f16..d4ad212 100644
+--- a/index.html
++++ b/index.html
+@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
+ <html lang="ko">
+ <head>
+ <meta charset="UTF-8">
+-<meta name="jihoo-version" content="R3.6"><meta name="jihoo-build" content="5"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
++<meta name="jihoo-version" content="R3.6"><meta name="jihoo-build" content="6"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <title>RE : 지후배틀</title>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+@@ -9462,15 +9462,15 @@ const CHARS = {
+     tick(u, dt) { dlTick(u, dt); } },
+   soulsteal: { name: '소울스틸러 지후', rarity: 'legend', role: '딜러', hp: 1200, atk: 180, atkSpeed: 1.8, range: 4, speed: 1.6, tok: 3, portrait: PORTRAITS.soulsteal, sfx: 'shot', color: '#6a3fb8', /* R3.6 build 3 */
+     story: '나비와 영혼 골목에서 떨어진 영혼을 주워 모으는 소울스틸러 지후입니다. 쓰러진 지후에게서 빠져나온 영혼이 날아오면 그는 조금씩 커지는데, 자고 일어나면 다시 원래대로 줄어들어요. 그래서 그는 매일 아침 영혼이 다 어디 갔는지 찾으러 다닙니다. 소울콜러 지후가 영혼은 부르는 거지 훔치는 게 아니라며 항의했지만, 그는 주운 걸 신고하면 보상금이 나오냐고 되물었어요. 솔렘라멘트 지후는 그가 주운 영혼 중 하나가 자기 나비라며 돌려 달라고 하는데, 그는 나비와 영혼을 구분하지 못합니다. 그는 오늘도 영혼 분실물 센터를 차리려다 영혼을 또 잃어버렸어요.',
+-    passive: '적이 쓰러지면 <b>영혼</b>이 떨어져 <b>2초</b> 뒤 자신에게 들어옵니다. 영혼 1개마다 공격력과 최대 체력이 <b>15%</b> 오릅니다. 라운드가 끝나면 사라집니다.',
++    passive: '적이 쓰러지면 <b>영혼</b>이 떨어져 <b>2초</b> 뒤 자신에게 들어옵니다. 영혼 1개마다 공격력이 <b>10%</b> · 최대 체력이 <b>2%</b> 오릅니다. 라운드가 끝나면 사라집니다.',
+     onStart(u) { ssStart(u); }, onUnitDeath(u, d) { ssDrop(u, d); }, dfKeep(u, r) { ssKeep(u, r); } },
+   matrix: { name: '매트릭스 지후', rarity: 'legend', role: '서포터', hp: 1505, atk: 111, atkSpeed: 2, range: 5, speed: 1.6, tok: 3, portrait: PORTRAITS.matrix, sfx: 'shot', color: '#3fd06a', /* R3.6 build 3 */
+     story: '디지털 골목 서버실에서 태어난 매트릭스 지후입니다. 친구의 홀로그램을 만들어 옆에 세워 두는 재주가 있는데, 홀로그램이 진짜보다 성격이 좋아서 친구들이 서운해한대요. 홀로그램은 오래 켜 두면 TV 꺼지듯 사라지는데, 엑시노스 지후는 그게 자기 발열 탓이라고 우깁니다. 한번은 친구가 쓰러지자 홀로그램이 그 자리를 대신했는데, 아무도 눈치채지 못해서 진짜 친구는 지금도 자기가 진짜라고 증명하는 중이에요. 코인 지후가 버그 아니냐고 묻자 그는 기능이라고 대답했습니다. 그날 이후 디지털 골목의 공식 표어는 버그가 아니라 기능이에요.',
+     passive: '<b>[홀로그램]</b>이 붙은 아군이 쓰러지면 홀로그램이 그 아군을 대신합니다. 대신한 아군은 최대 체력과 공격력이 절반이고 스킬을 쓰지 못합니다.',
+     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[홀로그램]</b>. 무작위 아군 옆에 <b>8초</b> 동안 따라다니며 함께 공격하는 홀로그램을 만듭니다.', run(u) { mxCast(u); } } },
+-  cyborg: { name: '사이보그 지후', rarity: 'legend', role: '딜러', hp: 1500, atk: 55, atkSpeed: 2, range: 3.2, speed: 1.6, tok: 3, portrait: PORTRAITS.cyborg, sfx: 'shot', color: '#3a8fd8', /* R3.6 build 3 */
++  cyborg: { name: '사이보그 지후', rarity: 'legend', role: '딜러', hp: 1500, atk: 75, atkSpeed: 2, range: 3.2, speed: 1.6, tok: 3, portrait: PORTRAITS.cyborg, sfx: 'shot', color: '#3a8fd8', /* R3.6 build 3 */
+     story: '디지털 골목 수리점에 고장 난 채로 실려 온 사이보그 지후입니다. 부팅하는 데 시간이 오래 걸려서 싸움이 한참 진행된 뒤에야 겨우 몸이 바뀌어요. 변신만 하면 손에서 광자포까지 나가지만, 대부분의 싸움은 그가 부팅하는 동안 끝나 버립니다. 엔지니어 지후가 업데이트를 해 주겠다고 했는데, 업데이트 시간이 부팅 시간보다 길어서 둘은 아직 합의하지 못했어요. 신칸센 지후는 그를 태워 주려고 기다리다 출발 시간에 늦어 해고될 뻔했습니다. 그는 오늘도 싸움이 끝난 전장에서 혼자 멋지게 변신해요.',
+-    passive: '라운드 시작 <b>32초</b> 뒤 <b>사이보그</b>로 변신합니다. 변신하면 공격이 점점 빨라지고, 가끔 <b>광자포</b>를 쏩니다.',
++    passive: '라운드 시작 <b>22초</b> 뒤 <b>사이보그</b>로 변신합니다. 변신하면 공격이 점점 빨라지고, 가끔 <b>광자포</b>를 쏩니다.',
+     onStart(u) { cbStart(u); }, tick(u, dt) { cbTick(u, dt); }, ivOf(u) { return cbIv(u); }, customAttack(u, t) { return cbAttack(u, t); }, gauge(u) { return cbGauge(u); }, dfKeep(u, r) { cbKeep(u, r); } },
+ };
+ // ═════════ R3.5 build 2 필살기 (SSS 랭크 · 예전 랭크 12 자리) ═════════
+@@ -9587,12 +9587,20 @@ function levelupKill(u) { // R2.37 build 3 레벨업 지후: 처치하면 이번
+   const g = u.lv - (u.lv0 || (u.lv0 = lv0)); A.portrait(u, u.def.portraitLv[Math.min(2, Math.max(0, g))] || u.def.portrait);
+   if (!S.fast) { const t = fxAt('fx-lvtext', u.x, u.y - unitRadius(u), 900); t.textContent = `LEVEL ${u.lv}!`; sfx('merge'); } drawUnit(u);
+ }
+-function godBeam(u, t) { // R2.37 build 3 갓지후 일반 공격: 대상 뒤 2칸까지 일자 레이저 (바로 · 닿은 적 모두 공격력 100% · SP 는 처음 맞은 적 하나로) · 빛줄기는 캔버스 FXC.beams
++function godBeam(u, t) { if (u.def.tfBeam) return godBeamTF(u, t); // R2.37 build 3 갓지후 일반 공격: 대상 뒤 2칸까지 일자 레이저 (바로 · 닿은 적 모두 공격력 100% · SP 는 처음 맞은 적 하나로) · 빛줄기는 캔버스 FXC.beams
+   const ang = Math.atan2(t.y - u.y, t.x - u.x), cx = Math.cos(ang), cy = Math.sin(ang), len = dist(u, t) + 2 * CFG.CELL, hw = 0.32 * CFG.CELL; let first = true;
+   if (!S.fast) { const tf = u.lv >= 6; FXC.beams.push({ x0: u.x, y0: u.y, x1: u.x + cx * len, y1: u.y + cy * len, t0: performance.now(), ms: 220, c1: tf ? 'rgba(90,120,255,.5)' : 'rgba(60,150,255,.45)', w1: 16, c2: 'rgba(225,240,255,.98)', w2: 5 } /* R3.1 build 4: 파란색 */); }
+   const L = foes(u).filter(e => { if (!e.alive || e.st.dive > 0) return false; const dx = e.x - u.x, dy = e.y - u.y, k = dx * cx + dy * cy; return k >= 0 && k <= len + unitRadius(e) && Math.abs(dx * cy - dy * cx) <= hw + unitRadius(e); }).sort((a, b) => ((a.x - u.x) * cx + (a.y - u.y) * cy) - ((b.x - u.x) * cx + (b.y - u.y) * cy));
+   for (const e of L) { const done = dealDamage(u, e, effAtk(u), {}); if (!(done > 0)) continue; if (!S.fast) hitFx(u, e, false); if (first) { first = false; afterHit(u, done); } }
+ }
++// R3.6 build 6 갓지후 트루폼 일반 공격: 맵 끝까지 · 폭 0.45칸 · 닿은 적마다 9999 고정 피해 (opts.pure · 치명타 없음) · SP 는 처음 맞은 적 하나로 · 공격속도 1.6초 고정 (심판의 빛 삭제)
++const GOD_TF = { HW: 0.45, DMG: 9999, IV: 1.6 };
++function godBeamTF(u, t) {
++  const ang = Math.atan2(t.y - u.y, t.x - u.x), cx = Math.cos(ang), cy = Math.sin(ang), len = edgeDist(u.x, u.y, cx, cy), hw = GOD_TF.HW * CFG.CELL; let first = true;
++  if (!S.fast) FXC.beams.push({ x0: u.x, y0: u.y, x1: u.x + cx * len, y1: u.y + cy * len, t0: performance.now(), ms: 260, c1: 'rgba(90,120,255,.5)', w1: 22, c2: 'rgba(225,240,255,.98)', w2: 7 });
++  const L = foes(u).filter(e => { if (!e.alive || e.st.dive > 0) return false; const dx = e.x - u.x, dy = e.y - u.y, k = dx * cx + dy * cy; return k >= 0 && k <= len + unitRadius(e) && Math.abs(dx * cy - dy * cx) <= hw + unitRadius(e); }).sort((a, b) => ((a.x - u.x) * cx + (a.y - u.y) * cy) - ((b.x - u.x) * cx + (b.y - u.y) * cy));
++  for (const e of L) { const done = dealDamage(u, e, GOD_TF.DMG, { pure: true, noCrit: true }); if (!(done > 0)) continue; if (!S.fast) hitFx(u, e, false); if (first) { first = false; afterHit(u, done); } }
++}
+ function pierceShot(u, t, o = {}) { // 관통 공격 (R2.17): 대상 쪽으로 직진해 대상 뒤 2칸까지 · 닿은 적 모두 공격력 피해 · SP 는 처음 맞은 적 하나로
+   const ang = Math.atan2(t.y - u.y, t.x - u.x); let first = true; u.fly = (u.fly || 0) + 1;
+   A.line(u, u.x, u.y, ang, { speed: 22, hw: 0.32 * CFG.CELL, len: dist(u, t) + 2 * CFG.CELL, cls: 'fx-pierce' + (o.cls ? ' ' + o.cls : ''), onEnd: () => { u.fly--; },
+@@ -10817,9 +10825,9 @@ function fmSteer(u, dt) { u.desVx = u.desVy = 0; const C = CFG.CELL;
+ function ultHarvest(u) { const P = njFarm()[u.side]; P.hv = FRM.BOOM; let n = 0; for (const f of P.L) if (f.rip) { fmThrow(u, f); n++; }
+   if (!S.fast) { fxRing(u.x, u.y, 3 * CFG.CELL, 'rgba(240,200,60,.95)', 650, 10); dmgNum(u, '🌾 풍년 · 빵 ' + n, { crit: true }); } }
+ 
+-// 도깨비불 지후: 사거리 안 가까운 적 3기 [영속] 2.5초 (받는 피해를 자신 + 엮인 적이 똑같이 나눠 받는다 · dealDamage 의 dkSplit) → 풀 때 엮인 적마다 공격력 500% + 최대 체력 15% 갈취 (저장)
++// 도깨비불 지후: 사거리 안 가까운 적 3기 [영속] 2.5초 (받는 피해를 자신 + 엮인 적이 똑같이 나눠 받는다 · dealDamage 의 dkSplit) → 풀 때 엮인 적마다 공격력 500% + 최대 체력 22% 갈취 (저장)
+ //   → 2.5초 뒤 다친 아군 (자신 제외) 3기 무작위에게 깎인 체력에 비례해 나눠 준다 (다친 아군이 없으면 다음까지 모아 둔다) → 4초 뒤 다시
+-const DK = { N: 3, N6: 4, LINK: 2.5, HOLD: 2.5, CD: 4, DMG: 5, STEAL: 0.15, GIVE: 3 };
++const DK = { N: 3, N6: 4, LINK: 2.5, HOLD: 2.5, CD: 4, DMG: 5, STEAL: 0.22, GIVE: 3 }; /* R3.6 build 6: 갈취 15 → 22% */
+ function dkStart(u) { u.dk = { ph: 0, t: 0, L: [], v: 0, id: 0 }; }
+ function dkTick(u, dt) { const k = u.dk; if (!k) return;
+   if (k.ph === 1) { k.L = k.L.filter(e => e.alive); u.dkL = k.L.length ? k.L : null; if ((k.t -= dt) <= 0 || !k.L.length) dkCut(u); return; }
+@@ -10861,18 +10869,18 @@ function dlDuel(u) { const R = u.range + 6, v = enh6(u) ? { atk: 0.25, aspd: 0.0
+ function ultDraw(u) { u.dlCd = 0; njInR(u, u.range + 6).slice(0, 5).forEach(e => { dealDamage(u, e, effAtk(u) * 2, { skill: true });
+   if (!S.fast) FXC.beams.push({ x0: u.x, y0: u.y, x1: e.x, y1: e.y, t0: performance.now(), ms: 260, c1: 'rgba(255,170,60,.45)', w1: 10, c2: 'rgba(255,245,210,1)', w2: 3 }); }); }
+ 
+-// 소울스틸러 지후: 적 (소환체 포함) 이 쓰러지면 영혼 → 2초 뒤 들어온다 (소울스틸러마다 따로) · 영혼 1개당 공격력 · 최대 체력 +15% (기본값 기준 · 늘어난 만큼 체력도)
+-//   라운드가 끝나면 사라진다 (새 유닛) · 새 디펜스: 로스터 r.ss 에 남기고 웨이브가 바뀌어 새로 태어날 때 절반 (버림 · dfKeep)
+-const SS = { K: 0.15, T: 2, T6: 1 };
++// 소울스틸러 지후: 적 (소환체 포함) 이 쓰러지면 영혼 → 2초 뒤 들어온다 (영혼 수는 소울스틸러마다 따로) · 영혼 1개당 공격력 +10% · 최대 체력 +2% (기본값 기준 · 늘어난 만큼 체력도) · 소울스틸러가 여러 기면 영혼은 무작위 한 기에게
++//   라운드가 끝나면 사라진다 (새 유닛) · 새 디펜스: 로스터 r.ss 에 남기고 웨이브가 바뀌어 새로 태어날 때 75% 를 잃는다 (25% 남김 · 버림 · dfKeep)
++const SS = { KA: 0.1, KH: 0.02, T: 2, T6: 1, LOSE: 0.75 }; /* R3.6 build 6: 공격력 15 → 10% · 최대 체력 15 → 2% · 디펜스 웨이브마다 잃는 영혼 절반 → 75% */
+ function ssStart(u) { u.ss = 0; u.ssA = u.atk; u.ssH = u.maxHp; }
+ function ssHead(u) { if (!u.el) return; const tx = u.ss ? '👻' + u.ss : ''; if (u.ssTx === tx) return; u.ssTx = tx; let b = u.el.querySelector('.xlv.ss'); if (!b) { b = document.createElement('span'); b.className = 'xlv ss'; u.el.appendChild(b); } b.textContent = tx; drawUnit(u); }
+ function ssSet(u, n) { if (u.ssA == null) ssStart(u); n = Math.max(0, n | 0); const d = n - (u.ss | 0); if (!d) return; u.ss = n;
+-  u.atk = Math.max(1, u.atk + Math.round(u.ssA * SS.K * d)); const dh = Math.round(u.ssH * SS.K * d); u.maxHp = Math.max(1, u.maxHp + dh); u.baseMaxHp = Math.max(1, (u.baseMaxHp || u.maxHp) + dh);
++  u.atk = Math.max(1, u.atk + Math.round(u.ssA * SS.KA * d)); const dh = Math.round(u.ssH * SS.KH * d); u.maxHp = Math.max(1, u.maxHp + dh); u.baseMaxHp = Math.max(1, (u.baseMaxHp || u.maxHp) + dh);
+   if (dh > 0) u.hp += dh; else u.hp = Math.min(u.hp, u.maxHp); if (u.dfR) u.dfR.ss = n; ssHead(u); drawUnit(u); }
+-function ssDrop(u, d) { if (!u.alive || d.side === u.side || d.def.castle || S.phase !== 'combat') return; const n = enh6(u) && d.killer === u ? 2 : 1, T = enh6(u) ? SS.T6 : SS.T;
++function ssDrop(u0, d) { if (!u0.alive || d.side === u0.side || d.def.castle || S.phase !== 'combat') return; const SL = friends(u0).filter(a => a.def === u0.def); if (SL[0] !== u0) return; /* R3.6 build 6: 소울스틸러가 여러 기면 영혼은 무작위 한 기에게 (맨 앞 한 기만 나눠 준다) */ const u = SL.length > 1 ? SL[Math.floor(rng() * SL.length)] : u0, n = enh6(u) && d.killer === u ? 2 : 1, T = enh6(u) ? SS.T6 : SS.T;
+   if (!S.fast) njFx({ k: 'njsoul2', ms: T * 1000 / Math.max(1, S.speed || 1), x: d.x, y: d.y, tu: u, col: '#c9a4ff', n });
+   A.later(T, () => { if (u.alive) ssSet(u, (u.ss | 0) + n); }); }
+-function ssKeep(u, r) { const c = S.cw; if (r.ssW !== c.wave) { r.ss = Math.floor((r.ss || 0) / 2); r.ssW = c.wave; } u.dfR = r; if (r.ss) ssSet(u, r.ss); }
++function ssKeep(u, r) { const c = S.cw; if (r.ssW !== c.wave) { r.ss = Math.floor((r.ss || 0) * (1 - SS.LOSE)); r.ssW = c.wave; } u.dfR = r; if (r.ss) ssSet(u, r.ss); }
+ function ultSoul(u) { let n = 0; njInR(u, u.range + 6).slice(0, 5).forEach(e => { if (dealDamage(u, e, effAtk(u), { skill: true }) > 0) { n++; if (!S.fast) njFx({ k: 'njsoul', ms: 420, x: e.x, y: e.y, tu: u, col: '#c9a4ff' }); } });
+   if (n) ssSet(u, (u.ss | 0) + n); }
+ 
+@@ -10906,10 +10914,10 @@ function ultSwap(u) { let n = 0;
+     if (!S.fast) FXC.beams.push({ x0: x, y0: y, x1: o.x, y1: o.y, t0: performance.now(), ms: 360, c1: 'rgba(93,255,122,.4)', w1: 10, c2: 'rgba(230,255,235,1)', w2: 3 }); }
+   if (!S.fast) dmgNum(u, '💠 스왑 ' + n, { crit: true }); }
+ 
+-// 사이보그 지후: 라운드 시작 32초 뒤 (랭크 S 30초) 변신 → 체력 2000 · 0.55초 · 사거리 5.5칸 · 차징 1초 (랭크 S 없음) · 공격마다 공격속도 +20% (최대 0.2초) · 1초 쉬면 초기화 (다시 차징)
+-//   공격 5% 광자포 (대상 반경 1.8칸 200% · 1초 공격 못 함 · 가속 초기화) · 새 디펜스: 처음 소환한 때부터 32초 (로스터 r.cbT0 · 웨이브가 바뀌어도 이어진다)
++// 사이보그 지후: 라운드 시작 22초 뒤 (랭크 S 20초) 변신 → 체력 2000 · 0.55초 · 사거리 5.5칸 · 차징 1초 (랭크 S 없음) · 공격마다 공격속도 +20% (최대 0.2초) · 1초 쉬면 초기화 (다시 차징)
++//   공격 5% 광자포 (대상 반경 1.8칸 200% · 쏴도 공격 · 가속은 그대로) · 새 디펜스: 처음 소환한 때부터 22초 (로스터 r.cbT0 · 웨이브가 바뀌어도 이어진다)
+ //   필살기 [오버클럭 필드]: 자기 자리 반경 5칸 · 이번 라운드 · 안의 아군 공격속도 +15% (S.njZ · 중첩 없음)
+-const CB = { T: 32, T6: 30, HP: 2000 / 1500, IV: 0.55, IVMIN: 0.2, UP: 0.2, R: 5.5, CH: 1, IDLE: 1, P: 0.05, K: 2, AOE: 1.8, LOCK: 1, ZR: 5, ZA: 0.15 };
++const CB = { T: 22, T6: 20, HP: 2000 / 1500, IV: 0.55, IVMIN: 0.2, UP: 0.2, R: 5.5, CH: 1, IDLE: 1, P: 0.05, K: 2, AOE: 1.8, ZR: 5, ZA: 0.15 }; /* R3.6 build 6: 변신 32 → 22초 (랭크 S 30 → 20) · 광자포 뒤 공격불가 (LOCK) · 가속 초기화 삭제 */
+ function cbStart(u) { u.cb = { on: false, t0: S.time, ch: 0, rdy: false, n: 0, last: -9 }; }
+ const cbT = u => enh6(u) ? CB.T6 : CB.T;
+ function cbOn(u) { const c = u.cb, quiet = S.time - c.t0 > cbT(u) + 0.5; c.on = true; c.rdy = !!enh6(u); c.ch = 0; c.n = 0; c.last = S.time;
+@@ -10922,7 +10930,7 @@ function cbTick(u, dt) { const c = u.cb; if (!c) return;
+   if (S.time - c.last > CB.IDLE) { c.n = 0; if (!enh6(u)) { c.rdy = false; c.ch = 0; u.cd = Math.max(u.cd, 1); } } }
+ function cbIv(u) { const c = u.cb; return c && c.on ? Math.max(CB.IVMIN, CB.IV * (u.atkSpeed / 2) / (1 + CB.UP * c.n)) : u.atkSpeed; }
+ function cbAttack(u, t) { const c = u.cb; if (!c || !c.on) return false; c.n++; c.last = S.time; if (rng() >= CB.P) return false;
+-  c.n = 0; c.last = S.time + CB.LOCK; u.cd += CB.LOCK; const R = CB.AOE * CFG.CELL, a = effAtk(u) * CB.K;
++  const R = CB.AOE * CFG.CELL, a = effAtk(u) * CB.K;
+   foes(u).forEach(e => { if (Math.hypot(e.x - t.x, e.y - t.y) <= R + unitRadius(e)) dealDamage(u, e, a, { skill: true, lite: e !== t }); });
+   if (!S.fast) { FXC.beams.push({ x0: u.x, y0: u.y, x1: t.x, y1: t.y, t0: performance.now(), ms: 320, c1: 'rgba(80,200,255,.5)', w1: 18, c2: 'rgba(235,252,255,1)', w2: 5 }); fxRing(t.x, t.y, R, 'rgba(90,210,255,.95)', 480, 9); dmgNum(u, '⚡ 광자포', { crit: true }); shake(false); }
+   return true; }
+@@ -10989,11 +10997,9 @@ Object.defineProperty(CHARS, 'phoenix2', { enumerable: false, value: { name: '
+   steer(u) { if (!u.pf) return false; u.desVx = u.desVy = 0; return true; }, // [비행] 중에는 직접 날아간다 (공격도 안 한다)
+   tick(u, dt) { if (u.pf) phxFly(u, dt); } } });
+ 
+-CHARS.god.trueForm = { ...CHARS.god, name: '갓지후 트루폼', atk: 160, range: 7, portrait: PORTRAITS.god_true, color: '#fff0a0', // R2.17: Lv5 (R3.3 build 3 · 예전 Lv6) 가 되면 각성 (makeUnit 이 고른다 · 도감에는 없다)
+-  passive: '[트루폼] 일반 공격 사거리와 공격력이 <b>100%</b> 증가합니다. 일반 공격은 대상 뒤 <b>2칸</b>까지 관통합니다.',
+-  skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[심판의 빛]</b>. 그 자리에 멈춰 적진 끝까지 직진하는, 폭이 자신의 <b>1.5배</b>인 레이저를 <b>3초</b> 동안 쏩니다. 레이저에 닿아 있는 적은 <b>0.25초</b>마다 공격력의 <b>99999%</b> 피해를 입습니다.', run(u) { godRay(u); } },
+-  steer(u) { if (!u.gr) return false; u.desVx = u.desVy = 0; return true; }, // 레이저를 쏘는 동안 멈춘다 (공격도 안 한다)
+-  tick(u, dt) { if (u.gr) godRayTick(u, dt); } };
++CHARS.god.trueForm = { ...CHARS.god, name: '갓지후 트루폼', atk: 160, range: 7, portrait: PORTRAITS.god_true, color: '#fff0a0', tfBeam: true, fixAspd: true, atkSpeed: GOD_TF.IV, ivOf(u) { return GOD_TF.IV; }, /* R3.6 build 6: 공격속도 1.6초 고정 · 맵 끝까지 9999 고정 피해 레이저 */ // R2.17: Lv5 (R3.3 build 3 · 예전 Lv6) 가 되면 각성 (makeUnit 이 고른다 · 도감에는 없다)
++  passive: '[트루폼] 사거리가 <b>100%</b> 증가하고 공격속도가 <b>1.6초</b>로 고정됩니다. 일반 공격은 더 넓은 레이저가 되어 <b>맵 끝까지</b> 관통하고, 닿은 적마다 <b>9999</b> 고정 피해를 줍니다.',
++  /* R3.6 build 6: [심판의 빛] 삭제 (godRay · godRayTick 은 안 쓴다) */ };
+ 
+ // 소환체 (뽑기 · 덱에는 없다 · 네크로맨서가 싸우는 중에 불러낸다)
+ const CASTLE_PIC = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="#fff"/><g fill="#9aa2b6" stroke="#1b2033" stroke-width="8" stroke-linejoin="round"><path d="M52 212V104h152v108z"/><path d="M36 104V60h22v18h18V60h22v44zM158 104V60h22v18h18V60h22v44z"/><path d="M98 104V84h16v12h28V84h16v20z"/></g><path d="M108 212v-46a20 20 0 0 1 40 0v46z" fill="#4a3320" stroke="#1b2033" stroke-width="8" stroke-linejoin="round"/><g fill="#1b2033"><rect x="72" y="128" width="14" height="26" rx="5"/><rect x="170" y="128" width="14" height="26" rx="5"/></g><path d="M128 18v48" stroke="#1b2033" stroke-width="8" stroke-linecap="round"/><path d="M130 20l36 11-36 13z" fill="#e5322d" stroke="#1b2033" stroke-width="6" stroke-linejoin="round"/></svg>'); // R2.33 성뿌수기: 성 그림 (SVG)
+@@ -11011,11 +11017,11 @@ const SUMMONS = {
+ // 도감 상세 수치 (R2.4): 설명(passive · skill.desc)은 쉽게 · 숫자는 여기에 [항목, 값] — 수치를 바꾸면 같이 고친다
+ const CHAR_INFO = {
+   farmer: [['밭', '게임 내내 남는다 · 진영마다 15개까지 · 빵이 없을 때 10초마다 빵이 자란다 (다 자란 빵을 수확해야 다시 자란다)'], ['[수확]', '다 자란 빵이 있는 밭으로 가서 0.5초 멈춤 · 체력 비율이 가장 낮은 아군 공격력 180% 회복 · 토큰 0.3'], ['이동', '다 자란 빵이 있으면 밭으로 (가는 중에도 공격) · 없으면 적에게'], ['밭 근처', '반경 1.5칸 · 받는 피해 −20%'], ['검기', '근접으로 칠 적이 없을 때 · 공격 간격 1.7초 · 사거리 7칸 · 공격력 20%'], ['일반 공격', '근접 · 공격력 100% · 7초']],
+-  wisp: [['[영속]', '사거리 안 가까운 적 3기 · 2.5초 · 받는 피해를 자신과 엮인 적들이 똑같이 나눠 받는다'], ['풀기', '엮인 적마다 공격력 500% 피해 + 최대 체력 15% 갈취 (저장)'], ['나눠 주기', '풀고 2.5초 뒤 · 다친 아군 (자신 제외) 3기 무작위 · 깎인 체력에 비례해 회복 · 다친 아군이 없으면 다음까지 모아 둔다'], ['다시', '나눠 준 뒤 4초'], ['일반 공격', '공격력 100% · 2초']],
++  wisp: [['[영속]', '사거리 안 가까운 적 3기 · 2.5초 · 받는 피해를 자신과 엮인 적들이 똑같이 나눠 받는다'], ['풀기', '엮인 적마다 공격력 500% 피해 + 최대 체력 22% 갈취 (저장)'], ['나눠 주기', '풀고 2.5초 뒤 · 다친 아군 (자신 제외) 3기 무작위 · 깎인 체력에 비례해 회복 · 다친 아군이 없으면 다음까지 모아 둔다'], ['다시', '나눠 준 뒤 4초'], ['일반 공격', '공격력 100% · 2초']],
+   duelist: [['일반 공격', '총 · 사거리 5.9칸 · 1.6초'], ['베기', '적이 1.4칸 안에 오면 · 135° · 반경 1.8칸 · 공격력 180% · 입힌 피해 40% 회복 · SP 1.5 · 4.3초마다'], ['베기 뒤', '0.8초 공격하지 않는다'], ['[최후의 결전]', 'SP 13 · 사거리 안 아군 (자신 포함) 공격력 +25% · 5초']],
+-  soulsteal: [['영혼', '적 (소환체 포함) 이 쓰러지면 2초 뒤 들어온다 · 소울스틸러마다 따로'], ['영혼 1개', '공격력 +15% · 최대 체력 +15% (늘어난 만큼 체력도)'], ['초기화', '라운드가 끝나면 · 디펜스는 웨이브가 바뀔 때 절반 (버림)']],
++  soulsteal: [['영혼', '적 (소환체 포함) 이 쓰러지면 2초 뒤 들어온다 · 소울스틸러가 여러 기면 무작위 한 기에게만'], ['영혼 1개', '공격력 +10% · 최대 체력 +2% (늘어난 만큼 체력도)'], ['초기화', '라운드가 끝나면 · 디펜스는 웨이브가 바뀔 때 75% 를 잃음 (25% 남김 · 버림)']],
+   matrix: [['[홀로그램]', 'SP 4 · 무작위 아군 (홀로그램이 없는 아군 먼저 · 자신 제외) · 8초 · 노릴 수 없고 피해를 받지 않는다 · 유닛으로 세지 않는다'], ['홀로그램 공격', '주인의 일반 공격 (공격력 · 공격 간격 · 사거리) · 홀로그램 자리에서'], ['대체', '주인이 쓰러지면 홀로그램 자리에 다시 · 최대 체력 · 공격력 50% · 스킬 없음']],
+-  cyborg: [['평소', '체력 1500 · 공격력 55 · 2초 · 사거리 3.2칸'], ['[변신]', '라운드 시작 32초 뒤 · 그 라운드만 · 체력 2000 · 0.55초 · 사거리 5.5칸 · 디펜스는 처음 소환하고 32초 뒤부터 끝까지'], ['차징', '공격을 시작하려면 1초 · 1초 동안 공격하지 않으면 다시'], ['가속', '공격마다 공격속도 +20% · 최대 0.2초'], ['광자포', '공격의 5% · 대상 반경 1.8칸 공격력 200% · 그 뒤 1초 공격하지 않고 가속 초기화']],
++  cyborg: [['평소', '체력 1500 · 공격력 75 · 2초 · 사거리 3.2칸'], ['[변신]', '라운드 시작 22초 뒤 · 그 라운드만 · 체력 2000 · 0.55초 · 사거리 5.5칸 · 디펜스는 처음 소환하고 22초 뒤부터 끝까지'], ['차징', '공격을 시작하려면 1초 · 1초 동안 공격하지 않으면 다시'], ['가속', '공격마다 공격속도 +20% · 최대 0.2초'], ['광자포', '공격의 5% · 대상 반경 1.8칸 공격력 200%']],
+   fire: [['일반 공격', '광역 · 대상 주변 반경 1.2칸'], ['[소각]', 'SP 3 · 대상 하나에게 [화상]'], ['[화상]', '4초 · 1초마다 공격력의 25% (4번) · 중첩 가능']],
+   ice: [['둔화', '일반 공격 · 5초 · 이동속도 −70% · 다시 맞으면 시간만 새로'], ['대상', '느려지지 않은 가장 가까운 적 먼저 (모두 느려졌으면 보통 대상)']],
+   assassin: [['순간이동', '시작 2초 뒤 · 가장 먼 적의 뒤'], ['[은신]', '1초'], ['첫 공격', '대상 하나 · 공격력의 900%']],
+@@ -11086,7 +11092,7 @@ const CHAR_INFO = {
+   lament: [['탄약', '산나비 5 · 죽은나비 5 · 번갈아 · 둘 다 0 이면 재장전 1.5초'], ['일반 공격', '폭이 넓고 대상 뒤 2.5칸까지 관통 · 공격력 100%'], ['산나비', '[침잠] +2 · 죽은나비 1개 장전'], ['죽은나비', '그 공격의 [침잠] 피해 +20%'], ['[침잠]', '최대 30 · 피해를 받을 때마다 20% (최소 1) 소모 · 1중첩당 8 × 레벨 배율 고정 피해'], ['[애도]', '40% + 남은 산나비 1개마다 20% · 고정 피해 1타 공격력 50% (산나비 3개마다 +20%) · 그 공격 [침잠] 2배'], ['[합체]', '합체로 레벨이 오르면 토큰 1'], ['[구원]', 'Lv2 부터 · 2번 공격마다 공격 간격 −0.05초 (최대 8중첩) · 1.5초 안 쏘면 사라짐'], ['[장례]', 'Lv3 부터 · 한쪽 탄이 0 → 공격 간격 0.9초 · 적은 쪽 탄 4개 보충 · 3초 안 쏘거나 탄이 다 떨어지면 재장전'], ['[죽음을 찾는 자]', '50% + 적은 탄이 5보다 모자란 1개마다 10% · 3번 더 (공격력 30%) · [침잠] 소모 없이 절반'], ['[죽은 나비의 장례식]', '[침잠] 12 이상 → 8 소모 · 피해 2배 · [죽음을 찾는 자] 6회 확정'], ['모드 · 흰', '처치 뒤 다음 발 산나비 · 재장전 때 죽은나비 → 산나비 (처치 − 1 · 2~4)'], ['모드 · 검', '재장전 때 산나비 → 죽은나비 (4 − 처치 · 0~3)'], ['모드 · 슬픔', '죽은나비 3개 이상이면 1개 더 써서 [침잠] +1']],
+   soulcaller: [['사거리', '2칸 = 궤도 반지름 · 가장 가까운 적과 이만큼 떨어져 멈춘다'], ['영혼 수', 'Lv1 1개 · Lv2~4 2개 · Lv5 3개'], ['공전', '주기 2.3초 · 반지름 2칸 · 영혼 크기는 몸의 절반'], ['영혼 피해', '공격력 100% (같은 영혼은 같은 적을 한 바퀴에 한 번)'], ['받는 피해 감소', '공전 중인 영혼 1개당 5% (검은 영혼 포함 · 최대 90%)'], ['검은 영혼', '아무 유닛이 죽을 때마다 1개 · 5초 유지 · 공격력 150% · 한 번에 최대 4개 (꽉 차면 추가되지 않음)'], ['공격', '하지 않는다 (가장 가까운 적에게 다가간다)']],
+   laser: [['공격속도', '어떤 효과로도 변하지 않는다'], ['차징', '3초 (대상이 죽거나 6칸 밖으로 나가면 다시 처음부터)'], ['레이저', '0.2초마다 공격력 100% · 치명타 없음'], ['피해 증가', '쏜 시간 1초마다 +35% (선형)'], ['끊기는 경우', '대상 사망 · 대상이 6칸 밖 · 기절 등 행동 불능 → 다시 차징 · 피해 증가 초기화']],
+-  god: [['관통', '대상 뒤 2칸까지 · 닿은 적 모두 공격력 100%'], ['트루폼 (Lv5)', '공격력 160 · 사거리 7 (기본의 2배) · 체력 그대로'], ['[심판의 빛]', 'SP 4 (트루폼) · 3초 · 0.25초마다 공격력 99999% · 폭 = 몸 지름의 1.5배 · 적진 끝까지 · 쏘는 동안 멈춘다 · 기절하면 끊긴다']],
++  god: [['관통', '대상 뒤 2칸까지 · 닿은 적 모두 공격력 100%'], ['트루폼 (Lv5)', '사거리 7 (기본의 2배) · 체력 그대로'], ['레이저 (트루폼)', '공격속도 1.6초 고정 · 폭 0.45칸 · 맵 끝까지 관통 · 닿은 적마다 9999 고정 피해 (받는 피해 감소 · 쉴드 무시 · 치명타 없음)']],
+   archaeo: [['발굴', '라운드 시작 5초 (움직이지 않고 공격하지 않는다 · 기절이면 멈춘다)'], ['등급 확률', '낡은 45% · 평범한 30% · 전설 20% · 개쩌는 5%'], ['낡은', '반지 공격력 +4% · 운동화 이동속도 +10% · 방패(였던 것) 적 받는 피해 +5% · 보호막 쉴드 50 · 방탄조끼 받는 피해 −5%'], ['평범한', '반지 +8% · 방패 +10% · 소리굽쇠 초당 10 회복 · 방탄조끼 −10% · 네잎클로버 다음 라운드 전설급 이상 · 에너지드링크 초당 SP 0.25 · 운동화 +20%'], ['전설', '괘종시계 적 4초 행동 불능 · 반지 +25% · 방패 +20% · 소리굽쇠 초당 25 · 방탄조끼 −25% · 에너지드링크 초당 SP 0.4 · 보호막 쉴드 200 · 토템 15% 부활 (아군당 1회)'], ['개쩌는', '괘종시계 7초 · 장난감 (공격력 +20% · 받는 피해 −20% · 적 받는 피해 +20% · 초당 15 회복 · 초당 SP 0.3) · 운동화 +100% · 마검 +80% · 에너지드링크 초당 SP 1 · 신의 가호 1.5초 버팀 · 토템 25% 부활 (제한 없음)'], ['겹침', '고고학자가 여럿이면 유물 효과가 더해진다 · 그 라운드만']],
+   rush: [['차징', '라운드 시작 1초 · 돌진 경로를 빨간 직사각형으로 표시'], ['돌진', '정면 (적 진영 쪽) · 초당 6칸 · 처음 부딪힌 적 하나에서 멈춘다 · 맵 끝까지'], ['피해', '공격력 320%'], ['기절', '부딪힌 적 2초 (랭크 6 [정면충돌] 3초)'], ['취소', '돌진 중 앞을 가로막은 아군에 닿으면 그 자리에서 멈춘다 (피해 없음)']],
+   thief: [['시작', '라운드가 시작되면 바로 예고장 하나'], ['[예고장]', 'SP 4 · 레벨이 가장 높은 적 (같으면 무작위 · 예고장이 없는 적)'], ['레벨 1인 적', '이번 라운드에서 사라진다 (즉사) · 배치는 그대로라 다음 라운드에 다시 나온다 · 아군 레벨 +1은 같다'], ['19초 뒤', '대상 레벨 −1 · 내 진영 무작위 지후 (자신 제외 · 최대 레벨 제외) 레벨 +1 · 경기 내내'], ['취소', '괴도가 쓰러지면 바로 취소 · 라운드가 먼저 끝나면 사라진다 · 대상이 쓰러져도 남는다']],
+@@ -13295,7 +13301,7 @@ function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도
+ }
+ DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.hp0 = f.hp; f.hp = f.hpSet || Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: DF2_PIC[f.id] || (f.pic && CHARS[f.pic] ? CHARS[f.pic].portrait : df2Pic(f)), color: f.col, dfFoe: true }; });
+ // 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 2~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
+-const DF2_TOK = { wisp: 4, duelist: 4, farmer: 3, soulsteal: 3, matrix: 2, cyborg: 2, /* R3.6 build 3 신규 지후 (농부는 사용자가 정함) */ atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
++const DF2_TOK = { god: 25, /* R3.6 build 6: 갓지후 디펜스 토큰 25 */ wisp: 4, duelist: 4, farmer: 3, soulsteal: 3, matrix: 2, cyborg: 2, /* R3.6 build 3 신규 지후 (농부는 사용자가 정함) */ atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
+ const df2Cost = id => DF2_TOK[id] || 2;
+ const df2R1 = v => Math.round(v * 10) / 10;
+ const df2Rew = hp => clamp(df2R1(0.1 + 0.4 * Math.log(Math.max(1, hp / 50)) / Math.log(120)), DF2.REW[0], DF2.REW[1]); // 처치 보상: 체력 비례 (로그 · 0.1 단위)
+@@ -14489,7 +14495,7 @@ const tokBase = r => r <= 1 ? TOK.BASE[0] : r <= 7 ? TOK.BASE[r - 1] : TOK.BASE[
+ const tokInc = side => tokBase((S.round | 0) + 1) + (S.inc[side] | 0); // 다음 라운드 수입
+ const r1 = x => Math.round(x * 10) / 10; // 토큰은 소수 첫째 자리까지
+ const tokF = x => String(r1(x || 0));
+-const TOK_COST = { /* R3.4 build 7: 토큰 1 지후 → 2 (토큰 1 없음) */ train: 5, sun: 6, tyrant: 5, dj: 5, weather: 5, monolith: 5, dragon: 4, phoenix: 4, gumiho: 4, lonely: 4, stopj: 4, slot: 4, scythe: 4, nuke: 4, barrier: 4, wolf: 4, biker: 4, cactus: 3, jaws: 3, revive: 3, reaper: 3, /* R3.1 build 4: 3 → 4 · 4 → 5 · 폭주족 4 · 선인장 · 죠스 · 부활 · 사신 3 */ taegeuk: 2, radiation: 2, growth: 2, gift: 1, /* R3.5 build 3: 2 → 1 */ archaeo: 2, god: 3, /* R3.2 build 12: 갓 1 → 3 · 태양 5 → 6 */ burglar: 2, phase: 2, frog: 2, ruin: 2 };
++const TOK_COST = { /* R3.4 build 7: 토큰 1 지후 → 2 (토큰 1 없음) */ train: 5, sun: 6, tyrant: 5, dj: 5, weather: 5, monolith: 5, dragon: 4, phoenix: 4, gumiho: 4, lonely: 4, stopj: 4, slot: 4, scythe: 4, nuke: 4, barrier: 4, wolf: 4, biker: 4, cactus: 3, jaws: 3, revive: 3, reaper: 3, /* R3.1 build 4: 3 → 4 · 4 → 5 · 폭주족 4 · 선인장 · 죠스 · 부활 · 사신 3 */ taegeuk: 2, radiation: 2, growth: 2, gift: 1, /* R3.5 build 3: 2 → 1 */ archaeo: 2, god: 4, /* R3.6 build 6: 3 → 4 · R3.2 build 12: 갓 1 → 3 · 태양 5 → 6 */ burglar: 2, phase: 2, frog: 2, ruin: 2 };
+ const TOK_ONCE = ['orchestra']; // R3.1 잠수함: 경기에서 한 번 놓으면 빈 칸에 새로 놓을 때 토큰 99 (S.placedOnce)
+ const tokCost = (id, side, nw) => nw && side && TOK_ONCE.includes(id) && S.placedOnce && S.placedOnce[side] && S.placedOnce[side][id] ? 99 : (CHARS[id] && CHARS[id].tok) || TOK_COST[id] || 2;
+ const tokOn = () => !!(S.tok && S.place) && !isCw() && !sandboxLike();
+@@ -16132,7 +16138,7 @@ const ENH_SKILL = { // 랭크 6 고유능력 · 랭크 12 필살기 (사용자
+   duelist: { 6: { name: '듀얼리즘', desc: '[최후의 결전]이 공격속도도 5% 올립니다.' } },
+   soulsteal: { 6: { name: '영혼 수확', desc: '영혼이 1초 만에 들어오고, 자신이 처치한 적은 영혼을 2개 떨어뜨립니다.' } },
+   matrix: { 6: { name: '다중 투영', desc: '[홀로그램]을 쓸 때 40% 확률로 구체를 2개 쏩니다.' } },
+-  cyborg: { 6: { name: '즉시 가동', desc: '변신이 2초 빨라지고 (30초), 변신 뒤 차징 없이 바로 공격합니다.' } },
++  cyborg: { 6: { name: '즉시 가동', desc: '변신이 2초 빨라지고 (20초), 변신 뒤 차징 없이 바로 공격합니다.' } },
+   curse: { 6: { name: '저주의 일격', desc: '일반 공격이 4.4% 확률로 대상을 즉사시킵니다.' } },
+ };
+ Object.entries(ULT).forEach(([id, U]) => { (ENH_SKILL[id] || (ENH_SKILL[id] = {}))[12] = { name: U.name, desc: U.desc + ` 쿨타임 ${U.cd}초.` }; }); // R3.5 build 2 필살기 (SSS)
+@@ -18831,7 +18837,20 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
+ // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
+ const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
+ const PATCH_NOTES = [
+-  { v: 'R3.6', date: '2026.11.25', title: '새 디펜스 모드 · 신규 지후 6종 · 도둑 리워크', sections: [
++  { v: 'R3.6', date: '2026.11.25', title: '새 디펜스 모드 · 신규 지후 6종 · 도둑 · 갓지후 리워크', sections: [
++    { title: '추가 패치 (build 6)', items: [
++      { id: 'god', name: '갓지후', tag: 'rework', desc: '트루폼 [심판의 빛] 삭제 → 공격속도 <b>1.6초</b> 고정 · 더 넓은 레이저가 <b>맵 끝까지</b> 관통 · 닿은 적마다 <b>9999</b> 고정 피해' },
++      { id: 'god', name: '갓지후', tag: 'nerf', desc: '토큰 <b>3 → 4</b>' },
++      { id: 'soulsteal', name: '소울스틸러 지후', tag: 'nerf', desc: '영혼 1개당 최대 체력 <b>+15% → +2%</b>' },
++      { id: 'soulsteal', name: '소울스틸러 지후', tag: 'nerf', desc: '영혼 1개당 공격력 <b>+15% → +10%</b>' },
++      { id: 'soulsteal', name: '소울스틸러 지후', tag: 'adjust', desc: '소울스틸러가 여러 기면 영혼은 <b>무작위 한 기</b>에게' },
++      { icon: '👻', name: '디펜스 영혼', tag: 'nerf', desc: '웨이브마다 잃는 소울스틸러 영혼 <b>절반 → 75%</b>' },
++      { id: 'cyborg', name: '사이보그 지후', tag: 'buff', desc: '공격력 <b>55 → 75</b>' },
++      { id: 'cyborg', name: '사이보그 지후', tag: 'buff', desc: '변신 시간 <b>32 → 22초</b>' },
++      { id: 'cyborg', name: '사이보그 지후', tag: 'buff', desc: '광자포 발사 시 <b>차징 · 공격불가</b> 삭제' },
++      { id: 'god', name: '갓지후 · 디펜스', tag: 'nerf', desc: '디펜스 토큰 <b>2 → 25</b>' },
++      { id: 'wisp', name: '도깨비불 지후', tag: 'buff', desc: '[영속]으로 뺏는 체력 <b>15% → 22%</b>' },
++    ] },
+     { title: '추가 패치 (build 5)', items: [
+       { icon: '🎨', name: '신규 지후 초상화', tag: 'new', desc: '농부 · 도깨비불 · 듀얼리스트 · 소울스틸러 · 매트릭스 · 사이보그 — 임시 그림 대신 <b>진짜 초상화</b>로 · 시그니처 색도 그림에서 다시' },
+       { id: 'duelist', name: '듀얼리스트 지후', tag: 'new', desc: '평소에는 <b>총</b> · 가까운 적을 벨 때 <b>검</b> · [최후의 결전] 때 <b>스킬</b> 그림' },
+diff --git a/tools/pn-count.json b/tools/pn-count.json
+index 1a82eb7..1adbae4 100644
+--- a/tools/pn-count.json
++++ b/tools/pn-count.json
+@@ -1,5 +1,5 @@
+ {
+-"R3.6": 35,
++"R3.6": 46,
+ "R3.5": 106,
+ "R3.4": 65,
+ "R3.3": 46,
+-- 
+2.43.0
+
