@@ -12903,14 +12903,14 @@ function dfStep(dt) { if (S.cw.v2) return df2Step(dt); /* R3.6 새 디펜스 */ 
 // 웨이브: 적을 다 잡으면 (클리어 +2 토큰 · 2초 뒤) 또는 20초가 지나면 다음 · 10웨이브마다 보스 · 처치 보상 0.1 ~ 0.5 (체력 비례 · 로그)
 // 적은 아군과 부딪히지만 질량이 무한 (invMass 0) → 아군만 밀려나고 적은 정해진 속도로 간다 · 적끼리는 겹친다
 const DF2 = {
-  TOK0: 5, CLEAR: 0.2, MAX: 15, HPA: 3, HPK: 2.5, HPK_FROM: 7, /* 모든 적 체력 ×3 · 두꺼운한철 (7웨이브) 부터 나오는 적은 거기에 ×2.5 더 (구성 · 처치 보상은 원래 체력 hp0 로) */ WAVE: 20, FIRST: 8, GAP: 2, LIVES: 5, BOSS_LEAK: 5, QK: { CAP: 15, WARN: 3, CD: 5 }, /* 충격파: 내 유닛 (소환체 포함) 이 15 를 넘으면 3초 경고 → 1/3 즉사 · 쿨타임 5초 */ PCT: 0.25, KILL_PCT: 0.2, KILL_BOSS: 0.05, /* 디펜스 규칙: 체력 비례 피해 ×0.25 · 즉사 = 최대 체력 20% (보스 5%) */ FLY_H: 0.9, /* 플라잉한철 높이 (칸) */ BOSS_EVERY: 10, BOSS_K: 1.25,
+  TOK0: 5, CLEAR: 0.2, MAX: 15, HPA: 3, HPK: 2.5, HPK_FROM: 7, /* 모든 적 체력 ×3 · 두꺼운한철 (7웨이브) 부터 나오는 적은 거기에 ×2.5 더 (구성 · 처치 보상은 원래 체력 hp0 로) */ WAVE: 20, FIRST: 8, GAP: 2, LIVES: 5, BOSS_LEAK: 5, QK: { CAP: 15, WARN: 3, CD: 5 }, /* 충격파: 내 유닛 (소환체 포함) 이 15 를 넘으면 3초 경고 → 1/3 즉사 · 쿨타임 5초 */ PCT: 0.25, KILL_PCT: 0.2, KILL_BOSS: 0.05, /* 디펜스 규칙: 체력 비례 피해 ×0.25 · 즉사 = 최대 체력 20% (보스 5%) */ FLY_H: 0.9, /* 플라잉한철 높이 (칸) */ FAST: 1.8, /* 이 속도 (빠름) 이상인 적: 이동속도 감소 · 빙결 면역 */ BOSS_EVERY: 10, BOSS_K: 1.25,
   REW: [0.1, 0.5], /* 처치 보상 (체력 50 → 0.1 · 6,000 이상 → 0.5) */
   SPAWN_WIN: 10, SPAWN_MAX: 1, /* 적은 웨이브 처음 10초에 나눠 나온다 (간격 최대 1초) */
   FLY_R: 6, /* 플라잉한철: 사거리 6칸 미만 지후는 노리지도 · 맞히지도 못한다 */
   HP: [[1, 500], [10, 3200], [20, 7500], [30, 12500], [45, 22000], [60, 34000], [80, 57000], [100, 95000]], /* 웨이브 총 체력 (사이는 로그 보간 · 100 뒤는 마지막 구간 증가율) */
   IMM: ['stun', 'freeze', 'frost', 'sleep', 'ban', 'charm', 'fear', 'taunt', 'hyp', 'lock', 'seal', 'blind'], /* 스테인리스한철이 무시하는 상태 */
   MUT: { /* 변이 능력 (초안 수치) */
-    rifle: { cd: 15, n: 3, sec: 10 }, /* 아군 3기 10초 기절 */
+    rifle: { cd: 15, n: 3, sec: 10, dmg: 1200 }, /* 아군 3기 10초 기절 · 탄마다 1,200 고정 피해 */
     blind: { cd: 20, n: 5, sec: 30, amt: 0.5 }, /* 아군 5기 30초 명중률 −50% */
     accel: { cd: 12, n: 5, sec: 8, k: 1.5 }, /* 적 5기 8초 이동속도 ×1.5 (보스 제외) */
     heal: { cd: 3, r: 2.5, pct: 0.1 }, /* 반경 2.5칸 적 최대 체력 10% 회복 */
@@ -12994,7 +12994,7 @@ const DF2_STORY = {
   dfbOrch: '오케스트라 지후는 왕국 음악회에서 박수를 한 번도 받아 본 적이 없어요. 한철 마을에서는 쇠 부딪히는 소리가 곧 음악이라며 상임 지휘자로 모셨습니다. 마력이 깃든 지휘봉을 휘두르면 쓰러져 가던 한철들이 다시 기운을 차려요. 문제는 한철들이 박자를 전혀 못 맞춘다는 겁니다. 그래도 난생처음 받은 쇠 박수에 감동해서 눌러앉았대요.',
 };
 const DF2_SPD = sp => (sp <= 0.5 ? '느림' : sp < 1.2 ? '보통' : sp < 1.8 ? '조금 빠름' : sp < 2.5 ? '빠름' : '매우 빠름');
-const DF2_MUTD = { rifle: '15초마다 지후 3기 기절 10초', blind: '20초마다 지후 5기 명중률 −50% (30초)', accel: '12초마다 적 5기 이동속도 ×1.5 (8초)', heal: '3초마다 주변 적 최대 체력 10% 회복', necro: '15초마다 두꺼운한철 3마리 소환 (2번)' };
+const DF2_MUTD = { rifle: '15초마다 지후 3기에게 1,200 고정 피해 · 기절 10초', blind: '20초마다 지후 5기 명중률 −50% (30초)', accel: '12초마다 적 5기 이동속도 ×1.5 (8초)', heal: '3초마다 주변 적 최대 체력 10% 회복', necro: '15초마다 두꺼운한철 3마리 소환 (2번)' };
 const D2C = { tab: 'story', sel: null };
 function df2CodexGroups() { const F = DF2_FOES.filter(f => !f.boss); return { foe: F.filter(f => !f.mut), mid: F.filter(f => f.mut), boss: DF2_FOES.filter(f => f.boss) }; }
 function df2CodexOpen() { // 햄버거 메뉴 → 적 도감
@@ -13011,7 +13011,7 @@ function df2CodexDraw() {
   else {
     const L = G[D2C.tab], f = L.find(x => x.id === D2C.sel) || L[0], img = id => pic(id), boss = !!f.boss;
     const meta = [['처음 등장', boss ? '10웨이브마다' : `${f.from}웨이브`], ['체력', boss ? '웨이브 총 체력 ×1.25' : f.hp.toLocaleString()], ['속도', DF2_SPD(f.sp)]];
-    const abil = boss ? f.desc : f.mut ? DF2_MUTD[f.mut] : f.fly ? '공중 · 사거리 6칸 미만 지후는 맞히지 못한다' : f.imm ? '디버프 면역' : '';
+    const abil = boss ? f.desc : f.mut ? DF2_MUTD[f.mut] : f.fly ? '공중 · 사거리 6칸 미만 지후는 맞히지 못한다' : f.imm ? '디버프 면역' : f.sp >= DF2.FAST ? '이동속도 감소 · 빙결 면역' : '';
     body = `<div class="dc-grid">${L.map(x => `<button type="button" class="dc-it${x === f ? ' on' : ''}" data-dcs="${x.id}" aria-pressed="${x === f}"><span class="dc-p">${img(x.id)}</span><b>${esc(x.name)}</b></button>`).join('')}</div>`
       + `<article class="dc-page"><div class="dc-head"><span class="dc-big">${img(f.id)}</span><div><small>${boss ? '보스' : f.mut ? '준보스' : '한철'}</small><h3>${esc(f.name)}</h3>${abil ? `<p class="dc-ab">${abil}</p>` : ''}</div></div>`
       + `<dl class="dc-meta">${meta.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><p class="dc-tx">${DF2_STORY[f.id] || ''}</p></article>`;
@@ -13035,7 +13035,7 @@ function df2Pic(f) { // 한철 얼굴 (SVG · 흰 바탕) — 흑화는 보라 �
 }
 function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도 하한 없음 · 칸/초 그대로) · 넉백 뒤에는 원래 줄로 돌아온다
   const c = S.cw; if (!c || !c.v2 || !u.dfF) return false; /* 진짜 한철만 (스파이가 한철로 변장하면 lane 이 없어 NaN) */ const bd = backDir(c.me), f = DF2_FOE[u.id];
-  const k = (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) * (f.imm ? 1 : Math.max(0.2, 1 + buffSum(u, 'spd'))), sp = u.speed * k;
+  const k = (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) * (f.imm ? 1 : f.sp >= DF2.FAST ? Math.max(1, 1 + buffSum(u, 'spd')) : Math.max(0.2, 1 + buffSum(u, 'spd'))), sp = u.speed * k;
   if (bd.x) { u.desVx = bd.x * sp; u.desVy = (u.lane - u.y) * 1.5; } else { u.desVy = bd.y * sp; u.desVx = (u.lane - u.x) * 1.5; }
   return true;
 }
@@ -13093,7 +13093,7 @@ function df2Mut(u, dt) { // 흑화 능력 (기절 · 명중률 · 가속 · 힐 
   const allies = () => S.units.filter(a => a.alive && a.side === me && !a.def.castle);
   const pickN = (L, n) => { const o = []; L = L.slice(); while (o.length < n && L.length) o.push(L.splice(Math.floor(rng() * L.length), 1)[0]); return o; };
   switch (f.mut) {
-    case 'rifle': pickN(allies(), m.n).forEach(a => { A.status(a, 'stun', m.sec); if (!S.fast) fxRing(a.x, a.y, CFG.CELL * 0.6, 'rgba(255,80,80,.9)', 450, 4); }); break;
+    case 'rifle': pickN(allies(), m.n).forEach(a => { dealDamage(u, a, m.dmg, { pure: true, noCrit: true, skill: true }); if (a.alive) A.status(a, 'stun', m.sec); if (!S.fast) fxRing(a.x, a.y, CFG.CELL * 0.6, 'rgba(255,80,80,.9)', 450, 4); }); break;
     case 'blind': pickN(allies(), m.n).forEach(a => blindOn(a, m.sec, m.amt)); break;
     case 'accel': pickN(S.units.filter(e => e.alive && e.dfF && e !== u && !DF2_FOE[e.id].boss), m.n).forEach(e => { e.dfAccT = S.time + m.sec; if (!S.fast) fxRing(e.x, e.y, CFG.CELL * 0.5, 'rgba(60,150,255,.9)', 400, 3); }); break;
     case 'heal': { const R = m.r * CFG.CELL; for (const e of S.units) if (e.alive && e.dfF && Math.hypot(e.x - u.x, e.y - u.y) <= R) dfHeal(e, e.maxHp * m.pct); if (!S.fast) fxRing(u.x, u.y, R, 'rgba(90,220,120,.8)', 500, 3); break; }
@@ -13107,7 +13107,7 @@ function df2Step(dt) { // dfStep 대신
   const c = S.cw; c.t += dt; let ne = 0;
   if (c.wave > 0 && c.sq.length && (c.sqT -= dt) <= 0) { c.sqT = c.sqI; df2Spawn(c.sq.shift()); }
   for (const u of S.units) { if (!u.alive || !u.dfF) continue; const f = DF2_FOE[u.id];
-    if (f.imm) for (const k of DF2.IMM) if (u.st[k] > 0) u.st[k] = 0;
+    if (f.imm) for (const k of DF2.IMM) if (u.st[k] > 0) u.st[k] = 0; if (f.sp >= DF2.FAST) { if (u.st.freeze > 0) u.st.freeze = 0; if (u.st.frost > 0) u.st.frost = 0; } /* 빠름 이상: 이동속도 감소 · 빙결 면역 (속도 증가는 받는다) */
     if (f.mut) df2Mut(u, dt); if (f.boss) df2BossTick(u, dt); if (dfAtEnd(u)) df2Leak(u); else ne++; }
   c.ne = ne; if (c.lives <= 0) return cwEnd(OPP(), '라이프 0'); df2Quake(dt);
   if (!c.wave) { if (c.t >= DF2.FIRST) df2Next(); }
@@ -18567,6 +18567,8 @@ const PATCH_NOTES = [
       { icon: '👾', name: '한철 14종', tag: 'new', desc: '흑화 한철은 기절 · 명중률 감소 · 가속 · 회복 · 소환 · 플라잉한철은 사거리 6칸 이상만 맞혀요' },
       { icon: '👑', name: '보스 지후 10종', tag: 'new', desc: '10웨이브마다 <b>무작위</b> 하나 · 사신 · 코인 · 무선충전 · 블리자드 · 티모 · 버블 · 보호막 · 십미호 · 쉴드 · 오케스트라' },
       { icon: '📖', name: '적 도감', tag: 'new', desc: '메뉴 → <b>적 도감</b> · 한철 마을 이야기 · 한철 · 준보스 · 보스' },
+      { icon: '⚡', name: '빠른 한철', tag: 'adjust', desc: '빠른한철 · 돌진한철 · 자라니한철은 이동속도 감소 · 빙결 면역' },
+      { icon: '🔫', name: '흑화 라이플', tag: 'adjust', desc: '맞힌 지후마다 <b>1,200</b> 고정 피해 · 기절 10초' },
       { icon: '❤', name: '라이프 5', tag: 'system', desc: '위 <b>기지</b> 게이지 · 적이 들어오면 <b>−1</b> · 보스는 <b>−5</b>' },
       { icon: '💥', name: '충격파', tag: 'system', desc: '내 지후 (소환체 포함) 가 <b>15</b>를 넘으면 3초 경고 뒤 <b>1/3</b> 즉사 · 쿨타임 5초' },
       { icon: '📜', name: '디펜스 규칙', tag: 'system', desc: '웨이브마다 지후가 새로 태어나 <b>쌓인 효과</b>가 사라져요 (체력 비율 · 스킬 게이지는 그대로) · 체력 비례 피해 <b>×0.25</b> · 즉사는 최대 체력 <b>20%</b> (보스 5%)' },
