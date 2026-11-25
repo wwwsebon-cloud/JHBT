@@ -12950,12 +12950,15 @@ function df2Pic(f) { // 한철 얼굴 (SVG · 흰 바탕) — 흑화는 보라 �
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도 하한 없음 · 칸/초 그대로) · 넉백 뒤에는 원래 줄로 돌아온다
-  const c = S.cw; if (!c || !c.v2) return false; const bd = backDir(c.me), f = DF2_FOE[u.id];
+  const c = S.cw; if (!c || !c.v2 || !u.dfF) return false; /* 진짜 한철만 (스파이가 한철로 변장하면 lane 이 없어 NaN) */ const bd = backDir(c.me), f = DF2_FOE[u.id];
   const k = (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) * (f.imm ? 1 : Math.max(0.2, 1 + buffSum(u, 'spd'))), sp = u.speed * k;
   if (bd.x) { u.desVx = bd.x * sp; u.desVy = (u.lane - u.y) * 1.5; } else { u.desVy = bd.y * sp; u.desVx = (u.lane - u.x) * 1.5; }
   return true;
 }
 DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.hp0 = f.hp; f.hp = Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: df2Pic(f), color: f.col, dfFoe: true }; });
+// 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 1~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
+const DF2_TOK = { atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3, sniper: 1, mutant: 1, nuke: 1, shield: 1, moon: 1, bubble: 1, stopj: 1, ice: 1, water: 1, cake: 1, sommelier: 1, thief: 1, god: 1, rot: 1, guardian: 1, titanium: 1, heal: 1, charge: 1, exynos: 1, pumpkin: 1, barrier: 1, frog: 1, typhoon: 1, nou: 1, portal: 1, hypno: 1, reaper: 1, stand: 1, tailwind: 1, spy: 1, growth: 1, hong: 1, joker: 1, antigrav: 1, gift: 1, slot: 1, monolith: 1, cowboy: 1, sans: 1, gunq: 1, volcano: 1, raincloud: 1, voodoo: 1 };
+const df2Cost = id => DF2_TOK[id] || 2;
 const df2R1 = v => Math.round(v * 10) / 10;
 const df2Rew = hp => clamp(df2R1(0.1 + 0.4 * Math.log(Math.max(1, hp / 50)) / Math.log(120)), DF2.REW[0], DF2.REW[1]); // 처치 보상: 체력 비례 (로그 · 0.1 단위)
 function df2Hp(w) { // 웨이브 총 체력: 기준점 사이를 매 웨이브 같은 비율로
@@ -13045,14 +13048,14 @@ function df2Pull(r) { // 합체로 빠지는 지후: 죽음 연출 · 보상 없
   (u.fx || []).forEach(e => e.remove()); u.fx = []; if (u.ufxEl) { u.ufxEl.remove(); u.ufxEl = null; } if (u.el) { u.el.remove(); u.el = null; }
 }
 function df2Summon(id, t) { // 토큰을 내고 칸 t 에 새로 소환 (같은 지후가 있어도)
-  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || !CHARS[id]) return false; const cost = tokCost(id);
+  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || !CHARS[id]) return false; const cost = df2Cost(id);
   if (c.ros.length >= DF2.MAX) { if (!S.fast && !c.auto) banner(`지후는 ${DF2.MAX}기까지`); return false; }
   if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto) banner(`🪙 ${cost} 이 필요해요`); return false; }
   const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); df2Put(r, q.x, q.y); e7Add('deploy');
   if (!S.fast) { sfx('place'); df2Render(); } return true;
 }
 function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.sum = c.sum === id ? null : id; df2Render(); } // 타일 누르기: 고르기 · 다시 누르면 취소
-const df2UpCost = (id, lv) => tokCost(id) * Math.pow(2, lv - 1); // 업그레이드 비용: Lv n → n+1 = 소환 비용 × 2^(n−1) (Lv5 까지 합 = 소환 16번)
+const df2UpCost = (id, lv) => df2Cost(id) * Math.pow(2, lv - 1); // 업그레이드 비용: Lv n → n+1 = 소환 비용 × 2^(n−1) (Lv5 까지 합 = 소환 16번)
 function df2Up(u) { // 전장의 지후 업그레이드: Lv+1 (그 자리 · 체력 가득)
   const c = S.cw, r = c.ros.find(x => x.uid === u.uid); if (!r) return false;
   if (r.lv >= maxLv(r.id)) { if (!S.fast && !c.auto) banner('최대 레벨'); return false; }
@@ -13064,12 +13067,12 @@ function df2Field(e) { // 전장 누르기 (전투 중 · 지후를 골랐을 �
   const el = e.target.closest('.tile[data-tile]') || (document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY) : []).find(x => x.classList && x.classList.contains('tile'));
   if (el && el.dataset.side === c.me) df2Summon(c.sum, Number(el.dataset.tile));
   else { const ue = e.target.closest('.unit'), u = (ue && S.units.find(x => x.el === ue)) || cvPick(e); if (!(u && u.df2A && u.alive && u.id === c.sum)) return false; df2Up(u); }
-  if (c.tok + 1e-9 < tokCost(c.sum)) c.sum = null; df2Render(); return true;
+  if (c.tok + 1e-9 < df2Cost(c.sum)) c.sum = null; df2Render(); return true;
 }
 function df2Bot() { // 시험용 자동: 가끔 (자리가 꽉 차면 늘) 무작위 지후 업그레이드 · 아니면 덱에서 무작위 소환 · 칸은 무작위
   const c = S.cw, al = c.ros.filter(x => !x.dead);
   if (al.length && (c.ros.length >= DF2.MAX || Math.random() < 0.35)) { const x = al[Math.floor(Math.random() * al.length)], u = df2Unit(x); if (u && x.lv < maxLv(x.id) && df2UpCost(x.id, x.lv) <= c.tok) { df2Up(u); return; } if (c.ros.length >= DF2.MAX) return; }
-  const deck = c.deck.filter(id => tokCost(id) <= c.tok); if (!deck.length) return;
+  const deck = c.deck.filter(id => df2Cost(id) <= c.tok); if (!deck.length) return;
   df2Summon(deck[Math.floor(Math.random() * deck.length)], Math.floor(Math.random() * TILES));
 }
 // 왼쪽 아래 디펜스 바 (#df2Hud · 디펜스 전용): 토큰 · 지후 수 · 소환 타일 5개 (초상화 · 비용) · PC 는 숫자키 1~5 · Esc
@@ -13079,19 +13082,19 @@ function df2BarInit() {
   if (!el) { el = document.createElement('div'); el.id = 'df2Hud'; $('screen-battle').appendChild(el);
     el.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) df2Pick(Number(b.dataset.i)); });
     document.addEventListener('keydown', e => { const k = S.cw; if (!k || !k.v2 || S.phase !== 'combat' || (e.target.closest && e.target.closest('input, textarea'))) return; const n = '12345'.indexOf(e.key); if (n >= 0 && k.deck[n]) { e.preventDefault(); df2Pick(n); } else if (e.key === 'Escape' && k.sum) { k.sum = null; df2Render(); } }); }
-  el.innerHTML = `<div class="d2-tk">${H4_COIN}<b></b><span class="d2-n"><b></b> / ${DF2.MAX}</span></div><div class="d2-row">` + c.deck.map((id, i) => `<button type="button" class="d2-c r-${CHARS[id].rarity}" data-i="${i}" aria-label="${esc(CHARS[id].name)} 소환"><span class="d2-p">${pic(id)}</span><span class="d2-k">${i + 1}</span><span class="d2-cost"><i></i>${tokCost(id)}</span></button>`).join('') + '</div>';
+  el.innerHTML = `<div class="d2-tk">${H4_COIN}<b></b><span class="d2-n"><b></b> / ${DF2.MAX}</span></div><div class="d2-row">` + c.deck.map((id, i) => `<button type="button" class="d2-c r-${CHARS[id].rarity}" data-i="${i}" aria-label="${esc(CHARS[id].name)} 소환"><span class="d2-p">${pic(id)}</span><span class="d2-k">${i + 1}</span><span class="d2-cost"><i></i>${df2Cost(id)}</span></button>`).join('') + '</div>';
   const t = el.querySelectorAll('.d2-tk b'); D2B.tok = t[0]; D2B.n = t[1]; D2B.cs = [...el.querySelectorAll('.d2-c')]; c._pk = null; if (DEV_HOST) df2Dev(el); /* DEV 임시 */ df2BarHud(); viewDirty();
 }
 function df2Dev(el) { // DEV 임시 (푸시 전에 지운다): 개발 주소에서만 · 아무 지후나 골라 소환 · 토큰 +50
   const c = S.cw, ids = Object.keys(CHARS).filter(id => !CHARS[id].castle).sort((a, b) => CHARS[a].name.localeCompare(CHARS[b].name, 'ko')), d = document.createElement('div'); d.className = 'd2-dev';
-  d.innerHTML = `<select aria-label="개발자: 지후 고르기"><option value="">DEV · 지후 고르기</option>${ids.map(id => `<option value="${id}">${esc(CHARS[id].name)} · 🪙${tokCost(id)}</option>`).join('')}</select><button type="button">🪙 +50</button>`;
+  d.innerHTML = `<select aria-label="개발자: 지후 고르기"><option value="">DEV · 지후 고르기</option>${ids.map(id => `<option value="${id}">${esc(CHARS[id].name)} · 🪙${df2Cost(id)}</option>`).join('')}</select><button type="button">🪙 +50</button>`;
   d.querySelector('select').addEventListener('change', e => { c.sum = e.target.value || null; df2Render(); }); d.querySelector('button').addEventListener('click', () => { c.tok = df2R1(c.tok + 50); df2Render(); });
   el.insertBefore(d, el.firstChild);
 }
 function df2BarHud() { // 토큰 · 지후 수 · 고른 타일이 바뀔 때만
   const c = S.cw; if (!D2B.cs) return; const k = c.tok + '/' + c.ros.length + '/' + c.sum; if (c._pk === k) return; c._pk = k; const full = c.ros.length >= DF2.MAX;
   D2B.tok.textContent = c.tok.toFixed(1); D2B.n.textContent = c.ros.length;
-  D2B.cs.forEach((b, i) => { const id = c.deck[i], off = full || c.tok + 1e-9 < tokCost(id), on = c.sum === id; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); });
+  D2B.cs.forEach((b, i) => { const id = c.deck[i], off = full || c.tok + 1e-9 < df2Cost(id), on = c.sum === id; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); });
 }
 function df2Tiles() { // 내 칸: 카드를 골랐으면 모두 밝게 (hot) · 상대 칸은 숨긴다 (CSS)
   const c = S.cw, f = $('field'); if (!f) return; const hot = !!c.sum && c.ros.length < DF2.MAX;
@@ -18474,6 +18477,7 @@ const PATCH_NOTES = [
     { title: '새 디펜스', items: [
       { icon: '🛡', name: '새 디펜스', tag: 'new', desc: '카드를 고르고 전장의 <b>3×5칸</b>을 누르면 소환 · 지후는 자유롭게 움직여요 · 최대 <b>15기</b> · 웨이브 <b>무한</b> · 10웨이브마다 <b>보스</b>' },
       { icon: '🚪', name: '디펜스 입구', tag: 'system', desc: '로비 오른쪽 아래 <b>디펜스</b> 탭 → 전투 시작 (⚡ 1)' },
+      { icon: '🏷', name: '디펜스 토큰표', tag: 'system', desc: '지후마다 디펜스 전용 비용 <b>1~15</b> (화력 · 광역 점수) · 원자 15 · 태양 12 · 낫 · 저주 · 제이슨 10' },
       { icon: '🪙', name: '토큰', tag: 'system', desc: '시작 <b>5</b> · 처치 <b>0.1~0.5</b> (적 체력 비례) · 웨이브 클리어 <b>+0.2</b>' },
       { icon: '⬆', name: '업그레이드', tag: 'system', desc: '지후를 고른 채 <b>전장의 같은 지후</b>를 누르면 Lv+1 (비용 ×2씩) · 칸을 누르면 언제나 새로 소환 · 쓰러진 지후는 다음 웨이브에 다시' },
       { icon: '👾', name: '한철 15종', tag: 'new', desc: '흑화 한철은 기절 · 명중률 감소 · 가속 · 회복 · 소환 · 근접 공격 · 플라잉한철은 사거리 6칸 이상만 맞혀요' },
