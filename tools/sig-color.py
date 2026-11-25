@@ -19,6 +19,7 @@ SIG_FIX = { 'typhoon': '#5fb8ff', 'volcano': '#e0471b,#3a2a26', 'mutant': '#7bd6
     'cake': '#e6010f,#ff8ccf', 'cakeslice': '#e6010f,#ff8ccf',  # 빨간 모자 + 분홍 크림 (색상이 가까워 자동으로는 한 색)
     'engineer': '#ca1e02,#3aa0ff',  # 갈색 + 파란 고글
     'rot': '#9b3fc7', 'pkskul': '#ff7a00',  # R2.30 부패: 보라 (자동은 자홍) · 폭발 스껄: 호박 주황 (자동은 회색)
+    'duelist': '#a6a630',  # R3.6 build 4 (올리브 군복 · 그림자가 짙어 자동은 회색)
 }
 
 HTML = 'index.html'
