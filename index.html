@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.6"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.6"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -12903,7 +12903,7 @@ function dfStep(dt) { if (S.cw.v2) return df2Step(dt); /* R3.6 새 디펜스 */ 
 // 웨이브: 적을 다 잡으면 (클리어 +2 토큰 · 2초 뒤) 또는 20초가 지나면 다음 · 10웨이브마다 보스 · 처치 보상 0.1 ~ 0.5 (체력 비례 · 로그)
 // 적은 아군과 부딪히지만 질량이 무한 (invMass 0) → 아군만 밀려나고 적은 정해진 속도로 간다 · 적끼리는 겹친다
 const DF2 = {
-  TOK0: 5, CLEAR: 0.2, MAX: 15, HPA: 3, HPK: 2.5, HPK_FROM: 7, /* 모든 적 체력 ×3 · 두꺼운한철 (7웨이브) 부터 나오는 적은 거기에 ×2.5 더 (구성 · 처치 보상은 원래 체력 hp0 로) */ WAVE: 20, FIRST: 8, GAP: 2, LIVES: 5, BOSS_LEAK: 5, QK: { CAP: 15, WARN: 3, CD: 5 }, /* 충격파: 내 유닛 (소환체 포함) 이 15 를 넘으면 3초 경고 → 1/3 즉사 · 쿨타임 5초 */ PCT: 0.25, KILL_PCT: 0.2, KILL_BOSS: 0.05, /* 디펜스 규칙: 체력 비례 피해 ×0.25 · 즉사 = 최대 체력 20% (보스 5%) */ FLY_H: 0.9, /* 플라잉한철 높이 (칸) */ FAST: 1.8, /* 이 속도 (빠름) 이상인 적: 이동속도 감소 · 빙결 면역 */ BOSS_EVERY: 10, BOSS_K: 1.25,
+  TOK0: 5, CLEAR: 0.5, EASY: { to: 21, k0: 0.6 }, /* build 2: 클리어 0.2 → 0.5 · 1 ~ 20웨이브 적 수 줄임 (예산 ×0.6 → 21웨이브 ×1) */ MAX: 15, HPA: 3, HPK: 2.5, HPK_FROM: 7, /* 모든 적 체력 ×3 · 두꺼운한철 (7웨이브) 부터 나오는 적은 거기에 ×2.5 더 (구성 · 처치 보상은 원래 체력 hp0 로) */ WAVE: 20, FIRST: 8, GAP: 2, LIVES: 5, BOSS_LEAK: 5, QK: { CAP: 15, WARN: 3, CD: 5 }, /* 충격파: 내 유닛 (소환체 포함) 이 15 를 넘으면 3초 경고 → 1/3 즉사 · 쿨타임 5초 */ PCT: 0.25, KILL_PCT: 0.2, KILL_BOSS: 0.05, /* 디펜스 규칙: 체력 비례 피해 ×0.25 · 즉사 = 최대 체력 20% (보스 5%) */ FLY_H: 0.9, /* 플라잉한철 높이 (칸) */ FAST: 1.8, /* 이 속도 (빠름) 이상인 적: 이동속도 감소 · 빙결 면역 */ BOSS_EVERY: 10, BOSS_K: 1.25,
   REW: [0.1, 0.5], /* 처치 보상 (체력 50 → 0.1 · 6,000 이상 → 0.5) */
   SPAWN_WIN: 10, SPAWN_MAX: 1, /* 적은 웨이브 처음 10초에 나눠 나온다 (간격 최대 1초) */
   FLY_R: 6, /* 플라잉한철: 사거리 6칸 미만 지후는 노리지도 · 맞히지도 못한다 */
@@ -12921,7 +12921,7 @@ const DF2 = {
 const DF2_FOES = [
   { id: 'hcBasic', name: '그냥한철', hp: 50, sp: 1, from: 1, col: '#b8c0c8' },
   { id: 'hcFast', name: '빠른한철', hp: 40, sp: 2, from: 1, col: '#6cc4f0', fx: 'fast' },
-  { id: 'hcThick', name: '두꺼운한철', hp: 400, sp: 1, from: 7, col: '#b08a5a', fx: 'brow' },
+  { id: 'hcThick', name: '두꺼운한철', hp: 400, hpSet: 2000, /* build 2: 3,000 → 2,000 */ sp: 1, from: 7, col: '#b08a5a', fx: 'brow' },
   { id: 'hcRush', name: '돌진한철', hp: 800, sp: 2, from: 19, col: '#f07a3a', fx: 'fast' },
   { id: 'hcRifle', name: '흑화 라이플', hp: 1700, sp: 1, from: 15, /* 흑화 검 자리 (15웨이브) */ cap: 2, mut: 'rifle', col: '#4a2f5e', badge: '#e74c3c' },
   { id: 'hcShot', name: '흑화 주사', hp: 2000, sp: 1, from: 22, cap: 2, mut: 'blind', col: '#4a2f5e', badge: '#2ecc71' },
@@ -12937,16 +12937,16 @@ const DF2_FOES = [
 
 // ── 보스 지후 (10웨이브마다 무작위 하나 · 한철 1호가 마력을 들이부은 친철파 엘리트) · 등장 2초 뒤 스킬 → 쿨타임마다 다시 · pic = 그림이 오기 전 임시 초상화 (원래 지후) ──
 const DF2_BOSS = [
-  { id: 'dfbReaper', name: '타락한 사신 지후', pic: 'reaper', cd: 12, sk: '대숙청', desc: '12초마다 지후 절반 즉사' },
-  { id: 'dfbCoin', name: '타락한 코인 지후', pic: 'coin', cd: 10, sk: '강제 청산', desc: '10초마다 토큰 절반 갈취 (최소 1)' },
-  { id: 'dfbCharge', name: '무선충전 지후', pic: 'charge', cd: 10, sk: '역충전', desc: '10초마다 지후 4기 SP 충전 −60% (45초)' },
-  { id: 'dfbBlizzard', name: '타락한 블리자드 지후', pic: 'blizzard', cd: 10, sk: '영구동토', desc: '10초마다 지후 3기 공격속도 · 이동속도 −60% (45초)' },
-  { id: 'dfbTeemo', name: '정글 티모 지후', pic: 'teemo', cd: 10, sk: '정글 안개', desc: '10초마다 지후 3기 명중률 −65% (45초)' },
+  { id: 'dfbReaper', name: '타락한 사신 지후', pic: 'reaper', cd: 24, sk: '대숙청', desc: '24초마다 지후 절반 즉사' },
+  { id: 'dfbCoin', name: '타락한 코인 지후', pic: 'coin', cd: 20, sk: '강제 청산', desc: '20초마다 토큰 절반 갈취 (최소 1)' },
+  { id: 'dfbCharge', name: '무선충전 지후', pic: 'charge', cd: 20, sk: '역충전', desc: '20초마다 지후 4기 SP 충전 −60% (45초)' },
+  { id: 'dfbBlizzard', name: '타락한 블리자드 지후', pic: 'blizzard', cd: 20, sk: '영구동토', desc: '20초마다 지후 3기 공격속도 · 이동속도 −60% (45초)' },
+  { id: 'dfbTeemo', name: '정글 티모 지후', pic: 'teemo', cd: 20, sk: '정글 안개', desc: '20초마다 지후 3기 명중률 −65% (45초)' },
   { id: 'dfbBubble', name: '타락한 버블 지후', pic: 'bubble', melee70: 1, desc: '근접 지후에게 받는 피해 −70%' },
   { id: 'dfbBarrier', name: '타락한 보호막 지후', pic: 'barrier', ranged70: 1, desc: '원거리 지후에게 받는 피해 −70%' },
-  { id: 'dfbGumiho', name: '십미호 지후', pic: 'gumiho', cd: 10, sk: '쇠꼬리 홀리기', desc: '10초마다 지후 1/4 [매혹] 4초' },
+  { id: 'dfbGumiho', name: '십미호 지후', pic: 'gumiho', cd: 20, sk: '쇠꼬리 홀리기', desc: '20초마다 지후 1/4 [매혹] 4초' },
   { id: 'dfbShield', name: '타락한 쉴드 지후', pic: 'shield', shield75: 1, imm: 1, desc: '최대 체력 75% 쉴드 · 쉴드가 있으면 받는 피해 −20% · 디버프 면역' },
-  { id: 'dfbOrch', name: '마에스트로 오케스트라 지후', pic: 'orchestra', cd: 10, sk: '쇠의 교향곡', desc: '10초마다 5초 동안 모든 적이 초당 최대 체력 4% 회복' },
+  { id: 'dfbOrch', name: '마에스트로 오케스트라 지후', pic: 'orchestra', cd: 20, sk: '쇠의 교향곡', desc: '20초마다 5초 동안 모든 적이 초당 최대 체력 4% 회복' },
 ];
 function df2BossCast(u) { // 보스 스킬 (등장 2초 뒤 · 쿨타임마다)
   const c = S.cw, f = DF2_FOE[u.id], me = c.me, L = S.units.filter(a => a.alive && a.side === me && !a.def.castle);
@@ -13039,7 +13039,7 @@ function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도
   if (bd.x) { u.desVx = bd.x * sp; u.desVy = (u.lane - u.y) * 1.5; } else { u.desVy = bd.y * sp; u.desVx = (u.lane - u.x) * 1.5; }
   return true;
 }
-DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.hp0 = f.hp; f.hp = Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: DF2_PIC[f.id] || (f.pic && CHARS[f.pic] ? CHARS[f.pic].portrait : df2Pic(f)), color: f.col, dfFoe: true }; });
+DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.hp0 = f.hp; f.hp = f.hpSet || Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: DF2_PIC[f.id] || (f.pic && CHARS[f.pic] ? CHARS[f.pic].portrait : df2Pic(f)), color: f.col, dfFoe: true }; });
 // 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 2~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
 const DF2_TOK = { atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
 const df2Cost = id => DF2_TOK[id] || 2;
@@ -13051,7 +13051,7 @@ function df2Hp(w) { // 웨이브 총 체력: 기준점 사이를 매 웨이브 �
   const [wa, ha] = P[P.length - 2], [wb, hb] = P[P.length - 1]; return hb * Math.pow(hb / ha, (w - wb) / (wb - wa));
 }
 function df2Plan(w) { // 웨이브 구성: 총 체력 예산을 도감 적으로 채운다 (웨이브 번호가 시드 · 목표 평균 체력에 가까울수록 · 느릴수록 잘 뽑힌다)
-  const r = mulberry32(w * 7919 + 13), B = df2Hp(w), pool = DF2_FOES.filter(f => !f.boss && f.from <= w), avg = B / Math.min(40, 10 + Math.floor(w / 2)), cnt = {}, out = []; let rem = B;
+  const r = mulberry32(w * 7919 + 13), B = df2Hp(w) * (w < DF2.EASY.to ? DF2.EASY.k0 + (1 - DF2.EASY.k0) * (w - 1) / (DF2.EASY.to - 1) : 1), pool = DF2_FOES.filter(f => !f.boss && f.from <= w), avg = B / Math.min(40, 10 + Math.floor(w / 2)), cnt = {}, out = []; let rem = B;
   const wt = f => 1 / (1 + Math.pow(Math.log(f.hp0 / avg), 2)) / Math.max(1, f.sp) * (f.mut ? 0.6 : 1);
   for (let g = 0; g < 80; g++) {
     const C = pool.filter(f => f.hp0 <= rem && !(f.cap && (cnt[f.id] | 0) >= f.cap)); if (!C.length) break;
@@ -18570,7 +18570,13 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.6', date: '2026.11.25', title: '새 디펜스 모드', sections: [
+  { v: 'R3.6', date: '2026.11.25', title: '새 디펜스 모드 · 난이도 조정', sections: [
+    { title: '추가 패치 (build 2)', items: [
+      { icon: '🧱', name: '두꺼운한철', tag: 'adjust', desc: '체력 <b>3,000 → 2,000</b>' },
+      { icon: '👑', name: '보스 지후', tag: 'adjust', desc: '스킬 쿨타임 <b>2배</b> (사신 24초 · 그 밖 20초)' },
+      { icon: '🌊', name: '1~20웨이브', tag: 'adjust', desc: '적 수 줄임 (1웨이브 <b>−40%</b> → 21웨이브부터 그대로)' },
+      { icon: '🪙', name: '웨이브 클리어', tag: 'buff', desc: '토큰 <b>0.2 → 0.5</b>' },
+    ] },
     { title: '새 디펜스', items: [
       { icon: '🛡', name: '새 디펜스 (베타)', tag: 'new', desc: '<b>베타</b> · 보상 없음 · 입장 무료 · 카드를 고르고 전장의 <b>3×5칸</b>을 누르면 소환 · 지후는 자유롭게 움직여요 · 최대 <b>15기</b> · 웨이브 <b>무한</b> · 10웨이브마다 <b>보스</b>' },
       { icon: '🚪', name: '디펜스 입구', tag: 'system', desc: '로비 오른쪽 아래 <b>디펜스</b> 탭 → 전투 시작' },
