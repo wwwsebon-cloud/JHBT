@@ -12975,7 +12975,7 @@ function df2Plan(w) { // 웨이브 구성: 총 체력 예산을 도감 적으로
   return out;
 }
 function df2Init() { // cwStart 끝: 새 디펜스 상태
-  const c = S.cw; Object.assign(c, { v2: true, tok: DF2.TOK0, lives: DF2.LIVES, t: 0, wave: 0, sq: [], sqT: 0, sqI: 1, clr: false, kills: 0, ne: 0, ros: [], pick: null });
+  const c = S.cw; Object.assign(c, { v2: true, tok: DF2.TOK0, lives: DF2.LIVES, t: 0, wave: 0, sq: [], sqT: 0, sqI: 1, clr: false, kills: 0, ne: 0, ros: [], sum: null /* 고른 소환 타일 (c.pick 은 예전 디펜스 정비 시간 = 시간 멈춤) */ });
   if (!S.place) S.place = { a: [], e: [] }; S.place[c.me] = Array(TILES).fill(null); S.place[OPP()] = Array(TILES).fill(null); /* 칸은 소환 자리일 뿐 (지후는 c.ros) */
   c.deck = (S.deck[c.me] || []).filter(id => CHARS[id]).slice(0, 5); D2B.cs = null;
 }
@@ -13059,10 +13059,10 @@ function df2Summon(id, t) { // 토큰을 내고 칸 t 에 소환 → 자동 합�
   const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); df2Put(r, q.x, q.y); e7Add('deploy'); df2Merge();
   if (!S.fast) { sfx('place'); df2Render(); } return true;
 }
-function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.pick = c.pick === id ? null : id; df2Render(); } // 타일 누르기: 고르기 · 다시 누르면 취소
+function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.sum = c.sum === id ? null : id; df2Render(); } // 타일 누르기: 고르기 · 다시 누르면 취소
 function df2Field(e) { // 전장 누르기 (전투 중): 카드를 고른 채 내 칸을 누르면 소환 (토큰이 남으면 계속 고른 채)
-  const c = S.cw, el = e.target.closest('.tile[data-tile]'); if (!c.pick || !el || el.dataset.side !== c.me) return false;
-  df2Summon(c.pick, Number(el.dataset.tile)); if (c.tok + 1e-9 < tokCost(c.pick) || c.ros.length >= DF2.MAX) c.pick = null; df2Render(); return true;
+  const c = S.cw, el = e.target.closest('.tile[data-tile]'); if (!c.sum || !el || el.dataset.side !== c.me) return false;
+  df2Summon(c.sum, Number(el.dataset.tile)); if (c.tok + 1e-9 < tokCost(c.sum) || c.ros.length >= DF2.MAX) c.sum = null; df2Render(); return true;
 }
 function df2Bot() { // 시험용 자동: 덱에서 무작위 (같은 지후가 둘이 되면 알아서 합체) · 칸은 무작위
   const c = S.cw; if (c.ros.length >= DF2.MAX) return; const deck = c.deck.filter(id => tokCost(id) <= c.tok); if (!deck.length) return;
@@ -13074,17 +13074,17 @@ function df2BarInit() {
   let el = $('df2Hud'); const c = S.cw;
   if (!el) { el = document.createElement('div'); el.id = 'df2Hud'; $('screen-battle').appendChild(el);
     el.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) df2Pick(Number(b.dataset.i)); });
-    document.addEventListener('keydown', e => { const k = S.cw; if (!k || !k.v2 || S.phase !== 'combat' || (e.target.closest && e.target.closest('input, textarea'))) return; const n = '12345'.indexOf(e.key); if (n >= 0 && k.deck[n]) { e.preventDefault(); df2Pick(n); } else if (e.key === 'Escape' && k.pick) { k.pick = null; df2Render(); } }); }
+    document.addEventListener('keydown', e => { const k = S.cw; if (!k || !k.v2 || S.phase !== 'combat' || (e.target.closest && e.target.closest('input, textarea'))) return; const n = '12345'.indexOf(e.key); if (n >= 0 && k.deck[n]) { e.preventDefault(); df2Pick(n); } else if (e.key === 'Escape' && k.sum) { k.sum = null; df2Render(); } }); }
   el.innerHTML = `<div class="d2-tk">${H4_COIN}<b></b><span class="d2-n"><b></b> / ${DF2.MAX}</span></div><div class="d2-row">` + c.deck.map((id, i) => `<button type="button" class="d2-c r-${CHARS[id].rarity}" data-i="${i}" aria-label="${esc(CHARS[id].name)} 소환"><span class="d2-p">${pic(id)}</span><span class="d2-k">${i + 1}</span><span class="d2-cost"><i></i>${tokCost(id)}</span></button>`).join('') + '</div>';
   const t = el.querySelectorAll('.d2-tk b'); D2B.tok = t[0]; D2B.n = t[1]; D2B.cs = [...el.querySelectorAll('.d2-c')]; c._pk = null; df2BarHud(); viewDirty();
 }
 function df2BarHud() { // 토큰 · 지후 수 · 고른 타일이 바뀔 때만
-  const c = S.cw; if (!D2B.cs) return; const k = c.tok + '/' + c.ros.length + '/' + c.pick; if (c._pk === k) return; c._pk = k; const full = c.ros.length >= DF2.MAX;
+  const c = S.cw; if (!D2B.cs) return; const k = c.tok + '/' + c.ros.length + '/' + c.sum; if (c._pk === k) return; c._pk = k; const full = c.ros.length >= DF2.MAX;
   D2B.tok.textContent = c.tok.toFixed(1); D2B.n.textContent = c.ros.length;
-  D2B.cs.forEach((b, i) => { const id = c.deck[i], off = full || c.tok + 1e-9 < tokCost(id), on = c.pick === id; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); });
+  D2B.cs.forEach((b, i) => { const id = c.deck[i], off = full || c.tok + 1e-9 < tokCost(id), on = c.sum === id; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); });
 }
 function df2Tiles() { // 내 칸: 카드를 골랐으면 모두 밝게 (hot) · 상대 칸은 숨긴다 (CSS)
-  const c = S.cw, f = $('field'); if (!f) return; const hot = !!c.pick && c.ros.length < DF2.MAX;
+  const c = S.cw, f = $('field'); if (!f) return; const hot = !!c.sum && c.ros.length < DF2.MAX;
   f.querySelectorAll('.tile.ally').forEach(el => { el.style.opacity = ''; if (el.classList.contains('hot') !== hot) el.classList.toggle('hot', hot); });
 }
 function df2Render() { const c = S.cw; if (!c || S.fast) return; if (!D2B.cs) df2BarInit(); c._pk = null; df2BarHud(); df2Tiles(); cwHud(true); } // cwRender 대신
@@ -13254,7 +13254,7 @@ function loopBody(ts) {
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
   const simMs = performance.now() - simT0;
   const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); ubSync(); camYaw(real); camFollow(real); cvDraw(); drawShots(); monoDraw(); fmbTick(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
-  if (S.cw && S.cw.df) setRing(Math.max(0, DF.EWAVE - S.cw.et), DF.EWAVE); else if (S.cw) setRing(S.cw.sd ? 0 : Math.max(0, cwWv() - S.cw.t), cwWv()); else setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME); /* R2.33: 다음 웨이브까지 */
+  if (S.cw && S.cw.v2) setRing(S.cw.wave ? Math.max(0, DF2.WAVE - S.cw.t) : Math.max(0, DF2.FIRST - S.cw.t), S.cw.wave ? DF2.WAVE : DF2.FIRST); /* R3.6 새 디펜스: 웨이브 남은 시간 */ else if (S.cw && S.cw.df) setRing(Math.max(0, DF.EWAVE - S.cw.et), DF.EWAVE); else if (S.cw) setRing(S.cw.sd ? 0 : Math.max(0, cwWv() - S.cw.t), cwWv()); else setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME); /* R2.33: 다음 웨이브까지 */
   if (S.phase === 'combat' && S.cw) { cwHud(); benchFrame(real * 1000, simMs); } /* R2.33: 승률 대신 성 체력 */ else if (S.phase === 'combat') { if (!S._oddsC || S.time - S._oddsC.t >= 0.2 || S.time < S._oddsC.t) S._oddsC = { t: S.time, p: allyOdds() }; const p = S._oddsC.p, mine = ME() === 'a' ? p : 100 - p; botMind.oddsTick(p / 100); if (S._oddsW !== mine) { S._oddsW = mine; $('hudOdds').hidden = false; $('oddsA').textContent = mine + '%'; $('oddsE').textContent = (100 - mine) + '%'; $('oddsBar').style.width = mine + '%'; } /* R2.12.1: 바뀔 때만 */ benchFrame(real * 1000, simMs); }
 }
 
@@ -16682,7 +16682,8 @@ async function fmSpectate(f) {
 const MM = { on: false, t0: 0, iv: 0, tv: 0, fv: 0, unsub: null, busy: false, ask: 0, botAt: 0, err: '' };
 const MM_ASK = 50000, MM_FRESH = 45000, MM_RECENT = 25000;
 const mmRef = uid => FB.sdk.doc(FB.db, 'mmq', uid), omRef = id => FB.sdk.doc(FB.db, 'omatch', id);
-function mmModeSet(on) { profile.mmOn = !!on; if (on && profile.evOn) profile.evOn = false; save(); u2Render(); } // 로비 모드 버튼: 일반전 · 이벤트 모드 · 온라인
+function mmModeSet(on) { profile.mmOn = !!on; if (on) profile.dfOn = false; if (on && profile.evOn) profile.evOn = false; save(); u2Render(); }
+function dfModeSet() { profile.dfOn = true; profile.mmOn = false; profile.evOn = false; save(); u2Render(); } // R3.6 로비 디펜스 탭: 전투 시작 = 디펜스 (에너지 1) // 로비 모드 버튼: 일반전 · 이벤트 모드 · 온라인
 async function mmStart() {
   if (MM.on || (S.phase && S.phase !== 'idle')) return;
   const deck = fmDeck(); if (deck.length < 5) { banner(deckNeedMsg()); return; }
@@ -18433,6 +18434,7 @@ const PATCH_NOTES = [
   { v: 'R3.6', date: '2026.11.25', title: '새 디펜스 모드', sections: [
     { title: '새 디펜스', items: [
       { icon: '🛡', name: '새 디펜스', tag: 'new', desc: '카드를 고르고 전장의 <b>3×5칸</b>을 누르면 소환 · 지후는 자유롭게 움직여요 · 최대 <b>15기</b> · 웨이브 <b>무한</b> · 10웨이브마다 <b>보스</b>' },
+      { icon: '🚪', name: '디펜스 입구', tag: 'system', desc: '로비 오른쪽 아래 <b>디펜스</b> 탭 → 전투 시작 (⚡ 1)' },
       { icon: '🪙', name: '토큰', tag: 'system', desc: '시작 <b>5</b> · 처치 <b>0.1~0.5</b> (적 체력 비례) · 웨이브 클리어 <b>+2</b>' },
       { icon: '🔗', name: '합체', tag: 'system', desc: '같은 지후 · 같은 레벨이 둘이 되면 <b>자동 합체</b> (Lv+1) · 쓰러진 지후는 다음 웨이브에 다시 나와요' },
       { icon: '👾', name: '한철 15종', tag: 'new', desc: '흑화 한철은 기절 · 명중률 감소 · 가속 · 회복 · 소환 · 근접 공격 · 플라잉한철은 사거리 6칸 이상만 맞혀요' },
@@ -21818,8 +21820,8 @@ function u4Extra(v) {
   const deck = [0, 1, 2, 3, 4].map(i => { const id = profile.deck[i], c = id && CHARS[id], n = c ? (RAR[c.rarity] || 1) : 0; return { has: !!c, none: !c, src: c ? u2Img(id) : '', name: c ? c.name : '', rk: c ? rkN(enhLv(id)) : '', w: U4_W[i], dl: (i * 0.05).toFixed(2) + 's', on: '■'.repeat(n), off: '■'.repeat(4 - n) }; });
   const nav = u.nav.filter(n => n.t !== '전투').map((n, i) => Object.assign({}, n, { ix: String(i + 1).padStart(2, '0') }));
   const ev = !!(profile.evOn && CFG.EV_ENABLED);
-  const mm = !!profile.mmOn, modes = [['일반전', !ev && !mm, () => { if (mm) mmModeSet(false); if (ev) evModeTog(); }]].concat(CFG.EV_ENABLED ? [['이벤트 모드', ev && !mm, () => { if (mm) mmModeSet(false); if (!ev) evModeTog(); }]] : [], [['온라인', mm, () => mmModeSet(true)]]).map(([t, on, go]) => ({ t, go, cls: on ? 'on' : '' })); /* R3.4 build 7: 디펜스 (임시 삭제) → 온라인 매칭 */
-  if (mm) u.play = () => mmStart();
+  const mm = !!profile.mmOn, df = !!profile.dfOn && !mm, modes = [['일반전', !ev && !mm && !df, () => { profile.dfOn = false; if (mm) mmModeSet(false); if (ev) evModeTog(); else u2Render(); }]].concat(CFG.EV_ENABLED ? [['이벤트', ev && !mm && !df, () => { profile.dfOn = false; if (mm) mmModeSet(false); if (!ev) evModeTog(); else u2Render(); }]] : [], [['온라인', mm, () => mmModeSet(true)], ['디펜스', df, () => dfModeSet()]]).map(([t, on, go]) => ({ t, go, cls: on ? 'on' : '' })); /* R3.4 build 7: 온라인 매칭 · R3.6: 디펜스 다시 (새 디펜스) */
+  if (mm) u.play = () => mmStart(); else if (df) u.play = () => dfStart();
   if (u.isUnits) u4UnitsFix(u.un);
   const rcGhost = u.isRecruit ? u4RecruitFix(u.rc) : '';
   if (u.pg && u.pg.tabs) u.pg.tabs.forEach(t => { t.cls = t.on ? 'on' : ''; });
@@ -21832,7 +21834,7 @@ function u4Extra(v) {
     det = Object.assign({}, u.ov, { bw: R === 'common' ? 1 : R === 'rare' ? 2 : 3, bc: leg ? 'var(--u4-acc)' : 'var(--u4-ink)', tagCls: leg ? 'u4-dtag acc' : 'u4-dtag', pips: Array.from({ length: 6 }, (_, i) => ({ cls: i < el ? (i === 5 ? 'on r6' : 'on') : '' })), r6Cls: have && el >= 6 ? 'u4-dbox r6 on' : 'u4-dbox r6', eqCls: 'u4-btn u4-deq' + (!have || inDeck ? ' off' : ''), tabs: (u.ov.tabs || []).map(t => Object.assign({}, t, { cls: t.on ? 'on' : '' })) });
     u.ov = null; }
   const pid = puToday(), pc = CHARS[pid] || CHARS.fire;
-  return { det, cls: (u.isMain ? ' u4-main' : '') + (u.isUnits || u.isUnitsSub ? ' u4-nodock' : '') /* build 9: 지후 탭은 아래 메뉴 없이 (뒤로가기로 나간다) */, rcGhost, deck, nav, modes, goSub: profile.mmOn ? '온라인 · 유저 대전' : ev ? '이벤트 모드' : '일반전 · 봇 대전', pu: { src: u2Img(pid), name: pc.name, left: puLeft('td') || '-' } };
+  return { det, cls: (u.isMain ? ' u4-main' : '') + (u.isUnits || u.isUnitsSub ? ' u4-nodock' : '') /* build 9: 지후 탭은 아래 메뉴 없이 (뒤로가기로 나간다) */, rcGhost, deck, nav, modes, goSub: profile.mmOn ? '온라인 · 유저 대전' : df ? `디펜스 · 최고 W${profile.dfBest | 0}` : ev ? '이벤트 모드' : '일반전 · 봇 대전', pu: { src: u2Img(pid), name: pc.name, left: puLeft('td') || '-' } };
 }
 function u4UnitsFix(un) { // ui3 값에 ui4 클래스 · 칸을 덧붙인다 (색 대신 클래스)
   const RAR = { common: 1, rare: 2, epic: 3, legend: 4, limited: 4 }, eq = !!UI2.st.equipId;
