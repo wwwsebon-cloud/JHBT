@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.5"><meta name="jihoo-build" content="13"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.6"><meta name="jihoo-build" content="1"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -853,7 +853,7 @@ body.u2-theme .cdp .tags span { background:#2c3553; color:#dfe3f0; } body.u2-the
 #screen-battle .cw-c { position:relative; aspect-ratio:1; max-height:58px; justify-self:center; width:100%; max-width:58px; border-radius:9px; background:#fff !important; border:2.5px solid var(--rc, #c9c9c6); overflow:hidden; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:26px; }
 #screen-battle .cw-c.e { background:#f1f1ef !important; border:2px dashed #cfcfcb; cursor:default; } .cw-c img { width:100%; height:100%; object-fit:contain; display:block; }
 .cw-c em { position:absolute; right:2px; bottom:2px; min-width:16px; padding:1px 3px; border-radius:5px; background:#111; color:#ffd76a; font:900 11px/1.15 'Pretendard Variable',Pretendard,sans-serif; font-style:normal; text-align:center; }
-.cw-c.sel { outline:3px solid #111; outline-offset:1px; } .cw-c.mg { outline:3px solid #36c98a; outline-offset:1px; } .cw-c.mg::after { content:'Lv↑'; position:absolute; left:2px; top:2px; padding:1px 3px; border-radius:5px; background:#36c98a; color:#fff; font:900 10px/1.15 'Pretendard Variable',Pretendard,sans-serif; }
+.cw-c.sel { outline:3px solid #111; outline-offset:1px; } .cw-c.dd img { filter:grayscale(1) brightness(.75); } #screen-battle.df #cwSummon { display:none; } /* R3.6 새 디펜스: 쓰러진 지후 · 소환 버튼 대신 아래 카드 */ .cw-c.mg { outline:3px solid #36c98a; outline-offset:1px; } .cw-c.mg::after { content:'Lv↑'; position:absolute; left:2px; top:2px; padding:1px 3px; border-radius:5px; background:#36c98a; color:#fff; font:900 10px/1.15 'Pretendard Variable',Pretendard,sans-serif; }
 .cw-c.pop { animation:cwPop .28s cubic-bezier(.2,1.5,.4,1); } @keyframes cwPop { from { transform:scale(.4); opacity:.3; } to { transform:none; opacity:1; } }
 .unit.big { width:150px; height:150px; }
 /* R2.30 신규 지후: 태극 아우라 · 줄 · 폭발 스껄 · 총? 날아감 (transform · opacity 애니메이션만) */
@@ -12111,7 +12111,7 @@ function foes(u) { const r = u.realm || 0; return foeList(u).filter(e => e.alive
 function targets(u) { return foes(u).filter(e => !(e.st.stealth > 0) && !(e.st.dive > 0) && !(e.yeetT > 0)); } // [은신]은 노리지 못한다 (범위 공격에는 맞는다) · [잠수]는 아무것도 닿지 않는다
 function friends(u) { const r = u.realm || 0; return sideIx()[u.side].filter(e => e.alive && (e.realm || 0) === r && !e.def.castle); } /* R2.33: 성은 아군 버프 · 회복 대상이 아니다 */
 function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
-const canTarget = (u, e) => e.alive && e !== u && (e.realm || 0) === (u.realm || 0) && !(e.st.stealth > 0) && !(e.st.dive > 0) && !(e.yeetT > 0) && (u.st.charm > 0 ? e.side === u.side : (e.side !== u.side || !!e.vdOn)); /* R3.2 build 3 부두술사 */
+const canTarget = (u, e) => e.alive && e !== u && (e.realm || 0) === (u.realm || 0) && !(e.st.stealth > 0) && !(e.st.dive > 0) && !(e.yeetT > 0) && (u.st.charm > 0 ? e.side === u.side : (e.side !== u.side || !!e.vdOn)) && !(e.dfFly && u.range < DF2.FLY_R * CFG.CELL); /* R3.2 build 3 부두술사 · R3.6 플라잉한철: 사거리 6칸 미만은 못 노린다 */
 function nearestFoe(u) { let b = null, bd = Infinity; for (const e of foeList(u)) { if (!canTarget(u, e)) continue; const dx = e.x - u.x, dy = e.y - u.y, d = dx * dx + dy * dy; if (d < bd) { bd = d; b = e; } } return b; }
 // 대상 유지 (R2.12): 때리는 중이면 그대로 · 훨씬 가까운 적(80%)이 생기면 바꾼다 · 근접은 자리가 꽉 찬 적 대신 자리가 남은 적
 function pickFoe(u) {
@@ -12158,6 +12158,7 @@ function recut(t) { const f = Math.min(0.9, t.cuts.reduce((n, c) => n + c.f, 0))
 // ── 피해 · 회복 · 상태이상 ──
 function dealDamage(src, t, amount, opts = {}) {
   if (!t.alive || amount <= 0) return 0;
+  if (t.dfFly && src && src.side !== t.side && src.range < DF2.FLY_R * CFG.CELL && !opts.dot) return 0; // R3.6 플라잉한철: 사거리 6칸 미만 지후의 공격 · 스킬을 받지 않는다
   if (t.vdOn && src && src !== t && !opts.vdx) { const c = t.vd && t.vd.t, al = src.side === t.side, k = al ? 0.9 : 0.5; /* R3.5 리워크: 아군에게 맞으면 10% 만 받고 90% 전이 · 적에게는 50 · 50% */ if (c && c.alive) dealDamage(src, c, amount * k, { lite: true, noCrit: true, vdx: true, dot: true }); amount *= 1 - k; /* R3.4 build 8: 25 · 75% → 50 · 50% */ } /* R3.2 build 4 부두술사: 누구에게 맞든 25% 만 받고 저주한 적에게 150% (build 3: 아군만 · 25%) */
   if (t.def.plCall && !t.plDone && src && src !== t && src.side !== t.side) paladinCall(t, src); /* R3.2 build 3 팔라딘 지후: 처음 적에게 맞으면 */
   if (t.dcStore) t.dcStore.v += amount; /* R3.3 build 7: 피해는 그대로 받는다 (버티면 피날레) */ /* R3.1 build 5 오케스트라 [다카포]: 받는 피해를 모은다 */
@@ -12285,7 +12286,7 @@ function killUnit(u) {
   S.lastDeath = { x: u.x, y: u.y }; sfx('death');
   if (!S.replay && !u.leak && u.side === OPP() && S.phase === 'combat' && (S.net ? S.net.ranked && !S.net.spec : !S.arc && !sandboxLike())) ruAdd(1); /* R3.4 build 9 지후 유적: 일반전만 */
   if (!S.net && !S.replay && !sandboxLike() && !(S.arc && S.arc.kind === 'tutorial') && u.side === OPP() && S.phase === 'combat' && !u.leak) { profile.ach.kills++; questAdd('kills', 1); } // 일일 퀘스트 · 업적: 봇전에서 적 처치
-  u.alive = false; u.deadAt = S.time; if (S.cw && u.cwU) { const gs = u.side === 'a' ? 'e' : 'a'; S.cw.gold[gs] += CW.KILL * (S.cw.df ? DF.KILL_K : 1) * (S.cw.df && S.cw.evs.bounty && gs === S.cw.me && Math.random() < 0.1 ? 2 : 1); /* build 5: 디펜스 처치 골드 ×0.5 */ } /* R2.33 성뿌수기: 처치 골드 */ u.vx = 0; u.vy = 0; u.desVx = 0; u.desVy = 0; u._engaged = false; S.deaths = (S.deaths || 0) + 1; // S.deaths: 진영 목록 캐시 (sideIx)
+  u.alive = false; u.deadAt = S.time; if (u.dfF && !u.leak) df2Kill(u); if (u.df2A) df2Down(u); /* R3.6 새 디펜스 */ if (S.cw && u.cwU) { const gs = u.side === 'a' ? 'e' : 'a'; S.cw.gold[gs] += CW.KILL * (S.cw.df ? DF.KILL_K : 1) * (S.cw.df && S.cw.evs.bounty && gs === S.cw.me && Math.random() < 0.1 ? 2 : 1); /* build 5: 디펜스 처치 골드 ×0.5 */ } /* R2.33 성뿌수기: 처치 골드 */ u.vx = 0; u.vy = 0; u.desVx = 0; u.desVy = 0; u._engaged = false; S.deaths = (S.deaths || 0) + 1; // S.deaths: 진영 목록 캐시 (sideIx)
   clearTelegraph(u); r3Kill(u); /* R3.0 처치 피드 */
   if (u.el) { u.el.classList.add('dead'); spawnDeathEffect(u); }
   (u.fx || []).forEach(e => e.remove()); u.fx = []; if (u.ufxEl) { u.ufxEl.remove(); u.ufxEl = null; }
@@ -12739,7 +12740,7 @@ function cwStart() {
   S.phase = 'combat'; S.time = 0; acc = 0; lastTs = 0; S.started = true; S.lastDmgAt = 0; S.stallEnded = false; S.odds = []; S.rk++;
   clearInterval(S.timer); S.pick = null; S.moveSel = null; S.pool = [];
   uidSeq = 0; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.timed = []; S.rel = { a: {}, e: {} }; S.relAcc = 0; S.relLog = []; S.fx = [];
-  const df = isDf(); if ($('cwUp')) $('cwUp').innerHTML = ''; S.cw = { df, me: ME(), up: {}, evs: {}, evL: [], fuseN: 0, k: null, pick: null, lives: DF.LIVES, ne: 0, wt: 0, et: DF.EWAVE - DF.FIRST, mw: 0, gold: { a: CW.START, e: CW.START }, cost: { a: CW.COST0, e: CW.COST0 }, wave: 0, t: df ? DF.WAVE - DF.FIRST : CW.WAVE - CW.FIRST, /* 첫 웨이브까지 10초 */ sd: false, rage: { a: 0, e: 0 }, botT: 1, purgeT: 0, gone: {}, sel: null, castle: {} };
+  const df = isDf(); if ($('cwUp')) $('cwUp').innerHTML = ''; S.cw = { df, me: ME(), up: {}, evs: {}, evL: [], fuseN: 0, k: null, pick: null, lives: DF.LIVES, ne: 0, wt: 0, et: DF.EWAVE - DF.FIRST, mw: 0, gold: { a: CW.START, e: CW.START }, cost: { a: CW.COST0, e: CW.COST0 }, wave: 0, t: df ? DF.WAVE - DF.FIRST : CW.WAVE - CW.FIRST, /* 첫 웨이브까지 10초 */ sd: false, rage: { a: 0, e: 0 }, botT: 1, purgeT: 0, gone: {}, sel: null, castle: {} }; if (df) df2Init(); /* R3.6 새 디펜스 */
   const f = S.fast ? null : $('field'); if (f) cwUi(true); /* R2.33.1: PC 폭을 줄인 다음 fitField */
   if (f) { CAM.follow = true; CAM.user = false; CAM.fz = null; CAM.az = null; fitField(); hideRangeRing(); renderField(); /* R2.34: 성뿌수기 · 디펜스도 카메라가 따라간다 (AUTO) */ f.querySelectorAll('.unit, .ufx').forEach(el => el.remove()); f.querySelectorAll('.tile').forEach(t => { t.style.opacity = '.35'; }); }
   if (!df) ['a', 'e'].forEach(side => { const q = cwCastleXY(side), u = makeUnit(side, 'castle', 1, q.x, q.y); u.big = true; S.cw.castle[side] = u; if (f) { u.el = unitEl(u); u.el.classList.add('big'); f.appendChild(u.el); drawUnit(u); } S.units.push(u); });
@@ -12882,7 +12883,7 @@ function dfLeak(u) { // 적이 들어왔다: 라이프 −1 · 그 적은 사라
   const c = S.cw; c.lives--; u.cwU = false; u.leak = true; u.hp = 0; drawUnit(u); killUnit(u); if (!S.fast) shake(true); /* build 2: 글 없이 흔들림 · 라이프만 */ dfRallyCheck();
   if (c.evs.miracle && !c.mirUsed && c.lives <= 1) { c.mirUsed = 1; c.lives = 1; for (const e of S.units) if (e.alive && e.side !== c.me) { e.hp = 0; drawUnit(e); killUnit(e); } if (!S.fast) { banner('🙏 자네는 기적을 믿나?'); shake(true); } } // [기적]: 라이프 1 → 모든 적 즉사 (1회)
 }
-function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · 내 출격 20초 · 적 웨이브 10초 (또는 적을 다 잡으면 바로 · 웨이브 시작 1초 뒤부터)
+function dfStep(dt) { if (S.cw.v2) return df2Step(dt); /* R3.6 새 디펜스 */ // 디펜스 한 스텝: 들어온 적 → 라이프 · 내 출격 20초 · 적 웨이브 10초 (또는 적을 다 잡으면 바로 · 웨이브 시작 1초 뒤부터)
   const c = S.cw; let ne = 0; c.t += dt; c.wt += dt; c.et += dt; dfStats(c);
   if (c.evs.ai) cwSummon(c.me); // [최첨단 AI]
   if (c.evs.pork && (c.porkT = (c.porkT || 0) + dt) >= 1) { c.porkT -= 1; for (const u of S.units) if (u.alive && u.side === c.me) dfHeal(u, u.maxHp * 0.02); } // [양념돼지목살]
@@ -12892,6 +12893,184 @@ function dfStep(dt) { // 디펜스 한 스텝: 들어온 적 → 라이프 · �
   c.t = c.et; // build 8: 내 출격은 웨이브 시작 때 같이 (dfFoeGo) · 막대는 다음 웨이브까지
   c.botT -= dt; if (c.botT <= 0) { c.botT = 0.7 + Math.random() * 0.9; if (c.auto) cwBot(ME()); } // auto: 시험용 (내 쪽도 봇)
   c.purgeT += dt; if (c.purgeT >= 2) { c.purgeT = 0; cwPurge(); }
+}
+// ═════════ R3.6 새 디펜스 (타워디펜스형 · DF2) ═════════
+// 내 3×5칸에 토큰으로 지후를 소환 (같은 지후 · 같은 레벨 둘 → Lv+1) · 체력만 있는 한철들이 상대 진영 끝에서 내 진영 끝으로 걸어온다
+// 웨이브: 적을 다 잡으면 (클리어 +2 토큰 · 2초 뒤) 또는 20초가 지나면 다음 · 10웨이브마다 보스 · 처치 보상 0.1 ~ 0.5 (체력 비례 · 로그)
+// 적은 아군과 부딪히지만 질량이 무한 (invMass 0) → 아군만 밀려나고 적은 정해진 속도로 간다 · 적끼리는 겹친다
+const DF2 = {
+  TOK0: 5, CLEAR: 2, WAVE: 20, FIRST: 8, GAP: 2, LIVES: 20, BOSS_LEAK: 5, BOSS_EVERY: 10, BOSS_K: 1.25,
+  REW: [0.1, 0.5], /* 처치 보상 (체력 50 → 0.1 · 6,000 이상 → 0.5) */
+  SPAWN_WIN: 10, SPAWN_MAX: 1, /* 적은 웨이브 처음 10초에 나눠 나온다 (간격 최대 1초) */
+  FLY_R: 6, /* 플라잉한철: 사거리 6칸 미만 지후는 노리지도 · 맞히지도 못한다 */
+  HP: [[1, 500], [10, 3200], [20, 7500], [30, 12500], [45, 22000], [60, 34000], [80, 57000], [100, 95000]], /* 웨이브 총 체력 (사이는 로그 보간 · 100 뒤는 마지막 구간 증가율) */
+  IMM: ['stun', 'freeze', 'frost', 'sleep', 'ban', 'charm', 'fear', 'taunt', 'hyp', 'lock', 'seal', 'blind'], /* 스테인리스한철이 무시하는 상태 */
+  MUT: { /* 변이 능력 (초안 수치) */
+    rifle: { cd: 15, n: 3, sec: 10 }, /* 아군 3기 10초 기절 */
+    blind: { cd: 20, n: 5, sec: 30, amt: 0.5 }, /* 아군 5기 30초 명중률 −50% */
+    accel: { cd: 12, n: 5, sec: 8, k: 1.5 }, /* 적 5기 8초 이동속도 ×1.5 (보스 제외) */
+    heal: { cd: 3, r: 2.5, pct: 0.1 }, /* 반경 2.5칸 적 최대 체력 10% 회복 */
+    necro: { cd: 15, n: 3, max: 2, id: 'hcThick' }, /* 두꺼운한철 3마리 · 2번까지 (보상 없음) */
+    melee: { cd: 1, r: 1.3, dmg: 150 }, /* 걸어가며 1.3칸 안의 아군 하나를 1초마다 150 */
+  },
+};
+// 적 도감 (같은 종류는 체력 고정 · from = 처음 나오는 웨이브 · cap = 한 웨이브 최대 마릿수 · sp = 칸/초) — 변이를 늘릴 때는 여기에 한 줄
+const DF2_FOES = [
+  { id: 'hcBasic', name: '그냥한철', hp: 50, sp: 1, from: 1, col: '#b8c0c8' },
+  { id: 'hcFast', name: '빠른한철', hp: 40, sp: 2, from: 1, col: '#6cc4f0', fx: 'fast' },
+  { id: 'hcThick', name: '두꺼운한철', hp: 400, sp: 1, from: 7, col: '#b08a5a', fx: 'brow' },
+  { id: 'hcSword', name: '흑화 검', hp: 1500, sp: 1, from: 15, cap: 3, mut: 'melee', col: '#4a2f5e', badge: '#f39c12' },
+  { id: 'hcRush', name: '돌진한철', hp: 800, sp: 2, from: 19, col: '#f07a3a', fx: 'fast' },
+  { id: 'hcRifle', name: '흑화 라이플', hp: 1700, sp: 1, from: 19, cap: 2, mut: 'rifle', col: '#4a2f5e', badge: '#e74c3c' },
+  { id: 'hcShot', name: '흑화 주사', hp: 2000, sp: 1, from: 22, cap: 2, mut: 'blind', col: '#4a2f5e', badge: '#2ecc71' },
+  { id: 'hcAccel', name: '흑화 가속', hp: 2000, sp: 1, from: 22, cap: 3, mut: 'accel', col: '#4a2f5e', badge: '#3498db' },
+  { id: 'hcNecro', name: '흑화 네크로맨서', hp: 1200, sp: 1, from: 25, cap: 2, mut: 'necro', col: '#4a2f5e', badge: '#9b59b6' },
+  { id: 'hcZara', name: '자라니한철', hp: 999, sp: 3, from: 30, col: '#8fd14f', fx: 'fast' },
+  { id: 'hcSlow', name: '느린한철', hp: 3000, sp: 0.5, from: 30, col: '#6b7b8c', fx: 'brow' },
+  { id: 'hcHeal', name: '흑화 힐', hp: 3000, sp: 1, from: 30, cap: 3, mut: 'heal', col: '#4a2f5e', badge: '#ff8fb1' },
+  { id: 'hcFly', name: '플라잉한철', hp: 1000, sp: 1.3, from: 35, col: '#b49cf8', fly: 1 },
+  { id: 'hcSteel', name: '스테인리스한철', hp: 4000, sp: 1.3, from: 44, col: '#d5dbe1', imm: 1 },
+  { id: 'hcGiant', name: '자이언트한철', hp: 6000, sp: 0.5, from: 48, col: '#55597a', fx: 'brow' },
+  { id: 'hcBoss', name: '보스한철', hp: 1000, sp: 0.7, from: 9999, col: '#e8b923', boss: 1 }, /* 체력 = 그 웨이브 총 체력 × 1.25 */
+];
+const DF2_FOE = {};
+function df2Pic(f) { // 한철 얼굴 (SVG · 흰 바탕) — 흑화는 보라 몸 · 빨간 눈 · 능력 색 딱지
+  const ink = '#1d1d1f', ey = f.mut ? '#ff3b3b' : ink;
+  let back = '', front = '';
+  if (f.fly) back += `<ellipse cx="11" cy="30" rx="10" ry="6" fill="#fff" stroke="${ink}" stroke-width="2.5"/><ellipse cx="53" cy="30" rx="10" ry="6" fill="#fff" stroke="${ink}" stroke-width="2.5"/>`;
+  if (f.fx === 'fast') back += `<path d="M2 30h9M0 38h11M3 46h9" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`;
+  if (f.fx === 'brow') front += `<path d="M17 24l11 4M47 24l-11 4" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`;
+  if (f.imm) front += `<path d="M18 22q6-8 14-8" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  if (f.boss) front += `<path d="M18 16l4-12 6 8 4-10 4 10 6-8 4 12z" fill="#ffd23f" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  if (f.badge) front += `<circle cx="50" cy="50" r="8" fill="${f.badge}" stroke="${ink}" stroke-width="2.5"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#fff"/>${back}<circle cx="32" cy="36" r="22" fill="${f.col}" stroke="${ink}" stroke-width="3"/><circle cx="24" cy="33" r="6" fill="#fff"/><circle cx="40" cy="33" r="6" fill="#fff"/><circle cx="25" cy="34" r="3" fill="${ey}"/><circle cx="41" cy="34" r="3" fill="${ey}"/><path d="M26 45q6 4 12 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>${front}</svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도 하한 없음 · 칸/초 그대로) · 넉백 뒤에는 원래 줄로 돌아온다
+  const c = S.cw; if (!c || !c.v2) return false; const bd = backDir(c.me), f = DF2_FOE[u.id];
+  const k = (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) * (f.imm ? 1 : Math.max(0.2, 1 + buffSum(u, 'spd'))), sp = u.speed * k;
+  if (bd.x) { u.desVx = bd.x * sp; u.desVy = (u.lane - u.y) * 1.5; } else { u.desVy = bd.y * sp; u.desVx = (u.lane - u.x) * 1.5; }
+  return true;
+}
+DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: df2Pic(f), color: f.col, dfFoe: true }; });
+const df2R1 = v => Math.round(v * 10) / 10;
+const df2Rew = hp => clamp(df2R1(0.1 + 0.4 * Math.log(Math.max(1, hp / 50)) / Math.log(120)), DF2.REW[0], DF2.REW[1]); // 처치 보상: 체력 비례 (로그 · 0.1 단위)
+function df2Hp(w) { // 웨이브 총 체력: 기준점 사이를 매 웨이브 같은 비율로
+  const P = DF2.HP; if (w <= P[0][0]) return P[0][1];
+  for (let i = 1; i < P.length; i++) { const [w1, h1] = P[i], [w0, h0] = P[i - 1]; if (w <= w1) return h0 * Math.pow(h1 / h0, (w - w0) / (w1 - w0)); }
+  const [wa, ha] = P[P.length - 2], [wb, hb] = P[P.length - 1]; return hb * Math.pow(hb / ha, (w - wb) / (wb - wa));
+}
+function df2Plan(w) { // 웨이브 구성: 총 체력 예산을 도감 적으로 채운다 (웨이브 번호가 시드 · 목표 평균 체력에 가까울수록 · 느릴수록 잘 뽑힌다)
+  const r = mulberry32(w * 7919 + 13), B = df2Hp(w), pool = DF2_FOES.filter(f => !f.boss && f.from <= w), avg = B / Math.min(40, 10 + Math.floor(w / 2)), cnt = {}, out = []; let rem = B;
+  const wt = f => 1 / (1 + Math.pow(Math.log(f.hp / avg), 2)) / Math.max(1, f.sp) * (f.mut ? 0.6 : 1);
+  for (let g = 0; g < 80; g++) {
+    const C = pool.filter(f => f.hp <= rem && !(f.cap && (cnt[f.id] | 0) >= f.cap)); if (!C.length) break;
+    let s = 0; for (const f of C) s += wt(f); let x = r() * s, pick = C[C.length - 1];
+    for (const f of C) { x -= wt(f); if (x <= 0) { pick = f; break; } }
+    out.push(pick.id); cnt[pick.id] = (cnt[pick.id] | 0) + 1; rem -= pick.hp;
+  }
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const tmp = out[i]; out[i] = out[j]; out[j] = tmp; }
+  return out;
+}
+function df2Init() { // cwStart 끝: 새 디펜스 상태
+  const c = S.cw; Object.assign(c, { v2: true, tok: DF2.TOK0, lives: DF2.LIVES, t: 0, wave: 0, sq: [], sqT: 0, sqI: 1, clr: false, kills: 0, ne: 0, sel: null });
+  if (!S.place) S.place = { a: [], e: [] }; S.place[c.me] = Array(TILES).fill(null); S.place[OPP()] = Array(TILES).fill(null);
+}
+function df2SpawnXY() { // 상대 진영 끝 · 줄은 무작위
+  const bd = backDir(S.cw.me), W = FW(), H = FH(), m = CFG.CELL * 0.6, lane = CFG.CELL * 1.2;
+  if (bd.x) return { x: bd.x < 0 ? W - m : m, y: lane + rng() * (H - lane * 2) };
+  return { x: lane + rng() * (W - lane * 2), y: bd.y < 0 ? H - m : m };
+}
+function df2Spawn(id, at) {
+  const c = S.cw, f = DF2_FOE[id], q = at || df2SpawnXY(), u = makeUnit(OPP(), id, 1, q.x, q.y), el = S.fast ? null : $('field');
+  if (f.boss) { u.baseMaxHp = u.maxHp = u.hp = Math.round(df2Hp(c.wave) * DF2.BOSS_K); u.big = true; }
+  u.dfF = true; u.invMass = 0; u.mass = 1e9; /* 무한 질량: 앞을 막아도 밀고 간다 */ u.lane = backDir(c.me).x ? u.y : u.x; if (f.fly) u.dfFly = true;
+  u.mt = f.mut ? DF2.MUT[f.mut].cd * (0.5 + rng() * 0.5) : 0;
+  if (el) { u.el = unitEl(u); if (u.big) u.el.classList.add('big'); el.appendChild(u.el); drawUnit(u); deployFx(u, 'drop'); }
+  S.units.push(u); return u;
+}
+function df2Next() { // 다음 웨이브: 쓰러진 지후 다시 · 유물 초기화 · 적 줄 세우기 (보스는 맨 뒤)
+  const c = S.cw; c.wave++; c.t = 0; c.clr = false; dfRelReset();
+  S.place[c.me].forEach((p, t) => { if (p && p.dead) df2Put(t); });
+  c.sq = df2Plan(c.wave); c.sqI = Math.min(DF2.SPAWN_MAX, DF2.SPAWN_WIN / Math.max(1, c.sq.length)); c.sqT = 0;
+  const boss = c.wave % DF2.BOSS_EVERY === 0; if (boss) c.sq.push('hcBoss');
+  if (!S.fast) { banner(boss ? `👑 보스 웨이브 · WAVE ${c.wave}` : `WAVE ${c.wave}`); sfx('battle_start'); cwRender(); }
+}
+function df2Mut(u, dt) { // 흑화 능력 (기절 · 명중률 · 가속 · 힐 · 소환 · 근접 공격)
+  if (blocked(u) || (u.mt -= dt) > 0) return;
+  const f = DF2_FOE[u.id], m = DF2.MUT[f.mut], me = S.cw.me; u.mt = m.cd;
+  const allies = () => S.units.filter(a => a.alive && a.side === me && !a.def.castle);
+  const pickN = (L, n) => { const o = []; L = L.slice(); while (o.length < n && L.length) o.push(L.splice(Math.floor(rng() * L.length), 1)[0]); return o; };
+  switch (f.mut) {
+    case 'rifle': pickN(allies(), m.n).forEach(a => { A.status(a, 'stun', m.sec); if (!S.fast) fxRing(a.x, a.y, CFG.CELL * 0.6, 'rgba(255,80,80,.9)', 450, 4); }); break;
+    case 'blind': pickN(allies(), m.n).forEach(a => blindOn(a, m.sec, m.amt)); break;
+    case 'accel': pickN(S.units.filter(e => e.alive && e.dfF && e !== u && !DF2_FOE[e.id].boss), m.n).forEach(e => { e.dfAccT = S.time + m.sec; if (!S.fast) fxRing(e.x, e.y, CFG.CELL * 0.5, 'rgba(60,150,255,.9)', 400, 3); }); break;
+    case 'heal': { const R = m.r * CFG.CELL; for (const e of S.units) if (e.alive && e.dfF && Math.hypot(e.x - u.x, e.y - u.y) <= R) dfHeal(e, e.maxHp * m.pct); if (!S.fast) fxRing(u.x, u.y, R, 'rgba(90,220,120,.8)', 500, 3); break; }
+    case 'necro': if ((u.nc | 0) < m.max) { u.nc = (u.nc | 0) + 1; for (let i = 0; i < m.n; i++) { const s = df2Spawn(m.id, { x: u.x + (rng() - 0.5) * CFG.CELL * 1.5, y: u.y + (rng() - 0.5) * CFG.CELL * 1.5 }); s.noRew = true; } } break;
+    case 'melee': { let b = null, bd = m.r * CFG.CELL; for (const a of S.units) if (a.alive && a.side === me && !a.def.castle) { const d = Math.hypot(a.x - u.x, a.y - u.y) - unitRadius(a); if (d < bd) { bd = d; b = a; } } if (b) dealDamage(u, b, m.dmg, { noCrit: true }); break; }
+  }
+}
+function df2Leak(u) { const c = S.cw; c.lives -= DF2_FOE[u.id].boss ? DF2.BOSS_LEAK : 1; u.leak = true; u.hp = 0; drawUnit(u); killUnit(u); if (!S.fast) shake(true); } // 들어온 적: 라이프 −1 (보스 −5) · 보상 없음
+function df2Kill(u) { const c = S.cw; if (!c || !c.v2 || u.noRew) return; c.tok = df2R1(c.tok + df2Rew(u.baseMaxHp)); c.kills++; } // killUnit 에서
+function df2Down(u) { const c = S.cw; if (!c || !c.v2) return; const p = S.place[c.me][u.tile]; if (p && p.uid === u.uid) { p.dead = true; if (!S.fast) cwRender(); } } // 쓰러진 지후: 칸은 남고 다음 웨이브에 다시 나온다
+function df2Step(dt) { // dfStep 대신
+  const c = S.cw; c.t += dt; let ne = 0;
+  if (c.wave > 0 && c.sq.length && (c.sqT -= dt) <= 0) { c.sqT = c.sqI; df2Spawn(c.sq.shift()); }
+  for (const u of S.units) { if (!u.alive || !u.dfF) continue; const f = DF2_FOE[u.id];
+    if (f.imm) for (const k of DF2.IMM) if (u.st[k] > 0) u.st[k] = 0;
+    if (f.mut) df2Mut(u, dt); if (dfAtEnd(u)) df2Leak(u); else ne++; }
+  c.ne = ne; if (c.lives <= 0) return cwEnd(OPP(), '라이프 0');
+  if (!c.wave) { if (c.t >= DF2.FIRST) df2Next(); }
+  else if (!c.clr && !c.sq.length && !ne) { c.clr = true; c.tok = df2R1(c.tok + DF2.CLEAR); c.t = Math.max(c.t, DF2.WAVE - DF2.GAP); if (!S.fast) banner(`✨ 클리어 · 🪙 +${DF2.CLEAR}`); }
+  if (c.wave && c.t >= DF2.WAVE) df2Next();
+  c.botT -= dt; if (c.botT <= 0) { c.botT = 0.4 + Math.random() * 0.4; if (c.auto) df2Bot(); }
+  c.purgeT += dt; if (c.purgeT >= 2) { c.purgeT = 0; cwPurge(); }
+}
+// ── 내 칸: 소환 · 합체 ──
+const df2Can = (p, q) => !!(p && q && p.id === q.id && p.lv === q.lv && p.lv < maxLv(p.id));
+function df2Put(t) { // 칸의 지후를 그 자리에 (전장)
+  const me = S.cw.me, p = S.place[me][t]; if (!p) return; const q = tileXY(me, t), u = makeUnit(me, p.id, p.lv, q.x, q.y), f = S.fast ? null : $('field');
+  if (overSet(S.place[me]).has(t)) ovlUnit(u); u.tile = t; u.df2A = true; p.uid = u.uid; p.dead = false;
+  if (f) { u.el = unitEl(u); f.appendChild(u.el); drawUnit(u); } S.units.push(u);
+  if (u.def.onStart) try { u.def.onStart(u, A); } catch (e) { stepErr(u, e); } if (f) deployFx(u, 'drop');
+}
+function df2Pull(p) { // 합체로 빠지는 지후: 죽음 연출 · 보상 없이 치운다
+  const u = p && S.units.find(x => x.uid === p.uid); if (!u || !u.alive) return;
+  u.alive = false; u.deadAt = -99; u.vx = u.vy = u.desVx = u.desVy = 0; S.deaths = (S.deaths || 0) + 1; clearTelegraph(u);
+  (u.fx || []).forEach(e => e.remove()); u.fx = []; if (u.ufxEl) { u.ufxEl.remove(); u.ufxEl = null; } if (u.el) { u.el.remove(); u.el = null; }
+}
+function df2Summon(id) {
+  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || !CHARS[id]) return false; const me = c.me, L = S.place[me], cost = tokCost(id);
+  if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto) banner(`🪙 ${cost} 이 필요해요`); return false; }
+  let t = c.sel != null && !L[c.sel] ? c.sel : -1;
+  if (t < 0) { const fr = []; L.forEach((p, i) => { if (!p) fr.push(i); }); if (!fr.length) { if (!S.fast && !c.auto) banner('칸이 가득 찼어요'); return false; } t = fr[Math.floor(Math.random() * fr.length)]; }
+  c.sel = null; c.tok = df2R1(c.tok - cost); L[t] = { id, lv: 1 }; df2Put(t); e7Add('deploy');
+  if (!S.fast) { sfx('place'); c.pop = t; cwRender(); } return true;
+}
+function df2Fuse(a, b) { const c = S.cw, L = S.place[c.me], id = L[b].id, lv = L[b].lv + 1; df2Pull(L[a]); df2Pull(L[b]); L[a] = null; L[b] = { id, lv }; df2Put(b); e7Add('merge'); if (!S.fast) { sfx('merge'); c.pop = b; } }
+function df2Tap(t) { // 칸 누르기: 고르기 (빈 칸 = 다음 소환 자리) → 같은 지후 · 같은 레벨 칸을 누르면 합체
+  const c = S.cw, L = S.place[c.me];
+  if (c.sel == null || c.sel === t) { c.sel = c.sel === t ? null : t; return cwRender(); }
+  const a = c.sel; c.sel = null; if (df2Can(L[a], L[t])) df2Fuse(a, t); else c.sel = t; cwRender();
+}
+function df2Bot() { // 시험용 자동: 합칠 수 있으면 합체 · 짝이 없는 Lv1 지후를 먼저 · 아니면 덱에서 무작위
+  const c = S.cw, L = S.place[c.me];
+  for (let a = 0; a < TILES; a++) for (let b = a + 1; b < TILES; b++) if (df2Can(L[a], L[b])) { df2Fuse(a, b); if (!S.fast) cwRender(); return; }
+  if (!L.some(p => !p)) return; const deck = (S.deck[c.me] || []).filter(id => CHARS[id] && tokCost(id) <= c.tok); if (!deck.length) return;
+  const lone = deck.filter(id => L.some(p => p && p.id === id && p.lv === 1)); const L2 = lone.length ? lone : deck;
+  df2Summon(L2[Math.floor(Math.random() * L2.length)]);
+}
+function df2UpRender() { // 아래 소환 카드 (내 덱 5기 · 토큰 비용)
+  const c = S.cw, el = $('cwUp'); c._upG = null;
+  el.innerHTML = (S.deck[c.me] || []).filter(id => CHARS[id]).slice(0, 5).map(id => `<button class="cw-u r-${CHARS[id].rarity}" data-sum="${id}"><span class="pp">${pic(id)}</span><b>${esc(CHARS[id].name.replace(/ ?지후$/, ''))}</b><small>🪙 ${tokCost(id)}</small></button>`).join('');
+  df2UpHud();
+}
+function df2UpHud() { const c = S.cw, el = $('cwUp'); if (!el || c._upG === c.tok) return; c._upG = c.tok; el.querySelectorAll('.cw-u').forEach(b => { const off = c.tok + 1e-9 < tokCost(b.dataset.sum); if (b.classList.contains('off') !== off) b.classList.toggle('off', off); }); } // 토큰이 바뀔 때만
+function df2Hud(set) { // cwHud 에서: 토큰 · 라이프 · 남은 적
+  const c = S.cw, left = c.ne + c.sq.length; set('cwGold', c.tok.toFixed(1)); set('cwInc', `클리어 🪙 +${DF2.CLEAR}`);
+  set('oddsA', '❤ ' + Math.max(0, c.lives)); set('oddsE', '적 ' + left); set('oddsLabA', '라이프'); set('oddsLabE', c.wave && c.wave % DF2.BOSS_EVERY === 0 ? '👑 보스' : '남은 적');
+  const w = Math.round(clamp(c.lives / DF2.LIVES, 0, 1) * 100); if (c._w !== w) { c._w = w; $('oddsBar').style.width = w + '%'; }
+  df2UpHud();
 }
 function dfEnd(win, note) { alWhy('디펜스 끝 · ' + (S.cw ? S.cw.wave : 0) + '웨이브'); // R2.34 디펜스 결과: 지난 웨이브 수만큼 열쇠
   const c = S.cw, w = c ? c.wave : 0, keys = dfKeys(Math.max(0, w - 1)), best = w > (profile.dfBest | 0); profile.keys = (profile.keys | 0) + keys; if (best) profile.dfBest = w; if (best || !profile.dfDeck.length) { const dk = ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).slice(0, 5); if (dk.length) { profile.dfDeck = dk; profile.dfRk = dk.map(id => (owned(id) ? clamp(enhLv(id) | 0, 1, ENH_MAX) : 1)); } } /* R2.35 build 11: 리더보드에 그 덱 */ e7Add('dfWave', w, true); postEvent('gacha', (((S.deck && S.deck[c ? c.me : ME()]) || []).find(id => CHARS[id]) || 'fire'), 'df' + w); /* R3.1 build 4 소식 */ discordNotify({ type: 'defense', wave: w, best: !!best, level: profile.level, myDeck: ((S.deck && S.deck[c ? c.me : ME()]) || []).filter(id => CHARS[id]).map(id => CHARS[id].name) }); /* R3.1 build 3 */ /* R2.35 build 6: 한 판 최고 웨이브 */ save(); sfx('match_win'); if (best) dfPush(); /* R2.34 디펜스 리더보드 */
@@ -12953,14 +13132,14 @@ function dfUp(id) { const c = S.cw; if (!c || !c.df || S.phase !== 'combat' || c
   const m0 = dfUpM(id); c.gold[me] -= cost; (c.up || (c.up = {}))[id] = lv + 1; const m1 = dfUpM(id);
   S.units.forEach(u => { if (u.alive && u.side === me && u.id === id && !u.dfE) { dfUpApply(u, m0, m1); if (!S.fast) drawUnit(u); } }); /* 전장에 있는 그 지후도 바로 */
   if (!S.fast) { sfx('merge'); cwUpRender(); cwHud(true); } }
-function cwUpRender() { const c = S.cw, el = $('cwUp'); if (!c || !c.df || S.fast || !el) return; const me = c.me, g = c.gold[me]; c._upG = null;
+function cwUpRender() { const c = S.cw, el = $('cwUp'); if (!c || !c.df || S.fast || !el) return; if (c.v2) return df2UpRender(); const me = c.me, g = c.gold[me]; c._upG = null;
   el.innerHTML = (S.deck[me] || []).filter(id => CHARS[id]).slice(0, 5).map(id => { const lv = dfUpLv(id), cost = DF.UP_COST[lv - 1]; return `<button class="cw-u r-${CHARS[id].rarity}${!cost ? ' max' : g < cost ? ' off' : ''}" data-up="${id}"><span class="pp">${pic(id)}</span><b>Lv.${lv}</b><small>${cost ? '🪙 ' + cost : 'MAX'}</small></button>`; }).join(''); }
-function cwUpHud() { const c = S.cw, el = $('cwUp'); if (!c || !c.df || !el) return; const g = c.gold[c.me]; if (c._upG === g) return; c._upG = g; el.querySelectorAll('.cw-u').forEach(b => { const cost = DF.UP_COST[dfUpLv(b.dataset.up) - 1]; const off = !!cost && g < cost; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); }); } // 골드가 바뀔 때만
+function cwUpHud() { const c = S.cw, el = $('cwUp'); if (!c || !c.df || !el) return; if (c.v2) return df2UpHud(); const g = c.gold[c.me]; if (c._upG === g) return; c._upG = g; el.querySelectorAll('.cw-u').forEach(b => { const cost = DF.UP_COST[dfUpLv(b.dataset.up) - 1]; const off = !!cost && g < cost; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); }); } // 골드가 바뀔 때만
 const CW_ORD = () => { const o = []; for (let c = 0; c < CFG.COLS; c++) for (let r = CFG.ROWS - 1; r >= 0; r--) o.push(r * CFG.COLS + c); return o; }; // R3.0: 슬롯판 칸 순서 (줄마다 왼쪽 후열 → 오른쪽 전열)
 function cwRender() { // 내 슬롯판 (트레이)
   const c = S.cw; if (!c || S.fast) return; const me = ME(), L = S.place[me], sel = c.sel;
-  const ov = overSet(L); $('cwGrid').innerHTML = CW_ORD().map(t => [L[t], t]).map(([p, t]) => { if (!p || !CHARS[p.id]) return `<div class="cw-c e" data-t="${t}"></div>`; const ch = CHARS[p.id], can = sel != null && sel !== t && L[sel] && (dfCan(me, L[sel], p) || jokerCan(L[sel], p));
-    return `<div class="cw-c r-${ch.rarity}${ov.has(t) ? ' ovl' : ''}${sel === t ? ' sel' : ''}${can ? ' mg' : ''}${c.pop === t ? ' pop' : ''}" data-t="${t}">${pic(p.id, p.id === 'taegeuk' ? PORTRAITS.taegeuk_n : p.nk ? ch.portraitUsed : null)}<em>${p.lv}</em></div>`; }).join('');
+  const ov = overSet(L); $('cwGrid').innerHTML = CW_ORD().map(t => [L[t], t]).map(([p, t]) => { if (!p || !CHARS[p.id]) return `<div class="cw-c e${sel === t ? ' sel' : ''}" data-t="${t}"></div>`; const ch = CHARS[p.id], can = sel != null && sel !== t && L[sel] && (dfCan(me, L[sel], p) || jokerCan(L[sel], p));
+    return `<div class="cw-c r-${ch.rarity}${ov.has(t) ? ' ovl' : ''}${sel === t ? ' sel' : ''}${can ? ' mg' : ''}${c.pop === t ? ' pop' : ''}${p.dead ? ' dd' : ''}" data-t="${t}">${pic(p.id, p.id === 'taegeuk' ? PORTRAITS.taegeuk_n : p.nk ? ch.portraitUsed : null)}<em>${p.lv}</em></div>`; }).join('');
   c.pop = null; $('hudCount').textContent = countSide(me); if (c.df && !$('cwUp').children.length) cwUpRender(); cwHud(true);
 }
 function cwHud(force) { // 골드 · 비용 · 웨이브 · 성 체력 (바뀐 값만 · 0.15초에 한 번)
@@ -12969,6 +13148,7 @@ function cwHud(force) { // 골드 · 비용 · 웨이브 · 성 체력 (바뀐 �
   set('cwGold', g.toLocaleString()); set('cwCost', '🪙 ' + cost); set('cwWave', c.wave); set('hudRound', c.wave); set('cwInc', c.sd ? '☠ 서든 데스' : '다음 웨이브 🪙 +' + cwIncome(c.wave));
   const bw = (c.sd ? 1 : clamp(c.t / cwWv(), 0, 1)).toFixed(3); if (c._bw !== bw) { c._bw = bw; $('cwBar').style.transform = `scaleX(${bw})`; }
   const full = !S.place[me].some(p => !p), off = c.sd || (g < cost && !(c.df && c.amT > S.time)) || full, btn = $('cwSummon'); if (btn.disabled !== off) btn.disabled = off; set('cwSumTxt', full ? '가득 참' : '소환');
+  if (c.v2) return df2Hud(set); /* R3.6 새 디펜스 */
   if (c.df) { if (!S._oddsC || S.time - S._oddsC.t >= 0.2 || S.time < S._oddsC.t) S._oddsC = { t: S.time, p: allyOdds() }; const w = ME() === 'a' ? S._oddsC.p : 100 - S._oddsC.p, na = dfAllies(); /* build 6: 위 게이지 = 승률 · 라이프 · 아군 수 */
     set('oddsA', w + '%'); set('oddsE', (100 - w) + '%'); set('oddsLabA', `❤ ${Math.max(0, c.lives)} · 👥 ${na}/${DF.QCAP}`); set('oddsLabE', '적 ' + c.ne + (c.wave > DF.EXP_W ? ` · 🔥×${dfExp(c.wave).toFixed(1)}` : '')); const ov = na > DF.QCAP, la = $('oddsLabA'); if (la.classList.contains('over') !== ov) la.classList.toggle('over', ov); cwUpHud(); set('cwInc', `🔑 ${dfKeys(Math.max(0, c.wave - 1))} · 다음 출격 🪙 +${cwIncome(c.mw) * DF.GOLD_K}`); if (c._w !== w) { c._w = w; $('oddsBar').style.width = w + '%'; } return; } /* R2.34 디펜스: 라이프 · 남은 적 */
   const ha = Math.max(0, Math.ceil(c.castle[me].hp)), he = Math.max(0, Math.ceil(c.castle[op].hp)), w = Math.round(ha / Math.max(1, ha + he) * 100);
@@ -12976,7 +13156,7 @@ function cwHud(force) { // 골드 · 비용 · 웨이브 · 성 체력 (바뀐 �
 }
 $('cwSummon').addEventListener('click', () => { if (!isCw() || S.replay) return; const c = S.cw, me = ME(); if (c && c.df && c.amT > S.time && c.gold[me] < c.cost[me]) { const now = performance.now(); if (now - (c.amLast || 0) >= 50) { c.amLast = now; c.gold[me] += 1; cwHud(true); } return; } cwSummon(me); }); // build 2 [오토마우스]: 0.05초마다 🪙 +1
 $('cwGrid').addEventListener('click', e => { // 칸을 누르고 → 다른 칸: 같은 지후 · 같은 레벨이면 합체 (레벨 +1 · 무작위 지후) · 합칠 수 없으면 그 칸을 고른다 (R2.33.1: 자리 옮기기 없음)
-  const el = e.target.closest('[data-t]'), c = S.cw; if (!el || !c || S.phase !== 'combat') return; const t = Number(el.dataset.t), me = ME(), L = S.place[me];
+  const el = e.target.closest('[data-t]'), c = S.cw; if (!el || !c || S.phase !== 'combat') return; const t = Number(el.dataset.t), me = ME(), L = S.place[me]; if (c.v2) return df2Tap(t); /* R3.6 */
   if (c.sel == null) { if (L[t]) { c.sel = t; cwRender(); } return; }
   const a = c.sel; c.sel = null; if (a !== t && L[a] && L[t] && (dfCan(me, L[a], L[t]) || jokerCan(L[a], L[t]))) cwFuse(me, a, t); else if (a !== t && L[t]) c.sel = t; cwRender();
 });
@@ -17491,7 +17671,7 @@ function mmShow(ms, done) { // R2.34 매칭 연출 (2~4초): 레이더 · 바뀌
     mmShow.t = setTimeout(() => { mmStop(); done(); }, 700); }, Math.max(0, ms - 700));
 }
 $('dfpCards').addEventListener('click', e => { const b = e.target.closest('[data-ev]'); if (b) dfTake(b.dataset.ev); }); // R2.34 build 2 디펜스 이벤트 고르기
-$('cwUp').addEventListener('click', e => { const b = e.target.closest('[data-up]'); if (b) dfUp(b.dataset.up); }); // R2.36 디펜스 유닛 업그레이드
+$('cwUp').addEventListener('click', e => { const sm = e.target.closest('[data-sum]'); if (sm) return df2Summon(sm.dataset.sum); /* R3.6 소환 카드 */ const b = e.target.closest('[data-up]'); if (b) dfUp(b.dataset.up); }); // R2.36 디펜스 유닛 업그레이드
 function mmCancel() { // R3.1 build 4: 매칭 중 취소 (일반전만 · 판 기록을 지우고 로비로)
   if (mmCancelSearch()) return; /* R3.4 build 7 온라인 매칭 찾는 중 */
   if (!$('mmOv').classList.contains('show') || $('mmOv').classList.contains('found') || S.arc || S.net) return;
@@ -18226,6 +18406,15 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
+  { v: 'R3.6', date: '2026.11.25', title: '새 디펜스 모드', sections: [
+    { title: '새 디펜스', items: [
+      { icon: '🛡', name: '새 디펜스', tag: 'new', desc: '토큰으로 지후를 <b>3×5칸</b>에 소환 · 한철들이 내 진영으로 걸어와요 · 웨이브 <b>무한</b> · 10웨이브마다 <b>보스</b>' },
+      { icon: '🪙', name: '토큰', tag: 'system', desc: '시작 <b>5</b> · 처치 <b>0.1~0.5</b> (적 체력 비례) · 웨이브 클리어 <b>+2</b>' },
+      { icon: '🔗', name: '합체', tag: 'system', desc: '같은 지후 · 같은 레벨 칸을 차례로 누르면 <b>Lv+1</b> · 쓰러진 지후는 다음 웨이브에 다시 나와요' },
+      { icon: '👾', name: '한철 15종', tag: 'new', desc: '흑화 한철은 기절 · 명중률 감소 · 가속 · 회복 · 소환 · 근접 공격 · 플라잉한철은 사거리 6칸 이상만 맞혀요' },
+      { icon: '❤', name: '라이프 20', tag: 'system', desc: '적이 들어오면 <b>−1</b> · 보스는 <b>−5</b>' },
+    ] },
+  ] },
   { v: 'R3.5', date: '2026.11.24', title: '랭크 개편 · 필살기 · 토큰 리워크 · 운영자 메시지 · 리워크 · 고유능력 16종', sections: [
     { title: '추가 패치 (build 13)', items: [
       { icon: '💜', name: '필살기 지후 표시', tag: 'system', desc: '보라 테두리 대신 카드 <b>아래 테두리</b>에 옅은 보라 빛' },
@@ -22839,7 +23028,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { BOT_D, BOT_LV_C, MMR, mmr, mmrUpdate, mmrInit, botDPick, botStylePick, botTierDeck, botEff, TIER_SC, tierOf, /* R3.5 build 6 봇 난이도 시험 */ updDraw, PATCH_NOTES, bcShow, ultInit, ultCast, ULT, rkN, /* R3.5 build 2 시험 */ /* R3.5 운영자 메시지 시험 */ artOpen, artPull, artList, artNow, ART, artS: () => S, /* R3.4 build 6 시험 */ uInfoHtml, charDetail, A, botTierDeck, tierOf, /* build 7 */ ruAdd, /* build 9 */ U4, showComic, comicGo, CVF, ddDrawFx, CV, renderBlock, evOpen, evt, EVT, EVH, bgFlip, capPull, lotShow, lotPick, evNoteShow, evhDraw, evBuy, LOT, alOpen, alShow, AL, liveOpen, liveDraw, LIVE, opOpen, opTab, OP, ST, DEV, visitMark, VS, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { DF2, DF2_FOES, df2Plan, df2Hp, df2Rew, /* R3.6 새 디펜스 시험 */ BOT_D, BOT_LV_C, MMR, mmr, mmrUpdate, mmrInit, botDPick, botStylePick, botTierDeck, botEff, TIER_SC, tierOf, /* R3.5 build 6 봇 난이도 시험 */ updDraw, PATCH_NOTES, bcShow, ultInit, ultCast, ULT, rkN, /* R3.5 build 2 시험 */ /* R3.5 운영자 메시지 시험 */ artOpen, artPull, artList, artNow, ART, artS: () => S, /* R3.4 build 6 시험 */ uInfoHtml, charDetail, A, botTierDeck, tierOf, /* build 7 */ ruAdd, /* build 9 */ U4, showComic, comicGo, CVF, ddDrawFx, CV, renderBlock, evOpen, evt, EVT, EVH, bgFlip, capPull, lotShow, lotPick, evNoteShow, evhDraw, evBuy, LOT, alOpen, alShow, AL, liveOpen, liveDraw, LIVE, opOpen, opTab, OP, ST, DEV, visitMark, VS, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>
