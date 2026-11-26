@@ -8577,7 +8577,7 @@ const CHARS = {
     takenMult(u) { return enh6(u) ? Math.max(0.5, Math.min(1, coinMult(S.coinSlot))) : 1; } }, // 랭크 6 [존버 정신]: 시세가 1배 아래로 떨어진 비율만큼 받는 피해 감소 (R2.22.1: 시세가 0.3배까지 내려가서 최대 50% · 예전 범위와 같게)
   combo: { name: '콤보 지후', rarity: 'epic', role: '딜러', hp: 1210, atk: 67, atkSpeed: 1.1, /* R2.26: 1.4 → 1.2 · R3.2 build 12: 1.2 → 1.1 */ range: 6.2, speed: 1.6, portrait: PORTRAITS.combo, sfx: 'shot', color: '#ff6b6b',
     story: '수학만 빼고 전 과목 1등급인, 올해로 9수째 왕국 과거 시험을 보는 지후입니다. 수학 때문에 매년 떨어지는데, 그는 그게 채점 오류라고 굳게 믿고 있어요. 최근에는 6과 7 중 어느 쪽이 더 큰지를 두고 깊은 고민에 빠졌습니다. 옆자리 원자 지후가 세 시간 동안 설명해 줬는데, 듣고 나니 8까지 헷갈리기 시작했다고 해요. 그래도 때린 횟수만큼은 열심히 세는데, 손가락으로 세는 탓에 열 번이 넘어가면 처음부터 다시 셉니다.',
-    passive: '공격할 때마다 공격력이 <b>6%</b>씩 늘어납니다.',
+    passive: '공격할 때마다 공격력이 <b>6%</b>씩 늘어납니다. 디펜스에서는 <b>웨이브</b>마다 초기화됩니다.',
     onAttack(u) { u.comboMult = (u.comboMult || 1) * (enh6(u) ? 1.07 : 1.06); /* R2.36 build 5: 7 → 6% */ /* R2.19: 7 → 10% · R2.22: 10 → 7% · 랭크 6 [연타 장인] +1% */ u.comboN = (u.comboN || 0) + 1; } },
   // ── R2.2 신규 지후 ──
   water: { name: '물 지후', rarity: 'epic', role: '컨트롤러', hp: 1760, atk: 70, atkSpeed: 1.75, /* R3.4 build 8: 2 → 1.75 */ /* R2.22.2 build 6: 2.5 → 2 · 해일 120% + 잃은 체력 12% → 30% + 20% */ range: 4.5, speed: 1.6, portrait: PORTRAITS.water, sfx: 'ice', color: '#2f8fe8',
@@ -11153,7 +11153,7 @@ const CHAR_INFO = {
   dice: [['피해', '1 ~ 250 (레벨 · 버프 적용)']],
   gun: [['동시 공격', '레벨 수만큼 (Lv3 = 3명)'], ['적이 적으면', '사거리 안에 있는 만큼']],
   get coin() { const st = coinState(), m = st.m, left = 10 - Math.floor(Date.now() / 60000) % 10; return [['지금 시세', `${m.toFixed(2)}배 (공격력 ${Math.round(CHARS.coin.atk * m)})`], ['지금 장세', COIN_RG[st.r].name], ['다음 변동', `약 ${left}분 뒤`], ['범위', '0.3배 ~ 4배 (오래 보면 평균 약 1배)'], ['장세', '상승장 · 하락장 2 ~ 4시간 · 횡보장 3 ~ 6시간 · 광기장 (크게 출렁) 30분 ~ 1시간 · 비율로 오르내린다'], ['펌핑 · 떡락', '10분마다 1% (반반) · 펌핑 +30 ~ 80% · 떡락 −30 ~ 60%'], ['주기', '10분 (모두 같은 시세)'], ['친선전', '판 시작 시세로 고정']]; }, // R2.22.1 리워크: 지금 시세 · 장세
-  combo: [['공격마다', '공격력 +6% (복리 · 랭크 6 +7%)'], ['초기화', '라운드마다']],
+  combo: [['공격마다', '공격력 +6% (복리 · 랭크 6 +7%)'], ['초기화', '라운드마다 · 디펜스는 웨이브마다']],
   water: [['방향', '가장 가까운 적 쪽으로 맵 끝까지'], ['폭', '몸 지름'], ['피해', '공격력의 30% + 잃은 체력의 20%'], ['넉백', '최대 4칸 (멀수록 덜 밀림)']],
   berserker: [['공격력', '체력이 낮을수록 최대 350%'], ['위기', '체력 15% 미만: 공격속도 +20%']],
   slot: [['돌리기', '2초마다 (레벨마다 -0.2초) · 세 자리 0~9'], ['7 하나', '모든 적에게 7 피해'], ['7 둘 [럭키독]', '모든 적에게 현재 체력의 77% 피해'], ['7 셋 [잭팟]', '상대 라이프를 모두 깎고 즉시 승리 (확률 0.1%)'], ['특징', '움직이지도 공격하지도 않는다']],
@@ -13461,6 +13461,7 @@ function df2Spawn(id, at) {
 function df2Next() { // 다음 웨이브: 쓰러진 지후 다시 · 유물 초기화 · 적 줄 세우기 (보스는 맨 뒤)
   const c = S.cw, w0 = c.wave; df2KeyGive(w0); if (w0 && w0 % DF2.WIPE === 0) df2Wipe(); c.wave++; c.t = 0; c.clr = false; dfRelReset();
   c.ros.forEach(r => { if (!df2Unit(r)) df2Reborn(r); }); /* R3.7 build 2: 쓰러진 지후만 다시 · 쌓인 효과는 10웨이브마다 (df2Wipe) */
+  for (const u of S.units) if (u.comboMult) { u.comboMult = 1; u.comboN = 0; } /* R3.7 build 3: 콤보 누적만은 웨이브마다 초기화 */
   c.ros.forEach(r => { const u = df2Unit(r); if (u && u.id === 'sommelier' && !u.ovl) smPour(u); }); /* 웨이브 = 라운드: 와인 */
   c.sq = df2Plan(c.wave); c.sqI = Math.min(DF2.SPAWN_MAX, DF2.SPAWN_WIN / Math.max(1, c.sq.length)); c.sqT = 0;
   const boss = c.wave % DF2.BOSS_EVERY === 0; if (boss) { c.bossHp = c.sq.reduce((a, id) => a + DF2_FOE[id].hp, 0); c.sq.push(DF2_BOSS[Math.floor(rng() * DF2_BOSS.length)].id); } /* 보스 지후 무작위 */
@@ -19017,6 +19018,7 @@ const PATCH_NOTES = [
   { v: 'R3.7', date: '2026.11.26', title: '사신 · 냉각 · 마탄 · 변이 리워크 · 디펜스 정식 · 디펜스 밸런스', sections: [
     { title: '추가 패치 (build 3)', items: [
       { id: 'atom', name: '원자 지후', tag: 'nerf', desc: '디펜스 전자 피해 <b>12.5 → 3.1%</b>' },
+      { id: 'combo', name: '콤보 지후', tag: 'nerf', desc: '디펜스 누적 공격력 초기화 <b>10웨이브 → 웨이브마다</b>' },
     ] },
     { title: '추가 패치 (build 2)', items: [
       { icon: '⏳', name: '디펜스', tag: 'system', desc: '쌓인 효과 초기화 <b>웨이브마다 → 10웨이브마다</b> (쓰러진 지후는 다음 웨이브에 다시)' },
