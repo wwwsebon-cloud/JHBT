@@ -4064,8 +4064,6 @@ html body.u3-on #mmOv.found .mm-side { animation:mmGlint .8s ease-out; }
 .fx-fgskull { position:absolute; z-index:14; pointer-events:none; font-size:46px; line-height:1; transform:translate(-50%, -50%); animation:fgSkull 1.2s ease-out forwards; }
 @keyframes fgSkull { 0% { transform:translate(-50%, -50%) scale(.3); opacity:0; } 20% { transform:translate(-50%, -60%) scale(1.25); opacity:1; } 70% { transform:translate(-50%, -90%) scale(1); opacity:1; } 100% { transform:translate(-50%, -120%) scale(.9); opacity:0; } }
 .fx-lvtext.fg { color:#fff; }
-.fx-polar { position:absolute; width:0; height:0; z-index:2; pointer-events:none; }
-.fx-polar::before { content:''; position:absolute; left:calc(var(--pr) * -1); top:calc(var(--pr) * -1); width:calc(var(--pr) * 2); height:calc(var(--pr) * 2); border-radius:50%; background:radial-gradient(circle, rgba(200,245,255,.28), rgba(95,220,255,.18) 60%, rgba(95,220,255,.05)); border:3px solid rgba(160,235,255,.8); box-sizing:border-box; animation:ptSpin 12s linear infinite; }
 .fx-bobber { position:absolute; left:-9px; top:-9px; width:18px; height:18px; border-radius:50%; z-index:6; pointer-events:none; background:linear-gradient(#ff4040 0 50%, #fff 50%); box-shadow:0 0 0 2px #0d0c0e; }
 .fx-pierce.ice { background:linear-gradient(90deg, transparent, rgba(150,230,255,.6) 40%, #e9fbff); box-shadow:0 0 10px rgba(95,220,255,.9); }
 .fx-radar { position:absolute; width:0; height:0; z-index:2; pointer-events:none; }
@@ -9394,11 +9392,11 @@ const CHARS = {
     story: '왕궁 뒷산 오두막에서 물약을 끓이는 마녀 지후입니다. 레시피를 외우는 걸 싫어해서 솥에 손에 잡히는 대로 넣고 저어 보는데, 그 결과물의 반은 약이고 반은 독이에요. 그래서 그녀는 물약을 마시기 전에 늘 친구를 먼저 마셔 보게 합니다. 한번은 국왕 화염 지후 1호에게 기력 회복 물약을 바쳤다가 국왕이 개구리가 되는 사고가 있었고, 물 지후가 사흘 동안 연못을 뒤져 겨우 찾아냈어요. 그 뒤로 그녀의 물약에는 빈 병이 섞여 나가는데, 그게 제일 안전하다는 평이 많습니다. 개구리 지후는 그녀를 은인이라 부릅니다.',
     passive: '사거리 안 무작위 지후에게 물약을 던집니다. 아군에게는 이로운 물약을, 적에게는 해로운 물약을 던지지만, 가끔 빈 물병이 날아갑니다.',
     customAttack(u) { return witchAttack(u); } },
-  frostj: { name: '냉각 지후', rarity: 'legend', role: '컨트롤러', hp: 1100, atk: 240, /* R3.2 build 2: 270 → 240 */ atkSpeed: 4.3, range: 7.2, speed: 1.6, tok: 4, /* R3.2 build 5: 2 → 4 */ portrait: PORTRAITS.frostj, sfx: 'ice', color: '#5fdcff',
+  frostj: { name: '냉각 지후', rarity: 'legend', role: '컨트롤러', hp: 1100, atk: 290, /* R3.7 리워크: 240 → 290 · R3.2 build 2: 270 → 240 */ atkSpeed: 4.3, range: 7.2, speed: 1.6, tok: 4, /* R3.2 build 5: 2 → 4 */ portrait: PORTRAITS.frostj, sfx: 'ice', color: '#5fdcff',
     story: '왕궁 냉동 창고를 지키는 저격수 지후입니다. 창고의 아이스크림을 노리는 도둑을 막으려고 냉각탄을 개발했는데, 지금은 창고 자체가 너무 추워져서 아무도 들어가지 못해요. 블리자드 지후는 그를 진정한 동지라 부르며 매일 같이 눈싸움을 하자고 조르지만, 그는 고글에 김이 서린다며 거절합니다. 한번은 사막에서 휴가를 보내던 태양 지후가 그의 냉각탄에 맞아 일주일 동안 미지근한 채로 지냈어요. 그 뒤로 둘은 서로를 볼 때마다 기온 이야기만 합니다. 아이스크림은 아직 무사해요.',
-    passive: '탄환이 적을 <b>관통</b>합니다. 맞은 적은 <b>2초</b> [빙결]에 걸리고, 녹으면 <b>5초</b> [동상]에 걸립니다.',
+    passive: '탄환이 적을 <b>관통</b>합니다. 극지방 게이지가 가득 찬 적은 <b>2.5초</b> [빙결]에 걸립니다.',
     customAttack(u, t) { return frostShot(u, t); },
-    skill: { type: 'hit', need: 2, desc: '<b>SP 2</b> · <b>[극지방]</b>. 맵 무작위 자리에 반경 <b>3칸</b> 극지방을 <b>10초</b> 동안 만듭니다. 안에 있는 적은 이동속도와 공격속도가 서서히 줄어 최대 <b>30%</b>까지 떨어집니다.', run(u) { polarZone(u); } } },
+    skill: { type: 'hit', need: 3, desc: '<b>SP 3</b> · <b>[극지방]</b>. 맞힌 적 자리에 반경 <b>3칸</b> 극지방을 <b>10초</b> 동안 만듭니다. 안에 있는 적은 <b>8초</b>에 걸쳐 이동속도와 공격속도가 <b>30%</b>까지 줄어듭니다.', run(u) { polarZone(u); } } },
   fisher: { name: '낚시 지후', rarity: 'legend', role: '컨트롤러', hp: 1100, atk: 90, /* R3.7: 1300 → 1100 · 140 → 90 · R3.5 리워크: 1100 → 1300 · 125 → 140 · R3.2 build 2: 200 → 125 */ atkSpeed: 0.8, range: 'melee', speed: 0, tok: 2, portrait: PORTRAITS.fisher, sfx: 'swing', color: '#1e96ff',
     story: '왕궁 연못가에서 하루 종일 낚싯대를 드리우는 지후입니다. 물고기를 낚아 본 적은 한 번도 없지만, 연못 근처를 지나가던 지후는 꽤 여러 번 낚았어요. 미끼가 너무 맛있어 보여서 다들 저도 모르게 찌로 다가간다고 합니다. 낚인 지후들은 그의 양동이 옆에서 한참 동안 움직이지 못하는데, 그 이유가 갈고리 때문인지 그의 수다 때문인지는 아무도 모릅니다. 죠스 지후를 낚으려다 연못에 빠진 뒤로 촉수 지후와는 사이가 서먹해요. 그는 오늘도 대어를 꿈꾸며 의자에서 한 발짝도 움직이지 않습니다.',
     passive: '직접 움직이지 않습니다. 적진에 <b>찌</b>를 던져 적을 낚아 옵니다. 일반 공격은 <b>140°</b> 부채꼴 광역이며, 맞힐 때마다 <b>[회치기]</b>를 쌓아 체력이 <b>30%</b> 아래로 떨어지면 모두 써서 회복합니다.',
@@ -9850,10 +9848,10 @@ let monoCv = null, monoCvOn = false;
 const FXC = { rings: [], beams: [] }; // rings: { x, y, R 반경 px, bw 테두리 px, c 색, t0, ms } · beams: { x0, y0, x1, y1, t0, ms } (시각은 performance.now · 연출 전용)
 function fxRing(x, y, R, c, ms, bw, inv) { if (S.fast || FXC.rings.length >= 12) return; FXC.rings.push({ x, y, R, c, bw: bw || 4, ms, inv: !!inv, t0: performance.now() }); } // inv: 밖에서 안으로 줄어든다 (블랙홀 · R2.22)
 function monoDraw() { // 아군과 잇는 빛줄기 · 큰 원 · 레이저: 전장 위 캔버스 하나에 프레임마다 한 번 (아군마다 DOM 을 만들지 않는다 · 반 해상도) · loop 가 부른다
-  const L = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.mn), now = performance.now(), PG = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.buffs.polar), /* R3.2 build 2 극지방 게이지 */ DS = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.dis && u.dis.length), /* R3.3 드라이아이스 샤드 */ TYU = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.tys && u.tys.length), RCU = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.rcE != null), VZ = !S.fast && S.phase === 'combat' && S.vcK === vcKey() ? (S.vAsh || []).filter(z => S.time < z.t1).length + (S.vLava || []).length : 0; /* R3.3 build 7 태풍 · 먹구름 · 화산재 · 용암 */
+  const L = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.mn), now = performance.now(), PG = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.buffs.polar), /* R3.2 build 2 극지방 게이지 */ PZ = S.fast || S.phase !== 'combat' || S.pzK !== vcKey() ? [] : (S.pz || []).filter(z => S.time < z.t1), /* R3.7 극지방 바닥 */ DS = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.dis && u.dis.length), /* R3.3 드라이아이스 샤드 */ TYU = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.tys && u.tys.length), RCU = S.fast || S.phase !== 'combat' ? [] : S.units.filter(u => u.alive && u.rcE != null), VZ = !S.fast && S.phase === 'combat' && S.vcK === vcKey() ? (S.vAsh || []).filter(z => S.time < z.t1).length + (S.vLava || []).length : 0; /* R3.3 build 7 태풍 · 먹구름 · 화산재 · 용암 */
   if (FXC.rings.length) FXC.rings = FXC.rings.filter(r => now - r.t0 < r.ms); if (FXC.beams.length) FXC.beams = FXC.beams.filter(b => now - b.t0 < b.ms);
   if (S.fast) FXC.rings.length = FXC.beams.length = 0;
-  const busy = FXC.rings.length + FXC.beams.length + PG.length + DS.length + TYU.length + RCU.length + VZ > 0;
+  const busy = FXC.rings.length + FXC.beams.length + PG.length + PZ.length + DS.length + TYU.length + RCU.length + VZ > 0;
   if (!busy && L.length && (monoDraw.n = (monoDraw.n || 0) + 1) & 1) return; // 빛줄기만이면 초당 30번이면 충분 · 원 · 레이저는 매 프레임
   if (!L.length && !busy) { if (monoCvOn && monoCv) { monoCv.getContext('2d').clearRect(0, 0, monoCv.width, monoCv.height); monoCvOn = false; } return; }
   if (!monoCv || !monoCv.isConnected) { monoCv = document.createElement('canvas'); monoCv.className = 'fx-mcv'; $('field').appendChild(monoCv); }
@@ -9868,7 +9866,7 @@ function monoDraw() { // 아군과 잇는 빛줄기 · 큰 원 · 레이저: 전
   for (const b of FXC.beams) { const p = (now - b.t0) / b.ms; c.globalAlpha = p < 0.4 ? 1 : Math.max(0, 1 - (p - 0.4) / 0.6); // 예전 monoBeam: 40% 까지 그대로 → 사라진다
     c.strokeStyle = b.c1 || 'rgba(80,205,255,.35)'; c.lineWidth = b.w1 || 20; c.beginPath(); c.moveTo(b.x0, b.y0); c.lineTo(b.x1, b.y1); c.stroke(); // c1 · w1 · c2 · w2: 늑대 그림자 줄기 (R2.24 build 3)
     c.strokeStyle = b.c2 || 'rgba(205,245,255,.98)'; c.lineWidth = b.w2 || 7; c.stroke(); }
-  c.globalAlpha = 1; for (const u of PG) { const g = Math.min(1, (u.polarT || 0) / 10), r = unitRadius(u) * 1.5 + 14; c.lineWidth = 9; c.strokeStyle = 'rgba(10,30,50,.55)'; c.beginPath(); c.arc(u.x, u.y, r, 0, Math.PI * 2); c.stroke(); /* R3.2 build 2: 극지방 게이지 (가득 = 최대 감소) */
+  for (const z of PZ) { const a = Math.min(1, (S.time - z.t0) / 0.3, z.t1 - S.time), rr = z.r * (0.85 + 0.15 * Math.min(1, (S.time - z.t0) / 0.3)); c.globalAlpha = Math.max(0, a); c.fillStyle = 'rgba(150,230,255,.16)'; c.beginPath(); c.arc(z.x, z.y, rr, 0, Math.PI * 2); c.fill(); c.strokeStyle = 'rgba(190,245,255,.75)'; c.lineWidth = 4; c.stroke(); } /* R3.7 극지방 바닥: 원 하나 · 단색 (그라데이션을 새로 만들지 않는다) */ c.globalAlpha = 1; for (const u of PG) { const g = Math.min(1, (u.polarT || 0) / FR.FULL), r = unitRadius(u) * 1.5 + 14; c.lineWidth = 9; c.strokeStyle = 'rgba(10,30,50,.55)'; c.beginPath(); c.arc(u.x, u.y, r, 0, Math.PI * 2); c.stroke(); /* R3.2 build 2: 극지방 게이지 (가득 = 최대 감소) */
     c.strokeStyle = g >= 1 ? '#e8fbff' : '#5fdcff'; c.beginPath(); c.arc(u.x, u.y, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * g); c.stroke(); }
   for (const u of DS) for (const q of u.dis) { const r = 11; c.fillStyle = q.t < 2 ? 'rgba(170,230,255,.8)' : '#eafcff'; c.strokeStyle = 'rgba(40,120,170,.9)'; c.lineWidth = 2; c.beginPath(); c.moveTo(q.x, q.y - r); c.lineTo(q.x + r * 0.65, q.y); c.lineTo(q.x, q.y + r); c.lineTo(q.x - r * 0.65, q.y); c.closePath(); c.fill(); c.stroke(); } /* R3.3 [샤드] */
   if (VZ) { for (const z of S.vAsh || []) if (S.time < z.t1) { c.fillStyle = 'rgba(96,94,100,.24)'; c.fillRect(z.x0, z.y0, z.w, z.h); c.strokeStyle = 'rgba(150,146,150,.45)'; c.lineWidth = 3; c.strokeRect(z.x0, z.y0, z.w, z.h); }
@@ -10388,13 +10386,23 @@ function witchAttack(u) { const R = u.range + 6, inR = x => x !== u && x.alive &
       else { A.transform(t, 'frog', t.lv, true); if (!S.fast) dmgNum(t, '🐸 변이!', { crit: true, stamp: true }); }
       if (!S.fast && k !== 'poly') dmgNum(t, { harm: '💥 피해의 물약', weak: '😩 나약의 물약', vuln: '💔 취약의 물약', slow: '⛓ 구속의 물약', poison: '☠ 독의 물약' }[k], { crit: true }); }
   }, 'magic'); afterHit(u, 1); return true; }
-// 냉각 지후: 관통탄 (대상 뒤 2칸까지) · 맞은 적 [빙결] 2초 → 끝나면 [동상] 5초 · [극지방] SP 2: 맵 무작위 자리 반경 3칸 10초 · 안에 있는 적 이동속도 · 공격속도 감소가 10초에 걸쳐 최대 30% (벗어나도 2~5초 더 · 발밑 게이지 e.polarT / 10)
+// 냉각 지후 (R3.7 리워크): 관통탄 (대상 뒤 2칸까지 · 맞혀도 바로 빙결 없음) · [극지방] SP 3: 처음 맞힌 적 자리 반경 3칸 10초 (S.pz · 그리기는 monoDraw)
+// 안에 있는 적: 게이지 e.polarT 가 8초에 걸쳐 차며 이동속도 · 공격속도 최대 −30% · 벗어나도 4초 그대로 · 가득 차면 [빙결] 2.5초 → 게이지 · 감속 처음부터 (빙결 중에는 안 찬다)
+// 여러 극지방 (여러 냉각) 이 겹쳐도 한 적의 게이지는 실제 시간만큼만 찬다 (e._pzAt)
+const FR = { R: 3, T: 10, FULL: 8, MAX: 0.3, OUT: 4, FRZ: 2.5, DT: 0.25 };
 function frostShot(u, t) { const ang = Math.atan2(t.y - u.y, t.x - u.x); let first = true; u.fly = (u.fly || 0) + 1; sfxAttack(u);
   A.line(u, u.x, u.y, ang, { speed: 22, hw: 0.32 * CFG.CELL, len: dist(u, t) + 2 * CFG.CELL, cls: 'fx-pierce ice', onEnd: () => { u.fly--; },
-    onHit: e => { if (!e.alive) return; const done = dealDamage(u, e, effAtk(u), {}); if (!(done > 0)) return; if (!S.fast) hitFx(u, e, false); if (e.alive) { A.status(e, 'freeze', 2); A.later(2, () => { if (e.alive) A.status(e, 'frost', 5); }); } if (first) { first = false; afterHit(u, done); } } }); return true; }
-function polarZone(u) { const x = (0.12 + rng() * 0.76) * FW(), y = (0.12 + rng() * 0.76) * FH(), R = 3 * CFG.CELL; /* R3.2 build 2: 3.7 → 3칸 */
-  if (!S.fast && $('field')) { const el = document.createElement('div'); el.className = 'fx-polar'; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.setProperty('--pr', R.toFixed(0) + 'px'); $('field').appendChild(el); setTimeout(() => el.remove(), 10000 / (S.speed || 1)); dmgNum(u, '❄ 극지방', { crit: true, stamp: true }); }
-  for (let k = 1; k <= 20; k++) A.later(k * 0.5, () => foes(u).forEach(e => { if (!e.alive || Math.hypot(e.x - x, e.y - y) > R + unitRadius(e)) return; if (!e.buffs.polar) e.polarT = 0; /* 효과가 끝났으면 게이지도 처음부터 */ e.polarT = (e.polarT || 0) + 0.5; const a = 0.3 * Math.min(1, e.polarT / 10); A.buff(e, 'polar', { spd: -a, aspd: -a }, 2 + rng() * 3); })); } // R3.2 build 2: 이동속도 · 공격속도 최대 −30% (예전 공격력 −40%) · 게이지는 monoDraw
+    onHit: e => { if (!e.alive) return; const done = dealDamage(u, e, effAtk(u), {}); if (!(done > 0)) return; if (!S.fast) hitFx(u, e, false); if (first) { first = false; u.frT = { x: e.x, y: e.y }; afterHit(u, done); u.frT = null; } } }); return true; }
+function polarZone(u) { const p = u.frT; let x, y; u.frT = null;
+  if (p) { x = p.x; y = p.y; } else { let b = null, bd = Infinity; for (const e of foes(u)) if (e.alive) { const d = dist(u, e); if (d < bd) { bd = d; b = e; } } /* 일반 공격 밖에서 쓰면 (도둑 등) 가장 가까운 적 */ if (b) { x = b.x; y = b.y; } else { x = (0.12 + rng() * 0.76) * FW(); y = (0.12 + rng() * 0.76) * FH(); } }
+  const R = FR.R * CFG.CELL; if (S.pzK !== vcKey()) { S.pzK = vcKey(); S.pz = []; } S.pz = S.pz.filter(z => S.time < z.t1); S.pz.push({ x, y, r: R, t0: S.time, t1: S.time + FR.T });
+  if (!S.fast) dmgNum(u, '❄ 극지방', { crit: true, stamp: true });
+  for (let k = 1; k <= FR.T / FR.DT; k++) A.later(k * FR.DT, () => { for (const e of foes(u)) if (e.alive && Math.hypot(e.x - x, e.y - y) <= R + unitRadius(e)) polarIn(e); }); }
+function polarIn(e) { const b = e.buffs.polar, d = !b || e._pzAt == null ? FR.DT : Math.min(FR.DT, S.time - e._pzAt); if (b && d <= 0) return; /* 같은 순간 다른 극지방: 한 번만 */
+  if (!b) e.polarT = 0; e._pzAt = S.time; if (!(e.st.freeze > 0)) e.polarT = (e.polarT || 0) + d;
+  if (e.polarT >= FR.FULL - 1e-6) { e.polarT = 0; A.status(e, 'freeze', FR.FRZ); }
+  const a = FR.MAX * Math.min(1, e.polarT / FR.FULL);
+  if (b) { b.spd = -a; b.aspd = -a; b.left = FR.OUT + FR.DT; } else A.buff(e, 'polar', { spd: -a, aspd: -a }, FR.OUT + FR.DT); } /* 이미 걸려 있으면 값 · 남은 시간만 바꾼다 */
 // 낚시 지후: 직접 움직이지 않는다 · 적진 무작위 자리로 찌 → 초당 1.1칸으로 당긴다 · 찌 반경 1.7칸 적은 찌로 끌려온다 · 찌에 닿으면 입질 (그 적을 걸고 당기는 속도 2배) → 낚시 지후 앞에서 [잠금] · 받는 피해 +20% 2.5초 · 낚은 적이 아니면 공격 피해 −50%
 function fishTick(u, dt) { const f = u.fs || (u.fs = { ph: 'wait', t: 0.6, caught: new Set() });
   if (f.ph === 'wait') { f.t -= dt; if (f.t > 0) return; const op = u.side === 'a' ? 'e' : 'a', T = foes(u).filter(e => e.alive && !e.cwCastle && !(e.st.dive > 0) && (e.realm || 0) === (u.realm || 0)); f.ph = 'cast'; f.prey = null;
@@ -11143,7 +11151,7 @@ const CHAR_INFO = {
   taegeuk: [['색', '배치 중 무색 · 라운드 시작 1초 뒤 [적] · [청] 반반'], ['줄 판정', '색이 정해지고 1초 뒤 · 세로 3칸 (한 줄) 또는 가로 4칸 (전열 · 중열 · 후열) 이 모두 같은 색 태극 지후'], ['[붉은 힘]', '[적] 줄 · 그 줄의 태극 지후 공격력 400%'], ['[푸른 힘]', '[청] 줄 · 그 줄의 태극 지후 공격속도 400%'], ['[극의 조화]', '같은 색 줄과 태극 지후로 가득 찬 다른 방향 줄이 만나는 칸 · 공격력 · 공격속도 모두 400% · 최대 체력 +50% · 조화 폼']],
   triage: [['[트리아지]', 'SP 8 · 체력 비율이 가장 낮은 아군 자리 · 0.6초 뒤 떨어진다 · 반경 2.5칸 적 공격력 600%'], ['[보급]', '지후마다 한 번 · 트리아지후 현재 체력 50% 쉴드 (7초 동안 서서히 사라진다) · 받는 피해 −25% 3초 · 이미 받은 아군은 먹지 않는다']],
   witch: [['물약', '사거리 안 무작위 지후 (아군 · 적 · 적이 사거리 안에 있을 때) · 10% 빈 물병 (체력 20)'], ['이로운 물약', '회복 300% · 힘 (공격력 +15% 5초) · 보호 (받는 피해 −15% 5초) · 속도 (이동속도 +20% 5초) · 재생 (8초 동안 50%) · 무지개 5% (회복 250% + 공격력 · 방어 · 이동속도 +10% 5초)'], ['해로운 물약', '피해 (반경 2.5칸 200%) · 나약 (공격력 −15% 5초) · 취약 (받는 피해 +15% 5초) · 구속 (이동속도 −20% 5초) · 독 (8초 동안 40%) · 변이 5% (이번 라운드 개구리 지후)']],
-  frostj: [['관통탄', '대상 뒤 2칸까지 · 닿은 적 모두'], ['[빙결] → [동상]', '2초 → 5초'], ['[극지방]', 'SP 2 · 맵 무작위 자리 · 반경 3칸 · 10초 · 안에 있는 시간만큼 이동속도 · 공격속도 최대 −30% (10초에 최대 · 발밑 게이지) · 벗어나도 2~5초 더']],
+  frostj: [['관통탄', '대상 뒤 2칸까지 · 닿은 적 모두'], ['[극지방]', 'SP 3 · 맞힌 적 자리 · 반경 3칸 · 10초 · 여러 개가 겹쳐도 한 번만'], ['감속', '안에 있는 동안 8초에 걸쳐 이동속도 · 공격속도 최대 −30% (발밑 게이지) · 벗어나도 4초 그대로'], ['[빙결]', '게이지가 가득 차면 2.5초 · 게이지와 감속은 처음부터 (빙결 중에는 안 찬다)']],
   fisher: [['이동', '직접 움직이지 않는다 (밀려나기는 한다)'], ['찌', '무작위 적 근처 (0.5 ~ 2.2칸) · 초당 1.1칸으로 당긴다 · 반경 1.7칸 적을 찌로 끌어온다 · 닿으면 입질 → 그 적을 걸고 초당 2.2칸'], ['낚은 적', '낚시 지후 앞에서 [잠금] 2.5초 · 받는 피해 +20% 2.5초'], ['일반 공격', '대상 쪽 140° 부채꼴 · 반지름 몸 + 1.6칸 · 낚은 적이 아니면 피해 −50%'], ['[회치기]', '맞힌 적마다 +1 · 최대 10 · 체력이 30% 아래로 떨어질 때 (라운드에 두 번) 모두 써서 1개마다 25 회복 · 다음 라운드엔 절반 (반올림)']],
   dryice: [['일반 공격', '맞은 적 [빙결] 0.8초'], ['[승화]', '빙결이 풀릴 때 · 그 자리 반경 2칸 적 공격력 80% · 승화한 적 말고 맞은 적은 35% 다시 [빙결] (또 승화)'], ['[샤드]', '승화마다 그 자리에 · 2초 뒤 드라이아이스 지후에게 날아온다'], ['샤드를 먹으면', '가장 가까운 적에게 고드름 · 공격력 160% · 받는 피해 +20% 4초']],
   dealer: [['카드', '3초마다 두 장 (0.5초 간격) · 모양 ♠ ♣ ♥ ♦ × 색 검정 · 빨강 · 그 뒤 SP +1'], ['♠ 공격 (가장 가까운 적)', '♠ 150% ×2 · 쉴드 제거 / ♣ 120% ×2 · 독 3초 (초당 30%) / ♥ 100% ×2 · 입힌 피해 30% 회복 / ♦ 대상 앞 130° · 반지름 2.4칸 부채꼴 75% ×2 · 베인 적 받는 피해 +12% 4초'], ['♣ 아군 2기 (가장 가까운)', '♠ 공격력 +25% 10초 / ♣ 치명타 확률 +15% 5초 / ♥ 공격력 400% 회복 / ♦ 공격력 400% 쉴드'], ['♥ 자신 회복', '♠ 공격력 400% / ♣ 공격력 100% 5초 동안 1초마다 / ♥ 최대 체력 35% / ♦ 현재 체력 50%'], ['♦ 자신 강화', '♠ 쉴드 400 (깨지면 반경 2칸 공격력 150%) / ♣ 쉴드 600 (10초 동안 사라짐) / ♥ 쉴드 400 + 디버프 면역 10초 / ♦ 받는 피해 −70% 8초'], ['배율', '빨간 카드 장마다 +20% · 두 장 모양이 같으면 +50% 더'], ['[잭팟]', '두 장의 모양과 색이 모두 같으면 · 자신 포함 모든 아군 공격속도 +77% 7초 · 각자 최대 체력 17% 회복'], ['[블랙잭]', 'SP 3 · 1~10 을 3~5번 더한다 · 21 반경 8칸 적 기절 3초 + 현재 체력 50% · 20 반경 8칸 적 공격력 200% · 19 반경 8칸 아군 회복 (자신 최대 체력 19%) · 18 자신 최대 체력 18% 회복 · 22 이상 자신 기절 2초 · 그 밖 모든 적 현재 체력 (합 / 2)%']],
