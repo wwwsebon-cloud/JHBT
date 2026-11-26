@@ -51,7 +51,7 @@ function model() {
 function count(M, name) { if (M.cnt.has(name)) return M.cnt.get(name); const re = new RegExp('(?<![\\w$])' + name.replace(/\$/g, '\\$') + '(?![\\w$])', 'g'); let n = 0; while (re.exec(M.src)) n++; M.cnt.set(name, n); return n; }
 
 const KEY_KO = { hp: '체력', atk: '공격력', atkSpeed: '공격 간격 (초)', range: '사거리 (칸)', speed: '이동속도', tok: '토큰', need: '스킬 SP', cd: '쿨타임 (초)', splash: '광역 반경', shield: '쉴드', deployLimit: '출격 제한', maxLv: '최대 레벨', mass: '무게' };
-const NOT_HELPER = new Set(['CHARS', 'PORTRAITS', 'CFG', 'S', 'A', 'DF2', 'DF', 'TOK', 'TOK_COST', 'DF2_TOK', 'STATUS', 'ULT', 'CHAR_INFO', 'ENH_SKILL', 'SUMMONS', 'RARITY', 'FX_OF', 'BUFF_SRC', 'baseInterval', 'effAtk', 'dealDamage', 'heal', 'instaKill', 'pctD', 'killUnit', 'makeUnit', 'launchProjectile', 'performAttack', 'moveToward']);
+const NOT_HELPER = new Set(['CHARS', 'PORTRAITS', 'CFG', 'S', 'A', 'DF2', 'DF', 'TOK', 'TOK_COST', 'DF2_TOK', 'STATUS', 'ULT', 'CHAR_INFO', 'ENH_SKILL', 'SUMMONS', 'RARITY', 'FX_OF', 'BUFF_SRC', 'baseInterval', 'effAtk', 'dealDamage', 'heal', 'instaKill', 'pctD', 'killUnit', 'makeUnit', 'launchProjectile', 'performAttack', 'moveToward', 'rkX', 'WS', 'bodySeparation', 'physMass', 'flatD', 'midXY', 'recut', 'lvShift', 'ultPlace', 'tileXY', 'coinState', 'unitRadius', 'physSnap', 'spGive', 'evSp', 'njSpAdd', 'njNear', 'njInR', 'inFan', 'attackLunge', 'muzzle']);
 const oneLine = s => s.replace(/\s+/g, ' ');
 // ── 사람이 읽는 이름 (숫자 앞뒤 코드로 짐작) · 사용자가 붙인 이름은 labels.json 이 먼저 ──
 const LABELS_F = path.join(__dirname, 'labels.json');
@@ -60,8 +60,26 @@ function setLabel(k, v) { const L = labels(); if (v) L[k] = v; else delete L[k];
 const BUFF_KO = { atk: '공격력 증가', aspd: '공격속도 증가', spd: '이동속도 증가', tk: '받는 피해 증가', critB: '치명타 확률 증가', crit: '치명타 확률', critD: '치명타 피해', amt: '효과량', dps: '초당 피해', miss: '빗나감 확률', dodge: '회피 확률', heal: '회복량', ls: '흡혈', range: '사거리', sp: 'SP' };
 let STATUS_KO = null;
 function statusKo(src) { if (STATUS_KO) return STATUS_KO; STATUS_KO = {}; const a = src.indexOf('const STATUS = {'), b = src.indexOf('\n};', a); const re = /^\s+(\w+): \{ name: '([^']+)'/gm; re.lastIndex = a; let m; while ((m = re.exec(src)) && m.index < b) STATUS_KO[m[1]] = m[2]; return STATUS_KO; }
-const ABBR = { N: '개수', MAX: '최대', MIN: '최소', CD: '쿨타임 (초)', T: '시간 (초)', TIME: '시간 (초)', R: '반경 (칸)', RR: '반경 (칸)', K: '배율', HEAL: '회복', DMG: '피해 배율', D: '피해', LINK: '연결 시간 (초)', HOLD: '유지 시간 (초)', SPD: '속도', SPEED: '속도', HP: '체력', ATK: '공격력', P: '확률', PROB: '확률', CHAIN: '연쇄 확률', SP: 'SP', TOK: '토큰', GROW: '자라는 시간 (초)', LOW: '낮은 체력 기준', USES: '사용 횟수', HALF: '부채꼴 반각 (도)', RANGE: '사거리', W: '폭', IV: '간격 (초)', LOCK: '잠금 시간 (초)', SLOW: '감속', STEAL: '빼앗는 비율', GIVE: '나눠 주는 대상 수', FIRST: '처음 대기 (초)', ON: '지속 (초)', OFF: '꺼진 시간 (초)', LIFE: '수명 (초)', TURN: '회전 속도', AMP: '증폭', RAMP: '증가량', CAP: '최대치', BOOM: '폭발', TAKEN: '받는 피해 배율', NEAR: '가까운 거리 (칸)', HV: '수확 시간 (초)', REACH: '닿는 거리 (칸)', WAVE: '파동', ST: '쌓기', EN: '기력', B: '보너스 배율', KA: '공격력 비율', KH: '체력 비율', LOSE: '잃는 비율', LV: '레벨', AW: '각성', WIND: '준비 시간 (초)', SWING: '휘두르는 시간 (초)', HIT: '맞는 순간 (초)', FADE: '사라지는 시간 (초)', PCT: '비율', SH: '쉴드', STACK: '중첩', DUR: '지속 (초)', RATE: '비율', ANG: '각도', ARC: '각도', NUM: '개수', MS: '연출 시간 (ms)', t: '시간 (초)', on: '지속 (초)', cd: '쿨타임 (초)', r: '반경', n: '개수', k: '배율', v: '값', ms: '연출 시간 (ms)', amt: '효과량' };
+const ABBR = { N: '개수', MAX: '최대', MIN: '최소', CD: '쿨타임 (초)', T: '시간 (초)', TIME: '시간 (초)', R: '반경 (칸)', RR: '반경 (칸)', K: '배율', HEAL: '회복', DMG: '피해 배율', LINK: '연결 시간 (초)', HOLD: '유지 시간 (초)', SPD: '속도', SPEED: '속도', HP: '체력', ATK: '공격력', P: '확률', PROB: '확률', CHAIN: '연쇄 확률', SP: 'SP', TOK: '토큰', GROW: '자라는 시간 (초)', LOW: '낮은 체력 기준', USES: '사용 횟수', HALF: '부채꼴 반각 (도)', RANGE: '사거리', W: '폭', IV: '간격 (초)', LOCK: '잠금 시간 (초)', SLOW: '감속', STEAL: '빼앗는 비율', GIVE: '나눠 주는 대상 수', FIRST: '처음 대기 (초)', ON: '지속 (초)', OFF: '꺼진 시간 (초)', LIFE: '수명 (초)', TURN: '회전 속도', AMP: '증폭', RAMP: '증가량', CAP: '최대치', BOOM: '폭발', TAKEN: '받는 피해 배율', NEAR: '가까운 거리 (칸)', HV: '수확 시간 (초)', REACH: '닿는 거리 (칸)', WAVE: '파동', ST: '쌓기', EN: '기력', B: '보너스 배율', KA: '공격력 비율', KH: '체력 비율', LOSE: '잃는 비율', LV: '레벨', AW: '각성', WIND: '준비 시간 (초)', SWING: '휘두르는 시간 (초)', HIT: '맞는 순간 (초)', FADE: '사라지는 시간 (초)', PCT: '비율', SH: '쉴드', STACK: '중첩', DUR: '지속 (초)', RATE: '비율', ANG: '각도', ARC: '각도', NUM: '개수', MS: '연출 시간 (ms)', t: '시간 (초)', on: '지속 (초)', cd: '쿨타임 (초)', r: '반경', n: '개수', k: '배율', v: '값', ms: '연출 시간 (ms)', amt: '효과량' };
 const keyKo = k => { if (ABBR[k]) return ABBR[k]; const p = String(k).split(/_|(?<=[A-Z])(?=\d)|(?<=\d)(?=[A-Z])/).filter(Boolean); const t = p.map(x => /^\d+$/.test(x) ? (x === '6' ? '랭크 S' : x) : ABBR[x] || ABBR[x.toUpperCase()]); return t.every(Boolean) ? t.join(' ') : ''; };
+const SEG_KO = { sum: '합계', hits: '맞힌 수', stack: '중첩', cnt: '개수', count: '개수', wave: '웨이브', round: '라운드', lives: '목숨', tok: '토큰', hp: '체력', atk: '공격력', as: '공격 간격', atkSpeed: '공격 간격', speed: '이동속도', range: '사거리', maxHp: '최대 체력', baseMaxHp: '체력', form: '단계', lv: '레벨', sk: 'SP', shield: '쉴드', time: '전투 시간', cd: '공격 쿨타임', mult: '레벨 배율' };
+const segKo = s => SEG_KO[s] || ABBR[s] || '';
+function arrInfo(src, s) { // 숫자가 key: [ … ] 배열 안이면 { key, idx }
+  const ls = src.lastIndexOf('\n', s) + 1, line = src.slice(ls, s), re = /([A-Za-z_$][\w$]*)\s*:\s*\[/g; let m, best = null;
+  while ((m = re.exec(line))) { let d = 0; for (let k = m.index + m[0].length - 1; k < line.length; k++) { if (line[k] === '[') d++; else if (line[k] === ']') d--; } if (d > 0) best = m; }
+  if (!best) return null; const cur = [];
+  for (let k = best.index + best[0].length - 1; k < line.length; k++) { const c = line[k]; if (c === '[') cur.push(0); else if (c === ']') cur.pop(); else if (c === ',' && cur.length) cur[cur.length - 1]++; }
+  return { key: best[1], idx: cur };
+}
+const ARR_M = new Map();
+function arrMeaning(src, key) { // const [kh, ka, as] = u.def.forms[…] → b.hp * kh → 체력 배율
+  if (ARR_M.has(key)) return ARR_M.get(key); let out = null;
+  const m = new RegExp('\\[\\s*([\\w$]+(?:\\s*,\\s*[\\w$]+)+)\\s*\\]\\s*=\\s*[^;\\n]*\\.' + key + '\\[').exec(src);
+  if (m) { const tail = src.slice(m.index, m.index + 700); out = m[1].split(/\s*,\s*/).map(n => { const r = new RegExp('([\\w$.]+)\\s*\\*\\s*' + n + '(?![\\w$])').exec(tail); const g = r && segKo(r[1].split('.').pop()); return g ? g + ' 배율' : n; }); }
+  ARR_M.set(key, out); return out;
+}
+function arrLabel(src, a) { const mean = arrMeaning(src, a.key), last = a.idx[a.idx.length - 1], name = keyKo(a.key) || a.key;
+  return `${name} ${a.idx.length > 1 ? a.idx.slice(0, -1).map(i => i + 1).join('-') + '단계 · ' : ''}${mean && mean[last] ? mean[last] : last + 1 + '번째 값'}`; }
 function guess(src, before, after, key, v) {
   const b = before.slice(-140), pct = x => (+x < 10 ? ` (${+(x * 100).toFixed(1)}%)` : '');
   if (key && BUFF_KO[key] && /\{[^{}]*$/.test(b) && /A\.buff\(|buff/.test(b)) return BUFF_KO[key] + pct(v);
@@ -69,7 +87,22 @@ function guess(src, before, after, key, v) {
   if ((m = /A\.status\(\s*[\w.]+,\s*'(\w+)',\s*$/.exec(b))) return (statusKo(src)[m[1]] || m[1]) + ' 시간 (초)';
   if (/A\.buff\(\s*[\w.]+,\s*[^,]+,\s*\{[^}]*\},\s*$/.test(b)) return '버프 지속 (초)';
   if (/A\.later\(\s*$/.test(b)) return '지연 (초)';
-  if (/enh6\([^)]*\)\s*\?\s*$/.test(b)) return '랭크 S 일 때 값';
+  if (/A\.dmg\(\s*[\w.]+,\s*[\w.]+,\s*$/.test(b)) return `피해 (공격력의 ${v}%)`;
+  if (/A\.knock\(\s*[\w.]+,\s*[\w.]+,\s*$/.test(b)) return '넉백 거리 (칸)';
+  if (/A\.cut\(\s*[\w.]+,\s*$/.test(b)) return '최대 체력 깎는 비율' + pct(v);
+  if (/A\.cut\(\s*[\w.]+,\s*[^,]+,\s*$/.test(b)) return '최대 체력 깎기 지속 (초)';
+  if (/A\.(?:around|zone)\(\s*[\w.]+,\s*(?:[\w.]+,\s*[\w.]+,\s*)?$/.test(b)) return '범위 반경 (칸)';
+  if (/A\.zone\(\s*[\w.]+,\s*[^,]+,\s*$/.test(b)) return '장판 지속 (초)';
+  if (/A\.boom\(\s*[\w.]+,\s*[^,]+,\s*[^,]+,\s*$/.test(b)) return '폭발 반경 (칸)';
+  if (/A\.boom\(\s*[\w.]+,\s*[^,]+,\s*[^,]+,\s*[^,]+,\s*[^,]+,\s*$/.test(b)) return '넉백 거리 (칸)';
+  if (/A\.line\([^;]*speed:\s*$/.test(b)) return '날아가는 속도';
+  { const am = /([\w$.]+)\s*=\s*$/.exec(b); if (am) { const w = am[1].split('.').pop(), sg = segKo(w) || keyKo(w); return (sg || w) + ' 값'; } }
+  { const e1 = /enh6\([^)]*\)\s*\?\s*$/.test(b), e2 = /enh6\([^)]*\)\s*\?\s*[\d.]+\s*:\s*$/.test(b);
+    if (e1 || e2) { const mm = /([\w$.]+)\s*\*\s*\(\s*enh6\([^)]*\)\s*\?[^()]*$/.exec(b), sg = mm && segKo(mm[1].split('.').pop()); return (sg ? sg + ' 비율 · ' : '') + (e1 ? '랭크 S 일 때' : '랭크 S 아닐 때') + (sg ? pct(v) : ' 값'); } }
+  { const cm = /([\w$.]+)\s*(?:\|\|\s*[\d.]+\s*\)\s*)?(?:[<>]=?|[!=]==?)\s*$/.exec(b); if (cm) { const w = cm[1].split('.').pop(), sg = segKo(w); return (sg || w) + (/[!=]==?\s*$/.test(b) ? ' = 이 값일 때' : ' 기준값 (이 값과 비교)'); } }
+  { const tm = /([\w$.]+(?:\(\))?)\s*\?\s*$/.exec(b); if (tm && /^[A-Za-z_$]/.test(tm[1]) && !/enh6/.test(tm[1])) { const w = tm[1].replace(/\(\)$/, '').split('.').pop(), sg = segKo(w); return `${sg || w} 일 때 값`; } }
+  { const tm = /([\w$.]+(?:\(\))?)\s*\?\s*[\d.]+\s*:\s*$/.exec(b); if (tm && /^[A-Za-z_$]/.test(tm[1])) { const w = tm[1].replace(/\(\)$/, '').split('.').pop(), sg = segKo(w); return `${sg || w} 아닐 때 값`; } }
+  { const vm = /(?:\b(?:const|let|var)\s+|,\s*)([A-Za-z_$][\w$]*)\s*=\s*[^;,=]*$/.exec(b); if (vm && !/^(?:i|j|k)$/.test(vm[1])) { const ko = segKo(vm[1]) || keyKo(vm[1]); if (ko) return `${ko} (${vm[1]})`; } }
   if (/rkX\([^)]*\)\s*\*\s*$/.test(b) || /^\s*\*\s*rkX\(/.test(after)) return '랭크마다 늘어나는 값';
   if (/\(\s*u\.lv\s*-\s*1\s*\)\s*\*\s*$/.test(b) || /^\s*\*\s*\(\s*u\.lv\s*-\s*1/.test(after)) return '레벨마다 늘어나는 값';
   if (/rng\(\)\s*<\s*$/.test(b)) return '확률' + pct(v);
@@ -85,6 +118,8 @@ function guess(src, before, after, key, v) {
   if (/Math\.min\(\s*$|,\s*$/.test(b) && /Math\.min\(/.test(b.slice(-40))) return '최대 한도';
   if (/Math\.max\(\s*$/.test(b)) return '최소 한도';
   if (/[<>]=?\s*$/.test(b)) return '기준값';
+  { const am = /([\w$.]+)\s*[+\-*/]?=\s*[^=;]*$/.exec(b), sg = am && segKo(am[1].split('.').pop()), op = /\+=?\s*$/.test(b) ? '더하는 값' : /-=?\s*$/.test(b) ? '빼는 값' : /\*\s*$/.test(b) ? '곱하는 값' : /\/\s*$/.test(b) ? '나누는 값' : '';
+    if (sg && op) return `${sg} 계산 · ${op}`; }
   if (/\+=?\s*$/.test(b)) return '더하는 값';
   if (/-=?\s*$/.test(b)) return '빼는 값';
   if (/\*\s*$/.test(b) || /^\s*\*/.test(after)) return '배율';
@@ -101,16 +136,19 @@ function numsIn(M, a, b, group, opt = {}) { // 범위 안 숫자 → 항목
     const km = /(?:^|[{,]|\*\/)\s*([A-Za-z_$][\w$]*)\s*:\s*$/.exec(before.slice(-60)), key = km && km[1];
     if (+v === 0) return; if (+v === 1 && !key) return;
     if (/\[\s*$/.test(before) && /^\s*\]/.test(after) && +v < 10) return; /* 배열 칸 번호 */
+    if (/e-\d/.test(v) || /\*\s*$/.test(before) && /^\s*\)\s*\/\s*100/.test(after) || /Math\.round\([^()]*\*\s*[^()]*\)\s*\/\s*$/.test(before)) return; /* 아주 작은 값 · 반올림 */
     if (/Math\.PI\s*[*/]\s*$/.test(before) || /^\s*\*\s*Math\.PI/.test(after)) return; /* 각도 계산 */
     if (/[%]\s*$/.test(before) || /(?<![\w$])(?:[cs][12]|i|k|j)\s*(?:[<>]=?|===?)\s*$/.test(before)) return; /* 카드 · 반복 계산 */
-    const vis = /rgba?\([^)]*$|(?:fxRing|fxAt|dmgNum|njFx|shake|hitFx|sfx[A-Za-z]*|setTimeout|animate|FXC\.beams\.push)\([^;]*$/.test(before.slice(-90)) || ['ms', 'w1', 'w2', 't0', 'fs', 'padX'].includes(key || '');
+    const vis = /rgba?\([^)]*$|(?:fxRing|fxAt|dmgNum|njFx|shake|hitFx|sfx[A-Za-z]*|setTimeout|animate|A\.ring|FXC\.beams\.push)\([^;]*$|\.style\.|style="|toFixed\(\s*$|\$\{[^}]*$/.test(before.slice(-90)) || /^\s*(?:px|deg|s"|%)/.test(after) || ['ms', 'w1', 'w2', 't0', 'fs', 'padX', 'dx', 'dy'].includes(key || '') || opt.fxFn;
     const note = (/^\s*,?\s*\/\*\s*([^*]{1,90}?)\s*\*\//.exec(after) || [])[1] || '';
     const ls = src.lastIndexOf('\n', s) + 1, ctxA = Math.max(ls, s - 70), le = src.indexOf('\n', e), ctxB = Math.min(le < 0 ? src.length : le, e + 50);
     const lk = (opt.id || '') + '|' + oneLine(src.slice(ctxA, s)).slice(-40) + '|' + oneLine(src.slice(e, ctxB)).slice(0, 20), mine = (opt.L || {})[lk];
-    const g = guess(src, before, after, key, v);
+    const g = guess(src, before, after, key, v), arr = !key ? arrInfo(src, s) : null;
+    const dead = (opt.dead || []).some(([x, y]) => s >= x && s < y) || !!(arr && opt.deadKey && opt.deadKey(arr.key));
     const kk = key && keyKo(key), code = key ? (opt.prefix ? opt.prefix + '.' : '') + key : '';
-    const lab = mine || (key && opt.base && KEY_KO[key] ? KEY_KO[key] : key && BUFF_KO[key] && g ? g : key ? (kk ? `${kk} (${code})` : code + (g && !/값$/.test(g) ? ' · ' + g : '')) : vis ? '연출 숫자' : g || '기타 숫자');
-    out.push({ group, vis, lk, mine: !!mine, start: s, end: e, value: v, label: lab, key: key || '', note, ctx: [oneLine(src.slice(ctxA, s)).trimStart(), v, oneLine(src.slice(e, ctxB)).trimEnd()] });
+    const lab0 = mine || (arr ? arrLabel(src, arr) : key && opt.base && KEY_KO[key] ? KEY_KO[key] : key && BUFF_KO[key] && g ? g : key ? (kk ? `${kk} (${code})` : code + (g && !/값$/.test(g) ? ' · ' + g : '')) : vis ? '연출 숫자' : g || '기타 숫자');
+    const lab = dead && !mine ? '(안 쓰는 코드) ' + lab0 : lab0;
+    out.push({ group, vis: vis || dead, dead, lk, mine: !!mine, start: s, end: e, value: v, label: lab, key: key || '', note, ctx: [oneLine(src.slice(ctxA, s)).trimStart(), v, oneLine(src.slice(e, ctxB)).trimEnd()] });
   } });
   return out;
 }
@@ -120,7 +158,13 @@ function charInfo(id) {
   const src = M.src, groups = [], texts = [];
   // 1) 기본 스탯 (정의 첫 줄 + skill 의 need · cd)
   const firstEnd = src.indexOf('\n', c.a) + 1;
-  const LB = labels(), O = x => ({ id, L: LB, ...x });
+  // 안 쓰는 코드: 이름이 …Old 이거나 「안 쓴다」 주석이 붙은 멤버 · 그 안에서만 쓰는 배열
+  const dead = [], MRE = /^    ([A-Za-z_$][\w$]*)\s*(?:\(|:)/gm; MRE.lastIndex = c.a; let mm, prevM = null;
+  const closeM = at => { if (prevM && prevM.d) dead.push([prevM.a, at]); };
+  while ((mm = MRE.exec(src)) && mm.index < c.b) { closeM(mm.index); const ln = src.slice(mm.index, src.indexOf('\n', mm.index)); prevM = { a: mm.index, d: /Old$/.test(mm[1]) || /안 쓴다|안 씀/.test(ln.slice(0, 200)) }; }
+  closeM(c.b);
+  const deadKey = k => { const re = new RegExp('\\.' + k + '(?![\\w$])', 'g'); let r, n = 0; while ((r = re.exec(src))) { n++; if (!dead.some(([x, y]) => r.index >= x && r.index < y)) return false; } return n > 0; };
+  const LB = labels(), O = x => ({ id, L: LB, dead, deadKey, ...x });
   const base = numsIn(M, c.a, firstEnd, '기본 스탯', O({ base: true }));
   const rest = numsIn(M, firstEnd, c.b, '지후 정의 (CHARS)', O({ base: true }));
   const skillNum = rest.filter(x => x.key === 'need' || x.key === 'cd'); base.push(...skillNum);
@@ -139,7 +183,7 @@ function charInfo(id) {
   // 필살기
   const U = M.defs.get('ULT'); let ultR = null;
   if (U) { const re = new RegExp('^  ' + id + ': \\{', 'm'), seg = src.slice(U.a, U.b), r = re.exec(seg); if (r) { const a = U.a + r.index, nx = /^  [A-Za-z0-9_]+: \{|^\};/m; const tail = src.slice(a + 3, U.b), n2 = nx.exec(tail); ultR = [a, n2 ? a + 3 + n2.index : U.b]; visit(ultR[0], ultR[1], 1); } }
-  order.sort((x, y) => x.a - y.a).forEach(df => { const it = numsIn(M, df.a, df.b, (df.fn ? '함수 ' : '상수 ') + df.name, O({ prefix: df.fn ? '' : df.name })); if (it.length) groups.push({ title: (df.fn ? '도우미 함수 · ' : '상수 · ') + df.name, items: it }); });
+  order.sort((x, y) => x.a - y.a).forEach(df => { const it = numsIn(M, df.a, df.b, (df.fn ? '함수 ' : '상수 ') + df.name, O({ prefix: df.fn ? '' : df.name, fxFn: /(?:Fx|Draw|Spin|Head|Count|Pic|El|Css)$/.test(df.name) })); if (it.length) groups.push({ title: (df.fn ? '도우미 함수 · ' : '상수 · ') + df.name, items: it }); });
   if (ultR) { const it = numsIn(M, ultR[0], ultR[1], '필살기 (SSS)', O({})); if (it.length) groups.push({ title: '필살기 (SSS)', items: it }); }
   // 3) 설명 글
   const strAfter = (a, b, keyRe, label) => { scan(src, a, b, { str: (s, e) => { if (keyRe.test(src.slice(Math.max(a, s - 20), s))) texts.push({ label, start: s + 1, end: e - 1, value: src.slice(s + 1, e - 1), kind: 'str' }); } }); };
