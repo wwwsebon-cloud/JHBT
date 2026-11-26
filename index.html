@@ -8822,15 +8822,10 @@ const CHARS = {
       if (u.sk >= u.def.skill.need) castSkill(u); },
     skill: { type: 'ally', need: 6, /* R2.36 build 5: 5 → 6 */ desc: '<b>SP 6</b> · <b>[부활]</b>. 쓰러진 아군을 자기 레벨 수만큼 되살립니다.',
       run(u, A) { u.revQ = { t: 1.5, L: u.revL || [] }; u.revL = []; if (!S.fast) { dmgNum(u, '부활 준비', { crit: true }); A.ring(u.x, u.y, 1.2); } } } },
-  reaper: { name: '사신 지후', rarity: 'legend', role: '딜러', hp: 1400, atk: 158, atkSpeed: 3, range: 'melee', speed: 1.6, portrait: PORTRAITS.reaper, sfx: 'swing', color: '#2b2b2b',
+  reaper: { name: '사신 지후', rarity: 'legend', role: '딜러', hp: 1444, atk: 444, atkSpeed: 14, range: 1.5, speed: 0, portrait: PORTRAITS.reaper, sfx: 'swing', color: '#2b2b2b', /* R3.7 리워크 (도우미는 reapFx 바로 앞 '// ── R3.7 사신 지후 리워크 도우미 ──') */
     story: '할머니 댁 다락방에서 커다란 낫과 검은 망토를 발견한 지후입니다. 장난으로 걸쳐 봤더니 망토가 몸에서 떨어지지 않았고, 세탁소에 맡기러 갔더니 세탁소 주인이 기절했어요. 다락방에는 낫이 두 자루 있었는데, 한 자루는 마트 할인 코너로 흘러가 낫 지후 손에 들어갔다고 믿고 있습니다. 평소에는 얌전해서 매주 부활 지후의 꽃집에서 국화를 사 가지만, 친구들이 하나둘 쓰러지면 망토 속 무언가가 깨어나요. 다만 망토가 너무 커서 늘 소매를 세 번 접고 싸웁니다.',
-    passive: '[봉인] 상태로 시작해 움직이지 못합니다. 아군이 쓰러질 때마다 SP 가 찹니다.',
-    onStart(u, A) { A.status(u, 'seal', 800); },
-    onUnitDeath(u, d) { if (d.side === u.side) spGive(u, 1); }, // R2.21.2: 소환체 · 분열체도 (예전엔 제외)
-    skill: { type: 'ally', need: 6, desc: '<b>SP 6</b> · <b>[사신강림]</b>. 봉인이 풀려 강해지고, 그 뒤로는 SP 가 찰 때마다 가장 가까운 적을 <b>[즉사]</b>시킵니다.', // R2.10.2: SP 5 → 6
-      run(u, A) { const k = 2044 / 1400; /* R2.17.2 · R2.25.4: 2444 → 2044 */ u.def = CHARS.reaper.awake; u.baseMaxHp = Math.round(u.baseMaxHp * k); u.maxHp = Math.round(u.maxHp * k); u.hp = u.maxHp; // 체력 · 버프 비율 그대로 키운다
-        u.atkSpeed = 1.2; u.cd = Math.min(u.cd, 1.2); u.speed = 2.4 * CFG.CELL; /* build 5: 3.5 → 2.4 */ u.st.seal = 0; if (u.el) u.el.classList.add('reaper-on');
-        if (!S.fast) { dmgNum(u, '☠ 사신강림!', { crit: true, stamp: true }); A.ring(u.x, u.y, 1.6); shake(true); } drawUnit(u); } } },
+    passive: '<b>[봉인]</b> 상태로 시작해 움직이지 못합니다. 지후가 쓰러질 때마다 <b>[망령]</b>을 모으고, <b>6개</b>가 모이면 <b>[사신강림]</b>합니다. 강림하면 낫에 베인 적은 <b>[즉사]</b>합니다.',
+    onStart(u, A) { rprStart(u, A); }, onUnitDeath(u, d) { rprSoul(u, d); }, customAttack(u, t) { return rprSwing(u, t); }, steer(u) { return rprSteer(u); }, tick(u, dt) { rprTick(u, dt); }, gauge(u) { return rprGauge(u); } },
   guardian: { name: '수호자 지후', rarity: 'legend', role: '서포터', hp: 2250, atk: 100, atkSpeed: 3, range: 4, speed: 1.6, portrait: PORTRAITS.guardian, sfx: 'bash', color: '#e0b400',
     story: '동네 놀이터의 자칭 보안관이던 지후입니다. 미끄럼틀에서 떨어지는 아이, 그네에서 날아간 아이를 언제나 몸을 날려 받아 냈어요. 딱 한 번, 뺑뺑이를 너무 빨리 돌다 바람이 되어 날아간 회오리 지후만 놓쳤는데, 그날 일기장에 바람은 받는 게 아니라고 적었습니다. 수백 번을 받아 내던 어느 날 등 뒤로 황금 방패가 떠올랐고, 국왕은 그를 근위대장으로 임명했어요. 쉴드 지후는 그의 첫 제자입니다. 광폭화 지후와는 그네 순서로 싸운 뒤로 말을 안 섞어서, 바로 옆에 서도 못 본 척해요.',
     passive: '앞뒤좌우 칸의 아군을 <b>[수호]</b>합니다. [수호] 받는 아군은 쓰러질 때 한 번 버팁니다.',
@@ -9512,7 +9507,7 @@ function ultStep(dt) {
 function ultTap(u) { if (S.replay || S.phase !== 'combat' || !u.ult || !u.alive) return; if (u.ult.t > 0) { banner(`⏳ ${ULT[u.id].name} · ${Math.ceil(u.ult.t)}초`); return; } if (blocked(u)) { banner('지금은 쓸 수 없어요'); return; } ultCast(u); }
 function ultCast(u, rep) { const U = ULT[u.id]; if (!U || !u.ult || !u.alive) return false; if (!rep && (u.ult.t > 0 || blocked(u) || S.phase !== 'combat')) return false;
   u.ult.t = u.ult.cd; const p = ultPlace(u); if (p) p.ut = u.ult.t;
-  if (!rep && !S.replay && !S.fast && u.side === ME() && RP.rounds.length) { const rr = RP.rounds[RP.rounds.length - 1]; (rr.u || (rr.u = [])).push([S.time, u.side, u.tile]); }
+  if (!rep && !S.replay && !S.fast && u.side === ME() && RPR.rounds.length) { const rr = RPR.rounds[RPR.rounds.length - 1]; (rr.u || (rr.u = [])).push([S.time, u.side, u.tile]); }
   A.buff(u, 'ult', ULT_BUFF, ULT_T); u.ultGlow = S.time + ULT_T; if (u.el) u.el.classList.add('ult-on'); A.later(ULT_T, () => { if (u.el && !(u.ultGlow > S.time + 0.05)) u.el.classList.remove('ult-on'); });
   if (!S.fast) { dmgNum(u, '💥 ' + U.name, { crit: true, stamp: true }); fxRing(u.x, u.y, 2.4 * CFG.CELL, 'rgba(176,75,255,.95)', 650, 12); if (u.side === ME() && !U.quick) ultCut(u, U); sfx(U.quick ? 'merge' : 'match_win'); }
   try { U.run(u); } catch (e) { stepErr(u, e); } drawUnit(u); return true; }
@@ -10974,13 +10969,109 @@ function njDrawFx(c, e, p, now, W) { const k = e.k;
   if (k === 'njtv') { const X = W.x(e.x, e.y), Y = W.y(e.x, e.y) - 30, sy = p < 0.5 ? 1 - p * 1.9 : 0.05, sx = p < 0.5 ? 1 + p * 0.3 : Math.max(0, 1.15 * (1 - (p - 0.5) * 2));
     c.save(); c.translate(X, Y); c.scale(e.fl ? -sx : sx, sy); c.globalAlpha = 0.6; c.drawImage(e.spr, -e.D / 2, -e.D / 2, e.D, e.D); c.globalAlpha = 0.9; c.fillStyle = '#eaffee'; c.fillRect(-e.D / 2, -3 / Math.max(0.05, sy), e.D, 6 / Math.max(0.05, sy)); c.restore(); }
 }
+// ── R3.7 사신 지후 리워크 도우미 ──
+const RPR = { R: 1.5, HALF: 112.5 * Math.PI / 180, WIND: 1.0, SWING: 0.16, HIT: 0.07, HOLD: 0.3, FADE: 0.75, SOUL: 6, FLY: 2, HP: 1444, AW_HP: 2444, IV: 14, AW_IV: 4.4, AW_SPD: 2.44, DF: 0.75, FIRST: 3 }; // 부채꼴 225° · 반지름 1.5칸 · 차징 1초 → 반시계 베기 · 망령 6개 · 2초 뒤 도착
+function rprStart(u, A) { A.status(u, 'seal', 800); u.rpr = { w: 0, aw: false, sw: null, vis: null, awT: -9 }; u.cd = Math.min(u.cd, RPR.FIRST); S.rprU = true; } // [봉인]: 라운드마다 새 유닛이라 다시 봉인 (디펜스는 웨이브마다 df2Reborn)
+function rprOf(u) { return u.rpr || (u.rpr = { w: 0, aw: u.def === CHARS.reaper.awake, sw: null, vis: null, awT: -9 }); } // 변신 · 복사로 들어온 경우
+function rprSoul(u, d) { // 지후가 쓰러지면 [망령] → 2초 뒤 사신에게 (사신마다 하나씩)
+  const r = u.rpr; if (!r || r.aw || d === u || !u.alive) return; S.rprU = true;
+  if (!S.fast && CV.on) { const L = S.rprW || (S.rprW = []); if (L.length < 90) L.push({ x: d.x, y: d.y, u, t0: S.time, r: S.round, s: (d.uid * 37 % 100) / 100 }); }
+  A.later(RPR.FLY, () => { if (!u.alive || !u.rpr || u.rpr.aw) return; u.rpr.w++; if (!S.fast && CV.on) CVF.over.push({ k: 'spark', t0: performance.now(), ms: 420, x: u.x, y: u.y, col: '#a8ecff', big: true }); drawUnit(u); if (u.rpr.w >= RPR.SOUL) rprAwake(u); });
+}
+function rprAwake(u) { // [사신강림]: 체력 2,444 (레벨 · 랭크 비율 그대로 · 가득) · 이동속도 2.44 · 공격 간격 4.4초 · 베면 [즉사]
+  const r = rprOf(u), k = RPR.AW_HP / RPR.HP; r.aw = true; r.awT = S.time; r.sw = null; r.vis = null; u.def = CHARS.reaper.awake;
+  u.baseMaxHp = Math.round(u.baseMaxHp * k); u.maxHp = Math.round(u.maxHp * k); u.hp = u.maxHp;
+  u.atkSpeed = u.atkSpeed * RPR.AW_IV / RPR.IV; u.cd = Math.min(u.cd, 0.6); u.speed = RPR.AW_SPD * CFG.CELL; u.st.seal = 0; u.invMass = 1 / u.mass; u._fxT = null;
+  if (u.el) u.el.classList.add('reaper-on');
+  if (!S.fast) { dmgNum(u, '☠ 사신강림!', { crit: true, stamp: true }); A.ring(u.x, u.y, 1.6); fxRing(u.x, u.y, 2.4 * CFG.CELL, '#e5322d', 700, 6); shake(true); } drawUnit(u);
+}
+function rprSwing(u, t) { // 일반 공격 = 낫 차징 시작 (방향은 이때 정한다 · 피해는 rprTick 이 1초 뒤에)
+  const r = rprOf(u); if (r.sw) return true;
+  r.sw = r.vis = { t0: S.time, ang: Math.atan2(t.y - u.y, t.x - u.x), hit: false }; return true;
+}
+function rprTick(u, dt) {
+  const r = u.rpr; if (!r || !r.sw) return; const s = r.sw, e = S.time - s.t0;
+  if (!s.hit && blocked(u)) { r.sw = r.vis = null; return; } /* 기절 · 빙결: 베기 취소 */
+  u.cd = Math.max(0, u.cd - dt * aspdRate(u)); /* 차징 · 베기 동안에도 공격 간격은 흐른다 (steer 가 멈춰 둔 동안) */
+  if (!s.hit && e >= RPR.WIND + RPR.HIT) { s.hit = true; rprCut(u, s.ang); }
+  if (e >= RPR.WIND + RPR.HOLD) r.sw = null;
+}
+function rprSteer(u) { return !!(u.rpr && u.rpr.sw); } // 차징 · 베기 동안 그 자리에 멈춘다
+function rprCut(u, ang) { // 부채꼴 안의 적 모두 · 봉인: 공격력 피해 · 강림: [즉사] (성: 공격력 피해 · 디펜스 한철: 현재 체력 75% · 보스는 즉사 비율만큼 줄여서)
+  const reach = RPR.R * CFG.CELL, aw = u.rpr.aw; let any = 0, kill = 0;
+  for (const e of foes(u)) {
+    if (e.st.dive > 0 || e.yeetT > 0 || e.dfFly || !inFan(u, e, ang, RPR.HALF, reach)) continue;
+    if (!aw || e.def.castle) { const d = dealDamage(u, e, effAtk(u)); if (d > 0) { hitFx(u, e, aw); any += d; } continue; }
+    if (e.dfF) { const b = DF2_FOE[e.id] && DF2_FOE[e.id].boss, d = dealDamage(u, e, e.hp * RPR.DF * (b ? DF2.KILL_BOSS / DF2.KILL_PCT : 1), { noCrit: true, skill: true }); if (d > 0) { hitFx(u, e, true); any += d; } continue; }
+    if (!CV.on && !S.fast) reapFx(u, e);
+    const d = instaKill(u, e); any += d; if (d > 0) kill++;
+  }
+  if (kill && !S.fast) shake(true);
+  afterHit(u, any);
+}
+function rprGauge(u) { const r = u.rpr; if (!r) return 0; return r.aw ? clamp(1 - Math.max(0, u.cd) / Math.max(0.1, baseInterval(u)), 0, 1) : Math.min(1, r.w / RPR.SOUL); } // 봉인: 망령 n / 6 · 강림: 다음 베기
+function rprScy(aw) { // 낫 그림 (자루 끝 → 날이 -y 쪽으로 휘어 뒤로 · 손잡이 (36, 80) · 자루 끝 (150, 80))
+  return cvSprite('rprScy' + (aw ? 1 : 0), 168, 120, 2, g => {
+    g.lineCap = 'round'; g.strokeStyle = aw ? '#1a1012' : '#3b2f2a'; g.lineWidth = 7; g.beginPath(); g.moveTo(16, 80); g.lineTo(150, 80); g.stroke();
+    g.strokeStyle = aw ? 'rgba(255,70,80,.45)' : 'rgba(255,255,255,.22)'; g.lineWidth = 2; g.beginPath(); g.moveTo(20, 78); g.lineTo(146, 78); g.stroke();
+    g.strokeStyle = aw ? '#e5322d' : '#8c7f99'; g.lineWidth = 3; for (let x = 26; x <= 50; x += 6) { g.beginPath(); g.moveTo(x, 75); g.lineTo(x + 4, 85); g.stroke(); }
+    g.save(); if (aw) { g.shadowColor = 'rgba(229,50,45,.95)'; g.shadowBlur = 14; }
+    const gr = g.createLinearGradient(150, 84, 58, 8);
+    if (aw) { gr.addColorStop(0, '#3a1a1e'); gr.addColorStop(0.55, '#140b0d'); gr.addColorStop(1, '#5a0e16'); } else { gr.addColorStop(0, '#f4f6fa'); gr.addColorStop(0.5, '#aab1bd'); gr.addColorStop(1, '#666c7a'); }
+    g.fillStyle = gr; g.beginPath(); g.moveTo(154, 84); g.quadraticCurveTo(152, 20, 56, 8); g.quadraticCurveTo(120, 36, 136, 76); g.closePath(); g.fill(); g.restore();
+    g.strokeStyle = aw ? '#ff5560' : '#ffffff'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(56, 8); g.quadraticCurveTo(120, 36, 136, 76); g.stroke();
+    g.fillStyle = aw ? '#e5322d' : '#5a5f6b'; g.beginPath(); g.arc(147, 80, 6, 0, Math.PI * 2); g.fill();
+    if (aw) { g.fillStyle = '#ffd0d3'; g.beginPath(); g.arc(147, 80, 2.2, 0, Math.PI * 2); g.fill(); }
+    return true; });
+}
+function rprSector(c, r1, r2, a, b) { const ccw = b < a; c.beginPath(); c.arc(0, 0, r2, a, b, ccw); c.arc(0, 0, r1, b, a, !ccw); c.closePath(); } // 고리 조각 (지금 변환 안에서)
+function rprDraw(c, W, now) { // 사신 지후: 낫 (평소 · 차징 · 반시계 베기 · 잔상) · 망령 — 전장 캔버스 위층 (좌표는 W.x · W.y)
+  const T = TILT(), lift = T !== 1 ? CFG.LIFT : 0, st = S.time, H = RPR.HALF, R = RPR.R * CFG.CELL;
+  for (const u of S.units) {
+    const r = u.rpr; if (!r || !u.alive || u.realm) continue;
+    const x = u._rx != null ? u._rx : u.x, y = u._ry != null ? u._ry : u.y, X = W.x(x, y), Y = W.y(x, y), sx = (W.x(x + R, y) - X) / R, sy = (W.y(x, y + R) - Y) / R, dir = sx * sy < 0 ? -1 : 1;
+    const ds = u._cvS || 1, D = cvD(u) * ds, Yb = Y - cvD(u) / 2 * lift * ds, aw = r.aw, v = r.vis, e = v ? st - v.t0 : 99;
+    let th = null, ph = 0, p = 0;
+    if (v && e < RPR.WIND + RPR.FADE && e >= 0) {
+      const A0 = v.ang, w0 = A0 + dir * H * 0.78, w1 = A0 + dir * H * 1.14, wE = A0 - dir * H * 1.06;
+      c.save(); c.translate(X, Y); c.scale(sx, sy); const lw = 1 / Math.max(0.2, Math.abs(sx));
+      if (e < RPR.WIND) { // 1) 차징: 시계방향으로 느리게 · 바닥 부채꼴이 차오른다
+        p = e / RPR.WIND; const q = p * p * (3 - 2 * p); th = w0 + (w1 - w0) * q; ph = 1;
+        c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, A0 - H, A0 + H); c.closePath(); c.fillStyle = aw ? `rgba(120,0,16,${(0.06 + 0.14 * p).toFixed(3)})` : `rgba(60,48,90,${(0.05 + 0.1 * p).toFixed(3)})`; c.fill();
+        c.strokeStyle = aw ? `rgba(229,50,45,${(0.25 + 0.5 * p).toFixed(3)})` : `rgba(150,140,190,${(0.2 + 0.4 * p).toFixed(3)})`; c.lineWidth = 1.6 * lw; c.stroke();
+        const eA = A0 + dir * H; c.beginPath(); c.arc(0, 0, R * 0.97, eA, eA - dir * 2 * H * q, dir > 0); c.strokeStyle = aw ? '#ff3b46' : '#c9c2ee'; c.lineWidth = 3 * lw; c.globalAlpha = 0.5 + 0.5 * p; c.stroke(); c.globalAlpha = 1;
+      } else { // 2) 베기 (반시계 · 슉) → 3) 잔상이 사라진다
+        const k = Math.min(1, (e - RPR.WIND) / RPR.SWING), eo = 1 - (1 - k) * (1 - k) * (1 - k), fade = e < RPR.WIND + RPR.SWING ? 0 : (e - RPR.WIND - RPR.SWING) / (RPR.FADE - RPR.SWING);
+        th = w1 + (wE - w1) * eo; ph = 2; const N = 5, al = 1 - fade, span = th - w1;
+        rprSector(c, R * 0.3, R * 1.02, w1 + span * 0.25, th); c.fillStyle = aw ? `rgba(70,0,10,${(0.4 * al).toFixed(3)})` : `rgba(40,32,64,${(0.3 * al).toFixed(3)})`; c.fill(); /* 어두운 바탕 (한 번) */
+        for (let i = 0; i < N; i++) { const a = w1 + span * i / N, b = w1 + span * (i + 1) / N, f = (0.2 + 0.8 * (i + 1) / N) * al;
+          rprSector(c, R * 0.7, R * 1.0, a, b); c.fillStyle = aw ? `rgba(255,45,60,${(0.85 * f).toFixed(3)})` : `rgba(190,180,240,${(0.7 * f).toFixed(3)})`; c.fill(); }
+        const hs = span * 0.7; c.beginPath(); c.arc(0, 0, R * 0.96, w1 + hs, th, span < 0); c.strokeStyle = `rgba(255,246,246,${(0.95 * al).toFixed(3)})`; c.lineWidth = 3.2 * lw; c.lineCap = 'round'; c.stroke();
+      }
+      c.restore();
+    }
+    const spr = rprScy(aw); if (!spr) continue;
+    let phi, len, px = X, py = Yb;
+    if (th != null) { const vx = sx * Math.cos(th), vy = sy * Math.sin(th); phi = Math.atan2(vy, vx); len = R * Math.max(0.62 * Math.abs(sx), Math.hypot(vx, vy)) * 0.98; if (ph === 2 && e > RPR.WIND + RPR.SWING) c.globalAlpha = Math.max(0.35, 1 - (e - RPR.WIND - RPR.SWING) / (RPR.FADE - RPR.SWING) * 0.6); }
+    else { phi = -Math.PI / 2 - 0.22 + Math.sin(now / 640 + u.uid) * 0.05; len = D * 0.95; px = X + D * 0.42; py = Yb + D * 0.2; if (!aw) c.globalAlpha = 0.9; }
+    const sc = len / 114; c.save(); c.translate(px, py); c.rotate(phi); c.drawImage(spr, -36 * sc, -80 * sc, 168 * sc, 120 * sc); c.restore(); c.globalAlpha = 1;
+  }
+  const L = S.rprW; if (!L || !L.length) return; let n = 0; const G = cvGlow([0.14, 0.34, 0.78], '#8fe3ff');
+  for (let i = 0; i < L.length; i++) { // 망령: 쓰러진 자리에서 떠올라 → 휘어지며 빨라져 사신에게
+    const w = L[i], tau = (st - w.t0) / RPR.FLY, u = w.u; if (tau > 1.02 || tau < -0.05 || w.r !== S.round || !u.alive) continue; L[n++] = w; if (tau < 0) continue;
+    const ux = u._rx != null ? u._rx : u.x, uy = u._ry != null ? u._ry : u.y, tx = W.x(ux, uy), ty = W.y(ux, uy) - cvD(u) / 2 * lift * (u._cvS || 1);
+    const x0 = W.x(w.x, w.y), y0 = W.y(w.x, w.y) - 14, wob = w.s * 6.28, x1 = x0 + Math.sin(4.7 + wob) * 7, y1 = y0 - 38, cx = (x1 + tx) / 2 + (w.s - 0.5) * 110, cy = Math.min(y1, ty) - 80;
+    const pos = t => { if (t < 0.3) { const k = t / 0.3, q = 1 - (1 - k) * (1 - k); return [x0 + Math.sin(k * 4.7 + wob) * 7, y0 - 38 * q]; } const k = (t - 0.3) / 0.7, q = k * k, m = 1 - q; return [m * m * x1 + 2 * m * q * cx + q * q * tx, m * m * y1 + 2 * m * q * cy + q * q * ty]; };
+    const fin = Math.min(1, tau / 0.12);
+    for (let j = 4; j >= 0; j--) { const t = tau - j * 0.035; if (t < 0) continue; const [qx, qy] = pos(t), s = (j ? 22 - j * 3.5 : 34) * (0.85 + 0.15 * Math.sin(now / 90 + w.s * 9)); c.globalAlpha = fin * (j ? 0.5 - j * 0.09 : 1); c.drawImage(G, qx - s / 2, qy - s / 2, s, s); }
+  }
+  c.globalAlpha = 1; L.length = n;
+}
 function reapFx(u, t) { // 사신 [즉사]: 대상 위로 붉은 낫이 크게 휘둘러 베고, 베인 자리에 사선 섬광 (build 5)
   const ang = Math.atan2(t.y - u.y, t.x - u.x) * 180 / Math.PI, el = fxAt('fx-reap', t.x, t.y, 900); el.style.setProperty('--a', ang.toFixed(1) + 'deg'); el.innerHTML = '<i class="arc"></i><i class="blade"></i><i class="cut"></i><i class="cut c2"></i>';
 }
-CHARS.reaper.awake = { ...CHARS.reaper, hp: 2044, atkSpeed: 1.2, speed: 2.4, onStart: null, onUnitDeath: null, // 사신 지후 강림 (스킬로만 · 도감에는 없다)
-  passive: '[강림] 일반 공격으로 SP 가 찹니다.',
-  skill: { type: 'hit', need: 4, /* R2.25.4: 5 → 4 */ desc: '<b>SP 4</b> · <b>[즉사]</b>. 가장 가까운 적 <b>하나</b>를 즉사시킵니다 (무적 · 버티기 등 어떤 효과로도 막을 수 없습니다).', // R2.9: SP 6 → 5
-    run(u, A) { const t = nearestFoe(u); if (!t) return; if (!S.fast) { reapFx(u, t); shake(true); } instaKill(u, t); } } }; // 대상은 가장 가까운 적 하나뿐 · R2.10.2: 무적도 막지 못한다
+CHARS.reaper.awake = { ...CHARS.reaper, hp: 2444, atkSpeed: 4.4, speed: 2.44, onStart: null, onUnitDeath: null, /* 사신 지후 강림 ([망령] 6개 · 도감에는 없다) · 낫 · 게이지는 그대로 */
+  passive: '<b>[사신강림]</b> 낫에 베인 적은 모두 <b>[즉사]</b>합니다.' };
 
 Object.defineProperty(CHARS, 'prince', { enumerable: false, value: { name: '왕자 지후', rarity: 'epic', role: '딜러', hp: 2380, atk: 200, atkSpeed: 1.2, range: 'melee', cleave: true, speed: 1.6, portrait: PORTRAITS.prince, sfx: 'swing', color: '#f2c230', // R2.20: 개구리 지후가 변한 모습 (뽑기 · 덱 · 도감에는 없다)
   story: '연못에서 왕관을 쓰고 걸어 나온, 몇 안 되는 성공한 개구리 지후입니다. 저주가 풀리자마자 그는 왕궁으로 달려가 자기가 잃어버린 왕자라고 주장했어요. 국왕 화염 지후 1호는 왕자를 잃어버린 적이 없다고 했지만, 그는 직접 만든 족보를 들이밀며 끝까지 버텼습니다. 칼을 휘두를수록 점점 기세가 오르는데, 이건 왕실 교육이 아니라 순전히 자존심이에요. 쓰러질 때는 꼭 백성들에게 남기는 긴 유언을 읊어서 아군의 사기를 올려 줍니다. 연못 시절 이야기를 꺼내면 못 들은 척해요.',
@@ -11081,7 +11172,7 @@ const CHAR_INFO = {
   lightning: [['[낙뢰]', 'SP 5 · 공격력 600% · [기절] 0.5초'], ['처치하면', '0.5초 뒤 무작위 적에게 다시 (계속 이어질 수 있다)']],
   barrier: [['시작 쉴드', '십자 범위 아군 · 공격력 250% · 남아 있는 동안 디버프 무효'], ['쉴드 중첩', '한 아군에게 보호막 지후 둘 이상이 닿아 있으면 쉴드가 합쳐진다'], ['[배리어]', '반지름 2.2칸 · 3.5초 · 바깥에서 오는 투사체를 막는다'], ['못 막는 것', '근접 공격 · 투사체가 아닌 광역 공격']],
   revive: [['SP', '아군이 쓰러질 때마다 1 (소환체 · 분열체 포함)'], ['[부활]', '1.5초 뒤 · 레벨 수만큼 · 쓰러질 때 레벨로'], ['대상', '지난 [부활] 뒤로 쓰러진 아군 중 무작위 (소환체 · 분열체는 쓰러질 때 체력 · 공격력으로) · 부활 지후 제외']],
-  reaper: [['[봉인]', '움직이지 못한다 (사거리 안에 들어온 적은 공격한다)'], ['SP (봉인)', '아군이 쓰러질 때마다 1 (소환체 · 분열체 포함)'], ['[사신강림]', 'SP 6 · 체력 2,044 · 공격 간격 1.2초 · 이동속도 2.4'], ['[즉사] (강림)', 'SP 4 (일반 공격) · 가장 가까운 적 하나 · 즉사 (무적 · 버티기 등 어떤 효과로도 못 막는다)']],
+  reaper: [['[봉인]', '움직이지 못한다 · 밀리지 않는다 · 일반 공격 공격력 피해 (간격 14초)'], ['[망령]', '아군 · 적이 쓰러지면 2초 뒤 들어온다 (소환체 포함 · 사신이 여러 기면 모두에게)'], ['낫 베기', '1초 차징 (그 자리에 멈춤) · 중심각 225° · 반지름 1.5칸 부채꼴의 적 모두 · 기절 · 빙결되면 취소'], ['[사신강림]', '망령 6개 · 체력 2,444 (가득) · 이동속도 2.44 · 공격 간격 4.4초 · 라운드가 끝나면 다시 봉인'], ['[즉사] (강림)', '낫에 베인 적 모두 · 성은 공격력 피해 · 디펜스 한철은 현재 체력 75% (보스 18.75%)']],
   guardian: [['[수호]', '십자 범위 아군 · 쓰러질 때 체력 1 + [무적] 1초 · 라운드에 한 번'], ['조건', '수호자 지후가 살아 있을 때'], ['예외', '광폭화 지후']],
   clock: [['랭크', '랭크마다 공격속도 증감량 +0.3%'], ['같은 레벨 적', '공격속도 -4% (레벨마다 -1%)'], ['같은 레벨 아군', '공격속도 +4% (자신 포함 · 레벨마다 +1%)'], ['범위', '맵 전체 · 중첩']],
   charge: [['레벨 · 랭크', '0.5초마다 충전량 레벨마다 +0.2% · 랭크마다 +0.3%'], ['충전 범위', '반경 3.6칸 · 0.5초마다 안의 아군 SP 를 최대 SP 의 2.5%씩 (초당 5%) · 기절하면 멈춘다'], ['[급속 충전]', 'SP 13 · 가장 가까운 아군 (자신 제외) SP 를 바로 가득'], ['제외', '자신 · 다른 충전 지후 · 부활 지후 · 봉인된 사신 지후 · 핵미사일 지후 (강림한 사신은 받는다)']],
@@ -13986,7 +14077,7 @@ function cvDraw0() {
   }
   c.setTransform(k, 0, 0, k, 0, 0); if (gu) cO.setTransform(k, 0, 0, k, 0, 0);
   for (const p of S.shots) if (p.el === CV_STUB) cvShot(gu && GL_SHOT.has(p.cls || '') ? GLC : cO, p, W.x(p.x, p.y), W.y(p.x, p.y), flip, ew); // 5) 위층: 투사체 · 불꽃 · 베기 · 피해 숫자
-  if (S.njH && S.njH.length) njHoloDraw(cO, W, now, q); /* R3.6 build 3 홀로그램 */ cvFxDraw(cO, 'over', now, W, gu ? GLC : null); if (gu) GLC.end();
+  if (S.njH && S.njH.length) njHoloDraw(cO, W, now, q); /* R3.6 build 3 홀로그램 */ if (S.rprU) rprDraw(cO, W, now); /* R3.7 사신 낫 · 망령 */ cvFxDraw(cO, 'over', now, W, gu ? GLC : null); if (gu) GLC.end();
 }
 // ── R2.29 전장 캔버스 이펙트: 자주 생기는 이펙트 (피해 숫자 · 불꽃 · 총구 · 투사체 · 베기 · 고리 · 먼지 · 공격 예고) 를 DOM 대신 캔버스에 ──
 // 50기 벤치 8초에 DOM 이 520개 붙었다 떨어졌다 (피해 숫자 129 · 불꽃 103 · 예고 63 + 매 프레임 clip-path) — 이것이 남은 렉의 절반. 드문 스킬 이펙트는 DOM 그대로.
@@ -17955,7 +18046,7 @@ const TIPS_MORE = [ // R2.12.3 build 10: 팁 100종 추가 — 접속 로딩 (BO
   '블리자드 지후의 [눈보라]는 모든 적을 한꺼번에 얼려요.',
   '번개 지후의 [낙뢰]로 적을 쓰러뜨리면 다른 적에게 낙뢰가 또 떨어져요.',
   '랜턴 지후는 적을 공격하는 빔과 아군을 치료하는 빔을 동시에 써요.',
-  '사신 지후는 아군이 쓰러질 때마다 SP 를 모아 <b>[사신강림]</b>해요.',
+  '사신 지후는 지후가 쓰러질 때마다 <b>[망령]</b>을 모아 <b>[사신강림]</b>해요.',
   '부활 지후는 아군이 쓰러질 때마다 SP 를 모아 동료를 되살려요.',
   '충전 지후는 주변 아군의 SP 를 채워 줘요. 스킬 지후와 함께 쓰면 좋아요.',
   '주사위 지후의 피해는 1 ~ 250 사이 무작위! 오늘의 운을 시험해 보세요.',
