@@ -55,6 +55,13 @@ service cloud.firestore {
     function cleanName(n) {
       return !n.lower().replace('[^가-힣ㄱ-ㅎㅏ-ㅣa-z]', '').matches('.*(씨발|시발|씨팔|시팔|씹|병신|븅신|지랄|좆|존나|개새|새끼|느금|느그어|느그엄|니애미|니애비|니미|애미|애비|엠창|엄창|창녀|섹스|보지|자지|노무현|운지|노알라|엠씨무현|mc무현|무현이|일베|홍어|운영자|관리자|fuck|shit|bitch|nigger).*');
     }
+    // R3.7 build 7: 게스트 (익명) 는 다른 계정이 등록한 닉네임으로 순위에 올리지 못한다 (로그인이 풀린 기기가 본계정 기록을 복사해 둘이 되던 것 · 예전 화면도 막는다)
+    function guestNickOk(n) {
+      return request.auth.token.firebase.sign_in_provider != 'anonymous'
+        || n.matches('.*/.*')
+        || !exists(/databases/$(database)/documents/nicknames/$('n_' + n.lower()))
+        || get(/databases/$(database)/documents/nicknames/$('n_' + n.lower())).data.owner == request.auth.uid;
+    }
     // 닉네임 로그인 · 친구 찾기 (R1 과 같은 등록부): 문서 ID 'n_' + 소문자 닉네임 · code 는 로그인한 계정 자신의 UID
     function validNickname(key, data) {
       return data.keys().hasAll(['owner', 'code', 'nickname', 'updatedAt'])
@@ -107,7 +114,7 @@ service cloud.firestore {
         && request.resource.data.season is int && request.resource.data.season >= 1 && request.resource.data.season <= 100000
         && docId == string(request.resource.data.season) + '_' + request.auth.uid
         && request.resource.data.keys().hasOnly(['nickname', 'tp', 'season', 'wins', 'losses', 'fav', 'frame', 'updatedAt'])
-        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.tp is int && request.resource.data.tp >= 0 && request.resource.data.tp <= 10000000
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
         && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
@@ -176,7 +183,7 @@ service cloud.firestore {
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
         && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'deck', 'rk', 'updatedAt'])
-        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
@@ -189,7 +196,7 @@ service cloud.firestore {
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
         && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
-        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
@@ -200,7 +207,7 @@ service cloud.firestore {
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
         && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'updatedAt'])
-        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
         && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
