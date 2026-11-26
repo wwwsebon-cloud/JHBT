@@ -8563,7 +8563,7 @@ const CHARS = {
     tick(u, dt, A) { const n = u.lv, R = 2 * CFG.CELL, er = 0.3 * CFG.CELL;
       for (let i = 0; i < n; i++) { const ang = S.time * Math.PI * 2 / 1.5 /* R2.19: 공전 1.3 → 1.5초 */ + i * Math.PI * 2 / n, ex = u.x + Math.cos(ang) * R, ey = u.y + Math.sin(ang) * R, el = u.fx && u.fx[i];
         if (el) { el.style.left = ex.toFixed(1) + 'px'; el.style.top = ey.toFixed(1) + 'px'; }
-        foes(u).forEach(e => { const key = i + ':' + e.uid; if ((u.ehit[key] || 0) > S.time || Math.hypot(e.x - ex, e.y - ey) > er + unitRadius(e)) return; u.ehit[key] = S.time + 1.5; const done = dealDamage(u, e, pctD(e, e.hp * 0.125), {}); /* R3.4 build 8: 11 → 12.5% · R2.10.2: 14 → 11% */ if (done > 0) hitFx(u, e, false); }); } } },
+        foes(u).forEach(e => { const key = i + ':' + e.uid; if ((u.ehit[key] || 0) > S.time || Math.hypot(e.x - ex, e.y - ey) > er + unitRadius(e)) return; u.ehit[key] = S.time + 1.5; const done = dealDamage(u, e, e.hp * 0.125, {}); /* R3.7 build 2: 전자는 체력 비례 피해 감소를 무시한다 */ /* R3.4 build 8: 11 → 12.5% · R2.10.2: 14 → 11% */ if (done > 0) hitFx(u, e, false); }); } } },
   dice: { name: '주사위 지후', rarity: 'rare', role: '딜러', hp: 1477, /* R2.26: 777 → 1477 */ atk: 125, atkSpeed: 1.4, /* R2.26: 1.7 → 1.4 */ range: 5.5, speed: 1.6, dmgRange: [1, 250], /* R2.26: 1~300 → 1~250 */ portrait: PORTRAITS.dice, sfx: 'shot', color: '#e8e2d4',
     story: '보드게임에서 원하는 숫자가 안 나오면 판을 엎던 지후입니다. 친구들이 더는 같이 놀아 주지 않자, 그는 집에서 정이십면체 주사위를 들고 나왔어요. 면이 많아지면 원하는 숫자가 나올 확률도 높아진다는 이론이었는데, 계산해 보니 오히려 낮아졌습니다. 그래도 그는 느낌상 높아졌다며 오늘도 굴려요. 카지노에 가면 슬롯머신 지후가 슬그머니 자리를 피합니다. 요즘은 아침 메뉴도 출근 여부도 주사위로 정하다가, 회사에서 잘렸어요.',
     passive: '공격할 때마다 <b>1 ~ 250</b> 사이 무작위 피해를 입힙니다.' },
@@ -8585,7 +8585,7 @@ const CHARS = {
     skill: { type: 'hit', need: 4, desc: '<b>SP 4</b> · <b>[해일]</b>. 맵 끝까지 나아가는 해일로 적을 밀어내고, 잃은 체력이 많은 적일수록 큰 피해를 줍니다.',
       run(u, A) { const t = nearestFoe(u); if (!t) return; const ang = Math.atan2(t.y - u.y, t.x - u.x), hw = unitRadius(u) * (enh6(u) ? 2 : 1) /* 랭크 6 [대해일] */, dx = Math.cos(ang), dy = Math.sin(ang);
         dmgNum(u, '해일!', { crit: true }); sfx('ice');
-        A.line(u, u.x, u.y, ang, { speed: 9, hw, h: hw * 2, cls: 'fx-wave', onHit: (e, frac) => { const done = dealDamage(u, e, pctD(e, effAtk(u) * 0.3 + Math.max(0, e.maxHp - e.hp) * 0.2), { skill: true }); if (done > 0) hitFx(u, e, true); A.knock(u, e, 4 * (1 - frac), dx, dy); } }); } } },
+        A.line(u, u.x, u.y, ang, { speed: 9, hw, h: hw * 2, cls: 'fx-wave', onHit: (e, frac) => { const done = dealDamage(u, e, flatD(e, effAtk(u) * 0.3) + pctD(e, Math.max(0, e.maxHp - e.hp) * 0.2), { skill: true }); if (done > 0) hitFx(u, e, true); A.knock(u, e, 4 * (1 - frac), dx, dy); } }); } } },
   berserker: { name: '버서커 지후', rarity: 'rare', role: '딜러', hp: 1600, /* R3.1 build 2 */ atk: 70, atkSpeed: 0.8, /* R3.4 build 8: 100 → 70 · 1.25 → 0.8초 */ range: 'melee', speed: 1.6, portrait: PORTRAITS.berserker, portraitSkill: PORTRAITS.berserker_skill, sfx: 'swing', color: '#f08a00',
     story: '평소에는 조용하고 얌전한 왕궁 도서관 사서 지후입니다. 그런데 냉장고에 이름까지 써 둔 푸딩이 사라진 날, 도서관 책 3천 권이 한꺼번에 날아갔어요. 범인은 급식실의 포식 지후였고, 빈 푸딩 컵에는 친절하게 감사 메모까지 붙어 있었습니다. 그날 이후 그는 맞을수록 화가 쌓여서 점점 세져요. 포식 지후가 전장에 보이면 처음부터 끝까지 화가 나 있습니다. 도서관 입구에는 지금 사서의 정신 건강을 위해 음식물 반입을 절대 금지한다는 팻말이 붙어 있어요.',
     passive: '체력이 낮을수록 공격력이 최대 <b>350%</b>까지 오릅니다. 체력이 <b>15%</b> 아래로 떨어지면 공격속도도 <b>20%</b> 빨라집니다.',
@@ -8895,10 +8895,7 @@ const CHARS = {
   sommelier: { name: '소믈리에 지후', rarity: 'epic', role: '서포터', hp: 1480, atk: 115, /* R2.21.2: 90 → 115 */ atkSpeed: 3, range: 6.8, speed: 1.6, portrait: PORTRAITS.sommelier, sfx: 'shot', color: '#c2185b',
     story: '왕궁 연회장의 와인 담당 지후입니다. 국왕이 삼겹살을 구울 때마다 와인을 골라 숯불 향이 어쩌고 하는 긴 설명을 덧붙여요. 그의 와인은 너무 독해서 한 모금이면 휘청거리지만, 마신 지후들은 어째선지 칼끝이 날카로워집니다. 다만 혼자 마시게 하는 건 예의가 아니라며, 손님이 여럿 모였을 때만 병을 따요. 정작 본인은 술을 한 방울도 못 마셔서 시음은 늘 포도 주스로 합니다. 아직 아무도 눈치채지 못했어요.',
     passive: '라운드가 시작되면 앞뒤좌우 칸의 아군 (2명 이상) 에게 와인을 나눠 줍니다. 마신 아군은 체력이 조금 줄지만 공격력 · 치명타가 경기 내내 쌓여 오릅니다.',
-    onStart(u, A) { const me = u.tile != null && S.place[u.side][u.tile], my = me && me.id === 'sommelier' ? me : null; u.atk += 5 * ((my && my.sm) || 0); // 지난 라운드까지 와인을 준 만큼
-      const L = A.cross(u); if (L.length < 2) return; let n = 0;
-      L.forEach(a => { const pa = a.tile != null && S.place[a.side][a.tile]; if (!pa) return; pa.wn = (pa.wn || 0) + 1; a.wn = pa.wn; if (u.lv > 1) { pa.wnL = (pa.wnL || 0) + u.lv - 1; a.wnL = pa.wnL; } /* R3.2 build 12: 소믈리에 레벨 */ if (enh6(u)) { pa.wn6 = (pa.wn6 || 0) + 1; a.wn6 = pa.wn6; } /* 랭크 6 [빈티지 와인] */ a.hp = Math.max(1, a.hp - Math.round(a.maxHp * 0.1)); n++; if (!S.fast) dmgNum(a, '🍷', { crit: true }); drawUnit(a); });
-      if (my) my.sm = (my.sm || 0) + n; u.atk += 5 * n; } },
+    onStart(u) { smStart(u); } },
   chicken: { name: '닭 지후', rarity: 'epic', role: '소환형', hp: 1260, atk: 135, atkSpeed: 1.4, /* R3.4 build 8: 1.5 → 1.4 */ range: 5.5, speed: 1.6, shotCls: 'egg', portrait: PORTRAITS.chicken, sfx: 'shot', color: '#ff8a80',
     story: '서쪽 농장에서 반란군의 식량으로 길러지던 지후입니다. 화염 지후 314호가 오늘 저녁 메뉴를 치킨으로 정하는 걸 엿듣고, 그날 밤 철망을 넘어 왕궁으로 망명했어요. 망명 신청서의 사유 칸에는 저녁 메뉴라고만 적었습니다. 겁이 나면 달걀을 던지는 버릇이 있는데, 아주 가끔 그 달걀에서 병아리 지후가 태어나요. 병아리도 엄마를 따라 달걀을 던지지만, 병아리의 달걀은 아직 덜 익어서 아무것도 나오지 않습니다. 그래서 그는 닭이 먼저냐 달걀이 먼저냐는 질문에 이제 병아리가 먼저라고 대답해요.',
     passive: '일반 공격으로 달걀을 던지고, 가끔 달걀에서 <b>병아리 지후</b>가 부화합니다.',
@@ -9584,6 +9581,14 @@ function mgShot(u, t, k) { if (!t || !u.alive || !((u.mg | 0) > 0)) return; u.mg
 function ultMagic(u) { u.mg = Math.max(0, (u.mg | 0) - MG.UN); mgHead(u); const R = MG.UR * CFG.CELL; if (!S.fast) fxRing(u.x, u.y, R, 'rgba(60,150,255,.9)', 600, 10); foes(u).forEach(e => { if (e.alive && dist(u, e) <= R + unitRadius(e)) mgScopeOn(u, e); }); if (!((u.mg | 0) > 0)) mgScope(u); }
 // ── R2.17 신규 지후 도우미 ──
 function nukeCount(el, at) { if (!el || !el.isConnected) return; const s = Math.max(0, Math.ceil(at - S.time - 1e-6)); el.textContent = s; if (s > 0) A.later(Math.min(1, at - S.time - (s - 1)) || 1, () => nukeCount(el, at)); } // R2.18 핵미사일: 떨어질 자리에 남은 초 (전투 시간 기준)
+// R3.7 build 2: 새 디펜스는 S.place 대신 로스터 줄 (c.ros) 에 와인 같은 기록을 남긴다
+const df2Row = u => (S.cw && S.cw.v2 && u && u.df2A && S.cw.ros.find(x => x.uid === u.uid)) || null;
+const smRec = a => (S.cw && S.cw.v2 ? df2Row(a) : (a.tile != null && S.place[a.side][a.tile]) || null);
+function smStart(u) { const me = smRec(u); u.atk += 5 * ((me && me.id === 'sommelier' && me.sm) || 0); if (!(S.cw && S.cw.v2)) smPour(u); } // 지난 라운드까지 와인을 준 만큼 · 디펜스는 웨이브가 시작될 때 따른다 (df2Next)
+function smPour(u) { const me = smRec(u), my = me && me.id === 'sommelier' ? me : null, L = A.cross(u); if (L.length < 2) return; let n = 0; // 십자 범위 아군 2명 이상에게 와인
+  L.forEach(a => { const pa = smRec(a); if (!pa) return; pa.wn = (pa.wn || 0) + 1; a.wn = pa.wn; if (u.lv > 1) { pa.wnL = (pa.wnL || 0) + u.lv - 1; a.wnL = pa.wnL; } /* R3.2 build 12: 소믈리에 레벨 */ if (enh6(u)) { pa.wn6 = (pa.wn6 || 0) + 1; a.wn6 = pa.wn6; } /* 랭크 6 [빈티지 와인] */ a.hp = Math.max(1, a.hp - Math.round(a.maxHp * 0.1)); n++; if (!S.fast) dmgNum(a, '🍷', { crit: true }); drawUnit(a); });
+  if (my) my.sm = (my.sm || 0) + n; u.atk += 5 * n; }
+const frogP = side => (S.enh && enhOf(side, 'frog') >= 3 ? 0.275 : 0.25); // 왕자가 될 확률 (랭크 6 [개굴 기도] +2.5%)
 const maxLv = id => (CHARS[id] && CHARS[id].maxLv) || CFG.MAX_LV; // 강화 지후 Lv1 (R3.3 build 3: 갓지후 Lv6 삭제)
 function edgeDist(x, y, dx, dy) { const tx = dx > 0 ? (FW() - x) / dx : dx < 0 ? -x / dx : Infinity, ty = dy > 0 ? (FH() - y) / dy : dy < 0 ? -y / dy : Infinity; return Math.max(1, Math.min(tx, ty)); } // 이 방향으로 맵 끝까지 거리
 function levelupKill(u) { // R2.37 build 3 레벨업 지후: 처치하면 이번 라운드 동안 진짜 레벨 +1 (lvShift · 최대 Lv5 · 배치 기록은 그대로) · 랭크 6 [만렙 보너스] 15% 한 번 더
@@ -9834,7 +9839,7 @@ function dragonTrails(u, dt) { // 불길: 1초마다 닿아 있는 적 공격력
 function frogEvolve(side, t, key) {
   const L = S.place[side], p = L[t]; if (!p || p.id !== 'frog' || p.lv <= 1) return;
   const r = S.net ? mulberry32(hashSeed(S.net.seed, 'frog', key || actKey(), side, t, p.lv))() : rng(), me = side === ME() && !S.fast;
-  let txt; if (r < (S.enh && enhOf(side, 'frog') >= 3 ? 0.275 : 0.25) /* R2.26: 35 → 25% · 랭크 6 [개굴 기도] +2.5% */) { L[t] = { ...p, id: 'prince' }; txt = '👑 왕자!'; if (me) sfx('gacha_legend'); }
+  let txt; if (r < frogP(side) /* R2.26: 35 → 25% */) { L[t] = { ...p, id: 'prince' }; txt = '👑 왕자!'; if (me) sfx('gacha_legend'); }
   else { L[t] = null; txt = '🐸 개굴… 소멸'; }
   (S.fx || (S.fx = [])).push({ side, t, kind: 'merge', txt: me ? txt : '' }); // R2.26: 화면 가운데 배너 대신 그 칸 위에 작게 잠깐 (renderField)
 }
@@ -10210,7 +10215,7 @@ function ruinHead(u) { const txt = u.rnT == null ? '' : '💀' + Math.max(0, Mat
 function ruinTick(u, dt) { u.rnT -= dt; ruinHead(u); if (u.rnT <= 0) ruinGo(u); }
 function ruinBoom(u, maxHpPct) { // 반경 10칸 적 모두 · Lv2 이상 변이: 공격력 4444% · Lv1 소멸: 그 적 최대 체력 25%
   const R = 10 * CFG.CELL, atk = effAtk(u) * 44.44; if (!S.fast) { fxRing(u.x, u.y, R, 'rgba(120,10,30,.9)', 750, 14); shake(true); }
-  foes(u).forEach(e => { if (Math.hypot(e.x - u.x, e.y - u.y) <= R + unitRadius(e) && dealDamage(u, e, pctD(e, maxHpPct ? e.maxHp * maxHpPct : atk), { skill: true, noCrit: true, lite: true }) > 0 && !S.fast) hitFx(u, e, false); });
+  foes(u).forEach(e => { if (Math.hypot(e.x - u.x, e.y - u.y) <= R + unitRadius(e) && dealDamage(u, e, maxHpPct ? pctD(e, e.maxHp * maxHpPct) : flatD(e, atk), { skill: true, noCrit: true, lite: true }) > 0 && !S.fast) hitFx(u, e, false); });
 }
 function ruinGo(u) {
   u.rnT = null;
@@ -10259,7 +10264,7 @@ function forgeTry(side, t) {
   fx.push({ side, t, kind: 'drop', fg: 'fail', txt: me ? `강화 실패 (+${n})` : '' }); if (me) sfx('place');
 }
 function forgeHead(el, n) { if (!el) return; let b = el.querySelector('.xlv.fg'); if (!b) { b = document.createElement('span'); b.className = 'xlv fg'; el.appendChild(b); } b.textContent = '+' + n; }
-function forgeStart(u) { const p = u.tile != null && S.place && S.place[u.side][u.tile], n = p && p.id === 'forge' ? p.fg | 0 : 0; u.fg = n; if (n) u.atk = u.atk * (1 + n); /* R3.2 build 2: 강화마다 500 → 100% */ A.portrait(u, forgePic(n)); forgeHead(u.el, n); drawUnit(u); }
+function forgeStart(u) { const p = u.tile != null && S.place && S.place[u.side][u.tile], n = S.cw && S.cw.v2 && u.side === S.cw.me ? S.cw.fg | 0 : p && p.id === 'forge' ? p.fg | 0 : 0; u.fg = n; if (n) u.atk = u.atk * (1 + n); /* R3.2 build 2: 강화마다 500 → 100% */ A.portrait(u, forgePic(n)); forgeHead(u.el, n); drawUnit(u); }
 // 리트머스 지후: 일반 공격이 맞으면 대상 등급 [검출] (전설 · 한정 = 빨강 · 그 밖 = 파랑 · 구체가 대상에서 돌아온다) · [중화]: 빨강 수만큼 공격력 높은 아군 공격력 +20% 7초 · 파랑 수만큼 체력 비율 낮은 아군 쉴드 400 × 레벨 배율 (7초 동안 서서히) → 검출 수 0
 function lmHead(u) { const m = u.lm; if (!m || !u.el) return; const tx = `🔴${m.r} 🔵${m.b}`; if (u.lmTx === tx) return; u.lmTx = tx; let b = u.el.querySelector('.xlv.lm'); if (!b) { b = document.createElement('span'); b.className = 'xlv lm'; u.el.appendChild(b); } b.textContent = tx; }
 function lmHit(u, t) { const m = u.lm; if (!m || !t || !t.def) return; const red = t.def.rarity === 'legend' || t.def.rarity === 'limited'; if (red) m.r++; else m.b++; lmHead(u); drawUnit(u);
@@ -10302,10 +10307,10 @@ function ocFinHit(u) { const o = u.oc, R = OC.FIN_R * CFG.CELL; if (!o || !(o.dm
 function ocLethal(u) { if (u.ocDone || !u.oc) return false; u.ocDone = true; ocSet(u, 'dc'); u.hp = u.maxHp; u.atk = 0; u.range = 15 * CFG.CELL; u.dcStore = { v: 0 }; drawUnit(u); /* R3.3 build 7: 바로 다카포 (무적 없음) */ if (!S.fast) dmgNum(u, '🎻 …', { crit: true }); return true; }
 function ocFinFx(u) { if (S.fast) return; shake(true); const L = bfxLayer && bfxLayer(); if (!L) return; const el = document.createElement('div'); el.className = 'oc-fin' + (u.side === ME() ? '' : ' e'); el.innerHTML = `<img src="${OC_FINALE}" alt="">`; L.appendChild(el); setTimeout(() => el.remove(), 1800); }
 // ── R3.1 build 6 신규 지후 도우미 ──
-// 가판대 지후: 반경 4.5칸에 처음 들어온 아군은 끌려와 레모네이드 (체력 400 × 레벨 배율) · 적은 10% 확률로 끌려와 마시면 체력 가득 + 우리 진영으로 영구 전향 (lmnDefect · R3.2 build 17) · 한 잔에 토큰 0.2 (1이 되면 그 진영 S.tok +1 · 디펜스 · 성뿌수기는 골드 +1)
+// 가판대 지후: 반경 4.5칸에 처음 들어온 아군은 끌려와 레모네이드 (체력 400 × 레벨 배율) · 적은 10% 확률로 끌려와 마시면 체력 가득 + 우리 진영으로 영구 전향 (lmnDefect · R3.2 build 17) · 디펜스는 적을 부르지 않는다 · 토큰 지급 없음 (R3.7 build 2)
 function lmnStart(u) { u.ln = { seen: new Set(), go: [], frac: 0 }; }
 function lmnTick(u, dt) { const L = u.ln; if (!L) return; const R = u.range + 6;
-  S.units.forEach(x => { if (x === u || !x.alive || L.seen.has(x) || x.def.immobile || (x.realm || 0) !== (u.realm || 0) || dist(u, x) > R + unitRadius(x)) return; L.seen.add(x); if (x.lmnBy && x.lmnBy !== u) return; /* R3.1 잠수함: 가판대가 둘 이상이면 하나에게만 */ if (x.side === u.side || rng() < 0.1) { x.lmnBy = u; L.go.push(x); } });
+  S.units.forEach(x => { if (x === u || !x.alive || L.seen.has(x) || x.def.immobile || (x.realm || 0) !== (u.realm || 0) || dist(u, x) > R + unitRadius(x)) return; L.seen.add(x); if (x.lmnBy && x.lmnBy !== u) return; /* R3.1 잠수함: 가판대가 둘 이상이면 하나에게만 */ if (x.side === u.side || (!(S.cw && S.cw.df) && rng() < 0.1)) { x.lmnBy = u; L.go.push(x); } /* R3.7 build 2: 디펜스는 전향 없음 */ });
   L.go = L.go.filter(x => { if (!x.alive) return false; const dx = u.x - x.x, dy = u.y - x.y, d = Math.hypot(dx, dy) || 1;
     if (d <= unitRadius(u) + unitRadius(x) + 10) { lmnSell(u, x); return false; } const st = Math.min(d, 3 * CFG.CELL * dt); physSnap(x, x.x + dx / d * st, x.y + dy / d * st); return true; }); }
 function lmnThrow(u) { // [리얼 탄산 레모네이드] SP 10 (초당 1): 자신 말고 무작위 아군 자리로 던져 반경 3칸 아군 (자신 제외) 초당 100 회복 · 적 초당 50 피해 (5초)
@@ -10322,8 +10327,7 @@ function lmnSell(u, x) { const L = u.ln;
   if (x.side === u.side) { const amt = 400 * lvMult(u.lv || 1), /* R3.2 build 17: 600 → 400 */ over = Math.max(0, amt - (x.maxHp - x.hp)); heal(u, x, amt); if (over > 0 && x.alive && !(x.st.noheal > 0)) { x.shield = (x.shield || 0) + over; drawUnit(x); } if (!S.fast) dmgNum(x, '🍋 레모네이드', { heal: true }); } /* R3.1 build 5: 200 → 600 · 넘친 체력은 쉴드 */
   else if (x.st.nou > 0) { lmnDefect(u, x.side); if (!S.fast) dmgNum(u, '🍋 NO U!', { crit: true, stamp: true }); return; } /* R3.2 build 17: [NO U] 중인 NO U 가 마시면 가판대가 넘어간다 */
   else { lmnDefect(x, u.side); if (!S.fast) dmgNum(x, '🍋 전향!', { crit: true, stamp: true }); } /* R3.2 build 17: [매혹] 대신 우리 진영으로 영구 전향 */
-  if (S.cw && S.cw.gold) { S.cw.gold[u.side] = (S.cw.gold[u.side] || 0) + 1; return; } /* 디펜스 · 성뿌수기: 한 잔에 골드 1 */
-  if (!S.tok) return; L.frac += 0.2; if (L.frac >= 0.999) { L.frac -= 1; S.tok[u.side] += 1; if (!S.fast) dmgNum(u, '🪙 +1', { crit: true }); } }
+}
 // 포탈 지후: 라운드 시작에 적을 노리지 않고 적진의 무작위 빈 칸으로 가서 (빈 칸이 없거나 8초가 지나면 그 자리) 포탈 · 포탈은 30초 (체력 1500 이 줄어든다 · 노릴 수 없다) · 5초마다 차원체 지후 (체력 15% · 공격력 100%)
 // R3.5 랭크 6 [상설 포탈]: 연 포탈을 S.ptK[진영] 에 남긴다 (최대 5 · 경기 내내) · 라운드가 시작되면 랭크 6 포탈 지후가 남은 포탈을 다시 연다 (진영마다 한 번) · 포탈이 있는 칸에는 새로 열지 않는다
 function ptStart(u) { const op = u.side === 'a' ? 'e' : 'a', E = [], r6 = enh6(u), K = r6 ? ((S.ptK || (S.ptK = { a: [], e: [] }))[u.side]) : null;
@@ -10589,8 +10593,8 @@ function ddBJGo(u, sum) { const R = 8 * CFG.CELL, a = effAtk(u), F = foes(u).fil
 // 저주 지후: 공격마다 자신에게 저주 스택 (저주 지후마다 따로) · 같은 대상을 4번 연속 공격하면 4번째에 [즉사] · 다른 대상을 치면 스택 초기화
 function curseHead(u) { if (!u.el) return; const tx = '☠' + (u.cuN | 0); if (u.cuTx === tx) return; u.cuTx = tx; let b = u.el.querySelector('.xlv.cu'); if (!b) { b = document.createElement('span'); b.className = 'xlv cu'; u.el.appendChild(b); } b.textContent = tx; drawUnit(u); }
 function curseAttack(u, t) { if (u.cuT !== t) { u.cuT = t; u.cuN = 0; } u.cuN = (u.cuN | 0) + 1; const n = u.cuN; if (n >= 4) u.cuN = 0; curseHead(u);
-  launchProjectile(u, t, () => { if (!t.alive) return; if (n >= 4) { instaKill(u, t, '☠ 저주'); if (!S.fast) fxRing(t.x, t.y, 1.2 * CFG.CELL, 'rgba(140,20,20,.9)', 520, 8); return; }
-    if (enh6(u) && rng() < 0.044) { instaKill(u, t, '☠ 저주의 일격'); return; } /* R3.5 랭크 6 */ const d = dealDamage(u, t, effAtk(u), {}); if (d > 0 && !S.fast) hitFx(u, t, false); }, 'magic');
+  launchProjectile(u, t, () => { if (!t.alive) return; if (n >= 4) { if (t.dfF) { if (!S.fast) dmgNum(t, '0', {}); return; } /* R3.7 build 2: 지후가 아닌 대상에게 [즉사] 는 0 피해 */ instaKill(u, t, '☠ 저주'); if (!S.fast) fxRing(t.x, t.y, 1.2 * CFG.CELL, 'rgba(140,20,20,.9)', 520, 8); return; }
+    if (enh6(u) && !t.dfF && rng() < 0.044) { instaKill(u, t, '☠ 저주의 일격'); return; } /* R3.5 랭크 6 */ const d = dealDamage(u, t, effAtk(u), {}); if (d > 0 && !S.fast) hitFx(u, t, false); }, 'magic');
   afterHit(u, 1); return true; }
 // 최면 지후: [최면] SP 4 · 대상 (없으면 가장 가까운 적) 자리 반경 1.7칸 적 [최면] 2초 · [최면]: 공격하지 못하고 가려던 쪽 (가장 가까운 적) 의 반대로 걷는다 (aiSteerAndAttack)
 function hypCast(u) { const c = u.tgt && canTarget(u, u.tgt) ? u.tgt : nearestFoe(u); if (!c) return; const x = c.x, y = c.y, R = 1.7 * CFG.CELL;
@@ -10685,7 +10689,7 @@ function sansSteer(u) { const t = nearestFoe(u); if (!t) return true; if (dist(u
 function sansGo(u) { if (!S.fast) dmgNum(u, '💀 와! 샌즈', { crit: true, stamp: true }); for (let i = 0; i < 4; i++) A.later(i * 0.5, () => sansPush(u)); if (enh6(u)) sansMore(u, 2, 0); else A.later(2.1, () => { if (u.alive) A.portrait(u, u.def.portrait); }); }
 function sansMore(u, at, k) { if (k < 30 && rng() < 0.3) { A.later(at, () => { if (!u.alive) return; if (!S.fast) dmgNum(u, '💀 한 번 더!', { crit: true }); sansPush(u); }); sansMore(u, at + 0.5, k + 1); return; } A.later(at + 0.1, () => { if (u.alive) A.portrait(u, u.def.portrait); }); } // R3.5 랭크 6 [한 번 더]: 30% 로 밀쳐내기 하나 더 · 성공하면 다시 30% // 샌즈 지후 [와! 샌즈]: 0.5초 간격 4번
 function sansPush(u) { // 모든 적 · 상하좌우 중 무작위 한 벽까지 · 공격력 50% (스킬 · R2.30 build 2: 150 → 50%)
-  if (!u.alive || S.phase !== 'combat') return; const [dx, dy] = SANS_D[Math.floor(rng() * 4)], P = u.def.portraitPose; A.portrait(u, P[Math.floor(rng() * P.length)]);
+  if (!u.alive || S.phase !== 'combat') return; const D = S.cw && S.cw.df ? SANS_D.filter(([x, y]) => { const b = backDir(u.side); return x !== b.x || y !== b.y; }) : SANS_D, [dx, dy] = D[Math.floor(rng() * D.length)], P = u.def.portraitPose; /* R3.7 build 2: 디펜스는 내 진영 쪽 벽 제외 */ A.portrait(u, P[Math.floor(rng() * P.length)]);
   if (!S.fast) { shake(true); if (CV.on) CVF.over.push({ k: 'sans', t0: performance.now(), ms: 520, x: 0, y: 0, a: Math.atan2(dy, dx) }); }
   const W = FW(), H = FH(), dmg = effAtk(u) * 1; /* R3.2 build 17: 75 → 100% · R3.2 build 12: 50 → 75% */ /* R2.30 build 2: 150 → 50% */
   foes(u).forEach(e => { if (!e.alive) return; dealDamage(u, e, dmg, { skill: true, lite: true }); if (!e.alive) return;
@@ -10988,7 +10992,7 @@ function njDrawFx(c, e, p, now, W) { const k = e.k;
     c.save(); c.translate(X, Y); c.scale(e.fl ? -sx : sx, sy); c.globalAlpha = 0.6; c.drawImage(e.spr, -e.D / 2, -e.D / 2, e.D, e.D); c.globalAlpha = 0.9; c.fillStyle = '#eaffee'; c.fillRect(-e.D / 2, -3 / Math.max(0.05, sy), e.D, 6 / Math.max(0.05, sy)); c.restore(); }
 }
 // ── R3.7 사신 지후 리워크 도우미 ──
-const RPR = { R: 1.5, HALF: 112.5 * Math.PI / 180, WIND: 1.0, SWING: 0.16, HIT: 0.07, HOLD: 0.3, FADE: 0.75, SOUL: 6, FLY: 2, HP: 1444, AW_HP: 2444, IV: 14, AW_IV: 4.4, AW_SPD: 2.44, DF: 0.75, FIRST: 3 }; // 부채꼴 225° · 반지름 1.5칸 · 차징 1초 → 반시계 베기 · 망령 6개 · 2초 뒤 도착
+const RPR = { R: 1.5, HALF: 112.5 * Math.PI / 180, WIND: 1.0, SWING: 0.16, HIT: 0.07, HOLD: 0.3, FADE: 0.75, SOUL: 6, FLY: 2, HP: 1444, AW_HP: 2444, IV: 14, AW_IV: 4.4, AW_SPD: 2.44, FIRST: 3 }; // 부채꼴 225° · 반지름 1.5칸 · 차징 1초 → 반시계 베기 · 망령 6개 · 2초 뒤 도착
 function rprStart(u, A) { A.status(u, 'seal', 800); u.rpr = { w: 0, aw: false, sw: null, vis: null, awT: -9 }; u.cd = Math.min(u.cd, RPR.FIRST); S.rprU = true; } // [봉인]: 라운드마다 새 유닛이라 다시 봉인 (디펜스는 웨이브마다 df2Reborn)
 function rprOf(u) { return u.rpr || (u.rpr = { w: 0, aw: u.def === CHARS.reaper.awake, sw: null, vis: null, awT: -9 }); } // 변신 · 복사로 들어온 경우
 function rprSoul(u, d) { // 지후가 쓰러지면 [망령] → 2초 뒤 사신에게 (사신마다 하나씩)
@@ -11020,7 +11024,7 @@ function rprCut(u, ang) { // 부채꼴 안의 적 모두 · 봉인: 공격력 �
   for (const e of foes(u)) {
     if (e.st.dive > 0 || e.yeetT > 0 || e.dfFly || !inFan(u, e, ang, RPR.HALF, reach)) continue;
     if (!aw || e.def.castle) { const d = dealDamage(u, e, effAtk(u)); if (d > 0) { hitFx(u, e, aw); any += d; } continue; }
-    if (e.dfF) { const b = DF2_FOE[e.id] && DF2_FOE[e.id].boss, d = dealDamage(u, e, e.hp * RPR.DF * (b ? DF2.KILL_BOSS / DF2.KILL_PCT : 1), { noCrit: true, skill: true }); if (d > 0) { hitFx(u, e, true); any += d; } continue; }
+    if (e.dfF) { if (!S.fast) dmgNum(e, '0', {}); continue; } /* R3.7 build 2: 지후가 아닌 대상에게 [즉사] 는 0 피해 (예전 현재 체력 75%) */
     if (!CV.on && !S.fast) reapFx(u, e);
     const d = instaKill(u, e); any += d; if (d > 0) kill++;
   }
@@ -12641,6 +12645,7 @@ function immune(t) { return !!(t.def.immune && t.def.immune(t)); }
 const CC_IMMUNE_SEC = 0.5;
 function addStatus(t, key, sec, extra) {
   if (!t.alive || t.yeetT > 0) return; // R2.22 날려 보냄 중에는 아무것도 걸리지 않는다
+  if (t.dfF && (key === 'hyp' || key === 'lock') && DF2_FOE[t.id] && DF2_FOE[t.id].ccImm) return; // R3.7 build 2 디펜스: 최면 · 잠금 면역 한철
   if ((key === 'freeze' || key === 'frost') && ICE_T.has(t.id)) return; // R2.30 얼음 지후: 빙결 · 동상이 걸리지 않는다
   if (t.def.stainless && !(STATUS[key] && STATUS[key].buff)) { stRev(t, key, sec, extra); return; } // R2.30 스테인리스: 디버프 면역 · 몇몇은 반대로
   if (!(STATUS[key] && STATUS[key].buff) && immune(t)) return; /* 면역 */
@@ -12909,7 +12914,7 @@ function kbBounce(u, k) { // R3.2 build 13 넉백 벽 튕김 (샌즈): 벽에 �
 function physIntegrate(u, dt) {
   if (!u.alive || u.ghost) return; // 신칸센 돌진 중: 위치를 직접 옮긴다
   if (u.kb) { const k = u.kb, v = k.v * (k.left / k.T); u.x += k.dx * v * dt; u.y += k.dy * v * dt; u.vx = u.vy = 0; k.left -= dt; if (k.bn && kbBounce(u, k)) return; if (k.left <= 0) u.kb = null; return; } // 넉백
-  const frozen = u.st.freeze > 0, stunned = u.st.stun > 0, slow = u.st.frost > 0 ? 0.6 : 1; // [동상]: 이동속도 -40%
+  const frozen = u.st.freeze > 0, stunned = u.st.stun > 0, slow = u.st.frost > 0 && !u.slowImm ? 0.6 : 1; // [동상]: 이동속도 -40%
   const desX = frozen || stunned ? 0 : u.desVx * slow, desY = frozen || stunned ? 0 : u.desVy * slow;
   const k = 1 - Math.exp(-(frozen ? 22 : stunned ? 5 : PHYS.STEER) * dt);
   u.vx += (desX - u.vx) * k; u.vy += (desY - u.vy) * k;
@@ -13103,7 +13108,8 @@ const dfKeys = n => { let k = 0; for (let w = 5; w <= n; w += 5) k += w >= 30 ? 
 // R2.34 디펜스: 내 슬롯 지후는 WAVE (20초) 마다 · 적 웨이브는 EWAVE (20초 · build 3: 10 → 20 · 다시 1배) 마다 (둘 다 처음은 10초 뒤 · 적을 다 잡으면 다음 적 웨이브 바로) · 적 = 무작위 지후 Lv1 · 수 N0 + (웨이브 − 1) × NADD · 능력치 ×(K0 + (웨이브 − 1) × KADD) · 적이 내 진영 끝에 닿으면 라이프 −1 (10) · 보상 열쇠 = 지난 적 웨이브 수 · 열쇠 상자 BOX 개 · 핵은 고정 NUKE 피해
 const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 20, /* R2.36 build 5: 30 → 20 · build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QCAP: 20, /* build 10: 다시 20 (build 9 에 30) · build 6: 웨이브가 끝날 때 아군이 이 수를 넘으면 충격파 (예전 3웨이브마다) */ QD0: 0.25, QDADD: 0.2 / 71, QDMAX: 0.45, QSTEP: [[110, 0.5], [120, 0.55]], /* R2.36: 최대 80 → 60% · R3.2 build 13: 72웨이브에 45% (25% → 45% 를 71웨이브에 걸쳐) · 110웨이브부터 50% · 120웨이브부터 55% */ QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 피해 · 5초 기절 · build 5: 피해 25% 에서 웨이브마다 +1%p · 최대 80% (예전 50% 고정) */ GOLD_K: 2, KILL_K: 1.25, /* R2.36: 처치 골드 2 → 5 (CW.KILL 4 × 1.25) */ UP_COST: [100, 200, 400, 800], UP_K: 0.25, /* R2.36 유닛 업그레이드: Lv5 까지 · 레벨마다 능력치 +25% (Lv5 = 2배) */ /* build 5: 웨이브 골드 ×2 · 처치 골드 ×0.5 */ N0: 2, NK: 0.6, /* build 7: 적 수 = 내 전장 지후 × 0.6 (+0~1 · 최소 2) · 예전 ±1 */ NADD: 0.13, NMAX: 24, K0: 0.6, KADD: 0.012, KW5: 5, KADD5: 0.003, /* R3.2 build 9: 5웨이브부터 웨이브마다 +0.003 더 (출격제한이 없어져서 · 아주 소폭) */ EXP_W: 50, EXP_A: 0.04, EXP_B: 0.1, /* R2.37 build 2 광폭 웨이브: 50웨이브 뒤 웨이브마다 배율 +0.04 (선형) · 2배가 된 뒤로는 +0.1 (예전: 30웨이브부터 ×1.035 곱) */ /* build 6: 0.022 → 0.019 · build 7: 0.7 / 0.019 → 0.6 / 0.012 */ RALLY: [5] /* R2.36 build 5: 20 · 10 → 5 (한 번) */, RALLY_GOLD: 300, RALLY_DMG: 2000, RALLY_STUN: 10, RALLY_KB: 4, /* build 7 반격: 라이프 20 · 10 이 될 때 */ /* build 5 상향: 0.016 → 0.022 · 적 수는 이제 내 전장 지후 수만큼 (dfSpawn) */ /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE_P: 0.1 /* R3.2 build 10: 핵 = 적 최대 체력 비율 (build 9 현재 체력 50% · 예전 NUKE 500 고정) */ };
 const cwWv = () => (S.cw && S.cw.df ? DF.WAVE : CW.WAVE);
-const pctD = (t, v) => t.def.castle ? v * 0.05 : t.dfF ? v * DF2.PCT : v; // 체력 비례 피해: 성은 95% 줄여 받는다 · R3.6 한철은 ×0.25
+const pctD = (t, v) => t.def.castle ? v * 0.05 : t.dfF ? v * (t.baseMaxHp >= DF2.BIG_HP ? DF2.PCT_BIG : DF2.PCT) : v; // 체력 비례 피해: 성은 95% 줄여 받는다 · 한철은 ×0.25 (R3.7 build 2: 최대 체력 3001 이상은 ×0.05)
+const flatD = (t, v) => t.def.castle ? v * 0.05 : t.dfF ? v * DF2.PCT : v; // 비례가 아니지만 성 · 한철에게 줄어드는 피해 (해일 기본분 · 파멸 변이 폭발)
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
 function cwCastleXY(side) { const c = tileXY(side, (CFG.ROWS - 1) * CFG.COLS + 1), b = backDir(side); return { x: c.x + b.x * 1.8 * CFG.CELL, y: c.y + b.y * 1.8 * CFG.CELL }; } // 후열 가운데 칸 뒤 (1.8칸 · 화면 위아래 HUD 에 가리지 않게)
 function cwUi(on) { if (!on) $('oddsLabA').classList.remove('over'); const sb = $('screen-battle'); sb.classList.toggle('cw', !!on && !isDf()); sb.classList.toggle('df', false); sb.classList.toggle('df2', !!on && isDf()); /* R3.6 새 디펜스: 일반전 화면 (h4) */ viewDirty(); /* R2.34 디펜스: PC 좌우 분할 */ const lab = document.querySelector('#hudMid .rd small'); if (lab) lab.textContent = on ? 'WAVE' : 'ROUND'; }
@@ -13273,7 +13279,7 @@ function dfStep(dt) { if (S.cw.v2) return df2Step(dt); /* R3.6 새 디펜스 */ 
 // 웨이브: 적을 다 잡으면 (클리어 +2 토큰 · 2초 뒤) 또는 20초가 지나면 다음 · 10웨이브마다 보스 · 처치 보상 0.1 ~ 0.5 (체력 비례 · 로그)
 // 적은 아군과 부딪히지만 질량이 무한 (invMass 0) → 아군만 밀려나고 적은 정해진 속도로 간다 · 적끼리는 겹친다
 const DF2 = {
-  TOK0: 5, CLEAR: 1, /* build 3: 0.5 → 1 */ EASY: { to: 21, k0: 0.6 }, /* build 2: 클리어 0.2 → 0.5 · 1 ~ 20웨이브 적 수 줄임 (예산 ×0.6 → 21웨이브 ×1) */ MAX: 15, HPA: 3, HPK: 2.5, HPK_FROM: 7, /* 모든 적 체력 ×3 · 두꺼운한철 (7웨이브) 부터 나오는 적은 거기에 ×2.5 더 (구성 · 처치 보상은 원래 체력 hp0 로) */ WAVE: 20, FIRST: 8, GAP: 2, LIVES: 5, BOSS_LEAK: 5, QK: { CAP: 15, WARN: 3, CD: 5 }, /* 충격파: 내 유닛 (소환체 포함) 이 15 를 넘으면 3초 경고 → 1/3 즉사 · 쿨타임 5초 */ PCT: 0.25, KILL_PCT: 0.2, KILL_BOSS: 0.05, /* 디펜스 규칙: 체력 비례 피해 ×0.25 · 즉사 = 최대 체력 20% (보스 5%) */ FLY_H: 0.9, /* 플라잉한철 높이 (칸) */ FAST: 1.8, /* 이 속도 (빠름) 이상인 적: 이동속도 감소 · 빙결 면역 */ BOSS_EVERY: 10, BOSS_K: 1.25,
+  TOK0: 5, CLEAR: 1, /* build 3: 0.5 → 1 */ EASY: { to: 21, k0: 0.6 }, /* build 2: 클리어 0.2 → 0.5 · 1 ~ 20웨이브 적 수 줄임 (예산 ×0.6 → 21웨이브 ×1) */ MAX: 15, HPA: 3, HPK: 2.5, HPK_FROM: 7, /* 모든 적 체력 ×3 · 두꺼운한철 (7웨이브) 부터 나오는 적은 거기에 ×2.5 더 (구성 · 처치 보상은 원래 체력 hp0 로) */ WAVE: 20, FIRST: 8, GAP: 2, LIVES: 5, BOSS_LEAK: 5, QK: { CAP: 15, WARN: 3, CD: 5 }, /* 충격파: 내 유닛 (소환체 포함) 이 15 를 넘으면 3초 경고 → 1/3 즉사 · 쿨타임 5초 */ PCT: 0.25, BIG_HP: 3001, PCT_BIG: 0.05, /* R3.7 build 2: 최대 체력 3001 이상인 적은 체력 비례 피해 95% 감소 */ CC: ['hcBasic', 'hcFast', 'hcThick'], /* 이 셋과 준보스만 최면 · 잠금 · 이동속도 감소가 통한다 */ KILL_PCT: 0.2, KILL_BOSS: 0.05, /* 디펜스 규칙: 체력 비례 피해 ×0.25 · 즉사 = 최대 체력 20% (보스 5%) */ FLY_H: 0.9, /* 플라잉한철 높이 (칸) */ FAST: 1.8, /* 이 속도 (빠름) 이상인 적: 이동속도 감소 · 빙결 면역 */ BOSS_EVERY: 10, BOSS_K: 1.25,
   REW: [0.2, 0.5], /* 처치 보상 0.2 ~ 0.5 (build 3: 최소 0.1 → 0.2 · 체력 비례) */
   SPAWN_WIN: 10, SPAWN_MAX: 1, /* 적은 웨이브 처음 10초에 나눠 나온다 (간격 최대 1초) */
   FLY_R: 6, /* 플라잉한철: 사거리 6칸 미만 지후는 노리지도 · 맞히지도 못한다 */
@@ -13383,7 +13389,7 @@ function df2CodexDraw() {
   else {
     const L = G[D2C.tab], f = L.find(x => x.id === D2C.sel) || L[0], seen = id => DEV.op || !!(profile.dfSeen || {})[id], /* 운영자는 전부 공개 */ img = id => (seen(id) || !DF2_SIL[id] ? pic(id) : `<img src="${DF2_SIL[id]}" alt="">`), nm = x => (seen(x.id) ? esc(x.name) : '???'), boss = !!f.boss, sn = seen(f.id);
     const meta = sn ? [['처음 등장', boss ? '10웨이브마다' : `${f.from}웨이브`], ['체력', boss ? '웨이브 총 체력 ×1.25' : f.hp.toLocaleString()], ['속도', DF2_SPD(f.sp)]] : [['처음 등장', '???'], ['체력', '???'], ['속도', '???']];
-    const abil = !sn ? '' : boss ? f.desc : f.mut ? DF2_MUTD[f.mut] : f.fly ? '공중 · 사거리 6칸 미만 지후는 맞히지 못한다' : f.imm ? '디버프 면역' : f.sp >= DF2.FAST ? '이동속도 감소 · 빙결 면역' : '';
+    const base = boss ? f.desc : f.mut ? DF2_MUTD[f.mut] : f.fly ? '공중 · 사거리 6칸 미만 지후는 맞히지 못한다' : f.imm ? '디버프 면역' : f.sp >= DF2.FAST ? '이동속도 감소 · 빙결 면역' : '', cc = f.imm || !f.ccImm ? '' : f.sp >= DF2.FAST ? '최면 · 잠금 면역' : '최면 · 잠금 · 이동속도 감소 면역', abil = !sn ? '' : [base, cc].filter(Boolean).join(' · ');
     body = `<div class="dc-grid">${L.map(x => `<button type="button" class="dc-it${x === f ? ' on' : ''}" data-dcs="${x.id}" aria-pressed="${x === f}"><span class="dc-p">${img(x.id)}</span><b>${nm(x)}</b></button>`).join('')}</div>`
       + `<article class="dc-page"><div class="dc-head"><span class="dc-big">${img(f.id)}</span><div><small>${boss ? '보스' : f.mut ? '준보스' : '한철'}</small><h3>${nm(f)}</h3>${abil ? `<p class="dc-ab">${abil}</p>` : ''}</div></div>`
       + `<dl class="dc-meta">${meta.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><p class="dc-tx">${sn ? DF2_STORY[f.id] || '' : '아직 만나지 못한 적이에요.'}</p></article>`;
@@ -13407,13 +13413,13 @@ function df2Pic(f) { // 한철 얼굴 (SVG · 흰 바탕) — 흑화는 보라 �
 }
 function df2Steer(u) { // 적 이동: 내 진영 끝으로 곧장 (최소 속도 하한 없음 · 칸/초 그대로) · 넉백 뒤에는 원래 줄로 돌아온다
   const c = S.cw; if (!c || !c.v2 || !u.dfF) return false; /* 진짜 한철만 (스파이가 한철로 변장하면 lane 이 없어 NaN) */ const bd = backDir(c.me), f = DF2_FOE[u.id];
-  const k = (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) * (f.imm ? 1 : f.sp >= DF2.FAST ? Math.max(1, 1 + buffSum(u, 'spd')) : Math.max(0.2, 1 + buffSum(u, 'spd'))), sp = u.speed * k;
+  const k = (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) * (f.imm ? 1 : f.sp >= DF2.FAST || f.ccImm ? Math.max(1, 1 + buffSum(u, 'spd')) : Math.max(0.2, 1 + buffSum(u, 'spd'))), sp = u.speed * k;
   if (bd.x) { u.desVx = bd.x * sp; u.desVy = (u.lane - u.y) * 1.5; } else { u.desVy = bd.y * sp; u.desVx = (u.lane - u.x) * 1.5; }
   return true;
 }
-DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.hp0 = f.hp; f.hp = f.hpSet || Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: DF2_PIC[f.id] || (f.pic && CHARS[f.pic] ? CHARS[f.pic].portrait : df2Pic(f)), color: f.col, dfFoe: true }; });
+DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.ccImm = !(f.mut || DF2.CC.includes(f.id)); f.hp0 = f.hp; f.hp = f.hpSet || Math.round(f.hp * DF2.HPA * (!f.boss && f.from >= DF2.HPK_FROM ? DF2.HPK : 1)); SUMMONS[f.id] = { name: f.name, rarity: f.boss ? 'legend' : f.mut ? 'epic' : 'rare', role: '탱커', hp: f.hp, atk: 0, atkSpeed: 1, range: 1, speed: f.sp, noAttack: true, steer: df2Steer, portrait: DF2_PIC[f.id] || (f.pic && CHARS[f.pic] ? CHARS[f.pic].portrait : df2Pic(f)), color: f.col, dfFoe: true }; });
 // 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 2~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
-const DF2_TOK = { mutant: 8, /* R3.7 */ god: 25, /* R3.6 build 6: 갓지후 디펜스 토큰 25 */ wisp: 4, duelist: 4, farmer: 3, soulsteal: 3, matrix: 2, cyborg: 2, /* R3.6 build 3 신규 지후 (농부는 사용자가 정함) */ atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
+const DF2_TOK = { gunq: 670, slot: 777, nuke: 50, /* R3.7 build 2 */ mutant: 8, /* R3.7 */ god: 25, /* R3.6 build 6: 갓지후 디펜스 토큰 25 */ wisp: 4, duelist: 4, farmer: 3, soulsteal: 3, matrix: 2, cyborg: 2, /* R3.6 build 3 신규 지후 (농부는 사용자가 정함) */ atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
 const df2Cost = id => DF2_TOK[id] || 2;
 const df2R1 = v => Math.round(v * 10) / 10;
 const df2Rew = hp => clamp(df2R1(0.1 + 0.4 * Math.log(Math.max(1, hp / 50)) / Math.log(120)), DF2.REW[0], DF2.REW[1]); // 처치 보상: 체력 비례 (로그 · 0.1 단위)
@@ -13447,7 +13453,7 @@ function df2SpawnXY() { // 상대 진영 끝 · 줄은 무작위
 function df2Spawn(id, at) {
   const c = S.cw, f = DF2_FOE[id], q = at || df2SpawnXY(), u = makeUnit(OPP(), id, 1, q.x, q.y), el = S.fast ? null : $('field');
   if (f.boss) { u.baseMaxHp = u.maxHp = u.hp = Math.round((c.bossHp || df2Hp(c.wave)) * DF2.BOSS_K * (c.wave <= 20 ? 0.5 : 1)); /* build 3: 10 · 20웨이브 보스 체력 절반 */ u.big = true; u.bt = S.time + 2; if (f.shield75) u.maxShield = u.shield = Math.round(u.maxHp * 0.75); } /* 그 웨이브 실제 총 체력 × 1.25 · 스킬은 2초 뒤 */
-  if (!S.fast) df2Seen(id); u.dfF = true; u.invMass = 0; u.mass = 1e9; /* 무한 질량: 앞을 막아도 밀고 간다 */ u.lane = backDir(c.me).x ? u.y : u.x; if (f.fly) u.dfFly = true;
+  if (!S.fast) df2Seen(id); u.dfF = true; u.slowImm = !!f.ccImm; u.invMass = 0; u.mass = 1e9; /* 무한 질량: 앞을 막아도 밀고 간다 */ u.lane = backDir(c.me).x ? u.y : u.x; if (f.fly) u.dfFly = true;
   u.mt = f.mut ? DF2.MUB[0] : 0; u.mtN = 0; /* R3.7 준보스: 3초 뒤 · 20초 뒤 한 번 더 */
   if (el) { u.el = unitEl(u); if (u.big) u.el.classList.add('big'); el.appendChild(u.el); drawUnit(u); deployFx(u, 'drop'); }
   S.units.push(u); return u;
@@ -13492,7 +13498,7 @@ function df2Step(dt) { // dfStep 대신
 // c.ros = [{ id, lv, t (소환 자리 칸), uid (전장 유닛), dead }] · 최대 DF2.MAX
 function df2Put(r, x, y, quiet) { // 로스터 한 줄을 전장에 (x, y) · quiet: 연출 없이 (웨이브마다 새로 태어날 때)
   const me = S.cw.me, u = makeUnit(me, r.id, r.lv, x, y), f = S.fast ? null : $('field');
-  if (overSet(S.cw.ros).has(S.cw.ros.indexOf(r))) ovlUnit(u); u.tile = r.t; u.df2A = true; r.uid = u.uid; r.dead = false; ultInit(u, null);
+  if (overSet(S.cw.ros).has(S.cw.ros.indexOf(r))) ovlUnit(u); u.tile = r.t; u.df2A = true; r.uid = u.uid; r.dead = false; ultInit(u, null); if (r.wn) u.wn = r.wn; if (r.wnL) u.wnL = r.wnL; if (r.wn6) u.wn6 = r.wn6; /* R3.7 build 2 와인 */
   if (f) { u.el = unitEl(u); f.appendChild(u.el); drawUnit(u); } S.units.push(u);
   if (u.def.onStart) try { u.def.onStart(u, A); } catch (e) { stepErr(u, e); } if (u.def.dfKeep) try { u.def.dfKeep(u, r); } catch (e) { stepErr(u, e); } /* R3.6 build 3 */ if (f && !quiet) deployFx(u, 'drop'); return u;
 }
@@ -13513,10 +13519,24 @@ function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.sum = c
 const df2UpCost = (id, lv) => df2Cost(id) * (DF2.UP[lv - 1] || 0); // R3.7 업그레이드: 보이는 Lv0 → 5 (내부 Lv1 → 6) · 소환 비용 × 1 · 2 · 4 · 8 · 10
 const df2MaxLv = id => maxLv(id) >= CFG.MAX_LV ? DF2.UP.length + 1 : maxLv(id); // 강화 지후 (Lv1 고정) 는 그대로
 function df2Up(u) { // 전장의 지후 업그레이드: Lv+1 (그 자리 · 체력 가득)
-  const c = S.cw, r = c.ros.find(x => x.uid === u.uid); if (!r) return false;
+  const c = S.cw, r = c.ros.find(x => x.uid === u.uid); if (!r) return false; if (r.id === 'forge') return df2Forge();
   if (r.lv >= df2MaxLv(r.id)) { if (!S.fast && !c.auto) banner('최대 레벨'); return false; }
   const cost = df2UpCost(r.id, r.lv); if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto) banner(`🪙 ${cost} 이 필요해요`); return false; }
-  const x = u.x, y = u.y, up = c.upU === u.uid; c.tok = df2R1(c.tok - cost); df2Pull(r); r.lv++; const nu = df2Put(r, x, y); df2Ovl(); e7Add('merge'); if (up) c.upU = nu.uid; if (!S.fast) { sfx('merge'); if (nu.el) deployFx(nu, 'drop'); df2Render(); df2UpDraw(true); } return true;
+  const x = u.x, y = u.y, up = c.upU === u.uid; c.tok = df2R1(c.tok - cost); df2Pull(r); r.lv++;
+  if (r.id === 'frog') { if (rng() < frogP(c.me)) { r.id = 'prince'; if (!S.fast) { banner('👑 왕자!'); sfx('gacha_legend'); } } else { c.ros.splice(c.ros.indexOf(r), 1); c.upU = null; df2Ovl(); if (!S.fast) { banner('🐸 개굴… 소멸'); sfx('death'); df2Render(); df2UpDraw(true); } return true; } } /* R3.7 build 2: 디펜스 개구리 */
+  if (r.id === 'lament') { c.tok = df2R1(c.tok + 1); if (!S.fast) banner('🦋 솔렘라멘트 합체 · 토큰 +1'); } /* R3.7 build 2 */
+  const nu = df2Put(r, x, y); df2Ovl(); e7Add('merge'); if (up) c.upU = nu.uid; if (!S.fast) { sfx('merge'); if (nu.el) deployFx(nu, 'drop'); df2Render(); df2UpDraw(true); } return true;
+}
+function df2Forge() { // 강화 지후 업그레이드 = 검 강화 (토큰 = 소환 비용 · 단계는 강화 지후 모두 함께 · 10웨이브가 지나도 유지)
+  const c = S.cw, n = c.fg | 0, say = t => { if (!S.fast && !c.auto) banner(t); };
+  if (n >= FORGE_MAX) { say('최대 강화'); return false; }
+  const cost = df2Cost('forge'); if (c.tok + 1e-9 < cost) { say(`🪙 ${cost} 이 필요해요`); return false; }
+  c.tok = df2R1(c.tok - cost);
+  if (rng() < forgeP(n)) { c.fg = n + 1; say(`⚒ +${n + 1} 강화 성공!`); if (!S.fast) sfx('merge'); }
+  else if (rng() < 0.3) { c.fg = 0; say('💥 검 파괴… +0'); if (!S.fast) sfx('death'); }
+  else { say(`강화 실패 (+${n})`); if (!S.fast) sfx('place'); }
+  if ((c.fg | 0) !== n) c.ros.forEach(x => { if (x.id === 'forge' && df2Unit(x)) { const was = c.upU === x.uid; df2Reborn(x); if (was) c.upU = x.uid; } });
+  if (!S.fast) { df2Render(); df2UpDraw(true); } return true;
 }
 function df2Field(e) { // 전장 누르기 (전투 중 · 지후를 골랐을 때만): 내 칸을 누르면 (그 자리에 지후가 있어도) 새로 소환 · 칸 밖의 같은 지후를 누르면 업그레이드 (토큰이 남으면 계속 고른 채)
   const c = S.cw; if (df2UpTap(e)) return true; if (!c.sum) return false;
@@ -13620,10 +13640,10 @@ function df2UpDraw(force) { // 창 내용은 바뀔 때만 · 위치는 매 프�
   if (!el || !el.isConnected) { el = D2U.el = document.createElement('div'); el.id = 'df2Up'; $('screen-battle').appendChild(el);
     el.addEventListener('click', e => { e.stopPropagation(); const k = S.cw; if (!k) return; if (e.target.closest('[data-x]')) { k.upU = null; return df2UpDraw(true); }
       if (e.target.closest('[data-up]')) { const v = S.units.find(x => x.uid === k.upU && x.alive); if (v) df2Up(v); df2UpDraw(true); } }); }
-  const mx = df2MaxLv(r.id), cost = r.lv < mx ? df2UpCost(r.id, r.lv) : 0, ok = c.tok + 1e-9 >= cost, k = r.uid + '/' + r.lv + '/' + cost + '/' + ok;
+  const fg = r.id === 'forge', fn = c.fg | 0, mx = df2MaxLv(r.id), cost = fg ? (fn < FORGE_MAX ? df2Cost(r.id) : 0) : r.lv < mx ? df2UpCost(r.id, r.lv) : 0, ok = c.tok + 1e-9 >= cost, k = r.uid + '/' + r.lv + '/' + cost + '/' + ok + '/' + fn;
   if (force || el._k !== k) { el._k = k;
     el.innerHTML = `<div class="d2u-h"><b>${esc(CHARS[r.id].name)}</b><button type="button" data-x aria-label="닫기">✕</button></div>` + (mx > 1 ? `<div class="d2u-lv">${Array.from({ length: mx - 1 }, (_, i) => `<i${i < r.lv - 1 ? ' class="on"' : ''}></i>`).join('')}</div>` : '')
-      + (cost ? `<button type="button" class="d2u-go${ok ? '' : ' off'}" data-up>Lv${r.lv - 1} → Lv${r.lv}<span>${H4_COIN}${cost}</span></button>` : `<div class="d2u-max">MAX · Lv${r.lv - 1}</div>`); }
+      + (cost ? `<button type="button" class="d2u-go${ok ? '' : ' off'}" data-up>${fg ? `+${fn} → +${fn + 1} · ${Math.round(forgeP(fn) * 100)}%` : `Lv${r.lv - 1} → Lv${r.lv}`}<span>${H4_COIN}${cost}</span></button>` : `<div class="d2u-max">MAX · ${fg ? `+${fn}` : `Lv${r.lv - 1}`}</div>`); }
   const p = df2UpPos(u); if (!p) { el.hidden = true; return; } if (el.hidden) el.hidden = false;
   const t = `translate(${p.x.toFixed(0)}px, ${p.y.toFixed(0)}px) translate(-50%, -100%)`; if (el._t !== t) { el._t = t; el.style.transform = t; }
 }
@@ -14427,7 +14447,7 @@ function buffSrcName(k) { const m = k.match(/^[a-z]+/); return (m && BUFF_SRC[m[
 function uInfoHtml(u) { // R3.4 build 7 리디자인: 능력치 칸 · 같은 종류 버프는 합쳐 한 줄 (누가 줬는지는 구분하지 않는다)
   const c = u.def, pct = x => `${x > 0 ? '+' : '−'}${Math.round(Math.abs(x) * 100)}%`, f1 = x => (Math.round(x * 100) / 100).toString();
   const chg = (d, good, txt) => Math.abs(d) < 1e-3 ? '' : `<i class="${good ? 'up' : 'dn'}">${txt}</i>`;
-  const atk0 = u.atk, atk1 = c.noAttack ? 0 : effAtk(u), iv0 = u.atkSpeed, iv1 = baseInterval(u) / aspdRate(u), sp0 = u.speed / CFG.CELL, sp1 = sp0 * Math.max(0.2, 1 + buffSum(u, 'spd')) * (u.st.vweak > 0 ? 0.8 : 1) * (u.st.frost > 0 ? 0.6 : 1);
+  const atk0 = u.atk, atk1 = c.noAttack ? 0 : effAtk(u), iv0 = u.atkSpeed, iv1 = baseInterval(u) / aspdRate(u), sp0 = u.speed / CFG.CELL, sp1 = sp0 * Math.max(u.slowImm ? 1 : 0.2, 1 + buffSum(u, 'spd')) * (u.st.vweak > 0 ? 0.8 : 1) * (u.st.frost > 0 && !u.slowImm ? 0.6 : 1);
   const G = { atk: 0, aspd: 0, spd: 0, dodge: 0 }; for (const k in u.buffs) { const b = u.buffs[k]; for (const g in G) if (b[g]) G[g] += b[g]; }
   const why = []; [['atk', '공격력'], ['aspd', '공격속도'], ['spd', '이동속도'], ['dodge', '회피']].forEach(([k, n]) => { if (Math.abs(G[k]) > 1e-3) why.push([`${n} ${pct(G[k])}`, G[k] > 0]); });
   if (u.st.rage > 0) why.push(['광폭화 · 공격력 +50%', true]); if (u.st.vweak > 0) why.push(['약화', false]); if (u.st.frost > 0) why.push(['동상', false]); if (u.st.drowsy > 0) why.push(['졸음 · 공격력 −30%', false]); if (u.wn) why.push([`와인 ${u.wn}잔`, true]);
