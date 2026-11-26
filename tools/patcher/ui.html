@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>딸깍 패치기 · RE:JHBT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { --ink:#0d0d0d; --mute:#6b6b66; --line:#d9d9d4; --bg:#f2f2ef; --acc:#f04a14; --buff:#1a7a3c; --nerf:#c8102e; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif; background:var(--bg); color:var(--ink); font-size:14px; }
+header { display:flex; align-items:center; gap:14px; padding:12px 20px; background:#fff; border-bottom:2px solid var(--ink); position:sticky; top:0; z-index:5; }
+header b { font-size:18px; letter-spacing:-.02em; } header .tag { font:700 11px/1 monospace; letter-spacing:3px; color:var(--acc); } header .ver { margin-left:auto; font:700 13px monospace; }
+main { display:grid; grid-template-columns:260px 1fr; height:calc(100vh - 52px); }
+aside { border-right:2px solid var(--ink); background:#fff; display:flex; flex-direction:column; min-height:0; }
+aside input { margin:12px; padding:10px 12px; border:2px solid var(--ink); border-radius:2px; font:inherit; }
+#list { overflow:auto; flex:1; }
+#list button { display:flex; align-items:center; gap:8px; width:100%; padding:8px 14px; border:0; border-bottom:1px solid var(--line); background:none; font:inherit; text-align:left; cursor:pointer; }
+#list button:hover { background:#f6f6f3; } #list button.on { background:var(--ink); color:#fff; }
+#list i { width:8px; height:8px; flex:none; } #list small { margin-left:auto; color:var(--mute); font:11px monospace; } #list button.on small { color:#bbb; }
+.r-common i, i.r-common { background:#9b958a; } .r-rare i, i.r-rare { background:#3d8bd4; } .r-epic i, i.r-epic { background:#9b5cf0; } .r-legend i, i.r-legend { background:#e0a81a; } .r-limited i, i.r-limited { background:#ff3d7f; }
+section#main { overflow:auto; padding:20px 24px 220px; min-height:0; }
+.empty { color:var(--mute); padding:60px; text-align:center; font-size:16px; }
+.hero { display:flex; align-items:center; gap:16px; margin-bottom:18px; }
+.hero img { width:84px; height:84px; border:2px solid var(--ink); background:#fff; object-fit:contain; }
+.hero h1 { margin:0; font-size:26px; letter-spacing:-.03em; } .hero code { color:var(--mute); }
+.grp { background:#fff; border:2px solid var(--ink); border-radius:2px; margin-bottom:14px; }
+.grp h2 { margin:0; padding:9px 14px; font-size:14px; border-bottom:2px solid var(--ink); display:flex; align-items:center; gap:8px; }
+.grp h2 span { color:var(--mute); font-weight:400; font-size:12px; }
+.grp h2 label { margin-left:auto; font-weight:400; font-size:12px; color:var(--mute); cursor:pointer; }
+table { width:100%; border-collapse:collapse; }
+td { padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+tr:last-child td { border-bottom:0; } tr.vis { display:none; } .grp.showvis tr.vis { display:table-row; } tr.vis td { opacity:.75; }
+td.lab { font-weight:600; } td.lab .nm { cursor:pointer; border-bottom:1px dashed transparent; } td.lab .nm:hover { border-bottom-color:var(--acc); } td.lab .nm.mine::after { content:' ✎'; color:var(--acc); font-weight:400; } td.lab small { display:block; font-weight:400; color:var(--mute); font-size:11px; } td.lab code { display:block; margin-top:3px; font:11px/1.4 monospace; color:var(--mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:640px; } td.lab code b { color:var(--ink); background:#ffe08a; padding:0 2px; }
+td.val { width:120px; }
+td.val input { width:100px; padding:5px 8px; border:2px solid var(--line); border-radius:2px; font:600 14px monospace; }
+tr.chg td.val input { border-color:var(--acc); background:#fff4ef; }
+td.ctx { font:12px/1.4 monospace; color:var(--mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:0; }
+td.ctx b { color:var(--ink); background:#ffe08a; padding:0 2px; }
+td.old { width:80px; font:12px monospace; color:var(--acc); }
+.txt { padding:10px 14px; border-bottom:1px solid var(--line); } .txt:last-child { border-bottom:0; }
+.txt div { font-weight:600; margin-bottom:6px; display:flex; gap:8px; align-items:center; } .txt div span { margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; }
+.txt textarea { width:100%; min-height:54px; padding:8px; border:2px solid var(--line); border-radius:2px; font:12px/1.5 monospace; resize:vertical; }
+.txt.chg textarea { border-color:var(--acc); }
+.sug { padding:3px 8px; border:1px solid var(--acc); background:#fff; color:var(--acc); font:12px inherit; cursor:pointer; border-radius:2px; }
+#dock { position:fixed; left:260px; right:0; bottom:0; background:#fff; border-top:2px solid var(--ink); padding:12px 24px; max-height:46vh; overflow:auto; z-index:6; }
+#dock h3 { margin:0 0 8px; font-size:14px; display:flex; gap:10px; align-items:center; } #dock h3 span { color:var(--mute); font-weight:400; }
+.note { display:grid; grid-template-columns:22px 90px 1fr; gap:8px; align-items:center; margin-bottom:6px; }
+.note select, .note input[type=text] { padding:5px 8px; border:2px solid var(--line); border-radius:2px; font:inherit; }
+.row { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+.row label { display:flex; gap:5px; align-items:center; cursor:pointer; }
+#title { padding:6px 10px; border:2px solid var(--line); border-radius:2px; font:inherit; width:320px; }
+#go { margin-left:auto; padding:11px 26px; border:2px solid var(--ink); background:var(--ink); color:#fff; font:700 15px inherit; border-radius:2px; cursor:pointer; }
+#go:disabled { background:#9aa0a8; border-color:#9aa0a8; cursor:default; }
+#log { white-space:pre-wrap; font:12px/1.5 monospace; margin-top:10px; padding:10px; background:#f6f6f3; border-left:4px solid var(--ink); display:none; }
+#log.err { border-color:var(--nerf); color:var(--nerf); } #log.ok { border-color:var(--buff); }
+</style></head>
+<body>
+<header><span class="tag">PATCHER</span><b>딸깍 패치기</b><span style="color:var(--mute)">지후를 골라 숫자를 바꾸고 바로 게임 코드에 넣어요</span><span class="ver" id="ver"></span></header>
+<main>
+  <aside><input id="q" placeholder="지후 검색 (이름 · id)" autocomplete="off"><div id="list"></div></aside>
+  <section id="main"><div class="empty">왼쪽에서 지후를 고르세요</div></section>
+</main>
+<div id="dock" hidden>
+  <h3>바꾼 것 <span id="cnt"></span></h3>
+  <div id="notes"></div>
+  <div class="row">
+    <label><input type="radio" name="mode" value="sub"> 잠수함 (build 그대로 · 패치노트 없음)</label>
+    <label><input type="radio" name="mode" value="build" checked> build +1 (오늘 이어지는 패치)</label>
+    <label><input type="radio" name="mode" value="version"> 새 버전 (그날 첫 업데이트)</label>
+    <input id="title" placeholder="새 버전 패치노트 제목" hidden>
+  </div>
+  <div class="row">
+    <label><input type="checkbox" id="push"> 적용 뒤 GitHub 에 바로 푸시</label>
+    <span style="color:var(--mute);font-size:12px">적용 = index.html 수정 → 주석 · 문법 검사 (실패하면 되돌림) → main 에 커밋</span>
+    <button id="go">적용하기</button>
+  </div>
+  <div id="log"></div>
+</div>
+<script>
+const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+let LIST = [], CUR = null, EDIT = new Map(), TXT = new Map(), NOTE = new Map();
+const KEY = it => it.insert ? 'ins:' + it.table : String(it.start);
+const LOWER = /간격|쿨|need|cd|SP|atkSpeed|토큰|tok/;
+async function load() { const r = await (await fetch('/api/list')).json(); LIST = r.list; $('#ver').textContent = r.meta.version + ' · build ' + r.meta.build; drawList(); }
+function drawList() { const q = $('#q').value.trim().toLowerCase(); $('#list').innerHTML = LIST.filter(c => !q || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)).map(c => `<button class="r-${c.rarity}${CUR && CUR.id === c.id ? ' on' : ''}" data-id="${c.id}"><i></i>${esc(c.name)}<small>${c.id}</small></button>`).join(''); }
+$('#q').oninput = drawList;
+$('#list').onclick = e => { const b = e.target.closest('[data-id]'); if (!b) return; if ((EDIT.size || TXT.size) && !confirm('바꾼 것이 있어요. 버리고 다른 지후로 갈까요?')) return; open(b.dataset.id); };
+async function open(id) {
+  CUR = await (await fetch('/api/char?id=' + encodeURIComponent(id))).json(); EDIT.clear(); TXT.clear(); NOTE.clear(); drawList();
+  const m = $('#main'); let h = `<div class="hero">${CUR.portrait ? `<img src="${CUR.portrait}" alt="">` : ''}<div><h1>${esc(CUR.name)}</h1><code>${CUR.id} · <i class="r-${CUR.rarity}" style="display:inline-block;width:8px;height:8px"></i> ${CUR.rarity}</code></div></div>`;
+  CUR.groups.forEach((g, gi) => { const nv = g.items.filter(x => x.vis).length;
+    h += `<div class="grp" data-g="${gi}"><h2>${esc(g.title)} <span>${g.items.length - nv}개</span>${nv ? `<label><input type="checkbox" data-vis> 연출 숫자 ${nv}개 보기</label>` : ''}</h2><table>` + g.items.map((it, ii) => `<tr class="${it.vis ? 'vis' : ''}" data-k="${gi}:${ii}"><td class="lab"><span class="nm${it.mine ? ' mine' : ''}" title="눌러서 이름 바꾸기">${esc(it.label || '수치')}</span>${it.note ? `<small>${esc(it.note)}</small>` : ''}<code title="${esc(it.ctx.join(''))}">${esc(it.ctx[0])}<b>${esc(it.ctx[1])}</b>${esc(it.ctx[2])}</code></td><td class="val"><input value="${esc(it.value)}" placeholder="${it.insert ? '기본 2' : ''}" inputmode="decimal"></td><td class="old"></td></tr>`).join('') + '</table></div>'; });
+  if (CUR.texts.length) h += `<div class="grp"><h2>설명 글 <span>숫자를 바꾸면 여기 같은 숫자를 바꾸는 단추가 생겨요</span></h2>` + CUR.texts.map((t, ti) => `<div class="txt" data-t="${ti}"><div>${esc(t.label)}<span></span></div><textarea spellcheck="false">${esc(t.value)}</textarea></div>`).join('') + '</div>';
+  m.innerHTML = h; m.scrollTop = 0; $('#dock').hidden = true; $('#log').style.display = 'none'; refresh();
+}
+$('#main').addEventListener('change', e => { if (e.target.matches('[data-vis]')) e.target.closest('.grp').classList.toggle('showvis', e.target.checked); });
+$('#main').addEventListener('input', e => {
+  const tr = e.target.closest('tr[data-k]'), tx = e.target.closest('.txt');
+  if (tr) { const [gi, ii] = tr.dataset.k.split(':').map(Number), it = CUR.groups[gi].items[ii], v = e.target.value.trim(), k = KEY(it);
+    if (v === String(it.value) || (it.insert && !v)) EDIT.delete(k); else EDIT.set(k, { it, v });
+    tr.classList.toggle('chg', EDIT.has(k)); tr.querySelector('.old').textContent = EDIT.has(k) ? (it.insert ? '(없음)' : it.value) + ' →' : ''; }
+  if (tx) { const t = CUR.texts[+tx.dataset.t], v = tx.querySelector('textarea').value; if (v === t.value) TXT.delete(+tx.dataset.t); else TXT.set(+tx.dataset.t, v); tx.classList.toggle('chg', TXT.has(+tx.dataset.t)); }
+  refresh();
+});
+const numRe = n => new RegExp('(?<![\\d.])' + String(n).replace('.', '\\.') + '(?![\\d.]|\\d)', 'g');
+function refresh() {
+  // 설명 도우미: 바꾼 숫자의 예전 값이 설명에 있으면 단추
+  document.querySelectorAll('.txt').forEach(tx => { const ta = tx.querySelector('textarea'), sp = tx.querySelector('div span'); const out = [];
+    for (const { it, v } of EDIT.values()) if (!it.insert && String(it.value).length && numRe(it.value).test(ta.value)) out.push(`<button class="sug" data-o="${esc(it.value)}" data-n="${esc(v)}">${esc(it.value)} → ${esc(v)}</button>`);
+    sp.innerHTML = [...new Set(out)].join(''); });
+  // 패치노트 줄
+  const n = EDIT.size + TXT.size; $('#dock').hidden = !n; $('#cnt').textContent = n ? `숫자 ${EDIT.size} · 설명 ${TXT.size}` : '';
+  const rows = [...EDIT.entries()].map(([k, { it, v }]) => { if (!NOTE.has(k)) { const up = +v > +(it.value || 2), low = LOWER.test(it.key + it.label); NOTE.set(k, { on: true, tag: it.key && ['hp', 'atk', 'range', 'speed', 'atkSpeed', 'need', 'cd', 'tok'].includes(it.key) || it.insert || it.table ? (up !== low ? 'buff' : 'nerf') : 'adjust', desc: `${(it.label || '수치').replace(/\s*\([\w.]+\)$/, '').replace(/\s*\([\d.]+%\)$/, '').replace(/\s*\((?:초|칸|ms)\)$/, '')} <b>${it.insert ? 2 : it.value} → ${v}</b>` }); } else { const o = NOTE.get(k); o.desc = o.desc.replace(/<b>([^<]*?)→\s*[^<]*<\/b>/, `<b>$1→ ${v}</b>`); } return k; });
+  for (const k of [...NOTE.keys()]) if (!EDIT.has(k)) NOTE.delete(k);
+  $('#notes').innerHTML = rows.map(k => { const o = NOTE.get(k); return `<div class="note" data-n="${k}"><input type="checkbox" ${o.on ? 'checked' : ''}><select>${['buff', 'nerf', 'adjust', 'rework', 'fix'].map(t => `<option ${t === o.tag ? 'selected' : ''}>${t}</option>`).join('')}</select><input type="text" value="${esc(o.desc)}"></div>`; }).join('');
+}
+$('#main').addEventListener('click', async e => { const nm = e.target.closest('.nm'); if (nm) { const [gi, ii] = nm.closest('tr').dataset.k.split(':').map(Number), it = CUR.groups[gi].items[ii]; if (!it.lk) return; const v = prompt('이 숫자의 이름 (비우면 자동 이름으로)', it.mine ? it.label : ''); if (v === null) return; await fetch('/api/label', { method: 'POST', body: JSON.stringify({ lk: it.lk, label: v.trim() }) }); it.label = v.trim() || it.label; it.mine = !!v.trim(); nm.textContent = it.label; nm.classList.toggle('mine', it.mine); refresh(); return; } });
+$('#main').addEventListener('click', e => { const b = e.target.closest('.sug'); if (!b) return; const ta = b.closest('.txt').querySelector('textarea'); ta.value = ta.value.replace(numRe(b.dataset.o), b.dataset.n); ta.dispatchEvent(new Event('input', { bubbles: true })); });
+$('#notes').addEventListener('input', e => { const d = e.target.closest('[data-n]'), o = NOTE.get(d.dataset.n); o.on = d.querySelector('[type=checkbox]').checked; o.tag = d.querySelector('select').value; o.desc = d.querySelector('[type=text]').value; });
+$('#notes').addEventListener('change', e => $('#notes').dispatchEvent(new Event('input', { bubbles: true })) || null);
+document.querySelectorAll('[name=mode]').forEach(r => r.onchange = () => { $('#title').hidden = r.value !== 'version' || !r.checked; });
+$('#go').onclick = async () => {
+  const mode = document.querySelector('[name=mode]:checked').value;
+  const body = { sha: CUR.sha, id: CUR.id, mode, title: $('#title').value, push: $('#push').checked,
+    edits: [...EDIT.values()].map(({ it, v }) => ({ start: it.start, end: it.end, old: it.value, new: v, insert: !!it.insert, table: it.table, key: it.key, label: it.label })),
+    texts: [...TXT.entries()].map(([i, v]) => ({ start: CUR.texts[i].start, end: CUR.texts[i].end, old: CUR.texts[i].value, new: v, kind: CUR.texts[i].kind, label: CUR.texts[i].label })),
+    notes: mode === 'sub' ? [] : [...NOTE.values()].filter(o => o.on).map(o => ({ tag: o.tag, desc: o.desc })) };
+  if (mode !== 'sub' && !body.notes.length) return alert('패치노트 줄이 없어요 (잠수함으로 하거나 한 줄 이상 켜세요)');
+  if (!confirm(`${CUR.name} · ${mode === 'sub' ? '잠수함' : mode === 'build' ? 'build +1' : '새 버전'}${body.push ? ' · 푸시까지' : ''} — 적용할까요?`)) return;
+  const go = $('#go'), lg = $('#log'); go.disabled = true; go.textContent = '적용 중…'; lg.style.display = 'block'; lg.className = ''; lg.textContent = '검사하는 중… (몇 초)';
+  try { const r = await (await fetch('/api/apply', { method: 'POST', body: JSON.stringify(body) })).json(); if (r.error) throw new Error(r.error); lg.className = 'ok'; lg.textContent = '✔ ' + r.log.join('\n'); await load(); const id = CUR.id; setTimeout(() => open(id).then(() => { $('#dock').hidden = false; lg.style.display = 'block'; }), 50); }
+  catch (e) { lg.className = 'err'; lg.textContent = '✖ ' + e.message; }
+  go.disabled = false; go.textContent = '적용하기';
+};
+load();
+</script>
+</body></html>
