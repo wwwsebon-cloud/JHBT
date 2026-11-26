@@ -3,7 +3,7 @@
 //   지후를 골라 숫자 · 설명을 고치면 index.html 에 넣고 → 주석 검사 · 문법 검사 → (build / 버전 올리기 · 패치노트) → main 에 커밋 → (푸시)
 //   검사가 실패하면 index.html 을 원래대로 되돌린다 · main 이 아니거나 index.html 에 커밋 안 된 변경이 있으면 적용하지 않는다
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os'), { spawnSync, exec } = require('child_process');
-const C = require('./core');
+const C = require('./core'), J = require('./jobs');
 const PORT = +process.env.PORT || 8790, ROOT = C.ROOT;
 const run = (cmd, args, opt = {}) => { const r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, ...opt }); return { ok: r.status === 0, out: ((r.stdout || '') + (r.stderr || '')).trim() || (r.error ? String(r.error) : '') }; };
 const git = (...a) => run('git', a);
@@ -49,6 +49,10 @@ http.createServer((req, res) => {
     if (u.pathname === '/') return send(res, 200, fs.readFileSync(path.join(__dirname, 'ui.html'), 'utf8'), 'text/html; charset=utf-8');
     if (u.pathname === '/api/list') { const M = C.model(); return send(res, 200, { meta: M.meta, list: M.chars.map(c => ({ id: c.id, name: c.name, rarity: c.rarity })) }); }
     if (u.pathname === '/api/char') { const r = C.charInfo(u.searchParams.get('id')); return r ? send(res, 200, r) : send(res, 404, { error: '없는 지후' }); }
+    if (/^\/infographics\/[\w.\-]+\.png$/.test(u.pathname)) { const f = path.join(ROOT, u.pathname); return fs.existsSync(f) ? (res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' }), res.end(fs.readFileSync(f))) : send(res, 404, { error: 'no' }); } // 미리보기 그림
+    if (u.pathname === '/api/status') return send(res, 200, J.status());
+    if (u.pathname === '/api/job' && req.method === 'GET') return send(res, 200, J.poll(+u.searchParams.get('id'), +u.searchParams.get('from') || 0));
+    if (u.pathname === '/api/job' && req.method === 'POST') { let b = ''; req.on('data', d => b += d); req.on('end', () => { try { const j = JSON.parse(b); send(res, 200, { id: J.start(j.kind, j.opt) }); } catch (e) { send(res, 400, { error: String(e.message || e) }); } }); return; } // 배포 · 공지 작업 (jobs.js)
     if (u.pathname === '/api/label' && req.method === 'POST') { let b = ''; req.on('data', d => b += d); req.on('end', () => { try { const j = JSON.parse(b); C.setLabel(String(j.lk), String(j.label || '').slice(0, 40)); send(res, 200, { ok: true }); } catch (e) { send(res, 400, { error: String(e.message) }); } }); return; } // 사용자가 붙인 이름 → tools/patcher/labels.json
     if (u.pathname === '/api/apply' && req.method === 'POST') { let b = ''; req.on('data', d => b += d); req.on('end', () => { try { send(res, 200, doApply(JSON.parse(b))); } catch (e) { send(res, 400, { error: String(e.message || e) }); } }); return; }
     send(res, 404, { error: 'not found' });
