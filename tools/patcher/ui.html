@@ -64,6 +64,7 @@ body.ops main, body.ops #dock { display:none !important; } #ops { display:none; 
 #con .hd { padding:8px 12px; border-bottom:1px solid #333; font:700 12px monospace; display:flex; gap:10px; align-items:center; } #con .hd span { margin-left:auto; color:#9a9a94; }
 #con pre { margin:0; padding:10px 12px; overflow:auto; flex:1; font:12px/1.5 monospace; white-space:pre-wrap; word-break:break-all; }
 #con pre .ok { color:#6fdc8c; } #con pre .er { color:#ff7a7a; } #con pre .cm { color:#ffd23f; }
+.tpr { margin-top:10px; } .tbar { height:12px; background:#eee; border:2px solid var(--ink); border-radius:2px; overflow:hidden; } .tbar i { display:block; height:100%; width:0; background:var(--acc); transform-origin:left; } .ttx { display:flex; justify-content:space-between; gap:10px; margin-top:6px; font-size:12px; } .ttx b { font-weight:700; } .ttx span { color:var(--mute); } #workers { padding:5px; border:2px solid var(--line); font:inherit; }
 #zoom { position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:20; } #zoom.on { display:flex; } #zoom img { max-height:92vh; max-width:92vw; }
 </style></head>
 <body>
@@ -85,8 +86,9 @@ body.ops main, body.ops #dock { display:none !important; } #ops { display:none; 
     <div class="card"><h3><i></i>공지 올리기</h3><p>맨 위 패치노트 (그날 마지막 build) + 인포그래픽. 먼저 미리보기 → 그 설정 그대로 「이대로 올리기」.</p>
       <div class="bt"><label><input type="checkbox" class="to" value="discord" checked> 디스코드</label><label><input type="checkbox" class="to" value="threads"> Threads</label><label><input type="checkbox" class="to" value="instagram"> 인스타그램</label><label><input type="checkbox" id="day"> 하루 총정리</label></div>
       <div class="bt" style="margin-top:8px"><button data-job="post" data-dry="1">미리보기</button><button class="warn" id="postGo" disabled>이대로 올리기</button></div></div>
-    <div class="card"><h3><i></i>티어리스트</h3><p>시뮬 (일꾼 2개) → 집계 → TIER_SC · 티어표 그림 → 커밋. 1,600판에 몇 분. 메커니즘을 바꾸는 중이면 무효예요.</p>
-      <div class="bt"><input type="number" id="games" value="1600" min="100" step="100"> 판 <button data-job="tier">시작</button></div></div>
+    <div class="card"><h3><i></i>티어리스트</h3><p>시뮬 → 집계 → TIER_SC · 티어표 그림 (PNG) → 커밋. 일꾼은 2개를 권장 (3개 이상은 PC 가 느려질 수 있어요). 메커니즘을 바꾸는 중이면 무효예요.</p>
+      <div class="bt"><input type="number" id="games" value="1600" min="100" step="100"> 판 <label>일꾼 <select id="workers"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><button data-job="tier">시작</button></div>
+      <div class="tpr"><div class="tbar"><i id="tFill"></i></div><div class="ttx"><b id="tTxt">예상 계산 중…</b><span id="tEta"></span></div></div><div class="thumbs" id="tPng"></div></div>
   </div>
   <div id="con"><div class="hd">작업 기록 <span id="conS">대기 중</span></div><pre id="out"></pre></div>
 </div>
@@ -167,8 +169,10 @@ $('#go').onclick = async () => {
 document.querySelector('nav.tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; document.querySelectorAll('nav.tabs button').forEach(x => x.classList.toggle('on', x === b)); document.body.classList.toggle('ops', b.dataset.tab === 'ops'); if (b.dataset.tab === 'ops') stat(); };
 async function stat() { const s = await (await fetch('/api/status')).json(), row = (k, v) => `<b>${k}</b><span>${v}</span>`;
   $('#st').innerHTML = row('버전', `${s.version} · build ${s.build}`) + row('브랜치', s.branch === 'main' ? 'main' : `<span class="bad">${esc(s.branch)} (main 이 아님)</span>`) + row('안 올린 커밋', s.ahead ? `<span class="bad">${s.ahead}개</span>` : '<span class="good">없음</span>') + (s.behind ? row('원격에 새 커밋', `<span class="bad">${s.behind}개 (먼저 받으세요)</span>`) : '') + row('커밋 안 된 파일', s.dirty.length ? `<span class="bad">${s.dirty.map(esc).join('<br>')}</span>` : '<span class="good">없음</span>') + row('인포그래픽', s.pngs.length ? `${esc(s.img)} · ${s.pngs.length}장` : `<span class="bad">${esc(s.img)} 없음</span>`) + row('하루 총정리', s.dayJson ? (s.dayPng ? `${s.day} 있음` : `${s.day}.json 만 있음`) : '없음');
+  $('#tPng').innerHTML = (s.tierPngs || []).map(f => `<img src="/infographics/${f}?t=${Date.now()}" alt="${f}" title="${f}">`).join(''); if (!RUN) tierEst();
   $('#th').innerHTML = s.pngs.map(f => `<img src="/infographics/${f}?t=${Date.now()}" alt="${f}">`).join(''); }
 $('#stR').onclick = stat;
+$('#tPng').onclick = e => { if (e.target.tagName === 'IMG') { $('#zoom img').src = e.target.src; $('#zoom').classList.add('on'); } };
 $('#th').onclick = e => { if (e.target.tagName === 'IMG') { $('#zoom img').src = e.target.src; $('#zoom').classList.add('on'); } }; $('#zoom').onclick = () => $('#zoom').classList.remove('on');
 let RUN = null, LASTDRY = null;
 const postOpt = () => ({ to: [...document.querySelectorAll('.to:checked')].map(x => x.value), day: $('#day').checked });
@@ -179,14 +183,20 @@ async function job(kind, opt, confirmMsg) {
   const r = await (await fetch('/api/job', { method: 'POST', body: JSON.stringify({ kind, opt }) })).json(); if (r.error) return alert(r.error);
   RUN = r.id; const out = $('#out'); out.innerHTML = ''; $('#conS').textContent = '실행 중…'; document.querySelectorAll('[data-job], #postGo').forEach(b => b.disabled = true);
   let from = 0; for (;;) { await new Promise(t => setTimeout(t, 700)); const p = await (await fetch(`/api/job?id=${r.id}&from=${from}`)).json(); from = p.next;
-    p.lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; d.className = /^✔/.test(l) ? 'ok' : /^✖|실패|오류|error/i.test(l) ? 'er' : /^\$ |^──|^▶/.test(l) ? 'cm' : ''; out.appendChild(d); }); out.scrollTop = out.scrollHeight;
+    const stick = out.scrollHeight - out.scrollTop - out.clientHeight < 40; /* 위로 올려 읽는 중이면 따라 내려가지 않는다 */ if (p.progress && kind === 'tier') tierShow(p.progress); p.lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; d.className = /^✔/.test(l) ? 'ok' : /^✖|실패|오류|error/i.test(l) ? 'er' : /^\$ |^──|^▶/.test(l) ? 'cm' : ''; out.appendChild(d); }); if (stick) out.scrollTop = out.scrollHeight;
     if (p.done) { $('#conS').textContent = p.ok ? '✔ 끝' : '✖ 실패'; RUN = null; document.querySelectorAll('[data-job]').forEach(b => b.disabled = false); if (kind === 'post' && opt.dry && p.ok) { LASTDRY = JSON.stringify(postOpt()); $('#postGo').disabled = false; } stat(); load(); return p.ok; } }
 }
 document.querySelector('#ops').addEventListener('click', e => { const b = e.target.closest('[data-job]'); if (!b) return; const k = b.dataset.job, dry = !!b.dataset.dry;
-  const opt = k === 'post' ? { ...postOpt(), dry } : k === 'rules' ? { dry } : k === 'tier' ? { games: +$('#games').value } : { overwrite: $('#ow').checked };
-  const msg = { all: '인포그래픽 → 커밋 → 푸시 → 규칙 게시를 할까요?', push: 'main 을 GitHub 에 푸시할까요?', rules: dry ? null : 'Firebase 규칙을 게시할까요?', tier: `티어 시뮬 ${opt.games}판을 돌릴까요? (몇 분 · TIER_SC 가 바뀌고 커밋됩니다)`, info: opt.overwrite ? '있는 인포그래픽을 덮어쓸까요?' : null }[k];
+  const opt = k === 'post' ? { ...postOpt(), dry } : k === 'rules' ? { dry } : k === 'tier' ? { games: +$('#games').value, workers: +$('#workers').value } : { overwrite: $('#ow').checked };
+  const msg = { all: '인포그래픽 → 커밋 → 푸시 → 규칙 게시를 할까요?', push: 'main 을 GitHub 에 푸시할까요?', rules: dry ? null : 'Firebase 규칙을 게시할까요?', tier: `티어 시뮬 ${opt.games}판 (일꾼 ${opt.workers}개 · ${$('#tTxt').textContent}) 을 돌릴까요? TIER_SC 가 바뀌고 커밋됩니다${opt.workers > 2 ? ' · 일꾼 3개 이상은 PC 가 느려질 수 있어요' : ''}`, info: opt.overwrite ? '있는 인포그래픽을 덮어쓸까요?' : null }[k];
   job(k, opt, msg); });
 $('#postGo').onclick = () => { const o = postOpt(); if (JSON.stringify(o) !== LASTDRY) return alert('설정이 바뀌었어요 — 미리보기를 다시 보세요'); job('post', { ...o, dry: false }, `${o.to.join(' · ')} 에 ${o.day ? '하루 총정리를' : '공지를'} 진짜로 올릴까요?`); };
+
+// ── 티어리스트: 예상 시간 · 진행 게이지 ──
+const mmss = t => { t = Math.max(0, Math.round(t)); return t >= 60 ? `${Math.floor(t / 60)}분 ${t % 60}초` : `${t}초`; };
+async function tierEst() { const r = await (await fetch(`/api/tier-est?games=${+$('#games').value || 1600}&workers=${$('#workers').value}`)).json(); $('#tTxt').textContent = `예상 약 ${mmss(r.sec)}`; $('#tEta').textContent = r.measured ? '지난 실행 속도 기준' : '기본값 기준 (한 번 돌리면 이 PC 속도로 맞춰져요)'; $('#tFill').style.width = '0'; }
+$('#games').oninput = tierEst; $('#workers').onchange = tierEst;
+function tierShow(p) { const f = p.total ? p.done / p.total : 0; $('#tFill').style.width = (p.phase === '끝' ? 100 : Math.round(f * 100)) + '%'; $('#tTxt').textContent = `${p.phase} · ${p.done.toLocaleString()} / ${p.total.toLocaleString()}판 (${Math.round(f * 100)}%) · 일꾼 ${p.workers}개`; $('#tEta').textContent = p.phase === '끝' ? `걸린 시간 ${mmss((Date.now() - p.t0) / 1000)}` : `남은 시간 약 ${mmss(p.eta)}${p.rate ? ` · 초당 ${p.rate.toFixed(1)}판` : ''}`; }
 
 load();
 </script>
