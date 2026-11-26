@@ -58,6 +58,7 @@
 - **게임 스크린샷을 넣지 않는다** (`"shots"` 안 씀). 리눅스에서는 `CHROME` 에 `--no-sandbox` 래퍼.
 
 ## 공지 올리기 (디스코드 · Threads · 인스타그램)
+- **밀린 공지는 `node tools/post-all.js`** (`--list` 확인 · `--dry` 그림과 글 미리보기 · 묻고 올림 · `--yes`): 올릴 곳마다 마지막으로 올린 것 다음부터 지금까지를 합친다 → build 덱들을 `infographics/sum-<버전>-b<처음>-<끝>.json` 으로 합쳐 그림 → 커밋 · 푸시 → 올리기. 큰 사건을 직접 고를 때는 그 JSON 을 고치고 `"keep": true`. 딸깍 패치기 「안 올린 것 모아 올리기」 · 바탕화면 `Discord Thread.bat` 도 이것을 부른다. 「올려줘」라고 해도 미리보기를 보여 주고 확인받는다.
 - `node tools/post-patch.js` — 맨 위 패치노트 (그날 마지막 build 칸 · `--all` 은 버전 전체) 글 + 인포그래픽 → 디스코드 (웹후크) · Threads (500자 → 항목 이름만 · 캐러셀) · 인스타그램 (`--ig-token` 이 있을 때 · 지금은 토큰 없음 · `--only instagram` · JPEG 4:5 조각 `tools/ig-slices.py` → `infographics/ig/<이름>-ig<N>.jpg` 최대 10장).
 - **이미지는 GitHub raw 주소로 받으니 커밋 · 푸시한 뒤에** 올린다 · `--dry` 로 확인. ⚠️ 푸시 전에 `--dry` 로 raw 주소를 열어 보면 CDN 이 404 를 몇 분 기억한다 → 푸시 뒤 주소가 200 이 될 때까지 백그라운드로 기다렸다 올린다.
 - 설정은 저장소 밖 `문서/jhbt-app/post.json` (웹후크 · 토큰 · 올린 기록 `posted` — **내용을 출력하지 않는다**) · `--init` · `--threads-token` (20일마다 알아서 갱신) · `--discord-role <역할 ID>` (핑) · `--no-ping`.
