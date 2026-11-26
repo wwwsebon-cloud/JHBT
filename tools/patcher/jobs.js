@@ -17,7 +17,7 @@ function status() {
   const pngs = fs.readdirSync(D).filter(f => new RegExp('^' + name.replace(/\./g, '\\.') + '(?:-\\d+)?\\.png$').test(f)).sort();
   const day = 'today-' + todayKST().replace(/\./g, '-');
   return { version: v, build: b, branch: gitOut('branch', '--show-current'), ahead: +gitOut('rev-list', '--count', 'origin/main..main') || 0, behind: +gitOut('rev-list', '--count', 'main..origin/main') || 0,
-    dirty: gitOut('status', '--porcelain').split('\n').filter(Boolean).slice(0, 12), img: name, pngs, tierPngs: fs.readdirSync(D).filter(f => f.startsWith(`tier-${v}`) && f.endsWith('.png')).sort(), day, dayJson: fs.existsSync(path.join(D, day + '.json')), dayPng: fs.existsSync(path.join(D, day + '.png')), job: JOB && !JOB.done ? JOB.kind : null };
+    dirty: gitOut('status', '--porcelain').split('\n').filter(Boolean).slice(0, 12), img: name, pngs, sumPngs: fs.readdirSync(D).filter(f => f.startsWith(`sum-`) && f.includes(`${v}-`) && f.endsWith('.png')).sort((a, c) => a.length - c.length || a.localeCompare(c)), tierPngs: fs.readdirSync(D).filter(f => f.startsWith(`tier-${v}`) && f.endsWith('.png')).sort(), day, dayJson: fs.existsSync(path.join(D, day + '.json')), dayPng: fs.existsSync(path.join(D, day + '.png')), job: JOB && !JOB.done ? JOB.kind : null };
 }
 
 // ── 작업 실행기 ──
@@ -78,6 +78,10 @@ async function post({ log, run, opt }) { // opt: { to: ['discord','threads'], da
   let ok = true; for (const t of to) ok = (await run('node', ['tools/post-patch.js', ...base, '--only', t, ...(opt.dry ? ['--dry'] : [])])) && ok;
   return ok;
 }
+async function pendingPost({ log, run, opt }) { // 안 올린 버전 · build 를 합쳐서 (tools/post-all.js) · list 확인만 · dry 미리보기 (그림까지 만든다) · 그 밖에는 올리기
+  if (!opt.list && !opt.dry && !mainOnly(log)) return false;
+  return run('node', ['tools/post-all.js', ...(opt.list ? ['--list'] : opt.dry ? ['--dry'] : ['--yes'])]);
+}
 // 티어 시뮬 속도 기록 (일꾼 하나가 1초에 몇 판) — 다음 예상 시간에 쓴다 · 처음엔 기본값 (일꾼 2개면 1,600판 약 3분)
 const RATE_F = path.join(__dirname, 'tier-rate.json'), TIER_FIXED = 45; /* 브라우저 켜기 · 집계 · 그림 (초) */
 const tierRate = () => { try { const r = JSON.parse(fs.readFileSync(RATE_F, 'utf8')); return r; } catch (e) { return { perWorker: 4.4, n: 0 }; } };
@@ -109,6 +113,6 @@ async function all(ctx) { // 인포그래픽 → 커밋 → 푸시 → 규칙 �
   ctx.log('── 공지는 아래 「미리보기」 → 「이대로 올리기」로'); return true;
 }
 const WORK = { all: { title: '한 번에 (인포그래픽 → 커밋 → 푸시 → 규칙)', fn: all }, info: { title: '인포그래픽 만들기', fn: infographic }, commitInfo: { title: '인포그래픽 커밋', fn: commitInfo },
-  push: { title: 'GitHub 푸시', fn: push }, rules: { title: 'Firebase 규칙 게시', fn: rules }, post: { title: '공지 올리기', fn: post }, tier: { title: '티어리스트 (시뮬)', fn: tier } };
+  push: { title: 'GitHub 푸시', fn: push }, rules: { title: 'Firebase 규칙 게시', fn: rules }, post: { title: '공지 올리기', fn: post }, pending: { title: '안 올린 것 모아 올리기', fn: pendingPost }, tier: { title: '티어리스트 (시뮬)', fn: tier } };
 
 module.exports = { status, start, poll, tierEstimate };

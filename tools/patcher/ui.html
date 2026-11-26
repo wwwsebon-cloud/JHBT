@@ -83,6 +83,8 @@ body.ops main, body.ops #dock { display:none !important; } #ops { display:none; 
       <div class="bt"><button data-job="info">만들기</button><button data-job="commitInfo">커밋</button></div></div>
     <div class="card"><h3><i></i>GitHub 푸시</h3><p>main 을 origin 에 올립니다 (사이트 배포가 시작돼요).</p><div class="bt"><button class="pri" data-job="push">푸시</button></div></div>
     <div class="card"><h3><i></i>Firebase 규칙</h3><p>firestore.rules 를 서버에 게시합니다. 서버와 같으면 그대로.</p><div class="bt"><button data-job="rules" data-dry="1">차이 보기</button><button class="pri" data-job="rules">게시</button></div></div>
+    <div class="card"><h3><i></i>안 올린 것 모아 올리기</h3><p>디스코드 · Threads 에 마지막으로 올린 뒤의 버전 · build 를 합쳐 한 번에 올립니다 (합친 인포그래픽 → 커밋 → 푸시 → 올리기). 먼저 미리보기.</p>
+      <div class="bt"><button data-job="pending" data-list="1">안 올린 것 확인</button><button data-job="pending" data-dry="1">미리보기</button><button class="warn" id="pendGo" disabled>모두 올리기</button></div><div class="thumbs" id="pendTh"></div></div>
     <div class="card"><h3><i></i>공지 올리기</h3><p>맨 위 패치노트 (그날 마지막 build) + 인포그래픽. 먼저 미리보기 → 그 설정 그대로 「이대로 올리기」.</p>
       <div class="bt"><label><input type="checkbox" class="to" value="discord" checked> 디스코드</label><label><input type="checkbox" class="to" value="threads"> Threads</label><label><input type="checkbox" class="to" value="instagram"> 인스타그램</label><label><input type="checkbox" id="day"> 하루 총정리</label></div>
       <div class="bt" style="margin-top:8px"><button data-job="post" data-dry="1">미리보기</button><button class="warn" id="postGo" disabled>이대로 올리기</button></div></div>
@@ -169,9 +171,11 @@ $('#go').onclick = async () => {
 document.querySelector('nav.tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; document.querySelectorAll('nav.tabs button').forEach(x => x.classList.toggle('on', x === b)); document.body.classList.toggle('ops', b.dataset.tab === 'ops'); if (b.dataset.tab === 'ops') stat(); };
 async function stat() { const s = await (await fetch('/api/status')).json(), row = (k, v) => `<b>${k}</b><span>${v}</span>`;
   $('#st').innerHTML = row('버전', `${s.version} · build ${s.build}`) + row('브랜치', s.branch === 'main' ? 'main' : `<span class="bad">${esc(s.branch)} (main 이 아님)</span>`) + row('안 올린 커밋', s.ahead ? `<span class="bad">${s.ahead}개</span>` : '<span class="good">없음</span>') + (s.behind ? row('원격에 새 커밋', `<span class="bad">${s.behind}개 (먼저 받으세요)</span>`) : '') + row('커밋 안 된 파일', s.dirty.length ? `<span class="bad">${s.dirty.map(esc).join('<br>')}</span>` : '<span class="good">없음</span>') + row('인포그래픽', s.pngs.length ? `${esc(s.img)} · ${s.pngs.length}장` : `<span class="bad">${esc(s.img)} 없음</span>`) + row('하루 총정리', s.dayJson ? (s.dayPng ? `${s.day} 있음` : `${s.day}.json 만 있음`) : '없음');
+  $('#pendTh').innerHTML = (s.sumPngs || []).map(f => `<img src="/infographics/${f}?t=${Date.now()}" alt="${f}" title="${f}">`).join('');
   $('#tPng').innerHTML = (s.tierPngs || []).map(f => `<img src="/infographics/${f}?t=${Date.now()}" alt="${f}" title="${f}">`).join(''); if (!RUN) tierEst();
   $('#th').innerHTML = s.pngs.map(f => `<img src="/infographics/${f}?t=${Date.now()}" alt="${f}">`).join(''); }
 $('#stR').onclick = stat;
+$('#pendTh').onclick = e => { if (e.target.tagName === 'IMG') { $('#zoom img').src = e.target.src; $('#zoom').classList.add('on'); } };
 $('#tPng').onclick = e => { if (e.target.tagName === 'IMG') { $('#zoom img').src = e.target.src; $('#zoom').classList.add('on'); } };
 $('#th').onclick = e => { if (e.target.tagName === 'IMG') { $('#zoom img').src = e.target.src; $('#zoom').classList.add('on'); } }; $('#zoom').onclick = () => $('#zoom').classList.remove('on');
 let RUN = null, LASTDRY = null;
@@ -181,15 +185,16 @@ async function job(kind, opt, confirmMsg) {
   if (RUN) return alert('다른 작업이 끝날 때까지 기다려 주세요');
   if (confirmMsg && !confirm(confirmMsg)) return;
   const r = await (await fetch('/api/job', { method: 'POST', body: JSON.stringify({ kind, opt }) })).json(); if (r.error) return alert(r.error);
-  RUN = r.id; const out = $('#out'); out.innerHTML = ''; $('#conS').textContent = '실행 중…'; document.querySelectorAll('[data-job], #postGo').forEach(b => b.disabled = true);
+  RUN = r.id; const out = $('#out'); out.innerHTML = ''; $('#conS').textContent = '실행 중…'; document.querySelectorAll('[data-job], #postGo, #pendGo').forEach(b => b.disabled = true);
   let from = 0; for (;;) { await new Promise(t => setTimeout(t, 700)); const p = await (await fetch(`/api/job?id=${r.id}&from=${from}`)).json(); from = p.next;
     const stick = out.scrollHeight - out.scrollTop - out.clientHeight < 40; /* 위로 올려 읽는 중이면 따라 내려가지 않는다 */ if (p.progress && kind === 'tier') tierShow(p.progress); p.lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; d.className = /^✔/.test(l) ? 'ok' : /^✖|실패|오류|error/i.test(l) ? 'er' : /^\$ |^──|^▶/.test(l) ? 'cm' : ''; out.appendChild(d); }); if (stick) out.scrollTop = out.scrollHeight;
-    if (p.done) { $('#conS').textContent = p.ok ? '✔ 끝' : '✖ 실패'; RUN = null; document.querySelectorAll('[data-job]').forEach(b => b.disabled = false); if (kind === 'post' && opt.dry && p.ok) { LASTDRY = JSON.stringify(postOpt()); $('#postGo').disabled = false; } stat(); load(); return p.ok; } }
+    if (p.done) { $('#conS').textContent = p.ok ? '✔ 끝' : '✖ 실패'; RUN = null; document.querySelectorAll('[data-job]').forEach(b => b.disabled = false); if (kind === 'post' && opt.dry && p.ok) { LASTDRY = JSON.stringify(postOpt()); $('#postGo').disabled = false; } if (kind === 'pending' && opt.dry && p.ok) $('#pendGo').disabled = false; stat(); load(); return p.ok; } }
 }
 document.querySelector('#ops').addEventListener('click', e => { const b = e.target.closest('[data-job]'); if (!b) return; const k = b.dataset.job, dry = !!b.dataset.dry;
-  const opt = k === 'post' ? { ...postOpt(), dry } : k === 'rules' ? { dry } : k === 'tier' ? { games: +$('#games').value, workers: +$('#workers').value } : { overwrite: $('#ow').checked };
+  const opt = k === 'pending' ? { dry, list: !!b.dataset.list } : k === 'post' ? { ...postOpt(), dry } : k === 'rules' ? { dry } : k === 'tier' ? { games: +$('#games').value, workers: +$('#workers').value } : { overwrite: $('#ow').checked };
   const msg = { all: '인포그래픽 → 커밋 → 푸시 → 규칙 게시를 할까요?', push: 'main 을 GitHub 에 푸시할까요?', rules: dry ? null : 'Firebase 규칙을 게시할까요?', tier: `티어 시뮬 ${opt.games}판 (일꾼 ${opt.workers}개 · ${$('#tTxt').textContent}) 을 돌릴까요? TIER_SC 가 바뀌고 커밋됩니다${opt.workers > 2 ? ' · 일꾼 3개 이상은 PC 가 느려질 수 있어요' : ''}`, info: opt.overwrite ? '있는 인포그래픽을 덮어쓸까요?' : null }[k];
   job(k, opt, msg); });
+$('#pendGo').onclick = () => job('pending', {}, '안 올린 것을 모두 합쳐 디스코드 · Threads 에 진짜로 올릴까요? (미리보기에서 본 내용 · 커밋과 푸시도 함께)');
 $('#postGo').onclick = () => { const o = postOpt(); if (JSON.stringify(o) !== LASTDRY) return alert('설정이 바뀌었어요 — 미리보기를 다시 보세요'); job('post', { ...o, dry: false }, `${o.to.join(' · ')} 에 ${o.day ? '하루 총정리를' : '공지를'} 진짜로 올릴까요?`); };
 
 // ── 티어리스트: 예상 시간 · 진행 게이지 ──

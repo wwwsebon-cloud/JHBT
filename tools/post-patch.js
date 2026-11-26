@@ -5,6 +5,7 @@
 //   node tools/post-patch.js --dry           올리지 않고 글 · 이미지 · 이미지 주소만 확인
 //   node tools/post-patch.js R2.36 --build 2 버전 · build 를 골라서 (--all : 그 버전 항목 전체 · build 1 은 --all)
 //   node tools/post-patch.js --day           하루 총정리: 맨 위 버전 항목 전체 (build 칸까지) + infographics/today-<날짜>*.png (없으면 <버전>.png) · 매일 마지막에 한 번
+//   node tools/post-all.js                   안 올린 버전 · build 를 모두 합쳐 올리기 (R3.7 · 합친 그림 → 푸시 → 미리보기 → 확인)
 //   인스타그램: node tools/post-patch.js --ig-token <토큰> [--secret <인스타 앱 시크릿>] (프로페셔널 계정 · 토큰이 있으면 기본으로 같이 올린다)
 //             그림은 JPEG 4:5 조각 (tools/ig-slices.py → infographics/ig/) 을 GitHub raw 주소로 받는다 → 조각을 커밋 · 푸시한 뒤 올린다
 //   옵션: --only discord|threads|instagram · --img a.png,b.png (이미지를 직접) · --everyone (디스코드 @everyone) · --no-ping (역할 핑 빼기) · --force (이미 올린 것도 다시)
@@ -71,6 +72,83 @@ function pick() { // 올릴 항목: { key, ver, build, title, date, sections }
   return { key: ver, ver, build: 0, title: e.title, date: e.date, sections: e.sections.filter(s => !bOf(s)) };
 }
 
+// ── 안 올린 것 모으기 (R3.7) — 올릴 곳마다 「마지막으로 올린 곳」 다음부터 지금 버전까지 · tools/post-all.js 가 부른다 ──
+const bAll = s => +((/\(build (\d+)\)/.exec(s.title || '') || [])[1] || 1); /* 칸의 build (표시가 없으면 첫 build) */
+const secName = s => plain(s.title).replace(/^추가 패치 \(build \d+\)\s*·?\s*/, '').replace(/\s*\(build \d+\)/, '');
+function channels() { const c = loadCfg() || {}; return ['discord', 'threads', 'instagram'].filter(k => k === 'discord' ? c.discord && c.discord.webhook : c[k] && c[k].token); }
+function boundary(k, N) { /* 그 곳에 마지막으로 올린 것: { i: 패치노트에서의 순서 (0 이 최신), upto: 올린 마지막 build, key } */
+  let best = null;
+  for (const [key, v] of Object.entries((loadCfg() || {}).posted || {})) {
+    if (!v || !v[k]) continue; const m = /^(R[\d.]+?)(?:-day|-b(\d+))?$/.exec(key); if (!m) continue; const i = N.findIndex(x => x.v === m[1]); if (i < 0) continue;
+    const upto = /-day$/.test(key) ? v[k].upto || Infinity : m[2] ? +m[2] : 1; if (!best || i < best.i || (i === best.i && upto > best.upto)) best = { i, upto, key };
+  }
+  return best;
+}
+function pending(to) { const N = patchNotes(), out = {};
+  for (const k of to) { const b = boundary(k, N), units = [], last = b ? Math.min(b.i, 4) : 0; /* 아주 오래 밀려도 5개 버전까지 · 한 번도 안 올린 곳은 지금 버전만 */
+    for (let i = last; i >= 0; i--) { const e = N[i], secs = e.sections.filter(s => !(b && i === b.i && bAll(s) <= b.upto)); if (!secs.length) continue;
+      units.push({ ver: e.v, date: e.date, title: plain(e.title), builds: [...new Set(secs.map(bAll))].sort((x, y) => x - y), sections: secs.slice().sort((x, y) => bAll(x) - bAll(y)) }); }
+    out[k] = { units, last: b ? b.key : '' }; }
+  return out;
+}
+const rangeText = U => { const a = U[0], z = U[U.length - 1], lo = a.builds[0], hi = z.builds[z.builds.length - 1]; return U.length > 1 ? `${a.ver} build ${lo} ~ ${z.ver} build ${hi}` : `${a.ver} build ${lo === hi ? lo : lo + '~' + hi}`; };
+const rangeKey = U => { const a = U[0], z = U[U.length - 1], lo = a.builds[0], hi = z.builds[z.builds.length - 1]; return U.length > 1 ? `sum-${a.ver}-b${lo}-${z.ver}-b${hi}` : `sum-${a.ver}-b${lo}-${hi}`; };
+const readRaw = name => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'infographics', name + '.json'), 'utf8')); } catch (e) { return null; } };
+function readDeck(name) { try { const d = JSON.parse(fs.readFileSync(path.join(ROOT, 'infographics', name + '.json'), 'utf8')); if (!d.sections) return d; /* 예전 한 장 형식은 덱 모양으로 */ return { headlines: [], tiles: d.sections.flatMap(s => s.tiles || []), more: d.sections.flatMap(s => s.items || []).map(m => ({ icon: m.icon, title: m.title, line: (m.lines || []).join(' · ') })) }; } catch (e) { return null; } }
+function mergeDeck(U, name) { // build 별 인포그래픽 덱 → 한 벌 (infographics/<name>.json) · 큰 사건 8개 (첫 build 5개 → 뒤 build 는 하나씩 · 너프 · 수정 제목은 뒤로) · 직접 고른 덱은 "keep": true 로 지킨다
+  if ((readRaw(name) || {}).keep) return { deck: true };
+  const parts = [], tiles = new Map(), more = new Map(); let found = 0;
+  for (const u of U) for (const b of u.builds) {
+    const d = readDeck(b > 1 ? `${u.ver}-b${b}` : u.ver);
+    if (!d) { u.sections.filter(s => bAll(s) === b).forEach(s => s.items.forEach(it => more.set(plain(it.name) + plain(it.desc), { icon: it.icon || TAG[it.tag] || '•', title: plain(it.name), line: plain(it.desc) }))); continue; }
+    found++; parts.push(d.headlines || []);
+    (d.tiles || []).forEach(t => { const o = tiles.get(t.id) || { ...t, lines: [] }; o.tag = t.tag;
+      (t.lines || []).forEach(l => { const j = o.lines.findIndex(x => (l.stat ? x.stat === l.stat : x.text === l.text)); if (j < 0) o.lines.push({ ...l }); else if (l.stat) o.lines[j] = { ...l, from: o.lines[j].from }; }); tiles.set(t.id, o); }); /* 같은 수치를 여러 번 바꿨으면 처음 → 마지막 */
+    (d.more || []).forEach(m => more.set(m.title, m));
+  }
+  if (!found) return { deck: false };
+  const all = parts.flat(), small = h => /너프|수정|조정|보호/.test(h.title), pick8 = (parts[0] || []).slice(0, parts.length > 1 ? 5 : 8);
+  for (const h of [...parts.slice(1).map(p => p.find(x => !small(x))), ...all.filter(x => !small(x)), ...all]) if (h && pick8.length < 8 && !pick8.includes(h)) pick8.push(h);
+  const hls = all.filter(h => pick8.includes(h)); all.filter(h => !pick8.includes(h)).forEach(h => more.set(h.title, { icon: h.icon, title: h.title, line: h.lead || '' }));
+  const z = U[U.length - 1], title = U.length > 1 ? U.map(u => u.ver).join(' ~ ') + ' 모아 보기' : '업데이트 총정리';
+  fs.writeFileSync(path.join(ROOT, 'infographics', name + '.json'), JSON.stringify({ version: z.ver, date: z.date, title, headlines: hls, tiles: [...tiles.values()], more: [...more.values()] }, null, 1));
+  return { deck: true };
+}
+function pendingImages(U, name) { // 합친 그림이 있으면 그것 · 없으면 build 별 그림을 순서대로 (20장까지)
+  const merged = images(name); if (merged.length) return merged;
+  return U.flatMap(u => u.builds.flatMap(b => images(b > 1 ? `${u.ver}-b${b}` : u.ver))).slice(0, 20);
+}
+function pendingNote(k) { const p = pending([k])[k], U = p.units; if (!U.length) return null; const z = U[U.length - 1];
+  return { key: rangeKey(U), units: U, ver: U.length > 1 ? `${U[0].ver} ~ ${z.ver}` : z.ver, build: 0, title: U.length > 1 ? U.map(u => u.ver).join(' · ') + ' 모아 보기' : z.title, date: z.date, sections: U.flatMap(u => u.sections) };
+}
+function groupItems(n) { /* 합친 글: 새로 생긴 것 · 리워크 · 밸런스 (지후 이름만) · 바뀐 것 · 버그 수정 · 같은 지후의 여러 build 는 한 번만 */
+  const G = { new: new Map(), rework: new Map(), other: new Map(), fix: new Map() }, bal = new Map();
+  n.sections.forEach(s => s.items.forEach(it => {
+    if (it.id && ['buff', 'nerf', 'adjust'].includes(it.tag)) { const o = bal.get(it.id) || { name: plain(it.name).replace(/ 지후$/, ''), tags: new Set() }; o.tags.add(it.tag); bal.set(it.id, o); return; }
+    const g = G[it.tag] ? it.tag : 'other'; G[g].set(plain(it.name) + '|' + plain(it.desc), it);
+  }));
+  const B = [...bal.values()], of = t => B.filter(x => x.tags.size === 1 && x.tags.has(t)).map(x => x.name), up = of('buff'), dn = of('nerf');
+  return { G: Object.fromEntries(Object.entries(G).map(([k, m]) => [k, [...m.values()]])), n: B.length, up, dn, adj: B.map(x => x.name).filter(x => !up.includes(x) && !dn.includes(x)) };
+}
+const GROUPS = [['new', '🆕 새로 생긴 것'], ['rework', '♻️ 리워크'], ['bal', '⚖️ 밸런스'], ['other', '⚙️ 바뀐 것'], ['fix', '🔧 버그 수정']];
+function mergedChunks(n) { // 디스코드: 4,000자를 넘으면 여러 메시지로 나눈다 (자르지 않는다)
+  const g = groupItems(n), L = [];
+  for (const [k, label] of GROUPS) {
+    if (k === 'bal') { if (!g.n) continue; L.push(`\n**${label} ${g.n}종**`); if (g.up.length) L.push(`🔺 상향: ${g.up.join(' · ')}`); if (g.dn.length) L.push(`🔻 하향: ${g.dn.join(' · ')}`); if (g.adj.length) L.push(`🔄 조정: ${g.adj.join(' · ')}`); continue; }
+    if (!g.G[k].length) continue; L.push(`\n**${label}**`); g.G[k].forEach(it => L.push(line(it).slice(0, 600)));
+  }
+  const out = ['']; L.forEach(x => { if (out[out.length - 1].length + x.length > 3800) out.push(''); out[out.length - 1] += (out[out.length - 1] ? '\n' : '') + x; });
+  return out.map(x => x.trim());
+}
+function mergedShort(n) { // Threads 500자: 묶음마다 앞 몇 개 이름
+  const g = groupItems(n), cp = x => [...x].length, top = `${head(n)}\n\n`, tail = `\n\n▶ ${SITE.replace('https://', '')}`;
+  for (const k of [5, 4, 3, 2, 1, 0]) {
+    const L = GROUPS.map(([id, label]) => { if (id === 'bal') return g.n ? `${label} ${g.n}종 (상향 ${g.up.length} · 하향 ${g.dn.length}${g.adj.length ? ' · 조정 ' + g.adj.length : ''})` : ''; const T = [...new Set(g.G[id].map(it => plain(it.name).split(' · ')[0]))]; return !T.length ? '' : `${label}` + (k ? ` — ${T.slice(0, k).join(', ')}${T.length > k ? ` 외 ${T.length - k}` : ''}` : ` ${T.length}`); }).filter(Boolean);
+    const t = top + L.join('\n') + tail; if (cp(t) <= 490) return t;
+  }
+  return top + tail.trim();
+}
+
 function images(key) { // infographics/<key>.png · <key>-2.png …
   if (opt('img')) return opt('img').split(',').map(f => path.resolve(f.trim()));
   const dir = path.join(ROOT, 'infographics'), re = new RegExp('^' + key.replace(/\./g, '\\.') + '(?:-(\\d+))?\\.png$');
@@ -109,12 +187,14 @@ function dayShort(n) { // Threads (하루 총정리 · 500자): 섹션마다 앞
   return top + n.today.sections.map(sec => plain(sec.label)).join(' · ') + tail;
 }
 function longText(n) { // 디스코드: 항목 전부 (4000자까지)
+  if (n.units) return mergedChunks(n).join('\n\n');
   if (n.today) return dayLong(n);
   const out = []; n.sections.forEach(s => { if (n.sections.length > 1 || (s.title && s.title !== n.title)) out.push(`\n**${plain(s.title)}**`); s.items.forEach(it => out.push(line(it))); });
   let t = out.join('\n').trim(); if (t.length > 3900) t = t.slice(0, 3900).replace(/\n[^\n]*$/, '') + '\n…';
   return t;
 }
 function shortText(n) { // Threads: 500자 → 항목 이름만 · 넘치면 「외 N개」
+  if (n.units) return mergedShort(n);
   if (n.today) return dayShort(n);
   const cp = s => [...s].length, top = `${head(n)}\n${plain(n.title)}\n\n`, tail = `\n\n▶ ${SITE.replace('https://', '')}`, names = [];
   n.sections.forEach(s => s.items.forEach(it => names.push(`${it.icon || TAG[it.tag] || '•'} ${plain(it.name)}`)));
@@ -138,16 +218,21 @@ async function checkUrl(f) { // 푸시됐는지 (크기가 같은지)
 // ── 디스코드 ──
 async function postDiscord(cfg, n, imgs) {
   const hook = cfg.discord && cfg.discord.webhook; if (!hook) throw new Error('post.json 에 discord.webhook 이 없어요');
-  const url = SITE, color = 0x5b6cff, names = imgs.map((f, i) => `p${i}${path.extname(f)}`);
-  const embeds = [{ title: head(n).replace('📢 ', '') + ' · ' + plain(n.title), url, color, description: longText(n), footer: { text: n.date || '' }, ...(imgs[0] ? { image: { url: 'attachment://' + names[0] } } : {}) }];
-  for (let i = 1; i < Math.min(imgs.length, 4); i++) embeds.push({ url, image: { url: 'attachment://' + names[i] } }); // 같은 url 이면 디스코드가 한 갤러리로 묶는다 (4장까지)
-  const ev = flag('everyone'), role = !flag('no-ping') && cfg.discord.role ? String(cfg.discord.role) : ''; /* 역할 핑 (예: @update) · --no-ping 이면 안 함 */
-  const payload = { username: '지후배틀', content: [ev ? '@everyone' : '', role ? `<@&${role}>` : ''].filter(Boolean).join(' '), allowed_mentions: { parse: ev ? ['everyone'] : [], roles: role ? [role] : [] }, embeds, attachments: imgs.map((f, i) => ({ id: i, filename: names[i] })) };
-  const fd = new FormData(); fd.append('payload_json', JSON.stringify(payload));
-  imgs.forEach((f, i) => fd.append(`files[${i}]`, new Blob([fs.readFileSync(f)], { type: 'image/png' }), names[i]));
-  const r = await fetch(hook + (hook.includes('?') ? '&' : '?') + 'wait=true', { method: 'POST', body: fd });
-  if (!r.ok) throw new Error(`디스코드 ${r.status} ${(await r.text()).slice(0, 300)}`);
-  const j = await r.json().catch(() => ({})); return j.id ? `메시지 ${j.id}` : 'ok';
+  const url = SITE, color = 0x5b6cff, texts = n.units ? mergedChunks(n) : [longText(n)], ids = [];
+  const total = Math.max(texts.length, Math.ceil(imgs.length / 10), 1); /* 한 메시지에 글 하나 + 그림 10장까지 · 넘치면 메시지를 나눈다 */
+  for (let m = 0; m < total; m++) {
+    const pics = imgs.slice(m * 10, m * 10 + 10), names = pics.map((f, i) => `p${m}_${i}${path.extname(f)}`), embeds = [];
+    if (texts[m] || pics.length) embeds.push({ url, color, ...(m === 0 ? { title: (head(n).replace('📢 ', '') + ' · ' + plain(n.title)).slice(0, 250) } : {}), ...(texts[m] ? { description: texts[m] } : {}), ...(m === total - 1 ? { footer: { text: n.date || '' } } : {}), ...(pics[0] ? { image: { url: 'attachment://' + names[0] } } : {}) });
+    for (let i = 1; i < Math.min(pics.length, 4); i++) embeds.push({ url, image: { url: 'attachment://' + names[i] } }); // 같은 url 이면 디스코드가 한 갤러리로 묶는다 (4장까지)
+    const ev = !m && flag('everyone'), role = !m && !flag('no-ping') && cfg.discord.role ? String(cfg.discord.role) : ''; /* 역할 핑 (예: @update) · 첫 메시지만 · --no-ping 이면 안 함 */
+    const payload = { username: '지후배틀', content: [ev ? '@everyone' : '', role ? `<@&${role}>` : ''].filter(Boolean).join(' '), allowed_mentions: { parse: ev ? ['everyone'] : [], roles: role ? [role] : [] }, embeds, attachments: pics.map((f, i) => ({ id: i, filename: names[i] })) };
+    const fd = new FormData(); fd.append('payload_json', JSON.stringify(payload));
+    pics.forEach((f, i) => fd.append(`files[${i}]`, new Blob([fs.readFileSync(f)], { type: 'image/png' }), names[i]));
+    const r = await fetch(hook + (hook.includes('?') ? '&' : '?') + 'wait=true', { method: 'POST', body: fd });
+    if (!r.ok) throw new Error(`디스코드 ${r.status} ${(await r.text()).slice(0, 300)}${m ? ` (${m}개는 이미 올라갔어요)` : ''}`);
+    const j = await r.json().catch(() => ({})); ids.push(j.id || 'ok'); if (m < total - 1) await sleep(1500);
+  }
+  return `메시지 ${ids.join(', ')}`;
 }
 
 // ── Threads ──
@@ -244,12 +329,15 @@ async function setIgToken(cfg) { // --ig-token <토큰> [--secret <인스타 앱
   cfg.instagram = { userId: String(id), username: me.username, token, savedAt: new Date().toISOString() }; saveCfg(cfg);
   console.log(`✅ 인스타그램 @${me.username} (${id}) 저장 → ${CFG_PATH}`);
 }
-(async () => {
+module.exports = { channels, pending, rangeText, rangeKey, mergeDeck, pendingImages, checkUrl };
+if (require.main === module) (async () => {
   if (flag('init')) { if (loadCfg()) console.log('이미 있어요: ' + CFG_PATH); else { saveCfg(TEMPLATE); console.log('✅ 만들었어요: ' + CFG_PATH + ' (discord.webhook 을 채우고, Threads 는 --threads-token)'); } return; }
   if (opt('threads-token')) return setThreadsToken(loadCfg() || { ...TEMPLATE });
   if (opt('ig-token')) return setIgToken(loadCfg() || { ...TEMPLATE });
   if (opt('discord-role')) { const c = loadCfg() || { ...TEMPLATE }, id = (/\d{15,}/.exec(opt('discord-role')) || [])[0]; if (!id) die('역할 ID (숫자) 를 넣어 주세요'); c.discord = { ...(c.discord || {}), role: id }; saveCfg(c); console.log(`✅ 디스코드 공지마다 역할 <@&${id}> 핑 · 빼려면 --no-ping`); return; }
-  const n = pick(), imgs = (n.img && images(n.img).length ? images(n.img) : images(n.key.replace(/-day$/, ''))), want = k => !ONLY || ONLY === k;
+  const PEND = flag('pending'); if (PEND && !ONLY) die('--pending 은 --only <곳> 과 함께 (여러 곳은 node tools/post-all.js)');
+  const n = PEND ? pendingNote(ONLY) : pick(); if (!n) { console.log(`✔ ${ONLY}: 밀린 것이 없어요`); return; }
+  const imgs = PEND ? pendingImages(n.units, n.key) : (n.img && images(n.img).length ? images(n.img) : images(n.key.replace(/-day$/, ''))), want = k => !ONLY || ONLY === k;
   imgs.forEach(f => { if (!fs.existsSync(f)) die('이미지가 없어요: ' + f); });
   console.log(`📝 ${n.key} · ${plain(n.title)} · 항목 ${n.sections.reduce((t, s) => t + s.items.length, 0)}개 · 이미지 ${imgs.length}장`);
   if (DRY) {
@@ -260,13 +348,16 @@ async function setIgToken(cfg) { // --ig-token <토큰> [--secret <인스타 앱
     console.log('\n(--dry: 올리지 않았어요 · 설정 파일 ' + (loadCfg() ? '있음' : '없음 → --init') + ')'); return;
   }
   const cfg = loadCfg(); if (!cfg) die('설정 파일이 없어요 → node tools/post-patch.js --init (' + CFG_PATH + ')');
-  const log = (cfg.posted = cfg.posted || {})[n.key] = cfg.posted[n.key] || {}; let fail = 0;
+  cfg.posted = cfg.posted || {}; const log = n.units ? {} : (cfg.posted[n.key] = cfg.posted[n.key] || {}); let fail = 0;
   if (want('threads') && imgs.length) for (const f of imgs) { const c = await checkUrl(f); if (c !== 'ok') throw new Error(`Threads 용 이미지 주소가 아직 안 돼요: ${pubUrl(f)} — ${c}\n   먼저 git push 하고 몇 분 뒤 다시 (또는 --only discord)`); }
   for (const [k, fn] of [['discord', postDiscord], ['threads', postThreads], ['instagram', postInstagram]]) {
     if (!want(k)) continue;
     if (k === 'instagram' && !ONLY && !(cfg.instagram && cfg.instagram.token)) continue; /* 토큰이 없으면 기본 올리기에서 뺀다 */
     if (log[k] && !FORCE) { console.log(`⏭️  ${k}: 이미 올렸어요 (${log[k].at}) · 다시 올리려면 --force`); continue; }
-    try { const r = await fn(cfg, n, imgs); log[k] = { at: new Date().toISOString(), ref: r }; saveCfg(cfg); console.log(`✅ ${k}: ${r}`); }
+    try { const r = await fn(cfg, n, imgs), at = new Date().toISOString();
+      if (n.units) n.units.forEach(u => { const o = (cfg.posted[`${u.ver}-day`] = cfg.posted[`${u.ver}-day`] || {}); o[k] = { at, ref: r, upto: u.builds[u.builds.length - 1] }; }); /* 모아 올린 것: 버전마다 어디까지 올렸는지 */
+      else log[k] = { at, ref: r, ...(flag('day') ? { upto: Math.max(...patchNotes().find(x => x.v === n.ver).sections.map(bAll)) } : {}) };
+      saveCfg(cfg); console.log(`✅ ${k}: ${r}`); }
     catch (e) { fail++; console.error(`❌ ${k}: ${e.message}`); }
   }
   process.exitCode = fail ? 1 : 0; /* process.exit 는 윈도우에서 열린 fetch 와 부딪혀 죽는다 */
