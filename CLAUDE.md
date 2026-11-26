@@ -111,6 +111,7 @@
 - `CHARS` 끝에 추가 (도우미는 `reapFx` 앞 `// ── R3.x 신규 지후 도우미 ──`). 안 준 역할군 · 사거리 등은 정하고 알린다.
 - `passive` · `skill.desc` 는 **쉽게 · ~니다 · 한두 문장** · 자세한 숫자는 `CHAR_INFO[id]` (버전명 · 「예전엔」 금지 · 지금 규칙만).
 - **서사 `story`**: ~입니다 · ~해요 · 5~7문장 · **개그 · 병맛** (말도 안 되는 사건 · 반전 · 마지막 펀치라인 · 외양 묘사는 줄인다) · 지후왕국 세계관과 다른 지후를 엮는다. **AI 티 금지**: 인용문 금지 · 능력 숫자 금지 (세계관 숫자 1호 · 314호 · 3년은 괜찮다) · 능력 서술 최소.
+- **전설이면 획득 소식 문구**를 `NEWS_LINE` 에 한 줄 (`{n}` = 닉네임 · 한 문장 · 개그) · 영웅 이하는 「○○ 지후를 뽑았습니다」라 필요 없다.
 - 뽑기 · 덱 · 도감에 안 나오는 변신 지후 (`prince` 등) 는 `Object.defineProperty(CHARS, id, { enumerable: false })`.
 - 새 상태 · 버프는 `STATUS` · `FX_OF` / `fxList` · `BUFF_SRC` · 매거진 `MZ_STC` · `MZ_STD` · 스테인리스 반전 `ST_REV` 를 정할지.
 - 배치 기록 (`S.place[side][t]`) 에 새 필드를 넣으면 친선전 `packPlace` / `unpackPlace` 와 합체 (`moveTile` 의 `canFuse`) 에도.
@@ -169,7 +170,7 @@
 - 매일 보상 · 날짜는 **`todayKey()` · `stDay()`** (한국 · 서버 시간) · `new Date()` 로 날짜를 만들지 않는다 (시간대를 바꿔 무료 모집을 무한으로 돈 유저가 있었다).
 - 보상 · 소비 함수 맨 앞에 `alWhy('이유')` (활동 기록).
 - 운영: `admins/<uid>` · 정지 `bans/<uid>` · 점검 `config/maintenance` · 로비 공지 `config/announce` · 띠 `config/bcast` · 운영 우편 `giftMail` (`giftOk`) · 개발자 도구 `#opModal` (`opOpen(탭)` · 새 운영 기능은 탭으로) · 욕설 `hasBad` (금지어를 늘리면 rules 의 `cleanName` 도).
-- 소식 `events` (type 은 rules 의 목록에 있어야 한다: level · join · gacha · login · leave) · 접속 중 `pres/<uid>` · 동접 `pulse` · 리더보드 `r2lb` (필드는 rules `hasOnly` 에 있어야 한다 · 규칙 게시 전이면 `FB.noXx` 로 빼고 다시 올리는 패턴).
+- 소식 `events` (type 은 rules 의 목록에 있어야 한다 · `ban` 은 운영자만 · 모양과 문구는 `newsItem` · 새 종류는 rules · `newsItem` · CSS `.nwk-*` 를 같이 · 닉네임 없는 손님은 `guestPost`) · 접속 중 `pres/<uid>` · 동접 `pulse` · 리더보드 `r2lb` (필드는 rules `hasOnly` 에 있어야 한다 · 규칙 게시 전이면 `FB.noXx` 로 빼고 다시 올리는 패턴).
 - 서버에 쓰는 기능은 실서버로 시험하지 않는다 → 코드 · 규칙만 맞추고 「실서버 미확인 · 규칙 게시 필요」를 알린다.
 - `dlg` 가 다른 dlg 에 밀리면 `null` — 꼭 골라야 하는 창은 null 이면 다시 묻는다.
 
@@ -283,7 +284,8 @@
 - 새 디펜스 (타워디펜스형 · 위 「디펜스」) · 신규 지후 6종 (농부 · 도깨비불 · 듀얼리스트 · 소울스틸러 · 매트릭스 · 사이보그) · 도둑 리워크 (`burglarTake` · 쓰러진 적의 스킬) · 필살기 버프 `ULT_BUFF` · iPad 지후 탭 스크롤 (`UI2.busy`).
 - build 6: 갓지후 트루폼 `godBeamTF` (맵 끝까지 · 9999 · 1.6초) · 소울스틸러 `SS` 너프 · 사이보그 `CB.T` 22 · 웹 업로드로 올라와 다음 날 정리.
 
-## 최근 변경 (R3.7 · 2026-11-26 · build 1~7)
+## 최근 변경 (R3.7 · 2026-11-26 · build 1~8)
+- build 8: 소식 개편 (`// ═════════ R3.7 build 8 소식` · ui4 소식 창 `.u4-nw` 갈래 탭 + HEADLINE 카드 · 로비 줄 `newsTicker` · ui3 는 글만) · 새 소식 visit · gone · welcome · quit · first · vs · streak (5·10·15·20) · broke · tower (15층) · promo · almost (이기면 승급하는 판에서 짐) · friend · ban · 전설만 전용 문구 · 모집 소식은 전설이 없는 판에 하나 (영웅 또는 처음 얻은 지후) · 닫을 때 보내는 소식은 안 올라갈 수 있다 · **규칙 게시 필요** · 실서버 미확인.
 - build 7: 순위 중복 방지 (위 「계정 · 서버」) · 로그인이 풀린 상태 (`accLost`) 의 새 계정 만들기 막음 · 리더보드 `r2lb` 의 level · xp 는 서버에서 새 공식으로 한 번 환산했다.
 - build 6: ui4 랭킹 개편 (`u4Lb` · `LB4_LABEL` · CSS `.u4-lb-*` · 지휘관 명단 + 선수 카드 `UI2.st.lbSel` · ui3 랭킹은 그대로) · 겹치는 짧은 클래스 이름 (`.av` 등) 은 전역 규칙에 걸리니 `lb*` 처럼 전용 이름 · `pfHtml` 옵션 `still` (멈춤 · 장식은 그림 `pfOrnImg`) · `blob` (가벼운 사진) · `u4Recolor` 는 `<!--pf-->` 구간 (프로필 테두리) 의 색을 바꾸지 않는다.
 - build 5: 유저 레벨 필요 경험치 복리 15 → 5% (`xpNeed`) · 옛 기록은 `lvMove` 가 한 번 환산 (`profile.xp5` · `normProfile` 과 서버 기록 `bkParse` · 오른 레벨의 보상 없음) · 레벨업 보상 ◆150.
