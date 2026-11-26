@@ -50,13 +50,47 @@ td.old { width:80px; font:12px monospace; color:var(--acc); }
 #go:disabled { background:#9aa0a8; border-color:#9aa0a8; cursor:default; }
 #log { white-space:pre-wrap; font:12px/1.5 monospace; margin-top:10px; padding:10px; background:#f6f6f3; border-left:4px solid var(--ink); display:none; }
 #log.err { border-color:var(--nerf); color:var(--nerf); } #log.ok { border-color:var(--buff); }
+
+nav.tabs { display:flex; gap:0; margin-left:18px; } nav.tabs button { padding:7px 16px; border:2px solid var(--ink); background:#fff; font:700 13px inherit; cursor:pointer; margin-left:-2px; } nav.tabs button.on { background:var(--ink); color:#fff; }
+body.ops main, body.ops #dock { display:none !important; } #ops { display:none; height:calc(100vh - 52px); overflow:auto; padding:20px 24px; } body.ops #ops { display:grid; grid-template-columns:minmax(380px, 520px) 1fr; gap:18px; align-items:start; }
+.card { background:#fff; border:2px solid var(--ink); border-radius:2px; padding:14px 16px; margin-bottom:12px; }
+.card h3 { margin:0 0 4px; font-size:15px; display:flex; align-items:center; gap:8px; } .card h3 i { width:10px; height:10px; background:var(--acc); } .card p { margin:0 0 10px; color:var(--mute); font-size:12px; line-height:1.5; }
+.card .bt { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.bt button { padding:8px 14px; border:2px solid var(--ink); background:#fff; font:700 13px inherit; border-radius:2px; cursor:pointer; } .bt button.pri { background:var(--ink); color:#fff; } .bt button.warn { background:var(--acc); border-color:var(--acc); color:#fff; } .bt button:disabled { opacity:.4; cursor:default; }
+.bt label { display:flex; gap:4px; align-items:center; font-size:13px; cursor:pointer; } .bt input[type=number] { width:80px; padding:6px; border:2px solid var(--line); font:inherit; }
+.st { display:grid; grid-template-columns:110px 1fr; gap:4px 10px; font-size:13px; } .st b { font-weight:600; color:var(--mute); } .st .bad { color:var(--nerf); font-weight:700; } .st .good { color:var(--buff); font-weight:700; }
+.thumbs { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; } .thumbs img { width:84px; border:1px solid var(--line); cursor:zoom-in; }
+#con { position:sticky; top:0; background:#111214; color:#e8e8e4; border:2px solid var(--ink); border-radius:2px; height:calc(100vh - 100px); display:flex; flex-direction:column; }
+#con .hd { padding:8px 12px; border-bottom:1px solid #333; font:700 12px monospace; display:flex; gap:10px; align-items:center; } #con .hd span { margin-left:auto; color:#9a9a94; }
+#con pre { margin:0; padding:10px 12px; overflow:auto; flex:1; font:12px/1.5 monospace; white-space:pre-wrap; word-break:break-all; }
+#con pre .ok { color:#6fdc8c; } #con pre .er { color:#ff7a7a; } #con pre .cm { color:#ffd23f; }
+#zoom { position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:20; } #zoom.on { display:flex; } #zoom img { max-height:92vh; max-width:92vw; }
 </style></head>
 <body>
-<header><span class="tag">PATCHER</span><b>딸깍 패치기</b><span style="color:var(--mute)">지후를 골라 숫자를 바꾸고 바로 게임 코드에 넣어요</span><span class="ver" id="ver"></span></header>
+<header><span class="tag">PATCHER</span><b>딸깍 패치기</b><span style="color:var(--mute)">지후를 골라 숫자를 바꾸고 바로 게임 코드에 넣어요</span><nav class="tabs"><button data-tab="patch" class="on">딸깍 패치</button><button data-tab="ops">배포 · 공지</button></nav><span class="ver" id="ver"></span></header>
 <main>
   <aside><input id="q" placeholder="지후 검색 (이름 · id)" autocomplete="off"><div id="list"></div></aside>
   <section id="main"><div class="empty">왼쪽에서 지후를 고르세요</div></section>
 </main>
+
+<div id="ops">
+  <div>
+    <div class="card"><h3><i></i>지금 상태 <button class="sug" id="stR" style="margin-left:auto">새로고침</button></h3><div class="st" id="st">불러오는 중…</div><div class="thumbs" id="th"></div></div>
+    <div class="card"><h3><i></i>한 번에</h3><p>인포그래픽 → 커밋 → GitHub 푸시 → Firebase 규칙 게시. 공지는 아래에서 미리보기를 본 뒤 올립니다.</p>
+      <div class="bt"><button class="pri" data-job="all">한 번에 하기</button><label><input type="checkbox" id="ow"> 인포그래픽 덮어쓰기</label></div></div>
+    <div class="card"><h3><i></i>인포그래픽</h3><p>지금 버전 · build 의 자동판 (남색 클래식). 이미 있으면 덮어쓰기를 켜야 다시 만듭니다 — 직접 만든 덱이면 끄세요.</p>
+      <div class="bt"><button data-job="info">만들기</button><button data-job="commitInfo">커밋</button></div></div>
+    <div class="card"><h3><i></i>GitHub 푸시</h3><p>main 을 origin 에 올립니다 (사이트 배포가 시작돼요).</p><div class="bt"><button class="pri" data-job="push">푸시</button></div></div>
+    <div class="card"><h3><i></i>Firebase 규칙</h3><p>firestore.rules 를 서버에 게시합니다. 서버와 같으면 그대로.</p><div class="bt"><button data-job="rules" data-dry="1">차이 보기</button><button class="pri" data-job="rules">게시</button></div></div>
+    <div class="card"><h3><i></i>공지 올리기</h3><p>맨 위 패치노트 (그날 마지막 build) + 인포그래픽. 먼저 미리보기 → 그 설정 그대로 「이대로 올리기」.</p>
+      <div class="bt"><label><input type="checkbox" class="to" value="discord" checked> 디스코드</label><label><input type="checkbox" class="to" value="threads"> Threads</label><label><input type="checkbox" class="to" value="instagram"> 인스타그램</label><label><input type="checkbox" id="day"> 하루 총정리</label></div>
+      <div class="bt" style="margin-top:8px"><button data-job="post" data-dry="1">미리보기</button><button class="warn" id="postGo" disabled>이대로 올리기</button></div></div>
+    <div class="card"><h3><i></i>티어리스트</h3><p>시뮬 (일꾼 2개) → 집계 → TIER_SC · 티어표 그림 → 커밋. 1,600판에 몇 분. 메커니즘을 바꾸는 중이면 무효예요.</p>
+      <div class="bt"><input type="number" id="games" value="1600" min="100" step="100"> 판 <button data-job="tier">시작</button></div></div>
+  </div>
+  <div id="con"><div class="hd">작업 기록 <span id="conS">대기 중</span></div><pre id="out"></pre></div>
+</div>
+<div id="zoom"><img alt=""></div>
 <div id="dock" hidden>
   <h3>바꾼 것 <span id="cnt"></span></h3>
   <div id="notes"></div>
@@ -129,6 +163,31 @@ $('#go').onclick = async () => {
   catch (e) { lg.className = 'err'; lg.textContent = '✖ ' + e.message; }
   go.disabled = false; go.textContent = '적용하기';
 };
+// ── 배포 · 공지 탭 ──
+document.querySelector('nav.tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; document.querySelectorAll('nav.tabs button').forEach(x => x.classList.toggle('on', x === b)); document.body.classList.toggle('ops', b.dataset.tab === 'ops'); if (b.dataset.tab === 'ops') stat(); };
+async function stat() { const s = await (await fetch('/api/status')).json(), row = (k, v) => `<b>${k}</b><span>${v}</span>`;
+  $('#st').innerHTML = row('버전', `${s.version} · build ${s.build}`) + row('브랜치', s.branch === 'main' ? 'main' : `<span class="bad">${esc(s.branch)} (main 이 아님)</span>`) + row('안 올린 커밋', s.ahead ? `<span class="bad">${s.ahead}개</span>` : '<span class="good">없음</span>') + (s.behind ? row('원격에 새 커밋', `<span class="bad">${s.behind}개 (먼저 받으세요)</span>`) : '') + row('커밋 안 된 파일', s.dirty.length ? `<span class="bad">${s.dirty.map(esc).join('<br>')}</span>` : '<span class="good">없음</span>') + row('인포그래픽', s.pngs.length ? `${esc(s.img)} · ${s.pngs.length}장` : `<span class="bad">${esc(s.img)} 없음</span>`) + row('하루 총정리', s.dayJson ? (s.dayPng ? `${s.day} 있음` : `${s.day}.json 만 있음`) : '없음');
+  $('#th').innerHTML = s.pngs.map(f => `<img src="/infographics/${f}?t=${Date.now()}" alt="${f}">`).join(''); }
+$('#stR').onclick = stat;
+$('#th').onclick = e => { if (e.target.tagName === 'IMG') { $('#zoom img').src = e.target.src; $('#zoom').classList.add('on'); } }; $('#zoom').onclick = () => $('#zoom').classList.remove('on');
+let RUN = null, LASTDRY = null;
+const postOpt = () => ({ to: [...document.querySelectorAll('.to:checked')].map(x => x.value), day: $('#day').checked });
+document.querySelectorAll('.to, #day').forEach(x => x.onchange = () => { $('#postGo').disabled = true; });
+async function job(kind, opt, confirmMsg) {
+  if (RUN) return alert('다른 작업이 끝날 때까지 기다려 주세요');
+  if (confirmMsg && !confirm(confirmMsg)) return;
+  const r = await (await fetch('/api/job', { method: 'POST', body: JSON.stringify({ kind, opt }) })).json(); if (r.error) return alert(r.error);
+  RUN = r.id; const out = $('#out'); out.innerHTML = ''; $('#conS').textContent = '실행 중…'; document.querySelectorAll('[data-job], #postGo').forEach(b => b.disabled = true);
+  let from = 0; for (;;) { await new Promise(t => setTimeout(t, 700)); const p = await (await fetch(`/api/job?id=${r.id}&from=${from}`)).json(); from = p.next;
+    p.lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; d.className = /^✔/.test(l) ? 'ok' : /^✖|실패|오류|error/i.test(l) ? 'er' : /^\$ |^──|^▶/.test(l) ? 'cm' : ''; out.appendChild(d); }); out.scrollTop = out.scrollHeight;
+    if (p.done) { $('#conS').textContent = p.ok ? '✔ 끝' : '✖ 실패'; RUN = null; document.querySelectorAll('[data-job]').forEach(b => b.disabled = false); if (kind === 'post' && opt.dry && p.ok) { LASTDRY = JSON.stringify(postOpt()); $('#postGo').disabled = false; } stat(); load(); return p.ok; } }
+}
+document.querySelector('#ops').addEventListener('click', e => { const b = e.target.closest('[data-job]'); if (!b) return; const k = b.dataset.job, dry = !!b.dataset.dry;
+  const opt = k === 'post' ? { ...postOpt(), dry } : k === 'rules' ? { dry } : k === 'tier' ? { games: +$('#games').value } : { overwrite: $('#ow').checked };
+  const msg = { all: '인포그래픽 → 커밋 → 푸시 → 규칙 게시를 할까요?', push: 'main 을 GitHub 에 푸시할까요?', rules: dry ? null : 'Firebase 규칙을 게시할까요?', tier: `티어 시뮬 ${opt.games}판을 돌릴까요? (몇 분 · TIER_SC 가 바뀌고 커밋됩니다)`, info: opt.overwrite ? '있는 인포그래픽을 덮어쓸까요?' : null }[k];
+  job(k, opt, msg); });
+$('#postGo').onclick = () => { const o = postOpt(); if (JSON.stringify(o) !== LASTDRY) return alert('설정이 바뀌었어요 — 미리보기를 다시 보세요'); job('post', { ...o, dry: false }, `${o.to.join(' · ')} 에 ${o.day ? '하루 총정리를' : '공지를'} 진짜로 올릴까요?`); };
+
 load();
 </script>
 </body></html>
