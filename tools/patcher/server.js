@@ -43,10 +43,14 @@ function doApply(req) {
 }
 
 const send = (res, code, body, type = 'application/json; charset=utf-8') => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store' }); res.end(typeof body === 'string' ? body : JSON.stringify(body)); };
-http.createServer((req, res) => {
+// 도구 코드의 버전 (파일 수정 시각) — 예전 버전 서버가 켜져 있으면 끄고 새로 켠다 (화면이 안 바뀌는 문제)
+const STAMP = ['core.js', 'server.js', 'jobs.js', 'ui.html', 'labels.json'].map(f => { try { return fs.statSync(path.join(__dirname, f)).mtimeMs | 0; } catch (e) { return 0; } }).join('.');
+const srv = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   try {
     if (u.pathname === '/') return send(res, 200, fs.readFileSync(path.join(__dirname, 'ui.html'), 'utf8'), 'text/html; charset=utf-8');
+    if (u.pathname === '/api/ver') return send(res, 200, { stamp: STAMP });
+    if (u.pathname === '/api/quit' && req.method === 'POST') { send(res, 200, { ok: true }); setTimeout(() => process.exit(0), 100); return; }
     if (u.pathname === '/api/list') { const M = C.model(); return send(res, 200, { meta: M.meta, list: M.chars.map(c => ({ id: c.id, name: c.name, rarity: c.rarity })) }); }
     if (u.pathname === '/api/char') { const r = C.charInfo(u.searchParams.get('id')); return r ? send(res, 200, r) : send(res, 404, { error: '없는 지후' }); }
     if (/^\/infographics\/[\w.\-]+\.png$/.test(u.pathname)) { const f = path.join(ROOT, u.pathname); return fs.existsSync(f) ? (res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' }), res.end(fs.readFileSync(f))) : send(res, 404, { error: 'no' }); } // 미리보기 그림
@@ -57,7 +61,22 @@ http.createServer((req, res) => {
     if (u.pathname === '/api/apply' && req.method === 'POST') { let b = ''; req.on('data', d => b += d); req.on('end', () => { try { send(res, 200, doApply(JSON.parse(b))); } catch (e) { send(res, 400, { error: String(e.message || e) }); } }); return; }
     send(res, 404, { error: 'not found' });
   } catch (e) { send(res, 500, { error: String(e.stack || e) }); }
-}).on('error', e => { if (e.code === 'EADDRINUSE') { console.log(`이미 켜져 있어요 → http://127.0.0.1:${PORT}/ 를 열어요`); if (!process.env.NO_OPEN) exec(`start "" "http://127.0.0.1:${PORT}/"`); setTimeout(() => process.exit(0), 500); } else throw e; }).listen(PORT, '127.0.0.1', () => {
-  const url = `http://127.0.0.1:${PORT}/`; console.log('딸깍 패치기: ' + url + '  (이 창을 닫으면 꺼져요)');
-  if (!process.env.NO_OPEN) exec(process.platform === 'win32' ? `start "" "${url}"` : `xdg-open ${url}`);
 });
+const openUrl = () => { const url = `http://127.0.0.1:${PORT}/`; if (!process.env.NO_OPEN) exec(process.platform === 'win32' ? `start "" "${url}"` : `xdg-open ${url}`); };
+srv.once('listening', () => { console.log(`딸깍 패치기: http://127.0.0.1:${PORT}/  (이 창을 닫으면 꺼져요)`); openUrl(); });
+function listen() { srv.listen(PORT, '127.0.0.1'); }
+srv.on('error', async e => {
+  if (e.code !== 'EADDRINUSE') throw e;
+  let same = false; try { same = (await (await fetch(`http://127.0.0.1:${PORT}/api/ver`)).json()).stamp === STAMP; } catch (er) {}
+  if (same) { console.log('이미 같은 버전이 켜져 있어요 → 그 화면을 열어요'); openUrl(); return setTimeout(() => process.exit(0), 500); }
+  console.log('예전 버전이 켜져 있어요 → 끄고 새로 켭니다');
+  try { await fetch(`http://127.0.0.1:${PORT}/api/quit`, { method: 'POST' }); } catch (er) {}
+  await new Promise(r => setTimeout(r, 600));
+  if (process.platform === 'win32') { /* /api/quit 이 없는 아주 예전 서버: 그 포트를 쓰는 node 만 끈다 */
+    const ns = spawnSync('netstat', ['-ano'], { encoding: 'utf8' }).stdout || '', m = new RegExp('127\\.0\\.0\\.1:' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)').exec(ns);
+    if (m && m[1] !== String(process.pid)) { const tl = spawnSync('tasklist', ['/FI', 'PID eq ' + m[1], '/NH'], { encoding: 'utf8' }).stdout || ''; if (/node\.exe/i.test(tl)) spawnSync('taskkill', ['/PID', m[1], '/F']); }
+    await new Promise(r => setTimeout(r, 500));
+  }
+  listen();
+});
+listen();
