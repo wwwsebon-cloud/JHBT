@@ -8539,11 +8539,11 @@ const CHARS = {
       const gain = clamp(u.maxHp * (enh6(u) ? 0.625 : 0.5) /* 랭크 6 [만렙 보너스]: +25% */, 0, u.maxHp - u.hp); u.hp += gain; if (!S.fast && gain > 0) dmgNum(u, Math.round(gain), { heal: true }); drawUnit(u); A.portrait(u, u.def.portraitLv[u.form - 1]); A.headLv(u, u.form); // R2.19: 최대 체력의 50% (build 13 가득 · 예전 30%) · build 13 때 주석에 묻혀 그림 · 레벨 표시가 안 바뀌던 것 수정
       const t = fxAt('fx-lvtext', u.x, u.y - unitRadius(u), 900); t.textContent = `LEVEL ${u.form}!`; sfx('merge');
     } },
-  magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 1100, atk: 90, /* R3.5 build 3 리워크: 2.2 → 2.1초 · 확률 마탄 → 마탄 5발 (스킬 · 재장전) */ atkSpeed: 2.1, range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad',
+  magic: { name: '마탄 지후', rarity: 'legend', role: '딜러', hp: 1100, atk: 60, /* R3.7 리워크: 90 → 60 · 2.1 → 1.6초 · 마탄 7발 · [스코프] */ atkSpeed: 1.6, range: 8.5, speed: 1.6, portrait: PORTRAITS.magic, sfx: 'shot', color: '#8e44ad',
     story: '장난감 총에 스펀지 총알 대신 구슬을 넣었다가 마탄의 사수가 된 지후입니다. 그 구슬은 옆 동네 유리창 세 장과 우체통 하나를 뚫고, 마지막으로 빠따 지후의 머리 위를 스쳐 지나갔어요. 빠따 지후는 그게 자기 홈런 때문인 줄 알고 아직도 유리창 수리비를 갚고 있습니다. 그는 진실을 알지만 말하지 않기로 했어요. 탄환의 본질은 마음가짐이라고 늘 강조하는데, 정작 빗나가면 탄환 탓을 합니다. 마음가짐은 언제나 완벽하다고 해요.',
-    passive: '<b>[마탄]</b> 5발을 가지고 시작합니다. 마탄을 다 쓰면 가까운 적 넷에게 마탄을 쏘아 표식을 남기고, 5초 뒤 표식이 있는 적의 체력을 빼앗아 최대 체력이 늘어나며 재장전합니다.',
-    onStart(u) { mgStart(u); }, customAttack(u) { return u.mgWait > S.time; },
-    skill: { type: 'hit', need: 6, can: u => (u.mg | 0) > 0 && !(u.mgWait > S.time), desc: '<b>SP 6</b> · 체력이 가장 높은 적에게 공격력의 <b>850%</b> <b>[마탄]</b>을 쏩니다. 맞은 적은 [절상] · [취약]에 걸리고, 처치하면 30% 위력의 마탄을 한 발 더 쏩니다.', run(u) { mgShot(u, mgTop(u), MG.K); } } },
+    passive: '<b>[마탄]</b> 7발로 공격합니다. 다 쓰면 가까운 적 셋에게 <b>[스코프]</b>를 겁니다. [스코프]가 붙은 적을 맞히면 그 적의 SP 를 깎고 마탄 1발을 재장전합니다.',
+    onStart(u) { mgStart(u); }, onAttack(u) { mgBoost(u); }, customAttack(u, t) { return mgAtk(u, t); }, onHit(u, t) { mgPop(u, t); }, pickTarget(u) { return mgPick(u); },
+    skill: { type: 'hit', need: 8, /* R3.7: 6 → 8 */ hold: u => !((u.mg | 0) > 0), desc: '<b>SP 8</b> · 체력이 가장 높은 적에게 공격력의 <b>1000%</b> <b>[최후의 마탄]</b>을 쏩니다. 맞은 적은 [절상] · [취약]에 걸리고, 처치하면 30% 위력의 마탄을 한 발 더 쏩니다.', run(u) { mgShot(u, mgTop(u), MG.K); } } },
   gift: { name: '선물 지후', rarity: 'legend', role: '보조형', hp: 300, /* R2.36 build 5: 1390 → 300 */ atk: 0, atkSpeed: 1, range: 1, speed: 0, immobile: true, noAttack: true, portrait: PORTRAITS.gift, color: '#e84393',
     story: '국왕 화염 지후 1호의 생일마다 왕궁 앞에 놓이는 수상한 선물 상자입니다. 보낸 사람은 아무도 모르고, 상자에는 뜯지 말라는 경고와 꼭 뜯으라는 부탁이 동시에 적혀 있어요. 상자를 열면 매번 다른 지후가 튀어나오는데, 한 번은 안에서 또 선물 상자가 나와 국왕이 상자를 뜯다가 생일이 끝났습니다. 왕궁 우체국은 이 상자를 요주의 택배로 분류했어요. 반품하려 해도 반송 주소 칸에 너의 마음속이라고 적혀 있어서 반품이 안 됩니다.',
     passive: '움직이지도 공격하지도 않습니다. SP 가 다 차면 무작위 지후로 변신합니다.',
@@ -9495,8 +9495,10 @@ const ULT = {
   soulsteal: { name: '영혼 착취', cd: 30, desc: '사거리 안 가까운 적 5기에게 공격력의 100% 피해를 주고, 맞힌 적마다 영혼을 1개 바로 얻습니다.', run: ultSoul, c: '#9a6bff' },
   matrix: { name: '시스템 스왑', cd: 25, desc: '모든 홀로그램과 주인의 자리를 바꾸고 주인의 체력을 최대 체력의 35% 회복시킵니다. 홀로그램이 사라질 때가 가까울수록 5% 까지 줄어듭니다.', run: ultSwap, c: '#5dff7a' },
   cyborg: { name: '오버클럭 필드', cd: 36, desc: '자기 주위 반경 5칸에 이번 라운드 동안 버프 공간을 만듭니다. 안의 아군 (자신 포함) 은 공격속도가 15% 오릅니다.', run: ultField, c: '#39d2ff' },
+  magic: { name: '마탄의 사수', cd: 39, ok: u => (u.mg | 0) >= MG.UN, desc: '마탄 5발을 써서 반경 5.5칸 안의 모든 적에게 [스코프]를 겁니다. 마탄이 5발보다 적으면 쓸 수 없습니다.', run: ultMagic, c: '#3d9bff' }, /* R3.7 */
   berserk: { name: '극대노', cd: 32, desc: '다음에 쓰러질 때 [광폭화]가 3.5초 늘고, 그동안 공격이 맞을 때마다 공격속도가 10%씩 오릅니다. 쓰러질 때까지 유지됩니다.', run: ultRage, c: '#7a4de8' },
 };
+const ultOk = u => { const U = ULT[u.id]; return !U || !U.ok || !!U.ok(u); }; /* R3.7 마탄: 마탄 5발이 있어야 쓸 수 있다 */
 function ultPlace(u) { const p = u && u.tile != null && !u.summoner && S.place && S.place[u.side] && S.place[u.side][u.tile]; return p && p.id === u.id ? p : null; }
 function ultInit(u, p) { u.ult = null; const U = ULT[u.id]; if (!U || !S.enh || (u.enh || 1) < 5 || (S.cw && !S.cw.v2)) return; /* R3.6: 새 디펜스는 필살기 있음 */ const t = p && p.ut != null && isFinite(+p.ut) ? clamp(+p.ut, 0, U.cd) : U.cd; u.ult = { cd: U.cd, t }; if (p) p.ut = t; }
 const ultManual = () => ubWant() && !document.body.classList.contains('b-noubar');
@@ -9506,10 +9508,10 @@ function ultStep(dt) {
   if (Q) while ((S.ultQi | 0) < Q.length && S.time >= Q[S.ultQi | 0][0] - 1e-9) { const q = Q[S.ultQi | 0]; S.ultQi = (S.ultQi | 0) + 1; const u = S.units.find(x => x.alive && x.ult && x.side === q[1] && x.tile === q[2] && !x.summoner); if (u) ultCast(u, true); }
   for (const u of S.units) { if (!u.ult || !u.alive || !ULT[u.id]) continue;
     if (u.ult.t > 0) { u.ult.t = Math.max(0, u.ult.t - dt); const p = ultPlace(u); if (p) p.ut = u.ult.t; }
-    else if (ultAuto(u) && foes(u).some(e => e.alive)) ultCast(u); }
+    else if (ultAuto(u) && ultOk(u) && foes(u).some(e => e.alive)) ultCast(u); }
 }
-function ultTap(u) { if (S.replay || S.phase !== 'combat' || !u.ult || !u.alive) return; if (u.ult.t > 0) { banner(`⏳ ${ULT[u.id].name} · ${Math.ceil(u.ult.t)}초`); return; } if (blocked(u)) { banner('지금은 쓸 수 없어요'); return; } ultCast(u); }
-function ultCast(u, rep) { const U = ULT[u.id]; if (!U || !u.ult || !u.alive) return false; if (!rep && (u.ult.t > 0 || blocked(u) || S.phase !== 'combat')) return false;
+function ultTap(u) { if (S.replay || S.phase !== 'combat' || !u.ult || !u.alive) return; if (u.ult.t > 0) { banner(`⏳ ${ULT[u.id].name} · ${Math.ceil(u.ult.t)}초`); return; } if (blocked(u)) { banner('지금은 쓸 수 없어요'); return; } if (!ultOk(u)) { banner(u.id === 'magic' ? '🔵 마탄이 5발 필요해요' : '지금은 쓸 수 없어요'); return; } ultCast(u); }
+function ultCast(u, rep) { const U = ULT[u.id]; if (!U || !u.ult || !u.alive) return false; if (!rep && (u.ult.t > 0 || blocked(u) || S.phase !== 'combat' || !ultOk(u))) return false;
   u.ult.t = u.ult.cd; const p = ultPlace(u); if (p) p.ut = u.ult.t;
   if (!rep && !S.replay && !S.fast && u.side === ME() && RP.rounds.length) { const rr = RP.rounds[RP.rounds.length - 1]; (rr.u || (rr.u = [])).push([S.time, u.side, u.tile]); }
   A.buff(u, 'ult', ULT_BUFF, ULT_T); u.ultGlow = S.time + ULT_T; if (u.el) u.el.classList.add('ult-on'); A.later(ULT_T, () => { if (u.el && !(u.ultGlow > S.time + 0.05)) u.el.classList.remove('ult-on'); });
@@ -9562,21 +9564,29 @@ function ultNuke(u) { const op = u.side === 'a' ? 'e' : 'a', c = midXY(op), dmg 
     if (dfN) foes(u).forEach(e => { if (e.alive) dealDamage(u, e, Math.max(1, pctD(e, e.maxHp * DF.NUKE_P)), { skill: true, noCrit: true, lite: true }); }); else A.boom(u, c.x, c.y, 99, dmg); }); }
 function ultRage(u) { if (u.rageT != null) { rageMore(u); return; } u.rgPlus = true; const p = ultPlace(u); if (p) p.rgp = 1; if (!S.fast) { dmgNum(u, '😡 극대노', { crit: true, stamp: true }); fxRing(u.x, u.y, 1.6 * CFG.CELL, 'rgba(200,30,40,.95)', 500, 10); } }
 function rageMore(u) { u.rgPlus = false; const p = ultPlace(u); if (p) p.rgp = 0; u.rageT += 3.5; u.st.inv = (u.st.inv || 0) + 3.5; u.st.rage = (u.st.rage || 0) + 3.5; u.rgN = 0; if (!S.fast) { dmgNum(u, '😡 극대노 +3.5초', { crit: true, stamp: true }); fxRing(u.x, u.y, 2 * CFG.CELL, 'rgba(220,20,40,.95)', 600, 12); shake(true); } }
-// ── R3.5 build 3 마탄 지후 리워크 ──
-// u.mg 남은 마탄 (5) · 스킬 (SP 6): 체력이 가장 높은 적에게 850% (mgShot · 처치하면 30% 위력으로 한 발 더 · 연쇄) · 0발 → mgEmpty: 가까운 적 4기 150% + [마탄 표식] (u.mgWait 5초 동안 공격 안 함) → mgDrain: 표식 적마다 최대 체력 20% 피해 · 자신 최대 체력 +4% (배치 기록 p.mgp · 경기 내내) · 재장전
-const MG = { N: 5, K: 8.5, CHAIN: 0.3, EK: 1.5, EN: 4, T: 5, STEAL: 0.2, GAIN: 0.04 };
-function mgStart(u) { u.mg = MG.N; u.mgWait = 0; mgHead(u); }
-function mgHead(u) { if (!u.el) return; const tx = u.mgWait > S.time ? '🔵 장전' : '🔵' + (u.mg | 0); if (u.mgTx === tx) return; u.mgTx = tx; let b = u.el.querySelector('.xlv.mg'); if (!b) { b = document.createElement('span'); b.className = 'xlv mg'; u.el.appendChild(b); } b.textContent = tx; drawUnit(u); }
+// ── R3.7 마탄 지후 리워크 ──
+// u.mg 남은 마탄 (7) · 일반 공격 = 마탄 1발 (mgAtk) · 0발이 되면 mgScope: 가까운 적 3기 [스코프] (e.st.scope 10초) · 0발일 때는 평범한 일반 공격 · 스코프가 붙은 적을 먼저 노린다 (mgPick)
+// mgPop: [스코프] 적이 아무 마탄 지후에게 맞으면 — 스킬 있는 적: 표식 제거 · 최대 SP 50% 제거 / 스킬 없는 적: 표식이 7초 남고 (e.scU) 그동안 받는 피해 +16% (buff mgSc tk) · 때린 마탄 지후: SP +1 · 마탄 +1 · 다음 첫 일반 공격 피해 +200% (u.mgB → mgBoost · ×3)
+// 스킬 [최후의 마탄] (SP 8 · 1발 사용): 체력이 가장 높은 적 1000% · 절상 · 취약 · 처치하면 30% 한 발 더 (연쇄) · 랭크 S: 맞은 적에게 [스코프] · 필살기 ultMagic: 마탄 5발 사용 · 반경 5.5칸 모든 적 [스코프]
+const MG = { N: 7, K: 10, CHAIN: 0.3, EN: 3, ST: 10, SP: 0.5, VT: 7, VK: 0.16, B: 3, UN: 5, UR: 5.5 };
+function mgStart(u) { u.mg = MG.N; u.mgB = 0; mgHead(u); }
+function mgHead(u) { if (!u.el) return; const tx = '🔵' + (u.mg | 0); if (u.mgTx === tx) return; u.mgTx = tx; let b = u.el.querySelector('.xlv.mg'); if (!b) { b = document.createElement('span'); b.className = 'xlv mg'; u.el.appendChild(b); } b.textContent = tx; drawUnit(u); }
 function mgTop(u) { let b = null; for (const e of foes(u)) if (e.alive && canTarget(u, e) && (!b || e.hp > b.hp)) b = e; return b; }
-function mgShot(u, t, k) { if (!t || !u.alive || !((u.mg | 0) > 0)) return; u.mg--; mgHead(u); if (!S.fast) dmgNum(u, '🔵 마탄!', { crit: true });
-  launchProjectile(u, t, () => { if (t.alive) { dealDamage(u, t, effAtk(u) * k, { skill: true }); if (t.alive) { A.cut(t, 0.3, 4); A.status(t, 'vuln', 4, { amt: 0.3 }); } else if (u.alive && (u.mg | 0) > 0) { mgShot(u, mgTop(u), k * MG.CHAIN); return; } } mgAfter(u); }, 'mgb'); }
-function mgAfter(u) { if (u.alive && (u.mg | 0) <= 0 && !(u.mgWait > S.time)) mgEmpty(u); }
-function mgEmpty(u) { u.mgWait = S.time + MG.T; mgHead(u); if (!S.fast) dmgNum(u, '🔵 마탄 표식', { crit: true, stamp: true });
-  foes(u).filter(e => e.alive && canTarget(u, e)).sort((x, y) => dist(u, x) - dist(u, y)).slice(0, MG.EN).forEach(e => launchProjectile(u, e, () => { if (!e.alive) return; dealDamage(u, e, effAtk(u) * MG.EK, { skill: true, lite: true }); if (e.alive) { A.status(e, 'mgmk', MG.T + 0.2); e.mgBy = u; } }, 'mgb'));
-  A.later(MG.T, () => mgDrain(u)); }
-function mgDrain(u) { let k = 0; foes(u).forEach(e => { if (!e.alive || !(e.st.mgmk > 0) || e.mgBy !== u) return; e.st.mgmk = 0; drawUnit(e); dealDamage(u, e, pctD(e, e.maxHp * MG.STEAL), { skill: true, lite: true, noCrit: true }); k++; if (!S.fast) FXC.beams.push({ x0: e.x, y0: e.y, x1: u.x, y1: u.y, t0: performance.now(), ms: 420, c1: 'rgba(60,150,255,.45)', w1: 12, c2: 'rgba(220,240,255,1)', w2: 3 }); });
-  if (u.alive && k) { const g = MG.GAIN * k, add = Math.round((u.baseMaxHp || u.maxHp) * g); u.maxHp += add; u.baseMaxHp = (u.baseMaxHp || u.maxHp - add) + add; u.hp += add; const p = u.tile != null && S.place[u.side] && S.place[u.side][u.tile]; if (p && p.id === 'magic') p.mgp = Math.round(((p.mgp || 0) + g) * 1000) / 1000; if (!S.fast) dmgNum(u, '🔵 최대 체력 +' + add, { heal: true }); }
-  u.mg = MG.N; u.mgWait = 0; mgHead(u); if (u.alive && !S.fast) { fxRing(u.x, u.y, 1.4 * CFG.CELL, 'rgba(60,150,255,.95)', 450, 8); dmgNum(u, '🔄 재장전', { crit: true }); } }
+const mgLive = e => e.st.scope > 0 && !e.scU; /* 아직 터지지 않은 스코프 */
+function mgPick(u) { const reach = attackDist(u); let b = null, bd = Infinity; for (const e of targets(u)) { if (!mgLive(e)) continue; const d = dist(u, e); if (d <= reach + unitRadius(e) && d < bd) { bd = d; b = e; } } return b; }
+function mgBoost(u) { if (!(u.mgB > 0)) return; u.mgB = 0; u.nextHitPct = (u.nextHitPct || 100) * MG.B; }
+function mgAtk(u, t) { if (!((u.mg | 0) > 0)) return false; u.mg--; mgHead(u); if (!((u.mg | 0) > 0)) mgScope(u);
+  const pct = u.nextHitPct || 100; u.nextHitPct = 0; u.nextHitSingle = false; muzzleFx(u, t);
+  launchProjectile(u, t, () => { const d = dealDamage(u, t, effAtk(u) * pct / 100, pct > 100 ? { skill: true } : {}); if (d > 0) { hitFx(u, t, pct > 100); mgPop(u, t); } afterHit(u, d); }, 'mgb'); return true; }
+function mgScopeOn(u, e) { if (!e || !e.alive || (e.st.scope > 0 && e.scU)) return; addStatus(e, 'scope', MG.ST); if (e.st.scope > 0) { e.scU = 0; drawUnit(e); } }
+function mgScope(u) { if (!u.alive) return; foes(u).filter(e => e.alive && canTarget(u, e)).sort((x, y) => dist(u, x) - dist(u, y)).slice(0, MG.EN).forEach(e => mgScopeOn(u, e)); if (!S.fast) dmgNum(u, '🎯 스코프', { crit: true }); }
+function mgPop(u, e) { if (!e || !e.alive || !u.alive || !mgLive(e)) return; const sk = e.def.skill;
+  if (sk) { e.st.scope = 0; if (!e.skillDone && e.sk > 0) e.sk = Math.max(0, e.sk - (sk.type === 'cooldown' ? sk.cd : skNeed(e) || 0) * MG.SP); if (!S.fast && fxRoom()) dmgNum(e, '🎯 SP −50%', { crit: true }); }
+  else { e.st.scope = MG.VT; e.scU = 1; A.buff(e, 'mgSc', { tk: MG.VK }, MG.VT); }
+  drawUnit(e); const us = u.def.skill; if (us && !u.st.silence && !(u.st.nou > 0)) u.sk += 1; u.mg = (u.mg | 0) + 1; u.mgB = 1; mgHead(u); if (!S.fast && fxRoom()) dmgNum(u, '🔄 +1', { heal: true }); }
+function mgShot(u, t, k) { if (!t || !u.alive || !((u.mg | 0) > 0)) return; u.mg--; mgHead(u); if (!S.fast) dmgNum(u, '🔵 최후의 마탄!', { crit: true });
+  launchProjectile(u, t, () => { if (t.alive) { dealDamage(u, t, effAtk(u) * k, { skill: true }); if (t.alive) { A.cut(t, 0.3, 4); A.status(t, 'vuln', 4, { amt: 0.3 }); mgPop(u, t); if (enh6(u)) mgScopeOn(u, t); /* 랭크 S [정밀 조준] */ } else if (u.alive && (u.mg | 0) > 0) { mgShot(u, mgTop(u), k * MG.CHAIN); return; } } if (u.alive && !((u.mg | 0) > 0)) mgScope(u); }, 'mgb'); }
+function ultMagic(u) { u.mg = Math.max(0, (u.mg | 0) - MG.UN); mgHead(u); const R = MG.UR * CFG.CELL; if (!S.fast) fxRing(u.x, u.y, R, 'rgba(60,150,255,.9)', 600, 10); foes(u).forEach(e => { if (e.alive && dist(u, e) <= R + unitRadius(e)) mgScopeOn(u, e); }); if (!((u.mg | 0) > 0)) mgScope(u); }
 // ── R2.17 신규 지후 도우미 ──
 function nukeCount(el, at) { if (!el || !el.isConnected) return; const s = Math.max(0, Math.ceil(at - S.time - 1e-6)); el.textContent = s; if (s > 0) A.later(Math.min(1, at - S.time - (s - 1)) || 1, () => nukeCount(el, at)); } // R2.18 핵미사일: 떨어질 자리에 남은 초 (전투 시간 기준)
 const maxLv = id => (CHARS[id] && CHARS[id].maxLv) || CFG.MAX_LV; // 강화 지후 Lv1 (R3.3 build 3: 갓지후 Lv6 삭제)
@@ -11041,7 +11051,7 @@ const CHAR_INFO = {
   scythe: [['공격 범위', '근접 부채꼴 1.65칸 · 120°'], ['[힘줄 끊기] 쿨타임', '9초 (라운드 시작 5초 뒤부터)'], ['[힘줄 끊기] 범위', '반경 1.65칸'], ['[힘줄 끊기] 피해', '공격력의 70%'], ['[절상] · [침묵]', '4초'], ['[부상]', '1초'], ['시전', '0.5초 멈춤 → 순간이동 → 1.25초 뒤 귀환 (그동안 행동 불가)']],
   moon: [['범위', '반경 5.2칸 (자신 포함)'], ['기본 버프', '공격력 +5% · 공격속도 +8%'], ['공격마다', '각각 +1%p (최대 100%)']],
   levelup: [['처치하면', '이번 라운드 동안 레벨 +1 (진짜 레벨 · 체력 · 공격력 · 공격속도가 같이 오른다) · 최대 Lv5'], ['초기화', '라운드가 끝나면 배치된 레벨로']],
-  magic: [['[마탄]', '5발로 시작 · 마탄마다 1발'], ['스킬', 'SP 6 · 체력이 가장 높은 적 · 공격력 850% · [절상] 최대 체력 30% 4초 · [취약] +30% 4초'], ['연쇄', '마탄으로 처치하면 체력이 가장 높은 적에게 그 피해의 30% 마탄 (1발 · 연쇄 가능)'], ['탄이 0', '가까운 적 넷에게 공격력 150% 마탄 + 표식 · 5초 동안 공격 안 함'], ['표식', '5초 뒤 표식이 있는 적마다 최대 체력 20% 피해 · 자신 최대 체력 +4% (경기 내내) · 마탄 5발 재장전']],
+  magic: [['[마탄]', '7발 · 일반 공격마다 1발 · 다 쓰면 가까운 적 3기에게 [스코프] · 0발이면 마탄 없이 일반 공격'], ['[스코프]', '10초 · 마탄 지후에게 맞으면 사라지고 최대 SP 50% 제거 · 스킬이 없는 적은 7초 동안 받는 피해 +16%'], ['스코프 명중', '때린 마탄 지후 SP +1 · 마탄 1발 재장전 · 다음 일반 공격 피해 +200%'], ['스킬', 'SP 8 · 마탄 1발 · 체력이 가장 높은 적 · 공격력 1000% · [절상] 최대 체력 30% 4초 · [취약] +30% 4초'], ['연쇄', '[최후의 마탄]으로 처치하면 체력이 가장 높은 적에게 그 피해의 30% 마탄 (1발 · 연쇄 가능)']],
   gift: [['SP', '초당 1 (라운드 시작부터)'], ['필요 SP', '32'], ['변신', '모든 지후 중 무작위 1기 · 자신의 레벨보다 1 높은 레벨 (최대 Lv5) · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다'], ['변신 전에 쓰러지면', '모은 SP가 다음 라운드로 이어진다']],
   slime: [['분열', '2기 · 체력 30% · 공격력 절반'], ['최대', '2단계']],
   atom: [['사거리', '2칸 = 궤도 반지름 (적이 전자 궤도 위에 오게)'], ['전자 수', '레벨과 같음'], ['공전 주기', '1.5초'], ['궤도 반지름', '2칸'], ['전자 피해', '현재 체력의 12.5% (한 바퀴에 같은 적 한 번)']],
@@ -11224,7 +11234,7 @@ const STATUS = {
   spot: { name: '포착', icon: '📡' }, // R3.2 build 8 레이더 지후: 이번 라운드 · [은신] 불가 · 회피 0% · 다음 처음 받는 피해 +100% (t.spot1)
   hyp: { name: '최면', icon: '🌀' }, // R3.2 build 3 최면 지후: 공격하지 못하고 가려던 반대쪽으로 걷는다
   vdc: { name: '저주', icon: '⛓️' }, dkl: { name: '영속', icon: '👻' }, /* R3.6 build 3 도깨비불 지후 */
-  mgmk: { name: '마탄 표식', icon: '🔵' }, // R3.5 build 3 마탄 지후: 5초 뒤 최대 체력 20% 를 빼앗긴다 (mgBy) // R3.2 build 3 부두술사 지후 사슬               // R2.25 차원 지후: 공격하지 못하고 도망친다 (fearX.by)
+  scope: { name: '스코프', icon: '🎯' }, // R3.7 마탄 지후: 마탄 지후에게 맞으면 SP 50% 제거 · 스킬 없는 적은 받는 피해 +16% (e.scU) // R3.2 build 3 부두술사 지후 사슬               // R2.25 차원 지후: 공격하지 못하고 도망친다 (fearX.by)
   goja: { name: '고자', icon: '🥚' },                 // R2.31 build 2 총? 지후: 이번 라운드 최대 체력 · 체력 1 (gojaOn · 표시용)
   realm: { name: '아공간', icon: '🌌', buff: true }, // R2.25 차원 지후: 다른 층 (u.realm) · 바깥과 서로 노리지도 · 맞히지도 · 부딪히지도 않는다
   sear: { name: '3도 화상', icon: '🔥', dot: true },   // R2.30 부루스타 [점화]: 라운드 끝까지 · 공격력 −10% · 받는 피해 증가 (searK) · 해제하면 보통 [화상]
@@ -11236,7 +11246,7 @@ const STATUS = {
 };
 
 // 효과 아이콘 (R2.17 build 3 · 사용자가 직접 그린 icons/fx/<키>.png · 분류마다 바탕색) — 이름 있는 상태는 자기 아이콘 하나 · 능력치 변화는 화살표로 모은다 (fxList)
-const FX_OF = { dkl: 'reaper', /* R3.6 build 3 */ mgmk: 'takenUp', /* R3.5 build 3 */ sink: 'nbdead', /* R3.4 build 8 [침잠] (아이콘은 죽은나비 그대로) */ spot: 'miscDown', hyp: 'drowsy', vdc: 'reaper', goja: 'goja', sear: 'sear', ignite: 'ignite', rot: 'corr', corr: 'corr', absorb: 'absorb', addict: 'addict', taunt: 'taunt', fear: 'fear', realm: 'realm', /* R2.36: 사용자가 그린 새 아이콘 (고자 · 점화 · 부식 · 흡수 · 중독됨 · 도발 · 공포 · 아공간 · 왜곡 · 탄핵 당함) */ noheal: 'noheal', c4: 'c4', stun: 'stun', freeze: 'freeze', burn: 'burn', poison: 'poison', blind: 'blind', silence: 'silence', stealth: 'stealth', lacer: 'lacer', wound: 'wound', inv: 'inv', rage: 'rage', frost: 'frost', dive: 'dive', alone: 'alone', charm: 'charm', bubble: 'bubble', dnote: 'dnote', arcana: 'arcana', ban: 'ban', seal: 'seal', guard: 'guard', feast: 'feast', drowsy: 'drowsy', sleep: 'sleep', nbfly: 'nbfly', nbdead: 'nbdead', lock: 'lock', pure: 'pure', antigrav: 'antigrav', nou: 'nou', card: 'card', doom: 'miscDown', warpUp: 'warp', warpDn: 'warp', /* R2.36: 왜곡은 아군 · 적 같은 아이콘 */ vuln: null, foxguard: null, vweak: null };
+const FX_OF = { dkl: 'reaper', /* R3.6 build 3 */ scope: 'miscDown', /* R3.7 마탄 */ sink: 'nbdead', /* R3.4 build 8 [침잠] (아이콘은 죽은나비 그대로) */ spot: 'miscDown', hyp: 'drowsy', vdc: 'reaper', goja: 'goja', sear: 'sear', ignite: 'ignite', rot: 'corr', corr: 'corr', absorb: 'absorb', addict: 'addict', taunt: 'taunt', fear: 'fear', realm: 'realm', /* R2.36: 사용자가 그린 새 아이콘 (고자 · 점화 · 부식 · 흡수 · 중독됨 · 도발 · 공포 · 아공간 · 왜곡 · 탄핵 당함) */ noheal: 'noheal', c4: 'c4', stun: 'stun', freeze: 'freeze', burn: 'burn', poison: 'poison', blind: 'blind', silence: 'silence', stealth: 'stealth', lacer: 'lacer', wound: 'wound', inv: 'inv', rage: 'rage', frost: 'frost', dive: 'dive', alone: 'alone', charm: 'charm', bubble: 'bubble', dnote: 'dnote', arcana: 'arcana', ban: 'ban', seal: 'seal', guard: 'guard', feast: 'feast', drowsy: 'drowsy', sleep: 'sleep', nbfly: 'nbfly', nbdead: 'nbdead', lock: 'lock', pure: 'pure', antigrav: 'antigrav', nou: 'nou', card: 'card', doom: 'miscDown', warpUp: 'warp', warpDn: 'warp', /* R2.36: 왜곡은 아군 · 적 같은 아이콘 */ vuln: null, foxguard: null, vweak: null };
 const FX_NAME = { atkUp: '공격력 증가', atkDown: '공격력 감소', aspdUp: '공격속도 증가', aspdDown: '공격속도 감소', spdUp: '이동속도 증가', spdDown: '이동속도 감소', takenUp: '받는 피해 증가', takenDown: '받는 피해 감소', critUp: '치명타 확률 증가', critDmgUp: '치명타 피해 증가', dodgeUp: '회피율 증가', healDown: '회복 감소', regen: '지속 회복', lastBullet: '최후의 탄환', reaper: '사신강림', miscUp: '기타 버프', miscDown: '기타 디버프' };
 const fxSrc = k => 'icons/fx/' + k + '.png';
 const STL_FX = { vuln: 'takenUp', foxguard: 'takenDown', vweak: 'atkDown' }; // R2.37 build 2: 도움말 상태이상 표 · 자기 아이콘이 없는 상태는 화살표 아이콘
@@ -13694,7 +13704,7 @@ function ubTick() { const now = performance.now(); if (!UB.els || now - UB.t < 1
   UB.list.forEach((u, i) => { const e = UB.els[i]; if (!e) return; const v = e.v, al = u.alive, h = (al ? clamp(u.hp / (u.baseMaxHp || u.maxHp), 0, 1) : 0).toFixed(3); if (v.h !== h) { v.h = h; e.hp.style.transform = `scaleX(${h})`; }
     const sk = u.def.skill, sp = !al ? 0 : u.def.gauge ? u.def.gauge(u) : !sk ? 0 : u.skillDone ? 1 : sk.type === 'cooldown' ? u.sk / sk.cd : u.sk / skNeed(u), q = Math.round(clamp(sp || 0, 0, 1) * 100); if (v.s !== q) { v.s = q; e.sp.style.strokeDashoffset = String(100 - q); e.c.classList.toggle('full', q >= 100); }
     if (!al && !v.dead) { v.dead = 1; e.c.classList.add('dead'); }
-    if (e.ut && u.ult) { const fu = u.ult.t > 0 ? clamp(1 - u.ult.t / u.ult.cd, 0, 1) : 1, fq = Math.round(fu * 100); if (v.u !== fq) { v.u = fq; e.ut.style.transform = `scaleX(${fu.toFixed(3)})`; } const ur = al && fq >= 100; if (v.ur !== ur) { v.ur = ur; e.c.classList.toggle('ur', ur); } } /* R3.5 build 2 필살기 게이지 */
+    if (e.ut && u.ult) { const fu = u.ult.t > 0 ? clamp(1 - u.ult.t / u.ult.cd, 0, 1) : 1, fq = Math.round(fu * 100); if (v.u !== fq) { v.u = fq; e.ut.style.transform = `scaleX(${fu.toFixed(3)})`; } const ur = al && fq >= 100 && ultOk(u); if (v.ur !== ur) { v.ur = ur; e.c.classList.toggle('ur', ur); } } /* R3.5 build 2 필살기 게이지 */
     const hn = al ? Math.max(0, Math.ceil(u.hp)) : 0, ht = !al ? '—' : hn >= 10000 ? (hn / 1000).toFixed(1) + 'k' : String(hn); if (v.n !== ht) { v.n = ht; e.n.textContent = ht; e.c.classList.toggle('low', al && +h < 0.35); }
     const L = al ? (u._fxl || fxList(u)).slice(0, 4) : [], k = L.map(x => x.k).join(','); if (v.k !== k) { v.k = k; e.ic.innerHTML = L.map(x => `<img src="${fxSrc(x.k)}" alt="">`).join(''); } }); }
 function loopBody(ts) {
@@ -13994,6 +14004,7 @@ function cvDraw0() {
     if (b && T !== 1 && u.side === OPP()) { c.scale(-1, 1); c.drawImage(b, -(X + ox) - W / 2, Y + oy - W / 2, W, W); cvAt(c, k, L[i + 1], L[i + 2], u._cvS); } /* R3.0: 적은 오른쪽에서 왼쪽을 본다 */ else if (b) c.drawImage(b, X + ox - W / 2, Y + oy - W / 2, W, W); else { c.fillStyle = u.side === OPP() ? '#ff5d6c' : '#36c9a8'; c.beginPath(); c.arc(X, Y, R + 4, 0, Math.PI * 2); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(X, Y, R, 0, Math.PI * 2); c.fill(); }
     c.globalAlpha = a;
     if (u._cvTgH && !low) { const r0 = R + 10, a0 = now / 320; c.lineWidth = 5; c.lineCap = 'round'; c.strokeStyle = '#ff2a2a'; c.beginPath(); c.arc(X + ox, Y + oy, r0, a0, a0 + Math.PI * 0.9); c.stroke(); c.strokeStyle = '#2a7bff'; c.beginPath(); c.arc(X + ox, Y + oy, r0, a0 + Math.PI, a0 + Math.PI * 1.9); c.stroke(); } // R2.30 태극 [극의 조화]
+    if (st.scope > 0) { const r0 = R + 9, X1 = X + ox, Y1 = Y + oy; c.strokeStyle = c.fillStyle = u.scU ? '#ff8a3d' : '#3d9bff'; c.lineWidth = 2.5; for (let j = 0; j < 4; j++) { const a0 = j * Math.PI / 2 + 0.3; c.beginPath(); c.arc(X1, Y1, r0, a0, a0 + Math.PI / 2 - 0.6); c.stroke(); } c.fillRect(X1 - 1.5, Y1 - r0 - 5, 3, 10); c.fillRect(X1 - 1.5, Y1 + r0 - 5, 3, 10); c.fillRect(X1 - r0 - 5, Y1 - 1.5, 10, 3); c.fillRect(X1 + r0 - 5, Y1 - 1.5, 10, 3); } /* R3.7 마탄 [스코프] 조준경 (터진 스코프는 주황) */
     if (st.freeze > 0) { c.fillStyle = 'rgba(110,210,255,.42)'; c.beginPath(); c.arc(X + ox, Y + oy, R * s, 0, Math.PI * 2); c.fill(); }
     if (st.bubble > 0) { c.fillStyle = 'rgba(150,200,255,.16)'; c.strokeStyle = 'rgba(150,170,255,.55)'; c.lineWidth = 3; c.beginPath(); c.arc(X, Y, R + 20, 0, Math.PI * 2); c.fill(); c.stroke(); }
     if (u.ghost) { c.strokeStyle = 'rgba(47,127,224,.9)'; c.lineWidth = 4; c.beginPath(); c.arc(X, Y, R + 7, 0, Math.PI * 2); c.stroke(); }
@@ -14045,7 +14056,7 @@ function cvDraw0() {
 // 50기 벤치 8초에 DOM 이 520개 붙었다 떨어졌다 (피해 숫자 129 · 불꽃 103 · 예고 63 + 매 프레임 clip-path) — 이것이 남은 렉의 절반. 드문 스킬 이펙트는 DOM 그대로.
 const CVF = { under: [], over: [] }; // { k 종류, t0, ms, x, y 월드 좌표, … }
 const CV_STUB = { remove() {}, style: {}, classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } }, setAttribute() {}, querySelector() { return null; } }; // 캔버스로 그리는 투사체의 가짜 el (p.el.remove() · style 을 그대로 써도 되게)
-const CV_SHOT = new Set(['', 'arrow', 'dart', 'dart big', 'egg', 'needle', 'venom', 'magic', 'dragon', 'dragon br', 'c4', 'bb']);
+const CV_SHOT = new Set(['', 'arrow', 'dart', 'dart big', 'egg', 'needle', 'venom', 'magic', 'mgb', 'dragon', 'dragon br', 'c4', 'bb']);
 function cvGlow(stops, c) { return cvSprite('gl|' + stops.join(',') + '|' + c, 110, 110, 1, g => { const gr = g.createRadialGradient(55, 55, 0, 55, 55, 55); gr.addColorStop(0, '#fff'); gr.addColorStop(stops[0], '#fff'); gr.addColorStop(stops[1], c); gr.addColorStop(stops[2], 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 110, 110); return true; }); } // 불꽃 · 총구 (예전 radial-gradient)
 function cvNum(t, amount, opts, isNum) { // 피해 숫자 (예전 .fx-damage-num 의 색 · 크기 · 흰 외곽선 · 0.7초 위로)
   let txt, col = '#c22a25', fs = 16, sw = 4, stamp = !!opts.stamp;
@@ -14070,12 +14081,13 @@ function cvShot(c, p, X, Y, flip, ew) { // 투사체 한 발
   else if (cls === 'egg') { c.fillStyle = '#e8c99a'; c.beginPath(); c.ellipse(X, Y, 8, 9.5, 0, 0, Math.PI * 2); c.fill(); c.fillStyle = '#fffaf0'; c.beginPath(); c.ellipse(X, Y, 6, 7.5, 0, 0, Math.PI * 2); c.fill(); }
   else if (cls === 'venom') { c.drawImage(cvGlow([0.05, 0.35, 0.75], 'rgba(76,140,43,.9)'), X - 14, Y - 14, 28, 28); c.fillStyle = '#4c8c2b'; c.beginPath(); c.arc(X, Y, 6, 0, Math.PI * 2); c.fill(); }
   else if (cls === 'magic') { c.drawImage(cvGlow([0.1, 0.35, 0.8], '#c58bff'), X - 26, Y - 26, 52, 52); c.fillStyle = '#8e44ad'; c.beginPath(); c.arc(X, Y, 10, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke(); }
+  else if (cls === 'mgb') { c.drawImage(cvGlow([0.1, 0.4, 0.85], '#59b4ff'), X - 22, Y - 22, 44, 44); c.fillStyle = '#0b3c8a'; c.beginPath(); c.arc(X, Y, 7, 0, Math.PI * 2); c.fill(); c.fillStyle = '#f2fbff'; c.beginPath(); c.arc(X, Y, 3.5, 0, Math.PI * 2); c.fill(); } /* R3.7 마탄 (파란 불꽃) */
   else if (cls === 'dragon' || cls === 'dragon br') { const r = cls === 'dragon br' ? 13 : 9; c.drawImage(cvGlow([0.15, 0.4, 0.85], '#ff6414'), X - r * 3, Y - r * 3, r * 6, r * 6); }
   else if (cls === 'c4') { c.save(); c.translate(X, Y); c.fillStyle = '#1a0d0d'; c.fillRect(-16, -12, 32, 24); c.fillStyle = '#b3261e'; c.fillRect(-13, -9, 26, 18); c.fillStyle = '#ffe08a'; c.font = `900 10px ${CV_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('C4', 0, 0.5); c.restore(); }
   else if (cls === 'bb') { c.fillStyle = '#2d4fa3'; c.beginPath(); c.arc(X, Y, 6.5, 0, Math.PI * 2); c.fill(); c.fillStyle = '#f4f6fb'; c.beginPath(); c.arc(X, Y, 4.5, 0, Math.PI * 2); c.fill(); }
   else { c.globalAlpha = 0.55; c.drawImage(cvGlow([0.05, 0.3, 0.8], col), X - 12, Y - 12, 24, 24); c.globalAlpha = 1; c.fillStyle = col; c.beginPath(); c.arc(X, Y, 4, 0, Math.PI * 2); c.fill(); }
 }
-const GL_FX = new Set(['spark', 'muzzle', 'ring', 'dust', 'num']), GL_SHOT = new Set(['', 'venom', 'magic', 'dragon', 'dragon br', 'bb']); // R3.0 build 3: WebGL 로 그리는 이펙트 · 투사체 (원 · 빛 · 글씨만 쓰는 것)
+const GL_FX = new Set(['spark', 'muzzle', 'ring', 'dust', 'num']), GL_SHOT = new Set(['', 'venom', 'magic', 'mgb', 'dragon', 'dragon br', 'bb']); // R3.0 build 3: WebGL 로 그리는 이펙트 · 투사체 (원 · 빛 · 글씨만 쓰는 것)
 function cvFxDraw(c2d, layer, now, W, g) { // W: 월드 → 그리기 좌표 { x(), y(), a() 각도 } · g: WebGL (있으면 GL_FX 종류는 거기에)
   const L = CVF[layer]; let n = 0;
   for (let i = 0; i < L.length; i++) { const e = L[i], p = (now - e.t0) / e.ms; if (p >= 1) continue; L[n++] = e; if (p < 0) continue; const c = g && GL_FX.has(e.k) ? g : c2d;
@@ -14319,7 +14331,7 @@ function showRangeRing(u) {
 }
 function hideRangeRing() { if (rangeRing) rangeRing.el.remove(); rangeRing = null; const b = $('uInfo'); if (b) b.hidden = true; }
 // ── 전투 중 지후 정보 (R2.10.2 build 5): 누른 지후의 체력 · 공격력 · 공격 간격 · 이동속도 · SP · 효과 (바뀐 만큼은 연두 · 줄면 빨강) ──
-const BUFF_SRC = { dlDuel: '최후의 결전', cbZone: '오버클럭 필드', /* R3.6 build 3 */ bh6: '사건의 지평선', st6: '충격 흡수', /* R3.5 */ tyStorm: '폭풍', diTk: '고드름', ddTk: '카드', ddCut: '카드', ddAtk: '카드', ddCrit: '카드', ddDef: '카드', ddJack: '잭팟', polar: '극지방', iceSlow: '얼음 둔화', stopSlow: '정지선', wolf: '사냥 개시', /* R2.37 build 3: wolf6 · clock6 은 앞 글자로 (wolf · clock) */ wroar: '늑대 포효', ldance: '라스트댄스', tg: '태극', rv: '반전', heat: '폭염', tyrant: '폭군', lonely: '고독', emp: 'EMP 자기장', clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', maf: '마피아', lan: '랜턴', jaws: '죠스', ev: '이벤트', moon: '달', accel: '가속', gpu: 'GPU 칩', royal: '왕의 유산', dj: 'DJ 파동' };
+const BUFF_SRC = { mgSc: '스코프', /* R3.7 */ dlDuel: '최후의 결전', cbZone: '오버클럭 필드', /* R3.6 build 3 */ bh6: '사건의 지평선', st6: '충격 흡수', /* R3.5 */ tyStorm: '폭풍', diTk: '고드름', ddTk: '카드', ddCut: '카드', ddAtk: '카드', ddCrit: '카드', ddDef: '카드', ddJack: '잭팟', polar: '극지방', iceSlow: '얼음 둔화', stopSlow: '정지선', wolf: '사냥 개시', /* R2.37 build 3: wolf6 · clock6 은 앞 글자로 (wolf · clock) */ wroar: '늑대 포효', ldance: '라스트댄스', tg: '태극', rv: '반전', heat: '폭염', tyrant: '폭군', lonely: '고독', emp: 'EMP 자기장', clock: '시계', wind: '순풍', berserker: '버서커', rain: '가랑비', rad: '방사능 지대', dust: '황사', maf: '마피아', lan: '랜턴', jaws: '죠스', ev: '이벤트', moon: '달', accel: '가속', gpu: 'GPU 칩', royal: '왕의 유산', dj: 'DJ 파동' };
 function buffSrcName(k) { const m = k.match(/^[a-z]+/); return (m && BUFF_SRC[m[0]]) || '효과'; }
 function uInfoHtml(u) { // R3.4 build 7 리디자인: 능력치 칸 · 같은 종류 버프는 합쳐 한 줄 (누가 줬는지는 구분하지 않는다)
   const c = u.def, pct = x => `${x > 0 ? '+' : '−'}${Math.round(Math.abs(x) * 100)}%`, f1 = x => (Math.round(x * 100) / 100).toString();
@@ -16192,6 +16204,7 @@ const ENH_SKILL = { // 랭크 6 고유능력 · 랭크 12 필살기 (사용자�
   matrix: { 6: { name: '다중 투영', desc: '[홀로그램]을 쓸 때 40% 확률로 구체를 2개 쏩니다.' } },
   cyborg: { 6: { name: '즉시 가동', desc: '변신이 2초 빨라지고 (20초), 변신 뒤 차징 없이 바로 공격합니다.' } },
   curse: { 6: { name: '저주의 일격', desc: '일반 공격이 4.4% 확률로 대상을 즉사시킵니다.' } },
+  magic: { 6: { name: '정밀 조준', desc: '[최후의 마탄]에 맞은 적에게 [스코프]를 겁니다.' } }, /* R3.7 */
 };
 Object.entries(ULT).forEach(([id, U]) => { (ENH_SKILL[id] || (ENH_SKILL[id] = {}))[12] = { name: U.name, desc: U.desc + ` 쿨타임 ${U.cd}초.` }; }); // R3.5 build 2 필살기 (SSS)
 const enh6 = u => (u.enh || 1) >= 3; // S 랭크 고유능력 (R3.5 build 2 · 예전 랭크 6) (친선전 · 미러전 · 샌드박스는 u.enh 가 없어 꺼진다)
@@ -17938,7 +17951,7 @@ const BOOT_TIPS = [ // R2.12.3: 접속 로딩 팁 (판마다 무작위 · 2.8초
   '아케이드 포인트로 아케이드 상점에서 <b>고급 임테기</b>를 살 수 있어요.',
   '쉴드 지후는 쉴드가 있는 동안 받는 피해가 줄고 상태이상에 걸리지 않아요.',
   '블리자드 지후의 [눈보라]에 얼었던 적은 녹은 뒤 <b>[동상]</b>에 걸려요.',
-  '마탄 지후의 [마탄]에 맞으면 [절상]과 [취약]이 함께 걸려요.',
+  '마탄 지후의 [최후의 마탄]에 맞으면 [절상]과 [취약]이 함께 걸려요.',
   '광폭화 지후는 쓰러지는 순간 <b>3초</b> 동안 무적이 되어 날뛰어요.',
   '수호자 지후 십자 범위의 아군은 라운드에 한 번, 체력 1로 버텨요.',
   '시계 지후는 <b>같은 레벨</b>의 지후에게만 영향을 줘요.',
