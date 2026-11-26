@@ -2246,6 +2246,15 @@ body.u2-theme #lifeFx.theirs { background:rgba(20,26,48,.8); color:#fff; -webkit
 .pf-badge { position:absolute; left:50%; bottom:0; transform:translate(-50%,45%); border-radius:999px; font-weight:900; letter-spacing:-.02em; line-height:normal; white-space:nowrap; }
 .pf-orn { position:absolute; left:0; top:0; width:100%; height:100%; overflow:visible; pointer-events:none; } .pf.tiny .pf-orn .d { display:none; } /* R3.7 build 4 장식 테두리 */
 .pf-blink { animation:pfblink 1.6s ease-in-out infinite; } @keyframes pfblink { 0%, 100% { opacity:.25; } 50% { opacity:1; } }
+.pf-orn .pf-tw { transform-box:fill-box; transform-origin:center; opacity:0; animation:pftw 3s ease-in-out infinite; } @keyframes pftw { 0%, 62%, 100% { opacity:0; transform:scale(.2); } 78% { opacity:1; transform:scale(1) rotate(45deg); } }
+.pf-glow { animation:pfglow 2.4s ease-in-out infinite; } @keyframes pfglow { 0%, 100% { opacity:.35; } 50% { opacity:1; } }
+.pf-shine { position:absolute; left:-30%; top:0; width:60%; height:100%; background:linear-gradient(100deg, transparent, rgba(255,255,255,.75) 50%, transparent); animation:pfshine 4.5s ease-in-out infinite; } @keyframes pfshine { 0%, 55% { transform:translateX(-60%) skewX(-12deg); } 100% { transform:translateX(330%) skewX(-12deg); } }
+.pf-stA { opacity:0; animation:pfstA 2.4s infinite; } @keyframes pfstA { 0% { opacity:0; } 1% { opacity:1; } 3% { opacity:.15; } 5% { opacity:1; } 10%, 100% { opacity:0; } }
+.pf-stB { opacity:0; animation:pfstB 2.4s infinite; } @keyframes pfstB { 0%, 49% { opacity:0; } 50% { opacity:1; } 52% { opacity:.15; } 54% { opacity:1; } 59%, 100% { opacity:0; } }
+.pf-crk { opacity:0; animation:pfcrk .9s steps(1) infinite; } @keyframes pfcrk { 0% { opacity:1; } 18% { opacity:0; } 34% { opacity:.8; } 46% { opacity:0; } 70% { opacity:1; } 78%, 100% { opacity:0; } }
+.pf.pf-shake { animation:pfshake 2.4s infinite; } @keyframes pfshake { 0%, 9%, 49%, 58%, 100% { transform:none; } 1% { transform:translate(-2%,1.5%) rotate(-1deg); } 3% { transform:translate(2%,-1.5%) rotate(1deg); } 5% { transform:translate(-1.5%,1%); } 7% { transform:translate(1%,-.5%); } 50% { transform:translate(2%,1%) rotate(1deg); } 52% { transform:translate(-2%,-1.5%) rotate(-1deg); } 54% { transform:translate(1.5%,1%); } 56% { transform:translate(-1%,0); } }
+.pf.tiny .pf-stA, .pf.tiny .pf-stB, .pf.tiny .pf-tw { display:none; }
+.pf.lock .pf-stA, .pf.lock .pf-stB, .pf.lock .pf-tw { display:none; } .pf.lock .pf-orn *, .pf.lock .pf-sheen, .pf.lock .pf-shine, .pf.tiny .pf-orn *, .pf.lock.pf-shake { animation:none !important; } /* 잠긴 · 작은 테두리는 멈춤 (목록에서 가볍게) */
 @keyframes pfspin { to { transform:rotate(360deg); } }
 .av.pfw { width:auto !important; height:auto !important; background:none !important; border-radius:0 !important; }
 .av.pfw:hover .pf { transform:scale(1.06); } .av.pfw .pf { transition:transform .15s; }
@@ -2341,7 +2350,7 @@ body.tut-on .topbar > *, body.tut-on #tabbar { pointer-events:none; } body.tut-o
 body.tut-gacha #screen-gacha button:not(#btnPull10), body.tut-gacha #gachaTickets { pointer-events:none; }
 body.tut-deck #deckCards, body.tut-deck #deckStory, body.tut-deck #deckOut, body.tut-deck #deckDetail .dt .p { pointer-events:none; } body.tut-deck:not(.tut-pend) #deckRow { pointer-events:none; }
 @media (max-width:700px) { #tutHint { top:126px; font-size:12px; padding:8px 14px; } #tutPic { width:60px; height:60px; } #tutBox { min-height:100px; gap:10px; } }
-@media (prefers-reduced-motion: reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } .pf-sheen { display:none; } .pf-blink { animation:none; } }
+@media (prefers-reduced-motion: reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } .pf-sheen, .pf-shine, .pf-tw, .pf-stA, .pf-stB, .pf-crk { display:none; } .pf-blink, .pf-glow, .pf.pf-shake { animation:none; } }
 /* ═════ 릴스 모드 (샌드박스 안 · 게임 소개 마케팅 프리뷰): 정사각형 전장 + 밑에 능력치 · 극한으로 단순하게 ═════ */
 .sb-modes { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:14px; } .sb-modes .seg button { padding:8px 16px; }
 .sb-slots.n1 { grid-template-columns:minmax(0, 120px); justify-content:center; } .sb-slots.n3 { grid-template-columns:repeat(3, minmax(0, 1fr)); }
@@ -11564,16 +11573,100 @@ const MQ = [
 // 프로필 테두리 (꾸미기): 업적 보상으로만 얻는다 · kind: free 기본 · lv 레벨 달성 · st 일반전(봇전) 최고 연승
 // t 테두리 두께(크기 비율) · bg 테두리 · sh 바깥 그림자 · inner 사진 안쪽 테 · gem 네 모서리 보석 · spin 빛 회전(초) · badge 아래 배지 · orn 장식 SVG (100 × 100 · class d 는 48px 미만에서 숨김 · R3.7 build 4) · kind 는 FRAME_K
 const PF_SHEEN = 'conic-gradient(from 0deg, transparent 0 62%, rgba(255,255,255,.95) 75%, transparent 88%)';
+// R3.7 build 4 테두리 생성기: 레벨 = 금 (빛 회전 · 반짝임) · 경쟁전 = 티어 색 + 번개 (뒤로 갈수록 많이 · 자주) · 디펜스 = 금속 (빛 지나감 · 리벳 · 볼트)
+// 장식 좌표는 100 × 100 (pfHtml 의 orn) · 애니메이션은 opacity · transform 만 (pf-tw 반짝임 · pf-zap 번개 · pf-glow 빛 숨쉬기 · pf-shine 금속 빛)
+const pfRR = (i, a) => `<rect x="${i}" y="${i}" width="${100 - 2 * i}" height="${100 - 2 * i}" rx="${Math.max(1, 24 - i)}" fill="none" ${a}/>`;
+const pfTw = (x, y, s, d, c = '#fff') => `<path class="pf-tw" style="animation-delay:${d}s" d="M${x} ${y - s}Q${x} ${y} ${x + s} ${y}Q${x} ${y} ${x} ${y + s}Q${x} ${y} ${x - s} ${y}Q${x} ${y} ${x} ${y - s}Z" fill="${c}"/>`;
+const pfRot = (s, n = 4) => [0, 90, 180, 270].slice(0, n).map(a => (a ? `<g transform="rotate(${a} 50 50)">${s}</g>` : s)).join('');
+const PF_GOLD = 'linear-gradient(145deg,#fff4c4,#f3c23a 42%,#a87408 72%,#ffe07a)';
+const PF_LV = [
+  [5, '금박', .045, 'linear-gradient(145deg,#fff6d8,#e9c76e 50%,#c39434)', 0],
+  [10, '금테', .055, PF_GOLD, 1],
+  [15, '이중 금테', .065, PF_GOLD, 2],
+  [20, '금장', .07, PF_GOLD, 3],
+  [30, '금세공', .08, 'linear-gradient(145deg,#fff6cf,#f6c632 40%,#b07a06 66%,#ffe58a 84%,#d9a21c)', 4],
+  [40, '황금 보석', .085, 'linear-gradient(145deg,#fff6cf,#f6c632 40%,#b07a06 66%,#ffe58a 84%,#d9a21c)', 5],
+  [50, '골드 크라운', .095, 'conic-gradient(from 210deg,#fff3c4,#ffc21a,#c98a00,#ffe27a,#fff3c4,#e0a400,#ffc21a,#fff3c4)', 6],
+].map(([n, name, t, bg, k]) => {
+  const D = '#7a5200', ruby = k >= 6 ? '#e0283c' : '#c8102e';
+  let o = k >= 1 ? pfRR(t * 100 - 1.2, `stroke="${D}" stroke-width=".7" opacity=".7"`) : '';
+  if (k >= 2) o += pfRR(1.4, 'stroke="#fff8dc" stroke-width=".7" opacity=".85"');
+  if (k >= 3) { const m = t * 50; o += pfRot(`<path d="M50 ${m - 2.6}l2.6 2.6-2.6 2.6-2.6-2.6z" fill="#fff3b8" stroke="${D}" stroke-width=".6"/>`); }
+  if (k >= 4) { const c = 24 - (24 - t * 50) * .707; o += pfRot(`<path class="d" d="M${c + 7} ${t * 50 - .4}q-3.4 0-4.6 3M${t * 50 - .4} ${c + 7}q0-3.4 3-4.6" fill="none" stroke="${D}" stroke-width=".8"/><path d="M${c} ${c - 2.4}l2.4 2.4-2.4 2.4-2.4-2.4z" fill="${k >= 5 ? ruby : '#fff3b8'}" stroke="${D}" stroke-width=".6"/>`); }
+  if (k >= 5) o += `<path d="M50 -3.6l2.4 4.4 4.8.6-3.5 3.3.9 4.7-4.6-2.3-4.6 2.3.9-4.7-3.5-3.3 4.8-.6z" fill="#ffe27a" stroke="${D}" stroke-width=".8"/>`;
+  if (k >= 6) o = o.replace(/<path d="M50 -3\.6[^>]*>/, '') + `<path d="M35 9L32.6 -3L41.6 2.6L50 -7.6L58.4 2.6L67.4 -3L65 9Z" fill="#ffd54a" stroke="${D}" stroke-width="1.1" stroke-linejoin="round"/><path class="d" d="M36.4 5.6H63.6" stroke="${D}" stroke-width=".8"/><circle cx="50" cy="-7.6" r="1.8" fill="${ruby}" stroke="${D}" stroke-width=".6"/><circle class="d" cx="50" cy="3.2" r="1.6" fill="#2a6bd8" stroke="${D}" stroke-width=".5"/>`;
+  o += [[88, 8, 4.2, 0], [9, 90, 3.4, -1.4], [96, 70, 3, -.7]].slice(0, Math.max(0, k - 3)).map(([x, y, s, d]) => pfTw(x, y, s, d)).join('');
+  return { id: 'lv' + n, name, kind: 'lv', need: n, ach: ['첫 금빛', '성장의 시작', '꾸준함', '숙련자', '베테랑', '마스터', '지후의 왕'][k], t, bg, sh: `0 0 0 1px rgba(255,194,26,${.15 + k * .05}), 0 ${8 + k}px ${20 + k * 2}px rgba(168,121,0,${.18 + k * .04})${k >= 5 ? ', 0 0 22px rgba(255,194,26,.4)' : ''}`,
+    inner: `0 0 0 ${k >= 4 ? 2 : 1.5}px rgba(255,248,220,.95)`, spin: [9, 8, 7, 6, 5, 4.5, 4][k], sheen: `conic-gradient(from 0deg, transparent 0 62%, rgba(255,255,255,${.6 + k * .05}) 75%, transparent 88%)`, orn: o || undefined,
+    badge: k >= 6 ? '♛ 50' : String(n), bBg: 'linear-gradient(135deg,#fff1b8,#e0a400)', bC: '#3d2b00' };
+});
+// 경쟁전: need = 묶음 번호 (COMP_GROUPS · 1 브론즈 ~ 9 챌린저) · 이번 시즌 최고 (profile.comp.speak)
+// 번개는 R1 개발자 테두리 방식: 박자 두 번 (A 0% · B 50%) 에 바깥으로 뻗는 긴 번개 (세 겹 + 갈래) · 테 번쩍 · 위 티어는 흔들림 · 테두리를 기는 전류는 점선 여러 개를 차례로 깜빡여서 (opacity 만)
+const PF_SC = ['M18 4L13.6-2.6 17.4-4.8 10.2-12 14-14.4 4.6-22.4', 'M13.6-2.6L6.6-1.6 3.4-6.6'], PF_SS = ['M96 38L104.2 34.7 102 40.8 111.4 38 108.6 44 121.3 41.3', 'M104.2 34.7L108 28 114 27'];
+const PF_STRIKE = [[PF_SC, 0], [PF_SS, 0], [PF_SC, 180], [PF_SS, 180], [PF_SC, 90], [PF_SS, 90], [PF_SC, 270], [PF_SS, 270]];
+const PF_CRK = ['4 3 1 5 6 2 1 78', '2 4 1 3 3 87', '3 2 5 4 1 85'];
+const PF_CP = [
+  ['cbronze', '브론즈', 'linear-gradient(145deg,#f6cfa4,#b8733d 48%,#6e3d17 78%,#d89a62)', '#ffd2a6', '#e07a32'],
+  ['csilver', '실버', 'linear-gradient(145deg,#ffffff,#b9c2cf 45%,#6f7887 75%,#dde3ea)', '#eaf4ff', '#7fb0ff'],
+  ['cgold', '골드', 'linear-gradient(145deg,#fff3b0,#f0b72f 45%,#9c6a06 75%,#ffe27a)', '#fff7c2', '#ffb000'],
+  ['cplat', '플래티넘', 'linear-gradient(145deg,#ecfffb,#7fd6c8 45%,#2f7f78 75%,#bff2ea)', '#dcfffa', '#22d6c0'],
+  ['cdia', '다이아', 'linear-gradient(145deg,#eaf6ff,#5fb2ff 45%,#1a4fa8 75%,#b5dcff)', '#d6eeff', '#2f8cff'],
+  ['cace', '에이스', 'linear-gradient(145deg,#ffe3e8,#ff5a76 45%,#8e1430 75%,#ffb0be)', '#ffe6ec', '#ff2a55'],
+  ['cmaster', '마스터', 'linear-gradient(145deg,#f3e6ff,#a35cff 45%,#41107e 75%,#d6b3ff)', '#efdcff', '#a24bff'],
+  ['cgm', '그랜드마스터', 'linear-gradient(145deg,#ffb48a,#d7262e 42%,#3a0508 74%,#ff7a4a)', '#ffe0c4', '#ff3b30'],
+  ['cchal', '챌린저', 'conic-gradient(from 200deg,#fff6c8,#ffcf3a,#3fe3ff,#ffffff,#ffcf3a,#2a7cff,#fff6c8)', '#fffbe0', '#1fc8ff'],
+].map(([id, name, bg, hi, glow], i) => {
+  const k = i + 1, ns = [0, 1, 2, 2, 3, 4, 5, 6, 8][i], cyc = [0, 4.2, 3.8, 3.4, 3, 2.8, 2.6, 2.2, 1.9][i], nc = [1, 1, 2, 2, 2, 3, 3, 3, 3][i], t = .075 + k * .002;
+  const an = (b, d = 0) => `style="animation-duration:${cyc}s${d ? `;animation-delay:${d}s` : ''}" class="pf-st${b}"`;
+  const bolt = (L, w) => L.map((d, j) => { const s = j ? .6 : 1; return `<path d="${d}" stroke="${glow}" stroke-width="${(w * 4.3 * s).toFixed(2)}" opacity=".55"/><path d="${d}" stroke="${hi}" stroke-width="${(w * 2.3 * s).toFixed(2)}"/><path d="${d}" stroke="#fff" stroke-width="${(w * s).toFixed(2)}"/>`; }).join('');
+  let o = '';
+  if (k >= 8) o += ['A', 'B'].map(b => `<g ${an(b)}>${pfRR(-2.4, `stroke="${glow}" stroke-width="5" opacity=".45"`)}</g>`).join('');
+  o += pfRR(1.2, `stroke="${hi}" stroke-width=".7" opacity=".85"`) + pfRR(t * 100 - .8, `stroke="${glow}" stroke-width=".8"`);
+  if (k >= 6) o = `<g class="pf-glow" style="animation-duration:${(cyc / 2).toFixed(2)}s">${pfRR(-.8, `stroke="${glow}" stroke-width="2.2" opacity=".55"`)}</g>` + o;
+  o += `<g class="d" fill="none" stroke-width="${k >= 7 ? 1.4 : 1}" stroke-linecap="round">` + PF_CRK.slice(0, nc).map((da, j) => `<rect class="pf-crk" style="animation-duration:${(.9 + j * .17).toFixed(2)}s;animation-delay:${(-j * .31).toFixed(2)}s" x="1.4" y="1.4" width="97.2" height="97.2" rx="22.6" pathLength="100" stroke="${j % 2 ? '#fff' : glow}" stroke-dasharray="${da}" stroke-dashoffset="${j * 31}"/>`).join('') + '</g>';
+  if (k >= 4) o += ['A', 'B'].map(b => `<g ${an(b)}>${pfRR(t * 50, `stroke="#fff" stroke-width="${t * 100}" opacity=".55"`)}</g>`).join('');
+  if (k >= 5) o += pfRot(`<path d="M50 -1.4l2.4 3.4-2.4 3.4-2.4-3.4z" fill="${hi}" stroke="${glow}" stroke-width=".6"/>`, k >= 6 ? 4 : 2);
+  if (k === 8) o += '<path d="M40 7L36 -4 44.6 1.8 50 -7 55.4 1.8 64 -4 60 7Z" fill="#2a0508" stroke="#ff6a3a" stroke-width="1" stroke-linejoin="round"/>';
+  if (k === 9) o += '<path d="M35 8.6L32.4 -3.4L41.6 2.4L50 -8.4L58.4 2.4L67.6 -3.4L65 8.6Z" fill="#ffd84a" stroke="#0b3a8a" stroke-width="1.1" stroke-linejoin="round"/><circle cx="50" cy="-8.4" r="1.9" fill="#3fe3ff" stroke="#0b3a8a" stroke-width=".6"/>';
+  o += PF_STRIKE.slice(0, ns).map(([L, a], j) => `<g ${an(j % 2 ? 'B' : 'A', j >= 2 ? -.04 * (j >> 1) : 0)} fill="none" stroke-linejoin="round" stroke-linecap="round"${a ? ` transform="rotate(${a} 50 50)"` : ''}>${bolt(L, k >= 7 ? 1.25 : 1.05)}</g>`).join('');
+  return { id, name, kind: 'cp', need: k, ach: `이번 시즌 ${name}`, t, bg, sh: `0 0 0 1px ${glow}55, 0 ${8 + k}px ${20 + k * 2}px ${glow}${k >= 6 ? '66' : '33'}`, inner: `0 0 0 1.5px ${hi}`, spin: k >= 3 ? +(9 - k * .6).toFixed(1) : 0, orn: o, shake: k >= 7 ? cyc : 0 };
+});
+// 디펜스: N 웨이브 클리어 (dfBeta - 1) · 금속이 비싸질수록 리벳 → 볼트 → 꺾쇠 → 통풍구 → 빛나는 이음매
+const PF_DF = [
+  ['철판', 'linear-gradient(160deg,#a3a9b0,#5d6369 45%,#3b4045 70%,#858b92)', '#9aa0a8', ''],
+  ['강철', 'linear-gradient(160deg,#e3e9f0,#8f9cab 40%,#56616e 70%,#bcc6d2)', '#b6c0cb', ''],
+  ['구리', 'linear-gradient(160deg,#ffd6b8,#d07a45 40%,#8a4120 72%,#eaa476)', '#eaa476', ''],
+  ['청동', 'linear-gradient(160deg,#ecd8a2,#a98a3e 40%,#5f4a1a 72%,#cdb168)', '#d2b770', ''],
+  ['크롬', 'linear-gradient(160deg,#ffffff,#c9d1da 22%,#5a6470 48%,#f4f7fa 62%,#7b8794 85%,#e4e9ee)', '#e2e7ec', ''],
+  ['티타늄', 'linear-gradient(160deg,#ebe6f5,#9a93b0 35%,#5d5a78 60%,#a8b5d6 80%,#dcdff0)', '#c2bed6', ''],
+  ['코발트', 'linear-gradient(160deg,#a8c8ff,#2f5fd0 40%,#132a6e 72%,#6493ea)', '#8fb2f2', '#5fd0ff'],
+  ['흑철', 'linear-gradient(160deg,#5e5956,#2a2624 40%,#121010 72%,#4c4643)', '#706865', '#ff7a2a'],
+  ['미스릴', 'linear-gradient(160deg,#ffffff,#d2e8ff 30%,#8fb4d9 58%,#ecf6ff 80%,#b8d5f1)', '#eef6ff', '#5fe0ff'],
+  ['오리하르콘', 'linear-gradient(160deg,#ffe6b8,#e0782f 35%,#8a2a12 62%,#ffb35a 82%,#fff1cc)', '#ffd58f', '#ffe26a'],
+].map(([name, bg, rv, glow], k) => {
+  const n = (k + 1) * 10, t = .08 + k * .0025, m = t * 50, dk = k === 7 ? '#000' : '#1c1f24';
+  const c = 24 - (24 - m) * .707, riv = (x, y, r = 2.2) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${rv}" stroke="${dk}" stroke-width=".55"/><circle class="d" cx="${x - r * .3}" cy="${y - r * .3}" r="${r * .38}" fill="#fff" opacity=".85"/>`;
+  const hex = (x, y) => `<path d="M${x - 3} ${y}l1.5-2.6h3l1.5 2.6-1.5 2.6h-3z" fill="${rv}" stroke="${dk}" stroke-width=".6"/><path class="d" d="M${x - 1.2} ${y + 1.2}l2.4-2.4" stroke="${dk}" stroke-width=".55"/>`;
+  let o = '';
+  if (glow) o += `<g class="pf-glow" style="animation-duration:${(2.8 - k * .15).toFixed(2)}s">${pfRR(m, `stroke="${glow}" stroke-width="1.3" stroke-dasharray="14 5 4 5"`)}</g>`;
+  if (k >= 2) o += pfRR(t * 100 - .8, `stroke="${dk}" stroke-width=".7" opacity=".55"`) + pfRR(1, 'stroke="#fff" stroke-width=".6" opacity=".5"');
+  if (k >= 3) o += pfRot(`<path d="M${c - 1} ${c + 9}V${c + 1}A2 2 0 0 1 ${c + 1} ${c - 1}H${c + 9}" fill="none" stroke="${dk}" stroke-width="3.6" stroke-linecap="round" opacity=".55"/><path d="M${c - 1} ${c + 9}V${c + 1}A2 2 0 0 1 ${c + 1} ${c - 1}H${c + 9}" fill="none" stroke="${rv}" stroke-width="2" stroke-linecap="round"/>`);
+  if (k >= 5) o += [`M${m - 1.6} 42V58`, `M${m + 1.6} 44V56`, `M${100 - m - 1.6} 44V56`, `M${100 - m + 1.6} 42V58`].map(d => `<path class="d" d="${d}" stroke="${dk}" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>`).join('');
+  o += pfRot(k >= 4 ? hex(c, c) : riv(c, c));
+  if (k >= 1) o += pfRot(k >= 6 ? hex(50, m) : riv(50, m, 1.8));
+  if (k >= 8) o += pfRot(`<path class="pf-glow d" style="animation-delay:-.8s" d="M${50 - 11} ${m}h5M${50 + 6} ${m}h5" stroke="${glow}" stroke-width="1.1" stroke-linecap="round"/>`);
+  if (k === 9) o += `<path d="M42 -4H58V4Q58 10 50 13Q42 10 42 4Z" fill="#8a2a12" stroke="#ffd58f" stroke-width="1.2" stroke-linejoin="round"/><path d="M50 -1.4l2 3-2 3-2-3z" fill="#ffe26a" class="pf-glow"/>`;
+  return { id: 'df' + n, name, kind: 'dfc', need: n, ach: `${n}웨이브 방어`, t, bg, sh: `0 0 0 1px rgba(20,24,40,.25), 0 ${9 + k}px ${22 + k}px rgba(20,24,40,${.2 + k * .02})${glow ? `, 0 0 18px ${glow}55` : ''}`,
+    inner: `0 0 0 1.5px ${dk}, 0 0 0 2.5px ${rv}`, shine: k >= 1 ? +(5.4 - k * .35).toFixed(2) : 0, orn: o, badge: String(n), bBg: bg, bC: k === 7 || k === 6 ? '#fff' : '#111318' };
+});
 const FRAMES = [
   { id: 'none', name: '기본', kind: 'free', need: 0, ach: '', t: .035, bg: 'rgba(255,255,255,.95)', sh: '0 8px 20px rgba(20,24,40,.12)' },
-  { id: 'lv10', name: '루키', kind: 'lv', need: 10, ach: '성장의 시작', t: .05, bg: 'linear-gradient(145deg,#f6f6f4,#c9c9c6 55%,#9b9b98)', sh: '0 8px 20px rgba(20,24,40,.14)', badge: '10', bBg: '#9b9b98', bC: '#fff' },
-  { id: 'lv20', name: '실버', kind: 'lv', need: 20, ach: '숙련자', t: .06, bg: 'linear-gradient(145deg,#ffffff,#aeb6c3 38%,#f1f3f7 58%,#7f8796)', sh: '0 10px 24px rgba(20,24,40,.16)', inner: '0 0 0 1.5px rgba(255,255,255,.9)', badge: '20', bBg: 'linear-gradient(135deg,#eef1f5,#8e96a3)', bC: '#111318' },
-  { id: 'lv30', name: '사파이어', kind: 'lv', need: 30, ach: '베테랑', t: .065, bg: 'linear-gradient(145deg,#cfe6ff,#4f9dff 45%,#1c56b3)', sh: '0 0 0 1px rgba(79,157,255,.25), 0 12px 28px rgba(42,125,225,.35)', inner: '0 0 0 1.5px rgba(255,255,255,.85)', gem: '#ffffff', badge: '30', bBg: '#2a7de1', bC: '#fff' },
-  { id: 'lv40', name: '아메시스트', kind: 'lv', need: 40, ach: '마스터', t: .07, bg: 'linear-gradient(145deg,#f3e2ff,#b26bff 45%,#4f1c99)', sh: '0 0 0 1px rgba(178,107,255,.3), 0 14px 32px rgba(138,70,214,.4)', inner: '0 0 0 1.5px rgba(255,255,255,.85)', gem: 'linear-gradient(135deg,#fff,#d9b3ff)', spin: 9, badge: '40', bBg: '#8a46d6', bC: '#fff' },
-  { id: 'lv50', name: '골드 크라운', kind: 'lv', need: 50, ach: '지후의 왕', t: .085, bg: 'conic-gradient(from 210deg,#fff3c4,#ffc21a,#c98a00,#ffe27a,#fff3c4,#e0a400,#ffc21a,#fff3c4)', sh: '0 0 0 1px rgba(255,194,26,.4), 0 0 24px rgba(255,194,26,.45), 0 14px 32px rgba(168,121,0,.35)', inner: '0 0 0 2px rgba(255,255,255,.9)', gem: 'linear-gradient(135deg,#fff8dc,#ffc21a)', spin: 5, badge: '♛ 50', bBg: 'linear-gradient(135deg,#ffe27a,#e0a400)', bC: '#3d2b00' },
+  ...PF_LV,
   { id: 's5', name: '불씨', kind: 'st', need: 5, ach: '연승 행진', t: .055, bg: 'linear-gradient(160deg,#ffd98a,#ff8a3d 58%,#e5562d)', sh: '0 12px 26px rgba(229,86,45,.28)', inner: '0 0 0 1.5px rgba(255,255,255,.8)' },
   { id: 's12', name: '불꽃', kind: 'st', need: 12, ach: '멈출 수 없어', t: .065, bg: 'linear-gradient(160deg,#ffe58f,#ff6a2b 42%,#c81e2a)', sh: '0 0 0 1px rgba(255,106,43,.3), 0 0 20px rgba(255,106,43,.4), 0 12px 28px rgba(200,30,42,.3)', inner: '0 0 0 1.5px rgba(255,255,255,.85)', spin: 4 },
   { id: 's20', name: '업화', kind: 'st', need: 20, ach: '전설의 연승', t: .085, bg: 'conic-gradient(from 0deg,#2a0b0b,#c81e2a,#ff6a2b,#ffc21a,#ff6a2b,#c81e2a,#2a0b0b,#c81e2a,#ffc21a,#2a0b0b)', sh: '0 0 0 1px rgba(200,30,42,.4), 0 0 28px rgba(255,90,40,.5), 0 14px 32px rgba(120,10,10,.35)', inner: '0 0 0 2px rgba(255,230,180,.9)', gem: 'linear-gradient(135deg,#ffe27a,#ff6a2b)', spin: 3, sheen: 'conic-gradient(from 0deg, transparent 0 60%, rgba(255,226,122,.9) 74%, transparent 88%)' },
+  ...PF_CP,
+  ...PF_DF,
   { id: 'ink', name: '먹', kind: 'day', need: 14, ach: '먹을 갈다', t: .085, bg: '#faf7ef', sh: '0 8px 20px rgba(20,24,40,.12)', inner: '0 0 0 1px rgba(22,18,14,.25)',
     orn: '<g fill="none" stroke="#17130f" stroke-linecap="round"><path d="M24.6 4.6H75.4A20 20 0 0 1 95.4 24.6V75.4A20 20 0 0 1 75.4 95.4H24.6A20 20 0 0 1 4.6 75.4V24.6A20 20 0 0 1 24.6 4.6H33" stroke-width="4.6"/><path d="M24.6 4.6H75.4A20 20 0 0 1 95.4 24.6V75.4A20 20 0 0 1 75.4 95.4H24.6A20 20 0 0 1 4.6 75.4V24.6A20 20 0 0 1 24.6 4.6H33" stroke-width="7.6" stroke-dasharray="16 400"/><path d="M24.6 4.6H75.4A20 20 0 0 1 95.4 24.6V75.4A20 20 0 0 1 75.4 95.4H24.6A20 20 0 0 1 4.6 75.4V24.6A20 20 0 0 1 24.6 4.6H33" stroke-width="6.4" stroke-dasharray="0 120 46 400"/><path d="M24.6 4.6H75.4A20 20 0 0 1 95.4 24.6V75.4A20 20 0 0 1 75.4 95.4H24.6A20 20 0 0 1 4.6 75.4V24.6A20 20 0 0 1 24.6 4.6H33" stroke-width="5.8" stroke-dasharray="0 250 30 400"/><path class="d" d="M24.6 4.6H75.4A20 20 0 0 1 95.4 24.6V75.4A20 20 0 0 1 75.4 95.4H24.6A20 20 0 0 1 4.6 75.4V24.6A20 20 0 0 1 24.6 4.6H33" stroke-width=".8" stroke-dasharray="26 6 14 9 40 5 60 12" transform="translate(-1.9 -1.9) scale(1.038)" opacity=".6"/><path class="d" d="M24.6 4.6H75.4A20 20 0 0 1 95.4 24.6V75.4A20 20 0 0 1 75.4 95.4H24.6A20 20 0 0 1 4.6 75.4V24.6A20 20 0 0 1 24.6 4.6H33" stroke-width=".7" stroke-dasharray="10 14 34 6 22 18" transform="translate(1.9 1.9) scale(.962)" opacity=".5"/></g><g class="d" fill="#17130f"><circle cx="98.4" cy="12" r="1"/><circle cx="100.6" cy="8.6" r=".55"/><circle cx="96.8" cy="6.4" r=".4"/></g><g transform="rotate(-6 86 86)"><rect x="77" y="77" width="19" height="19" rx="2" fill="#c8282d"/><rect class="d" x="78.6" y="78.6" width="15.8" height="15.8" rx="1" fill="none" stroke="#faf7ef" stroke-width=".8"/><text x="86.5" y="91.2" text-anchor="middle" font-size="12" font-weight="900" fill="#faf7ef" font-family="Do Hyeon, sans-serif">후</text></g>' },
   { id: 'moon', name: '월하', kind: 'day', need: 50, ach: '달빛 순례', t: .09, bg: 'linear-gradient(160deg,#3a4686,#171c44 58%,#0b0e2a)', sh: '0 0 0 1px rgba(243,213,138,.25), 0 12px 28px rgba(23,28,68,.4)', inner: '0 0 0 1.5px #e8c77a',
@@ -11582,7 +11675,7 @@ const FRAMES = [
     orn: '<rect x="1.6" y="1.6" width="96.8" height="96.8" rx="22.4" fill="none" stroke="#d6b26a" stroke-width=".8"/><g fill="none" stroke="#d6b26a" stroke-width=".8"><path d="M7 24A17 17 0 0 1 24 7M4.6 24A19.4 19.4 0 0 1 24 4.6"/><path class="d" d="M9.4 24A14.6 14.6 0 0 1 24 9.4"/><path transform="rotate(90 50 50)" d="M7 24A17 17 0 0 1 24 7M4.6 24A19.4 19.4 0 0 1 24 4.6"/><path class="d" transform="rotate(90 50 50)" d="M9.4 24A14.6 14.6 0 0 1 24 9.4"/><path transform="rotate(180 50 50)" d="M7 24A17 17 0 0 1 24 7M4.6 24A19.4 19.4 0 0 1 24 4.6"/><path class="d" transform="rotate(180 50 50)" d="M9.4 24A14.6 14.6 0 0 1 24 9.4"/><path transform="rotate(270 50 50)" d="M7 24A17 17 0 0 1 24 7M4.6 24A19.4 19.4 0 0 1 24 4.6"/><path class="d" transform="rotate(270 50 50)" d="M9.4 24A14.6 14.6 0 0 1 24 9.4"/></g><g fill="#d6b26a"><path d="M2 50l2.6-3 2.6 3-2.6 3z"/><path d="M92.8 50l2.6-3 2.6 3-2.6 3z"/></g><g fill="#0e0d0b" stroke="#d6b26a" stroke-width="1"><path d="M37 8V3H42V-.6H58V3H63V8"/><path d="M37 92V97H42V100.6H58V97H63V92"/></g><g fill="#d6b26a"><path d="M50 -.2l3 3.4-3 3.4-3-3.4z"/><path d="M50 93.6l3 3.4-3 3.4-3-3.4z"/></g><g class="d" stroke="#d6b26a" stroke-width=".7"><path d="M3 40V46M5 38V46M7 40V46M3 54V60M5 54V62M7 54V60M93 40V46M95 38V46M97 40V46M93 54V60M95 54V62M97 54V60"/></g>' },
   { id: 'crest', name: '왕국 문장', kind: 'win', need: 500, ach: '지후왕국의 기사', t: .1, bg: 'linear-gradient(150deg,#9a1730,#5a0a1c 55%,#2e030c)', sh: '0 0 0 1px rgba(230,192,106,.4), 0 0 22px rgba(154,23,48,.35), 0 14px 32px rgba(46,3,12,.4)', inner: '0 0 0 2px #e6c06a', spin: 6, sheen: 'conic-gradient(from 0deg, transparent 0 64%, rgba(255,226,160,.55) 76%, transparent 88%)',
     orn: '<rect x="1.4" y="1.4" width="97.2" height="97.2" rx="22.6" fill="none" stroke="#e6c06a" stroke-width="1"/><rect class="d" x="3.4" y="3.4" width="93.2" height="93.2" rx="20.6" fill="none" stroke="#e6c06a" stroke-width=".5" opacity=".7"/><g fill="#e6c06a" stroke="#4a0712" stroke-width=".5"><path d="M38 99Q4 96 4.6 46" fill="none" stroke="#e6c06a" stroke-width="1.1"/><ellipse cx="30" cy="97.4" rx="3.6" ry="1.5" transform="rotate(-8 30 97.4)"/><ellipse cx="22" cy="95.2" rx="3.6" ry="1.5" transform="rotate(-24 22 95.2)"/><ellipse cx="14.6" cy="90.6" rx="3.6" ry="1.5" transform="rotate(-42 14.6 90.6)"/><ellipse cx="9.4" cy="83.4" rx="3.6" ry="1.5" transform="rotate(-58 9.4 83.4)"/><ellipse cx="6.4" cy="75" rx="3.6" ry="1.5" transform="rotate(-72 6.4 75)"/><ellipse cx="5" cy="66" rx="3.6" ry="1.5" transform="rotate(-82 5 66)"/><ellipse class="d" cx="4.6" cy="57" rx="3.2" ry="1.4" transform="rotate(-88 4.6 57)"/><ellipse class="d" cx="4.7" cy="49" rx="2.8" ry="1.2" transform="rotate(-92 4.7 49)"/></g><g transform="translate(100 0) scale(-1 1)" fill="#e6c06a" stroke="#4a0712" stroke-width=".5"><path d="M38 99Q4 96 4.6 46" fill="none" stroke="#e6c06a" stroke-width="1.1"/><ellipse cx="30" cy="97.4" rx="3.6" ry="1.5" transform="rotate(-8 30 97.4)"/><ellipse cx="22" cy="95.2" rx="3.6" ry="1.5" transform="rotate(-24 22 95.2)"/><ellipse cx="14.6" cy="90.6" rx="3.6" ry="1.5" transform="rotate(-42 14.6 90.6)"/><ellipse cx="9.4" cy="83.4" rx="3.6" ry="1.5" transform="rotate(-58 9.4 83.4)"/><ellipse cx="6.4" cy="75" rx="3.6" ry="1.5" transform="rotate(-72 6.4 75)"/><ellipse cx="5" cy="66" rx="3.6" ry="1.5" transform="rotate(-82 5 66)"/><ellipse class="d" cx="4.6" cy="57" rx="3.2" ry="1.4" transform="rotate(-88 4.6 57)"/><ellipse class="d" cx="4.7" cy="49" rx="2.8" ry="1.2" transform="rotate(-92 4.7 49)"/></g><path d="M36 8.4L33.6 -3.4L42.4 2.2L50 -8L57.6 2.2L66.4 -3.4L64 8.4Z" fill="#e6c06a" stroke="#4a0712" stroke-width="1.1" stroke-linejoin="round"/><path class="d" d="M37 5.4H63" stroke="#4a0712" stroke-width=".8"/><g fill="#fff1c9" stroke="#4a0712" stroke-width=".6"><circle cx="50" cy="-8" r="1.7"/><circle cx="33.6" cy="-3.4" r="1.4"/><circle cx="66.4" cy="-3.4" r="1.4"/></g><circle class="d" cx="50" cy="2.6" r="1.5" fill="#c8102e" stroke="#4a0712" stroke-width=".5"/>' },
-  { id: 'frost', name: '서리꽃', kind: 'df', need: 30, ach: '얼어붙은 방벽', t: .085, bg: 'linear-gradient(150deg,#f4fbff,#bde1f7 30%,#7cb4de 68%,#cfe9fa)', sh: '0 0 0 1px rgba(93,156,201,.3), 0 12px 28px rgba(63,127,176,.3)', inner: '0 0 0 1.5px #ffffff, 0 0 0 2.5px rgba(93,156,201,.5)',
+  { id: 'frost', name: '서리꽃', kind: 'day', need: 100, ach: '백일의 겨울', t: .085, bg: 'linear-gradient(150deg,#f4fbff,#bde1f7 30%,#7cb4de 68%,#cfe9fa)', sh: '0 0 0 1px rgba(93,156,201,.3), 0 12px 28px rgba(63,127,176,.3)', inner: '0 0 0 1.5px #ffffff, 0 0 0 2.5px rgba(93,156,201,.5)',
     orn: '<g stroke-linecap="round"><g stroke="#3f7fb0" stroke-width="3.6"><path d="M10 -3V23M-1.3 3.5L21.3 16.5M-1.3 16.5L21.3 3.5"/></g><g stroke="#fff" stroke-width="2"><path d="M10 -3V23M-1.3 3.5L21.3 16.5M-1.3 16.5L21.3 3.5"/></g><g class="d" stroke="#fff" stroke-width="1.1" fill="none"><path d="M6.6 -1.4L10 2 13.4 -1.4M6.6 21.4L10 18 13.4 21.4M-.6 8L4 9.2 2.6 13.6M20.6 8L16 9.2 17.4 13.6M2.6 6.4L4 10.8M17.4 6.4L16 10.8"/></g><circle cx="10" cy="10" r="2.1" fill="#fff" stroke="#3f7fb0" stroke-width=".8"/></g><g transform="translate(80.5 81) scale(.72)" stroke-linecap="round"><g stroke="#3f7fb0" stroke-width="3.6"><path d="M10 -3V23M-1.3 3.5L21.3 16.5M-1.3 16.5L21.3 3.5"/></g><g stroke="#fff" stroke-width="2"><path d="M10 -3V23M-1.3 3.5L21.3 16.5M-1.3 16.5L21.3 3.5"/></g><circle cx="10" cy="10" r="2.1" fill="#fff" stroke="#3f7fb0" stroke-width=".8"/></g><g class="d" fill="#fff" stroke="#5d9cc9" stroke-width=".6" stroke-linejoin="round"><path d="M30 99L32 105 34 99M41 99.4L42.4 103 43.8 99.4M52 99L54.4 107 56.8 99M66 99.4L67.2 102.4 68.4 99.4"/></g><g class="d" fill="#fff"><circle cx="62" cy="4.4" r="1"/><circle cx="95.6" cy="40" r="1"/><circle cx="4.4" cy="62" r="1"/></g>' },
   { id: 'circ', name: '회로', kind: 'tw', need: 20, ach: '첨탑 해킹', t: .09, bg: 'linear-gradient(145deg,#16202c,#07090d 60%,#101820)', sh: '0 0 0 1px rgba(57,230,255,.35), 0 0 18px rgba(57,230,255,.25), 0 12px 28px rgba(7,9,13,.4)', inner: '0 0 0 1.5px #39e6ff',
     orn: '<rect x="1.4" y="1.4" width="97.2" height="97.2" rx="22.6" fill="none" stroke="#39e6ff" stroke-width=".5" opacity=".5"/><g fill="none" stroke="#39e6ff" stroke-width="1" stroke-linejoin="round"><path d="M24 4.4H42L45 2.2H62"/><path d="M4.4 30V44L2.4 47V62"/><path d="M95.6 26V40L97.6 43V54"/><path d="M38 95.6H56L59 97.6H72"/><path class="d" d="M70 3.6H80M3.6 70V78M96.4 66V76M20 96.4H30"/></g><g fill="#07090d" stroke="#39e6ff" stroke-width=".9"><circle cx="24" cy="4.4" r="1.5"/><circle cx="62" cy="2.2" r="1.5"/><circle cx="4.4" cy="30" r="1.5"/><circle cx="2.4" cy="62" r="1.5"/><circle cx="95.6" cy="26" r="1.5"/><circle cx="97.6" cy="54" r="1.5"/><circle cx="38" cy="95.6" r="1.5"/><circle cx="72" cy="97.6" r="1.5"/></g><g class="pf-blink" fill="#39e6ff"><circle cx="62" cy="2.2" r=".7"/><circle cx="2.4" cy="62" r=".7"/><circle cx="97.6" cy="54" r=".7"/><circle cx="38" cy="95.6" r=".7"/></g><rect x="43" y="-1.6" width="14" height="5.4" rx=".6" fill="#ff3db8" stroke="#07090d" stroke-width=".8"/><g class="d" stroke="#ff3db8" stroke-width=".7"><path d="M45.4 3.8V6M48.4 3.8V6M51.6 3.8V6M54.6 3.8V6"/></g>' },
@@ -11593,16 +11686,16 @@ const FRAME = Object.fromEntries(FRAMES.map(f => [f.id, f]));
 const hasKey = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k); // 남이 보낸 값 (리더보드 · 접속 상태 · 친선전)
 function pfHtml(fr, S, ph, o = {}) { // 정사각 둥근 프로필 사진(지후 초상화) + 테두리 · o: { lock 흑백, badge: false 배지 숨김, letter 사진 없을 때 글자, fc 글자 바탕 }
   const f = hasKey(FRAME, fr) ? FRAME[fr] : FRAME.none, t = Math.max(2, Math.round(S * f.t)), r = Math.round(S * .24), ri = Math.max(2, r - t), tiny = S < 56, d = Math.round(S * .1), c = r * .29, ring = S >= 150 ? 2 : 1.5, img = hasKey(CHARS, ph);
-  return `<span class="pf${o.lock ? ' lock' : ''}${S < 48 ? ' tiny' : ''}" style="width:${S}px;height:${S}px"><span class="pf-ring" style="border-radius:${r}px;background:${f.bg};box-shadow:${f.sh}">${f.spin && !tiny ? `<i class="pf-sheen" style="background:${f.sheen || PF_SHEEN};animation-duration:${f.spin}s"></i>` : ''}`
+  return `<span class="pf${o.lock ? ' lock' : ''}${S < 48 ? ' tiny' : ''}${f.shake && !tiny ? ' pf-shake' : ''}" style="width:${S}px;height:${S}px${f.shake && !tiny ? `;animation-duration:${f.shake}s` : ''}"><span class="pf-ring" style="border-radius:${r}px;background:${f.bg};box-shadow:${f.sh}">${f.spin && !tiny ? `<i class="pf-sheen" style="background:${f.sheen || PF_SHEEN};animation-duration:${f.spin}s"></i>` : ''}${f.shine && !tiny ? `<i class="pf-shine" style="animation-duration:${f.shine}s"></i>` : ''}`
     + `<span class="pf-photo" style="inset:${t}px;border-radius:${ri}px;box-shadow:${f.inner || 'none'}${img ? '' : `;background:${o.fc || 'var(--ink)'}`}">${img ? pic(ph) : `<b style="font-size:${Math.round(S * .38)}px">${esc(String(o.letter || '?').slice(0, 1))}</b>`}</span></span>`
     + (f.orn ? `<svg class="pf-orn" viewBox="0 0 100 100" aria-hidden="true">${f.orn}</svg>` : '')
     + (f.gem && !tiny ? [[c, c], [S - c, c], [c, S - c], [S - c, S - c]].map(([x, y]) => `<i class="pf-gem" style="left:${(x - d / 2).toFixed(1)}px;top:${(y - d / 2).toFixed(1)}px;width:${d}px;height:${d}px;border-radius:${Math.max(1, d * .2)}px;background:${f.gem};box-shadow:0 0 0 ${ring}px #fff, 0 2px 6px rgba(20,24,40,.25)"></i>`).join('') : '')
     + (f.badge && !tiny && o.badge !== false ? `<span class="pf-badge" style="padding:${Math.max(1, Math.round(S * .015))}px ${Math.max(6, Math.round(S * .06))}px;background:${f.bBg};color:${f.bC};font-size:${Math.max(9, Math.round(S * .1))}px;box-shadow:0 0 0 ${ring}px #fff, 0 4px 10px rgba(20,24,40,.2)">${f.badge}</span>` : '') + '</span>';
 }
-const FRAME_K = { /* R3.7 build 4 테두리 업적 종류: [지금 값, 조건 글, 묶음] */ lv: [() => profile.level, n => `레벨 ${n} 달성`, '레벨'], st: [() => profile.bestStreak || 0, n => `일반전 ${n}연승`, '연승'], win: [() => profile.wins | 0, n => `일반전 ${n.toLocaleString('ko-KR')}승`, '도전'], day: [() => profile.ach.days | 0, n => `출석 ${n}일`, '도전'], tw: [() => profile.tower.best | 0, n => `지후의 탑 ${n}층`, '도전'], df: [() => profile.dfBeta | 0, n => `디펜스 ${n}웨이브`, '도전'], col: [() => Object.keys(profile.owned).filter(id => CHARS[id] && profile.owned[id] > 0).length, n => `지후 ${n}종 보유`, '도전'] };
+const FRAME_K = { /* R3.7 build 4 테두리 업적 종류: [지금 값, 조건 글, 묶음] */ lv: [() => profile.level, n => `레벨 ${n} 달성`, '레벨'], st: [() => profile.bestStreak || 0, n => `일반전 ${n}연승`, '연승'], win: [() => profile.wins | 0, n => `일반전 ${n.toLocaleString('ko-KR')}승`, '도전'], day: [() => profile.ach.days | 0, n => `출석 ${n}일`, '도전'], tw: [() => profile.tower.best | 0, n => `지후의 탑 ${n}층`, '도전'], cp: [() => (profile.comp.season === compSeason().number ? compGroupIndex(profile.comp.speak | 0) : 0), n => `이번 시즌 경쟁전 ${COMP_GLABEL[n]}`, '경쟁전'], dfc: [() => Math.max(0, (profile.dfBeta | 0) - 1), n => `디펜스 ${n}웨이브 클리어`, '디펜스'], col: [() => Object.keys(profile.owned).filter(id => CHARS[id] && profile.owned[id] > 0).length, n => `지후 ${n}종 보유`, '도전'] };
 const frameHave = f => FRAME_K[f.kind] ? FRAME_K[f.kind][0]() : 1;
 const frameTxt = f => FRAME_K[f.kind] ? FRAME_K[f.kind][1](f.need) : '처음부터 보유';
-const frameProg = f => `${f.kind === 'lv' ? 'Lv ' : ''}${Math.min(frameHave(f), f.need)} / ${f.need}`;
+const frameProg = f => f.kind === 'cp' ? `${COMP_GLABEL[Math.min(frameHave(f), f.need)]} / ${COMP_GLABEL[f.need]}` : `${f.kind === 'lv' ? 'Lv ' : ''}${Math.min(frameHave(f), f.need)} / ${f.need}`;
 const frameState = f => profile.frame === f.id ? 'eq' : profile.frames.includes(f.id) ? 'own' : frameHave(f) >= f.need ? 'claim' : 'lock'; // 장착 중 · 보유 · 보상 받기 · 잠김
 const framesReady = () => FRAMES.filter(f => frameState(f) === 'claim').length;
 const frameCond = f => f.kind === 'free' ? '처음부터 보유' : `업적 「${f.ach}」 · ${frameTxt(f)}`;
@@ -11753,7 +11846,7 @@ function normProfile(p) {
   p.tower = Object.assign({ on: false, deck: [], draft: null, floor: 1, lose: 0, best: 0 }, p.tower && typeof p.tower === 'object' ? p.tower : {}); p.tower.deck = (Array.isArray(p.tower.deck) ? p.tower.deck : []).filter(id => CHARS[id]).slice(0, 5); p.tower.floor = Math.max(1, nat(p.tower.floor)); p.tower.lose = nat(p.tower.lose); p.tower.best = nat(p.tower.best); // 지후의 탑
   p.tower.cl = Number.isInteger(p.tower.cl) ? clamp(p.tower.cl, 0, p.tower.floor - 1) : p.tower.floor - 1; p.tower.over = !!p.tower.over; // R2.12.1: 층 보상은 눌러서 받는다
   if (p.tower.draft && !(Array.isArray(p.tower.draft.opts) && p.tower.draft.opts.every(id => CHARS[id]))) p.tower.draft = null; if (p.tower.on && !p.tower.draft && p.tower.deck.length < 5 && !p.tower.over) p.tower.on = false;
-  p.comp = Object.assign({ tp: 0, peak: 0, wins: 0, losses: 0, season: 0, promo: 0, played: [], rwDone: [] }, p.comp && typeof p.comp === 'object' ? p.comp : {}); ['tp', 'peak', 'wins', 'losses', 'season', 'promo'].forEach(k => { p.comp[k] = nat(p.comp[k]); }); ['played', 'rwDone'].forEach(k => { p.comp[k] = (Array.isArray(p.comp[k]) ? p.comp[k] : []).map(nat).slice(-24); }); // 경쟁전
+  p.comp = Object.assign({ tp: 0, peak: 0, wins: 0, losses: 0, season: 0, promo: 0, played: [], rwDone: [] }, p.comp && typeof p.comp === 'object' ? p.comp : {}); ['tp', 'peak', 'speak', 'fs', 'wins', 'losses', 'season', 'promo'].forEach(k => { p.comp[k] = nat(p.comp[k]); }); p.comp.speak = Math.max(p.comp.speak, p.comp.tp); /* R3.7 build 4 이번 시즌 최고 (경쟁전 테두리) */ ['played', 'rwDone'].forEach(k => { p.comp[k] = (Array.isArray(p.comp[k]) ? p.comp[k] : []).map(nat).slice(-24); }); // 경쟁전
   const cmap = m => Object.fromEntries(Object.entries(m && typeof m === 'object' ? m : {}).filter(([id]) => CHARS[id]).map(([id, v]) => [id, nat(v)])); p.cstat = Object.fromEntries(['picks', 'pwins', 'bans', 'norm', 'nwins'].map(k => [k, cmap(p.cstat && p.cstat[k])])); // 봇 학습용 내 통계 (r2picks)
   p.mode = p.mode === 'classic' ? 'classic' : 'event'; // 게임 모드 (R2.7.2)
   p.col = p.col && typeof p.col === 'object' && !Array.isArray(p.col) ? Object.fromEntries(Object.entries(p.col).filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v.filter(id => typeof id === 'string')])) : {}; // R2.36 build 5 컬렉션: 받은 지후 (컬렉션마다)
@@ -15817,7 +15910,8 @@ const compDiff = (d) => clamp(1 + d * COMP.DIFF, 0.5, 1.6); // 상대 티어 1�
 const compPromoReward = g => (g >= 2 ? (500 + (g - 2) * 100) * 2 : 0); // 실버 ◆1,000 · 그 위로 +200 (시즌마다 처음 오를 때)
 function compSeason(now = Date.now()) { const d = COMP.SEASON_DAYS * 86400000, n = Math.max(1, Math.floor((now - COMP.SEASON0) / d) + 1); return { number: n, start: COMP.SEASON0 + (n - 1) * d, end: COMP.SEASON0 + n * d }; } // 14일마다
 function compSeasonResetTp(tp) { const info = compTierInfo(tp), target = COMP_GROUPS.indexOf(info.group) - COMP.DROP; if (target <= 0) return 0; const ch = info.group === 'challenger', sub = ch ? 2 : (info.index - 1) % 3, idx = 1 + (target - 1) * 3 + sub; const f = COMP_TIER_POINTS[idx], nx = COMP_TIER_POINTS[idx + 1]; return Math.round(f + (nx - f) * (ch ? 0 : info.progress)); } // 세 묶음 내린다
-function compApplySeasonReset() { const c = profile.comp, cur = compSeason().number; if (!c.season) { c.season = cur; return; } if (c.season >= cur) return; while (c.season < cur) { c.tp = compSeasonResetTp(c.tp); c.season++; } c.wins = c.losses = 0; c.promo = compGroupIndex(c.tp); } // 새 시즌: 세 묶음 내리고 전적은 처음부터
+function cpFrameSweep() { const c = profile.comp; if (!c.fs || c.fs === compSeason().number) return false; profile.frames = profile.frames.filter(id => !(FRAME[id] && FRAME[id].kind === 'cp')); if (!profile.frames.includes(profile.frame)) profile.frame = 'none'; c.fs = 0; return true; } /* R3.7 build 4: 경쟁전 테두리는 그 시즌 동안만 */
+function compApplySeasonReset() { cpFrameSweep(); const c = profile.comp, cur = compSeason().number; if (!c.season) { c.season = cur; return; } if (c.season >= cur) return; while (c.season < cur) { c.tp = compSeasonResetTp(c.tp); c.season++; } c.wins = c.losses = 0; c.promo = compGroupIndex(c.tp); c.speak = c.tp; } // 새 시즌: 세 묶음 내리고 전적은 처음부터
 function tierBadge(tp, cls = '') { const t = compTierInfo(tp), art = TIER_ART[t.group]; return `<span class="tier-b tier-${t.group} ${cls}">${art ? `<img src="${art}" alt="">` : ''}${t.name}</span>`; }
 const fmtLeft = ms => { const h = Math.max(0, Math.floor(ms / 3600000)); return h >= 24 ? `${Math.floor(h / 24)}일 ${h % 24}시간` : `${h}시간 ${Math.floor(Math.max(0, ms) % 3600000 / 60000)}분`; };
 function openComp() { compApplySeasonReset(); save(); renderComp(); show('comp'); compSeasonReward(); cstatLoad(); }
@@ -15931,7 +16025,7 @@ function compEnd(win, note) { // 경쟁전 정산 (R1 그대로): TP · 한 판 
   compApplySeasonReset();
   const c = profile.comp, sur = !!S.quit, before = compTierInfo(c.tp), enemy = compTierInfo(S.arc.botTp), diff = enemy.index - before.index;
   let tp; if (win) { tp = Math.round(compWinTp(before.index) * compDiff(diff)); c.wins++; } else { tp = -Math.min(COMP.LOSS_CAP, Math.round(compLossTp(before.index) * compDiff(-diff))); c.losses++; }
-  c.tp = Math.max(0, c.tp + tp); c.peak = Math.max(c.peak, c.tp); const after = compTierInfo(c.tp), se = compSeason().number; if (!c.played.includes(se)) c.played = [...c.played, se].slice(-24);
+  c.tp = Math.max(0, c.tp + tp); c.peak = Math.max(c.peak, c.tp); c.speak = Math.max(c.speak | 0, c.tp); const after = compTierInfo(c.tp), se = compSeason().number; if (!c.played.includes(se)) c.played = [...c.played, se].slice(-24);
   let promo = 0; const pg = []; for (let g = c.promo + 1; g <= compGroupIndex(c.tp); g++) if (compPromoReward(g)) { promo += compPromoReward(g); pg.push(g); } c.promo = Math.max(c.promo, compGroupIndex(c.tp));
   const gd = sur ? 0 : COMP.GAME_DIA, xp = sur ? 0 : win ? rndBetween(100, 150) : rndBetween(30, 50), up = xp ? addXp(xp) : 0;
   profile.dia += gd + promo + (up ? CFG.LEVEL_REWARD * up : 0);
@@ -17079,7 +17173,7 @@ function renderRewards(msg = '') {
     + `<div class="rw-sec"><span class="eyebrow">ACHIEVEMENTS · 업적</span>${ACH.map((a, i) => { const cur = profile.ach[a.key] || 0, n = achReady(a), next = ((profile.ach.claimed[a.key] || 0) + 1) * a.step, done = Math.min(cur, next) - (next - a.step);
       return `<div class="rw-row" style="animation-delay:${(i * 0.04).toFixed(2)}s"><span><b>${a.label}</b> <small>${a.step > 1 ? `${a.step}${a.key === 'wins' ? '승' : '번'}마다 ` : ''}◆ ${a.dia}</small></span>${n > 0 ? `<button class="btn ready" data-ach="${a.key}">◆ ${(a.dia * n).toLocaleString()} 받기</button>` : `<small>${Math.max(0, done)} / ${a.step}</small>`}<span class="pb"><i style="width:${n > 0 ? 100 : clamp(done / a.step * 100, 0, 100)}%"></i></span></div>`; }).join('')}</div>`
     + `<div class="rw-sec"><span class="eyebrow">FRAMES · 테두리 업적</span>${FRAMES.filter(f => f.kind !== 'free').map((f, i) => { const st = frameState(f), h = frameHave(f);
-      return `<div class="rw-row fr" style="animation-delay:${(i * 0.04).toFixed(2)}s">${pfHtml(f.id, 48, myPhoto(), { badge: false, lock: st === 'lock' })}<span><b>${f.ach}</b> <small>${frameTxt(f)} · 「${f.name}」 테두리</small></span>${st === 'claim' ? `<button class="btn ready" data-fclaim="${f.id}">테두리 받기</button>` : `<small>${st === 'lock' ? `${Math.min(h, f.need)} / ${f.need}` : st === 'eq' ? '장착 중' : '보유'}</small>`}<span class="pb"><i style="width:${st === 'lock' ? clamp(h / f.need * 100, 0, 100) : 100}%"></i></span></div>`; }).join('')}<button class="g-btn wide" data-custom>꾸미기에서 장착하기 ›</button></div>`;
+      return `<div class="rw-row fr" style="animation-delay:${(i * 0.04).toFixed(2)}s">${pfHtml(f.id, 48, myPhoto(), { badge: false, lock: st === 'lock' })}<span><b>${f.ach}</b> <small>${frameTxt(f)} · 「${f.name}」 테두리</small></span>${st === 'claim' ? `<button class="btn ready" data-fclaim="${f.id}">테두리 받기</button>` : `<small>${st === 'lock' ? frameProg(f) : st === 'eq' ? '장착 중' : '보유'}</small>`}<span class="pb"><i style="width:${st === 'lock' ? clamp(h / f.need * 100, 0, 100) : 100}%"></i></span></div>`; }).join('')}<button class="g-btn wide" data-custom>꾸미기에서 장착하기 ›</button></div>`;
   renderRewardsDot();
 }
 $('rwBody').addEventListener('click', e => {
@@ -17105,7 +17199,7 @@ function qsHtml(tab) {
     const rows = ACH.map(a => { const cur = profile.ach[a.key] || 0, n = achReady(a), got = profile.ach.claimed[a.key] || 0, next = (got + 1) * a.step, done = Math.max(0, Math.min(cur, next) - (next - a.step));
       return `<div class="qs-row${n > 0 ? ' ready' : ''}"><span class="qs-ic">${ACH_ICON[a.key] || '🏅'}</span><div class="qs-mid"><b>${a.label} <em>단계 ${got + 1}</em></b><small>${a.step > 1 ? `${fmt(a.step)}${a.key === 'wins' ? '승' : '번'}마다` : '한 번마다'} ◆ ${a.dia} · 누적 ${fmt(cur)}</small>${bar(n > 0 ? 100 : done / a.step * 100, n > 0 ? '#ffc94a' : '')}</div>${n > 0 ? `<button class="qs-btn gold" data-qach="${a.key}">◆ ${fmt(a.dia * n)}<small>받기</small></button>` : `<span class="qs-cnt">${fmt(done)}<small>/ ${fmt(a.step)}</small></span>`}</div>`; }).join('');
     const frames = FRAMES.filter(f => f.kind !== 'free').map(f => { const st = frameState(f), h = frameHave(f);
-      return `<div class="qs-row${st === 'claim' ? ' ready' : ''}${st === 'own' || st === 'eq' ? ' done' : ''}"><span class="qs-pf">${pfHtml(f.id, 44, myPhoto(), { badge: false, lock: st === 'lock' })}</span><div class="qs-mid"><b>${f.ach}</b><small>${frameTxt(f)} · 「${f.name}」 테두리</small>${bar(st === 'lock' ? h / f.need * 100 : 100, st === 'claim' ? '#ffc94a' : st === 'lock' ? '' : '#53d3c0')}</div>${st === 'claim' ? `<button class="qs-btn gold" data-qframe="${f.id}">테두리<small>받기</small></button>` : `<span class="qs-cnt">${st === 'lock' ? `${Math.min(h, f.need)}<small>/ ${f.need}</small>` : st === 'eq' ? '<small>장착 중</small>' : '<small>보유</small>'}</span>`}</div>`; }).join('');
+      return `<div class="qs-row${st === 'claim' ? ' ready' : ''}${st === 'own' || st === 'eq' ? ' done' : ''}"><span class="qs-pf">${pfHtml(f.id, 44, myPhoto(), { badge: false, lock: st === 'lock' })}</span><div class="qs-mid"><b>${f.ach}</b><small>${frameTxt(f)} · 「${f.name}」 테두리</small>${bar(st === 'lock' ? h / f.need * 100 : 100, st === 'claim' ? '#ffc94a' : st === 'lock' ? '' : '#53d3c0')}</div>${st === 'claim' ? `<button class="qs-btn gold" data-qframe="${f.id}">테두리<small>받기</small></button>` : `<span class="qs-cnt">${st === 'lock' ? (f.kind === 'cp' ? `<small>${frameProg(f)}</small>` : `${Math.min(h, f.need)}<small>/ ${f.need}</small>`) : st === 'eq' ? '<small>장착 중</small>' : '<small>보유</small>'}</span>`}</div>`; }).join('');
     const all = achAllReady();
     return `<div class="qs-sum"><div><span>출석</span><b>${fmt(profile.ach.days)}일</b></div><div><span>받은 업적</span><b>${fmt(ACH.reduce((s, a) => s + (profile.ach.claimed[a.key] || 0), 0))}</b></div><div><span>테두리</span><b>${profile.frames.length - 1} / ${FRAMES.length - 1}</b></div></div>`
       + (all ? `<button class="qs-all" data-qall>🎁 받을 보상 ${all}개 · 모두 받기</button>` : '')
@@ -17181,7 +17275,7 @@ setInterval(() => { const bb = document.querySelector('#ui2 .u2-bb'); if ((bb ||
 // 왼쪽 = 고른 테두리 미리보기(200px) · 상태 · 버튼(업적 보상 받기 → 장착하기 → 장착 중) · 이렇게 보여요(로비 · 리더보드 · 매치) / 오른쪽 = 레벨 · 연승 테두리
 // 장착한 테두리는 남에게도 보인다 (리더보드 r2lb.frame · 친구 presence.frame · 친선전 lv 메시지)
 const CUS = { sel: 'none' };
-function claimFrame(id) { const f = FRAME[id]; if (!f || frameState(f) !== 'claim') return false; profile.frames.push(id); save(); sfx('buy'); renderLobby(); return true; }
+function claimFrame(id) { const f = FRAME[id]; if (!f || frameState(f) !== 'claim') return false; profile.frames.push(id); if (f.kind === 'cp') profile.comp.fs = compSeason().number; save(); sfx('buy'); renderLobby(); return true; }
 function equipFrame(id) { if (!profile.frames.includes(id)) return; profile.frame = id; save(); renderLobby(); lbPush(); presencePing(); }
 function openCustom(id) { if (window.__u2 && UI2.on) { closeModal('qsModal'); closeModal('menuModal'); u2Set({ profile: true, pfTab: 'frame', nickDraft: null }); return; } CUS.sel = id || profile.frame; renderCustom(); show('custom'); } // R2.12: 로비 프로필 시트로
 function renderCustom() {
@@ -17196,7 +17290,7 @@ function renderCustom() {
     <div class="cus-s2"><span class="rk">4</span>${pfHtml(f.id, 40, ph)}<span class="n">${nick} (나)</span><span class="sp"></span><span class="n">Lv.${lv}</span></div>
     <div class="cus-s3">${pfHtml(f.id, 72, ph)}<span class="t"><span class="eyebrow">VS · 매치 로딩</span><b>${nick}</b></span></div>`;
   const card = g => { const s = frameState(g); return `<button class="cus-card${g.id === f.id ? ' on' : ''}" data-frame="${g.id}">${pfHtml(g.id, 96, ph, { lock: s === 'lock' })}<span class="cn"><b>${g.name}</b><small>${g.kind === 'free' ? '기본 제공' : frameTxt(g)}</small></span>${tag(g, s)}${s === 'lock' ? '<span class="lk">🔒</span>' : s === 'claim' ? '<span class="rd"></span>' : ''}</button>`; };
-  $('cusList').innerHTML = [['레벨 테두리', '레벨 10 · 20 · 30 · 40 · 50 달성 업적', FRAMES.filter(g => g.kind === 'free' || g.kind === 'lv')], ['연승 테두리', '일반전 5 · 12 · 20연승 업적 · 최고 기록 기준', FRAMES.filter(g => g.kind === 'st')], ['도전 테두리', '승리 · 출석 · 탑 · 디펜스 · 도감 업적', FRAMES.filter(g => FRAME_K[g.kind] && FRAME_K[g.kind][2] === '도전')]]
+  $('cusList').innerHTML = [['레벨 테두리', '레벨 5 ~ 50 달성 업적', FRAMES.filter(g => g.kind === 'free' || g.kind === 'lv')], ['경쟁전 테두리', '이번 시즌 최고 티어', FRAMES.filter(g => g.kind === 'cp')], ['디펜스 테두리', '10 ~ 100웨이브 클리어', FRAMES.filter(g => g.kind === 'dfc')], ['연승 테두리', '일반전 5 · 12 · 20연승 업적 · 최고 기록 기준', FRAMES.filter(g => g.kind === 'st')], ['도전 테두리', '승리 · 출석 · 탑 · 디펜스 · 도감 업적', FRAMES.filter(g => FRAME_K[g.kind] && FRAME_K[g.kind][2] === '도전')]]
     .map(([h, sub, list]) => `<div class="g-card cus-grp"><div class="cus-gh"><b>${h}</b><small>${sub}</small></div><div class="cus-cards">${list.map(card).join('')}</div></div>`).join('');
 }
 $('cusList').addEventListener('click', e => { const b = e.target.closest('[data-frame]'); if (!b) return; CUS.sel = b.dataset.frame; renderCustom(); });
@@ -19035,13 +19129,17 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.7', date: '2026.11.26', title: '새 프로필 테두리 7종 · 사신 · 냉각 · 마탄 · 변이 리워크 · 디펜스 정식', sections: [
-    { title: '추가 패치 (build 4) · 새 프로필 테두리', items: [
+  { v: 'R3.7', date: '2026.11.26', title: '프로필 테두리 대량 추가 · 사신 · 냉각 · 마탄 · 변이 리워크 · 디펜스 정식', sections: [
+    { title: '추가 패치 (build 4) · 프로필 테두리', items: [
+      { icon: '👑', name: '레벨 테두리', tag: 'rework', desc: '금 테마로 새 단장 · 모두 움직여요' },
+      { icon: '✨', name: '레벨 테두리', tag: 'new', desc: '<b>5 · 15레벨</b> 테두리 추가' },
+      { icon: '⚡', name: '경쟁전 테두리', tag: 'new', desc: '이번 시즌 최고 티어 <b>브론즈 ~ 챌린저</b> 9종 (그 시즌 동안 사용)' },
+      { icon: '⚙️', name: '디펜스 테두리', tag: 'new', desc: '<b>10 ~ 100웨이브</b> 클리어 금속 테두리 10종' },
       { icon: '🖌', name: '테두리 「먹」', tag: 'new', desc: '출석 <b>14일</b>' },
       { icon: '🌙', name: '테두리 「월하」', tag: 'new', desc: '출석 <b>50일</b>' },
       { icon: '🏛', name: '테두리 「아르데코」', tag: 'new', desc: '일반전 <b>100승</b>' },
       { icon: '👑', name: '테두리 「왕국 문장」', tag: 'new', desc: '일반전 <b>500승</b>' },
-      { icon: '❄️', name: '테두리 「서리꽃」', tag: 'new', desc: '디펜스 <b>30웨이브</b>' },
+      { icon: '❄️', name: '테두리 「서리꽃」', tag: 'new', desc: '출석 <b>100일</b>' },
       { icon: '💾', name: '테두리 「회로」', tag: 'new', desc: '지후의 탑 <b>20층</b>' },
       { icon: '💎', name: '테두리 「프리즘」', tag: 'new', desc: '지후 <b>50종</b> 보유' },
     ] },
@@ -23798,7 +23896,7 @@ document.body.classList.add('u2-theme'); // R2.12 어두운 테마 (하위 화�
 window.__u2 = true; // 새 로비 준비 끝 (그 전에 부른 show 는 기존 화면)
 
 $('btnStart').addEventListener('click', () => { const n = $('nickInput').value.trim(); if (!n) return banner('닉네임을 넣어 주세요'); profile.nick = n.slice(0, 12); save(); renderLobby(); show('lobby'); setTimeout(updCheck, 400); }); // 처음 시작: 인트로 만화 → 업데이트 보상 (updCheck 가 본다)
-attend(); questAdd('login', 1); e7Login(); // 오늘 접속 · 출석
+if (cpFrameSweep()) save(); attend(); questAdd('login', 1); e7Login(); // 오늘 접속 · 출석
 $('welcomeVer').textContent = gameVersion();
 if (AUTH.ok) { renderLobby(); show('lobby'); } else { renderGate('loading'); show('welcome'); } // R2.12: 로그인해야 시작 (accBoot 가 확인)
 const RP_OPEN = (RP_LINK_RE.exec(location.search) || [])[1]; // R2.14 공유 리플레이 링크
