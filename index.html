@@ -7,7 +7,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.7"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.7"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -8558,12 +8558,12 @@ const CHARS = {
     onDeath(u, A) { const d = u.slimeDepth || 0; if (d >= 2) return; if (enh6(u)) { const R = 2 * CFG.CELL; if (!S.fast) A.ring(u.x, u.y, 2); foes(u).forEach(e => { if (dist(u, e) <= R + unitRadius(e)) dealDamage(u, e, 30, { skill: true, noCrit: true }); }); } /* 랭크 6 [끈적 폭발] */ [-1, 1].forEach(k => A.spawnChild(u, 'slime', { hp: u.baseMaxHp * 0.3 /* R2.26: 50 → 30% */, atk: u.atk * 0.5, depth: d + 1, dx: k * unitRadius(u) * 0.9, dy: k * unitRadius(u) * 0.4 })); } },
   atom: { name: '원자 지후', rarity: 'legend', role: '딜러', hp: 2250, atk: 45, atkSpeed: 1, range: 2, speed: 1.6, portrait: PORTRAITS.atom, sfx: 'ice', color: '#3fd0c9',
     story: '주기율표를 전부 외운 천재 지후입니다. 그런데 왕국 과거 시험장에 들어가서야 시험 과목에 화학이 없다는 걸 알게 되었어요. 너무 화가 나서 핵분열을 일으킬 뻔했지만, 감독관이 시험장 내 핵분열 금지 안내문을 가리켜 겨우 참았습니다. 같은 시험장에서 9수째인 콤보 지후에게 수학을 가르쳐 주려다, 6과 7 중 무엇이 큰지 설명하는 데 세 시간을 쓰고 포기했어요. 평소엔 온순하지만, 누가 수소를 H라고만 부르면 정색하고 풀네임을 불러 줍니다.',
-    passive: '레벨만큼의 전자가 주위를 돕니다. 전자에 닿은 적은 현재 체력의 <b>12.5%</b> 피해를 입습니다. 이 피해는 <b>체력 비례 피해 감소</b>를 무시합니다.',
+    passive: '레벨만큼의 전자가 주위를 돕니다. 전자에 닿은 적은 현재 체력의 <b>12.5%</b> 피해를 입습니다. 큰 적의 <b>95%</b> 비례 피해 감소는 받지 않습니다.',
     onStart(u) { u.ehit = {}; u.fx = u.fx || []; for (let i = 0; i < u.lv; i++) { const el = document.createElement('div'); el.className = 'fx-electron'; $('field').appendChild(el); u.fx.push(el); } },
     tick(u, dt, A) { const n = u.lv, R = 2 * CFG.CELL, er = 0.3 * CFG.CELL;
       for (let i = 0; i < n; i++) { const ang = S.time * Math.PI * 2 / 1.5 /* R2.19: 공전 1.3 → 1.5초 */ + i * Math.PI * 2 / n, ex = u.x + Math.cos(ang) * R, ey = u.y + Math.sin(ang) * R, el = u.fx && u.fx[i];
         if (el) { el.style.left = ex.toFixed(1) + 'px'; el.style.top = ey.toFixed(1) + 'px'; }
-        foes(u).forEach(e => { const key = i + ':' + e.uid; if ((u.ehit[key] || 0) > S.time || Math.hypot(e.x - ex, e.y - ey) > er + unitRadius(e)) return; u.ehit[key] = S.time + 1.5; const done = dealDamage(u, e, e.hp * 0.125, {}); /* R3.7 build 2: 전자는 체력 비례 피해 감소를 무시한다 */ /* R3.4 build 8: 11 → 12.5% · R2.10.2: 14 → 11% */ if (done > 0) hitFx(u, e, false); }); } } },
+        foes(u).forEach(e => { const key = i + ':' + e.uid; if ((u.ehit[key] || 0) > S.time || Math.hypot(e.x - ex, e.y - ey) > er + unitRadius(e)) return; u.ehit[key] = S.time + 1.5; const done = dealDamage(u, e, flatD(e, e.hp * 0.125), {}); /* R3.7 build 3: 전자는 큰 한철의 95% 감소를 받지 않는다 (한철은 크기와 상관없이 ×0.25) */ /* R3.4 build 8: 11 → 12.5% · R2.10.2: 14 → 11% */ if (done > 0) hitFx(u, e, false); }); } } },
   dice: { name: '주사위 지후', rarity: 'rare', role: '딜러', hp: 1477, /* R2.26: 777 → 1477 */ atk: 125, atkSpeed: 1.4, /* R2.26: 1.7 → 1.4 */ range: 5.5, speed: 1.6, dmgRange: [1, 250], /* R2.26: 1~300 → 1~250 */ portrait: PORTRAITS.dice, sfx: 'shot', color: '#e8e2d4',
     story: '보드게임에서 원하는 숫자가 안 나오면 판을 엎던 지후입니다. 친구들이 더는 같이 놀아 주지 않자, 그는 집에서 정이십면체 주사위를 들고 나왔어요. 면이 많아지면 원하는 숫자가 나올 확률도 높아진다는 이론이었는데, 계산해 보니 오히려 낮아졌습니다. 그래도 그는 느낌상 높아졌다며 오늘도 굴려요. 카지노에 가면 슬롯머신 지후가 슬그머니 자리를 피합니다. 요즘은 아침 메뉴도 출근 여부도 주사위로 정하다가, 회사에서 잘렸어요.',
     passive: '공격할 때마다 <b>1 ~ 250</b> 사이 무작위 피해를 입힙니다.' },
@@ -11149,7 +11149,7 @@ const CHAR_INFO = {
   magic: [['[마탄]', '7발 · 일반 공격마다 1발 · 다 쓰면 가까운 적 3기에게 [스코프] · 0발이면 마탄 없이 일반 공격'], ['[스코프]', '10초 · 마탄 지후에게 맞으면 사라지고 최대 SP 50% 제거 · 스킬이 없는 적은 7초 동안 받는 피해 +16%'], ['스코프 명중', '때린 마탄 지후 SP +1 · 마탄 1발 재장전 · 다음 일반 공격 피해 +200%'], ['스킬', 'SP 8 · 마탄 1발 · 체력이 가장 높은 적 · 공격력 1000% · [절상] 최대 체력 30% 4초 · [취약] +30% 4초'], ['연쇄', '[최후의 마탄]으로 처치하면 체력이 가장 높은 적에게 그 피해의 30% 마탄 (1발 · 연쇄 가능)']],
   gift: [['SP', '초당 1 (라운드 시작부터)'], ['필요 SP', '32'], ['변신', '모든 지후 중 무작위 1기 · 자신의 레벨보다 1 높은 레벨 (최대 Lv5) · 1회'], ['변신 뒤', '다음 라운드에도 그 지후로 남는다'], ['변신 전에 쓰러지면', '모은 SP가 다음 라운드로 이어진다']],
   slime: [['분열', '2기 · 체력 30% · 공격력 절반'], ['최대', '2단계']],
-  atom: [['사거리', '2칸 = 궤도 반지름 (적이 전자 궤도 위에 오게)'], ['전자 수', '레벨과 같음'], ['공전 주기', '1.5초'], ['궤도 반지름', '2칸'], ['전자 피해', '현재 체력의 12.5% (한 바퀴에 같은 적 한 번) · 체력 비례 피해 감소를 무시한다']],
+  atom: [['사거리', '2칸 = 궤도 반지름 (적이 전자 궤도 위에 오게)'], ['전자 수', '레벨과 같음'], ['공전 주기', '1.5초'], ['궤도 반지름', '2칸'], ['전자 피해', '현재 체력의 12.5% (한 바퀴에 같은 적 한 번) · 디펜스 한철은 크기와 상관없이 ×0.25']],
   dice: [['피해', '1 ~ 250 (레벨 · 버프 적용)']],
   gun: [['동시 공격', '레벨 수만큼 (Lv3 = 3명)'], ['적이 적으면', '사거리 안에 있는 만큼']],
   get coin() { const st = coinState(), m = st.m, left = 10 - Math.floor(Date.now() / 60000) % 10; return [['지금 시세', `${m.toFixed(2)}배 (공격력 ${Math.round(CHARS.coin.atk * m)})`], ['지금 장세', COIN_RG[st.r].name], ['다음 변동', `약 ${left}분 뒤`], ['범위', '0.3배 ~ 4배 (오래 보면 평균 약 1배)'], ['장세', '상승장 · 하락장 2 ~ 4시간 · 횡보장 3 ~ 6시간 · 광기장 (크게 출렁) 30분 ~ 1시간 · 비율로 오르내린다'], ['펌핑 · 떡락', '10분마다 1% (반반) · 펌핑 +30 ~ 80% · 떡락 −30 ~ 60%'], ['주기', '10분 (모두 같은 시세)'], ['친선전', '판 시작 시세로 고정']]; }, // R2.22.1 리워크: 지금 시세 · 장세
@@ -13109,7 +13109,7 @@ const dfKeys = n => { let k = 0; for (let w = 5; w <= n; w += 5) k += w >= 30 ? 
 const DF = { WAVE: 20, EWAVE: 20, /* build 3: 10 → 20 */ FIRST: 10, LIVES: 20, /* R2.36 build 5: 30 → 20 · build 2: 10 → 30 */ EV_EVERY: 10, /* 정비 시간 (이벤트 · build 3: 10 → 5 · build 4: 다시 10웨이브) */ QCAP: 20, /* build 10: 다시 20 (build 9 에 30) · build 6: 웨이브가 끝날 때 아군이 이 수를 넘으면 충격파 (예전 3웨이브마다) */ QD0: 0.25, QDADD: 0.2 / 71, QDMAX: 0.45, QSTEP: [[110, 0.5], [120, 0.55]], /* R2.36: 최대 80 → 60% · R3.2 build 13: 72웨이브에 45% (25% → 45% 를 71웨이브에 걸쳐) · 110웨이브부터 50% · 120웨이브부터 55% */ QSTUN: 5, /* build 4 충격파: 3웨이브마다 내 지후 모두 최대 체력 피해 · 5초 기절 · build 5: 피해 25% 에서 웨이브마다 +1%p · 최대 80% (예전 50% 고정) */ GOLD_K: 2, KILL_K: 1.25, /* R2.36: 처치 골드 2 → 5 (CW.KILL 4 × 1.25) */ UP_COST: [100, 200, 400, 800], UP_K: 0.25, /* R2.36 유닛 업그레이드: Lv5 까지 · 레벨마다 능력치 +25% (Lv5 = 2배) */ /* build 5: 웨이브 골드 ×2 · 처치 골드 ×0.5 */ N0: 2, NK: 0.6, /* build 7: 적 수 = 내 전장 지후 × 0.6 (+0~1 · 최소 2) · 예전 ±1 */ NADD: 0.13, NMAX: 24, K0: 0.6, KADD: 0.012, KW5: 5, KADD5: 0.003, /* R3.2 build 9: 5웨이브부터 웨이브마다 +0.003 더 (출격제한이 없어져서 · 아주 소폭) */ EXP_W: 50, EXP_A: 0.04, EXP_B: 0.1, /* R2.37 build 2 광폭 웨이브: 50웨이브 뒤 웨이브마다 배율 +0.04 (선형) · 2배가 된 뒤로는 +0.1 (예전: 30웨이브부터 ×1.035 곱) */ /* build 6: 0.022 → 0.019 · build 7: 0.7 / 0.019 → 0.6 / 0.012 */ RALLY: [5] /* R2.36 build 5: 20 · 10 → 5 (한 번) */, RALLY_GOLD: 300, RALLY_DMG: 2000, RALLY_STUN: 10, RALLY_KB: 4, /* build 7 반격: 라이프 20 · 10 이 될 때 */ /* build 5 상향: 0.016 → 0.022 · 적 수는 이제 내 전장 지후 수만큼 (dfSpawn) */ /* build 2 난이도 하향: 수 0.3 → 0.13 · 배율 0.04 → 0.016 (시뮬: 기본 덱 자동 봇 평균 16 → 42웨이브) */ BOX: 40, NUKE_P: 0.1 /* R3.2 build 10: 핵 = 적 최대 체력 비율 (build 9 현재 체력 50% · 예전 NUKE 500 고정) */ };
 const cwWv = () => (S.cw && S.cw.df ? DF.WAVE : CW.WAVE);
 const pctD = (t, v) => t.def.castle ? v * 0.05 : t.dfF ? v * (t.baseMaxHp >= DF2.BIG_HP ? DF2.PCT_BIG : DF2.PCT) : v; // 체력 비례 피해: 성은 95% 줄여 받는다 · 한철은 ×0.25 (R3.7 build 2: 최대 체력 3001 이상은 ×0.05)
-const flatD = (t, v) => t.def.castle ? v * 0.05 : t.dfF ? v * DF2.PCT : v; // 비례가 아니지만 성 · 한철에게 줄어드는 피해 (해일 기본분 · 파멸 변이 폭발)
+const flatD = (t, v) => t.def.castle ? v * 0.05 : t.dfF ? v * DF2.PCT : v; // 성 · 한철에게 늘 같은 비율로 줄어드는 피해 (해일 기본분 · 파멸 변이 폭발 · 원자 전자)
 const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이브 0 ~ 5: 50 · 6 ~ 10: 70 · 11 ~ 15: 90 …
 function cwCastleXY(side) { const c = tileXY(side, (CFG.ROWS - 1) * CFG.COLS + 1), b = backDir(side); return { x: c.x + b.x * 1.8 * CFG.CELL, y: c.y + b.y * 1.8 * CFG.CELL }; } // 후열 가운데 칸 뒤 (1.8칸 · 화면 위아래 HUD 에 가리지 않게)
 function cwUi(on) { if (!on) $('oddsLabA').classList.remove('over'); const sb = $('screen-battle'); sb.classList.toggle('cw', !!on && !isDf()); sb.classList.toggle('df', false); sb.classList.toggle('df2', !!on && isDf()); /* R3.6 새 디펜스: 일반전 화면 (h4) */ viewDirty(); /* R2.34 디펜스: PC 좌우 분할 */ const lab = document.querySelector('#hudMid .rd small'); if (lab) lab.textContent = on ? 'WAVE' : 'ROUND'; }
@@ -19015,6 +19015,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.7', date: '2026.11.26', title: '사신 · 냉각 · 마탄 · 변이 리워크 · 디펜스 정식 · 디펜스 밸런스', sections: [
+    { title: '추가 패치 (build 3)', items: [
+      { id: 'atom', name: '원자 지후', tag: 'nerf', desc: '디펜스 전자 피해 <b>12.5 → 3.1%</b>' },
+    ] },
     { title: '추가 패치 (build 2)', items: [
       { icon: '⏳', name: '디펜스', tag: 'system', desc: '쌓인 효과 초기화 <b>웨이브마다 → 10웨이브마다</b> (쓰러진 지후는 다음 웨이브에 다시)' },
       { icon: '📉', name: '디펜스', tag: 'adjust', desc: '최대 체력 <b>3,001</b> 이상 적은 체력 비례 피해 <b>95%</b> 감소' },
