@@ -54,6 +54,12 @@ function pick() { // 올릴 항목: { key, ver, build, title, date, sections }
   if (flag('day')) { /* 하루 총정리: build 칸까지 모두 · 이미지 today-<날짜> (없으면 <버전>) */
     const day = 'today-' + String(e.date || '').replace(/\./g, '-'), secs = e.sections.map(x => ({ title: plain(x.title).replace(/^추가 패치 \(build \d+\)\s*·?\s*/, '') || plain(e.title), items: x.items }));
     let today = null; try { today = JSON.parse(fs.readFileSync(path.join(ROOT, 'infographics', day + '.json'), 'utf8')); } catch (er) {}
+    if (today && !today.sections) { /* 덱 레이아웃 (R3.5~): sections 가 없으면 headlines · tiles · more 로 만든다 */
+      const it = (m, line) => ({ icon: m.icon, title: m.title, lines: line ? [line] : [] });
+      today.sections = [{ kind: 'change', label: '큰 변화', items: (today.headlines || []).map(h => it(h, h.lead)) },
+        { kind: 'balance', label: '밸런스', tiles: today.tiles || [] }, { kind: 'change', label: '그 밖에', items: (today.more || []).map(m => it(m, m.line)) }
+      ].filter(x => (x.items || x.tiles).length);
+    }
     return { key: `${ver}-day`, img: day, today, ver, build: 0, title: e.title, date: e.date, sections: secs };
   }
   let build = opt('build') ? +opt('build') : flag('all') ? 0 : bOf(e.sections[0]);
