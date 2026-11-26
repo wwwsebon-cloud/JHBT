@@ -1454,7 +1454,12 @@ html body #intro, html body.u2-theme #intro { background:#0d0c0e; color:#e8e3d8;
 @keyframes u4bob { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-7px); } }
 html, body { overscroll-behavior:none; } .u2-scroll { overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
 @media (prefers-reduced-motion:reduce) { .u4 .u4-ptc, .u4.u4-main .u4-sqc img { animation:none; } .u4 .u4-ptc { display:none; } }
-#screen-battle:not(.reels) .r3pf .av .pf-photo { inset:4px !important; } #screen-battle:not(.reels) .r3pf .av .pf-ring { border-radius:0 !important; } #screen-battle:not(.reels) .r3pf .av .pf-orn { display:none; } /* R3.7 build 4: 네모 칸에서는 장식이 어긋난다 */ /* 인게임에서도 테두리 색이 보이게 */
+#screen-battle:not(.reels) .r3pf .av .pf-photo { inset:4px !important; border-radius:18% !important; } #screen-battle:not(.reels) .r3pf .av .pf-ring { border-radius:24% !important; } /* 인게임에서도 테두리 색이 보이게 */
+/* R3.7 build 4: 전투 화면 프로필도 원본처럼 둥글게 · 네모 칸 (테두리 선 · 모서리 띠) 없이 · 장식 표시 (움직임은 없음) */
+html body #screen-battle:not(.reels) .r3pf .av.pfw, html body.u4-on #screen-battle.h4:not(.reels):not(.cw) .hud .r3pf .av.pfw { border:0 !important; border-radius:24% !important; background:transparent !important; overflow:visible !important; }
+html body #screen-battle:not(.reels) .r3pf .av::before { display:none !important; }
+#screen-battle:not(.reels) .r3pf .av .pf.tiny .pf-orn .d { display:inline; }
+#screen-battle:not(.reels) .r3pf .av.pfn .pf-ring { background:var(--h4a, var(--qa, #1d6fa5)) !important; } #screen-battle:not(.reels) .r3pf.op .av.pfn .pf-ring { background:var(--h4e, #d6382c) !important; } /* 기본 테두리는 진영 색 */
 .fx-projectile.mgb { width:22px; height:22px; border-radius:50%; background:radial-gradient(circle, #f2fbff 0 20%, #59b4ff 45%, #0b3c8a 75%) !important; box-shadow:0 0 18px 8px rgba(60,150,255,.75), 0 0 34px 14px rgba(40,110,255,.35); } /* 마탄 (파란 불꽃) */
 /* R3.5 build 3 접속 중인 유저 #presOv (ui4 색 · 흰 판 · 검은 테두리) */
 #presOv { position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; background:rgba(13,13,13,.55); font-family:'Noto Sans KR', sans-serif; }
@@ -14748,7 +14753,7 @@ const R3_MT = { castle: 'CASTLE', defense: 'DEFENSE', sandbox: 'SANDBOX', reels:
 function renderIds() { // 왼쪽(A) = 나 · 오른쪽(E) = 상대
   [[ME(), 'A'], [OPP(), 'E']].forEach(([s, U]) => {
     const lv = S.lvl && S.lvl[s] != null ? S.lvl[s] : null;
-    $('hudNick' + U).innerHTML = `${esc(S.nick[s])}${lv != null ? ` <em>Lv.${lv}</em>` : ''}${s === 'e' && S.weak && !S.net ? ` <em class="nb-tag" title="초보자 보호 · 봇 왕초보 · 능력치 ${Math.round(CFG.EASY_MULT * 100)}%">🐣 보호</em>` : ''}`; const pf = S.pf && S.pf[s] || {}; $('hudAv' + U).innerHTML = pfHtml(pf.fr, 40, pf.ph, { letter: S.nick[s], fc: s === ME() ? 'var(--ink)' : 'var(--red)' }); // R2.13: 초보자 보호 표시 (build 3: 이 주석이 줄 가운데에 있어 프로필 사진 코드가 삼켜졌던 것을 고침)
+    $('hudNick' + U).innerHTML = `${esc(S.nick[s])}${lv != null ? ` <em>Lv.${lv}</em>` : ''}${s === 'e' && S.weak && !S.net ? ` <em class="nb-tag" title="초보자 보호 · 봇 왕초보 · 능력치 ${Math.round(CFG.EASY_MULT * 100)}%">🐣 보호</em>` : ''}`; const pf = S.pf && S.pf[s] || {}; $('hudAv' + U).innerHTML = pfHtml(pf.fr, 40, pf.ph, { letter: S.nick[s], fc: s === ME() ? 'var(--ink)' : 'var(--red)' }); $('hudAv' + U).classList.toggle('pfn', !hasKey(FRAME, pf.fr) || pf.fr === 'none'); // R2.13: 초보자 보호 표시 (build 3: 이 주석이 줄 가운데에 있어 프로필 사진 코드가 삼켜졌던 것을 고침)
     const bn = (S.evf && S.evf[s] && S.evf[s].ban) || []; $('fdeck' + U).innerHTML = S.deck[s].map(id => `<span class="sg${bn.includes(id) ? ' banned' : ''}" style="--rc:${sigC(id)}; --rb:${sigBg(id)}" title="${CHARS[id].name}${bn.includes(id) ? ' · 밴' : ''}" data-cid="${id}">${pic(id)}${rkDot(s, id)}</span>`).join(''); /* [밴] 이벤트로 막힌 지후는 회색 + 금지 (R2.10) */ }); // 양쪽 덱 (전장 위 모서리) · 테두리는 지후 고유 색 (R2.6.1)
   const spec = S.net && S.net.spec; $('r3Mt').textContent = S.net ? 'FRIENDLY MATCH' : S.arc ? R3_MT[S.arc.kind] || 'ARCADE' : 'NORMAL MATCH'; /* R3.0 */
   $('hudMode').textContent = !S.net ? (S.arc ? ({ castle: '성뿌수기', defense: '디펜스', sandbox: '아케이드 · 샌드박스', reels: '아케이드 · 릴스 모드', mirror: '아케이드 · 미러전', random: '아케이드 · 랜덤전', tower: `지후의 탑 · ${S.arc.floor}층`, comp: '경쟁전 · 3판 2선승', tutorial: '튜토리얼' })[S.arc.kind] || '아케이드' : '일반전 · 봇') : spec ? '친선전 · 보상 없음' : '친선전 · 1:1';
@@ -19131,6 +19136,7 @@ const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정'
 const PATCH_NOTES = [
   { v: 'R3.7', date: '2026.11.26', title: '프로필 테두리 대량 추가 · 사신 · 냉각 · 마탄 · 변이 리워크 · 디펜스 정식', sections: [
     { title: '추가 패치 (build 4) · 프로필 테두리', items: [
+      { icon: '🖼', name: '전투 화면', tag: 'adjust', desc: '프로필 테두리를 원본처럼 <b>둥글게</b> · 장식도 표시' },
       { icon: '👑', name: '레벨 테두리', tag: 'rework', desc: '금 테마로 새 단장 · 모두 움직여요' },
       { icon: '✨', name: '레벨 테두리', tag: 'new', desc: '<b>5 · 15레벨</b> 테두리 추가' },
       { icon: '⚡', name: '경쟁전 테두리', tag: 'new', desc: '이번 시즌 최고 티어 <b>브론즈 ~ 챌린저</b> 9종 (그 시즌 동안 사용)' },
