@@ -33,7 +33,7 @@
 - `index.html` 하나가 게임 전체 (빌드 없음 · 약 10MB · 초상화 base64 포함). 로컬: `python -m http.server 8766` → `index.html?bench=` (로그인 없이 · 시험 함수 `window.__rejhbt` · 개발 주소에서만).
 - R1 (v8.1) 코드: `git show origin/archive/v8.1:index.html`.
 - **사이트 배포 (GitHub Pages · jihoobattle.kr)**: `_config.yml` 의 `exclude` 로 게임에 안 쓰는 폴더 (infographics · tools · docs · app · 지후초상화 …) 를 뺀다 (225MB 가 되자 10분 제한으로 실패했었다) · 큰 폴더를 새로 올리면 여기에 더한다. 상태: `https://api.github.com/repos/wwwsebon-cloud/JHBT/actions/runs` · 사이트 버전 `curl jihoobattle.kr` 의 `jihoo-version`.
-- **서버 규칙** `firestore.rules`: 사용자 PC 에서 **`node tools/rules-deploy.js`** (서비스 계정 키 · `문서/jhbt-app/rules.json` · `--dry` 로 차이만) · 콘솔에 파일 전체를 붙여 넣어도 된다.
+- **서버 규칙** `firestore.rules`: 사용자 PC 에서 **`node tools/rules-deploy.js`** (서비스 계정 키 · `문서/jhbt-app/rules.json` · `--dry` 로 차이만) · 콘솔에 파일 전체를 붙여 넣어도 된다. 사용자가 직접 게시할 때는 **`tools/rules-copy.bat`** (클립보드에 복사하고 콘솔 규칙 화면을 연다).
 - **사용자가 터미널 없이 GitHub 웹으로 `index.html` 만 올리는 때가 있다** («Add files via upload») → 다음 작업 시작에 `git fetch` → fast-forward → 패치노트 개수 확인 → 빠진 문서 · 인포그래픽 · 총정리를 채운다.
 
 ## 업데이트 때 할 일
