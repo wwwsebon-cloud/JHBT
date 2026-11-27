@@ -5126,6 +5126,7 @@ button.jtl-card small { font-size:11.5px; line-height:1.45; color:#c4bfb4; word-
 button.jtl-card span { margin-top:auto; align-self:stretch; padding:5px 0; text-align:center; font:400 13px 'Do Hyeon', sans-serif; background:#25232a; color:#8d887f; }
 button.jtl-card.has span { background:#fff; color:#0d0d0d; } button.jtl-card.eq span { background:#f04a14; color:#fff; }
 button.jtl-card:focus-visible { outline:3px solid #f04a14; outline-offset:1px; }
+button.jtl-card i.jtl-n { margin-top:auto; font:400 12px 'Do Hyeon', sans-serif; font-style:normal; color:#8d887f !important; } button.jtl-card i.jtl-n + span { margin-top:0; }
 .jttl-row { display:flex; align-items:center; min-height:18px; } .u4-pf-tx .jttl-row { min-height:0; margin:-2px 0 -1px; }
 .it-ttl em.jttl, .jttl-toast em.jttl, button.jtl-card em.jttl { background:none !important; padding:0; }
 .it-ttl { display:block; min-height:0; } .it-ttl em.jttl { font-size:clamp(15px, 2.2vw, 26px); transform-origin:50% 70%; }
@@ -12257,16 +12258,29 @@ const titleHtml = id => (typeof id === 'string' && hasKey(TITLE, id) ? `<em clas
 const titleNeed = t => (typeof t.need === 'function' ? t.need() : t.need || 1);
 function dayGap(a, b) { const f = k => { const m = /^(\d+)-(\d+)-(\d+)$/.exec(String(k || '')); return m ? Date.UTC(+m[1], m[2] - 1, +m[3]) : NaN; }; return Math.round((f(b) - f(a)) / 86400000); } /* 날짜 키 b 가 a 보다 며칠 뒤인지 (키가 없으면 NaN) */
 function titleNow(t) { try { if (t.id === 'diligent' && !(dayGap(profile.ttDay, todayKey()) <= 1)) return 0; return Math.max(0, Math.floor(Number(t.v ? t.v(profile) : (profile.tc || {})[t.id]) || 0)); } catch (e) { return 0; } }
+// 칭호별 보유 인원: 랭킹 기록 r2lb.tl 을 서버에서 센다 (칭호 탭을 열 때 · 1시간에 한 번 · 칭호 하나에 읽기 1 · 이 기기에 저장)
+const TTC_KEY = 'rejhbt-ttc', TTC_MS = 3600000;
+const TTC = (() => { const o = { at: 0, n: {}, busy: false, fail: 0 }; try { const s = JSON.parse(localStorage.getItem(TTC_KEY)); if (s && s.n && typeof s.n === 'object') { o.at = Number(s.at) || 0; o.n = s.n; } } catch (e) {} return o; })();
+async function titleCountLoad() {
+  if (TTC.busy || Date.now() - TTC.at < TTC_MS || Date.now() - TTC.fail < 60000) return; TTC.busy = true;
+  try { if (!(await fbInit()) || !FB.uid) throw new Error('offline'); if (profile.nick) await lbPush(); /* 내 칭호부터 올리고 센다 */ if (FB.noTi) throw new Error('rules');
+    const sdk = FB.sdk, col = sdk.collection(FB.db, 'r2lb');
+    TTC.n = Object.fromEntries(await Promise.all(TITLES.map(async t => [t.id, (await sdk.getCountFromServer(sdk.query(col, sdk.where('tl', 'array-contains', t.id)))).data().count | 0]))); TTC.at = Date.now(); TTC.fail = 0;
+    try { localStorage.setItem(TTC_KEY, JSON.stringify({ at: TTC.at, n: TTC.n })); } catch (e) {}
+  } catch (e) { TTC.fail = Date.now(); console.warn('[rejhbt] 칭호 보유 인원 읽기 실패', e); }
+  TTC.busy = false; if (window.__u2) u2Render();
+}
+const titleCountTxt = id => (typeof TTC.n[id] === 'number' ? `${TTC.n[id].toLocaleString()}명 보유` : TTC.busy ? '세는 중' : '–명 보유');
 const TTQ = { L: [], busy: false };
 function titleToast() { const L = TTQ.L.shift(); TTQ.busy = !!L; if (!L) return; const el = document.createElement('div'); el.className = 'jttl-toast'; el.setAttribute('role', 'status'); el.innerHTML = `<small>${L.length > 1 ? `칭호 ${L.length}개 획득` : '칭호 획득'}</small>${titleHtml(L[0])}`; document.body.appendChild(el); sfx('buy'); setTimeout(() => { el.remove(); titleToast(); }, 2600); }
-function titleGive(...ids) { const L = ids.filter(id => hasKey(TITLE, id) && !hasTitle(id)); if (!L.length) return false; profile.titles = [...(profile.titles || []), ...L]; profile.tiNew = 1; save(); TTQ.L.push(L); if (!TTQ.busy) titleToast(); return true; }
+function titleGive(...ids) { const L = ids.filter(id => hasKey(TITLE, id) && !hasTitle(id)); if (!L.length) return false; profile.titles = [...(profile.titles || []), ...L]; profile.tiNew = 1; save(); TTC.at = 0; clearTimeout(TTQ.up); TTQ.up = setTimeout(() => { if (profile.nick) lbPush(); }, 5000); TTQ.L.push(L); if (!TTQ.busy) titleToast(); return true; }
 function titleCheck() { const L = TITLES.filter(t => t.v && !hasTitle(t.id) && titleNow(t) >= titleNeed(t)).map(t => t.id); if (L.length) titleGive(...L); }
 function titleEquip(id) { if (!hasTitle(id)) return; profile.title = profile.title === id ? '' : id; save(); renderLobby(); lbPush(); presencePing();
   if ((profile.comp.wins | 0) + (profile.comp.losses | 0) > 0) compPush(); if (profile.tower.best > 0) towerPush(); if (profile.dfBest > 0) dfPush(); /* 기록이 있는 순위만 다시 올린다 */ if (window.__u2) u2Render(); }
 function titleListHtml() { const eq = profile.title, at = t => (t.id === eq ? 0 : hasTitle(t.id) ? 1 : 2), L = TITLES.slice().sort((a, b) => at(a) - at(b));
   return `<div class="jtl-sum">보유 <b>${TITLES.filter(t => hasTitle(t.id)).length}</b> / ${TITLES.length}</div><div class="jtl-grid">` + L.map(t => { const has = hasTitle(t.id), on = t.id === eq, need = titleNeed(t);
     const st = on ? '장착 중' : has ? '장착' : need > 1 ? `${Math.min(titleNow(t), need).toLocaleString()} / ${need.toLocaleString()}` : '잠김';
-    return `<button type="button" class="jtl-card${has ? ' has' : ''}${on ? ' eq' : ''}" data-jtl="${t.id}" aria-pressed="${on}"${has ? '' : ' aria-disabled="true"'}>${has ? titleHtml(t.id) : `<b>${t.n}</b>`}<small>${t.d}</small><span>${st}</span></button>`; }).join('') + '</div>'; }
+    return `<button type="button" class="jtl-card${has ? ' has' : ''}${on ? ' eq' : ''}" data-jtl="${t.id}" aria-pressed="${on}"${has ? '' : ' aria-disabled="true"'}>${has ? titleHtml(t.id) : `<b>${t.n}</b>`}<small>${t.d}</small><i class="jtl-n">${titleCountTxt(t.id)}</i><span>${st}</span></button>`; }).join('') + '</div>'; }
 function titleClick(e) { const b = e.target.closest('[data-jtl]'); if (b && hasTitle(b.dataset.jtl)) { sfx('merge'); titleEquip(b.dataset.jtl); } }
 // 전투에서 세는 칭호 — 내 진영만 · 리플레이 · 시뮬 · 튜토리얼 · 샌드박스 · 관전은 세지 않는다 · normal = 일반전만 (봇 · 온라인)
 const ttOn = (side, normal) => !!(S && !S.fast && !S.replay && !TUT.on && !sandboxLike() && !(S.net && S.net.spec) && side === ME() && (!normal || (!S.arc && !S.cw && (!S.net || S.net.ranked))));
@@ -12607,9 +12621,10 @@ async function lbPush() { // 전적 갱신 후 호출 (실패해도 게임은 �
     if (!FB.noRk) doc.rk = deck.map(id => (owned(id) ? clamp(enhLv(id) | 0, 1, ENH_MAX) : 1)); // R2.28 덱 지후 랭크 (리더보드 표시 · 규칙 게시 전이면 아래에서 빼고 다시)
     if (!FB.noRtb && rtbOn()) doc.rtb = profile.rtb.s + RTB.DAYS - 1; /* R3.8 build 8: 복귀 마지막 날 번호 (규칙 게시 전이면 빼고 다시) */
     if (!FB.noTi && profile.title) doc.ti = profile.title; /* R3.8 build 12 칭호 */
+    if (!FB.noTi && (profile.titles || []).length) doc.tl = profile.titles.filter(id => hasKey(TITLE, id)); /* 가진 칭호 (보유 인원 세기) */
     Object.assign(doc, { dia: Math.min(99999999, profile.dia), gold: Math.min(999999999, profile.gold), pulls: Math.min(999999, profile.pulls | 0), own: Object.keys(profile.owned || {}).length, cheat: Math.min(9999, (profile.cheat && profile.cheat.n) | 0) }); // R2.12 핵 방지: 운영 도구에서 본다
     await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2lb', FB.uid), doc);
-  } catch (e) { if (e && e.code === 'permission-denied') { if (!FB.noRtb && rtbOn()) { FB.noRtb = true; return lbPush(); } if (!FB.noTi && profile.title) { FB.noTi = true; return lbPush(); } if (!FB.oldIds && (/\d/.test(favChar()) || (profile.deck || []).some(id => /\d/.test(id)))) { FB.oldIds = true; return lbPush(); } if (!FB.noPt) { FB.noPt = true; return lbPush(); } if (!FB.noRk) { FB.noRk = true; return lbPush(); } if (!FB.noCp) { FB.noCp = true; return lbPush(); } if (!FB.noFrame) { FB.noFrame = true; return lbPush(); } } console.warn('[rejhbt] 전적 업로드 실패', e); } // 규칙을 아직 게시하지 않았으면 재화 칸 없이
+  } catch (e) { if (e && e.code === 'permission-denied') { if (!FB.noRtb && rtbOn()) { FB.noRtb = true; return lbPush(); } if (!FB.noTi && (profile.title || (profile.titles || []).length)) { FB.noTi = true; return lbPush(); } if (!FB.oldIds && (/\d/.test(favChar()) || (profile.deck || []).some(id => /\d/.test(id)))) { FB.oldIds = true; return lbPush(); } if (!FB.noPt) { FB.noPt = true; return lbPush(); } if (!FB.noRk) { FB.noRk = true; return lbPush(); } if (!FB.noCp) { FB.noCp = true; return lbPush(); } if (!FB.noFrame) { FB.noFrame = true; return lbPush(); } } console.warn('[rejhbt] 전적 업로드 실패', e); } // 규칙을 아직 게시하지 않았으면 재화 칸 없이
 }
 
 // ═════════ 계정: 로그인 · 회원가입 · Google (지후배틀과 같은 계정 · UID 8자리 + 비밀번호) ═════════
@@ -20042,6 +20057,7 @@ const PATCH_NOTES = [
   { v: 'R3.8', date: '2026.11.27', title: '칭호 · 커피 사주기 · 고객지원, 복귀 유저 혜택, 시작 팝업 정리, 비밀번호 찾기, 프로필 계정 정보, 계정 화면 새 디자인, 서버 저장 보안 강화, 계정 중복 수정, 이벤트와 친구와 업적 화면 새 디자인, 게임 모드 버튼, 초보자 모집 확률', sections: [
     { title: '추가 패치 (build 12)', items: [
       { icon: '🏅', name: '칭호', tag: 'new', desc: '프로필 → <b>칭호</b>에서 장착 · <b>53종</b>' },
+      { icon: '👥', name: '칭호 보유 인원', tag: 'new', desc: '칭호마다 <b>가진 사람 수</b> 표시' },
       { icon: '✨', name: '칭호 표시', tag: 'new', desc: '랭킹 · 매치 화면 · 프로필 · 유저 정보 · 채팅에 <b>금색 칭호</b>' },
       { icon: '🏆', name: '랭킹', tag: 'adjust', desc: '닉네임 아래 테두리 이름 대신 <b>칭호</b>' },
       { icon: '☕', name: '고객지원', tag: 'new', desc: '<b>개발자에게 커피 사주기</b>' },
@@ -24733,6 +24749,7 @@ function u2PfExtra(s, b) { // 프로필 (R2.27): 정보 · 전적 · 아바타 �
   const ownR = r => Object.keys(CHARS).filter(id => CHARS[id].rarity === r && seeId(id)), own = Object.keys(CHARS).filter(owned).length, tot = Object.keys(CHARS).filter(seeId).length;
   const left = nickLeft(), free = !(profile.nickN > 0);
   if (tab === 'title' && profile.tiNew) { profile.tiNew = 0; save(); }
+  if (tab === 'title') titleCountLoad();
   return Object.assign({}, b, {
     big: { html: pfHtml(profile.frame, 84, ph, { me: true }) }, idTxt: isMember() ? 'UID ' + accCode() : '게스트', goAvatar: () => u2Set({ pfTab: 'fav' }), nickOpen: !!s.nickOpen, nickToggle: () => u2Set({ nickOpen: !s.nickOpen, nickDraft: null }),
     nickK: left > 0 ? 'k-off' : free ? 'k-mint' : 'k-gold', xpLeft: `다음 레벨까지 EXP ${f(Math.max(0, need - profile.xp))}`, xpTxt: `${f(profile.xp)} / ${f(need)}`,

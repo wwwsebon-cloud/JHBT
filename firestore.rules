@@ -138,6 +138,7 @@ service cloud.firestore {
     function compSeasonNow(s) { return s == compSeasonAt(request.time.toMillis() - 600000) || s == compSeasonAt(request.time.toMillis() + 600000); }
     // R3.8 build 12 칭호 (표시용 · GM 은 운영자만)
     function tiOk() { return !('ti' in request.resource.data) || (request.resource.data.ti is string && request.resource.data.ti.matches('^[a-z0-9]{1,12}$') && (request.resource.data.ti != 'gm' || isAdmin())); }
+    function tlOk() { return !('tl' in request.resource.data) || (request.resource.data.tl is list && request.resource.data.tl.size() <= 100 && (!request.resource.data.tl.hasAny(['gm']) || isAdmin())); }
     match /r2comp/{docId} {
       allow get, list: if true;
       allow delete: if isAdmin();
@@ -240,7 +241,7 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'rtb', 'ti', 'updatedAt']) && tiOk()
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'rtb', 'ti', 'tl', 'updatedAt']) && tiOk() && tlOk()
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
