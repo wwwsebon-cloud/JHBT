@@ -168,6 +168,7 @@
 - **재화 · 지후 추첨은 `er('갈래')`** (계정 · 갈래 · 순번 `profile.rn` 으로 정해진다) — 새 상자 · 보상에 `Math.random` 을 쓰면 기록을 되돌려 다시 뽑을 수 있다 · 갈래는 출처마다 따로.
 - **하루 처리는 `newDay(지난 날짜)`** (접속 · 서버 시각 뒤 · 날짜가 앞으로 갈 때만 · `!== todayKey()` 로 쓰지 않는다) · 켤 때 처리는 `dayOpen()`.
 - 남이 만든 데이터 (리플레이 · 친선전 · 온라인) 는 `netClean` 을 거친다 · 가입 · 로그인 풀림: `finishSignUp` (닉네임 못 차지하면 계정 삭제) · `pendSign` (끊긴 가입 이어서) · `lostAsk`.
+- 프로필 「정보」 탭의 내 계정 정보: `pfAccRows` (ui3 · ui4 템플릿 `.u4-pfacc`) · **비밀번호는 저장하지도 보여 주지도 않는다** (상태 · 바꾸기만) · 복구 질문 기능은 만들지 않기로 함.
 - **비밀번호 찾기** (R3.8 build 6): 로그인 화면 `pwForgot` → 연결해 둔 Google 로 들어와 새로 정함 · 연결이 없으면 운영자가 `node tools/pw-reset.js <UID|닉네임>` (임시 비밀번호 · 본인 확인 먼저 · 서비스 계정 키 필요 · **내가 실행하지 않는다**) · 가짜 이메일이라 재설정 메일은 없다.
 - 감시: `node tools/audit.js` (읽기 전용 · `--hist` `--backup` `--replays` · 기준 `문서/jhbt-app/audit.json` · **기준 · 결과를 저장소에 넣지 않는다**) · 규칙 시험 `node tools/rules-test.js` (서비스 계정 키 필요).
 - **`normProfile` 이 보는 데이터 (`ITEMS` · `FRAMES` · `MQ` · `RK5` …) 는 `let profile = loadProfile()` 보다 앞에** (뒤면 TDZ 로 안 켜진다).
