@@ -27,15 +27,39 @@ service cloud.firestore {
     }
 
     // ── 계정 · 기록 ──
-    // R2 기록: r2_backups/{uid} = { payload(프로필 JSON), savedAt, updatedAt }
+    // R2 기록: r2_backups/{uid} = { payload(프로필 JSON), savedAt, updatedAt, rev, sid, led }
+    // R3.8 build 4 저장 순번: 서버 기록은 한 줄로만 이어진다 — rev = 이전 + 1 이고 sid 가 지금 접속한 창 (sessions/<uid>) 이어야 한다 (낡은 창 · 기기의 저장은 거절)
+    // ledOk: 서버 장부 (다이아 · 골드 · 뽑기 수 · 보유 지후 수) — 감시 도구 tools/audit.js 가 보고, 2단계에서 재화 상한을 건다
+    function ledOk(l) {
+      return l is map && l.keys().hasOnly(['dia', 'gold', 'pulls', 'own']) && l.keys().hasAll(['dia', 'gold', 'pulls', 'own'])
+        && l.dia is int && l.dia >= 0 && l.dia <= 1000000000000
+        && l.gold is int && l.gold >= 0 && l.gold <= 1000000000000
+        && l.pulls is int && l.pulls >= 0 && l.pulls <= 100000000
+        && l.own is int && l.own >= 0 && l.own <= 999;
+    }
+    function chainWrite(userId) {
+      return request.resource.data.keys().hasAll(['rev', 'sid', 'led'])
+        && request.resource.data.rev is int
+        && request.resource.data.rev == (resource == null ? 1 : resource.data.get('rev', 0) + 1)
+        && request.resource.data.sid is string
+        && request.resource.data.sid == get(/databases/$(database)/documents/sessions/$(userId)).data.sid
+        && request.resource.data.updatedAt == request.time
+        && ledOk(request.resource.data.led);
+    }
+    // 옛 화면 (rev 를 모름): 서버 기록에 아직 rev 가 없을 때만 · 새 화면이 한 번 저장한 계정은 바로 막힌다 · 2단계에서 이 길을 지운다
+    function oldWrite() {
+      return !('rev' in request.resource.data) && !('sid' in request.resource.data) && !('led' in request.resource.data)
+        && (resource == null || !('rev' in resource.data));
+    }
     match /r2_backups/{userId} {
       allow get: if owner(userId) || isAdmin(); // R2.12: 운영자는 의심 계정 기록을 본다 (핵 방지)
-      allow delete: if owner(userId);
-      allow create, update: if owner(userId)
-        && request.resource.data.keys().hasOnly(['payload', 'savedAt', 'updatedAt'])
+      allow delete: if false; // 지우고 다시 만들면 순번이 처음으로 돌아간다
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['payload', 'savedAt', 'updatedAt', 'rev', 'sid', 'led'])
         && request.resource.data.payload is string && request.resource.data.payload.size() <= 100000
         && request.resource.data.savedAt is int
-        && request.resource.data.updatedAt is timestamp;
+        && request.resource.data.updatedAt is timestamp
+        && (oldWrite() || chainWrite(userId));
       // R2.20 build 3 서버 이력: 3시간마다 한 칸 (t0~t7) · 기록을 고를 때 버린 쪽 (x0~x3) — 운영자가 사라진 지후를 찾는다
       match /hist/{slot} {
         allow get, list: if owner(userId) || isAdmin();
@@ -107,12 +131,16 @@ service cloud.firestore {
     // ── 리더보드 ──
     // 시즌 R2: r2lb/{uid} = { nickname, level(0~), wins, losses, deck, fav, xp, frame(프로필 테두리 · 없어도 됨), cp(전투력 · R2.21 · 없어도 됨), updatedAt } · 게스트(익명)도 자기 문서만
     // R2.7.2 경쟁전 리더보드: r2comp/{시즌}_{uid} = { nickname, tp, season, wins, losses, fav, frame(없어도 됨), updatedAt } · 시즌마다 따로 남는다 (지난 시즌 순위 보상)
+    // R3.8 build 4: 지난 시즌 · 앞 시즌에는 쓸 수 없다 (index.html 의 COMP.SEASON0 · SEASON_DAYS 와 같게)
+    function compSeasonAt(ms) { return int((ms - 1792767600000) / 1209600000) + 1; }
+    function compSeasonNow(s) { return s == compSeasonAt(request.time.toMillis() - 600000) || s == compSeasonAt(request.time.toMillis() + 600000); }
     match /r2comp/{docId} {
       allow get, list: if true;
       allow delete: if isAdmin();
       allow create, update: if request.auth != null && !banned()
         && request.resource.data.season is int && request.resource.data.season >= 1 && request.resource.data.season <= 100000
         && docId == string(request.resource.data.season) + '_' + request.auth.uid
+        && compSeasonNow(request.resource.data.season)
         && request.resource.data.keys().hasOnly(['nickname', 'tp', 'season', 'wins', 'losses', 'fav', 'frame', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.tp is int && request.resource.data.tp >= 0 && request.resource.data.tp <= 10000000
@@ -120,7 +148,7 @@ service cloud.firestore {
         && request.resource.data.losses is int && request.resource.data.losses >= 0 && request.resource.data.losses <= 99999
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
-        && request.resource.data.updatedAt is timestamp;
+        && request.resource.data.updatedAt == request.time;
     }
     // R2.7.2 경쟁전 봇 학습: r2picks/{uid} = { picks, pwins, bans, norm, nwins (지후 id → 횟수), updatedAt } · 로그인한 사람 모두 읽기 (봇이 합산)
     match /r2picks/{userId} {
@@ -141,6 +169,7 @@ service cloud.firestore {
       allow list: if false;
       allow delete: if (request.auth != null && resource.data.by == request.auth.uid) || isAdmin();
       allow create, update: if request.auth != null && !banned()
+        && (resource == null || request.resource.data.d == resource.data.d)
         && id.matches(request.auth.uid + '_[0-9]{10,16}')
         && request.resource.data.keys().hasOnly(['by', 'nick', 'pn', 'on', 'win', 'kind', 'n', 'b', 'at', 'd', 'created'])
         && request.resource.data.by == request.auth.uid
@@ -189,13 +218,14 @@ service cloud.firestore {
         && (!('frame' in request.resource.data) || (request.resource.data.frame is string && request.resource.data.frame.matches('^[a-z0-9]{1,8}$')))
         && (!('deck' in request.resource.data) || validDeck(request.resource.data.deck))
         && (!('rk' in request.resource.data) || rkOk(request.resource.data.rk))
-        && request.resource.data.updatedAt is timestamp;
+        && request.resource.data.updatedAt == request.time;
     }
     match /r2tower/{userId} {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
         && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.updatedAt == request.time
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
@@ -224,7 +254,8 @@ service cloud.firestore {
         && (!('cp' in request.resource.data) || (request.resource.data.cp is int && request.resource.data.cp >= 0 && request.resource.data.cp <= 99999999)) // R2.21 전투력
         && (!('pt' in request.resource.data) || (request.resource.data.pt is int && request.resource.data.pt >= 0 && request.resource.data.pt <= 99999999)) // R3.7 접속 시간 (분)
         && (!('rk' in request.resource.data) || rkOk(request.resource.data.rk)) // R2.28 덱 지후 랭크 (리더보드 표시)
-        && request.resource.data.updatedAt is timestamp;
+        && request.resource.data.keys().hasAll(['dia', 'gold', 'pulls', 'own', 'cheat']) // R3.8 build 4: 빼고 올려 감시를 피하던 것
+        && request.resource.data.updatedAt == request.time;
     }
     // 명예의 전당: R1 레벨 리더보드 (읽기만 · 더 이상 바뀌지 않는다)
     match /leaderboard/{userId} {
@@ -277,7 +308,7 @@ service cloud.firestore {
         && request.resource.data.rewards is list && request.resource.data.rewards.size() <= 6;
       allow update, delete: if false;
       match /claims/{userId} {
-        allow create, update: if owner(userId)
+        allow create: if owner(userId)
           && (get(/databases/$(database)/documents/giftMail/$(giftId)).data.to in [userId, 'all'])
           && request.resource.data.keys().hasOnly(['name', 'at'])
           && request.resource.data.name is string && request.resource.data.name.size() <= 12
@@ -315,7 +346,7 @@ service cloud.firestore {
     function bsStep(k) { return request.resource.data.get(k, 0) - (resource == null ? 0 : resource.data.get(k, 0)); }
     match /botstats/{id} {
       allow get, list: if isAdmin();
-      allow create, update: if request.auth != null && id.matches('^[a-z_][a-z0-9_]{0,23}$')
+      allow create, update: if request.auth != null && !banned() && id.matches('^[a-z_][a-z0-9_]{0,23}$')
         && request.resource.data.keys().hasOnly(['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9', 'g10', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10'])
         && bsStep('g1') >= 0 && bsStep('g1') <= 1 && bsStep('g2') >= 0 && bsStep('g2') <= 1 && bsStep('g3') >= 0 && bsStep('g3') <= 1 && bsStep('g4') >= 0 && bsStep('g4') <= 1 && bsStep('g5') >= 0 && bsStep('g5') <= 1 && bsStep('g6') >= 0 && bsStep('g6') <= 1 && bsStep('g7') >= 0 && bsStep('g7') <= 1 && bsStep('g8') >= 0 && bsStep('g8') <= 1 && bsStep('g9') >= 0 && bsStep('g9') <= 1 && bsStep('g10') >= 0 && bsStep('g10') <= 1 && bsStep('w1') >= 0 && bsStep('w1') <= 1 && bsStep('w2') >= 0 && bsStep('w2') <= 1 && bsStep('w3') >= 0 && bsStep('w3') <= 1 && bsStep('w4') >= 0 && bsStep('w4') <= 1 && bsStep('w5') >= 0 && bsStep('w5') <= 1 && bsStep('w6') >= 0 && bsStep('w6') <= 1 && bsStep('w7') >= 0 && bsStep('w7') <= 1 && bsStep('w8') >= 0 && bsStep('w8') <= 1 && bsStep('w9') >= 0 && bsStep('w9') <= 1 && bsStep('w10') >= 0 && bsStep('w10') <= 1;
     }
@@ -380,6 +411,8 @@ service cloud.firestore {
     function friendsWith(other) {
       return friendOk(request.auth.uid < other ? request.auth.uid + '_' + other : other + '_' + request.auth.uid);
     }
+    function friendNames(d) { return d.names is map && d.names.size() <= 2 && d.names.keys().hasOnly(d.members) && nameOk(d.names, d.members[0]) && nameOk(d.names, d.members[1]); }
+    function nameOk(n, u) { return !(u in n) || (n[u] is string && n[u].size() <= 12); }
     match /friendships/{pairId} {
       allow get: if request.auth != null && (resource == null || request.auth.uid in resource.data.members);
       allow list: if request.auth != null && request.auth.uid in resource.data.members;
@@ -391,13 +424,13 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.members
         && request.resource.data.members[0] < request.resource.data.members[1]
         && pairId == request.resource.data.members[0] + '_' + request.resource.data.members[1]
-        && request.resource.data.names is map
+        && friendNames(request.resource.data)
         && request.resource.data.at == request.time;
       allow update: if request.auth != null && request.auth.uid in resource.data.members
         && request.auth.uid != resource.data.from
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'names', 'at'])
         && request.resource.data.status == 'accepted'
-        && request.resource.data.names is map
+        && friendNames(request.resource.data)
         && request.resource.data.at == request.time;
       allow delete: if request.auth != null && request.auth.uid in resource.data.members;
     }

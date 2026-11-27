@@ -149,7 +149,7 @@ function refresh() {
   for (const k of [...NOTE.keys()]) if (!EDIT.has(k)) NOTE.delete(k);
   $('#notes').innerHTML = rows.map(k => { const o = NOTE.get(k); return `<div class="note" data-n="${k}"><input type="checkbox" ${o.on ? 'checked' : ''}><select>${['buff', 'nerf', 'adjust', 'rework', 'fix'].map(t => `<option ${t === o.tag ? 'selected' : ''}>${t}</option>`).join('')}</select><input type="text" value="${esc(o.desc)}"></div>`; }).join('');
 }
-$('#main').addEventListener('click', async e => { const nm = e.target.closest('.nm'); if (nm) { const [gi, ii] = nm.closest('tr').dataset.k.split(':').map(Number), it = CUR.groups[gi].items[ii]; if (!it.lk) return; const v = prompt('이 숫자의 이름 (비우면 자동 이름으로)', it.mine ? it.label : ''); if (v === null) return; await fetch('/api/label', { method: 'POST', body: JSON.stringify({ lk: it.lk, label: v.trim() }) }); it.label = v.trim() || it.label; it.mine = !!v.trim(); nm.textContent = it.label; nm.classList.toggle('mine', it.mine); refresh(); return; } });
+$('#main').addEventListener('click', async e => { const nm = e.target.closest('.nm'); if (nm) { const [gi, ii] = nm.closest('tr').dataset.k.split(':').map(Number), it = CUR.groups[gi].items[ii]; if (!it.lk) return; const v = prompt('이 숫자의 이름 (비우면 자동 이름으로)', it.mine ? it.label : ''); if (v === null) return; await fetch('/api/label', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lk: it.lk, label: v.trim() }) }); it.label = v.trim() || it.label; it.mine = !!v.trim(); nm.textContent = it.label; nm.classList.toggle('mine', it.mine); refresh(); return; } });
 $('#main').addEventListener('click', e => { const b = e.target.closest('.sug'); if (!b) return; const ta = b.closest('.txt').querySelector('textarea'); ta.value = ta.value.replace(numRe(b.dataset.o), b.dataset.n); ta.dispatchEvent(new Event('input', { bubbles: true })); });
 $('#notes').addEventListener('input', e => { const d = e.target.closest('[data-n]'), o = NOTE.get(d.dataset.n); o.on = d.querySelector('[type=checkbox]').checked; o.tag = d.querySelector('select').value; o.desc = d.querySelector('[type=text]').value; });
 $('#notes').addEventListener('change', e => $('#notes').dispatchEvent(new Event('input', { bubbles: true })) || null);
@@ -163,7 +163,7 @@ $('#go').onclick = async () => {
   if (mode !== 'sub' && !body.notes.length) return alert('패치노트 줄이 없어요 (잠수함으로 하거나 한 줄 이상 켜세요)');
   if (!confirm(`${CUR.name} · ${mode === 'sub' ? '잠수함' : mode === 'build' ? 'build +1' : '새 버전'}${body.push ? ' · 푸시까지' : ''} — 적용할까요?`)) return;
   const go = $('#go'), lg = $('#log'); go.disabled = true; go.textContent = '적용 중…'; lg.style.display = 'block'; lg.className = ''; lg.textContent = '검사하는 중… (몇 초)';
-  try { const r = await (await fetch('/api/apply', { method: 'POST', body: JSON.stringify(body) })).json(); if (r.error) throw new Error(r.error); lg.className = 'ok'; lg.textContent = '✔ ' + r.log.join('\n'); await load(); const id = CUR.id; setTimeout(() => open(id).then(() => { $('#dock').hidden = false; lg.style.display = 'block'; }), 50); }
+  try { const r = await (await fetch('/api/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); if (r.error) throw new Error(r.error); lg.className = 'ok'; lg.textContent = '✔ ' + r.log.join('\n'); await load(); const id = CUR.id; setTimeout(() => open(id).then(() => { $('#dock').hidden = false; lg.style.display = 'block'; }), 50); }
   catch (e) { lg.className = 'err'; lg.textContent = '✖ ' + e.message; }
   go.disabled = false; go.textContent = '적용하기';
 };
@@ -184,7 +184,7 @@ document.querySelectorAll('.to, #day').forEach(x => x.onchange = () => { $('#pos
 async function job(kind, opt, confirmMsg) {
   if (RUN) return alert('다른 작업이 끝날 때까지 기다려 주세요');
   if (confirmMsg && !confirm(confirmMsg)) return;
-  const r = await (await fetch('/api/job', { method: 'POST', body: JSON.stringify({ kind, opt }) })).json(); if (r.error) return alert(r.error);
+  const r = await (await fetch('/api/job', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, opt }) })).json(); if (r.error) return alert(r.error);
   RUN = r.id; const out = $('#out'); out.innerHTML = ''; $('#conS').textContent = '실행 중…'; document.querySelectorAll('[data-job], #postGo, #pendGo').forEach(b => b.disabled = true);
   let from = 0; for (;;) { await new Promise(t => setTimeout(t, 700)); const p = await (await fetch(`/api/job?id=${r.id}&from=${from}`)).json(); from = p.next;
     const stick = out.scrollHeight - out.scrollTop - out.clientHeight < 40; /* 위로 올려 읽는 중이면 따라 내려가지 않는다 */ if (p.progress && kind === 'tier') tierShow(p.progress); p.lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; d.className = /^✔/.test(l) ? 'ok' : /^✖|실패|오류|error/i.test(l) ? 'er' : /^\$ |^──|^▶/.test(l) ? 'cm' : ''; out.appendChild(d); }); if (stick) out.scrollTop = out.scrollHeight;

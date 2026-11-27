@@ -45,9 +45,15 @@ function doApply(req) {
 const send = (res, code, body, type = 'application/json; charset=utf-8') => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store' }); res.end(typeof body === 'string' ? body : JSON.stringify(body)); };
 // 도구 코드의 버전 (파일 수정 시각) — 예전 버전 서버가 켜져 있으면 끄고 새로 켠다 (화면이 안 바뀌는 문제)
 const STAMP = ['core.js', 'server.js', 'jobs.js', 'ui.html', 'labels.json'].map(f => { try { return fs.statSync(path.join(__dirname, f)).mtimeMs | 0; } catch (e) { return 0; } }).join('.');
+// R3.8 build 4: 켜 둔 동안 다른 웹페이지가 패치기 (커밋 · 푸시 · 게시) 를 부르지 못하게 — 주소 (Host) 와 보낸 곳 (Origin) 이 이 PC 의 패치기여야 하고, 보내는 요청은 JSON 만
+const LOCAL = [`127.0.0.1:${PORT}`, `localhost:${PORT}`];
+const allowed = (req, p) => LOCAL.includes(String(req.headers.host || '').toLowerCase())
+  && (!req.headers.origin || LOCAL.some(h => req.headers.origin === 'http://' + h))
+  && (req.method !== 'POST' || p === '/api/quit' || String(req.headers['content-type'] || '').startsWith('application/json'));
 const srv = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   try {
+    if (!allowed(req, u.pathname)) return send(res, 403, { error: '허용하지 않는 요청' });
     if (u.pathname === '/') return send(res, 200, fs.readFileSync(path.join(__dirname, 'ui.html'), 'utf8'), 'text/html; charset=utf-8');
     if (u.pathname === '/api/ver') return send(res, 200, { stamp: STAMP });
     if (u.pathname === '/api/quit' && req.method === 'POST') { send(res, 200, { ok: true }); setTimeout(() => process.exit(0), 100); return; }

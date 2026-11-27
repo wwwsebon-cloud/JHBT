@@ -7,7 +7,8 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="jihoo-version" content="R3.8"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+<meta name="jihoo-version" content="R3.8"><meta name="jihoo-build" content="4"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -12035,6 +12036,9 @@ const FRAMES = [
 ];
 const FRAME = Object.fromEntries(FRAMES.map(f => [f.id, f]));
 const hasKey = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k); // 남이 보낸 값 (리더보드 · 접속 상태 · 친선전)
+/* R3.8 build 4: 남이 만든 데이터 (리플레이 · 친선전 · 온라인) 는 통째로 씻어서 쓴다 — 글자에서 태그 · 따옴표를 빼고 원형 오염 키는 버린다 (화면에 innerHTML 로 들어가도 코드가 안 된다) */
+const RP_BADKEY = new Set(['__proto__', 'constructor', 'prototype']);
+function netClean(v, d = 0) { if (typeof v === 'string') return v.replace(/[<>"'`]/g, ''); if (!v || typeof v !== 'object') return v; if (d > 24) return null; if (Array.isArray(v)) return v.map(x => netClean(x, d + 1)); const o = {}; for (const k of Object.keys(v)) { if (RP_BADKEY.has(k) || /[<>"'`]/.test(k)) continue; o[k] = netClean(v[k], d + 1); } return o; }
 const PF_ORNI = {}; /* 멈춘 테두리 장식: SVG 를 그림 (data URI) 으로 한 번만 만든다 · 번개 · 반짝임은 뺀다 */
 const pfOrnImg = f => PF_ORNI[f.id] || (PF_ORNI[f.id] = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-25 -25 150 150" width="168" height="168"><style>.pf-stA,.pf-stB,.pf-crk,.pf-tw{display:none}</style>${f.orn}</svg>`));
 function pfHtml(fr, S, ph, o = {}) { // 정사각 둥근 프로필 사진(지후 초상화) + 테두리 · o: { lock 흑백, badge: false 배지 숨김, letter 사진 없을 때 글자, fc 글자 바탕 }
@@ -12063,7 +12067,7 @@ function freshProfile() { const st = STARTERS(); return { v: 1, nick: '', xp: 0,
 // ② 이 기기 기록(localStorage)은 서명해서 저장 · 서명이 맞지 않으면 로그인 계정은 서버 기록을 쓴다 (syncAfterLogin)
 // ③ 한 번에 너무 많이 늘면 (CUR_STEP) 흔적만 남긴다 (운영 우편 등 정상일 수도) · ④ 리더보드에 재화 · 흔적을 같이 올려 운영 도구 '의심 계정'에서 본다
 // ⑤ 콘솔용 window.__rejhbt · ?bench 는 개발 주소 (localhost · 내부망) 에서만 (DEV_HOST)
-const DEV_HOST = /^(localhost|127\.0\.0\.1|\[::1\]|192\.168\.|10\.)/.test(location.hostname);
+const DEV_HOST = !IS_APP && /^(localhost|127\.0\.0\.1|\[::1\]|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.test(location.hostname); /* R3.8 build 4: 주소 끝까지 · 앱 (https://localhost) 은 개발 주소가 아니다 */
 const AC_SALT = 'rejhbt:' + [82, 50, 46, 49, 50].map(c => String.fromCharCode(c)).join('') + ':jihoo', CUR_STEP = { dia: 30000, gold: 300000 };
 const acHash = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return (h >>> 0).toString(36); };
 const CUR = new WeakMap(), curSig = v => acHash(AC_SALT + '|' + v.dia + '|' + v.gold);
@@ -12086,9 +12090,9 @@ const tNow = () => Date.now() + ST.off, stDay = () => Math.floor((tNow() + ST_KS
 async function stSync() { if (ST.busy || ST.err) return; try { if (!FB.on || !FB.sdk || !FB.auth || !FB.auth.currentUser || ACC.kicked) return; } catch (e) { return; } ST.busy = true;
   try { const sdk = FB.sdk, uid = FB.auth.currentUser.uid, t0 = Date.now(); await sdk.setDoc(sdk.doc(FB.db, 'pulse', uid), { at: sdk.serverTimestamp() }); const t1 = Date.now();
     const snap = await sdk.getDocs(sdk.query(sdk.collection(FB.db, 'pulse'), sdk.where(sdk.documentId(), '==', uid))); let at = 0; snap.forEach(d => { const x = d.data().at; if (x && x.toMillis) at = x.toMillis(); });
-    if (at) { const was = ST.ok; ST.off = at - (t0 + t1) / 2; ST.ok = true; ST.at = Date.now(); if (!was) { try { u2Render(); } catch (e) {} } } }
+    if (at) { const was = ST.ok; ST.off = at - (t0 + t1) / 2; ST.ok = true; ST.at = Date.now(); ST.pat = performance.now(); if (!was) { try { u2Render(); } catch (e) {} } } }
   catch (e) { if (e && e.code === 'permission-denied') ST.err = true; } finally { ST.busy = false; } }
-setInterval(() => { if (!document.hidden && (!ST.ok || Date.now() - ST.at > 600000)) stSync(); }, 5000);
+setInterval(() => { if (ST.ok && ST.at && Math.abs((Date.now() - ST.at) - (performance.now() - ST.pat)) > 60000) ST.ok = false; /* R3.8 build 4: 시계가 바뀌었다 */ if (!document.hidden && (!ST.ok || Date.now() - ST.at > 600000)) stSync(); }, 5000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { ST.at = 0; stSync(); } }); /* 숨었다 돌아오면 다시 잰다 (그사이 시계를 바꿨을 수 있다) */
 // ═════════ 잠수함 · 접속 기록 (운영 도구 「접속 중인 유저」 · 「유저 탐색」) ═════════
 // profile.visit { n 몇 번째 접속 · last 이번 접속 · prev 지난 접속 · f 처음 본 시각 · old 이 기록 전부터 있던 계정 · sid } · profile.src 유입 (신규만) · profile.plat { a APK · h 홈 화면 앱 · w 웹 = 마지막으로 쓴 시각 }
@@ -12148,10 +12152,10 @@ function alTick() { try {
   if (AL.p !== p) { const o = AL.p && AL.s; AL.p = p; AL.s = s; if (o) { const c = alDiff(o, s); if (c) alPush(p, '기록 맞춤 (서버 · 다른 기기)', c); } return; }
   const c = alDiff(AL.s, s); AL.s = s; if (c) alPush(p, alWhyNow(), c);
 } catch (e) {} }
-let LOCAL_OK = false; // 이 기기 기록의 서명이 맞는가 (loadProfile · writeLocal)
+let LOCAL_OK = false, LOCAL_BAD = false; /* LOCAL_BAD: 켤 때 읽은 기록의 서명이 틀렸다 (부팅 중 저장이 다시 서명해도 남는다 · R3.8 build 4) */
 function writeLocal() { try { if (ACC.kicked) return; } catch (e) {} /* R2.20 build 3: 다른 창에 밀려 멈춘 창은 이 기기 기록(탭끼리 같이 쓴다)을 옛 기록으로 덮지 않는다 */ alTick(); /* 잠수함 활동 기록 */ try { const j = JSON.stringify(profile); localStorage.setItem(SAVE_KEY, j); localStorage.setItem(SAVE_KEY + '.s', acHash(AC_SALT + j)); LOCAL_OK = true; } catch (e) {} }
 function loadProfile() {
-  let p = null; try { const j = localStorage.getItem(SAVE_KEY); p = JSON.parse(j || 'null'); LOCAL_OK = !!j && localStorage.getItem(SAVE_KEY + '.s') === acHash(AC_SALT + j); } catch (e) {}
+  let p = null; try { const j = localStorage.getItem(SAVE_KEY); p = JSON.parse(j || 'null'); LOCAL_OK = !!j && localStorage.getItem(SAVE_KEY + '.s') === acHash(AC_SALT + j); LOCAL_BAD = !!j && !LOCAL_OK; } catch (e) {}
   if (!p) { try { const r1 = JSON.parse(localStorage.getItem(R1_SAVE_KEY) || 'null'); if (r1 && typeof r1 === 'object' && r1.nickname) { p = importR1(r1); if (r1.ownerUid) p.ownerUid = r1.ownerUid; } } catch (e) {} } // 처음 켰을 때: 이 기기의 R1 기록
   return normProfile(p);
 }
@@ -12186,6 +12190,7 @@ function normProfile(p) {
   p.deck = (p.deck || []).filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5); STARTERS().forEach(id => { if (p.deck.length < 5 && !p.deck.includes(id)) p.deck.push(id); }); // 빠진 자리는 기본 지후
   p.preset = [1, 2, 3].includes(p.preset) ? p.preset : 1; p.decks = p.decks && typeof p.decks === 'object' ? p.decks : {}; [1, 2, 3].forEach(n => { p.decks[n] = Array.isArray(p.decks[n]) ? p.decks[n].filter(id => CHARS[id] && (p.owned[id] || DEV.pref)).slice(0, 5) : []; }); p.decks[p.preset] = p.deck; // 덱 프리셋 (R2.12): deck = 지금 프리셋의 배열로
   p.alog = p.alog && typeof p.alog === 'object' && Array.isArray(p.alog.L) ? { n: nat(p.alog.n), L: p.alog.L.filter(e => Array.isArray(e) && e.length === 5).slice(-400) } : { n: 0, L: [] }; /* 잠수함 활동 기록 (AL.MAX) */
+  p.rn = p.rn && typeof p.rn === 'object' && !Array.isArray(p.rn) ? p.rn : {}; p.rev = nat(p.rev); /* R3.8 build 4 고정 시드 순번 · 서버 저장 순번 */
   lvMove(p); /* R3.7 build 5 */ p.level = Math.max(1, nat(p.level)); p.xp = nat(p.xp); /* R2.10: Lv1 부터 (예전 Lv0 은 Lv1 로) */ p.dia = nat(p.dia); p.gold = nat(p.gold);
   p.ach = Object.assign(freshAch(), p.ach || {}); p.ach.claimed = p.ach.claimed && typeof p.ach.claimed === 'object' ? p.ach.claimed : {};
   p.newbie = Object.assign({ on: false, days: 0, last: '' }, p.newbie || {}); p.nbPulls = clamp(nat(p.nbPulls), 0, CFG.NB_PULLS); p.mmr = p.mmr && typeof p.mmr === 'object' && Number.isFinite(Number(p.mmr.r)) ? { r: Math.max(600, Math.min(2300, Math.round(Number(p.mmr.r)))), n: nat(p.mmr.n), ls: nat(p.mmr.ls) } : null; /* R3.5 build 8 암묵적 MMR */ // 초보자 뽑기 한 횟수
@@ -12255,7 +12260,7 @@ function importR1(raw) { // R1 기록 → R2 프로필 (처음 한 번)
 let profile = loadProfile();
 function save() { profile.savedAt = Date.now(); writeLocal(); queueBackup(); } // 로그인했으면 서버에도 (1.5초 모아서)
 function needOnline(msg) { if (TUT.on) return false; if (OFF.on || !navigator.onLine) { banner(msg || '🌐 온라인 연결이 필요해요'); return true; } return false; } /* 오프라인 리세마라 · 날짜 조작 방지 */
-function saveNow() { save(); if (isMember() && !ACC.kicked && !ACC.conflict) backupSafe(); } /* 뽑기 · 상자 · 아이템 직후 즉시 백업 */
+function saveNow() { save(); if (isMember() && !ACC.kicked) backupSafe(); } /* 뽑기 · 상자 · 아이템 직후 즉시 백업 */
 function xpNeed(lv) { return Math.round(100 * Math.pow(1.05, Math.max(1, lv) - 1)); } // R2.10: Lv1 부터 · Lv1→2 100 XP · R3.7 build 5: 그 뒤 5% 씩 복리 (예전 15%)
 function lvMove(p) { /* R3.7 build 5 (한 번 · p.xp5): 예전 15% 공식으로 쌓은 경험치를 모두 더해 5% 공식으로 다시 나눈다 · 오른 레벨의 보상은 없다 */
   if (!p || typeof p !== 'object' || p.v !== 1 || p.xp5) return p; const old = Math.min(999, Math.max(1, Math.floor(Number(p.level) || 0)));
@@ -12343,9 +12348,9 @@ async function lbPush() { // 전적 갱신 후 호출 (실패해도 게임은 �
     if (!FB.noCp) doc.cp = cpTotal(); // 전투력 (R2.21 규칙)
     if (!FB.noPt) doc.pt = Math.min(99999999, profile.playM | 0); // R3.7 접속 시간 (분 · 규칙 게시 전이면 빼고 다시)
     if (!FB.noRk) doc.rk = deck.map(id => (owned(id) ? clamp(enhLv(id) | 0, 1, ENH_MAX) : 1)); // R2.28 덱 지후 랭크 (리더보드 표시 · 규칙 게시 전이면 아래에서 빼고 다시)
-    if (!FB.noEcon) Object.assign(doc, { dia: Math.min(99999999, profile.dia), gold: Math.min(999999999, profile.gold), pulls: Math.min(999999, profile.pulls | 0), own: Object.keys(profile.owned || {}).length, cheat: Math.min(9999, (profile.cheat && profile.cheat.n) | 0) }); // R2.12 핵 방지: 운영 도구에서 본다
+    Object.assign(doc, { dia: Math.min(99999999, profile.dia), gold: Math.min(999999999, profile.gold), pulls: Math.min(999999, profile.pulls | 0), own: Object.keys(profile.owned || {}).length, cheat: Math.min(9999, (profile.cheat && profile.cheat.n) | 0) }); // R2.12 핵 방지: 운영 도구에서 본다
     await FB.sdk.setDoc(FB.sdk.doc(FB.db, 'r2lb', FB.uid), doc);
-  } catch (e) { if (e && e.code === 'permission-denied') { if (!FB.oldIds && (/\d/.test(favChar()) || (profile.deck || []).some(id => /\d/.test(id)))) { FB.oldIds = true; return lbPush(); } if (!FB.noPt) { FB.noPt = true; return lbPush(); } if (!FB.noRk) { FB.noRk = true; return lbPush(); } if (!FB.noCp) { FB.noCp = true; return lbPush(); } if (!FB.noEcon) { FB.noEcon = true; return lbPush(); } if (!FB.noFrame) { FB.noFrame = true; return lbPush(); } } console.warn('[rejhbt] 전적 업로드 실패', e); } // 규칙을 아직 게시하지 않았으면 재화 칸 없이
+  } catch (e) { if (e && e.code === 'permission-denied') { if (!FB.oldIds && (/\d/.test(favChar()) || (profile.deck || []).some(id => /\d/.test(id)))) { FB.oldIds = true; return lbPush(); } if (!FB.noPt) { FB.noPt = true; return lbPush(); } if (!FB.noRk) { FB.noRk = true; return lbPush(); } if (!FB.noCp) { FB.noCp = true; return lbPush(); } if (!FB.noFrame) { FB.noFrame = true; return lbPush(); } } console.warn('[rejhbt] 전적 업로드 실패', e); } // 규칙을 아직 게시하지 않았으면 재화 칸 없이
 }
 
 // ═════════ 계정: 로그인 · 회원가입 · Google (지후배틀과 같은 계정 · UID 8자리 + 비밀번호) ═════════
@@ -12378,6 +12383,7 @@ function authMsg(e) {
   }
 }
 async function nickDoc(n) { const k = nickKey(n); if (!k) return null; try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'nicknames', k)); return snap.exists() ? snap.data() : null; } catch (e) { return null; } }
+async function nickDocStrict(n) { const k = nickKey(n); if (!k) return null; let snap; try { snap = await bkTimed(FB.sdk.getDoc(FB.sdk.doc(FB.db, 'nicknames', k))); } catch (e) { throw new Error('닉네임을 확인하지 못했어요. 네트워크를 확인하고 다시 시도해 주세요.'); } return snap.exists() ? snap.data() : null; } /* R3.8 build 4: 가입 때는 확인 실패를 「없는 닉네임」으로 보지 않는다 */
 async function claimNick() { // 로그인한 계정의 지금 닉네임을 등록하고 예전 등록은 지운다 (R1 과 같은 등록부)
   if (!isMember() || !profile.nick) return 'none';
   const k = nickKey(profile.nick), uid = myUid();
@@ -12391,17 +12397,12 @@ async function claimNick() { // 로그인한 계정의 지금 닉네임을 등�
   } catch (e) { return 'error'; }
 }
 // ── 서버 백업 강화 (R2.20 build 3) ──
-// 오늘 있었던 일: 어제부터 켜져 있던 다른 창 · 기기가 깨어나며 옛 기록을 서버에 올려, 아침에 뽑은 지후가 사라졌다 (서버 기록이 바뀌었는지 보지 않고 덮어썼다)
-// ① 덮어쓰기 방지: 이 창이 마지막으로 맞춘 저장 번호(profile.syncWid)와 서버 기록의 번호(bkWid)가 다르면 = 그 뒤에 다른 곳이 저장했다 → 덮어쓰지 않고 bkConflict
-//    확인은 runTransaction (읽기 + 쓰기 한 번에). 이 창이 BK_TRUST 안에 직접 저장 · 확인했으면 바로 쓴다 · 숨었다 돌아오거나 · 잠들었다 깨거나 · 다른 탭이 이 기기 기록을 바꾸면 다시 확인 (ACC.vAt = 0)
-//    보냈는데 답을 못 받은 번호(ACC.tried)는 내 것으로 본다 (서버엔 들어갔을 수 있다)
-// ② 두 기록이 다르면 (bkPick): 진행도(레벨 · 판 수 · 뽑기 · 보유 지후)가 한쪽이 모두 같거나 앞서면 그쪽 · 엇갈리면 사용자에게 묻는다 · 버린 쪽은 서버 이력 hist/x0~x3 에 남긴다
-// ③ 서버 이력 r2_backups/<uid>/hist/<slot>: 3시간마다 한 칸 (t0~t7 = 하루) · 운영 도구 「기록 보기」에서 사라진 지후를 찾는다 (규칙을 게시하기 전이면 조용히 끈다)
-// ④ 실패하면 이유를 계정 창에 · 1분 넘게 실패하거나 기록이 두 개면 메뉴 「JHBT 계정」에 점 · 기록이 크면 받은 우편 · 전투기록을 줄인다 (bkFit)
-const BK_TRUST = 60000, BK_SLOT = 3 * 3600e3, BK_MAX = 100000;
+// 서버 저장은 순번 (rev) 으로 한 줄만 이어진다 (R3.8 build 4 · 아래 bkSend) · 규칙이 낡은 창 · 기기의 저장을 거절한다
+// 서버 이력 r2_backups/<uid>/hist/<slot>: 3시간마다 한 칸 (t0~t7 = 하루) · 버린 기록 x0~x3 · 운영 도구 「기록 보기」에서 사라진 지후를 찾는다 (규칙을 게시하기 전이면 조용히 끈다)
+// 실패하면 이유를 계정 창에 · 1분 넘게 실패하면 메뉴 「JHBT 계정」에 점 · 기록이 크면 받은 우편 · 전투기록을 줄인다 (bkFit)
+const BK_SLOT = 3 * 3600e3, BK_MAX = 100000;
 const newWid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-function bkParse(d) { const p = lvMove(JSON.parse(d.payload)); /* R3.7 build 5: 새 레벨 공식으로 맞춘 뒤 비교 */ return { p, at: Number(d.savedAt) || 0, wid: (p && p.bkWid) || '', raw: d.payload }; }
-const bkSum = p => ({ lv: (p.level | 0) * 1e7 + Math.min(9999999, p.xp | 0), games: (p.wins | 0) + (p.losses | 0) + ((p.fr && p.fr.w) | 0) + ((p.fr && p.fr.l) | 0), pulls: p.pulls | 0, own: Object.keys(p.owned || {}).length }); // 기록 비교 (클수록 앞선 것)
+function bkParse(d) { const p = lvMove(JSON.parse(d.payload)); /* R3.7 build 5: 새 레벨 공식으로 맞춘 뒤 비교 */ const led = d.led && typeof d.led === 'object' ? d.led : null; if (led) { p.dia = nat(led.dia); p.gold = nat(led.gold); } /* R3.8 build 4: 다이아 · 골드는 서버 장부 값 */ return { p, at: Number(d.savedAt) || 0, wid: (p && p.bkWid) || '', rev: nat(d.rev), raw: d.payload }; }
 const bkHasProg = p => (p.pulls | 0) > (p.tutPull ? 10 : 0) || (p.wins | 0) + (p.losses | 0) > 0 || (p.level | 0) > 1; // 지키고 싶은 진행이 있는가 (튜토리얼 10회 뽑기만은 아님)
 function bkFit() { // 기록이 커지면: 받은 우편은 최근 20개 · 전투기록은 10판 (안 받은 우편 · 지후 · 재화는 그대로)
   const p = profile, open = p.mail.filter(m => !m.claimed), done = p.mail.filter(m => m.claimed).slice(-20); p.mail = [...open, ...done].sort((a, b) => (a.at || 0) - (b.at || 0)).slice(-60); p.mlog = (p.mlog || []).slice(0, 10);
@@ -12410,15 +12411,14 @@ function bkErrText(e) { const c = e && e.code || ''; return c === 'permission-de
 function bkState() { // 계정 창 · 메뉴 점이 보는 백업 상태
   if (!isMember()) return { k: 'guest', ic: '⚠️', title: '이 기기에만 저장돼요', sub: '게스트 기록은 서버에 없어요 · 앱 · 브라우저 기록을 지우면 사라져요' };
   if (ACC.kicked) return { k: 'fail', ic: '📱', title: '다른 곳에서 접속 중', sub: '이 창은 멈췄어요 · 새로고침하면 서버 기록으로 이어서 해요' };
-  if (ACC.conflict) return { k: 'conflict', ic: '🔀', title: '기록이 두 개예요', sub: '다른 기기 · 창에서 저장한 기록이 있어요 · 어느 쪽을 쓸지 골라 주세요' };
   if (ACC.bkErr) return { k: 'fail', ic: '⛔', title: '서버 저장 실패', sub: `${ACC.bkErr}${ACC.lastAt ? ` · 마지막 저장 ${new Date(ACC.lastAt).toLocaleTimeString()}` : ''}` };
   if (ACC.pendAt || ACC.bkBusy) return { k: 'pend', ic: '⏳', title: '저장하는 중…', sub: ACC.lastAt ? `마지막 저장 ${new Date(ACC.lastAt).toLocaleTimeString()}` : '곧 서버에 저장돼요' };
   return { k: 'ok', ic: '✅', title: '서버에 저장됨', sub: ACC.lastAt ? `마지막 저장 ${new Date(ACC.lastAt).toLocaleTimeString()} · 바뀔 때마다 자동으로` : '바뀔 때마다 자동으로 저장돼요' };
 }
-const bkWarn = () => isMember() && (!!ACC.conflict || (!!ACC.bkErr && ACC.failAt > 0 && Date.now() - ACC.failAt > 60000)); // 메뉴 「JHBT 계정」 점
+const bkWarn = () => isMember() && !!ACC.bkErr && ACC.failAt > 0 && Date.now() - ACC.failAt > 60000; // 메뉴 「JHBT 계정」 점
 function bkShow() { try { if ($('accModal').classList.contains('show') && !ACC.busy && !$('accModal').contains(document.activeElement && document.activeElement.tagName === 'INPUT' ? document.activeElement : null)) renderAccount(); if ($('setModal').classList.contains('show') && $('setAcc')) renderSetAcc(); } catch (e) {} }
 function queueBackup() { // R2.12.2: 모아서 보내되 처음 바뀐 뒤 4초 안에는 꼭 (계속 저장해도 미뤄지지 않게)
-  if (!FB.on || !isMember() || ACC.restoring || ACC.kicked || ACC.conflict) return; const now = Date.now(); if (!ACC.pendAt) ACC.pendAt = now;
+  if (!FB.on || !isMember() || ACC.restoring || ACC.kicked || ACC.synced !== myUid()) return; const now = Date.now(); if (!ACC.pendAt) ACC.pendAt = now;
   clearTimeout(ACC.timer); ACC.timer = setTimeout(backupSafe, Math.max(0, Math.min(1200, 4000 - (now - ACC.pendAt)))); }
 async function backupSafe() { // 실패하면 2 · 4 · 8 … 최대 60초 뒤 다시
   if (ACC.bkBusy) { ACC.again = true; return; } ACC.bkBusy = true; ACC.pendAt = 0;
@@ -12426,32 +12426,42 @@ async function backupSafe() { // 실패하면 2 · 4 · 8 … 최대 60초 뒤 �
   finally { ACC.bkBusy = false; if (ACC.again) { ACC.again = false; queueBackup(); } bkShow(); } }
 const econSig = () => { try { return acHash(JSON.stringify([profile.dia, profile.gold, profile.items, profile.owned, profile.shards, profile.arc, profile.sp, profile.tower && profile.tower.cl, profile.level])); } catch (e) { return ''; } }; // 재화 · 아이템 · 지후 · 패스
 function econTouch() { if (econTouch.q) return; econTouch.q = true; queueMicrotask(() => { econTouch.q = false; if (ACC.restoring) return; writeLocal(); queueBackup(); }); } // 금고(다이아 · 골드)가 바뀌면 save 를 잊어도 백업
-setInterval(() => { const now = Date.now(); if (ACC.tickAt && now - ACC.tickAt > 45000) ACC.vAt = 0; ACC.tickAt = now; // 기기가 잠들었다 깼다 (타이머가 멈춰 있었다) → 다음 저장은 서버를 확인하고
-  if (isMember() && !ACC.restoring && econSig() !== ACC.econ && !ACC.pendAt && !ACC.bkBusy) { writeLocal(); queueBackup(); } }, 20000); // 놓친 변화 (아이템 등)
-const backupFlush = () => { if (isMember() && !ACC.restoring && !ACC.kicked && !ACC.conflict && (ACC.pendAt || econSig() !== ACC.econ)) { clearTimeout(ACC.timer); writeLocal(); backupSafe(); } };
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { ACC.hidAt = Date.now(); backupFlush(); } else if (ACC.hidAt && Date.now() - ACC.hidAt > 15000) ACC.vAt = 0; }); addEventListener('pagehide', backupFlush); // 앱을 내리거나 닫을 때 바로 · 오래 숨었다 돌아오면 다음 저장은 확인하고
-addEventListener('storage', e => { if (e.key === SAVE_KEY) ACC.vAt = 0; }); // 같은 기기의 다른 탭이 기록을 바꿨다
-async function backupNow(o = {}) { // o.force: 서버를 확인하지 않고 쓴다 (기록 고르기에서 「이 기기 기록」을 골랐을 때)
-  if (!isMember() || ACC.kicked || (ACC.conflict && !o.force)) return;
+setInterval(() => { if (isMember() && !ACC.restoring && econSig() !== ACC.econ && !ACC.pendAt && !ACC.bkBusy) { writeLocal(); queueBackup(); } }, 20000); // 놓친 변화 (아이템 등)
+const backupFlush = () => { if (isMember() && !ACC.restoring && !ACC.kicked && (ACC.pendAt || econSig() !== ACC.econ)) { clearTimeout(ACC.timer); writeLocal(); backupSafe(); } };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') backupFlush(); }); addEventListener('pagehide', backupFlush); // 앱을 내리거나 닫을 때 바로
+// R3.8 build 4 저장 순번: 서버 기록은 한 줄로만 이어진다 — 쓸 때마다 rev = 이전 + 1 · sid = 지금 접속한 창 (sessions/<uid>) 이어야 규칙이 받는다. 낡은 창 · 기기의 저장은 서버가 거절한다
+const ledOf = p => ({ dia: nat(p.dia), gold: nat(p.gold), pulls: nat(p.pulls), own: Object.keys(p.owned || {}).length }); // 서버 장부 (규칙 · tools/audit.js 가 본다)
+const bkTimed = (pr, ms = 8000) => Promise.race([pr, new Promise((res, rej) => setTimeout(() => rej(new Error('서버 응답이 없어요')), ms))]); // 연결이 막히면 setDoc 은 끝나지 않는다
+function backupNow() { return (ACC.chain = (ACC.chain || Promise.resolve()).catch(() => {}).then(() => bkSend({}))); } // 한 번에 하나씩 보낸다
+async function bkSend(o) {
+  if (!isMember() || ACC.kicked || ACC.synced !== myUid()) return; // synced: 이 기록이 지금 계정의 서버 기록과 맞춰진 뒤에만
+  const uid = myUid(), P = profile; if (P.ownerUid && P.ownerUid !== uid) return; // 다른 계정의 기록은 절대 올리지 않는다
   clearTimeout(ACC.timer);
-  const uid = myUid(), ref = FB.sdk.doc(FB.db, 'r2_backups', uid); profile.ownerUid = uid;
-  const prev = profile.bkWid, wid = newWid(); profile.bkWid = wid; profile.gv = gameVersion(); /* R2.29: 저장한 게임 버전 */ (ACC.tried || (ACC.tried = new Set())).add(wid); // R2.18 build 6: 저장 번호 (기록 안에 · 서버 규칙은 그대로)
-  let payload = JSON.stringify(profile); if (payload.length > BK_MAX * 0.9) { bkFit(); payload = JSON.stringify(profile); }
-  if (payload.length > BK_MAX) { profile.bkWid = prev; throw new Error('기록이 너무 커서 백업하지 못했어요.'); }
-  const data = { payload, savedAt: Date.now(), updatedAt: FB.sdk.serverTimestamp() };
-  if (o.force || (ACC.vAt && Date.now() - ACC.vAt < BK_TRUST)) await FB.sdk.setDoc(ref, data);
-  else {
-    const hit = await FB.sdk.runTransaction(FB.db, async tx => { // 서버 기록이 이 창이 맞춘 것 그대로일 때만 쓴다
-      const snap = await tx.get(ref), b = snap.exists() ? bkParse(snap.data()) : null;
-      if (b && b.p && typeof b.p.gv === 'string' && compareVersions(b.p.gv, gameVersion()) > 0) return { old: b.p.gv }; // R2.29: 더 새 버전이 저장한 기록 → 이 창은 쓰지 않는다
-      if (b && b.wid && profile.syncWid && b.wid !== profile.syncWid && !ACC.tried.has(b.wid)) return b;
-      tx.set(ref, data); return null;
-    });
-    if (hit && hit.old) { profile.bkWid = prev; pendingUpdateVersion = hit.old; try { showUpdateOverlay(); } catch (e) {} throw new Error(`새 버전 (${hit.old}) 에서 저장한 기록이 있어요 · 업데이트하면 다시 저장돼요`); }
-    if (hit) { profile.bkWid = prev; bkConflict(hit); return; }
-  }
-  profile.syncWid = wid; ACC.vAt = ACC.lastAt = Date.now(); writeLocal(); bkHist(payload); bkShow();
+  const ref = FB.sdk.doc(FB.db, 'r2_backups', uid); P.ownerUid = uid;
+  const prev = P.bkWid, wid = newWid(); P.bkWid = wid; P.gv = gameVersion(); /* R2.29: 저장한 게임 버전 */ (ACC.tried || (ACC.tried = new Set())).add(wid); // 저장 번호 (기록 안에)
+  let payload = JSON.stringify(P); if (payload.length > BK_MAX * 0.9) { bkFit(); payload = JSON.stringify(P); }
+  if (payload.length > BK_MAX) { P.bkWid = prev; throw new Error('기록이 너무 커서 백업하지 못했어요.'); }
+  const rev = nat(P.rev) + 1, data = { payload, savedAt: Date.now(), updatedAt: FB.sdk.serverTimestamp() };
+  if (!o.legacy) Object.assign(data, { rev, sid: ACC.sid, led: ledOf(P) });
+  writeLocal(); // 보낸 번호를 먼저 이 기기에 남긴다 (답을 못 받아도 내 것으로 안다)
+  try { await FB.sdk.setDoc(ref, data); }
+  catch (e) { if (!e || e.code !== 'permission-denied') throw e; return bkRejected(e, o, P, uid, prev); }
+  if (profile !== P || myUid() !== uid) return;
+  P.rev = o.legacy ? 0 : rev; P.syncWid = wid; ACC.lastAt = Date.now(); writeLocal(); bkHist(payload); bkShow();
 }
+async function bkRejected(e, o, P, uid, prev) { // 서버가 거절했다 → 서버를 읽어 이유를 가린다
+  const b = await fetchBackup(), s = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'sessions', uid)).catch(() => null);
+  if (profile !== P || myUid() !== uid) return;
+  if (b && b.p && typeof b.p.gv === 'string' && compareVersions(b.p.gv, gameVersion()) > 0) { P.bkWid = prev; pendingUpdateVersion = b.p.gv; try { showUpdateOverlay(); } catch (er) {} throw new Error(`새 버전 (${b.p.gv}) 에서 저장한 기록이 있어요 · 업데이트하면 다시 저장돼요`); }
+  if (s && s.exists() && s.data().sid !== ACC.sid) return bkStop(); // 다른 창 · 기기가 접속했다
+  if (b && b.wid && b.wid !== P.syncWid && ACC.tried && ACC.tried.has(b.wid) && !o.mine) { P.rev = b.rev; P.syncWid = b.wid; return bkSend({ ...o, mine: true }); } // 내가 보낸 것이 답만 못 받았다
+  if (b && ((b.rev && b.rev !== nat(P.rev)) || (b.wid && P.syncWid && b.wid !== P.syncWid))) return bkStop(); // 그 사이 다른 곳이 저장했다
+  if (!o.claimed) { await claimSession(); return bkSend({ ...o, claimed: true }); }
+  if (!o.legacy && !(b && b.rev)) return bkSend({ ...o, legacy: true }); // 새 규칙을 게시하기 전
+  P.bkWid = prev; throw e;
+}
+function bkStop() { // 이 창의 기록은 낡았다 → 서버 이력에 남기고 멈춘다 (새로고침하면 서버 기록)
+  if (ACC.kicked) return; bkLost(JSON.stringify(profile)); ACC.tabLost = ACC.kicked = true; ACC.pendAt = 0; clearTimeout(ACC.timer); clearTimeout(ACC.retry); renderBlock(); bkShow(); }
 function bkHist(payload, slot) { // 서버 이력 한 칸 (3시간마다 t0~t7 · 버린 기록 x0~x3) · 규칙 게시 전이면 FB.noHist
   if (FB.noHist || !isMember() || !payload) return;
   const t = Math.floor(Date.now() / BK_SLOT); if (!slot) { if (profile.histT === t) return; slot = 't' + (t % 8); }
@@ -12462,54 +12472,36 @@ function bkLost(raw) { if (!raw) return; profile.lostN = ((profile.lostN | 0) + 
 function stashLocal() { try { if (bkHasProg(profile)) localStorage.setItem(SAVE_KEY + '.prev', JSON.stringify({ at: Date.now(), uid: profile.ownerUid || '', p: profile })); } catch (e) {} } // 바꾸기 전 이 기기 기록 한 벌 (문의 대응용)
 async function fetchBackup() { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'r2_backups', myUid())); if (!snap.exists()) return null; return bkParse(snap.data()); }
 async function fetchR1() { try { const snap = await FB.sdk.getDoc(FB.sdk.doc(FB.db, 'backups', myUid())); if (!snap.exists()) return null; const p = JSON.parse(snap.data().payload); return p && typeof p === 'object' && !Array.isArray(p) ? p : null; } catch (e) { return null; } }
-function useProfile(p, wid) { // 서버 기록으로 바꾼다 (다음 저장은 서버를 다시 확인 · vAt 0)
-  stashLocal(); ACC.restoring = true; profile = normProfile(p); profile.ownerUid = myUid(); profile.syncWid = wid || ''; ACC.vAt = 0; ACC.conflict = null;
+function useProfile(p, wid, rev) { // 서버 기록으로 바꾼다
+  stashLocal(); ACC.restoring = true; profile = normProfile(p); profile.ownerUid = myUid(); profile.syncWid = profile.bkWid = wid || ''; profile.rev = nat(rev);
   writeLocal();
   ACC.restoring = false; renderLobby();
-}
-async function bkPick(b) { // 서버 기록 b 와 이 기기 기록 중 어느 쪽 → 'server' | 'local' (한쪽이 모두 같거나 앞서면 묻지 않는다)
-  const s = bkSum(b.p || {}), l = bkSum(profile), ge = (x, y) => Object.keys(x).every(k => x[k] >= y[k]);
-  if (ge(s, l)) return 'server'; if (ge(l, s)) return 'local';
-  const card = (t, x, p, when) => `<div class="u2-ac-cmp-c"><b>${t}</b><span>Lv.${p.level | 0} · ${x.games}판</span><span>뽑기 ${x.pulls}회 · 지후 ${x.own}종</span><span>◆ ${nat(p.dia).toLocaleString()}</span><small>${when}</small></div>`;
-  for (;;) {
-    const r = await dlg({ icon: '🔀', title: '기록이 두 개예요', html: `다른 기기 · 창에서 저장한 기록과 이 기기 기록이 서로 달라요.<br>계속할 기록을 골라 주세요 (고르지 않은 쪽은 사라져요).<div class="u2-ac-cmp">${card('이 기기', l, profile, '지금 이 화면')}${card('서버 (다른 기기)', s, b.p || {}, b.at ? new Date(b.at).toLocaleString() : '')}</div>`, ok: '서버 기록 쓰기', cancel: '이 기기 기록 쓰기' });
-    if (r === true) return 'server'; if (r === false) return 'local';
-    await new Promise(res => setTimeout(res, 900)); // 다른 창에 밀렸다 (null) → 다시 묻는다
-  }
-}
-function bkConflict(b) { ACC.conflict = b; clearTimeout(ACC.timer); bkShow(); bkTry(); } // 저장하려는데 서버 기록이 그 뒤에 바뀌어 있었다
-const bkBusyScreen = () => TUT.on || !!S.net || $('screen-battle').classList.contains('active') || !AUTH.ok; // 전투 · 튜토리얼 중엔 기다렸다가
-async function bkTry() {
-  clearTimeout(ACC.cfT); const b = ACC.conflict; if (!b || ACC.resolving) return; if (bkBusyScreen()) { ACC.cfT = setTimeout(bkTry, 3000); return; }
-  ACC.resolving = true;
-  try {
-    const pick = await bkPick(b); if (ACC.conflict !== b) return;
-    if (pick === 'server') { bkLost(JSON.stringify(profile)); useProfile(b.p, b.wid); banner('다른 기기에서 이어서 한 기록을 불러왔어요'); }
-    else { bkLost(b.raw); profile.syncWid = b.wid; ACC.conflict = null; await backupNow({ force: true }).catch(e => { ACC.bkErr = bkErrText(e); }); banner('이 기기 기록으로 서버에 저장했어요'); }
-  } finally { ACC.resolving = false; bkShow(); }
 }
 // R2.18 build 6: 켤 때 서버 기록을 쓸지 — 예전엔 저장 시각(savedAt)을 비교했는데, 켜는 동안 출석 · 퀘스트 등이 save() 를 불러
 // 다른 기기의 오래된 기록이 새것처럼 보여 서버 기록(더 높은 레벨)을 덮어썼다. 이제 저장 번호(wid)로: 서버의 마지막 저장이 이 기기가 맞춘 것과 다르면 서버 기록.
 // 번호가 없는 예전 기록은 진행도(레벨 → 경험치 → 판 수)가 앞선 쪽 · 같으면 예전 규칙
 const progOf = p => [p.level | 0, p.xp | 0, (p.wins | 0) + (p.losses | 0)];
 const progCmp = (a, b) => { for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i] ? 1 : -1; return 0; };
-function serverNewer(b) {
-  if (b.wid && profile.syncWid) return b.wid !== profile.syncWid;
+function serverNewer(b) { // 서버의 마지막 저장이 이 기기가 맞춘 것도, 이 기기가 보낸 것도 아니면 서버 기록
+  if (b.wid) return b.wid !== profile.syncWid && b.wid !== profile.bkWid;
   const c = progCmp(progOf(b.p || {}), progOf(profile)); if (c) return c > 0;
   return b.at > (profile.savedAt || 0) + 5000;
 }
 async function syncAfterLogin(fromStart) { // R2 기록이 있으면 맞추고, 없으면 R1 기록을 처음 한 번 가져오고, 그것도 없으면 이 기기 기록을 계정에 붙인다
-  // R2.20 build 3: 예전엔 로그인(fromStart false)하면 서버 기록으로 무조건 덮었다 → 이 계정의 기록이면 켤 때처럼 비교 (서버가 바뀌었으면 bkPick)
-  const uid = myUid(), b = await fetchBackup(), mine = profile.ownerUid === uid;
+  // R3.8 build 4: 접속 자리를 먼저 잡고 (다른 창 · 기기의 저장이 그때부터 거절된다) 서버를 읽는다 · 두 기록이 갈라졌으면 늘 서버 (고르기 창 없음 · 버린 쪽은 서버 이력)
+  ACC.synced = null; ACC.chain = null; ACC.bkBusy = false;
+  const uid = myUid(), mine = profile.ownerUid === uid; await claimSession();
+  const b = await fetchBackup(); if (myUid() !== uid) return;
   if (b) {
-    const bad = fromStart && !LOCAL_OK && mine;
-    if (bad || !mine) { useProfile(b.p, b.wid); if (bad) { acFlag(profile, 'local-edit'); save(); } } // 다른 계정 · 게스트 기록 (게스트 진행이 있으면 로그인 전에 묻는다) · 서명이 틀린 이 기기 기록 (R2.12) → 서버
-    else if (serverNewer(b)) { if ((await bkPick(b)) === 'server') { bkLost(JSON.stringify(profile)); useProfile(b.p, b.wid); } else { bkLost(b.raw); profile.syncWid = b.wid; ACC.vAt = 0; save(); } }
+    const bad = fromStart && LOCAL_BAD && mine;
+    if (bad || !mine) { useProfile(b.p, b.wid, b.rev); ACC.synced = uid; if (bad) { acFlag(profile, 'local-edit'); save(); } } // 다른 계정 · 게스트 기록 · 서명이 틀린 이 기기 기록 (R2.12) → 서버
+    else if (serverNewer(b)) { bkLost(JSON.stringify(profile)); useProfile(b.p, b.wid, b.rev); ACC.synced = uid; banner('서버 기록을 불러왔어요'); }
+    else { profile.rev = b.rev; if (b.wid) profile.syncWid = b.wid; ACC.synced = uid; save(); } // 이 기기가 이어서 한 기록
   } else {
     const r1 = mine && bkHasProg(profile) ? null : await fetchR1(); // 이 계정으로 하던 기록이 이 기기에 있으면 R1 을 다시 가져오지 않는다 (서버 기록이 없을 때)
     if (r1) { stashLocal(); useProfile(importR1(r1)); banner('지후배틀 기록을 가져왔어요'); }
     else if (profile.ownerUid && profile.ownerUid !== uid) { stashLocal(); profile = normProfile(null); }
-    profile.ownerUid = uid; save(); await backupNow();
+    profile.ownerUid = uid; profile.rev = 0; ACC.synced = uid; save(); await backupNow();
   }
   const nick = await claimNick(); if (nick === 'taken') banner('닉네임이 다른 계정에 등록돼 있어요 · 환경설정에서 바꿔 주세요');
   await migrateR22(); lbPush(); updCheck();
@@ -12535,10 +12527,33 @@ async function accBoot() { // 5단계 순차 부팅: 1 인터넷 연결 → 2 �
   if (!AUTH.ok) {
     const was = !isMember() && !!profile.ownerUid;
     gateDone();
-    if (was) setTimeout(() => { ACC.tab = 'login'; ACC.msg = '로그인이 풀렸어요. 다시 로그인하면 계정 기록을 이어서 해요.'; openAccount(); }, 800);
+    if (was) setTimeout(lostAsk, 800); /* R3.8 build 4 */
     return;
   }
   onlineStart(); updCheck(); // 벤치 (?bench=) 만
+}
+// R3.8 build 4: 로그인이 풀린 계정의 기록을 게스트로 이어서 하면 복사본이 따로 자라 같은 계정이 둘이 됐다 → 다시 로그인하거나 새로 시작해야 이어 간다 (기록 한 벌은 이 기기에 남는다)
+async function lostAsk() {
+  while (accLost()) {
+    if (!ACC.busy && !$('accModal').classList.contains('show')) {
+      const r = await dlg({ icon: '🔒', title: '로그인이 풀렸어요', html: `<b>${esc(profile.nick || '계정')}</b> (Lv.${profile.level}) 계정의 기록이에요. 다시 로그인하면 이어서 해요.`, ok: '로그인', cancel: '새로 시작' });
+      if (!accLost()) return;
+      if (r === true) { ACC.msg = ''; openAccount('login'); }
+      else if (r === false && (await dlg({ icon: '⚠️', title: '새로 시작할까요?', html: '이 기기는 게스트로 처음부터 시작해요. 계정 기록은 마지막으로 저장한 상태 그대로 서버에 있어요.', ok: '새로 시작', cancel: '취소' })) === true) { stashLocal(); ACC.restoring = true; profile = normProfile(null); writeLocal(); location.reload(); return; }
+    }
+    await new Promise(res => setTimeout(res, 800));
+  }
+}
+// R3.8 build 4: 가입이 도중에 끊겨 다시 누르면 계정이 하나 더 생기던 것 → 만들던 번호를 이 기기에 남기고 이어서 마친다 (비밀번호는 남기지 않는다)
+const PEND_KEY = 'rejhbt-signing';
+const pendSign = () => { try { const v = JSON.parse(localStorage.getItem(PEND_KEY) || 'null'); return v && UID_RE.test(String(v.code)) && v.nick === profile.nick && Date.now() - v.at < 86400000 ? v : null; } catch (e) { return null; } };
+const pendSet = v => { try { if (v) localStorage.setItem(PEND_KEY, JSON.stringify(v)); else localStorage.removeItem(PEND_KEY); } catch (e) {} };
+async function finishSignUp(code, extra) { // 새 계정: 닉네임을 먼저 차지 → 진 쪽이면 계정을 지운다 → 기록 올리기
+  FB.uid = myUid(); await claimSession();
+  const nick = await claimNick();
+  if (nick === 'taken') { pendSet(null); try { await FB.auth.currentUser.delete(); } catch (e) { await FB.sdk.signOut(FB.auth).catch(() => {}); } await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); throw new Error('이미 다른 계정이 쓰는 닉네임이에요. 환경설정에서 닉네임을 바꾼 뒤 가입해 주세요.'); }
+  profile.ownerUid = FB.uid; profile.rev = 0; profile.syncWid = ''; ACC.synced = FB.uid; delete profile.guestUid; Object.assign(profile, extra || {}); profile.newbie = { on: true, days: 0, last: '' }; save();
+  pendSet(null); await bkTimed(backupNow()).catch(() => {}); if (nick !== 'mine') await claimNick(); lbPush(); postEvent('join', '', ''); joinReward(); if (!profile.joinPosted) { profile.joinPosted = 1; save(); discordNotify({ type: 'join' }); }
 }
 async function signUp(pw, pw2) {
   if (!profile.nick) throw new Error('닉네임을 먼저 정해 주세요.');
@@ -12546,15 +12561,20 @@ async function signUp(pw, pw2) {
   if (!(await fbInit())) throw new Error('온라인에 연결할 수 없어요. 네트워크를 확인해 주세요.');
   if (isMember()) throw new Error('이미 로그인되어 있어요.');
   if (accLost()) throw new Error(ACC_LOST_MSG); /* R3.7 build 7: 같은 진행의 계정이 하나 더 생기던 것 */
-  const taken = await nickDoc(profile.nick); if (taken) throw new Error('이미 다른 계정이 쓰는 닉네임이에요. 환경설정에서 닉네임을 바꾼 뒤 가입해 주세요.');
   const anon = FB.auth.currentUser && FB.auth.currentUser.isAnonymous ? FB.auth.currentUser.uid : null;
+  const pend = pendSign();
+  if (pend) { // 지난번에 만들던 번호가 있으면 그 계정으로 마저 (같은 비밀번호)
+    let made = false; try { await FB.sdk.signInWithEmailAndPassword(FB.auth, codeEmail(pend.code), pw); made = true; } catch (e) { if (e && e.code === 'auth/network-request-failed') throw new Error(authMsg(e)); }
+    if (made) { FB.uid = myUid(); const b = await fetchBackup(); if (b) { pendSet(null); await syncAfterLogin(false); return pend.code; } await finishSignUp(pend.code); return pend.code; }
+  }
+  const taken = await nickDocStrict(profile.nick); if (taken) throw new Error('이미 다른 계정이 쓰는 닉네임이에요. 환경설정에서 닉네임을 바꾼 뒤 가입해 주세요.');
   if (anon) await lbGhostDel(anon); // 게스트로 올린 순위 기록 (리더보드 · 디펜스 · 탑) 은 지운다 (계정으로 다시 올린다)
   for (let i = 0; i < 30; i++) {
     const code = randomCode();
+    pendSet({ code, nick: profile.nick, at: Date.now() });
     try { await FB.sdk.createUserWithEmailAndPassword(FB.auth, codeEmail(code), pw); }
-    catch (e) { if (e.code === 'auth/email-already-in-use') continue; throw new Error(authMsg(e)); }
-    FB.uid = myUid(); profile.ownerUid = FB.uid; delete profile.guestUid; profile.newbie = { on: true, days: 0, last: '' }; save();
-    await backupNow().catch(() => {}); await claimNick(); lbPush(); postEvent('join', '', ''); joinReward(); if (!profile.joinPosted) { profile.joinPosted = 1; save(); discordNotify({ type: 'join' }); }
+    catch (e) { if (e.code === 'auth/email-already-in-use') { pendSet(null); continue; } throw new Error(authMsg(e)); }
+    await finishSignUp(code);
     return code;
   }
   throw new Error('사용 가능한 번호를 배정하지 못했어요. 잠시 후 다시 시도하세요.');
@@ -12565,7 +12585,7 @@ async function logIn(id, pw) {
   let code = id;
   if (!UID_RE.test(code)) { const d = await nickDoc(id); code = d ? String(d.code || '') : ''; }
   if (!UID_RE.test(code)) throw new Error('이 닉네임으로 등록된 계정이 없어요. UID 로 로그인해 주세요.');
-  if (isMember()) await backupNow().catch(() => {});
+  if (isMember()) await bkTimed(backupNow()).catch(() => {});
   else if (FB.auth.currentUser && FB.auth.currentUser.isAnonymous) await lbGhostDel(FB.auth.currentUser.uid); /* R3.4 build 3: 게스트로 올린 리더보드 기록은 로그인 전에 지운다 (로그인에 실패하면 다음 lbPush 가 다시 올린다) */
   try { await FB.sdk.signInWithEmailAndPassword(FB.auth, codeEmail(code), pw); } catch (e) { throw new Error(authMsg(e)); }
   FB.uid = myUid();
@@ -12582,7 +12602,7 @@ async function signInGoogle(start) { // start: 연결된 계정이 없으면 새
   let result; try { result = await FB.sdk.signInWithPopup(FB.auth, googleProvider()); } catch (e) { throw new Error(authMsg(e)); }
   if (accCode()) { if (start && !(await guestLoginOk())) { await FB.sdk.signOut(FB.auth).catch(() => {}); await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); throw new Error('로그인을 취소했어요.'); } FB.uid = myUid(); await syncAfterLogin(false); return { existing: true }; } // 이미 연결된 계정 → 로그인 (「Google 로 시작」이었으면 게스트 기록이 바뀐다고 먼저 묻는다)
   const credential = FB.sdk.GoogleAuthProvider.credentialFromResult(result);
-  try { await result.user.delete(); } catch (e) { await FB.sdk.signOut(FB.auth).catch(() => {}); } // Google 전용 사용자는 지운다
+  try { await result.user.delete(); } catch (e) { await FB.sdk.signOut(FB.auth).catch(() => {}); await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); throw new Error('Google 연결에 실패했어요. 잠시 뒤 다시 시도해 주세요.'); } // Google 전용 사용자는 지운다 · 못 지우면 계정을 만들지 않는다 (누를 때마다 새 계정이 생기던 것)
   if (!start) { await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); throw new Error('이 Google 계정에 연결된 지후배틀 계정이 없어요. 처음이면 회원가입 탭의 "Google로 시작"을, 기존 계정이면 UID로 로그인한 뒤 계정 창에서 Google을 연결하세요.'); }
   if (lost) { await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); throw new Error(ACC_LOST_MSG); } /* 연결된 계정 로그인은 위에서 됨 · 새 계정만 막는다 */
   if (!profile.nick) { await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); throw new Error('닉네임을 먼저 정해 주세요.'); }
@@ -12590,10 +12610,10 @@ async function signInGoogle(start) { // start: 연결된 계정이 없으면 새
     const code = randomCode();
     try { await FB.sdk.createUserWithEmailAndPassword(FB.auth, codeEmail(code), randomSecret()); }
     catch (e) { if (e.code === 'auth/email-already-in-use') continue; throw new Error(authMsg(e)); }
-    let warn = ''; try { if (credential) await FB.sdk.linkWithCredential(FB.auth.currentUser, credential); } catch (e) { warn = authMsg(e); }
-    FB.uid = myUid(); profile.ownerUid = FB.uid; delete profile.guestUid; profile.noPw = true; profile.newbie = { on: true, days: 0, last: '' }; save();
-    await backupNow().catch(() => {}); await claimNick(); lbPush(); postEvent('join', '', ''); joinReward(); if (!profile.joinPosted) { profile.joinPosted = 1; save(); discordNotify({ type: 'join' }); }
-    return { code, warn };
+    try { if (credential) await FB.sdk.linkWithCredential(FB.auth.currentUser, credential); }
+    catch (e) { try { await FB.auth.currentUser.delete(); } catch (er) { await FB.sdk.signOut(FB.auth).catch(() => {}); } await FB.sdk.signInAnonymously(FB.auth).catch(() => {}); FB.uid = myUid(); throw new Error('Google 연결에 실패해 계정을 만들지 않았어요. ' + authMsg(e)); } /* R3.8 build 4: 연결 안 된 계정이 남으면 다음에 또 새 계정이 생긴다 */
+    await finishSignUp(code, { noPw: true });
+    return { code, warn: '' };
   }
   throw new Error('사용 가능한 번호를 배정하지 못했어요. 잠시 후 다시 시도하세요.');
 }
@@ -12615,7 +12635,8 @@ async function banRestart() { // 잠수함: 정지된 계정 (회원 · 게스�
 }
 async function logOut() {
   if (!isMember()) return; const code = accCode();
-  await backupNow().catch(() => {});
+  let ok = true; await bkTimed(backupNow()).catch(() => { ok = false; });
+  if (!ok && !ACC.kicked && (await dlg({ icon: '⚠️', title: '서버에 저장하지 못했어요', html: '지금 로그아웃하면 마지막 저장 뒤의 진행이 사라질 수 있어요.', ok: '로그아웃', cancel: '취소' })) !== true) return;
   onlineStop();
   await FB.sdk.signOut(FB.auth); await FB.sdk.signInAnonymously(FB.auth); FB.uid = myUid();
   ACC.restoring = true; profile = normProfile(null); writeLocal(); ACC.restoring = false; // 이 기기 기록은 비운다 (계정 기록은 서버에 있다)
@@ -12649,9 +12670,9 @@ function renderAccount() { // R2.20 build 3: JHBT 계정 창 (#accModal · 햄�
       ${msg}<p class="note">기록은 바뀔 때마다 서버에 자동으로 저장돼요. 다른 기기에서는 UID(또는 닉네임)와 비밀번호, 또는 연결한 Google 로 로그인하면 이어서 할 수 있어요. 두 기기에서 따로 진행했다면 어느 기록을 쓸지 물어봐요.</p>
       <button class="btn wide u2-ac-out" id="accOut">로그아웃</button>`;
     box.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => { if (b.dataset.sw !== accCode()) accRun(() => accSwitch(b.dataset.sw)); });
-    $('accAdd').onclick = async () => { await backupNow().catch(() => {}); await accRemember(); ACC.adding = true; ACC.tab = 'login'; ACC.msg = ''; renderAccount(); }; // R2.13 build 2: 계정 창 안에서 로그인
+    $('accAdd').onclick = async () => { await bkTimed(backupNow()).catch(() => {}); await accRemember(); ACC.adding = true; ACC.tab = 'login'; ACC.msg = ''; renderAccount(); }; // R2.13 build 2: 계정 창 안에서 로그인
     $('accCopy').onclick = () => { try { navigator.clipboard.writeText(accCode()); banner('UID 복사됨'); } catch (e) {} };
-    if ($('accBackup')) $('accBackup').onclick = () => { if (ACC.conflict) { closeModal('accModal'); ACC.cfT = 0; return bkTry(); } accRun(async () => { ACC.vAt = 0; await backupNow(); if (ACC.conflict) { ACC.msg = ''; closeModal('accModal'); bkTry(); return; } ACC.bkErr = ''; ACC.failAt = 0; ACC.msg = '서버에 저장했어요.'; }); }; // 손으로 누르면 늘 서버를 확인하고
+    if ($('accBackup')) $('accBackup').onclick = () => accRun(async () => { await bkTimed(backupNow()); ACC.msg = ACC.kicked ? '' : '서버에 저장했어요.'; });
     if ($('accGoogle')) $('accGoogle').onclick = () => accRun(async () => { await linkGoogle(); ACC.msg = 'Google 계정을 연결했어요.'; });
     $('accPwT').onclick = () => { ACC.pwOpen = !ACC.pwOpen; ACC.msg = ''; renderAccount(); };
     if ($('accPwGo')) $('accPwGo').onclick = () => { const a = $('accNewPw').value, b = $('accNewPw2').value; accRun(async () => { await setPassword(a, b); ACC.pwOpen = false; ACC.msg = '비밀번호를 바꿨어요.'; }); };
@@ -15775,13 +15796,13 @@ $('speedSeg').addEventListener('click', () => { const was = S.phase === 'combat'
 $('btnDeployDone').addEventListener('click', () => { if (S.phase === 'deploy' && !(S.net && S.net.spec)) autoPlace(); }); // 자동 배치: 시간 초과 때와 같이
 // ── 라운드 끝 (전작 endRoundCombat): 시간 종료 50:50 은 같은 라운드를 처음 배치로 다시 · 양쪽 전멸은 라이프 그대로 다음 라운드 ──
 function replayStart(at) { // at = 이 기기 기록 시각 · 또는 기록 그대로 (R2.14 공유 링크)
-  const rec = typeof at === 'object' ? at : rpLoad().find(r => r.at === at); if (!rec || !rec.rounds.length) return u2Toast('이 기기에 저장된 리플레이가 없어요');
+  const rec = netClean(typeof at === 'object' ? at : rpLoad().find(r => r.at === at)); if (!rec || !rec.rounds || !rec.rounds.length) return u2Toast('이 기기에 저장된 리플레이가 없어요'); /* R3.8 build 4 netClean */
   if (String(rec.b || 'R2').split('.')[0] !== gameVersion().split('.')[0]) return dlg({ icon: '📼', title: '예전 전장 기록', html: `${esc(String(rec.b || '').split('.').slice(0, 2).join('.') || 'R2')} 의 세로 전장에서 기록한 판이라 지금 전장 (${esc(gameVersion())}) 에서는 다시 볼 수 없어요`, ok: '확인' }); /* R3.0: 칸 수 · 전장이 달라 재생하면 다른 판이 된다 */
   clearTimeout(S.later); clearTimeout(newMatch.t); u2Set({ hist: false }); matchBase({ replay: true }); S.replay = { rec, i: 0, me: rec.me || 'a' }; replayRound();
   if (rec.b && rec.b !== rpBuild()) setTimeout(() => banner('다른 버전에서 기록한 판이라 전투가 조금 다를 수 있어요'), 600);
 }
 function replayRound() { const R = S.replay, r = R.rec.rounds[R.i], tok = R.tok = (R.tok || 0) + 1; clearTimeout(S.later); clearInterval(S.timer);
-  Object.assign(S, structuredClone(r.s)); S.net = null; S.fast = false; S.replay = R; S.speedManual = !!R.spd; if (R.spd) S.speed = R.spd; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.fx = []; S.barriers = []; S.timed = []; S.odds = [];
+  Object.assign(S, Object.fromEntries(Object.entries(structuredClone(r.s)).filter(([k]) => !RP_SKIP.has(k)))); S.net = null; S.fast = false; S.replay = R; S.speedManual = !!R.spd; if (R.spd) S.speed = R.spd; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.fx = []; S.barriers = []; S.timed = []; S.odds = [];
   document.body.classList.add('replaying'); $('screen-battle').classList.remove('spec', 'reels'); document.body.classList.remove('reels-on');
   show('battle'); renderIds(); renderLives(); renderField(); renderPool(); $('hudMode').textContent = `▶ ${R.rec.shared ? (R.rec.shared.nick || '지후') + '님의 ' : ''}다시보기 · ${R.i + 1} / ${R.rec.rounds.length} 라운드`; $('btnQuit').title = $('btnQuit').ariaLabel = '다시보기 끝'; rpCtlRender();
   setTimeout(() => { if (S.replay === R && R.tok === tok) beginCombat(); }, 500); // R2.14: 라운드를 빠르게 넘겨도 전투는 하나만
@@ -15838,11 +15859,11 @@ async function rpOpenLink2(id, ask) {
   if (!/^[A-Za-z0-9_]{6,80}$/.test(id)) return;
   if (['deploy', 'combat', 'roundEnd'].includes(S.phase) && !S.replay) return dlg({ icon: '🎬', title: '경기가 끝난 뒤에 볼 수 있어요' });
   if (!(await fbInit())) return dlg({ icon: '📡', title: '리플레이를 불러오지 못했어요', html: '인터넷 연결을 확인해 주세요.' });
-  const d = await rpGet(id); let o = null; try { o = d && JSON.parse(d.d); } catch (e) { o = null; }
+  const raw = await rpGet(id); let o = null, d = null; try { o = raw && netClean(JSON.parse(raw.d)); d = raw && netClean({ nick: raw.nick, pn: raw.pn, on: raw.on, kind: raw.kind, b: raw.b, at: raw.at }); } catch (e) { o = null; } /* R3.8 build 4 */
   if (!o || !Array.isArray(o.rounds) || !o.rounds.length) return dlg({ icon: '🎬', title: '리플레이를 찾을 수 없어요', html: '링크가 잘못됐거나 지워진 리플레이예요.' });
   if (ask) { // build 2: 링크로 열면 누구의 리플레이인지 먼저 보여 주고 [▶ 리플레이 보기] 를 눌러서 (소리도 이때부터 난다)
     const s0 = o.rounds[0].s || {}, me = o.me === 'e' ? 'e' : 'a', op = me === 'a' ? 'e' : 'a', kind = { normal: '일반전', friendly: '친선전', mirror: '미러전', random: '랜덤전', comp: '경쟁전', tower: '지후의 탑' }[d.kind] || '아케이드';
-    const deck = side => `<div class="rp-dk">${((s0.deck && s0.deck[side]) || []).filter(x => CHARS[x]).slice(0, 5).map(x => `<span style="border-color:${U2_RAR[CHARS[x].rarity].c}"><img src="${u2Img(x)}" alt=""></span>`).join('')}</div>`;
+    const deck = side => `<div class="rp-dk">${((s0.deck && s0.deck[side]) || []).filter(x => hasKey(CHARS, x)).slice(0, 5).map(x => `<span style="border-color:${U2_RAR[CHARS[x].rarity].c}"><img src="${u2Img(x)}" alt=""></span>`).join('')}</div>`;
     const when = Number(d.at) ? new Date(Number(d.at)).toLocaleDateString('ko-KR') : '';
     if (!(await dlg({ icon: '🎬', title: `${String(d.nick || '지후')}님의 리플레이`, ok: '▶ 리플레이 보기', cancel: '닫기', html: `<div class="u2-rpl"><div class="rp-side"><b>${esc(d.pn || '?')}</b>${deck(me)}</div><i class="rp-vs">VS</i><div class="rp-side"><b>${esc(d.on || '?')}</b>${deck(op)}</div><small>${kind} · ${o.rounds.length}라운드${when ? ' · ' + when : ''}</small></div>` }))) return;
   }
@@ -16008,7 +16029,7 @@ function renderGacha() {
   const its = Object.keys(ITEMS).filter(k => profile.items[k] > 0);
   $('gachaTickets').innerHTML = its.length ? '<span class="eyebrow">내 모집권 · 아이템</span>' + its.map(k => `<div class="g-card ticket"><span class="ic">${ITEMS[k].icon}</span><span class="tx"><b>${ITEMS[k].name} <em>×${profile.items[k]}</em></b><small>${ITEMS[k].desc}</small></span>${ITEMS[k].use ? `<button class="k-btn" data-item="${k}">사용</button>` : ''}</div>`).join('') : '';
 }
-const BOX_RAR = { boxLow: () => ['common', 'common', 'common', 'rare'], boxMid: () => ['rare', 'rare', 'rare', 'epic'], boxHigh: () => ['epic', 'epic', 'epic', ...(Math.random() < 0.25 ? ['legend'] : [])] }; // 상자 구성
+const BOX_RAR = { boxLow: () => ['common', 'common', 'common', 'rare'], boxMid: () => ['rare', 'rare', 'rare', 'epic'], boxHigh: () => ['epic', 'epic', 'epic', ...(er('boxHigh') < 0.25 ? ['legend'] : [])] }; // 상자 구성
 function useItem(k) { if (needOnline('🌐 아이템 사용은 온라인 연결이 필요해요')) return; alWhy('아이템 · ' + (ITEMS[k] ? ITEMS[k].name : k)); // 뽑기 화면 · 가방: 10회 뽑기권 · 임테기 · 영웅 모집권 · 선택 전설 모집권
   if (k === 'bingoT' || k === 'capT') { if (profile.items[k] > 0) evOpen(k === 'bingoT' ? 'bingo' : 'cap'); return; } /* R3.3 build 3 이벤트 */
   if (k === 'pickaxe') { artOpen(); return; } /* R3.4 build 6 유물 */
@@ -16021,13 +16042,15 @@ function useItem(k) { if (needOnline('🌐 아이템 사용은 온라인 연결�
   if (k === 'legendPick') { PICK_K = 'legendPick'; $('pickTitle').textContent = ITEMS.legendPick.name; $('pickNote').textContent = '원하는 전설 지후를 고르세요. 이미 가진 지후면 조각 1개가 돼요.'; $('pickGrid').innerHTML = byRarity('legend').map(id => `<button class="ccard r-legend${owned(id) ? '' : ' locked'}" data-pick="${id}"><div class="pic">${pic(id)}</div><b>${shortName(id)}</b><small>${owned(id) ? '보유 · 조각 +1' : '새로 얻기'}</small></button>`).join(''); openModal('pickModal'); return; }
   profile.items[k]--;
   if (k === 'pull10') return pull(10, true);
-  if (BOX_RAR[k]) { const res = BOX_RAR[k]().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; }); saveNow(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); return; } // 지후 상자
-  if (k === 'testKit') { const x = Math.random() * 100, r = x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') { discordNotify({ type: 'legend', name: CHARS[id].name }); } saveNow(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast); return; } // 임테기: 전설 1 · 영웅 14 · 희귀 · 일반 각 42.5
-  const rar = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(Math.random() * 4)] : k === 'legendRand' ? 'legend' : 'epic'; // 고급 임테기: 등급마다 25% · 랜덤 전설 모집권 · 영웅 모집권
-  const pool = byRarity(rar), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar');
+  if (BOX_RAR[k]) { const res = BOX_RAR[k]().map(r => { const pool = byRarity(r), id = pool[Math.floor(er('box:' + k) * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; }); saveNow(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); return; } // 지후 상자
+  if (k === 'testKit') { const x = er('kit:' + k) * 100, r = x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(er('kit:' + k) * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (r === 'legend') { discordNotify({ type: 'legend', name: CHARS[id].name }); } saveNow(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast); return; } // 임테기: 전설 1 · 영웅 14 · 희귀 · 일반 각 42.5
+  const rar = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(er('kit:' + k) * 4)] : k === 'legendRand' ? 'legend' : 'epic'; // 고급 임테기: 등급마다 25% · 랜덤 전설 모집권 · 영웅 모집권
+  const pool = byRarity(rar), id = pool[Math.floor(er('kit:' + k) * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar');
   saveNow(); renderGacha(); renderInv(); gachaLast = [{ id, isNew, seenBefore: !isNew }]; showReveal(gachaLast);
 }
 // ── 지후 받기 · 뽑기 · 뽑기 연출 ──
+// R3.8 build 4 고정 시드 추첨: 재화 · 지후 추첨은 (계정, 갈래, 몇 번째) 로 정해진다 → 기록을 되돌려 다시 뽑아도 같은 결과 · 갈래를 나눠 싼 상자로 뽑기 순번을 밀 수 없다 (연출 · 전투는 따로)
+function er(k) { const P = profile, N = P.rn && typeof P.rn === 'object' ? P.rn : (P.rn = {}), n = nat(N[k]); N[k] = n + 1; const seed = P.ownerUid || P.gseed || (P.gseed = newWid()); return mulberry32(hashSeed(AC_SALT, seed, k, n))(); }
 // 지후 받기 (뽑기 · 상점 · 우편 · 보상): 처음이면 보유, 이미 있으면 조각 10개 (R2.15 · 예전 1개) · 새 영웅 · 전설은 업적에 센다
 function grantChar(id) {
   if (!CHARS[id]) return false; if (CHARS[id].rarity === 'legend') postEvent('gacha', id, 'legend'); /* R3.1 build 4 소식: 전설 획득 (모든 경로) */
@@ -16035,9 +16058,9 @@ function grantChar(id) {
   profile.owned[id] = 1; const r = CHARS[id].rarity; if (r === 'epic') profile.ach.epic++; if (r === 'legend') profile.ach.legend++;
   return true;
 }
-function rollRarity(T = CFG.GACHA) { let x = Math.random() * 100; for (const [r, p] of T) { x -= p; if (x < 0) return r; } return 'common'; }
-const rollLegend = () => { const pool = byRarity('legend'); return pool[Math.floor(Math.random() * pool.length)]; };
-function rollOne(T) { let r = rollRarity(T), pool = Object.keys(CHARS).filter(id => CHARS[id].rarity === r); while (!pool.length) { r = ({ legend: 'epic', epic: 'rare', rare: 'common' })[r]; pool = Object.keys(CHARS).filter(id => CHARS[id].rarity === r); } return pool[Math.floor(Math.random() * pool.length)]; }
+function rollRarity(T = CFG.GACHA, rnd = Math.random) { let x = rnd() * 100; for (const [r, p] of T) { x -= p; if (x < 0) return r; } return 'common'; }
+const rollLegend = (rnd = Math.random) => { const pool = byRarity('legend'); return pool[Math.floor(rnd() * pool.length)]; };
+function rollOne(T, rnd = Math.random) { let r = rollRarity(T, rnd), pool = Object.keys(CHARS).filter(id => CHARS[id].rarity === r); while (!pool.length) { r = ({ legend: 'epic', epic: 'rare', rare: 'common' })[r]; pool = Object.keys(CHARS).filter(id => CHARS[id].rarity === r); } return pool[Math.floor(rnd() * pool.length)]; }
 const nbLeft = () => Math.max(0, CFG.NB_PULLS - (profile.nbPulls | 0)); // 초보자 뽑기 남은 횟수 (0 이면 사라진다)
 const p10Free = () => { const f = profile.p10f && typeof profile.p10f === 'object' ? profile.p10f : (profile.p10f = { k: 0, n: 0 }), cap = vipOn() ? 1 : (stDay() + 4) % 7 === 6 ? 1 : 0; /* R3.4 build 7: VIP 매일 1회 (2 →) · 일반 유저는 매주 토요일 1회 (한국 시간) */ if (stWait()) return 0; /* 잠수함: 서버 시간을 알기 전에는 무료 없음 (오프라인은 기기 시각) */ const k = stDay();
   if (typeof f.k !== 'number') { f.k = k; if (f.day !== todayKey()) f.n = 0; delete f.day; } /* 예전 기록 { day: 날짜 글자 } */ if (k > f.k) { f.k = k; f.n = 0; } else if (k < f.k) return 0; return Math.max(0, cap - (f.n | 0)); }; // R2.37 build 3: 10회 모집 무료
@@ -16048,9 +16071,10 @@ function pull(n, free, nb, pu) { if (needOnline('🌐 모집은 온라인 연결
   profile.dia -= cost; profile.pulls += n; questAdd('gacha', n); profile.mile = (profile.mile | 0) + n; /* R3.1 build 2 마일리지 */
   const res = [];
   for (let i = 0; i < n; i++) {
-    let id; if (nb) { profile.nbPulls = (profile.nbPulls | 0) + 1; id = profile.nbPulls >= CFG.NB_PULLS ? rollLegend() : rollOne(CFG.NB_GACHA); } // 초보자: 마지막 (50번째) 은 전설 확정 · 일반 천장은 건드리지 않는다
-    else if (pu) id = puRoll(pu); /* R3.2 build 15 픽업 배너 (sp · td · nw:<id> · cu) */
-    else { id = profile.pity >= CFG.PITY ? rollLegend() : rollOne(artGacha()); /* R3.4 build 6 주사위 */ profile.pity = CHARS[id].rarity === 'legend' ? 0 : profile.pity + 1; }
+    const rnd = () => er('g:' + (nb ? 'nb' : pu || 'n')); /* R3.8 build 4 고정 시드 */
+    let id; if (nb) { profile.nbPulls = (profile.nbPulls | 0) + 1; id = profile.nbPulls >= CFG.NB_PULLS ? rollLegend(rnd) : rollOne(CFG.NB_GACHA, rnd); } // 초보자: 마지막 (50번째) 은 전설 확정 · 일반 천장은 건드리지 않는다
+    else if (pu) id = puRoll(pu, rnd); /* R3.2 build 15 픽업 배너 (sp · td · nw:<id> · cu) */
+    else { id = profile.pity >= CFG.PITY ? rollLegend(rnd) : rollOne(artGacha(), rnd); /* R3.4 build 6 주사위 */ profile.pity = CHARS[id].rarity === 'legend' ? 0 : profile.pity + 1; }
     const isNew = grantChar(id); res.push({ id, isNew, seenBefore: !isNew });
   } // 같은 판에서 두 번째부터는 중복 (조각) · 천장
   mqEvent('newChar', res.filter(r => r.isNew).length);
@@ -16171,7 +16195,7 @@ function colView() { return colList().map(c => { const s = colState(c), mem = c.
   if (c.lock) mem.push({ img: '', cls: ' lock', rk: '곧 추가', onClick: () => u2Toast('곧 이 컬렉션에 지후가 더해져요') });
   return { name: c.name, mem, prog: c.lock ? '🔒' : `${s.n}/${c.ids.length}`, cls: s.done ? ' done' : s.ready ? ' ready' : c.lock ? ' soon' : '', btn: s.done ? '완료' : s.ready ? '받기' : c.lock ? '준비 중' : '진행 중', btnK: s.ready ? 'k-gold' : 'k-off', onClick: () => colClaim(c.k), rw: c.lock ? '' : `◆${COL_DIA * c.ids.length} · ✦ 빛나는 전설조각 ×${COL_GLOW * c.ids.length}${s.got.length && !s.done ? ` (받은 ${s.got.length}기 몫 제외)` : ''}` }; }).sort((a, b) => (b.cls === ' ready') - (a.cls === ' ready')); }
 const KIT_ALL = ['testKit', 'kitPro']; // R2.36 build 5: 가방에서 임테기 · 고급 임테기 한번에 까기 (한 번에 최대 100개)
-function kitRoll(k) { const x = Math.random() * 100, r = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(Math.random() * 4)] : x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew, r }; }
+function kitRoll(k) { const x = er('kit:' + k) * 100, r = k === 'kitPro' ? ['common', 'rare', 'epic', 'legend'][Math.floor(er('kit:' + k) * 4)] : x < 1 ? 'legend' : x < 15 ? 'epic' : x < 57.5 ? 'rare' : 'common', pool = byRarity(r), id = pool[Math.floor(er('kit:' + k) * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew, r }; }
 function useKitAll(k) { const n = Math.min(100, profile.items[k] | 0); if (!KIT_ALL.includes(k) || n < 1) return; profile.items[k] -= n; const res = []; for (let i = 0; i < n; i++) res.push(kitRoll(k)); const lg = res.filter(o => o.r === 'legend'); if (k === 'testKit' && lg.length) discordNotify({ type: 'legend', name: CHARS[lg[0].id].name }); res.forEach(o => delete o.r); save(); renderGacha(); renderInv(); gachaLast = res; showReveal(res); }
 function renderInv() { // 가방 (R2.7): 가진 아이템 전부 · 쓸 수 있는 것은 바로 사용
   const el = $('invGrid'); if (!el) return; const its = Object.keys(ITEMS).filter(k => profile.items[k] > 0);
@@ -16179,7 +16203,7 @@ function renderInv() { // 가방 (R2.7): 가진 아이템 전부 · 쓸 수 있�
   $('invDot').hidden = !its.some(k => ITEMS[k].use);
 }
 // ═════════ 아케이드 (R2.7.2): 티켓으로 입장 · 승리 5P · 패배 1P · 이벤트 없음 ═════════
-function arcDay() { const a = profile.arc, d = todayKey(); if (a.day !== d) { a.day = d; a.free = 0; a.buy = 0; } return a; } // 날이 바뀌면 오늘 무료 · 구매 수 초기화
+function arcDay() { const a = profile.arc, d = todayKey(); if (newDay(a.day)) { a.day = d; a.free = 0; a.buy = 0; } return a; } // 날이 바뀌면 오늘 무료 · 구매 수 초기화
 // R2.12.1 아케이드 상점 (포인트 P) · day = 하루 한도 · season = 경쟁전 시즌(14일) 한도
 // R2.20 build 6: 임테기 3 → 1P · 고급 임테기 시즌 3 → 5개 · ◆50 (한도 없음) → ◆120 (하루 3개) · 골드 6,000 (12P · 시즌 10개) 추가
 const ARC_SHOP = [
@@ -16192,11 +16216,11 @@ const ARC_SHOP = [
   { k: 'legendPick', p: 60, season: 1, give: { item: 'legendPick' } },
   { k: 'pickaxe', p: 5, day: 3, give: { item: 'pickaxe' } }, /* R3.5 build 3 */
 ];
-function arcShop() { const a = arcDay(), s = a.shop, d = todayKey(), se = compSeason().number; if (s.day !== d) { s.day = d; s.d = {}; } if (s.season !== se) { s.season = se; s.n = {}; } return s; }
+function arcShop() { const a = arcDay(), s = a.shop, d = todayKey(), se = compSeason().number; if (newDay(s.day)) { s.day = d; s.d = {}; } if (s.season !== se) { s.season = se; s.n = {}; } return s; }
 const arcLeft = it => { const s = arcShop(); return it.day ? it.day - (s.d[it.k] || 0) : it.season ? it.season - (s.n[it.k] || 0) : Infinity; };
 async function arcBuy(k) { const it = ARC_SHOP.find(x => x.k === k), a = arcDay(); if (!it || arcLeft(it) <= 0) return; if (a.p < it.p) return u2Toast(`포인트가 모자라요 (${it.p}P 필요 · 보유 ${a.p}P)`);
-  const nm = it.name || ITEMS[it.give.item].name; if (it.p >= 20 && !(await dlg({ icon: it.icon || ITEMS[it.give.item].icon, title: nm, html: `<b>${it.p}P</b>를 써요 (보유 ${a.p}P)${it.season ? `<br>이번 시즌 남은 구매 ${arcLeft(it)}회` : ''}`, ok: '구매', cancel: '취소' }))) return;
-  if (a.p < it.p || arcLeft(it) <= 0) return; const s = arcShop(); a.p -= it.p; if (it.day) s.d[k] = (s.d[k] || 0) + 1; if (it.season) s.n[k] = (s.n[k] || 0) + 1;
+  const P = profile, nm = it.name || ITEMS[it.give.item].name; if (it.p >= 20 && !(await dlg({ icon: it.icon || ITEMS[it.give.item].icon, title: nm, html: `<b>${it.p}P</b>를 써요 (보유 ${a.p}P)${it.season ? `<br>이번 시즌 남은 구매 ${arcLeft(it)}회` : ''}`, ok: '구매', cancel: '취소' }))) return;
+  if (P !== profile || a.p < it.p || arcLeft(it) <= 0) return; const s = arcShop(); a.p -= it.p; if (it.day) s.d[k] = (s.d[k] || 0) + 1; if (it.season) s.n[k] = (s.n[k] || 0) + 1;
   if (it.give.dia) profile.dia += it.give.dia; if (it.give.gold) profile.gold += it.give.gold; if (it.give.item) profile.items[it.give.item] = (profile.items[it.give.item] || 0) + 1;
   save(); sfx('buy'); renderMoney(); renderInv(); u2Toast(`${nm} 샀어요${it.give.item ? ' · 가방에 넣었어요' : ''}`); }
 function arcTicket(kind) { const a = arcDay(); if (kind === 'free') { if (a.free >= CFG.ARC_FREE) return; a.free++; a.t++; u2Toast('🎟 무료 티켓 받았어요'); } else { if (a.buy >= CFG.ARC_BUY) return; if (profile.gold < CFG.ARC_GOLD) return u2Toast('골드가 모자라요'); profile.gold -= CFG.ARC_GOLD; a.buy++; a.t++; u2Toast('🎟 티켓 1장 샀어요'); } save(); sfx('buy'); renderMoney(); renderArcade(); }
@@ -16276,7 +16300,7 @@ function compWinTp(i) { if (i < COMP_FADE) return rndBetween(200, 240); const c 
 function compLossTp(i) { const u = i < COMP_HIGH ? -1 : clamp((i - COMP_HIGH) / (COMP_GM - COMP_HIGH), 0, 1); let v; if (u >= 0) v = rndBetween(Math.round(50 + 100 * u), Math.round(70 + 130 * u)); else { const t = Math.min(i, COMP_GM) / COMP_GM, cv = (Math.exp(3.2 * t) - 1) / (Math.exp(3.2) - 1); v = rndBetween(Math.round(80 * cv), Math.round(5 + 95 * cv)); } return Math.round(v * COMP.LOSS_SCALE); } // R1: 낮은 티어는 거의 안 잃는다
 const compDiff = (d) => clamp(1 + d * COMP.DIFF, 0.5, 1.6); // 상대 티어 1칸마다 12%
 const compPromoReward = g => (g >= 2 ? (500 + (g - 2) * 100) * 2 : 0); // 실버 ◆1,000 · 그 위로 +200 (시즌마다 처음 오를 때)
-function compSeason(now = Date.now()) { const d = COMP.SEASON_DAYS * 86400000, n = Math.max(1, Math.floor((now - COMP.SEASON0) / d) + 1); return { number: n, start: COMP.SEASON0 + (n - 1) * d, end: COMP.SEASON0 + n * d }; } // 14일마다
+function compSeason(now = tNow()) { const d = COMP.SEASON_DAYS * 86400000, n = Math.max(1, Math.floor((now - COMP.SEASON0) / d) + 1); return { number: n, start: COMP.SEASON0 + (n - 1) * d, end: COMP.SEASON0 + n * d }; } // 14일마다 (서버 시각)
 function compSeasonResetTp(tp) { const info = compTierInfo(tp), target = COMP_GROUPS.indexOf(info.group) - COMP.DROP; if (target <= 0) return 0; const ch = info.group === 'challenger', sub = ch ? 2 : (info.index - 1) % 3, idx = 1 + (target - 1) * 3 + sub; const f = COMP_TIER_POINTS[idx], nx = COMP_TIER_POINTS[idx + 1]; return Math.round(f + (nx - f) * (ch ? 0 : info.progress)); } // 세 묶음 내린다
 function cpFrameSweep() { const c = profile.comp; if (!c.fs || c.fs === compSeason().number) return false; profile.frames = profile.frames.filter(id => !(FRAME[id] && FRAME[id].kind === 'cp')); if (!profile.frames.includes(profile.frame)) profile.frame = 'none'; c.fs = 0; return true; } /* R3.7 build 4: 경쟁전 테두리는 그 시즌 동안만 */
 function compApplySeasonReset() { cpFrameSweep(); const c = profile.comp, cur = compSeason().number; if (!c.season) { c.season = cur; return; } if (c.season >= cur) return; while (c.season < cur) { c.tp = compSeasonResetTp(c.tp); c.season++; } c.wins = c.losses = 0; c.promo = compGroupIndex(c.tp); c.speak = c.tp; } // 새 시즌: 세 묶음 내리고 전적은 처음부터
@@ -16411,8 +16435,8 @@ async function compPush() { // 경쟁전 리더보드: 시즌마다 따로 (r2co
 async function compSeasonReward() { // 지난 시즌 최종 순위 보상 (한 번 · 우편)
   const c = profile.comp, prev = compSeason().number - 1; if (prev < 1 || !c.played.includes(prev) || c.rwDone.includes(prev) || !FB.on) return;
   try {
-    const snap = await FB.sdk.getDocs(FB.sdk.query(FB.sdk.collection(FB.db, 'r2comp'), FB.sdk.where('season', '==', prev), FB.sdk.limit(1000))); // 시즌 하나만 (색인 없이) → 순위는 여기서
-    const rows = []; snap.forEach(d => rows.push({ id: d.id, tp: d.data().tp || 0 })); rows.sort((a, b) => b.tp - a.tp); if (c.rwDone.includes(prev)) return;
+    const P = profile, snap = await FB.sdk.getDocs(FB.sdk.query(FB.sdk.collection(FB.db, 'r2comp'), FB.sdk.where('season', '==', prev), FB.sdk.limit(1000))); // 시즌 하나만 (색인 없이) → 순위는 여기서
+    const rows = []; snap.forEach(d => rows.push({ id: d.id, tp: d.data().tp || 0 })); rows.sort((a, b) => b.tp - a.tp); if (P !== profile || c.rwDone.includes(prev)) return;
     const rank = rows.findIndex(x => x.id === `${prev}_${FB.uid}`) + 1, r = rank > 0 ? COMP_SEASON_RW.find(x => rank <= x.max) : null; c.rwDone = [...c.rwDone, prev].slice(-24);
     if (r) profile.mail = [...(profile.mail || []), { id: `comp-s${prev}`, icon: '🏆', title: `경쟁전 시즌 ${prev} 보상`, at: Date.now(), claimed: false, rewards: [{ kind: 'diamonds', amount: r.dia }, ...(r.legend ? [{ kind: 'legendChar', amount: r.legend }] : [])], body: `시즌 ${prev} 최종 ${rank}위` }];
     save(); renderMailDot();
@@ -16553,7 +16577,7 @@ function towerOpts(ph, r, taken) { const out = []; TOWER_PH[ph](r).forEach(rar =
 function towerBotDeck() { const picks = []; for (let ph = 0; ph < 5; ph++) { const o = towerOpts(ph, rng, picks); picks.push(o.map(id => ({ id, k: RARITY_ORDER[CHARS[id].rarity] + (TIER_SC[id] ?? 50) / 100 + rng() * 0.3 })).sort((x, y) => y.k - x.k)[0].id); } return picks; } // 봇: 같은 규칙 · 높은 등급 먼저 · R2.26: 같은 등급이면 티어 높은 지후 (무작위는 줄임)
 function towerGrant(r, reveal) { // 층 보상 → 이름 · R2.12.1: 상자는 가방에 넣지 않고 바로 연다 (reveal 에 결과)
   if (r.gold) profile.gold += r.gold; if (r.dia) profile.dia += r.dia; if (r.p) profile.arc.p += r.p;
-  const one = rar => { const pool = byRarity(rar), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (reveal) reveal.push({ id, isNew, seenBefore: !isNew }); return id; };
+  const one = rar => { const pool = byRarity(rar), id = pool[Math.floor(er('tower') * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); if (reveal) reveal.push({ id, isNew, seenBefore: !isNew }); return id; };
   if (r.item && BOX_RAR[r.item]) { BOX_RAR[r.item]().forEach(one); return `${ITEMS[r.item].icon} ${ITEMS[r.item].name} 열기`; }
   if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + 1;
   if (r.legend) { const id = one('legend'); return `🌟 ${CHARS[id].name}`; }
@@ -17130,7 +17154,7 @@ function onlineStart() {
   watchFriends(); watchInvites(); checkGiftMail();
 }
 let lastAcct = null;
-function onAccountChanged() { const u = isMember() ? myUid() : null; if (u === lastAcct) return; lastAcct = u; onlineStop(); ACC.banned = null; ACC.kicked = false; renderBlock(); renderSocialDot(); } // 다시 켜는 건 기록을 맞춘 뒤 (accBoot · 로그인)
+function onAccountChanged() { const u = isMember() ? myUid() : null; if (u === lastAcct) return; lastAcct = u; onlineStop(); ACC.banned = null; if (!ACC.tabLost) ACC.kicked = false; clearTimeout(ACC.timer); clearTimeout(ACC.retry); ACC.chain = null; ACC.bkBusy = false; ACC.pendAt = 0; ACC.tried = null; renderBlock(); renderSocialDot(); } // 다시 켜는 건 기록을 맞춘 뒤 (accBoot · 로그인)
 function watchConfig() {
   if (ON.cfgOn) return; ON.cfgOn = true;
   const sdk = FB.sdk;
@@ -17167,7 +17191,7 @@ $('boBtn').addEventListener('click', () => { const b = $('boBtn'); if (ACC.kicke
 async function claimSession() {
   if (!isMember()) return;
   const uid = myUid(), ref = FB.sdk.doc(FB.db, 'sessions', uid);
-  try { await FB.sdk.setDoc(ref, { sid: ACC.sid, at: FB.sdk.serverTimestamp() }); } catch (e) { return; }
+  try { await bkTimed(FB.sdk.setDoc(ref, { sid: ACC.sid, at: FB.sdk.serverTimestamp() })); } catch (e) { return; }
   if (ON.sessUnsub) ON.sessUnsub();
   ON.sessUnsub = FB.sdk.onSnapshot(ref, snap => { const d = snap.data(); if (d && d.sid && d.sid !== ACC.sid && myUid() === uid && !ACC.kicked) { ACC.kicked = true; renderBlock(); } }, () => {});
   ON.unsubs.push(() => { if (ON.sessUnsub) ON.sessUnsub(); ON.sessUnsub = null; });
@@ -17402,7 +17426,7 @@ function rpCardFill(root) { root.querySelectorAll('[data-rpcard]').forEach(c => 
   c.querySelector('.rp-t b').textContent = String(d.nick || '지후') + '님의 리플레이'; v.textContent = `${d.pn || '?'} VS ${d.on || '?'} · ${Number(d.n) || 1}라운드`;
   const dk = rpDeck(c.dataset.rpcard, d), box = c.querySelector('.rp-dk'); if (box && dk.length) box.innerHTML = dk.map(x => `<span style="border-color:${U2_RAR[CHARS[x].rarity].c}"><img src="${u2Img(x)}" alt=""></span>`).join(''); })); } // R2.15.2: 공유한 사람의 덱
 const RPD = {}; // 리플레이 id → 공유한 쪽 덱 (첫 라운드 시작 상태 · 한 번만 푼다)
-function rpDeck(id, d) { if (RPD[id]) return RPD[id]; let L = []; try { const o = JSON.parse(d.d), s0 = o.rounds[0].s; L = ((s0.deck && s0.deck[o.me === 'e' ? 'e' : 'a']) || []).filter(x => CHARS[x]).slice(0, 5); } catch (e) {} return (RPD[id] = L); }
+function rpDeck(id, d) { if (RPD[id]) return RPD[id]; let L = []; try { const o = JSON.parse(d.d), s0 = o.rounds[0].s; L = ((s0.deck && s0.deck[o.me === 'e' ? 'e' : 'a']) || []).filter(x => hasKey(CHARS, x)).slice(0, 5); } catch (e) {} return (RPD[id] = L); }
 function renderChat() {
   const member = isMember(); if (SOC.tab === 'dm' && (!SOC.dm || !member)) SOC.tab = 'chat';
   const dm = SOC.tab === 'dm' && SOC.dm, mine = m => m.uid === myUid();
@@ -17451,7 +17475,7 @@ async function sendChat(e) {
 function watchFriends() { // friendships: 문서 ID '작은UID_큰UID' · 요청한 사람이 만들고(pending) 받은 사람이 수락(accepted)
   const sdk = FB.sdk, uid = myUid();
   ON.unsubs.push(sdk.onSnapshot(sdk.query(sdk.collection(FB.db, 'friendships'), sdk.where('members', 'array-contains', uid)), snap => {
-    ON.fr = snap.docs.map(d => { const v = d.data(), other = (v.members || []).find(m => m !== uid) || ''; return { id: d.id, uid: other, nick: String((v.names && v.names[other]) || '?'), status: v.status, from: v.from }; });
+    ON.fr = snap.docs.map(d => { const v = d.data(), other = (v.members || []).find(m => m !== uid) || ''; return { id: d.id, uid: other, nick: String((v.names && typeof v.names[other] === 'string' && v.names[other]) || '?').slice(0, 12), status: v.status, from: v.from }; });
     syncPresence(); renderSocial(); renderSocialDot();
   }, () => {}));
 }
@@ -17513,7 +17537,7 @@ function claimMail(m) { if (needOnline('🌐 우편 수령은 온라인 연결�
   (m.rewards || []).forEach(r => {
     if (r.kind === 'diamonds') profile.dia += r.amount; else if (r.kind === 'gold') profile.gold += r.amount; else if (r.kind === 'item' && ITEMS[r.key]) profile.items[r.key] = (profile.items[r.key] || 0) + r.amount;
     else if (r.kind === 'char' && CHARS[r.id]) { for (let i = 0; i < r.amount; i++) { const isNew = grantChar(r.id); got.push({ id: r.id, isNew, seenBefore: !isNew }); } } // 정해진 지후 (이미 있으면 조각)
-    else if (r.kind === 'epicChar' || r.kind === 'legendChar') { const pool = byRarity(r.kind === 'epicChar' ? 'epic' : 'legend'); for (let i = 0; i < r.amount && pool.length; i++) { const id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); got.push({ id, isNew, seenBefore: !isNew }); } }
+    else if (r.kind === 'epicChar' || r.kind === 'legendChar') { const pool = byRarity(r.kind === 'epicChar' ? 'epic' : 'legend'); for (let i = 0; i < r.amount && pool.length; i++) { const id = pool[Math.floor(er('mail') * pool.length)], isNew = grantChar(id); got.push({ id, isNew, seenBefore: !isNew }); } }
   });
   if (m.gid && isMember()) FB.sdk.setDoc(FB.sdk.doc(FB.db, 'giftMail', String(m.gid), 'claims', myUid()), { name: (profile.nick || '?').slice(0, 12), at: FB.sdk.serverTimestamp() }).catch(() => {});
   return got;
@@ -17556,7 +17580,7 @@ function redeemCode(raw) {
   if (!codeLive(c)) return '기한이 지난 코드예요.';
   profile.codes.push(code); if (c.dia) profile.dia += c.dia; if (c.gold) profile.gold += c.gold; if (c.ticket) arcDay().t += c.ticket;
   let got = [];
-  if (c.legend) { const pool = byRarity('legend'); got = Array.from({ length: c.legend }, () => { const id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); return { id, isNew, seenBefore: !isNew }; }); }
+  if (c.legend) { const pool = byRarity('legend'); got = Array.from({ length: c.legend }, () => { const id = pool[Math.floor(er('code') * pool.length)], isNew = grantChar(id); return { id, isNew, seenBefore: !isNew }; }); }
   save(); sfx('buy'); renderLobby(); renderCodeList();
   if (got.length) { closeModal('codeModal'); showReveal(got); }
   return `코드 사용 완료! ${c.label}`;
@@ -17606,7 +17630,7 @@ const attRwLabel = r => r.label || (r.gold ? `● ${r.gold.toLocaleString()}` : 
 const attIcon = r => r.item ? { ic: ITEMS[r.item].icon, c: '#c89bff' } : r.dia ? { ic: '◆', c: '#7cc8ff' } : { ic: '●', c: '#ffc94a' };
 function attBook() { const nb = profile.newbie;
   if (nb.on && nb.days < NEWBIE.length) return { kind: 'new', title: '신규 출석부', list: NEWBIE, days: nb.days, ready: newbieReady() };
-  const a = profile.att, today = a.last !== todayKey(), wrap = a.days >= ATT_WEEK.length && today; // 다 채운 다음 날은 새 주
+  const a = profile.att, today = newDay(a.last), wrap = a.days >= ATT_WEEK.length && today; // 다 채운 다음 날은 새 주
   return { kind: 'week', title: `주간 출석부 · ${a.cycle + (wrap ? 2 : 1)}주차`, list: ATT_WEEK, days: wrap ? 0 : a.days, ready: today }; }
 const attReady = () => attBook().ready;
 function attClaim() { if (needOnline('🌐 출석 보상은 온라인 연결이 필요해요')) return null; const b = attBook(); if (!b.ready) return null; const i = b.days, r = b.list[i]; alWhy('출석 ' + (i + 1) + '일차');
@@ -17614,9 +17638,9 @@ function attClaim() { if (needOnline('🌐 출석 보상은 온라인 연결이 
   else { const a = profile.att; if (a.days >= ATT_WEEK.length) { a.days = 0; a.cycle++; } a.days++; a.last = todayKey(); }
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold = (profile.gold || 0) + r.gold; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + 1;
   save(); sfx('buy'); renderLobby(); renderQuestDot(); spAdd(SP_XP.att, '출석'); return { i, r, kind: b.kind }; }
-function attend() { const k = todayKey(); if (profile.ach.lastDay === k) return; profile.ach.lastDay = k; profile.ach.days++; save(); } // 오늘 처음 켰으면 출석 +1
+function attend() { const k = todayKey(); if (!newDay(profile.ach.lastDay)) return; profile.ach.lastDay = k; profile.ach.days++; save(); } // 오늘 처음 켰으면 출석 +1
 const achReady = a => Math.floor((profile.ach[a.key] || 0) / a.step) - (profile.ach.claimed[a.key] || 0);
-const newbieReady = () => profile.newbie.on && profile.newbie.days < NEWBIE.length && profile.newbie.last !== todayKey();
+const newbieReady = () => profile.newbie.on && profile.newbie.days < NEWBIE.length && newDay(profile.newbie.last);
 const rewardsReady = () => ACH.reduce((s, a) => s + Math.max(0, achReady(a)), 0) + framesReady() + (mqReady() ? 1 : 0); // 받을 업적 · 신규 보상 · 테두리 · 메인 퀘스트 수
 function renderRewardsDot() { renderQuestDot(); } // 상단 '퀘스트 · 출석' 점 하나로
 function renderRewards(msg = '') {
@@ -17690,7 +17714,7 @@ function mqEvent(ev, n = 1) { const m = profile.mq, q = MQ[m.i]; if (!q || m.don
 function mqClaim() {
   if (!mqReady()) return; const m = profile.mq, q = MQ[m.i], r = q.rw; let got = null;
   if (r.gold) profile.gold = (profile.gold || 0) + r.gold; if (r.dia) profile.dia += r.dia; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + 1;
-  if (r.epic || r.char) { const pool = byRarity('epic'), id = r.char || pool[Math.floor(Math.random() * pool.length)]; got = { id, isNew: grantChar(id) }; got.seenBefore = !got.isNew; }
+  if (r.epic || r.char) { const pool = byRarity('epic'), id = r.char || pool[Math.floor(er('mq') * pool.length)]; got = { id, isNew: grantChar(id) }; got.seenBefore = !got.isNew; }
   profile.mq = { i: m.i + 1, n: 0, done: false, day: todayKey() }; save(); sfx('buy'); banner(`메인 퀘스트 보상 · ${mqRwLabel(r)}${r.item ? ' (뽑기 화면 · 내 모집권)' : ''}`);
   mqCheck(); renderLobby(); if (got) showReveal([got]);
 }
@@ -17891,7 +17915,8 @@ function mmFound(m, role) { const op = role === 'host' ? m.guest : m.host, R = (
 function mmBot(asked) { // 대기열 봇: 상대가 없으면 (또는 물어보고) 봇과 일반전 · 보상 그대로
   mmEnd(true); clearInterval(MM.fv); mmStop(); newMatch(); }
 function startFriendly(m, role, opt) { // opt: { col, ranked } — R3.4 build 7 온라인 일반전 (omatch · 보상 있음)
-  const spec = role === 'spec', deck = d => (Array.isArray(d) ? d : []).filter(id => CHARS[id]).slice(0, 5);
+  m = netClean({ ...m, at: 0, createdAt: 0, updatedAt: 0 }); /* R3.8 build 4: 상대가 쓴 방 문서 */
+  const spec = role === 'spec', deck = d => (Array.isArray(d) ? d : []).filter(id => hasKey(CHARS, id)).slice(0, 5);
   matchBase({ deck: { a: deck(m.hostDeck), e: deck(m.guestDeck) } });
   if (!S.deck.a.length || !S.deck.e.length) { banner('덱 정보가 올바르지 않아요'); return; }
   S.nick = { a: String(m.hostName || '방장').slice(0, 12), e: String(m.guestName || '참가자').slice(0, 12) };
@@ -17923,7 +17948,7 @@ function netSend(body) {
 function netOnMessage(from, b) {
   const n = S.net; if (!n || n.done || !b) return;
   const side = from === n.host ? 'a' : from === n.guest ? 'e' : null; if (!side) return;
-  n.last = Date.now();
+  b = netClean(b); n.last = Date.now(); /* R3.8 build 4 */
   if (b.t === 'act' && typeof b.k === 'string') { n.acts[b.k + side] = b.a; netTry(); return; }
   if (b.t === 'lv' && !n.spec && String(b.gv || 'R2').split('.')[0] !== gameVersion().split('.')[0]) return netVerBad(b.gv); /* R3.0 */
   if (b.t === 'lv') { S.lvl[side] = clamp(nat(b.lv), 0, 9999); S.pf[side] = { fr: hasKey(FRAME, b.fr) ? b.fr : 'none', ph: hasKey(CHARS, b.ph) ? b.ph : S.deck[side][0] }; renderIds(); return; } // 상대 레벨 · 테두리
@@ -18197,7 +18222,7 @@ function alDraw() {
 const EVT = { t0: Date.UTC(2026, 10, 17, 15), ms: 14 * 86400000 }; // 2026-11-18 0시 (KST) 부터 14일
 const evtLive = () => { const t = tNow(); return t >= EVT.t0 && t < EVT.t0 + EVT.ms; };
 const evtLeft = () => { const ms = EVT.t0 + EVT.ms - tNow(), d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return ms <= 0 ? '종료' : d ? `${d}일 ${h}시간 남음` : `${h}시간 남음`; };
-const evRnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const evRnd = (a, b) => a + Math.floor(er('evr') * (b - a + 1));
 const EVT_Q = [['login', 1, { items: { fw: 1 } }, '접속하기'], ['games', 3, { items: { fw: 2 } }, '게임 3판 하기'], ['wins', 2, { items: { bingoT: 1 } }, '일반전 2번 이기기'], ['gacha', 10, { items: { fw: 2 } }, '지후 모집 10번'], ['dfWave', 10, { items: { fw: 2 } }, '디펜스 10웨이브 가기'], ['dailyAll', 1, { items: { fw: 3 } }, '일일 퀘스트 모두 완료']];
 const EVT_SHOP = [
   { id: 'tk', ic: '🔢', t: '빙고 티켓 ×1', rw: { items: { bingoT: 1 } }, c: 0, lim: 1, per: 'd' },
@@ -18211,7 +18236,7 @@ function evt() {
   if (!e.bg || typeof e.bg !== 'object') e.bg = { n: 0, b: null };
   if (!e.lot || typeof e.lot !== 'object') e.lot = { g: {}, got: {}, seen: 0, last: null };
   if (!e.ru || typeof e.ru !== 'object') e.ru = { k: 0, g: 0 }; /* R3.4 build 9 지후 유적: k 처치 수 · g 받은 레벨 */
-  const d = stDay(); if (e.day !== d) { e.day = d; e.sd = {}; e.qd = {}; e.qg = {}; EVT_Q.forEach(([k], i) => { if (k === 'login') e.qd[i] = 1; }); }
+  const d = stDay(); if (dayReady() && !(e.day >= d)) { e.day = d; e.sd = {}; e.qd = {}; e.qg = {}; EVT_Q.forEach(([k], i) => { if (k === 'login') e.qd[i] = 1; }); }
   return e;
 }
 function evqAdd(type, n = 1, max) { if (S.replay || !evtLive()) return; const e = evt(); EVT_Q.forEach(([k, need], i) => { if (k !== type || e.qg[i]) return; const v = e.qd[i] | 0, nv = Math.min(need, max ? Math.max(v, n) : v + n); if (nv !== v) e.qd[i] = nv; }); }
@@ -18229,7 +18254,7 @@ function evGive(r) {
   if (r.mile) { profile.mile = (profile.mile | 0) + r.mile; T.push(['Ⓜ', '마일리지 +' + r.mile]); }
   if (r.tix) { profile.arc.t = (profile.arc.t | 0) + r.tix; T.push(['🎟', '아케이드 티켓 ×' + r.tix]); }
   for (const k in r.items || {}) { itemAdd(k, r.items[k]); T.push([ITEMS[k].icon, `${ITEMS[k].name} ×${r.items[k]}`]); }
-  for (let i = 0; i < (r.legend | 0); i++) { const L = pubIds().filter(id => CHARS[id].rarity === 'legend'), id = L[Math.floor(Math.random() * L.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); T.push(['🌟', CHARS[id].name]); }
+  for (let i = 0; i < (r.legend | 0); i++) { const L = pubIds().filter(id => CHARS[id].rarity === 'legend'), id = L[Math.floor(er('ev') * L.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); T.push(['🌟', CHARS[id].name]); }
   return { T, res };
 }
 function evDone(g, fx) { save(); renderMoney(); try { renderInv(); } catch (e) {} u2Render(); evhDraw(); if (fx !== false) evhToast(g.T); if (g.res.length) setTimeout(() => showReveal(g.res), fx === 'late' ? 900 : 300); }
@@ -18251,9 +18276,9 @@ function bgBoard() { const e = evt(); if (!e.bg.b && e.bg.n < BG.BOARDS && evtLi
 function bgFlip(i) { if (needOnline('🌐 지후 빙고는 온라인 연결이 필요해요')) return;
   const e = evt(), b = bgBoard(); if (!b || b.end || b.o[i] || i < 0 || i >= BG.N || !evtLive()) return;
   if ((profile.items.bingoT | 0) < 1) return u2Toast('빙고 티켓이 없어요');
-  let tot = 0; for (const k in b.rem) tot += b.rem[k]; let r = Math.random() * tot, k = 'd1'; for (const x in b.rem) { r -= b.rem[x]; if (r < 0) { k = x; break; } }
+  let tot = 0; for (const k in b.rem) tot += b.rem[k]; let r = er('bg') * tot, k = 'd1'; for (const x in b.rem) { r -= b.rem[x]; if (r < 0) { k = x; break; } }
   b.rem[k]--; b.o[i] = k; profile.items.bingoT--; alWhy('지후 빙고 · ' + (k[0] === 'p' ? k[1] + '등' : BG_RW[k][1]));
-  if (Object.keys(b.o).length >= BG.FLIPS) { b.end = 1; const left = []; for (let j = 0; j < BG.N; j++) if (!b.o[j]) left.push(j); ['p1', 'p2', 'p3'].forEach(p => { if (b.rem[p] > 0 && left.length) b.show[left.splice(Math.floor(Math.random() * left.length), 1)[0]] = p; }); }
+  if (Object.keys(b.o).length >= BG.FLIPS) { b.end = 1; const left = []; for (let j = 0; j < BG.N; j++) if (!b.o[j]) left.push(j); ['p1', 'p2', 'p3'].forEach(p => { if (b.rem[p] > 0 && left.length) b.show[left.splice(Math.floor(er('bg') * left.length), 1)[0]] = p; }); }
   const ln = b.ln || (b.ln = []), nw = BG_LN.map((_, j) => j).filter(j => !ln.includes(j) && BG_LN[j].every(x => b.o[x])); ln.push(...nw); /* 빙고 줄 */
   const g = evGive(BG_RW[k][2]); if (nw.length) { profile.dia += BG.LINE * nw.length; g.T.push(['🎯', `빙고 ${nw.length}줄 · ◆ ${BG.LINE * nw.length}`]); }
   EVH.flip = i; sfx(nw.length ? 'match_win' : k[0] === 'p' ? 'gacha_legend' : 'ev_land'); evDone(g, 'late');
@@ -18278,7 +18303,7 @@ async function lotCheck() { // 켤 때 · 날이 바뀌면: 어제 숫자 발표
   if (!FB.on || !FB.sdk || stWait()) return; const e = evt(), y = stDay() - 1, ev0 = Math.floor((EVT.t0 + ST_KST) / 86400000);
   const todo = Object.keys(e.lot.g).map(Number).filter(d => d < stDay() && !e.lot.got[d]).sort((a, b) => a - b);
   let shown = null;
-  for (const d of todo) { let n = 0; try { n = await lotNum(d); } catch (er) { return false; } if (!n && d >= y) return false; /* 아직 못 읽음 · 다음에 다시 */
+  for (const d of todo) { const P = profile; let n = 0; try { n = await lotNum(d); } catch (er) { return false; } if (P !== profile || (!n && d >= y)) return false; /* 아직 못 읽음 · 다음에 다시 */
     const g = e.lot.g[d], rk = n ? lotRank(g, n) : 4, rw = LOT.RW[rk]; e.lot.got[d] = rk; alWhy(`지후 복권 ${rw[0]} · ${lotDate(d)}`); const gv = evGive(rw[2]); save(); renderMoney();
     if (d === y) shown = { d, n, g, rk, T: gv.T }; else if (n) e.lot.last = { d, n }; }
   if (e.lot.seen === y) return; if (!shown) { if (y < ev0 || !evtLive()) { e.lot.seen = y; return; } let n = 0; try { n = await lotNum(y); } catch (er) { return false; } if (!n) return false; shown = { d: y, n }; }
@@ -18300,8 +18325,8 @@ const CAP_RW = { gray: [() => ({ dia: evRnd(1, 500) }), () => ({ gold: evRnd(1, 
 const CAP_TXT = { gray: '◆ 1~500 · 🪙 1~10,000 · 🔑 1~100 · 임테기 ×1~5', blue: '◆ 250~750 · 🪙 4,000~12,000 · 고급 임테기 · 빛나는 전설조각', purple: '랜덤 전설 지후 모집권 · 빙고 티켓 ×10 · ◆ 800~1,500', gold: '선택 전설 지후 모집권' };
 function capPull() { if (needOnline('🌐 캡슐 뽑기는 온라인 연결이 필요해요')) return;
   if (EVH.cap || (profile.items.capT | 0) < 1) return (profile.items.capT | 0) < 1 ? u2Toast('캡슐 뽑기권이 없어요') : 0;
-  let r = Math.random() * 100, t = CAP_T[0]; for (const x of CAP_T) { r -= x[1]; if (r < 0) { t = x; break; } }
-  const L = CAP_RW[t[0]], rw = L[Math.floor(Math.random() * L.length)](); profile.items.capT--; alWhy('캡슐 뽑기 · ' + t[3]);
+  let r = er('cap') * 100, t = CAP_T[0]; for (const x of CAP_T) { r -= x[1]; if (r < 0) { t = x; break; } }
+  const L = CAP_RW[t[0]], rw = L[Math.floor(er('cap') * L.length)](); profile.items.capT--; alWhy('캡슐 뽑기 · ' + t[3]);
   const g = evGive(rw); save(); renderMoney(); EVH.cap = { t, g }; evhDraw(); sfx('ev_tick');
   setTimeout(() => sfx('merge'), 650); setTimeout(() => { sfx(t[0] === 'gold' ? 'gacha_legend' : t[0] === 'purple' ? 'gacha_epic' : 'ev_land'); }, 1500);
   setTimeout(() => { if (EVH.cap) EVH.cap.done = 1; evhDraw(); u2Render(); try { renderInv(); } catch (e) {} }, 2300);
@@ -18442,6 +18467,9 @@ $('dlgNo').addEventListener('click', () => dlgClose(false));
 const SHOP_PRICE = { common: 1000, rare: 4000, epic: 15000, legend: 40000, limited: 40000 }; // 전작의 약 2배
 const SHOP_REROLL_MAX = 3, /* R3.1 build 4: 4 → 3 */ SHOP_REROLL_COST = 2000;
 const todayKey = () => { const d = new Date(tNow() + ST_KST); return `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`; }; /* 잠수함: 한국 시간 · 서버 시간 (ST) 기준 · 예전엔 기기 시간대라 시간대를 바꿔 매일 보상을 다시 받았다 */
+const dayNum = k => { const m = /^(\d+)-(\d+)-(\d+)$/.exec(String(k || '')); return m ? m[1] * 10000 + m[2] * 100 + +m[3] : 0; };
+const dayReady = () => { try { return AUTH.ok && !stWait(); } catch (e) { return false; } }; // 접속을 마치고 서버 시각을 안 뒤에만 날짜를 넘긴다
+const newDay = prev => dayReady() && dayNum(todayKey()) > dayNum(prev); /* R3.8 build 4: 하루 처리는 날짜가 앞으로 갈 때만 (기기 시계를 되돌려 다시 받던 것) */
 const byRarity = r => Object.keys(CHARS).filter(id => CHARS[id].rarity === r);
 const isLim = id => !!(CHARS[id] && CHARS[id].rarity === 'limited'), pubIds = () => Object.keys(CHARS).filter(id => !isLim(id)), seeId = id => !isLim(id) || owned(id); // R2.31 한정: 무작위 · 봇 덱에서 빼고 (pubIds) · 미보유자 목록에서 숨긴다 (seeId)
 function shopRarity(r) { while (r && !byRarity(r).length) r = ({ legend: 'epic', epic: 'rare', rare: 'common' })[r]; return r || 'common'; }
@@ -18470,12 +18498,12 @@ function shopOffers(serial) {
   const pool = [...Object.entries(SHOP_CHAR_W).map(([r, w]) => ['c:' + r, w, SHOP_T[r]]), ...Object.entries(SHOP_ITEMS).filter(([, it]) => !(it.pack && packDone(it.pack))).map(([k, it]) => ['i:' + k, it.w, it.t])];
   const out = [], used = new Set(); let top = 0;
   for (let i = 0; i < 4; i++) { /* R3.1 build 4: 무료 포함 6 → 5 */
-    const L = pool.filter(([k, , t]) => !(k[0] === 'i' && used.has(k)) && !(top && t >= 3)), tot = L.reduce((s, x) => s + x[1], 0); let r = Math.random() * tot, pick = L[L.length - 1];
+    const L = pool.filter(([k, , t]) => !(k[0] === 'i' && used.has(k)) && !(top && t >= 3)), tot = L.reduce((s, x) => s + x[1], 0); let r = er('shop') * tot, pick = L[L.length - 1];
     for (const x of L) { r -= x[1]; if (r <= 0) { pick = x; break; } }
     used.add(pick[0]); if (pick[2] >= 3) top = 1;
     if (pick[0][0] === 'i') { out.push({ item: pick[0].slice(2), sold: false }); continue; }
     const rarity = shopRarity(pick[0].slice(2)), pl = byRarity(rarity);
-    out.push(!out.some(o => o.random) && Math.random() < 0.3 ? { charId: null, random: true, rarity, disc: 30, sold: false } : { charId: pl[Math.floor(Math.random() * pl.length)], rarity, disc: [0, 0, 5, 10][Math.floor(Math.random() * 4)], sold: false }); // 할인 0 · 5 · 10% · 랜덤 30% 는 하루 1개까지
+    out.push(!out.some(o => o.random) && er('shop') < 0.3 ? { charId: null, random: true, rarity, disc: 30, sold: false } : { charId: pl[Math.floor(er('shop') * pl.length)], rarity, disc: [0, 0, 5, 10][Math.floor(er('shop') * 4)], sold: false }); // 할인 0 · 5 · 10% · 랜덤 30% 는 하루 1개까지
   }
   return out.sort((a, b) => offerT(a) - offerT(b)).map((o, i) => ({ ...o, id: `${serial}-${i}` })); // 등급이 높은 매물일수록 뒤쪽
 }
@@ -18490,12 +18518,12 @@ async function buyShopItem(offerId) { // 아이템 매물 (R2.18 build 9)
 }
 function emoOffers() {
   const pool = EMOTICONS.map(e => e.k).filter(k => !emoOwned(k));
-  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(er('emo') * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
   return pool.slice(0, 3).map(k => ({ k, sold: false }));
 }
 function ensureDaily() {
   const key = todayKey();
-  if (!profile.daily || profile.daily.date !== key) { profile.daily = { date: key, q: { progress: {}, awarded: {}, points: 0, tiers: [] }, shop: { v: 2, freeType: Math.random() < 0.5 ? 'gold' : 'dia', freeClaimed: false, rerolls: 0, serial: 0, offers: shopOffers(0), emo: emoOffers() } }; save(); }
+  if (!profile.daily || newDay(profile.daily.date)) { profile.daily = { date: dayReady() ? key : '', q: { progress: {}, awarded: {}, points: 0, tiers: [] }, shop: { v: 2, freeType: er('shop') < 0.5 ? 'gold' : 'dia', freeClaimed: false, rerolls: 0, serial: 0, offers: shopOffers(0), emo: emoOffers() } }; save(); }
   if (!profile.daily.q) profile.daily.q = { progress: {}, awarded: {}, points: 0, tiers: [] };
   { const sh = profile.daily.shop; if (sh && sh.v !== 2) { sh.v = 2; sh.offers = shopOffers(sh.serial || 0); save(); } } // R2.18 build 9: 오늘 매물도 새 상점으로 한 번 다시
   return profile.daily.shop;
@@ -18548,7 +18576,7 @@ async function buyOffer(offerId, withDia) {
   if (!(await dlg({ icon: cur, title: '지후를 살까요?', html: `<b>${offerName(o)}</b> · ${cur} ${cost.toLocaleString()}<br><small>지금 ${withDia ? `다이아 ◆ ${profile.dia.toLocaleString()}` : `골드 ● ${(profile.gold || 0).toLocaleString()}`}</small>`, ok: '구매', cancel: '취소' }))) return;
   if ((withDia ? profile.dia : profile.gold || 0) < cost || o.sold) return;
   if (withDia) profile.dia -= cost; else profile.gold -= cost;
-  if (o.random) { const pool = byRarity(o.rarity); o.charId = pool[Math.floor(Math.random() * pool.length)]; }
+  if (o.random) { const pool = byRarity(o.rarity); o.charId = pool[Math.floor(er('shopc') * pool.length)]; }
   const id = o.charId, isNew = grantChar(id);
   o.sold = true; questAdd('shopBuy', 1); mqEvent('shop'); sfx('buy'); save();
   shopMsg(`${CHARS[id].name} ${isNew ? '획득!' : '· 이미 가진 지후라 조각 10개'}`);
@@ -18558,7 +18586,7 @@ async function buyOffer(offerId, withDia) {
 const PACK_REP = (r, n) => Array.from({ length: n }, () => r);
 const PACKS = [ // 다이아로 사면 바로 열린다 (중복은 조각 10) · once = 계정당 1회 (profile.packs[k])
   { k: 'upm', shopOnly: true, /* R2.18 build 9: 오늘의 매물로만 (◆ 6,500 · SHOP_ITEMS) */ name: '지후 패키지 UltraProMax+', dia: 6500, icon: '👑', c: '#ff5dd0', d: '#a8338a', tag: 'BEST · 계정당 1회', once: true, /* build 8: 계정당 1회 */ sub: '전설 1 · 영웅 5 · 희귀 15 · 일반 50 (무작위)', roll: () => [...PACK_REP('legend', 1), ...PACK_REP('epic', 5), ...PACK_REP('rare', 15), ...PACK_REP('common', 50)] },
-  { k: 'lite', name: '지후 패키지 Lite', dia: 750, icon: '🎒', c: '#53d3c0', d: '#2a9483', tag: '', sub: '일반 10 · 희귀 3 · 영웅 40% 확률 1 · 전설 10% 확률 1', roll: () => [...PACK_REP('common', 10), ...PACK_REP('rare', 3), ...(Math.random() < 0.4 ? ['epic'] : []), ...(Math.random() < 0.1 ? ['legend'] : [])] },
+  { k: 'lite', name: '지후 패키지 Lite', dia: 750, icon: '🎒', c: '#53d3c0', d: '#2a9483', tag: '', sub: '일반 10 · 희귀 3 · 영웅 40% 확률 1 · 전설 10% 확률 1', roll: () => [...PACK_REP('common', 10), ...PACK_REP('rare', 3), ...(er('pack:lite') < 0.4 ? ['epic'] : []), ...(er('pack:lite') < 0.1 ? ['legend'] : [])] },
   { k: 'starter1', shopOnly: true, name: '초보자 지원 패키지 I', dia: 650, icon: '🌱', c: '#7cc8ff', d: '#3f8fcf', tag: '계정당 1회', once: true, sub: '일반 10 · 희귀 5 · 영웅 1', roll: () => [...PACK_REP('common', 10), ...PACK_REP('rare', 5), 'epic'] },
   { k: 'vip', name: 'VIP (30일)', dia: 8900, icon: '💎', c: '#ffc21a', d: '#c98a1c', tag: 'VIP', vip: true, sub: '전투 2배속 · 매일 접속하면 우편으로 ● 3,000 + ◆ 100' },
 ];
@@ -18579,7 +18607,7 @@ async function buyPack(k) {
   packOpen(p);
 }
 function packOpen(p) { // 패키지 열기 (R2.18 build 9: 오늘의 매물에서 산 패키지도)
-  const res = p.roll().map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
+  const res = p.roll().map(r => { const pool = byRarity(r), id = pool[Math.floor(er('pack:' + p.k) * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
   res.sort((a, b) => RARITY_ORDER[CHARS[b.id].rarity] - RARITY_ORDER[CHARS[a.id].rarity]); save(); renderMoney(); gachaLast = res; showReveal(res);
 }
 async function buyEmo(key) {
@@ -18898,7 +18926,7 @@ function openDfRw() { renderDfRw(); openModal('dfRwModal'); const el = $('dfRwLi
 function dfRwClaim(w, all) { const e = DF_RW.find(x => x[0] === w); if (!e || dfRwGot(w) || (profile.dfBest | 0) < w) return; const r = e[1], tx = dfRwLabel(r)[1]; let res = null; /* R3.2 build 15 all: 모두 받기 (지후는 모아서 돌려주고 · 선택 전설 모집권은 가방에) */
   alWhy('디펜스 보상 ' + w + '웨이브'); profile.dfRw2 = (profile.dfRw2 || []).concat(w);
   if (r.dia) profile.dia += r.dia; if (r.gold) profile.gold += r.gold; if (r.tix) profile.arc.t += r.tix; if (r.item) profile.items[r.item] = (profile.items[r.item] || 0) + (r.n || 1);
-  if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); } }
+  if (r.rand) { res = []; for (let i = 0; i < (r.n || 1); i++) { const pool = byRarity(r.rand), id = pool[Math.floor(er('dfrw') * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); } }
   save(); sfx('buy'); renderDfRw(); renderLobby();
   if (all) return res || [];
   if (res) { gachaLast = res; showReveal(res); } else if (r.item === 'legendPick') { closeModal('dfRwModal'); useItem('legendPick'); } /* 선택 창을 닫아도 모집권은 가방에 */ else banner(`${w}웨이브 보상 · ${tx} 받았어요`);
@@ -18906,9 +18934,9 @@ function dfRwClaim(w, all) { const e = DF_RW.find(x => x[0] === w); if (!e || df
 $('dfRwModal').addEventListener('click', e => { const b = e.target.closest('[data-dfrw]'); if (b) dfRwClaim(+b.dataset.dfrw); });
 // ── R2.35 build 6 에너지: 디펜스 1판 = ⚡1 · 20분마다 1 (최대 5) · ◆300 에 ⚡5 (하루 3번 · 최대치를 넘어 쌓인다) ──
 const EN = { MAX: 5, MS: 20 * 60 * 1000, BUY: 1, /* R3.3 build 2: 5 → 1 */ BUY_DIA: 300, BUY_DAY: 3 };
-function enSync() { const e = profile.en, now = Date.now(); if (e.n >= EN.MAX || e.t > now) { e.t = now; return; } const k = Math.floor((now - e.t) / EN.MS); if (k > 0) { e.n = Math.min(EN.MAX, e.n + k); e.t = e.n >= EN.MAX ? now : e.t + k * EN.MS; save(); } }
-const enLeft = () => { const e = profile.en; return e.n >= EN.MAX ? 0 : Math.max(0, EN.MS - (Date.now() - e.t)); };
-const enBuyLeft = () => { const e = profile.en, d = todayKey(); if (e.day !== d) { e.day = d; e.buy = 0; } return EN.BUY_DAY - e.buy; };
+function enSync() { const e = profile.en, now = tNow(); if (e.n >= EN.MAX || e.t > now) { e.t = now; return; } const k = Math.floor((now - e.t) / EN.MS); if (k > 0) { e.n = Math.min(EN.MAX, e.n + k); e.t = e.n >= EN.MAX ? now : e.t + k * EN.MS; save(); } }
+const enLeft = () => { const e = profile.en; return e.n >= EN.MAX ? 0 : Math.max(0, EN.MS - (tNow() - e.t)); };
+const enBuyLeft = () => { const e = profile.en, d = todayKey(); if (newDay(e.day)) { e.day = d; e.buy = 0; } return EN.BUY_DAY - e.buy; };
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 async function enTap(need) { enSync(); const e = profile.en, left = enBuyLeft(), can = left > 0 && profile.dia >= EN.BUY_DIA;
   const ok = await dlg({ icon: '⚡', title: need ? '에너지가 모자라요' : `에너지 ${e.n} / ${EN.MAX}`, html: `디펜스 모드 1판에 <b>⚡ 1</b> · ${EN.MS / 60000}분마다 1개씩 차요 (최대 ${EN.MAX})${e.n < EN.MAX ? `<br>다음 충전까지 <b>${mmss(enLeft())}</b>` : ''}<br><br><b>⚡ ${EN.BUY}</b> 를 <b>◆ ${EN.BUY_DIA}</b> 에 살 수 있어요 (오늘 ${left} / ${EN.BUY_DAY}번 남음)${profile.dia < EN.BUY_DIA && left > 0 ? '<br><small>다이아가 모자라요</small>' : ''}`, ok: can ? `⚡ ${EN.BUY} 사기 (◆ ${EN.BUY_DIA})` : '확인', cancel: can ? '닫기' : undefined });
@@ -18943,7 +18971,7 @@ function e7Add(type, n = 1, max) { // 열린 날의 퀘스트에 진행도 (max:
   if (!profile.ev7 || S.replay || !e7Live()) return; const e = profile.ev7, D = e7Day(); let ch = false;
   E7_Q.forEach((L, d) => { if (d <= D) L.forEach((q, i) => { if (q[0] !== type) return; const id = e7Qid(d, i), v = e.q[id] || 0; if (e.got[id] || v >= q[1]) return; const nv = Math.min(q[1], max ? Math.max(v, n) : v + n); if (nv !== v) { e.q[id] = nv; ch = true; } }); });
   if (ch && type !== 'kills') save(); }
-function e7Login() { if (!profile.ev7 || !e7Live()) return; const k = todayKey(); if (profile.ev7.lg === k) return; profile.ev7.lg = k; e7Add('login'); save(); } // 날마다 한 번 (켤 때 · 로비)
+function e7Login() { if (!profile.ev7 || !e7Live()) return; const k = todayKey(); if (!newDay(profile.ev7.lg)) return; profile.ev7.lg = k; e7Add('login'); save(); } // 날마다 한 번 (켤 때 · 로비)
 const E7 = { sel: null };
 function openE7() { e7Login(); E7.sel = Math.min(6, e7Day()); renderE7(); openModal('e7Modal'); }
 function e7Pop() { // R3.2 build 8: 튜토리얼이 처음 끝나면 (마치거나 건너뛰고 로비에 오면) 7일간의 여정을 한 번 자동으로 · profile.e7Pop
@@ -18958,7 +18986,7 @@ function renderE7() { const e = profile.ev7, D = e7Day(), pts = e7Pts(), sel = E
 function e7Tip(k) { document.querySelectorAll('#e7Body .e7-chest').forEach((c, i) => c.classList.toggle('tipon', i === k && !c.classList.contains('tipon'))); } // 누르면 (폰) 창 안 말풍선 · 한 번 더 누르면 닫힘
 function e7Claim(k) { const e = profile.ev7, pts = e7Pts(); if (e.box.includes(k) || pts < E7_BOX[k]) return e7Tip(k); /* R2.35 build 7: 예전엔 창 밖 토스트 */
   const r = e7Rw(k); e.box.push(k); if (r.gold) profile.gold += r.gold; if (r.dia) profile.dia += r.dia; Object.entries(r.items).forEach(([i, n]) => { profile.items[i] = (profile.items[i] || 0) + n; });
-  const res = []; for (let i = 0; i < (r.legend || 0); i++) { const pool = byRarity('legend'), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); }
+  const res = []; for (let i = 0; i < (r.legend || 0); i++) { const pool = byRarity('legend'), id = pool[Math.floor(er('e7') * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); res.push({ id, isNew, seenBefore: !isNew }); }
   save(); sfx('buy'); renderMoney(); renderInv(); renderE7(); u2Render(); banner(`🎁 ${k + 1}번 상자 · ${e7RwTxt(k)}`);
   if (res.length) { gachaLast = res; showReveal(res); } else if (r.items.legendPick) { closeModal('e7Modal'); useItem('legendPick'); } }
 $('e7Modal').addEventListener('click', e => { const d = e.target.closest('[data-e7day]'), q = e.target.closest('[data-e7q]'), b = e.target.closest('[data-e7box]');
@@ -18972,12 +19000,12 @@ const KB_EXTRA = [[0.025, { gold: 2500 }], [0.01, { item: 'glowEpic', n: 3 }], [
 function keyBox(n = 1) { if (needOnline('🌐 열쇠 상자는 온라인 연결이 필요해요')) return; alWhy('열쇠 상자 ×' + n); // R2.34 열쇠 상자 (🔑 40): 일반 지후 2 · 희귀 지후 1 (R3.2 build 14: 5 · 3 →) · 10% 영웅 1 · 1% 전설 1 · R2.35 build 7: n 개 한 번에 (같은 지후는 한 장 ×N)
   if ((profile.keys | 0) < DF.BOX) return u2Toast(`열쇠가 모자라요 (🔑 ${DF.BOX} 필요 · 보유 ${profile.keys | 0})`);
   n = Math.max(1, Math.min(Math.floor(n) || 1, Math.floor((profile.keys | 0) / DF.BOX))); profile.keys -= DF.BOX * n; const rs = [];
-  for (let i = 0; i < n; i++) rs.push('common', 'common', 'rare', /* R3.2 build 14: 일반 5 · 희귀 3 → 일반 2 · 희귀 1 */ ...(Math.random() < 0.1 ? ['epic'] : []), ...(Math.random() < 0.01 ? ['legend'] : []));
-  const res = rs.map(r => { const pool = byRarity(r), id = pool[Math.floor(Math.random() * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
-  let g = 0; for (let i = 0; i < n; i++) g += 220 + Math.floor(Math.random() * 201); /* R2.35 build 6: 골드 1,000 ~ 2,000 · R3.2 build 14: 220 ~ 420 (추가 보상까지 상자 하나 평균 약 400) */
-  let d = 0; const got = {}; for (let i = 0; i < n; i++) { if (Math.random() < 0.3) d += 23; /* R3.2 build 14: 늘 ◆23 · R3.3 build 2: 30% */ for (const [p, r] of KB_EXTRA) if (Math.random() < p) { if (r.dia) d += r.dia; if (r.gold) g += r.gold; if (r.item) { profile.items[r.item] = (profile.items[r.item] || 0) + r.n; got[r.item] = (got[r.item] || 0) + r.n; } } } /* R3.2 build 14 추가 보상 */
-  for (let i = 0; i < n; i++) if (Math.random() < ART_PK.BOX + artPV('bag')) { profile.items.pickaxe = (profile.items.pickaxe || 0) + 1; got.pickaxe = (got.pickaxe || 0) + 1; } /* R3.4 build 6 곡괭이: 상자마다 4% (+ 지후의 책가방) */
-  if (evtLive()) for (let i = 0; i < n; i++) if (Math.random() < 0.1) { profile.items.bingoT = (profile.items.bingoT || 0) + 1; got.bingoT = (got.bingoT || 0) + 1; } /* R3.3 build 3: 상자마다 10% 빙고 티켓 */
+  for (let i = 0; i < n; i++) rs.push('common', 'common', 'rare', /* R3.2 build 14: 일반 5 · 희귀 3 → 일반 2 · 희귀 1 */ ...(er('kb:r') < 0.1 ? ['epic'] : []), ...(er('kb:r') < 0.01 ? ['legend'] : []));
+  const res = rs.map(r => { const pool = byRarity(r), id = pool[Math.floor(er('kb:c') * pool.length)], isNew = grantChar(id); if (isNew) mqEvent('newChar'); return { id, isNew, seenBefore: !isNew }; });
+  let g = 0; for (let i = 0; i < n; i++) g += 220 + Math.floor(er('kb:g') * 201); /* R2.35 build 6: 골드 1,000 ~ 2,000 · R3.2 build 14: 220 ~ 420 (추가 보상까지 상자 하나 평균 약 400) */
+  let d = 0; const got = {}; for (let i = 0; i < n; i++) { if (er('kb:x') < 0.3) d += 23; /* R3.2 build 14: 늘 ◆23 · R3.3 build 2: 30% */ for (const [p, r] of KB_EXTRA) if (er('kb:x') < p) { if (r.dia) d += r.dia; if (r.gold) g += r.gold; if (r.item) { profile.items[r.item] = (profile.items[r.item] || 0) + r.n; got[r.item] = (got[r.item] || 0) + r.n; } } } /* R3.2 build 14 추가 보상 */
+  for (let i = 0; i < n; i++) if (er('kb:p') < ART_PK.BOX + artPV('bag')) { profile.items.pickaxe = (profile.items.pickaxe || 0) + 1; got.pickaxe = (got.pickaxe || 0) + 1; } /* R3.4 build 6 곡괭이: 상자마다 4% (+ 지후의 책가방) */
+  if (evtLive()) for (let i = 0; i < n; i++) if (er('kb:b') < 0.1) { profile.items.bingoT = (profile.items.bingoT || 0) + 1; got.bingoT = (got.bingoT || 0) + 1; } /* R3.3 build 3: 상자마다 10% 빙고 티켓 */
   profile.gold = (profile.gold || 0) + g; profile.dia += d; e7Add('keyBox', n); UI2.st.kbN = 1;
   const xt = Object.keys(got).map(k => `${ITEMS[k].name} ×${got[k]}`).join(' · ');
   res.drop = [['🪙', '+' + g.toLocaleString()], ...(d ? [['◆', '+' + d.toLocaleString()]] : []), ...Object.keys(got).map(k => [ITEMS[k].icon || '🎁', `${ITEMS[k].name} ×${got[k]}`])]; /* R3.3 build 2: 드롭 보상도 연출에 (grDrop) */
@@ -19150,7 +19178,7 @@ function artPull(n) {
   if (needOnline('🌐 발굴은 온라인 연결이 필요해요')) return;
   const have = profile.items.pickaxe | 0; n = Math.min(Math.floor(n) || 1, have); if (n < 1) return u2Toast('곡괭이가 없어요');
   const M = artMap(), res = [];
-  for (let i = 0; i < n; i++) { const pool = ART.filter(a => (M[a[0]] | 0) < artCum(ART_MAX)); if (!pool.length) break; const id = pool[Math.floor(Math.random() * pool.length)][0], was = M[id] | 0, l0 = artLv(id); M[id] = was + 1; const l1 = artLv(id); res.push({ id, lv: l1, nw: !was, up: l1 > l0 }); }
+  for (let i = 0; i < n; i++) { const pool = ART.filter(a => (M[a[0]] | 0) < artCum(ART_MAX)); if (!pool.length) break; const id = pool[Math.floor(er('art') * pool.length)][0], was = M[id] | 0, l0 = artLv(id); M[id] = was + 1; const l1 = artLv(id); res.push({ id, lv: l1, nw: !was, up: l1 > l0 }); }
   if (!res.length) return u2Toast('모든 유물이 최대 레벨이에요');
   alWhy('유물 발굴 ×' + res.length); profile.items.pickaxe = have - res.length; save(); u2Render(); artDig(res); /* R3.5 build 3: 2초 발굴 연출 뒤 공개 */
 }
@@ -19605,7 +19633,16 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.8', date: '2026.11.27', title: '이벤트, 친구, 업적 화면 새 디자인, 게임 모드 버튼, 초보자 모집 확률, 전설 획득 소식 문구', sections: [
+  { v: 'R3.8', date: '2026.11.27', title: '서버 저장 보안 강화, 계정 중복 수정, 이벤트와 친구와 업적 화면 새 디자인, 게임 모드 버튼, 초보자 모집 확률', sections: [
+    { title: '추가 패치 (build 4)', items: [
+      { icon: '☁', name: '서버 저장', tag: 'system', desc: '여러 기기로 접속하면 <b>가장 새로 접속한 곳</b>만 저장돼요' },
+      { icon: '🔀', name: '기록 고르기', tag: 'adjust', desc: '「기록이 두 개예요」 창을 없애고 <b>서버 기록</b>을 기준으로' },
+      { icon: '👤', name: '계정 중복', tag: 'fix', desc: '내 계정이 <b>여러 개로 갈라지던</b> 문제' },
+      { icon: '🔑', name: '로그인 풀림', tag: 'adjust', desc: '<b>다시 로그인</b>하거나 새로 시작해야 이어서 해요' },
+      { icon: '🎬', name: '리플레이', tag: 'fix', desc: '공유 리플레이 <b>보안 강화</b>' },
+      { icon: '📅', name: '매일 보상', tag: 'fix', desc: '날짜가 바뀌는 처리를 <b>서버 시각</b> 기준으로' },
+      { icon: '🔐', name: '서버 검사', tag: 'system', desc: '저장과 리더보드 <b>검사 강화</b>' },
+    ] },
     { title: '추가 패치 (build 3)', items: [
       { icon: '🎆', name: '이벤트 화면', tag: 'rework', desc: '축제 포스터와 <b>타일 허브</b>에서 고르는 새 화면, 빙고는 <b>큰 빙고판</b>으로' },
       { icon: '👥', name: '친구와 채팅', tag: 'rework', desc: '친구를 고르면 가운데에 <b>전투력, 덱, 친선전 신청</b>' },
@@ -23378,12 +23415,12 @@ const puTarget = k => (k === 'sp' ? PU_SP.id : k === 'td' ? puToday() : typeof k
 const puOk = k => (k === 'sp' ? puSpOn() : k === 'td' ? true : k === 'cu' ? !!cuPick() : typeof k === 'string' && k.startsWith('nw:') ? puNew().includes(k.slice(3)) : false);
 const puEnd = k => (k === 'sp' ? PU_SP.t0 + PU_SP.ms : k === 'td' ? (puDay() + 1) * PU_DAY - PU_KST : typeof k === 'string' && k.startsWith('nw:') ? PU_NEW.t0 + PU_NEW.ms : 0);
 const puLeft = k => { const ms = puEnd(k) - Date.now(); return ms <= 0 ? '' : ms >= 2 * PU_DAY ? `D-${Math.ceil(ms / PU_DAY) - 1}` : fmtLeft(ms); };
-function puRoll(k) { // 픽업 모집 한 번 (전설이면 픽업 판정 · R3.2 build 17: 천장 없음)
-  let id = rollOne();
+function puRoll(k, rnd = Math.random) { // 픽업 모집 한 번 (전설이면 픽업 판정 · R3.2 build 17: 천장 없음)
+  let id = rollOne(undefined, rnd);
   if (CHARS[id].rarity === 'legend') {
     const C = k === 'cu' ? cuPick() : null, f = puTarget(k);
-    if (C) id = C[Math.floor(Math.random() * C.length)];
-    else if (f && CHARS[f]) { const L = puList().filter(x => x !== f); id = profile.puLost || Math.random() < PU_RATE || !L.length ? f : L[Math.floor(Math.random() * L.length)]; profile.puLost = id !== f; }
+    if (C) id = C[Math.floor(rnd() * C.length)];
+    else if (f && CHARS[f]) { const L = puList().filter(x => x !== f); id = profile.puLost || rnd() < PU_RATE || !L.length ? f : L[Math.floor(rnd() * L.length)]; profile.puLost = id !== f; }
   }
   return id;
 }
@@ -23927,7 +23964,7 @@ function newsItem(e) { // events 한 건 → { k 모양, cat 갈래, tile 왼쪽
     case 'quit': return o('quit', 'people', 'EXIT', '{n} 님은 지후들과 도저히 한 하늘을 이고 살 수 없었습니다');
     case 'first': return o('hot', 'win', '1ST', '{n} 님의 전설이 지금 시작되었습니다.', null, { tag: '첫 승리' });
     case 'vs': return o('ink', 'win', 'VS', NEWS_VS[(Number(b) >>> 0) % NEWS_VS.length], { W: n, L: nm(a) });
-    case 'streak': return NEWS_STREAK[a] ? o('s' + a, 'win', '×' + a, NEWS_STREAK[a], null, { tag: a + '연승' }) : null;
+    case 'streak': return hasKey(NEWS_STREAK, a) ? o('s' + a, 'win', '×' + a, NEWS_STREAK[a], null, { tag: a + '연승' }) : null;
     case 'broke': { const [id, st] = b.split(':'), m = hasKey(CHARS, id) ? CHARS[id] : null; return m ? o('broke', 'win', '', '{n} 님이 {a}의 {c}를 카운터치지 못해 처참하게 무릎꿇고 말았습니다.', { a: nm(a), c: m.name }, { pic: id, tag: `${Number(st) | 0}연승 끝` }) : null; }
     case 'tower': return o('tower', 'record', '15F', '{n} 님이 타워를 정복했습니다.', null, { tag: '지후의 탑' });
     case 'promo': return a ? o('promo', 'record', 'UP', '{n} 님이 경쟁전 {a}' + ro(a) + ' 승급하셨습니다.', { a }, { tag: '경쟁전' }) : null;
@@ -24480,7 +24517,7 @@ async function accSwitch(code) { // 원터치 전환
   if (accCode() === code) { gateDone(); return; }
   const v = await vaultAuth(code);
   if (!v.currentUser) { await accForget(code); throw new Error('저장된 로그인이 끝났어요. UID 와 비밀번호로 다시 로그인해 주세요.'); }
-  if (isMember()) { await backupNow().catch(() => {}); await accRemember(); }
+  if (isMember()) { await bkTimed(backupNow()).catch(() => {}); await accRemember(); }
   onlineStop(); await FB.sdk.updateCurrentUser(FB.auth, v.currentUser); FB.uid = myUid();
   await syncAfterLogin(false); gateDone();
 }
@@ -24502,10 +24539,15 @@ function offMode() { if (OFF.on) return; OFF.on = true; document.body.classList.
   setTimeout(() => banner('📴 오프라인 모드 · 친선전 · 랭킹 · 채팅은 인터넷이 연결되면 쓸 수 있어요', 3200), 900); }
 window.addEventListener('online', () => { if (OFF.on) banner('🔌 인터넷이 다시 연결됐어요 · 새로고침하면 서버 기록과 맞춰요', 4000); });
 window.addEventListener('offline', () => { if (!OFF.on && AUTH.ok) banner('📴 인터넷 연결이 끊겼어요 · 게임은 계속할 수 있어요', 3200); });
+function tabClaim() { // R3.8 build 4: 한 기기에서는 가장 새로 연 창 하나만 (게스트 포함) · 옛 창은 멈춘다
+  if (ACC.lockOn || !navigator.locks || (DEV_HOST && /[?&](bench|test)=/.test(location.search))) return; ACC.lockOn = true;
+  navigator.locks.request('rejhbt-play', { steal: true }, () => new Promise(() => {})).catch(() => { ACC.tabLost = ACC.kicked = true; try { renderBlock(); } catch (e) {} });
+}
+function dayOpen() { clearTimeout(dayOpen.t); if (!dayReady()) { dayOpen.t = setTimeout(dayOpen, 700); return; } if (cpFrameSweep()) save(); attend(); questAdd('login', 1); e7Login(); renderLobby(); } /* R3.8 build 4: 서버 시각을 안 뒤에 */
 function gateDone() { // 로그인 끝 → 로비
-  AUTH.ok = true; AUTH.msg = ''; accRemember(); renderAccPill(); onlineStart(); closeModal('accModal');
+  tabClaim(); AUTH.ok = true; AUTH.msg = ''; accRemember(); renderAccPill(); onlineStart(); closeModal('accModal');
   if (!profile.nick && isMember()) profile.nick = '지후' + (accCode() || '').slice(-4); // 게스트는 튜토리얼 뒤 닉네임 단계 (nickStep)
-  closeModal('setModal'); renderLobby(); show('lobby'); newsGuestIn(); setTimeout(updCheck, 400);
+  closeModal('setModal'); renderLobby(); show('lobby'); newsGuestIn(); setTimeout(updCheck, 400); dayOpen();
 }
 function renderGate(state, opt = {}) { // 시작 화면 (#screen-welcome): 5단계 순차 로딩 · 오류 차단 · 오프라인 선택
   const box = $('screen-welcome'), STEPS = ['인터넷 연결 확인', '로그인 확인', '데이터 불러오기 확인', '에셋 불러오기 확인', '진입'];
@@ -24631,7 +24673,7 @@ document.body.classList.add('u2-theme'); // R2.12 어두운 테마 (하위 화�
 window.__u2 = true; // 새 로비 준비 끝 (그 전에 부른 show 는 기존 화면)
 
 $('btnStart').addEventListener('click', () => { const n = $('nickInput').value.trim(); if (!n) return banner('닉네임을 넣어 주세요'); profile.nick = n.slice(0, 12); save(); renderLobby(); show('lobby'); setTimeout(updCheck, 400); }); // 처음 시작: 인트로 만화 → 업데이트 보상 (updCheck 가 본다)
-if (cpFrameSweep()) save(); attend(); questAdd('login', 1); e7Login(); // 오늘 접속 · 출석
+// 오늘 접속 · 출석은 접속을 마친 뒤 dayOpen() 에서
 $('welcomeVer').textContent = gameVersion();
 if (AUTH.ok) { renderLobby(); show('lobby'); } else { renderGate('loading'); show('welcome'); } // R2.12: 로그인해야 시작 (accBoot 가 확인)
 const RP_OPEN = (RP_LINK_RE.exec(location.search) || [])[1]; // R2.14 공유 리플레이 링크
@@ -24664,7 +24706,7 @@ function benchFrame(frameMs, simMs) {
 }
 function benchHud(on) { BENCH.on = on; BENCH.hist = []; window.__bench = BENCH; let el = $('benchHud'); if (!el) { el = document.createElement('div'); el.id = 'benchHud'; el.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7f7;font:12px/1.4 monospace;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(el); } el.hidden = !on; }
 { const bn = DEV_HOST && new URLSearchParams(location.search).get('bench'); if (bn) setTimeout(() => benchStart(+bn || 50), 1500); } // 개발 주소에서만 (R2.12 핵 방지)
-if (DEV_HOST) window.__rejhbt = { NEWS, newsItem, newsLine, presLeave, /* R3.7 build 8 소식 시험 */ df2Up, df2UpDraw, df2UpPos, df2Wipe, df2KeyGive, df2Next, showUpdateOverlay, puToday, lbShow: () => lbTab, lbMock: (t, rows, me) => { lbTab = t; lbShow(rows, me, t === 'hall'); }, u2Go, u2Set, /* 리더보드 시험 */ cur: () => S, /* R3.7 시험 */ placeAt, packPlace, unpackPlace, mutKey, newMatch, /* R3.7 변이 지후 시험 */ df2Start, df2Summon, prof: () => profile, njFarm, /* R3.6 build 3 신규 지후 시험 */ DEV, DF2, DF2_FOES, df2Plan, df2Hp, df2Rew, df2Put, df2Spawn, df2Pull, /* R3.6 새 디펜스 시험 */ BOT_D, BOT_LV_C, MMR, mmr, mmrUpdate, mmrInit, botDPick, botStylePick, botTierDeck, botEff, TIER_SC, tierOf, /* R3.5 build 6 봇 난이도 시험 */ updDraw, PATCH_NOTES, bcShow, ultInit, ultCast, ULT, rkN, /* R3.5 build 2 시험 */ /* R3.5 운영자 메시지 시험 */ artOpen, artPull, artList, artNow, ART, artS: () => S, /* R3.4 build 6 시험 */ uInfoHtml, charDetail, A, botTierDeck, tierOf, /* build 7 */ ruAdd, /* build 9 */ U4, showComic, comicGo, CVF, ddDrawFx, CV, renderBlock, evOpen, evt, EVT, EVH, bgFlip, capPull, lotShow, lotPick, evNoteShow, evhDraw, evBuy, LOT, alOpen, alShow, AL, liveOpen, liveDraw, LIVE, opOpen, opTab, OP, ST, DEV, visitMark, VS, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkPick, bkSum, bkState, bkConflict, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
+if (DEV_HOST) window.__rejhbt = { backupNow, syncAfterLogin, er, replayStart, netClean, pull, useItem, useKitAll, keyBox, capPull, artPull, redeemCode, shopOffers, ensureDaily, evGive, /* R3.8 build 4 보안 시험 */ NEWS, newsItem, newsLine, presLeave, /* R3.7 build 8 소식 시험 */ df2Up, df2UpDraw, df2UpPos, df2Wipe, df2KeyGive, df2Next, showUpdateOverlay, puToday, lbShow: () => lbTab, lbMock: (t, rows, me) => { lbTab = t; lbShow(rows, me, t === 'hall'); }, u2Go, u2Set, /* 리더보드 시험 */ cur: () => S, /* R3.7 시험 */ placeAt, packPlace, unpackPlace, mutKey, newMatch, /* R3.7 변이 지후 시험 */ df2Start, df2Summon, prof: () => profile, njFarm, /* R3.6 build 3 신규 지후 시험 */ DEV, DF2, DF2_FOES, df2Plan, df2Hp, df2Rew, df2Put, df2Spawn, df2Pull, /* R3.6 새 디펜스 시험 */ BOT_D, BOT_LV_C, MMR, mmr, mmrUpdate, mmrInit, botDPick, botStylePick, botTierDeck, botEff, TIER_SC, tierOf, /* R3.5 build 6 봇 난이도 시험 */ updDraw, PATCH_NOTES, bcShow, ultInit, ultCast, ULT, rkN, /* R3.5 build 2 시험 */ /* R3.5 운영자 메시지 시험 */ artOpen, artPull, artList, artNow, ART, artS: () => S, /* R3.4 build 6 시험 */ uInfoHtml, charDetail, A, botTierDeck, tierOf, /* build 7 */ ruAdd, /* build 9 */ U4, showComic, comicGo, CVF, ddDrawFx, CV, renderBlock, evOpen, evt, EVT, EVH, bgFlip, capPull, lotShow, lotPick, evNoteShow, evhDraw, evBuy, LOT, alOpen, alShow, AL, liveOpen, liveDraw, LIVE, opOpen, opTab, OP, ST, DEV, visitMark, VS, /* R3.3 시험 */ tlgOpen, TLG, tlgRun, tlgAgg, tlgFight, lmnDefect, openCredits, puRoll, puToday, puNew, puSpOn, cuPick, cuOpen, GR, u2Set, UI2, showReveal, grClose, grClear, pull10Go, DF_RW, /* R3.2 build 15 시험 */ TUT, u2Go, dfQk, useItem, keyBox, KB_EXTRA, /* R3.2 build 11 시험 */ forgeTry, forgeFx, ME, /* R3.2 build 3 시험 */ nickStep, mmShow, /* R3.1 build 4 시험 */ GL, GLC, /* R3.0 build 3 WebGL */ r3Skill, r3Round, r3Result, /* R3.0 연출 시험 */ levelupKill, godBeam, p10Free, pull10Go, overSet, aspdRate, lvShift, /* R2.37 build 3 시험 */ iceSlow, icePick, skulP, skulDown, gunqRay, phaseGo, colList, colView, colClaim, colReady, useKitAll, r6Grow, buffSum, /* R2.36 build 5 시험 */ keyBox, dfGo, DF, botRanks, evBotPick, /* R2.36 build 3 */ dfKw, dfExp, /* R2.35 build 2 */ dfStart, enSync, EN, e7Add, e7Day, e7Ready, openE7, renderRs, useItem, /* R2.35 build 6 */ FB, lbDef: () => { lbTab = 'def'; return lbLoad(); }, /* R2.35 build 8 시험 */ evRoll, evShow, dfUp, dfKeys, fastSpeed, /* R2.36 시험 */ DF_EV, dfInstant, dfPickOpen, dfTake, prof: () => profile, /* R2.34 */ botJoker, adjScore, botTile, BOT_P, cpParts, cpTotal, lbShow, ARC_SHOP, arcBuy, arcLeft, arcDay, bgm, bgmTick, BGM_MUL, nbLeft, u2Render, rollOne, normProfile, grDone, grClose, grClear, gachaLast: () => gachaLast, save, show, CAM, monoFire, bkState, syncAfterLogin, backupNow, useProfile, renderAccount, openAccount, guestLoginOk, FB, ACC, botDeckRamp, prophecyResolve, botDeployOne, levelUp, moveTile, frogEvolve, djBlast, setRng: f => { rng = f; }, addMail, claimMail, rewardText, giftOk, attAuto, attReady, buyPack, grGroup, TIER_SC, hasBad, nickBad, censorText, badNorm, nickPurge, showReveal, lifeFx, openTower, renderTower, replayStart, replayExit, rpJump, rpOpenLink, rpShare, rpShareSheet, rpCard, rpCardFill, RPM, u2Set, enhUp, enhGlow, enhLv, enhOf, enhHtml, dealDamage, enh6, coinMult, coinState, dexAtk, enhStat, SOC, renderChat, CHU, signNag, joinReward, frSheet, PATCH_NOTES, rpSave, rpLoad, RP, setSeed: s => { rng = mulberry32(s >>> 0); }, openCustom, openTab, openQs, openSocial, UI2, S, TUT, pendingEquip: () => pendingEquip, CHARS, CFG, A, EVENTS, evRoll, evTake, evDeal, evShow, evRecount, evInstant, evRoundWin, evTaken, evMerge, deployChances, levelUp, renderLives, profile: () => profile, newMatch, endMatch, mqEvent, mqClaim, useBoost, startRound, choosePick, tapTile, autoPlace, beginCombat, pull, rollRarity, makeUnit, stepCombat, effAtk, rotK, tgLines, tgPower, instaKill, renderField, charDetail, emoShow, CW, cwStart, cwSummon, cwBot, newMatch, tileXY, allyOdds, unitEl, serverNewer, shopOffers, buyShopItem, buyOffer, ensureDaily, SHOP_ITEMS, enhGlow, dragonTouch, lbLoad, lbPush, fbInit, lbShow, importR1, startFriendly, netOnMessage, applyAct }; // 테스트용 (콘솔)
 })();
 </script>
 </body>

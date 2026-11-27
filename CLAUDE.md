@@ -25,7 +25,7 @@
 14. **⚠️ 브라우저 테스팅 등의 검증 작업을 절대로 오랫동안 하지 말 것** (사용자 · 2026-11-26). 불가피하게 하는 게 좋다고 판단되면 **아주 간편하게, 최대한 압축해서 초고속으로** 테스트한다. 다만 작업 범위가 매우 방대하고 코드 자체에서 문제가 생겼을 때는 제대로 해도 된다. **브라우저 테스트가 어떤 이유로든 실패하면 재시도는 최대 1번만** — 2번 실패하면 검증하지 말고 생략한다 (「확인 못 한 것」에 적는다). (아래 「브라우저 시험」·「작업별 가이드」의 검사 목록보다 이 규칙이 먼저.)
 
 ## 이름 · 버전 · 구조
-- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.8** (build 3).
+- 정식 이름 **RE : 지후배틀** · 부제 **RE:JHBT** · 지금 **R3.8** (build 4).
 - **버전은 하루에 한 번만** 둘째 자리 +1 (R3.6 → R3.7). 「하루」는 달력이 아니라 **사용자가 잠들기 전까지** (밤샘은 같은 버전 · 애매하면 묻는다). 같은 날 이어지는 패치는 `<meta name="jihoo-build">` +1 · 패치노트는 그날 항목 하나에 `추가 패치 (build N)` 칸을 맨 위에 더하고 title 을 그날 내용으로 고친다 (셋째 자리 R3.5.1 은 특별한 경우만).
 - 버전 메타 `<meta name="jihoo-version">` (이름은 R1 과 같아야 한다 · 예전 화면이 새로고침 안내를 띄움).
 - **같은 build 번호로 두 번 올리면 열려 있던 앱은 업데이트를 모른다** → 이미 푸시한 것을 고쳐 다시 올릴 때는 build 를 올린다.
@@ -130,7 +130,7 @@
 - 확인: `?bench=50&ids=<지후,…>` (FPS · 최악 프레임 · 계산 ms) · 데스크톱은 렉이 안 보이니 CPU 스로틀 ×4 · ×6.
 
 ## 전투 엔진 핵심
-- 전투 난수는 `rng` 하나만 (친선전 두 화면 · 리플레이가 같아야 한다) · **전투 코드에 `Math.random` · `Date.now` 금지** (연출 · 뽑기는 `Math.random`). 배치 때 정하는 무작위 (변이 성공작 등) 는 결과를 배치 기록에 저장한다.
+- 전투 난수는 `rng` 하나만 (친선전 두 화면 · 리플레이가 같아야 한다) · **전투 코드에 `Math.random` · `Date.now` 금지** (연출은 `Math.random` · 재화 · 지후 추첨은 `er('갈래')` (「계정 · 서버」)). 배치 때 정하는 무작위 (변이 성공작 등) 는 결과를 배치 기록에 저장한다.
 - 스킬 도우미 `A` (`A.dmg` · `A.status` · `A.buff` · `A.line` · `A.zone` · `A.boom` · `A.knock` · `A.later` (전투 시간 예약) · `A.transform` · `A.spawnChild` · `A.portrait`) · 훅: `onStart` · `tick` · `customAttack` · `onHit` · `onKill` · `onUnitDeath` · `onLethal` · `onDamaged` · `onCrit` · `steer` · `takenMult` · `atkMult` · `ivOf` · `pickTarget` · `gauge` (**스킬 있는 지후에 gauge 를 달면 SP 막대 대신 그게 보인다**).
 - 즉사 `instaKill(src, t, label)` · 피해 `dealDamage` (받는 피해 감소 최대 90% · 최소 1) · 체력 비례 피해는 `pctD(t, v)` 로 (성 5% 한도) · 받는 피해 버프 키 `tk` · SP 는 `skNeed(u)` · `buffSum` 은 스테인리스의 음수 `tk` 를 뒤집지 않는다.
 - 투사체 `S.shots` · 관통탄 `S.lines` 는 목록을 비우고 돈다 (`filter` 한 번으로 바꾸지 말 것).
@@ -164,7 +164,11 @@
 ## 계정 · 서버
 - 순위 중복 방지: `r2lb` · `r2def` · `r2tower` · `r2comp` 업로드는 `await lbBlocked()` 를 거친다 (로그인이 풀린 계정 `accLost` · 게스트 uid 바뀜 `profile.guestUid` · 게스트가 남의 등록 닉네임) · 규칙은 `guestNickOk` · 새 순위를 더하면 둘 다 붙인다.
 - Firebase `jihoobattle` · 게스트는 익명 인증 · 기록 `r2_backups/<uid>` · 이 기기 `rejhbt.profile.v1`.
-- 서버 기록 맞추기: 저장 번호 `profile.bkWid` / `profile.syncWid` (`serverNewer` · `bkConflict` · `bkPick`) · 저장 시각은 비교에 쓰지 않는다.
+- **서버 저장은 한 줄** (R3.8 build 4): `r2_backups` 에 `rev` (이전 + 1) · `sid` (`sessions/<uid>`) · `led {dia, gold, pulls, own}` → 규칙이 낡은 창 · 기기의 저장을 거절 · 접속 때 **자리 먼저** (`claimSession`) → 읽기 (`syncAfterLogin`) · 갈라지면 늘 서버 (`bkStop` · 고르기 창 없음) · 저장은 `backupNow` 하나만 (`ACC.synced` 가 지금 계정일 때) · 서버에 새 칸을 더하면 규칙 `hasOnly` 도 · 다이아 · 골드는 불러올 때 `led` 값.
+- **재화 · 지후 추첨은 `er('갈래')`** (계정 · 갈래 · 순번 `profile.rn` 으로 정해진다) — 새 상자 · 보상에 `Math.random` 을 쓰면 기록을 되돌려 다시 뽑을 수 있다 · 갈래는 출처마다 따로.
+- **하루 처리는 `newDay(지난 날짜)`** (접속 · 서버 시각 뒤 · 날짜가 앞으로 갈 때만 · `!== todayKey()` 로 쓰지 않는다) · 켤 때 처리는 `dayOpen()`.
+- 남이 만든 데이터 (리플레이 · 친선전 · 온라인) 는 `netClean` 을 거친다 · 가입 · 로그인 풀림: `finishSignUp` (닉네임 못 차지하면 계정 삭제) · `pendSign` (끊긴 가입 이어서) · `lostAsk`.
+- 감시: `node tools/audit.js` (읽기 전용 · `--hist` `--backup` `--replays` · 기준 `문서/jhbt-app/audit.json` · **기준 · 결과를 저장소에 넣지 않는다**) · 규칙 시험 `node tools/rules-test.js` (서비스 계정 키 필요).
 - **`normProfile` 이 보는 데이터 (`ITEMS` · `FRAMES` · `MQ` · `RK5` …) 는 `let profile = loadProfile()` 보다 앞에** (뒤면 TDZ 로 안 켜진다).
 - 프로필을 한 번 옮기는 변환은 플래그로 (`p.rk5` · `profile.artC` …). 프로필에 없는 필드를 쓰지 않는다 (예: `profile.games` 는 없다 → `wins + losses`).
 - 매일 보상 · 날짜는 **`todayKey()` · `stDay()`** (한국 · 서버 시간) · `new Date()` 로 날짜를 만들지 않는다 (시간대를 바꿔 무료 모집을 무한으로 돈 유저가 있었다).
@@ -294,7 +298,8 @@
 - 디펜스 정식 (위 「디펜스」) · 업그레이드 창 · 열쇠 · 10웨이브 정리 · 준보스 · 4배속 삭제.
 - 소식 `login` 의 b = `new` · `m<분>` · 떠남 `leave` (`presLeave` · pagehide · 로그아웃) · 리더보드 접속 시간 `pt` (`profile.playM`) — **규칙 게시 필요** (events leave · r2lb pt) · 업데이트 안내 창 ui4 · `puToday` 음수 버그 · 듀얼리스트 스킬 초상화 (`u.dlSkT`).
 
-## 최근 변경 (R3.8 · 2026-11-27 · build 1~3)
+## 최근 변경 (R3.8 · 2026-11-27 · build 1~4)
+- build 4: 보안 강화 (규칙 + PC 감시 · 사용자가 심판 서버는 안 함) — 저장 순번 · 계정 중복 차단 · 시드 추첨 · 날짜 · 리플레이 정화 (위 「계정 · 서버」) · **규칙 게시 필요** · 실서버 미확인 · 2단계 (옛 저장 방식 차단 · 재화 상한) 는 `docs/next.md`.
 - build 3: 업적은 퀘스트 창 탭이 아니라 **바로가기 세 번째 칸** (`rail` · `qs: 'ach'` 면 제목 「업적」 · 탭 없음).
 - build 3 (사용자 승인 시안 「낙서 포스터」: 지후 그림 스티커 · 검정/주황 사선 · Black Han Sans 큰 글씨): 이벤트 `#evHub` 는 허브 `evhHub` → 상세 (`EVH.tab` · `data-tab` · ✕ = 허브 → 닫기 · 색은 `--e-*` · 1280×720 배율 `evhFit`) · 친구는 `s4Skin` (ui4 전용 마크업 `.s4-` · 가운데 `s4Spot` = 랭킹 기록의 cp · deck) · 업적은 `u4Ach` + `.u4-ac*`. **UI 를 새로 꾸밀 때는 조금 다듬기가 아니라 구성부터 바꾼 시안을 먼저 보여 준다** (색 · 테두리만 바꾼 것은 「바뀐 게 없다」였다).
 - 헤드리스에서 게임 전역은 안 보인다 → 임시 사본의 `window.__rejhbt = {` 에 `ev0: c => eval(c),` 를 넣어 시험 (끝나면 지움).
