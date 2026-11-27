@@ -8,7 +8,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
-<meta name="jihoo-version" content="R3.8"><meta name="jihoo-build" content="8"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.8"><meta name="jihoo-build" content="9"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -16115,7 +16115,7 @@ function endMatch(win, note) {
   const bdia = win && (S.boost || boostActive()) ? Math.round((1 + Math.floor(Math.random() * CFG.BOOST_DIA)) * evx) : 0; // 부스트: 승리마다 ◆1~300
   const rtbd = win && rtbOn() ? RTB.WIN_DIA : 0; /* R3.8 build 8 복귀: 승리 다이아 */
   profile.gold = (profile.gold || 0) + gold; profile.dia += bdia + rtbd; if (up) profile.dia += CFG.LEVEL_REWARD * up;
-  questAdd('games', 1); if (win) { questAdd('wins', 1); profile.ach.wins++; if (S.lives[me] >= (S.maxLives || CFG.LIVES)) profile.ach.flawless++; } sfx(win ? 'match_win' : 'match_lose'); if (win) profile.wins++; else profile.losses++;
+  questAdd('games', 1); if (win) { questAdd('wins', 1); if (!net) profile.ach.wins++; /* R3.8 build 9: 온라인 대전 승리는 「봇전 승리」에서 뺀다 */ if (S.lives[me] >= (S.maxLives || CFG.LIVES)) profile.ach.flawless++; } sfx(win ? 'match_win' : 'match_lose'); if (win) profile.wins++; else profile.losses++;
   const st0 = profile.streak | 0; profile.streak = win ? (profile.streak || 0) + 1 : 0; profile.bestStreak = Math.max(profile.bestStreak || 0, profile.streak); if (win) mqEvent('win'); save(); // 최고 연승 → 연승 테두리 업적 · 메인 퀘스트
   lbPush(); // 리더보드 전적 갱신 (오프라인이면 조용히 건너뜀)
   if (!S.quit) cstatAdd({ norm: S.deck[me], nwins: win ? S.deck[me] : [] }); // 봇 학습: 일반전 덱 · 승리
@@ -19868,6 +19868,9 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
   { v: 'R3.8', date: '2026.11.27', title: '복귀 유저 혜택, 시작 팝업 정리, 비밀번호 찾기, 프로필 계정 정보, 계정 화면 새 디자인, 서버 저장 보안 강화, 계정 중복 수정, 이벤트와 친구와 업적 화면 새 디자인, 게임 모드 버튼, 초보자 모집 확률', sections: [
+    { title: '추가 패치 (build 9)', items: [
+      { icon: '🏅', name: '봇전 승리 업적', tag: 'fix', desc: '온라인 대전 승리는 <b>세지 않아요</b>' },
+    ] },
     { title: '추가 패치 (build 8)', items: [
       { icon: '🎁', name: '복귀 유저', tag: 'new', desc: '<b>5일 이상</b> 쉬고 돌아오면 <b>7일 동안</b> 복귀 버프와 <b>복귀 배지</b>, 계정당 <b>3번</b>까지' },
       { icon: '💎', name: '복귀 모집 혜택', tag: 'new', desc: '5회와 10회 모집 <b>◆100 할인</b>, 전설 확률 <b>+0.2%</b>' },
