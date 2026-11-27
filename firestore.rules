@@ -136,6 +136,8 @@ service cloud.firestore {
     // R3.8 build 4: 지난 시즌 · 앞 시즌에는 쓸 수 없다 (index.html 의 COMP.SEASON0 · SEASON_DAYS 와 같게)
     function compSeasonAt(ms) { return int((ms - 1792767600000) / 1209600000) + 1; }
     function compSeasonNow(s) { return s == compSeasonAt(request.time.toMillis() - 600000) || s == compSeasonAt(request.time.toMillis() + 600000); }
+    // R3.8 build 12 칭호 (표시용 · GM 은 운영자만)
+    function tiOk() { return !('ti' in request.resource.data) || (request.resource.data.ti is string && request.resource.data.ti.matches('^[a-z0-9]{1,12}$') && (request.resource.data.ti != 'gm' || isAdmin())); }
     match /r2comp/{docId} {
       allow get, list: if true;
       allow delete: if isAdmin();
@@ -143,7 +145,7 @@ service cloud.firestore {
         && request.resource.data.season is int && request.resource.data.season >= 1 && request.resource.data.season <= 100000
         && docId == string(request.resource.data.season) + '_' + request.auth.uid
         && compSeasonNow(request.resource.data.season)
-        && request.resource.data.keys().hasOnly(['nickname', 'tp', 'season', 'wins', 'losses', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'tp', 'season', 'wins', 'losses', 'fav', 'frame', 'ti', 'updatedAt']) && tiOk()
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.tp is int && request.resource.data.tp >= 0 && request.resource.data.tp <= 10000000
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
@@ -213,7 +215,7 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'deck', 'rk', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'deck', 'rk', 'ti', 'updatedAt']) && tiOk()
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
         && request.resource.data.fav is string && (request.resource.data.fav == '' || request.resource.data.fav.matches('^[a-z][a-z0-9_]{0,23}$'))
@@ -226,7 +228,7 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'best', 'fav', 'frame', 'ti', 'updatedAt']) && tiOk()
         && request.resource.data.updatedAt == request.time
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.best is int && request.resource.data.best >= 0 && request.resource.data.best <= 100000
@@ -238,7 +240,7 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'rtb', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'rtb', 'ti', 'updatedAt']) && tiOk()
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
