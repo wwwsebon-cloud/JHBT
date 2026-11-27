@@ -16933,7 +16933,7 @@ function updDraw(n, tab) { // 업데이트 안내 창 (R3.5 build 2 · 시안 ht
   const all = n.sections.flatMap(sec => sec.items), plain = h => String(h).replace(/<[^>]+>/g, ''), b = gameBuild(), hi = all.find(it => it.tag === 'new') || all[0], it2 = ITEMS[CFG.UPD_ITEM];
   const L = all.filter(it => updIn(it, tab)), tabs = UPD_TABS.map(([k, t]) => { const c = all.filter(it => updIn(it, k)).length; return c || k === 'all' ? `<button type="button" class="pt${k === tab ? ' on' : ''}" data-ut="${k}">${t} <i>${c}</i></button>` : ''; }).join('');
   const row = it => `<div class="pr"><span class="pi">${it.id && CHARS[it.id] ? pic(it.id) : esc(it.icon || '✦')}</span><span class="px"><b>${esc(plain(it.name))}</b><small>${esc(plain(it.desc))}</small></span><span class="pg ${esc(it.tag)}">${UPD_TAG[it.tag] || esc(it.tag)}</span></div>`;
-  $('updBox').innerHTML = `<button type="button" class="p-x" data-upd="ok" aria-label="닫기">✕</button><div class="pm"><div class="ph"><b class="pv">${esc(n.v)}</b><span><small>UPDATE · ${esc(n.date)}${b > 1 ? ' · BUILD ' + b : ''}</small><strong>${esc(n.title)}</strong></span></div><div class="ptabs">${tabs}</div><div class="pl">${L.map(row).join('')}</div></div>
+  $('updBox').innerHTML = `<button type="button" class="p-x" data-upd="ok" aria-label="닫기">✕</button><div class="pm"><div class="ph"><b class="pv">${esc(verFull(n.v, b))}</b><span><small>UPDATE · ${esc(n.date)}</small><strong>${esc(n.title)}</strong></span></div><div class="ptabs">${tabs}</div><div class="pl">${L.map(row).join('')}</div></div>
     <div class="pa"><div class="phi"><small>HIGHLIGHT</small><b>${esc(plain(hi.name))}</b><span>${esc(plain(hi.desc))}</span></div><div class="prw"><b>업데이트 보상</b><div class="prc"><span><b>◆${CFG.UPD_DIA.toLocaleString()}</b><small>다이아</small></span><span><b>${it2.icon} ×1</b><small>${esc(it2.name.split(' (')[0])}</small></span></div><small>다음 업데이트가 나오면 사라집니다.</small></div><i class="psp"></i><button type="button" class="pgo" data-upd="ok">보상 받기 <em>◆${CFG.UPD_DIA.toLocaleString()}</em></button><button type="button" class="pno" data-upd="notes">전체 패치노트</button></div>`;
 }
 function attAuto() { // R2.17.2: 오늘 받을 출석 보상이 있으면 게임을 켜자마자 출석부를 연다 (켤 때 한 번 · 다른 창이 없을 때)
@@ -19877,8 +19877,8 @@ const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정'
 const PATCH_NOTES = [
   { v: 'R3.8', date: '2026.11.27', title: '복귀 유저 혜택, 시작 팝업 정리, 비밀번호 찾기, 프로필 계정 정보, 계정 화면 새 디자인, 서버 저장 보안 강화, 계정 중복 수정, 이벤트와 친구와 업적 화면 새 디자인, 게임 모드 버튼, 초보자 모집 확률', sections: [
     { title: '추가 패치 (build 10)', items: [
-      { icon: '🎁', name: '업데이트 보상', tag: 'system', desc: '버전이 같아도 <b>build 가 오를 때마다</b> 지급' },
-      { icon: '🔔', name: '새 버전 알림', tag: 'fix', desc: '지금과 새 버전을 <b>build 번호</b>까지 표시' },
+      { icon: '🎁', name: '업데이트 보상', tag: 'system', desc: '<b>R3.8.10</b> 처럼 뒤 숫자만 올라도 지급' },
+      { icon: '🔔', name: '새 버전 알림', tag: 'fix', desc: '버전을 <b>R3.8.10</b> 처럼 표시' },
       { icon: '🎨', name: '업데이트 안내 창', tag: 'fix', desc: '글씨가 안 보이던 <b>색상 수정</b>' },
     ] },
     { title: '추가 패치 (build 9)', items: [
@@ -22679,7 +22679,7 @@ function renderPatch(v) {
   const groups = []; PATCH_NOTES.forEach(n => { const g = n.v.split('.')[0]; if (!groups.length || groups[groups.length - 1].g !== g) groups.push({ g, list: [] }); groups[groups.length - 1].list.push(n); });
   $('pnSide').innerHTML = `<button class="btn back" data-pnback>← 로비</button><span class="eyebrow">VERSIONS</span>` + groups.map(g => `<div class="grp">${g.g}</div>${g.list.map((n, i) => `<button class="${n.v === v ? 'on' : ''}" data-pv="${n.v}">${n.v}${n === PATCH_NOTES[0] ? '<span class="nd"></span>' : ''}</button>`).join('')}`).join('');
   const n = PATCH_NOTES.find(x => x.v === v) || PATCH_NOTES[0];
-  $('pnMain').innerHTML = `<span class="dt">${n.date}</span><h2>${n.v} ${n.title}</h2>` + n.sections.map(sec => `<div class="pnsec"><span>${sec.title}</span>${sec.items.map((it, i) => `<div class="pnitem" style="animation-delay:${(i * 0.04).toFixed(2)}s">${it.id && CHARS[it.id] ? `<span class="ic p">${pic(it.id)}</span>` : `<span class="ic">${it.icon || '✦'}</span>`}<div><span class="nm">${it.name}<span class="tg ${it.tag}">${PN_TAG[it.tag] || it.tag}</span></span><p>${it.desc}</p></div></div>`).join('')}</div>`).join('');
+  $('pnMain').innerHTML = `<span class="dt">${n.date}</span><h2>${n.v} ${n.title}</h2>` + n.sections.map(sec => `<div class="pnsec"><span>${pnSec(sec.title, n.v)}</span>${sec.items.map((it, i) => `<div class="pnitem" style="animation-delay:${(i * 0.04).toFixed(2)}s">${it.id && CHARS[it.id] ? `<span class="ic p">${pic(it.id)}</span>` : `<span class="ic">${it.icon || '✦'}</span>`}<div><span class="nm">${it.name}<span class="tg ${it.tag}">${PN_TAG[it.tag] || it.tag}</span></span><p>${it.desc}</p></div></div>`).join('')}</div>`).join('');
   $('pnSide').querySelectorAll('[data-pv]').forEach(b => b.onclick = () => { renderPatch(b.dataset.pv); window.scrollTo(0, 0); });
   $('pnSide').querySelector('[data-pnback]').onclick = () => { renderLobby(); show('lobby'); };
 }
@@ -22804,7 +22804,7 @@ const BD = { sel: null, ix: null, n: 0 };
 const BD_TAG = { buff: ['#24a83d', '상향'], nerf: ['#d8343a', '하향'], adjust: ['#ee8f12', '조정'], rework: ['#7c4ff0', '리워크'] };
 function bdIndex() { if (BD.ix && BD.n === PATCH_NOTES.length) return BD.ix; const nm = s => String(s).replace(/\s+/g, '').replace(/지후$/, ''), byName = {}; Object.keys(CHARS).forEach(id => { byName[nm(CHARS[id].name)] = id; });
   const ix = {}; PATCH_NOTES.forEach(n => n.sections.forEach(sec => sec.items.forEach(it => { const id = it.id && CHARS[it.id] ? it.id : byName[nm(it.name)]; if (!id) return; const e = ix[id] || (ix[id] = { list: [], keys: new Set(), born: null, c: { buff: 0, nerf: 0, adjust: 0, rework: 0 } });
-    if (BD_TAG[it.tag]) { e.list.push({ v: n.v, date: n.date, sec: sec.title, tag: it.tag, desc: it.desc }); e.keys.add(n.v + '|' + sec.title); e.c[it.tag]++; } else if (it.tag === 'new' && /신규/.test(sec.title + it.desc)) e.born = { v: n.v, date: n.date }; })));
+    if (BD_TAG[it.tag]) { e.list.push({ v: n.v, date: n.date, sec: pnSec(sec.title, n.v), tag: it.tag, desc: it.desc }); e.keys.add(n.v + '|' + sec.title); e.c[it.tag]++; } else if (it.tag === 'new' && /신규/.test(sec.title + it.desc)) e.born = { v: n.v, date: n.date }; })));
   BD.n = PATCH_NOTES.length; return (BD.ix = ix); }
 function bdTiles(desc) { const t = String(desc), parts = []; let d = 0, cur = '';
   for (let i = 0; i < t.length; i++) { if (t.startsWith('<b>', i)) d++; else if (t.startsWith('</b>', i)) d = Math.max(0, d - 1); const ch = t[i]; if (ch === '(') d++; else if (ch === ')') d = Math.max(0, d - 1); if (!d && t.startsWith(' · ', i)) { parts.push(cur); cur = ''; i += 2; continue; } cur += ch; }
@@ -22833,12 +22833,12 @@ const mzRun = (tab, sec) => `<div class="mz-run"><span>지후 매거진 · ${esc
 const mzHd = (en, ko, lede) => `<div class="mz-hd"><div><span class="mz-en">${en}</span><h2>${ko}</h2></div>${lede ? `<p>${lede}</p>` : ''}</div>`;
 function mzHtml(tab) { mzFont(); if (!MZ_NO[tab]) tab = 'cover';
   const body = tab === 'cover' ? mzCover() : tab === 'rule' ? mzRule() : tab === 'status' ? mzStatus() : tab === 'grow' ? mzGrow() : tab === 'tier' ? mzTier() : tab === 'dict' ? mzDictPg() : tab === 'online' ? mzSocial() : mzGuin();
-  return `<div class="mz mz-${tab}">${body}<div class="mz-foot"><span>THE JIHOO MAGAZINE</span><span>R${esc(String(gameVersion()).replace(/^R/, ''))} · BUILD ${esc(mzBuild())}</span></div></div>`; }
+  return `<div class="mz mz-${tab}">${body}<div class="mz-foot"><span>THE JIHOO MAGAZINE</span><span>${esc(verFull())}</span></div></div>`; }
 function mzCover() { const g = mzGuinData(), n = PATCH_NOTES[0], SC = ON.tier ? ON.tier.sc : TIER_SC, ids = Object.keys(CHARS).filter(id => CHARS[id].portrait && !CHARS[id].special && seeId(id));
   const top = ids.slice().sort((a, b) => (SC[b] ?? 50) - (SC[a] ?? 50))[0], newId = (n.sections || []).map(s => s.items.find(it => it.tag === 'new' && it.id && CHARS[it.id])).find(Boolean), hero = (newId && newId.id) || top;
   const most = g.cats.find(c => c.k === 'patch'), mostR = most && most.r[0], items = (n.sections || []).flatMap(s => s.items).slice(0, 4);
   const toc = [['rule', '교본', '게임 방법 · 배치 · 토큰 · SP · 전투 · 이벤트 모드'], ['status', '상태이상 백과', `기절부터 천살성까지 ${Object.keys(STATUS).length}종`], ['grow', '경제면', '뽑기 · 천장 · 아케이드 · 경험치'], ['tier', '티어 시세표', `자동 대전 시뮬레이션 · ${ids.length}종`], ['dict', '밸런스 사전', 'R2.0 부터 지후별 모든 밸런스 변화'], ['online', '사교면', '친구 · 친선전 · 관전 · 채팅'], ['guin', '지후 기네스북', `${g.cats.length}개 부문 · 1 ~ 3위`]];
-  return `<div class="mz-top"><span>${esc(gameVersion())} · BUILD ${esc(mzBuild())}</span><span>${esc(n.date || '')} · 지후왕국 공식 매거진</span><span>값 ◆0</span></div>`
+  return `<div class="mz-top"><span>${esc(verFull())}</span><span>${esc(n.date || '')} · 지후왕국 공식 매거진</span><span>값 ◆0</span></div>`
     + `<div class="mz-mast"><div><span class="mz-en">The Jihoo Magazine</span><h1>지후 매거진</h1></div><b>${esc(gameVersion())}</b></div>`
     + `<div class="mz-cv"><div class="mz-cvs"><span class="mz-kick">이번 호 · 패치 소식</span><h3>${esc(n.title)}</h3>${items.map(it => `<p><b>${esc(it.name)}</b> ${it.desc}</p>`).join('')}<button type="button" class="mz-go" data-mz="dict">밸런스 사전에서 보기 →</button></div>`
     + `<div class="mz-cvp"><span class="mz-en">Cover</span><span class="p">${pic(hero)}</span><span class="cap">${esc(CHARS[hero].name)}</span></div>`
@@ -23087,6 +23087,8 @@ let pendingUpdateVersion = null, pendingUpdateBuild = 0, appUpdSkip = null; // a
 function gameVersion() { return document.querySelector('meta[name="jihoo-version"]')?.content || '0'; }
 function gameBuild() { return Number(document.querySelector('meta[name="jihoo-build"]')?.content) || 0; }
 { const bv = $('bootVer'); if (bv) bv.textContent = gameVersion() + (gameBuild() > 1 ? '.' + gameBuild() : ''); } // 시작 화면에 현재 버전
+function verFull(v = gameVersion(), b = gameBuild()) { return Number(b) > 1 ? v + '.' + b : v; } /* R3.8 build 10: 화면 표기는 R3.8.10 (build 라고 쓰지 않는다) */
+function pnSec(t, v) { return String(t).replace(/build (\d+)/i, (m, b) => v + '.' + b); } /* 패치노트 칸 제목: 추가 패치 (R3.8.10) */
 function compareVersions(a, b) { return String(a).localeCompare(String(b), undefined, { numeric: true }); }
 async function fetchDeployedVersion() {
   if (location.protocol === 'file:') return null;
@@ -23126,7 +23128,7 @@ async function checkForUpdate() {
 }
 function showUpdateOverlay() {
   if (!pendingUpdateVersion) return;
-  const verTxt = (v, b) => (b ? `${v} build ${b}` : v), skipKey = pendingUpdateVersion + '#' + pendingUpdateBuild; /* R3.8 build 10: build 까지 보여 준다 */
+  const verTxt = verFull, skipKey = pendingUpdateVersion + '#' + pendingUpdateBuild; /* R3.8 build 10: build 까지 보여 준다 */
   $('updateCurrent').textContent = verTxt(gameVersion(), gameBuild());
   $('updateNext').textContent = verTxt(pendingUpdateVersion, pendingUpdateBuild);
   if (IS_APP) { if (appUpdSkip === skipKey) return; const card = $('updateOverlay').querySelector('.update-card'), note = card && card.querySelector('.note'); if (note) note.textContent = '새 APK 를 받아 설치해 주세요 · 기록은 계정에 그대로 남아요'; $('btnUpdateReload').textContent = '새 APK 받기';
@@ -23977,7 +23979,7 @@ function u3OvD(v, tabOf) {
     const sw = BSET_ROWS.map(([k, t, d]) => { const on = !!BSET[k]; return { t, d, track: on ? '#c8102e' : '#1d1b20', tb: on ? '#c8102e' : '#3a3631', knob: on ? '#fff' : '#6f6a62', x: on ? '24px' : '0px', bd: on ? 'rgba(200,16,46,.5)' : '#2a2723', go: () => u3BsetToggle(k) }; });
     const vols = [['효과음', sfxState.vol, e => { sfxSetVolume(e.target.value); sfx('buy'); u2Render(); }], ['배경음악', bgm.vol, e => { bgm.vol = clamp(Math.round(Number(e.target.value) || 0), 0, 100); try { localStorage.setItem(BGM_KEY, String(bgm.vol)); } catch (er) {} bgmTick(); u2Render(); }]].map(([t, val, set]) => ({ t, v: String(val), set }));
     const etc = [['👤', 'JHBT 계정', isMember() ? 'UID ' + accCode() : '게스트 · 서버 백업 연결', () => { u2Set({ u3set: null }); openAccount(); }], ['🎟', '쿠폰 코드 입력', '', () => { u2Set({ u3set: null }); $('btnMenuCode').click(); }], ['🎓', '튜토리얼 다시 보기', '', () => { u2Set({ u3set: null }); setTimeout(() => TUT.start(), 150); }], ['📖', '인트로 만화', '', () => { u2Set({ u3set: null }); showComic(); }], ...(DEV.op ? [['🛠', '개발자 도구', '접속 · 유저 · 정지 · 우편 · 공지 · 설정', () => { u2Set({ u3set: null }); opOpen(); }]] : [])].map(([ic, t, d, go]) => ({ ic, t, d, go })); /* R3.1 잠수함: 운영자만 · 예전 환경설정 창 (개발자 모드 · renderAdmin) */
-    return { en: 'SETTINGS', t: '환경설정', close: () => u2Set({ u3set: null }), right: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || ''), tabs: [], set: { cats: C.map(([k, t, en]) => { const on = cat === k; return { t, en, on, bg: on ? '#c8102e' : 'rgba(13,12,14,.88)', bd: on ? '#c8102e' : '#2a2723', ec: on ? '#ffd0d6' : '#6f6a62', go: () => u2Set({ u3set: k }) }; }), isSound: cat === 'sound', isBattle: cat === 'battle', isEtc: cat === 'etc', sw, vols, etc } };
+    return { en: 'SETTINGS', t: '환경설정', close: () => u2Set({ u3set: null }), right: verFull(), tabs: [], set: { cats: C.map(([k, t, en]) => { const on = cat === k; return { t, en, on, bg: on ? '#c8102e' : 'rgba(13,12,14,.88)', bd: on ? '#c8102e' : '#2a2723', ec: on ? '#ffd0d6' : '#6f6a62', go: () => u2Set({ u3set: k }) }; }), isSound: cat === 'sound', isBattle: cat === 'battle', isEtc: cat === 'etc', sw, vols, etc } };
   }
   if (s.page === 'inv') {
     const its = Object.keys(ITEMS).filter(k => profile.items[k] > 0), sel = its.includes(s.u3it) ? s.u3it : its[0], it = sel && ITEMS[sel];
@@ -23989,7 +23991,7 @@ function u3OvD(v, tabOf) {
     const TB = { new: '#e9c46a', buff: '#5fd38a', nerf: '#ff6b6b', system: '#8fc6dd', fix: '#c9b98f', adjust: '#f2a33a', rework: '#c48bff' }, cv = PATCH_NOTES.find(n => n.v === s.u3pv) || PATCH_NOTES[0];
     return { en: 'PATCH NOTES', t: '패치노트', close: () => u2Go(s.tab || 'battle'), right: '', tabs: [], pn: { v: cv.v, date: cv.date, title: cv.title,
       vers: PATCH_NOTES.slice(0, 60).map(n => { const on = n === cv; return { v: n.v, t: n.title, bg: on ? 'rgba(200,16,46,.16)' : 'rgba(13,12,14,.88)', bd: on ? '#c8102e' : '#2a2723', bar: on ? '#c8102e' : 'transparent', vc: on ? '#fff7dc' : '#9b958a', go: () => u2Set({ u3pv: n.v }) }; }),
-      secs: cv.sections.map(sec => ({ t: sec.title, items: sec.items.map(it => ({ tag: PN_TAG[it.tag] || it.tag, tb: TB[it.tag] || '#9b958a', n: it.name, d: { html: it.desc } })) })) } };
+      secs: cv.sections.map(sec => ({ t: pnSec(sec.title, cv.v), items: sec.items.map(it => ({ tag: PN_TAG[it.tag] || it.tag, tb: TB[it.tag] || '#9b958a', n: it.name, d: { html: it.desc } })) })) } };
   }
   if (s.u3e7) {
     const e = profile.ev7, Dd = e7Day(), pts = e7Pts(), sel = s.u3e7 - 1;
@@ -24353,7 +24355,7 @@ function u3Extra(v) {
     defense: () => u2Set({ mode: 'defense' }), dfBest: profile.dfBest | 0,
     evTog: v.evTog, evS: profile.evOn ? 'ON' : 'OFF', evC: profile.evOn ? '#5fd38a' : '#9b958a', evBd: profile.evOn ? '#2f8f55' : '#4a4640',
     old: !!s.page && !['inv', 'patch', 'social', 'tower', 'comp', 'sandbox', 'custom'].includes(s.page), ov: u3Ov(v), pg2: u3Pg2(v), vip: vipOn(), xpP, notice: () => $('btnMenuPatch').click(), mail: () => { u2Set({ u3mail: true }); checkGiftMail().then(() => u2Render()); }, mailDot: dotOf('mailDot'),
-    nav, menu, uid: isMember() ? 'UID ' + accCode() : '게스트', ver: gameVersion() + ' · BUILD ' + ((document.querySelector('meta[name="jihoo-build"]') || {}).content || '')
+    nav, menu, uid: isMember() ? 'UID ' + accCode() : '게스트', ver: verFull()
   };
 }
 // R2.26 앱: 안드로이드 뒤로 가기 — 열린 창부터 하나씩 닫고, 로비 전투 탭이면 「게임을 끌까요?」
