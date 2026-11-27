@@ -236,7 +236,7 @@ service cloud.firestore {
       allow get, list: if true;
       allow delete: if owner(userId) || isAdmin();
       allow create, update: if owner(userId) && !banned()
-        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['nickname', 'level', 'wins', 'losses', 'deck', 'fav', 'xp', 'frame', 'dia', 'gold', 'pulls', 'own', 'cheat', 'cp', 'rk', 'pt', 'rtb', 'updatedAt'])
         && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname) && guestNickOk(request.resource.data.nickname)
         && request.resource.data.level is int && request.resource.data.level >= 0 && request.resource.data.level <= 999
         && request.resource.data.wins is int && request.resource.data.wins >= 0 && request.resource.data.wins <= 99999
@@ -254,6 +254,7 @@ service cloud.firestore {
         && (!('cp' in request.resource.data) || (request.resource.data.cp is int && request.resource.data.cp >= 0 && request.resource.data.cp <= 99999999)) // R2.21 전투력
         && (!('pt' in request.resource.data) || (request.resource.data.pt is int && request.resource.data.pt >= 0 && request.resource.data.pt <= 99999999)) // R3.7 접속 시간 (분)
         && (!('rk' in request.resource.data) || rkOk(request.resource.data.rk)) // R2.28 덱 지후 랭크 (리더보드 표시)
+        && (!('rtb' in request.resource.data) || (request.resource.data.rtb is int && request.resource.data.rtb >= 0 && request.resource.data.rtb <= int((request.time.toMillis() + 32400000) / 86400000) + 7)) // R3.8 build 8 복귀 마지막 날 (한국 날짜 번호)
         && request.resource.data.keys().hasAll(['dia', 'gold', 'pulls', 'own', 'cheat']) // R3.8 build 4: 빼고 올려 감시를 피하던 것
         && request.resource.data.updatedAt == request.time;
     }
