@@ -167,8 +167,9 @@
 - 설정 `CO` (FW 바로 위 · 전장 `CO.MAP` 1160² · `coMap()` 이면 `FW` · `tileXY` · `tileSize` 가 협동 배치) · 아래 = 나 · 위 = 동료 · **동료 지후도 같은 side (아군)** · 동료 로스터 칸 번호는 `TILES` 를 더한 15~29 (`u.coP` · SQUAD 줄에서 뺀다).
 - 동료 로스터 · 토큰은 `c.co[1]` · **`coAs(1, fn)` 으로 `c.tok` · `c.ros` · `c.deck` … 를 바꿔 쓴다** (그동안 `c.coI = 1` · `df2Render` · 퀘스트 · 소리는 건너뜀) · 둘 다 돌 때 `coEach` · uid 로 찾을 때 `coRos` (`c.ros.find` 만 쓰면 동료 지후를 못 찾는다).
 - 적: 길 위 거리 `u.coS` 로 위치를 직접 (`coMove` · 넉백 · 매혹 · 최면 · 도발 · 공포 무시 · 기절 · 빙결 · 잠금 · 감속은 통함) · 일반 적 `u.coN` (체력 비례 · `flatD` 감소 없음) · 보스는 디펜스 그대로 · `coStep` (df2Step 대신) · `coNext` · `coSpawn` · 패배 `CO.LOSE`.
-- 업그레이드 없음 (`df2UpTap` · `df2Field`) · 소환 뒤 `coMerge` (같은 id · 같은 레벨 · 살아 있는 것) · 꽉 차도 합칠 수 있으면 소환 (`coCanMerge`) · 처치 보상 · 클리어 보상은 **둘 다** 받는다 (`coKill`).
-- 보급 `CO_BUFF` (`coBuff` · `c.coB` 쌓임 · 아군 공격력 · 공속 · 이속은 `c.k` → `dfA` / `dfK`) · 기록 `profile.coBest` · 열쇠 `profile.coKey` · 로비 `profile.coOn` (`coModeSet` · 다른 모드 고르면 끈다) → 매칭 창 `#coLobby` (`coOpen` · `coGo`) · HUD `#df2Base.co` (필드 게이지) · `#coMate` (동료 · 보급) · 보급 카드 `.co-drop` · 결과 `.coe`.
+- 업그레이드 없음 (`df2UpTap` · `df2Field`) · **합체는 손으로**: 카드를 안 고른 채 내 지후를 누르고 (`coTap` · `c.mgU` · 머리 위 안내 `coPickDraw`) 같은 지후 · 같은 레벨을 누르면 `coFuse` (누른 쪽 자리 · 자동 합체 아님 · 이미 지후가 있는 칸에도 새로 소환) · 봇은 `coBot` 이 짝을 찾아 `coFuse` · 처치 보상 · 클리어 보상은 **둘 다** 받는다 (`coKill`).
+- 방어 실패 (디펜스 · 협동): `cwEnd` → `dfFail` (2초 슬로우모션 `S.slowK` · `.df-fail`) → `cwEndGo` (phase `final` = 캔버스 그대로 · `cvEnd` 를 부르면 한철이 바닥에 눕는다) → 결과 화면 (`df2End` 에서 phase 정리).
+- 보급 `CO_BUFF` (`coBuff` · `c.coB` 쌓임 · 아군 공격력 · 공속 · 이속은 `c.k` → `dfA` / `dfK`) · 기록 `profile.coBest` · 열쇠 `profile.coKey` · 로비 `profile.coOn` (`coModeSet` · 다른 모드 고르면 끈다) → 매칭 창 `#coLobby` (`coOpen` · `coGo`) · HUD `#df2Base.co` (필드 게이지) · `#coMate` (왼쪽 가운데 · 화살표 `.com-t` 로 접기 · `localStorage rejhbt-co-mate`) · 보급 카드 `.co-drop` · 결과 `.coe`.
 - ⚠️ 새 창 CSS 가 남색으로 바뀌면 테마 자동 변환 (`u2DarkRules` 의 `SKIP`) 에 걸린 것 → 선택자를 `SKIP` 에 더한다.
 
 ## 세계관 (서사를 쓸 때)

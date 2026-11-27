@@ -3019,6 +3019,32 @@ html body #screen-battle.df2.df2.df2.df2.df2.co .tile.enemy { display:block !imp
 body.u4-dark #coMate .com-s, body.u4-dark #df2Base.co .cob-g i:not(.on) { border-color:#333; background:#333; }
 body.u4-dark #coMate .com-s { background:transparent; }
 @media (max-width:820px), (max-height:520px) { #coMate { top:64px; width:176px; } #coMate .com-d i { width:28px; height:28px; } }
+/* 동료 패널: 왼쪽 가운데 · 화살표로 접기 */
+#coMate { left:0; right:auto; top:50%; width:auto; padding:0; display:flex; align-items:stretch; border-left:0; transform:translateY(-50%); transition:transform .22s ease-out; pointer-events:auto; }
+#coMate .com-in { width:196px; padding:9px 10px 10px; }
+#coMate .com-t { order:2; flex:none; width:24px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:var(--qi, #0d0d0d); color:var(--qp, #fff); border:0; cursor:pointer; }
+#coMate .com-t svg { width:10px; height:20px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; transition:transform .22s; }
+#coMate .com-t small { font-size:10px; font-weight:700; }
+#coMate.off { transform:translate(calc(-100% + 24px), -50%); }
+#coMate.off .com-t svg { transform:scaleX(-1); }
+@media (max-width:820px), (max-height:520px) { #coMate { top:50%; width:auto; } #coMate .com-in { width:170px; } }
+/* 합체 고르기 (머리 위) */
+#coPick { position:absolute; left:0; top:0; z-index:33; pointer-events:none; }
+#coPick .cop-h { position:absolute; left:0; top:0; display:flex; align-items:center; gap:10px; padding:5px 5px 5px 10px; background:var(--qp, #fff); color:var(--qi, #0d0d0d); border:2px solid var(--qi, #0d0d0d); box-shadow:3px 3px 0 #f04a14; white-space:nowrap; pointer-events:auto; font-family:var(--u4n, 'Chakra Petch', sans-serif); }
+#coPick .cop-h small { display:block; font-size:9px; font-weight:700; letter-spacing:.22em; color:#f04a14; }
+#coPick .cop-h b { display:block; font-family:'Do Hyeon', sans-serif; font-size:15px; font-weight:400; line-height:1.1; }
+#coPick .cop-h em { font-size:11px; font-style:normal; color:var(--qm, #55554f); }
+#coPick .cop-h button { width:24px; height:24px; padding:0; background:transparent; color:inherit; border:1.5px solid var(--qi, #0d0d0d); font-size:12px; cursor:pointer; }
+#coPick .cop-m { position:absolute; left:0; top:0; font-style:normal; }
+#coPick .cop-m span { display:flex; align-items:center; justify-content:center; width:26px; height:26px; background:#f04a14; color:#fff; border:2px solid #0d0d0d; font:700 18px/1 'Chakra Petch', sans-serif; animation:copB .6s ease-in-out infinite alternate; }
+@keyframes copB { to { transform:translateY(-5px); } }
+/* 방어 실패 (디펜스 · 협동) */
+#fieldWrap .df-fail { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; pointer-events:none; background:radial-gradient(ellipse at center, transparent 45%, rgba(110,0,10,.45)); box-shadow:inset 0 0 0 6px #d6382c; animation:dfFailIn .5s ease-out both; }
+@keyframes dfFailIn { from { opacity:0; } }
+#fieldWrap .df-fail > div { text-align:center; animation:dfFailT .8s cubic-bezier(.2, 1.4, .4, 1) .15s both; }
+@keyframes dfFailT { from { opacity:0; transform:scale(1.6); } }
+#fieldWrap .df-fail small { display:block; font:700 14px 'Chakra Petch', sans-serif; letter-spacing:.4em; color:#fff; }
+#fieldWrap .df-fail b { display:block; font-family:'Do Hyeon', sans-serif; font-size:64px; font-weight:400; line-height:1.1; color:#fff; text-shadow:4px 4px 0 #d6382c, 0 0 2px #000; }
 /* 보급 카드 (가운데) */
 #screen-battle .co-drop { position:absolute; left:50%; top:36%; z-index:40; pointer-events:none; transform:translate(-50%, -50%); }
 #screen-battle .cod-c { min-width:270px; padding:16px 36px 18px; background:#0d0d0d; color:#fff; border:2px solid #f04a14; box-shadow:6px 6px 0 #f04a14; text-align:center; animation:codIn 2.8s ease-out forwards; }
@@ -13344,7 +13370,7 @@ const midXY = side => { const a = tileXY(side, Math.floor((CFG.ROWS - 1) / 2) * 
 const backDir = side => (isEW() ? { x: side === 'a' ? -1 : 1, y: 0 } : { x: 0, y: side === 'a' ? 1 : -1 }); // 자기 진영 뒤쪽 (소환 · 분열 자리)
 function reelsOn() { return !!(S.arc && S.arc.kind === 'reels'); } // 릴스 모드 (R2.10.5 · 샌드박스 안 · reels.js)
 const sandboxLike = () => !!(S.arc && (S.arc.kind === 'sandbox' || S.arc.kind === 'reels')); // 보상 · 전적 · 배치 없는 한 라운드 싸움
-const CO = { MAP: [1160, 1160], DX: 150, DY: 124, PX: 455, PY: 455, ROAD: 92, WAVE: 15, FIRST: 6, N: 12, SPI: 1, LOSE: 30, HP: 100, BOSS0: 20000, BOSSK: 1.5, QCAP: 30 }; /* 협동 디펜스: 정사각형 전장 · 칸 간격 · 길 (가운데에서 PX · PY) · 웨이브 15초 · 첫 웨이브 6초 · 12마리 1초 간격 · 30마리 패배 · 한철 체력 100 × 웨이브 · 보스 2만 × 1.5 · 충격파 기준 30 */
+const CO = { MAP: [1160, 1160], DX: 150, DY: 124, PX: 455, PY: 455, ROAD: 92, WAVE: 15, FIRST: 6, N: 12, SPI: 1, LOSE: 30, HP: 100, BOSS0: 10000, BOSSK: 1.5, QCAP: 30 }; /* 협동 디펜스: 정사각형 전장 · 칸 간격 · 길 (가운데에서 PX · PY) · 웨이브 15초 · 첫 웨이브 6초 · 12마리 1초 간격 · 30마리 패배 · 한철 체력 100 × 웨이브 · 보스 1만 × 1.5 · 충격파 기준 30 */
 const coMap = () => !!(S.arc && S.arc.co); // 협동 디펜스 전장
 const FW = () => (reelsOn() ? CFG.MAP_REELS : coMap() ? CO.MAP : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[0], FH = () => (reelsOn() ? CFG.MAP_REELS : coMap() ? CO.MAP : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[1];
 const TILES = CFG.COLS * CFG.ROWS;
@@ -14029,7 +14055,7 @@ const cwIncome = w => 50 + 20 * Math.max(0, Math.ceil((w - 5) / 5)); // 웨이�
 function cwCastleXY(side) { const c = tileXY(side, (CFG.ROWS - 1) * CFG.COLS + 1), b = backDir(side); return { x: c.x + b.x * 1.8 * CFG.CELL, y: c.y + b.y * 1.8 * CFG.CELL }; } // 후열 가운데 칸 뒤 (1.8칸 · 화면 위아래 HUD 에 가리지 않게)
 function cwUi(on) { if (!on) $('oddsLabA').classList.remove('over'); const sb = $('screen-battle'); sb.classList.toggle('cw', !!on && !isDf()); sb.classList.toggle('df', false); sb.classList.toggle('df2', !!on && isDf()); sb.classList.toggle('co', !!on && isDf() && !!S.arc.co); if (!on) { const m = $('coMate'); if (m) m.remove(); } /* 협동 디펜스 */ /* R3.6 새 디펜스: 일반전 화면 (h4) */ viewDirty(); /* R2.34 디펜스: PC 좌우 분할 */ const lab = document.querySelector('#hudMid .rd small'); if (lab) lab.textContent = on ? 'WAVE' : 'ROUND'; }
 function cwStart() {
-  rng = mulberry32((Math.random() * 4294967296) >>> 0);
+  rng = mulberry32((Math.random() * 4294967296) >>> 0); S.slowK = 0; /* 방어 실패 슬로우모션 초기화 */
   S.phase = 'combat'; S.time = 0; acc = 0; lastTs = 0; S.started = true; S.lastDmgAt = 0; S.stallEnded = false; S.odds = []; S.rk++;
   clearInterval(S.timer); S.pick = null; S.moveSel = null; S.pool = [];
   uidSeq = 0; S.units = []; S.shots = []; S.lines = []; S.zones = []; S.timed = []; S.rel = { a: {}, e: {} }; S.relAcc = 0; S.relLog = []; S.fx = [];
@@ -14426,10 +14452,10 @@ function df2Pull(r) { // 합체로 빠지는 지후: 죽음 연출 · 보상 없
   (u.fx || []).forEach(e => e.remove()); u.fx = []; if (u.ufxEl) { u.ufxEl.remove(); u.ufxEl = null; } if (u.el) { u.el.remove(); u.el = null; }
 }
 function df2Summon(id, t) { // 토큰을 내고 칸 t 에 새로 소환 (같은 지후가 있어도)
-  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || !CHARS[id]) return false; const cost = df2Cost(id);
-  if (c.ros.length >= DF2.MAX && !(c.co && coCanMerge(id))) { if (!S.fast && !c.auto && !c.coI) banner(`지후는 ${DF2.MAX}기까지`); return false; } /* 협동: 꽉 차도 합체할 지후는 */
+  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || c.endK || !CHARS[id]) return false; /* 방어 실패 연출 중 소환 막음 */ const cost = df2Cost(id);
+  if (c.ros.length >= DF2.MAX) { if (!S.fast && !c.auto && !c.coI) banner(`지후는 ${DF2.MAX}기까지`); return false; }
   if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto && !c.coI) banner(`🪙 ${cost} 이 필요해요`); return false; }
-  const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); const nu = df2Put(r, q.x, q.y); if (!c.coI) e7Add('deploy'); df2Ovl(); if (nu.ovl && !S.fast && !c.auto && !c.coI) banner('출격제한 · 패시브 · 스킬 없음'); if (c.co) coMerge(r); /* 협동: 같은 지후 · 같은 레벨이면 합체 */
+  const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); const nu = df2Put(r, q.x, q.y); if (!c.coI) e7Add('deploy'); df2Ovl(); if (nu.ovl && !S.fast && !c.auto && !c.coI) banner('출격제한 · 패시브 · 스킬 없음');
   if (!S.fast) { if (!c.coI) sfx('place'); df2Render(); } return true;
 }
 function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.sum = c.sum === id ? null : id; df2Render(); } // 타일 누르기: 고르기 · 다시 누르면 취소
@@ -14456,7 +14482,7 @@ function df2Forge() { // 강화 지후 업그레이드 = 검 강화 (토큰 = �
   if (!S.fast) { df2Render(); df2UpDraw(true); } return true;
 }
 function df2Field(e) { // 전장 누르기 (전투 중 · 지후를 골랐을 때만): 내 칸을 누르면 (그 자리에 지후가 있어도) 새로 소환 · 칸 밖의 같은 지후를 누르면 업그레이드 (토큰이 남으면 계속 고른 채)
-  const c = S.cw; if (df2UpTap(e)) return true; if (!c.sum) return false;
+  const c = S.cw; if (c.co && !c.sum) return coTap(e); /* 협동: 두 지후를 눌러 합체 */ if (df2UpTap(e)) return true; if (!c.sum) return false;
   const el = e.target.closest('.tile[data-tile]') || (document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY) : []).find(x => x.classList && x.classList.contains('tile'));
   if (el && el.dataset.side === c.me) df2Summon(c.sum, Number(el.dataset.tile));
   else { const ue = e.target.closest('.unit'), u = (ue && S.units.find(x => x.el === ue)) || cvPick(e); if (c.co || !(u && u.df2A && u.alive && u.id === c.sum)) return false; df2Up(u); } /* 협동: 업그레이드 없음 */
@@ -14570,7 +14596,7 @@ async function df2Start() { // 로비 → 새 디펜스 (에너지 없음 · R3.
   if (profile.deck.filter(owned).length < 5) return banner(deckNeedMsg());
   dfGo();
 }
-function df2End(note) { if (S.cw && S.cw.co) return coEnd(note); /* 협동 디펜스 */ // 결과 (R3.7 베타 해제): 열쇠는 웨이브를 넘길 때 바로 (df2KeyGive) · 최고 기록 dfBeta (예전 디펜스 dfBest 와 따로) · 7일 퀘스트
+function df2End(note) { if (S.phase === 'final') S.phase = 'roundEnd'; /* 방어 실패: 결과 화면이 덮은 뒤 캔버스 정리 */ if (S.cw && S.cw.co) return coEnd(note); /* 협동 디펜스 */ // 결과 (R3.7 베타 해제): 열쇠는 웨이브를 넘길 때 바로 (df2KeyGive) · 최고 기록 dfBeta (예전 디펜스 dfBest 와 따로) · 7일 퀘스트
   const c = S.cw, w = c ? c.wave : 0, best = w > (profile.dfBeta | 0), kn = c ? c.keyN | 0 : 0; alWhy('디펜스 끝 · ' + w + '웨이브'); if (best) profile.dfBeta = w; e7Add('dfWave', w, true); save(); sfx('match_win');
   if (D2U.el) D2U.el.hidden = true; if (c) c.upU = null;
   $('dfPick').classList.remove('show'); $('screen-result').classList.add('win'); $('resTitle').textContent = `WAVE ${w}`; $('resMeta').textContent = 'DEFENSE · 디펜스'; $('resSub').textContent = `웨이브 ${w} 도달`;
@@ -14582,13 +14608,13 @@ function df2Hud(set) { // cwHud 에서: 라이프 · 남은 적 · 웨이브 남
   const c = S.cw, left = c.ne + c.sq.length;
   df2BaseHud(left);
   set('hudPhase', c.wave ? `${Math.max(0, Math.ceil(df2WV() - c.t))}초` : '준비');
-  df2BarHud(); coMateHud(); /* 협동 */
+  df2BarHud(); coMateHud(); coPickDraw(); /* 협동 */
 }
 // ═════════ 협동 디펜스 (CO · 봇 동료) ═════════
 // 아래 = 내 진영 15칸 · 위 = 동료 진영 15칸 (동료 칸 번호는 TILES 를 더한 15 ~ 29) · 동료 지후도 같은 아군 (side = me) 이고 로스터 · 토큰만 따로 (c.co[1] · coAs 로 바꿔 쓴다)
 // 적은 두 진영을 둘러싼 사각형 길을 시계 방향으로 돈다 (위치를 길 위 거리 u.coS 로 직접 · 넉백 · 끌어당기기 · 최면은 통하지 않는다 · 기절 · 빙결 · 감속은 통한다)
-// 웨이브 15초 = 1초마다 그냥한철 1마리 × 12 (체력 100 × 웨이브) + 3초 쉼 · 10웨이브마다 보스 (2만 · 다음 보스마다 ×1.5) · 필드의 적이 30마리가 되면 패배
-// 업그레이드 없음: 같은 지후 · 같은 레벨 둘이 되면 바로 합체 · 10웨이브가 끝날 때마다 보급 (무작위 버프 1개 · 쌓인다)
+// 웨이브 15초 = 1초마다 그냥한철 1마리 × 12 (체력 100 × 웨이브) + 3초 쉼 · 10웨이브마다 보스 (1만 · 다음 보스마다 ×1.5) · 필드의 적이 30마리가 되면 패배
+// 업그레이드 없음: 내 지후를 누르고 같은 지후 · 같은 레벨을 누르면 합체 (coTap) · 10웨이브가 끝날 때마다 보급 (무작위 버프 1개 · 쌓인다)
 const CO_BUFF = [
   { k: 'rew2', ic: '💰', t: '처치 보상 ×2', d: '20% 확률' },
   { k: 'bossHp', ic: '👑', t: '보스 체력 −15%', d: '' },
@@ -14610,6 +14636,7 @@ function coAs(i, fn) { // 동료 (1) 또는 나 (0) 의 로스터 · 토큰으�
 function coEach(fn) { fn(); if (coOn()) coAs(S.cw.coI ? 0 : 1, fn); } // 나와 동료 로스터 둘 다
 const coRos = uid => { const c = S.cw; if (!c || !c.ros) return null; const o = coOther(); return c.ros.find(x => x.uid === uid) || (o && o.ros ? o.ros.find(x => x.uid === uid) : null) || null; };
 const df2WV = () => (S.cw && S.cw.co ? CO.WAVE : DF2.WAVE), df2FV = () => (S.cw && S.cw.co ? CO.FIRST : DF2.FIRST); // 웨이브 길이 · 첫 웨이브까지 (협동은 15초 · 6초)
+const c0Ros = () => S.cw.ros.slice().sort((a, b) => b.lv - a.lv); // 봇: 높은 레벨부터 짝 찾기
 const coCdK = () => (coOn() ? Math.pow(1.1, S.cw.coB.cd | 0) : 1); // 보스 쿨타임 배율
 // ── 길 (사각형 · 시계 방향 · 왼쪽 위 모서리에서 시작) ──
 const coBox = () => ({ x0: FW() / 2 - CO.PX, x1: FW() / 2 + CO.PX, y0: FH() / 2 - CO.PY, y1: FH() / 2 + CO.PY });
@@ -14674,24 +14701,46 @@ function coKill(u) { // 처치 보상: 나와 동료 둘 다 (보급 [처치 보
   const c = S.cw, n = c.coB.rew2 | 0, x2 = n && rng() < Math.min(1, 0.2 * n), v = df2Rew(u.baseMaxHp) * (x2 ? 2 : 1), o = coOther();
   c.tok = df2R1(c.tok + v); if (o) o.tok = df2R1(o.tok + v); c.kills++; if (DF2_FOE[u.id] && DF2_FOE[u.id].boss) c.bossK = (c.bossK | 0) + 1;
 }
-function coMerge(r) { // 같은 지후 · 같은 레벨이 둘이면 합체 (먼저 있던 지후 자리 · Lv+1 · 이어서 또 합체될 수 있다)
-  const c = S.cw; let made = null;
-  for (let g = 0; g < 8; g++) {
-    if (!df2Unit(r) || r.id === 'forge' || r.lv >= df2MaxLv(r.id)) break;
-    const x = c.ros.find(o => o !== r && o.id === r.id && o.lv === r.lv && df2Unit(o)); if (!x) break;
-    const v = df2Unit(x), px = v.x, py = v.y; df2Pull(r); c.ros.splice(c.ros.indexOf(r), 1); df2Pull(x); x.lv++;
-    if (x.id === 'frog') { if (rng() < frogP(c.me)) { x.id = 'prince'; if (!c.coI) ttAdd(c.me, 'prince'); if (!S.fast) { banner('👑 왕자!'); sfx('gacha_legend'); } } else { c.ros.splice(c.ros.indexOf(x), 1); if (!S.fast) { banner('🐸 개굴… 소멸'); sfx('death'); } made = null; break; } }
-    if (x.id === 'lament') { c.tok = df2R1(c.tok + 1); if (!S.fast && !c.coI) banner('🦋 솔렘라멘트 합체 · 토큰 +1'); }
-    made = df2Put(x, px, py); if (!c.coI) e7Add('merge'); r = x;
-    if (!S.fast) { sfx('merge'); if (made.el) deployFx(made, 'merge'); const t = fxAt('fx-lvtext', made.x, made.y - unitRadius(made), 900); t.textContent = `Lv${lvShow(made)}`; }
-  }
-  df2Ovl(); return made;
+function coFuse(r, x) { // 로스터 r 을 x 에 합친다 (x 자리 · Lv+1) · 같은 지후 · 같은 레벨 · 둘 다 살아 있을 때만
+  const c = S.cw; if (!r || !x || r === x || r.id !== x.id || r.lv !== x.lv || x.id === 'forge' || x.lv >= df2MaxLv(x.id)) return null;
+  const v = df2Unit(x); if (!v || !df2Unit(r)) return null; const px = v.x, py = v.y;
+  df2Pull(r); c.ros.splice(c.ros.indexOf(r), 1); df2Pull(x); x.lv++;
+  if (x.id === 'frog') { if (rng() < frogP(c.me)) { x.id = 'prince'; if (!c.coI) ttAdd(c.me, 'prince'); if (!S.fast) { banner('👑 왕자!'); sfx('gacha_legend'); } } else { c.ros.splice(c.ros.indexOf(x), 1); df2Ovl(); if (!S.fast) { banner('🐸 개굴… 소멸'); sfx('death'); df2Render(); } return null; } }
+  if (x.id === 'lament') { c.tok = df2R1(c.tok + 1); if (!S.fast && !c.coI) banner('🦋 솔렘라멘트 합체 · 토큰 +1'); }
+  const m = df2Put(x, px, py); df2Ovl(); if (!c.coI) e7Add('merge');
+  if (!S.fast) { sfx('merge'); if (m.el) deployFx(m, 'merge'); const t = fxAt('fx-lvtext', m.x, m.y - unitRadius(m), 900); t.textContent = `Lv${lvShow(m)}`; df2Render(); }
+  return m;
 }
-const coCanMerge = id => df2MaxLv(id) > 1 && id !== 'forge' && S.cw.ros.some(o => o.id === id && o.lv === 1 && df2Unit(o));
-function coBot() { // 동료 봇 (동료 로스터로 바뀐 채): 합칠 수 있는 카드를 먼저 · 가끔 비싼 카드를 위해 모은다 · 빈 칸 우선
+const coMergeOk = (r, x) => !!(r && x && r !== x && r.id === x.id && r.lv === x.lv && x.id !== 'forge' && x.lv < df2MaxLv(x.id) && df2Unit(r) && df2Unit(x));
+function coTap(e) { // 전장 누르기 (카드를 안 골랐을 때): 내 지후 고르기 → 같은 지후 · 같은 레벨을 누르면 합체 · 빈 곳 · 같은 지후를 다시 누르면 취소
+  if (S.cw.endK) return true; /* 방어 실패 연출 중 */
+  const c = S.cw, ue = e.target.closest('.unit'), u = (ue && S.units.find(x => x.el === ue)) || cvPick(e), r = u && u.alive && u.df2A && !u.coP ? c.ros.find(x => x.uid === u.uid) : null, a = c.mgU != null ? c.ros.find(x => x.uid === c.mgU) : null;
+  if (!r) { if (c.mgU == null) return false; c.mgU = null; coPickDraw(true); return true; }
+  if (a && a === r) { c.mgU = null; coPickDraw(true); return true; }
+  if (a && coMergeOk(a, r)) { c.mgU = null; coFuse(a, r); coPickDraw(true); return true; }
+  if (a && !S.fast) banner(a.id !== r.id ? '같은 지후끼리만 합칠 수 있어요' : '같은 레벨끼리만 합칠 수 있어요');
+  c.mgU = r.uid; if (!S.fast) sfx('click'); coPickDraw(true); return true;
+}
+const CO_P = { el: null, hd: null, mk: [], k: '' };
+function coPickDraw(force) { // 고른 지후 머리 위 안내 + 합칠 수 있는 지후 머리 위 「+」 (위치는 매 프레임 · 내용은 바뀔 때만)
+  const c = S.cw; let el = CO_P.el;
+  const a = c && c.co && c.mgU != null && S.phase === 'combat' && !S.fast ? c.ros.find(x => x.uid === c.mgU) : null, au = a && df2Unit(a);
+  if (!au) { if (c && c.mgU != null && !a) c.mgU = null; if (el && !el.hidden) el.hidden = true; return; }
+  if (!el || !el.isConnected) { el = CO_P.el = document.createElement('div'); el.id = 'coPick'; $('screen-battle').appendChild(el); CO_P.k = '';
+    el.addEventListener('click', e => { if (e.target.closest('[data-x]')) { e.stopPropagation(); const k = S.cw; if (k) k.mgU = null; coPickDraw(true); } }); }
+  const L = c.ros.filter(x => coMergeOk(a, x)), k = a.uid + '/' + a.lv + '/' + L.map(x => x.uid).join(',');
+  if (force || CO_P.k !== k) { CO_P.k = k;
+    el.innerHTML = `<div class="cop-h"><span><small>MERGE</small><b>${esc(CHARS[a.id].name)} Lv${a.lv - 1}</b></span><em>${a.lv >= df2MaxLv(a.id) || a.id === 'forge' ? '더 합칠 수 없어요' : L.length ? '같은 지후를 누르세요' : '같은 레벨이 없어요'}</em><button type="button" data-x aria-label="취소">✕</button></div>` + L.map(() => '<i class="cop-m"><span>+</span></i>').join('');
+    CO_P.hd = el.querySelector('.cop-h'); CO_P.mk = [...el.querySelectorAll('.cop-m')]; CO_P.L = L; }
+  if (el.hidden) el.hidden = false;
+  const put = (n, u) => { const p = df2UpPos(u); if (!p) return; const t = `translate(${p.x.toFixed(0)}px, ${p.y.toFixed(0)}px) translate(-50%, -100%)`; if (n._t !== t) { n._t = t; n.style.transform = t; } };
+  put(CO_P.hd, au); (CO_P.L || []).forEach((x, i) => { const v = df2Unit(x); if (v && CO_P.mk[i]) put(CO_P.mk[i], v); });
+}
+function coBot() { // 동료 봇 (동료 로스터로 바뀐 채): 합칠 짝이 있으면 먼저 합친다 · 같은 지후를 더 자주 · 가끔 비싼 카드를 위해 모은다 · 빈 칸 우선
+  for (const r of c0Ros()) { const x = S.cw.ros.find(o => coMergeOk(r, o)); if (x && Math.random() < 0.7) { coFuse(r, x); return; } }
   const c = S.cw, rnd = L => L[Math.floor(Math.random() * L.length)], aff = c.deck.filter(id => df2Cost(id) <= c.tok + 1e-9); if (!aff.length) return;
-  const mg = aff.filter(coCanMerge), full = c.ros.length >= DF2.MAX; let id;
-  if (full) { if (!mg.length) return; id = rnd(mg); }
+  const mg = aff.filter(id => c.ros.some(o => o.id === id && o.lv === 1 && df2Unit(o) && df2MaxLv(id) > 1 && id !== 'forge')), full = c.ros.length >= DF2.MAX; let id;
+  if (full) return;
   else { const top = Math.max(...c.deck.map(df2Cost)); if (c.wave > 3 && top > c.tok && !mg.length && Math.random() < 0.35) return; id = mg.length && Math.random() < 0.65 ? rnd(mg) : rnd(aff); }
   const used = new Set(c.ros.map(o => o.t)), free = []; for (let t = 0; t < TILES; t++) if (!used.has(t + TILES)) free.push(t);
   df2Summon(id, (free.length ? rnd(free) : Math.floor(Math.random() * TILES)) + TILES);
@@ -14717,13 +14766,14 @@ function coBaseHud() { const c = S.cw, n = c.ne, k = 'co' + n; if (D2L.k === k) 
   const lv = n >= CO.LOSE * 0.8 ? 2 : n >= CO.LOSE * 0.5 ? 1 : 0; D2L.seg.forEach((g, i) => { const on = i < n; if (g.classList.contains('on') !== on) g.classList.toggle('on', on); }); const el = D2L.n.parentNode; el.dataset.lv = lv; }
 function coMateHud() { // 동료 패널 (바뀔 때만)
   const c = S.cw; if (!c || !c.co || S.fast) return; const o = coOther(); if (!o) return;
-  let el = CO_M.el; if (!el || !el.isConnected) { el = CO_M.el = document.createElement('div'); el.id = 'coMate'; $('screen-battle').appendChild(el); CO_M.k = ''; }
+  let el = CO_M.el; if (!el || !el.isConnected) { el = CO_M.el = document.createElement('div'); el.id = 'coMate'; el.classList.toggle('off', localStorage.getItem('rejhbt-co-mate') === '0'); $('screen-battle').appendChild(el); CO_M.k = '';
+    el.addEventListener('click', e => { if (!e.target.closest('.com-t')) return; e.stopPropagation(); const off = el.classList.toggle('off'); try { localStorage.setItem('rejhbt-co-mate', off ? '0' : '1'); } catch (x) {} sfx('click'); }); }
   const al = o.ros.filter(r => !r.dead).length, k = o.tok.toFixed(1) + '/' + o.ros.length + '/' + al + '/' + c.coL.length; if (CO_M.k === k) return;
   if (!CO_M.k || el._n !== c.coL.length) { el._n = c.coL.length;
     const bs = CO_BUFF.filter(b => c.coB[b.k]).map(b => `<span class="cob-b"><em>${b.ic}</em>${esc(b.t)}${c.coB[b.k] > 1 ? `<b>×${c.coB[b.k]}</b>` : ''}</span>`).join('');
-    el.innerHTML = `<div class="com-h"><small>PARTNER</small><span class="com-bot">BOT</span></div><div class="com-n"><b>${esc(c.mate.nick)}</b><span>Lv.${c.mate.lv}</span></div>`
+    el.innerHTML = `<button type="button" class="com-t" aria-label="동료 정보 접기 · 펴기"><svg viewBox="0 0 12 24"><path d="M9 4 3 12l6 8"/></svg><small>P</small></button><div class="com-in"><div class="com-h"><small>PARTNER</small><span class="com-bot">BOT</span></div><div class="com-n"><b>${esc(c.mate.nick)}</b><span>Lv.${c.mate.lv}</span></div>`
       + `<div class="com-s"><span>${H4_COIN}<b class="com-tk"></b></span><span>지후 <b class="com-un"></b> / ${DF2.MAX}</span></div><div class="com-d">${o.deck.map(id => `<i class="r-${CHARS[id].rarity}">${pic(id)}</i>`).join('')}</div>`
-      + (bs ? `<div class="com-bh"><small>SUPPLY</small><span>${c.coL.length}</span></div><div class="com-bs">${bs}</div>` : '');
+      + (bs ? `<div class="com-bh"><small>SUPPLY</small><span>${c.coL.length}</span></div><div class="com-bs">${bs}</div>` : '') + '</div>';
     CO_M.tk = el.querySelector('.com-tk'); CO_M.un = el.querySelector('.com-un'); }
   CO_M.k = k; CO_M.tk.textContent = o.tok.toFixed(1); CO_M.un.textContent = o.ros.length;
 }
@@ -14734,7 +14784,7 @@ function coDrop(b, n) { // 보급 카드 (가운데 · 2.8초 · transform · op
 }
 function coEnd(note) { // 결과 (협동): 최고 기록 profile.coBest · 열쇠는 웨이브를 넘길 때 바로 (coKey)
   const c = S.cw, w = c ? c.wave : 0, best = w > (profile.coBest | 0), kn = c ? c.keyN | 0 : 0; alWhy('협동 디펜스 끝 · ' + w + '웨이브'); if (best) profile.coBest = w; save(); sfx('match_win');
-  if (D2U.el) D2U.el.hidden = true; if (CO_M.el) CO_M.el.remove(); CO_M.el = null;
+  if (D2U.el) D2U.el.hidden = true; if (CO_M.el) CO_M.el.remove(); CO_M.el = null; if (CO_P.el) CO_P.el.hidden = true; if (c) c.mgU = null;
   const o = c && c.co ? coOther() : null, mine = (c ? c.ros : []), mate = o ? o.ros : [], sec = Math.round(S.time || 0);
   const row = (L) => L.slice().sort((a, b) => b.lv - a.lv).slice(0, 6).map(r => `<i class="r-${CHARS[r.id].rarity}">${pic(r.id)}${r.lv > 1 ? `<b>Lv${r.lv - 1}</b>` : ''}</i>`).join('') || '<span class="coe-x">—</span>';
   const bs = c ? CO_BUFF.filter(b => c.coB[b.k]).map(b => `<span><em>${b.ic}</em>${esc(b.t)}${c.coB[b.k] > 1 ? ` ×${c.coB[b.k]}` : ''}</span>`).join('') : '';
@@ -14819,12 +14869,19 @@ function cwBot(side) { // 봇: 자리가 모자라거나 가끔 합체 (같은 �
   if (c.gold[side] >= c.cost[side] && free > 0 && Math.random() < 0.8) cwSummon(side);
 }
 function cwEnd(w, why) { // 성이 부서지거나 서든 데스에서 전멸
-  if (S.phase !== 'combat') return; const c = S.cw; c.result = w; S.phase = 'roundEnd';
+  if (S.phase !== 'combat') return; const c = S.cw; if (c.df && !S.fast) { if (!c.endK) dfFail(w, why); return; } /* 디펜스: 슬로우모션 뒤 cwEndGo */ cwEndGo(w, why); }
+function dfFail(w, why) { // 방어 실패 연출: 1.6초 동안 느려지다 멈춘다 (계산은 계속 · 캔버스 그대로) · 빨간 테두리 · 글자
+  const c = S.cw; c.endK = { w, why, t0: performance.now() }; S.slowK = 0.35; c.sum = null; c.mgU = null; c.upU = null; if (D2U.el) D2U.el.hidden = true; if (CO_P.el) CO_P.el.hidden = true;
+  sfx('round_lose'); shake(true); setPhase('방어 실패'); const el = document.createElement('div'); el.className = 'df-fail'; el.innerHTML = '<div><small>DEFENSE FAILED</small><b>방어 실패</b></div>'; $('fieldWrap').appendChild(el); c.failEl = el;
+}
+function dfFailTick() { const c = S.cw, k = c && c.endK; if (!k || c.endD) return; const e = performance.now() - k.t0; S.slowK = Math.max(0.04, 0.35 * (1 - e / 1600)); if (e < 2000) return; c.endD = true; S.slowK = 0; cwEndGo(k.w, k.why); }
+function cwEndGo(w, why) {
+  if (S.phase !== 'combat') return; const c = S.cw; c.result = w; S.phase = c.df ? 'final' : 'roundEnd'; /* 디펜스: 멈춘 화면 그대로 (cvEnd 는 결과 화면이 덮은 뒤) */
   const rows = S.units.filter(u => CHARS[u.id]).map(u => ({ id: u.id, side: u.side, lv: u.lv, dealt: u.dmgDealt || 0, taken: u.dmgTaken || 0, kills: u._kills || 0, alive: !!u.alive })).concat(Object.values(c.gone));
   S.stats = [{ round: 1, winner: w, timedOut: false, seconds: Math.round(S.time || 0), rows }]; S.hist = [w === 'draw' ? 'D' : w === 'a' ? 'A' : 'E']; if (w !== 'draw') S.lives[w === 'a' ? 'e' : 'a'] = 0;
-  if (S.fast) return; cvEnd(); hideRangeRing(); const win = w === ME();
-  banner(c.df ? '🛡 방어 실패' : w === 'draw' ? '무승부' : win ? '🏰 승리!' : '🏰 성이 무너졌어요'); sfx(w === 'draw' ? 'round_lose' : win ? 'round_win' : 'round_lose'); setPhase(w === 'draw' ? '무승부' : win ? '승리' : '패배');
-  S.later = setTimeout(() => { endMatch(win, `${why}${w === 'draw' ? ' · 무승부' : ''}`); if (!c.df) $('resSub').textContent = `WAVE ${c.wave} · 내 성 ${Math.max(0, Math.ceil(c.castle[ME()].hp)).toLocaleString()} · 상대 성 ${Math.max(0, Math.ceil(c.castle[OPP()].hp)).toLocaleString()}`; }, 1700);
+  if (S.fast) return; if (!c.df) cvEnd(); hideRangeRing(); const win = w === ME();
+  if (!c.df) banner(w === 'draw' ? '무승부' : win ? '🏰 승리!' : '🏰 성이 무너졌어요'); if (!c.df) sfx(w === 'draw' ? 'round_lose' : win ? 'round_win' : 'round_lose'); /* 디펜스는 dfFail 에서 */ setPhase(w === 'draw' ? '무승부' : win ? '승리' : '패배');
+  S.later = setTimeout(() => { if (c.failEl) { c.failEl.remove(); c.failEl = null; } endMatch(win, `${why}${w === 'draw' ? ' · 무승부' : ''}`); if (!c.df) $('resSub').textContent = `WAVE ${c.wave} · 내 성 ${Math.max(0, Math.ceil(c.castle[ME()].hp)).toLocaleString()} · 상대 성 ${Math.max(0, Math.ceil(c.castle[OPP()].hp)).toLocaleString()}`; }, c.df ? 700 : 1700); /* 디펜스는 슬로우모션 뒤라 짧게 */
 }
 const dfUpLv = id => (S.cw && S.cw.up && S.cw.up[id]) || 1, dfUpM = id => 1 + (dfUpLv(id) - 1) * DF.UP_K; // R2.36 유닛 업그레이드 (경기마다 · 내 덱 지후만)
 function dfUpApply(u, m0, m1) { if (m0 === m1) return; const k = m1 / m0; u.atk = Math.round(u.atk * k); u.baseMaxHp = Math.max(1, Math.round(u.baseMaxHp * k)); u.maxHp = Math.max(1, Math.round(u.maxHp * k)); u.hp = Math.min(u.maxHp, Math.max(1, Math.round(u.hp * k))); }
@@ -14925,9 +14982,9 @@ function ubTick() { const now = performance.now(); if (!UB.els || now - UB.t < 1
     const hn = al ? Math.max(0, Math.ceil(u.hp)) : 0, ht = !al ? '—' : hn >= 10000 ? (hn / 1000).toFixed(1) + 'k' : String(hn); if (v.n !== ht) { v.n = ht; e.n.textContent = ht; e.c.classList.toggle('low', al && +h < 0.35); }
     const L = al ? (u._fxl || fxList(u)).slice(0, 4) : [], k = L.map(x => x.k).join(','); if (v.k !== k) { v.k = k; e.ic.innerHTML = L.map(x => `<img src="${fxSrc(x.k)}" alt="">`).join(''); } }); }
 function loopBody(ts) {
-  const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts;
+  const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts; if (S.cw && S.cw.endK) dfFailTick(); /* 디펜스 방어 실패 */
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
-  acc += real * (S.paused /* R3.1 전투 설정 창 (봇전) */ || (S.replay && S.replay.pause) || (S.cw && S.cw.pick) || (S.fxHold && performance.now() < S.fxHold) /* R3.0 라운드 전환 연출 동안 */ ? 0 : S.speed); /* build 2: 디펜스 정비 시간 */ const simT0 = performance.now(); // R2.14 다시보기 일시정지
+  acc += real * (S.paused /* R3.1 전투 설정 창 (봇전) */ || (S.replay && S.replay.pause) || (S.cw && S.cw.pick) || (S.fxHold && performance.now() < S.fxHold) /* R3.0 라운드 전환 연출 동안 */ ? 0 : S.speed * (S.slowK || 1)) /* 디펜스 방어 실패 슬로우모션 */; /* build 2: 디펜스 정비 시간 */ const simT0 = performance.now(); // R2.14 다시보기 일시정지
   let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
   const simMs = performance.now() - simT0;
   const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); ubSync(); camYaw(real); camFollow(real); cvDraw(); drawShots(); monoDraw(); fmbTick(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
@@ -15662,7 +15719,7 @@ const deckNeedMsg = () => `덱에 지후 5기를 채워야 시작할 수 있어�
 function newMatch(o) { // o: 아케이드 { arc, decks() } — 내 덱 대신 정해진 덱 · 랜덤 이벤트 없음 · 보상은 arcEnd
   const deck = profile.deck.filter(owned);
   if (!o && deck.length < 5) { banner(deckNeedMsg()); show('deck'); renderDeck(); return; } // 덱 5기를 채워야 시작 (R2.3 build 2)
-  rng = mulberry32((Date.now() ^ 0x9e3779b9) >>> 0);
+  rng = mulberry32((Date.now() ^ 0x9e3779b9) >>> 0); S.slowK = 0; /* 방어 실패 슬로우모션 중에 나가도 다음 판은 정상 속도 */
   const nb = o ? 0 : newbieLeft(), bd = !o ? (nb > 0 ? 1 : botDPick()) : 0, persona = !o ? botStylePick(bd) : o.arc && o.arc.kind === 'tower' ? towerPersona(o.arc.floor) : 'std'; // R2.12.2 봇 페르소나 (비공개) · R2.13.1: 아케이드(튜토리얼 · 미러전 · 경쟁전 …)는 전형적만
   matchBase(o ? { deck: o.decks(), evOn: false, arc: o.arc, persona, ...(o.lives ? { maxLives: o.lives, lives: { a: o.lives, e: o.lives } } : {}) } : { deck: { a: deck.slice(0, 5), e: nb > 0 ? botPersonaDeck(persona, true) : botTierDeck(persona, bd) /* R3.5 build 6: 모든 레벨 난이도로 */ }, ...(CFG.EV_ENABLED && (EV_NEXT || profile.evOn) ? { evOn: true, maxLives: CFG.EV_LIVES, lives: { a: CFG.EV_LIVES, e: CFG.EV_LIVES } } : profile.level >= CFG.LIVES4_LV ? { maxLives: 4, lives: { a: 4, e: 4 } } : {}), /* R2.37 build 3: Lv5 부터 일반전 라이프 4 */ persona, botD: bd, weak: nb > 0 }); EV_NEXT = false; // R2.23 이벤트 모드: 하트 4 · R2.26: 일반전은 늘 클래식 · 이벤트 모드는 아케이드에서 (EV_NEXT)
   if (DEV_HOST) console.info('[bot] 난이도', bd, 'persona', persona, BOT_P[persona] && BOT_P[persona].name);
@@ -20372,11 +20429,15 @@ const PATCH_NOTES = [
       { icon: '🤝', name: '협동 디펜스', tag: 'new', desc: '게임 모드 → <b>협동 디펜스</b>, 봇 동료와 함께 막는 디펜스' },
       { icon: '🗺', name: '전장', tag: 'new', desc: '아래는 내 진영, 위는 동료 진영, 적은 <b>둘레 길</b>을 계속 돈다' },
       { icon: '⏱', name: '웨이브', tag: 'new', desc: '<b>15초</b>마다 그냥한철 <b>12마리</b> (체력 100 × 웨이브)' },
-      { icon: '👑', name: '보스', tag: 'new', desc: '10웨이브마다, 체력 <b>20,000</b>에서 보스마다 ×1.5' },
+      { icon: '👑', name: '보스', tag: 'new', desc: '10웨이브마다, 체력 <b>10,000</b>에서 보스마다 ×1.5' },
       { icon: '☠', name: '패배', tag: 'new', desc: '필드의 적이 <b>30마리</b>가 되면' },
-      { icon: '🔗', name: '합체', tag: 'new', desc: '업그레이드 대신 같은 지후와 같은 레벨 둘이 <b>자동 합체</b>' },
+      { icon: '🔗', name: '합체', tag: 'new', desc: '업그레이드 대신 전장의 내 지후를 누르고 같은 지후(같은 레벨)를 누르면 <b>합체</b>' },
       { icon: '📦', name: '보급', tag: 'new', desc: '10웨이브가 끝날 때마다 <b>무작위 버프 1개</b> (8종, 쌓인다)' },
       { icon: '🔑', name: '열쇠', tag: 'new', desc: '5웨이브를 넘길 때마다 <b>열쇠 10</b> (처음 한 번)' },
+    ] },
+    { title: '디펜스', items: [
+      { icon: '🎬', name: '방어 실패 연출', tag: 'adjust', desc: '끝날 때 <b>슬로우모션</b>으로 멈춘다' },
+      { icon: '🔧', name: '방어 실패', tag: 'fix', desc: '끝날 때 적이 바닥에 눕던 것' },
     ] },
   ] },
   { v: 'R3.8', date: '2026.11.27', title: '칭호 · 커피 사주기 · 고객지원, 복귀 유저 혜택, 시작 팝업 정리, 비밀번호 찾기, 프로필 계정 정보, 계정 화면 새 디자인, 서버 저장 보안 강화, 계정 중복 수정, 이벤트와 친구와 업적 화면 새 디자인, 게임 모드 버튼, 초보자 모집 확률', sections: [
@@ -25577,7 +25638,7 @@ async function changeNick(n) {
   const st = document.createElement('style'); st.id = 'u2Mobile'; st.textContent = out.join('\n'); document.head.appendChild(st);
 })(); // 기존 화면은 넓은 화면 기준이라 440px 칼럼 안에서는 모바일(≤700px) 배치로
 (function u2DarkRules() { // 기존 글래스 CSS 의 밝은 바탕 · 어두운 글자 · 흰 테두리를 새 디자인 색으로 (같은 선택자 · 같은 우선순위로 뒤에 덧씌운다 · 전장 · 유닛 · 초상화는 그대로)
-  const SKIP = /#boot|#field|\.fieldwrap|\.unit|\.fx-|\.tile|\.pic|\.pf|portrait|photo|\bimg\b|#reveal|#cutscene|\.gr-|\.comic|\.cm-|\.tut|\.rl-|\.rli-|emo|#ui2|u2-|\.blobs|\.slot-|\.final|\.death|\.av\b|::?-webkit|::placeholder|\.minimap|#miniMap|\.dot\b|\.sw\b|#updModal|#updateOverlay|#supDesk|jttl|jtl-|#coLobby|#coMate|\.cod?-|\.cob-|\.coe/; /* 협동 디펜스 창은 자기 색 */
+  const SKIP = /#boot|#field|\.fieldwrap|\.unit|\.fx-|\.tile|\.pic|\.pf|portrait|photo|\bimg\b|#reveal|#cutscene|\.gr-|\.comic|\.cm-|\.tut|\.rl-|\.rli-|emo|#ui2|u2-|\.blobs|\.slot-|\.final|\.death|\.av\b|::?-webkit|::placeholder|\.minimap|#miniMap|\.dot\b|\.sw\b|#updModal|#updateOverlay|#supDesk|jttl|jtl-|#coLobby|#coMate|#coPick|\.cod?-|\.cob-|\.cop-|\.coe|\.df-fail/; /* 협동 디펜스 창은 자기 색 */
   const rgb = s => { const m = String(s).match(/rgba?\(([^)]+)\)|#([0-9a-f]{3,8})\b/i); if (!m) return null; if (m[1]) { const v = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return { r: v[0], g: v[1], b: v[2], a: v[3] == null ? 1 : v[3] }; } let h = m[2]; if (h.length <= 4) h = [...h].map(c => c + c).join(''); return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: h.length > 6 ? parseInt(h.slice(6, 8), 16) / 255 : 1 }; };
   const lum = c => (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255, light = s => { const c = rgb(s); return !!c && lum(c) > 0.82 && c.a >= 0.2; }, dark = s => { const c = rgb(s); return !!c && lum(c) < 0.32 && c.a >= 0.3; }, grey = s => { const c = rgb(s); return !!c && Math.abs(c.r - 60) < 12 && Math.abs(c.b - 67) < 12 && c.a < 0.9; };
   const scope = ':where(body.u2-theme:not([data-scr="battle"]), body.u2-theme[data-scr="battle"] #screen-battle > :not(.fieldwrap)) ';
