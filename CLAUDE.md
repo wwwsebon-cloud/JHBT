@@ -146,6 +146,8 @@
 - 토큰제 (`TOK.BASE` · `TOK.UPS` · `tokCost`) · 봇 난이도 1~10 (`BOT_D` · 유저 MMR `mmr()` · `botDPick`) · 봇 덱 `botTierDeck` · 봇 랭크 `botRanks`.
 - 화면: 로비는 **ui4** (화이트 · 그레이 · 블랙 미니멀 · 각진 모서리 2~4px · 글꼴 Do Hyeon `u4-dh` · Chakra Petch `u4-cp` · 강조 `#f04a14` · `?ui4=0` 이면 ui3) · 값은 `u3Vals` → `u4Extra` · 템플릿 `ui4Tpl` · CSS 는 `--u4-*` 변수와 `u4-` 클래스 (**새 UI 에 인라인 색 금지**) · `#ui2` 밖 창은 `body.u3-on` 테마를 ui4 로 덮어 쓰고 · 변수가 없으니 색을 CSS 에 직접 + `body.u4-dark` 덮어쓰기. 리더보드는 두 군데 (`#lbTabs` 옛 창 · `u3Vals` 의 `lbTabs` 로비) — 탭을 더하면 둘 다.
 
+- **켤 때 뜨는 창** (R3.8 build 7 · `// ═════════ R3.8 build 7 시작 팝업 줄`): 한 번에 하나 · 아래 같은 자리 버튼 `#popBar` 로 넘긴다 · **새 자동 팝업을 만들면 `popCur()` 에 더하고** 다른 창이 있으면 기다리게 (`attAuto` · `evbTick` · `e7Pop` 처럼) · 창 안의 같은 일 버튼은 `body.popq` 에서 숨김 (`.pop-own`) · 출석부는 받으면 바로 닫힘 (`attTake`).
+
 ## 디펜스 (R3.6~ · `// ═════════ R3.6 새 디펜스`)
 - **⚠️ 새 게임처럼** (사용자): 일반전 · 성뿌수기 UI 부품을 가져다 쓰지 않는다 · 전용 바 `#df2Hud` · 전용 창 `#df2Up`.
 - 설정 `DF2` · 적 도감 `DF2_FOES` (체력은 `hp × DF2.HPA (× HPK)` · `hpSet` 이 있으면 그 값 그대로) · 보스 `DF2_BOSS` · 구성 `df2Plan` · 한 스텝 `df2Step` (`S.cw.v2`) · 다음 웨이브 `df2Next` (열쇠 `df2KeyGive` · 10웨이브마다 `df2Wipe` · `df2Reborn`).
@@ -300,7 +302,8 @@
 - 디펜스 정식 (위 「디펜스」) · 업그레이드 창 · 열쇠 · 10웨이브 정리 · 준보스 · 4배속 삭제.
 - 소식 `login` 의 b = `new` · `m<분>` · 떠남 `leave` (`presLeave` · pagehide · 로그아웃) · 리더보드 접속 시간 `pt` (`profile.playM`) — **규칙 게시 필요** (events leave · r2lb pt) · 업데이트 안내 창 ui4 · `puToday` 음수 버그 · 듀얼리스트 스킬 초상화 (`u.dlSkT`).
 
-## 최근 변경 (R3.8 · 2026-11-27 · build 1~5)
+## 최근 변경 (R3.8 · 2026-11-27 · build 1~7)
+- build 7: 시작 팝업 정리 (「켤 때 뜨는 창」) · build 6: 비밀번호 찾기 · 프로필 계정 정보.
 - build 5: 접속 차단 `#blockOverlay` (정지 · 점검 포함) · JHBT 계정 `#accModal` 은 심플 디자인 (`.a2` · 색 `--a-*` · 사용자 취향: 계정 · 설정류는 **심플하고 세련되게**, 포스터풍 아님).
 - build 4: 보안 강화 (규칙 + PC 감시 · 사용자가 심판 서버는 안 함) — 저장 순번 · 계정 중복 차단 · 시드 추첨 · 날짜 · 리플레이 정화 (위 「계정 · 서버」) · **규칙 게시 필요** · 실서버 미확인 · 2단계 (옛 저장 방식 차단 · 재화 상한) 는 `docs/next.md`.
 - build 3: 업적은 퀘스트 창 탭이 아니라 **바로가기 세 번째 칸** (`rail` · `qs: 'ach'` 면 제목 「업적」 · 탭 없음).
