@@ -96,10 +96,12 @@ service cloud.firestore {
         && key == 'n_' + data.nickname.lower()
         && data.updatedAt is timestamp;
     }
+    // R3.8 build 11: 새로 등록하는 닉네임은 2글자 이상 · 홀로 쓴 자음 · 모음 금지 (이미 있는 등록은 그대로)
+    function newNickOk(n) { return n.size() >= 2 && !n.matches('.*[ᄀ-ᇿ㄰-㆏].*'); }
     match /nicknames/{key} {
       allow get: if true;
       allow list: if request.auth != null && resource.data.owner == request.auth.uid;
-      allow create: if request.auth != null && validNickname(key, request.resource.data);
+      allow create: if request.auth != null && validNickname(key, request.resource.data) && newNickOk(request.resource.data.nickname);
       allow update: if request.auth != null && resource.data.owner == request.auth.uid && validNickname(key, request.resource.data);
       allow delete: if request.auth != null && (resource.data.owner == request.auth.uid || isAdmin());
     }
@@ -317,6 +319,38 @@ service cloud.firestore {
         allow get, list: if isAdmin();
         allow delete: if false;
       }
+    }
+
+    // ── 고객지원 (R3.8 build 11) ──
+    // 제작자와 면담: letters/{uid}_{한국 날짜 번호}_{0~4} (하루 5통) · 읽기 · 읽음 표시 · 삭제는 운영자만 · 보낸 뒤에는 고칠 수 없다
+    function kstDay() { return int((request.time.toMillis() + 32400000) / 86400000); }
+    match /letters/{id} {
+      allow get, list: if isAdmin();
+      allow create: if request.auth != null && !banned()
+        && (id.matches(request.auth.uid + '_' + string(kstDay()) + '_[0-4]') || id.matches(request.auth.uid + '_' + string(kstDay() - 1) + '_[0-4]') || id.matches(request.auth.uid + '_' + string(kstDay() + 1) + '_[0-4]'))
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'text', 'member', 'read', 'ver', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+        && request.resource.data.member is bool && request.resource.data.read == false
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 16
+        && request.resource.data.at == request.time;
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin();
+    }
+    // 리뷰: reviews/{uid} 한 사람에 하나 (고칠 수 있다) · stars = 별점 × 2 (1~10) · 읽기는 본인과 운영자
+    match /reviews/{userId} {
+      allow get: if owner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if owner(userId) && !banned()
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'stars', 'text', 'ver', 'at'])
+        && request.resource.data.uid == userId
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() > 0 && request.resource.data.nickname.size() <= 12 && cleanName(request.resource.data.nickname)
+        && request.resource.data.stars is int && request.resource.data.stars >= 1 && request.resource.data.stars <= 10
+        && request.resource.data.text is string && request.resource.data.text.size() >= 8 && request.resource.data.text.size() <= 500
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 16
+        && request.resource.data.at == request.time;
+      allow delete: if isAdmin();
     }
 
     // ── 전체 채팅 · 공지 이벤트 ──
