@@ -8,7 +8,7 @@ RE : 지후배틀 (RE:JHBT) — 이 파일 하나가 게임 전체입니다 (빌
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
-<meta name="jihoo-version" content="R3.9"><meta name="jihoo-build" content="2"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
+<meta name="jihoo-version" content="R3.9"><meta name="jihoo-build" content="3"><style>input, textarea, select { font-family:var(--font-input) !important; font-synthesis:weight; } /* 입력 칸은 읽기 쉬운 글꼴 (R2.12.3) */</style><!-- 잠수함 패치(버전 그대로)마다 build +1 → 열려 있는 화면도 새로고침을 받는다 · 태그 이름은 지후배틀(R1)과 같다 (예전 화면도 새 버전을 알아본다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RE : 지후배틀</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2978,6 +2978,10 @@ body.u4-dark #coLobby .col-go.off { background:#2a2a2a; color:#777; }
 @media (max-width:620px) { #coLobby .col-vs { grid-template-columns:1fr; gap:8px; } #coLobby .col-lk { display:none; } #coLobby .col-r { grid-template-columns:1fr 1fr; } #coLobby .col-r > div:nth-child(3) { border-left:0; } #coLobby .col-r > div:nth-child(n+3) { border-top:1px solid #d8d6d0; } }
 @media (max-height:520px) { #coLobby .col-c { padding:14px 18px; } #coLobby .col-vs { margin:10px 0; } #coLobby .col-p { min-height:0; } #coLobby .col-h h2 { font-size:28px; } }
 /* 전장: 길 · 동료 칸 */
+/* R3.9 build 3 평면 (2D) 디펜스: 눕힌 바닥 효과를 끄고 칸은 네모 */
+body #screen-battle:not(.reels) #field.tilt.flat { transform-style:flat; }
+body #screen-battle:not(.reels) #field.tilt.flat .tile::before { left:3px; right:3px; top:3px; bottom:3px; border-radius:4px; }
+body #screen-battle:not(.reels) #field.tilt.flat > .unit::before { display:none; }
 #field .co-road { position:absolute; box-sizing:border-box; border-style:solid; border-color:#d6d0c1; border-radius:8px; pointer-events:none; }
 #field .co-lane { position:absolute; border:2px dashed #a99f88; border-radius:2px; }
 #field .co-gate { position:absolute; display:flex; align-items:center; justify-content:center; border:2px solid #0d0d0d; border-radius:4px; background:repeating-linear-gradient(45deg, #0d0d0d 0 10px, #f04a14 10px 20px); }
@@ -11636,7 +11640,7 @@ function njUnderDraw(c, W, now) {
     const p = clamp(f.g / FRM.GROW, 0, 1), h = ry * (0.3 + 1.5 * p); c.globalAlpha = 1; c.strokeStyle = p > 0.7 ? '#e0b83a' : '#6fbf3e'; c.lineWidth = 2.5; c.beginPath();
     for (let i = -2; i <= 2; i++) { const x = X + i * rx * 0.28; c.moveTo(x, Y); c.lineTo(x + Math.sin(now / 500 + i) * 1.5, Y - h); } c.stroke(); }
   c.globalAlpha = 1; }
-function njHoloDraw(c, W, now, q) { const low = BSET.low, lift = TILT() !== 1 ? CFG.LIFT : 0, fl = TILT() !== 1;
+function njHoloDraw(c, W, now, q) { const low = BSET.low, lift = TILT() !== 1 ? CFG.LIFT : 0, fl = isEW();
   for (const h of S.njH) { const o = h.own; if (h.end || !o.alive) continue; const spr = cvBody(o, q, low); if (!spr) continue; h.spr = spr; h.fl = fl && o.side === OPP();
     const s = P3.m ? proj3(h.x, h.y).s : 1, D = cvD(o) + CV_PAD * 2, X = W.x(h.x, h.y), Y = W.y(h.x, h.y) - cvD(o) / 2 * lift * s, fade = clamp(h.left, 0, 1);
     c.save(); c.translate(X, Y); c.scale(h.fl ? -s : s, s); c.globalAlpha = (0.4 + 0.08 * Math.sin(now / 70 + h.x)) * fade; c.drawImage(spr, -D / 2, -D / 2, D, D);
@@ -13359,7 +13363,8 @@ let uidSeq = 0;
 const WS = CFG.CELL / 45; // 전작 WORLD_SCALE: 45px 격자 기준 수치 → 지금 격자 (유닛 반지름 · 몸 간격도 같은 비율)
 // 전장 방향 (R3.0): 가로 전장 (나는 왼쪽 · 상대는 오른쪽) · 릴스만 예전 세로 정사각형 전장 (R2.12 ~ R2.37 은 모든 모드 세로)
 function isEW() { return !reelsOn(); }
-const TILT = () => (isEW() ? Math.cos(CFG.TILT_DEG * Math.PI / 180) : 1); /* R3.0 3D: 눕힌 바닥의 세로 비율 (카메라 맞춤 · 따라가기용 근사) */ // R3.0 2.5D: 바닥을 세로로 누른다 (그리기만 · 세계 좌표 · 전투 계산은 평면 그대로 · 릴스는 평면)
+const flatDf = () => !!(S.arc && S.arc.kind === 'defense'); /* R3.9 build 3: 디펜스 · 협동 디펜스는 평면 (2D) */
+const TILT = () => (isEW() && !flatDf() ? Math.cos(CFG.TILT_DEG * Math.PI / 180) : 1); /* R3.0 3D: 눕힌 바닥의 세로 비율 (카메라 맞춤 · 따라가기용 근사) */ // R3.0 2.5D: 바닥을 세로로 누른다 (그리기만 · 세계 좌표 · 전투 계산은 평면 그대로 · 릴스는 평면)
 const depthS = y => 1; // R3.0 3D: 깊이 배율은 원근이 정한다 (캔버스는 proj3 의 s · DOM 은 CSS 3D)
 const camV = (x, y) => { let X = mx(x), Y = y; const a = CAM.yaw || 0; if (a) { const r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r), dx = X - FW() / 2, dy = Y - FH() / 2; X = FW() / 2 + dx * c - dy * s; Y = FH() / 2 + dx * s + dy * c; } return [X + SKW() * y, Y * TILT()]; }; // R3.0: 세계 → 카메라 보기 좌표 (반전 · 회전 카메라 · 눕힌 바닥)
 const P3 = { m: null, z: 1 }; // R3.0 3D: #field 의 3D 변환 행렬 (applyCamera 가 만든다) — 세계 (x, y, 0) → 전장 틀 (#fieldWrap) 안 화면 px
@@ -13370,7 +13375,7 @@ const midXY = side => { const a = tileXY(side, Math.floor((CFG.ROWS - 1) / 2) * 
 const backDir = side => (isEW() ? { x: side === 'a' ? -1 : 1, y: 0 } : { x: 0, y: side === 'a' ? 1 : -1 }); // 자기 진영 뒤쪽 (소환 · 분열 자리)
 function reelsOn() { return !!(S.arc && S.arc.kind === 'reels'); } // 릴스 모드 (R2.10.5 · 샌드박스 안 · reels.js)
 const sandboxLike = () => !!(S.arc && (S.arc.kind === 'sandbox' || S.arc.kind === 'reels')); // 보상 · 전적 · 배치 없는 한 라운드 싸움
-const CO = { MAP: [1160, 1160], DX: 150, DY: 124, PX: 455, PY: 455, ROAD: 92, WAVE: 15, FIRST: 6, N: 12, SPI: 1, LOSE: 30, HP: 100, BOSS0: 10000, BOSSK: 1.5, QCAP: 30 }; /* 협동 디펜스: 정사각형 전장 · 칸 간격 · 길 (가운데에서 PX · PY) · 웨이브 15초 · 첫 웨이브 6초 · 12마리 1초 간격 · 30마리 패배 · 한철 체력 100 × 웨이브 · 보스 1만 × 1.5 · 충격파 기준 30 */
+const CO = { MAP: [1160, 1160], DX: 150, DY: 124, PX: 455, PY: 455, ROAD: 92, WAVE: 15, FIRST: 6, N: 12, SPI: 1, LOSE: 30, HP: 200, BOSS0: 10000, BOSSK: 1.5, QCAP: 30, SPD3: 3, TOKUP: 0.5, FAST: { P: 0.3, HP: 0.75, SP: 4 }, THICK: { FROM: 10, N: 25, HP: 3 }, MU: { FROM: 20, N: 20, HP: 2 }, NEC: 0.5, BOSS2: 50 }; /* R3.9 build 3: 체력 100 → 200 · 3배속 · 소환 비용 +0.5 · 빠른 / 두꺼운 / 준보스 · 네크로 소환 0.5배 · 50웨이브부터 보스 둘 */ /* 협동 디펜스: 정사각형 전장 · 칸 간격 · 길 (가운데에서 PX · PY) · 웨이브 15초 · 첫 웨이브 6초 · 12마리 1초 간격 · 30마리 패배 · 한철 체력 200 × 웨이브 · 보스 1만 × 1.5 · 충격파 기준 30 */
 const coMap = () => !!(S.arc && S.arc.co); // 협동 디펜스 전장
 const FW = () => (reelsOn() ? CFG.MAP_REELS : coMap() ? CO.MAP : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[0], FH = () => (reelsOn() ? CFG.MAP_REELS : coMap() ? CO.MAP : isEW() ? CFG.MAP_EW : CFG.MAP_NS)[1];
 const TILES = CFG.COLS * CFG.ROWS;
@@ -14362,6 +14367,7 @@ DF2_FOES.forEach(f => { DF2_FOE[f.id] = f; f.ccImm = !(f.mut || DF2.CC.includes(
 // 디펜스 전용 토큰 (2026-11-25 측정: Lv1 한 기 · 한철 과녁 20초 · 점수 = 단일 DPS ×0.5 + 다수 (6기) DPS ÷2 ×0.5 · 토큰 = 2 × (점수 ÷ 중앙값 69)^0.75 · 2~16) · 표에 없으면 2 · 전체 점수는 docs/defense-scores.md
 const DF2_TOK = { gunq: 670, slot: 777, nuke: 50, /* R3.7 build 2 */ mutant: 8, /* R3.7 */ god: 25, /* R3.6 build 6: 갓지후 디펜스 토큰 25 */ wisp: 4, duelist: 4, farmer: 3, soulsteal: 3, matrix: 2, cyborg: 2, /* R3.6 build 3 신규 지후 (농부는 사용자가 정함) */ atom: 15, sun: 12, scythe: 10, curse: 10, jason: 10, vampire: 9, lonely: 9, dryice: 9, laser: 8, holy: 8, fisher: 8, magic: 7, lament: 7, biker: 6, deathnote: 6, dealer: 5, dimension: 5, ruin: 5, dragon: 5, arcane: 5, c4: 5, pan: 4, blizzard: 4, assassin: 4, necro: 4, jaws: 4, whirl: 4, emp: 4, bat: 4, lightning: 4, tentacle: 3, burner: 3, phase: 3, berserk: 3, rush: 3, roulette: 3, radiation: 3, star: 3, sword: 3, combo: 3, phoenix: 3, lurker: 3, chicken: 3, engineer: 3, stainless: 3, triage: 3, radar: 3, train: 3, burglar: 3, mercury: 3, lock: 3, metal: 3, melody: 3, skul: 3, levelup: 3, dj: 3, slime: 3, devour: 3, bullet: 3, berserker: 3, clock: 3 };
 const df2Cost = id => DF2_TOK[id] || 2;
+const df2SumCost = id => df2Cost(id) + (S.cw && S.cw.co && S.cw.sc ? CO.TOKUP * (S.cw.sc[id] | 0) : 0); /* R3.9 build 3: 협동은 소환할 때마다 그 지후 비용 +0.5 */
 const df2R1 = v => Math.round(v * 10) / 10;
 const df2Rew = hp => clamp(df2R1(0.1 + 0.4 * Math.log(Math.max(1, hp / 50)) / Math.log(120)), DF2.REW[0], DF2.REW[1]); // 처치 보상: 체력 비례 (로그 · 0.1 단위)
 function df2Hp(w) { // 웨이브 총 체력: 기준점 사이를 매 웨이브 같은 비율로
@@ -14418,7 +14424,7 @@ function df2Mut(u, dt) { // 흑화 능력 (기절 · 명중률 · 가속 · 힐 
     case 'blind': pickN(allies(), m.n).forEach(a => blindOn(a, m.sec, m.amt)); break;
     case 'accel': pickN(S.units.filter(e => e.alive && e.dfF && e !== u && !DF2_FOE[e.id].boss), m.n).forEach(e => { e.dfAccT = S.time + m.sec; if (!S.fast) fxRing(e.x, e.y, CFG.CELL * 0.5, 'rgba(60,150,255,.9)', 400, 3); }); break;
     case 'heal': { const R = m.r * CFG.CELL; for (const e of S.units) if (e.alive && e.dfF && Math.hypot(e.x - u.x, e.y - u.y) <= R) dfHeal(e, e.maxHp * m.pct); if (!S.fast) fxRing(u.x, u.y, R, 'rgba(90,220,120,.8)', 500, 3); break; }
-    case 'necro': if ((u.nc | 0) < m.max) { u.nc = (u.nc | 0) + 1; for (let i = 0; i < m.n; i++) { const s = df2Spawn(m.id, { x: u.x + (rng() - 0.5) * CFG.CELL * 1.5, y: u.y + (rng() - 0.5) * CFG.CELL * 1.5 }); s.noRew = true; } } break;
+    case 'necro': if ((u.nc | 0) < m.max) { u.nc = (u.nc | 0) + 1; if (S.cw.co) coRaise(u); else for (let i = 0; i < m.n; i++) { const s = df2Spawn(m.id, { x: u.x + (rng() - 0.5) * CFG.CELL * 1.5, y: u.y + (rng() - 0.5) * CFG.CELL * 1.5 }); s.noRew = true; } } break;
   }
 }
 function df2Leak(u) { const c = S.cw; c.lives -= DF2_FOE[u.id].boss ? DF2.BOSS_LEAK : 1; u.leak = true; u.hp = 0; drawUnit(u); killUnit(u); if (!S.fast) shake(true); } // 들어온 적: 라이프 −1 (보스 −5) · 보상 없음
@@ -14452,10 +14458,10 @@ function df2Pull(r) { // 합체로 빠지는 지후: 죽음 연출 · 보상 없
   (u.fx || []).forEach(e => e.remove()); u.fx = []; if (u.ufxEl) { u.ufxEl.remove(); u.ufxEl = null; } if (u.el) { u.el.remove(); u.el = null; }
 }
 function df2Summon(id, t) { // 토큰을 내고 칸 t 에 새로 소환 (같은 지후가 있어도)
-  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || c.endK || !CHARS[id]) return false; /* 방어 실패 연출 중 소환 막음 */ const cost = df2Cost(id);
+  const c = S.cw; if (!c || !c.v2 || S.phase !== 'combat' || c.endK || !CHARS[id]) return false; /* 방어 실패 연출 중 소환 막음 */ const cost = df2SumCost(id);
   if (c.ros.length >= DF2.MAX) { if (!S.fast && !c.auto && !c.coI) banner(`지후는 ${DF2.MAX}기까지`); return false; }
   if (c.tok + 1e-9 < cost) { if (!S.fast && !c.auto && !c.coI) banner(`🪙 ${cost} 이 필요해요`); return false; }
-  const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); c.ros.push(r); const nu = df2Put(r, q.x, q.y); if (!c.coI) e7Add('deploy'); df2Ovl(); if (nu.ovl && !S.fast && !c.auto && !c.coI) banner('출격제한 · 패시브 · 스킬 없음');
+  const q = tileXY(c.me, t), r = { id, lv: 1, t }; c.tok = df2R1(c.tok - cost); if (c.co) c.sc[id] = (c.sc[id] | 0) + 1; c.ros.push(r); const nu = df2Put(r, q.x, q.y); if (!c.coI) e7Add('deploy'); df2Ovl(); if (nu.ovl && !S.fast && !c.auto && !c.coI) banner('출격제한 · 패시브 · 스킬 없음');
   if (!S.fast) { if (!c.coI) sfx('place'); df2Render(); } return true;
 }
 function df2Pick(i) { const c = S.cw, id = c.deck[i]; if (!id) return; c.sum = c.sum === id ? null : id; df2Render(); } // 타일 누르기: 고르기 · 다시 누르면 취소
@@ -14482,16 +14488,16 @@ function df2Forge() { // 강화 지후 업그레이드 = 검 강화 (토큰 = �
   if (!S.fast) { df2Render(); df2UpDraw(true); } return true;
 }
 function df2Field(e) { // 전장 누르기 (전투 중 · 지후를 골랐을 때만): 내 칸을 누르면 (그 자리에 지후가 있어도) 새로 소환 · 칸 밖의 같은 지후를 누르면 업그레이드 (토큰이 남으면 계속 고른 채)
-  const c = S.cw; if (c.co && !c.sum) return coTap(e); /* 협동: 두 지후를 눌러 합체 */ if (df2UpTap(e)) return true; if (!c.sum) return false;
+  const c = S.cw; if (c.co && !c.sum) return coTap(e); /* 협동: 두 지후를 눌러 합체 */ if (c.co && coMergeTap(e)) { c.sum = null; df2Render(); return coTap(e); } /* R3.9 build 3: 다른 지후 카드를 고른 채 지후를 누르면 소환 대신 합체 고르기 */ if (df2UpTap(e)) return true; if (!c.sum) return false;
   const el = e.target.closest('.tile[data-tile]') || (document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY) : []).find(x => x.classList && x.classList.contains('tile'));
   if (el && el.dataset.side === c.me) df2Summon(c.sum, Number(el.dataset.tile));
   else { const ue = e.target.closest('.unit'), u = (ue && S.units.find(x => x.el === ue)) || cvPick(e); if (c.co || !(u && u.df2A && u.alive && u.id === c.sum)) return false; df2Up(u); } /* 협동: 업그레이드 없음 */
-  if (c.tok + 1e-9 < df2Cost(c.sum)) c.sum = null; df2Render(); return true;
+  if (c.tok + 1e-9 < df2SumCost(c.sum)) c.sum = null; df2Render(); return true;
 }
 function df2Bot() { // 시험용 자동: 가끔 (자리가 꽉 차면 늘) 무작위 지후 업그레이드 · 아니면 덱에서 무작위 소환 · 칸은 무작위
   const c = S.cw, al = c.ros.filter(x => !x.dead);
   if (al.length && (c.ros.length >= DF2.MAX || Math.random() < 0.35)) { const x = al[Math.floor(Math.random() * al.length)], u = df2Unit(x); if (u && x.lv < df2MaxLv(x.id) && df2UpCost(x.id, x.lv) <= c.tok) { df2Up(u); return; } if (c.ros.length >= DF2.MAX) return; }
-  const deck = c.deck.filter(id => df2Cost(id) <= c.tok); if (!deck.length) return;
+  const deck = c.deck.filter(id => df2SumCost(id) <= c.tok); if (!deck.length) return;
   df2Summon(deck[Math.floor(Math.random() * deck.length)], Math.floor(Math.random() * TILES));
 }
 // 왼쪽 아래 디펜스 바 (#df2Hud · 디펜스 전용): 토큰 · 지후 수 · 소환 타일 5개 (초상화 · 비용) · PC 는 숫자키 1~5 · Esc
@@ -14501,7 +14507,7 @@ function df2BarInit() {
   if (!el) { el = document.createElement('div'); el.id = 'df2Hud'; $('screen-battle').appendChild(el);
     el.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) df2Pick(Number(b.dataset.i)); });
     document.addEventListener('keydown', e => { const k = S.cw; if (!k || !k.v2 || S.phase !== 'combat' || (e.target.closest && e.target.closest('input, textarea'))) return; const n = '12345'.indexOf(e.key); if (n >= 0 && k.deck[n]) { e.preventDefault(); df2Pick(n); } else if (e.key === 'Escape' && k.sum) { k.sum = null; df2Render(); } }); }
-  el.innerHTML = `<div class="d2-tk">${H4_COIN}<b></b><span class="d2-n"><b></b> / ${DF2.MAX}</span></div><div class="d2-row">` + c.deck.map((id, i) => `<button type="button" class="d2-c r-${CHARS[id].rarity}" data-i="${i}" aria-label="${esc(CHARS[id].name)} 소환"><span class="d2-p">${pic(id)}</span><span class="d2-k">${i + 1}</span><span class="d2-cost"><i></i>${df2Cost(id)}</span></button>`).join('') + '</div>';
+  el.innerHTML = `<div class="d2-tk">${H4_COIN}<b></b><span class="d2-n"><b></b> / ${DF2.MAX}</span></div><div class="d2-row">` + c.deck.map((id, i) => `<button type="button" class="d2-c r-${CHARS[id].rarity}" data-i="${i}" aria-label="${esc(CHARS[id].name)} 소환"><span class="d2-p">${pic(id)}</span><span class="d2-k">${i + 1}</span><span class="d2-cost"><i></i>${df2SumCost(id)}</span></button>`).join('') + '</div>';
   const t = el.querySelectorAll('.d2-tk b'); D2B.tok = t[0]; D2B.n = t[1]; D2B.cs = [...el.querySelectorAll('.d2-c')]; c._pk = null; if (devOn()) df2Dev(el); /* 운영자 개발자 모드 */ df2BarHud(); viewDirty();
 }
 function df2Dev(el) { // 운영자 개발자 모드 (devOn): 아무 지후나 골라 소환 · 토큰 +50
@@ -14511,9 +14517,9 @@ function df2Dev(el) { // 운영자 개발자 모드 (devOn): 아무 지후나 �
   el.insertBefore(d, el.firstChild);
 }
 function df2BarHud() { // 토큰 · 지후 수 · 고른 타일이 바뀔 때만
-  const c = S.cw; if (!D2B.cs) return; const k = c.tok + '/' + c.ros.length + '/' + c.sum; if (c._pk === k) return; c._pk = k; const full = c.ros.length >= DF2.MAX;
+  const c = S.cw; if (!D2B.cs) return; const cs = c.deck.map(df2SumCost), k = c.tok + '/' + c.ros.length + '/' + c.sum + '/' + cs; if (c._pk === k) return; c._pk = k; const full = c.ros.length >= DF2.MAX;
   D2B.tok.textContent = c.tok.toFixed(1); D2B.n.textContent = c.ros.length;
-  D2B.cs.forEach((b, i) => { const id = c.deck[i], off = full || c.tok + 1e-9 < df2Cost(id), on = c.sum === id; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); });
+  D2B.cs.forEach((b, i) => { const id = c.deck[i], off = full || c.tok + 1e-9 < cs[i], on = c.sum === id, tx = b.querySelector('.d2-cost').lastChild; if (tx.nodeValue !== String(cs[i])) tx.nodeValue = cs[i]; if (b.classList.contains('off') !== off) b.classList.toggle('off', off); if (b.classList.contains('on') !== on) b.classList.toggle('on', on); });
 }
 function df2Tiles() { // 내 칸: 카드를 골랐으면 모두 밝게 (hot) · 상대 칸은 숨긴다 (CSS)
   const c = S.cw, f = $('field'); if (!f) return; const hot = !!c.sum && c.ros.length < DF2.MAX;
@@ -14613,7 +14619,8 @@ function df2Hud(set) { // cwHud 에서: 라이프 · 남은 적 · 웨이브 남
 // ═════════ 협동 디펜스 (CO · 봇 동료) ═════════
 // 아래 = 내 진영 15칸 · 위 = 동료 진영 15칸 (동료 칸 번호는 TILES 를 더한 15 ~ 29) · 동료 지후도 같은 아군 (side = me) 이고 로스터 · 토큰만 따로 (c.co[1] · coAs 로 바꿔 쓴다)
 // 적은 두 진영을 둘러싼 사각형 길을 시계 방향으로 돈다 (위치를 길 위 거리 u.coS 로 직접 · 넉백 · 끌어당기기 · 최면은 통하지 않는다 · 기절 · 빙결 · 감속은 통한다)
-// 웨이브 15초 = 1초마다 그냥한철 1마리 × 12 (체력 100 × 웨이브) + 3초 쉼 · 10웨이브마다 보스 (1만 · 다음 보스마다 ×1.5) · 필드의 적이 30마리가 되면 패배
+// 웨이브 15초 = 1초마다 한철 1마리 × 12 + 3초 쉼 · 그냥한철 체력 200 × 웨이브 · 30% 는 빠른한철 (×0.75 · 이동속도 ×4) · 10웨이브부터 25마리마다 두꺼운한철 (×3) · 20웨이브부터 20마리마다 준보스 (×2)
+// 10웨이브마다 보스 (1만 · 다음 보스 웨이브마다 ×1.5 · 50웨이브부터 둘) · 필드의 적이 30마리가 되면 패배 · 소환할 때마다 그 지후의 소환 비용 +0.5 (나 · 동료 따로)
 // 업그레이드 없음: 내 지후를 누르고 같은 지후 · 같은 레벨을 누르면 합체 (coTap) · 10웨이브가 끝날 때마다 보급 (무작위 버프 1개 · 쌓인다)
 const CO_BUFF = [
   { k: 'rew2', ic: '💰', t: '처치 보상 ×2', d: '20% 확률' },
@@ -14625,7 +14632,7 @@ const CO_BUFF = [
   { k: 'atk', ic: '⚔️', t: '공격력 +5%', d: '' },
   { k: 'spd', ic: '👟', t: '이동속도 +10%', d: '' },
 ];
-const CO_K = ['tok', 'ros', 'deck', 'fg', 'sum', 'upU'];
+const CO_K = ['tok', 'ros', 'deck', 'fg', 'sum', 'upU', 'sc']; /* sc: 지후마다 소환한 횟수 */
 const coOn = () => !!(S.cw && S.cw.co);
 const coOther = () => { const c = S.cw; return c && c.co ? c.co[c.coI ? 0 : 1] : null; };
 function coAs(i, fn) { // 동료 (1) 또는 나 (0) 의 로스터 · 토큰으로 바꿔 fn 실행
@@ -14658,18 +14665,30 @@ function coMove(u, dt) { // 적 이동: 길 위 거리만 늘리고 그 자리�
   u.kb = null; if (u.st.charm > 0) u.st.charm = 0; if (u.st.hyp > 0) u.st.hyp = 0; if (u.st.taunt > 0) u.st.taunt = 0; if (u.st.fear > 0) u.st.fear = 0;
   const f = DF2_FOE[u.id] || {}; let k = 0;
   if (!blocked(u) && !(u.st.lock > 0)) { const sp = 1 + buffSum(u, 'spd'); k = (u.st.frost > 0 && !u.slowImm ? 0.6 : 1) * (f.ccImm || f.imm ? Math.max(1, sp) : Math.max(0.2, sp)); }
-  u.coS += u.speed * k * dt; const p = coPt(u.coS); u.x = p.x; u.y = p.y; u.vx = u.vy = u.desVx = u.desVy = 0;
+  u.coS += u.speed * k * (u.dfAccT > S.time ? DF2.MUT.accel.k : 1) /* 흑화 가속 */ * dt; const p = coPt(u.coS); u.x = p.x; u.y = p.y; u.vx = u.vy = u.desVx = u.desVy = 0;
 }
 // ── 시작 · 웨이브 ──
 function coInit() { // df2Init 끝 (협동)
-  const c = S.cw, P = S.arc.mate || {}; c.co = [null, { tok: DF2.TOK0, ros: [], deck: (S.deck[OPP()] || []).filter(id => CHARS[id]).slice(0, 5), fg: 0, sum: null, upU: null }]; c.coI = 0;
+  const c = S.cw, P = S.arc.mate || {}; c.co = [null, { tok: DF2.TOK0, ros: [], deck: (S.deck[OPP()] || []).filter(id => CHARS[id]).slice(0, 5), fg: 0, sum: null, upU: null, sc: {} }]; c.coI = 0; c.sc = {}; c.coTc = 0; c.coMc = 0; /* 두꺼운한철 · 준보스까지 센 마릿수 */
   c.coB = {}; c.coL = []; c.k = { atk: 0, aspd: 0, spd: 0 }; c.mate = { nick: P.nick || '동료', lv: P.lv || 1 }; c.botM = 1.5; c.bossN = 0;
   CO_M.k = ''; CO_M.el = null;
 }
-function coSpawn(id) {
-  const c = S.cw, f = DF2_FOE[id], p = coPt(0), u = df2Spawn(id, { x: p.x, y: p.y }), B = c.coB; u.coS = 0;
+function coHp(id) { const c = S.cw, f = DF2_FOE[id], k = id === 'hcFast' ? CO.FAST.HP : id === 'hcThick' ? CO.THICK.HP : f.mut ? CO.MU.HP : 1; return CO.HP * c.wave * k * Math.pow(0.85, c.coB.foeHp | 0); } /* 그냥한철 체력의 배수 */
+function coPlan(w) { // 웨이브 구성 12마리: 준보스 · 두꺼운한철은 마릿수를 세어서 · 나머지는 30% 빠른한철 (둘이 겹치면 두꺼운한철은 다음 마리)
+  const c = S.cw, T = CO.THICK, M = CO.MU, out = [];
+  for (let i = 0; i < CO.N; i++) {
+    if (w >= T.FROM) c.coTc++; if (w >= M.FROM) c.coMc++;
+    if (c.coMc >= M.N) { c.coMc -= M.N; const L = DF2_FOES.filter(f => f.mut); out.push(L[Math.floor(rng() * L.length)].id); }
+    else if (c.coTc >= T.N) { c.coTc -= T.N; out.push('hcThick'); }
+    else out.push(rng() < CO.FAST.P ? 'hcFast' : 'hcBasic');
+  }
+  return out;
+}
+function coRaise(n) { ['hcBasic', 'hcFast', 'hcThick'].forEach((id, i) => { coSpawn(id, { s: n.coS + (i - 1) * CFG.CELL * 0.6, k: CO.NEC }).noRew = true; }); } /* 협동 흑화 네크로맨서: 셋을 한 마리씩 · 체력 0.5배 · 보상 없음 */
+function coSpawn(id, o) { // o: { s 길 위 자리, k 체력 배수 }
+  const c = S.cw, f = DF2_FOE[id], at = (o && o.s) || 0, p = coPt(at), u = df2Spawn(id, { x: p.x, y: p.y }), B = c.coB; u.coS = at;
   if (f.boss) { const hp = Math.round(CO.BOSS0 * Math.pow(CO.BOSSK, c.bossN - 1) * Math.pow(0.85, B.bossHp | 0)); u.baseMaxHp = u.maxHp = u.hp = hp; u.maxShield = u.shield = f.shield75 ? Math.round(hp * 0.75) : 0; u.bt = S.time + 2 * coCdK(); }
-  else { const hp = Math.max(1, Math.round(CO.HP * c.wave * Math.pow(0.85, B.foeHp | 0))); u.baseMaxHp = u.maxHp = u.hp = hp; u.coN = true; u.slowImm = false; }
+  else { const hp = Math.max(1, Math.round(coHp(id) * ((o && o.k) || 1))); u.baseMaxHp = u.maxHp = u.hp = hp; u.coN = true; u.slowImm = false; if (id === 'hcFast') u.speed = DF2_FOE.hcBasic.sp * CO.FAST.SP * CFG.CELL; /* 그냥한철의 4배 */ }
   if (u.el) drawUnit(u); return u;
 }
 function coNext() { // 다음 웨이브 (15초마다 · 적이 남아 있어도)
@@ -14679,8 +14698,8 @@ function coNext() { // 다음 웨이브 (15초마다 · 적이 남아 있어도)
   coEach(() => c.ros.forEach(r => { if (!df2Unit(r)) df2Reborn(r); }));
   for (const u of S.units) if (u.comboMult) { u.comboMult = 1; u.comboN = 0; }
   coEach(() => c.ros.forEach(r => { const u = df2Unit(r); if (u && u.id === 'sommelier' && !u.ovl) smPour(u); }));
-  c.sq = Array(CO.N).fill('hcBasic'); c.sqI = CO.SPI; c.sqT = CO.SPI; /* 1 ~ 12초에 한 마리씩 · 마지막 3초는 쉼 */
-  const boss = c.wave % DF2.BOSS_EVERY === 0; if (boss) { c.bossN++; coSpawn(DF2_BOSS[Math.floor(rng() * DF2_BOSS.length)].id); } /* 보스는 웨이브 시작에 바로 */
+  c.sq = coPlan(c.wave); c.sqI = CO.SPI; c.sqT = CO.SPI; /* 1 ~ 12초에 한 마리씩 · 마지막 3초는 쉼 */
+  const boss = c.wave % DF2.BOSS_EVERY === 0; if (boss) { c.bossN++; const L = DF2_BOSS.slice(), n = c.wave >= CO.BOSS2 ? 2 : 1; for (let i = 0; i < n; i++) coSpawn(L.splice(Math.floor(rng() * L.length), 1)[0].id, { s: i * CFG.CELL * 1.6 }); } /* 보스는 웨이브 시작에 바로 · R3.9 build 3: 50웨이브부터 서로 다른 둘 */
   if (!S.fast) { banner(boss ? `👑 보스 웨이브 · WAVE ${c.wave}` : `WAVE ${c.wave}`); sfx('battle_start'); df2Render(); }
 }
 function coStep(dt) { // df2Step 대신 (협동)
@@ -14688,7 +14707,7 @@ function coStep(dt) { // df2Step 대신 (협동)
   if (c.wave > 0 && c.sq.length && (c.sqT -= dt) <= 0) { c.sqT = c.sqI; coSpawn(c.sq.shift()); }
   for (const u of S.units) { if (!u.alive || !u.dfF) continue; const f = DF2_FOE[u.id];
     if (f && f.imm) for (const k of DF2.IMM) if (u.st[k] > 0) u.st[k] = 0;
-    coMove(u, dt); if (f && f.boss) df2BossTick(u, dt); ne++; }
+    coMove(u, dt); if (f && f.mut) df2Mut(u, dt); /* R3.9 build 3 준보스 */ if (f && f.boss) df2BossTick(u, dt); ne++; }
   c.ne = ne; if (ne >= CO.LOSE) return cwEnd(OPP(), `필드의 적 ${CO.LOSE}마리`); df2Quake(dt);
   if (!c.wave) { if (c.t >= CO.FIRST) coNext(); }
   else { if (!c.clr && !c.sq.length && !ne) { c.clr = true; const o = coOther(); c.tok = df2R1(c.tok + DF2.CLEAR); if (o) o.tok = df2R1(o.tok + DF2.CLEAR); if (!S.fast) banner(`✨ 클리어 · 🪙 +${DF2.CLEAR}`); }
@@ -14712,9 +14731,11 @@ function coFuse(r, x) { // 로스터 r 을 x 에 합친다 (x 자리 · Lv+1) ·
   return m;
 }
 const coMergeOk = (r, x) => !!(r && x && r !== x && r.id === x.id && r.lv === x.lv && x.id !== 'forge' && x.lv < df2MaxLv(x.id) && df2Unit(r) && df2Unit(x));
+function coHit(e) { const c = S.cw, ue = e.target.closest('.unit'), u = (ue && S.units.find(x => x.el === ue)) || cvPick(e, v => v.df2A && !v.coP); /* 적 · 동료가 겹쳐 있어도 내 지후를 고른다 */ return u && u.alive && u.df2A && !u.coP ? c.ros.find(x => x.uid === u.uid) || null : null; }
+function coMergeTap(e) { const c = S.cw, r = coHit(e); if (!r) return false; const a = c.mgU != null ? c.ros.find(x => x.uid === c.mgU) : null; return r.id !== c.sum || coMergeOk(a, r); } /* 고른 카드와 다른 지후이거나 합칠 짝이면 합체 쪽 */
 function coTap(e) { // 전장 누르기 (카드를 안 골랐을 때): 내 지후 고르기 → 같은 지후 · 같은 레벨을 누르면 합체 · 빈 곳 · 같은 지후를 다시 누르면 취소
   if (S.cw.endK) return true; /* 방어 실패 연출 중 */
-  const c = S.cw, ue = e.target.closest('.unit'), u = (ue && S.units.find(x => x.el === ue)) || cvPick(e), r = u && u.alive && u.df2A && !u.coP ? c.ros.find(x => x.uid === u.uid) : null, a = c.mgU != null ? c.ros.find(x => x.uid === c.mgU) : null;
+  const c = S.cw, r = coHit(e), a = c.mgU != null ? c.ros.find(x => x.uid === c.mgU) : null;
   if (!r) { if (c.mgU == null) return false; c.mgU = null; coPickDraw(true); return true; }
   if (a && a === r) { c.mgU = null; coPickDraw(true); return true; }
   if (a && coMergeOk(a, r)) { c.mgU = null; coFuse(a, r); coPickDraw(true); return true; }
@@ -14738,10 +14759,10 @@ function coPickDraw(force) { // 고른 지후 머리 위 안내 + 합칠 수 있
 }
 function coBot() { // 동료 봇 (동료 로스터로 바뀐 채): 합칠 짝이 있으면 먼저 합친다 · 같은 지후를 더 자주 · 가끔 비싼 카드를 위해 모은다 · 빈 칸 우선
   for (const r of c0Ros()) { const x = S.cw.ros.find(o => coMergeOk(r, o)); if (x && Math.random() < 0.7) { coFuse(r, x); return; } }
-  const c = S.cw, rnd = L => L[Math.floor(Math.random() * L.length)], aff = c.deck.filter(id => df2Cost(id) <= c.tok + 1e-9); if (!aff.length) return;
+  const c = S.cw, rnd = L => L[Math.floor(Math.random() * L.length)], aff = c.deck.filter(id => df2SumCost(id) <= c.tok + 1e-9); if (!aff.length) return;
   const mg = aff.filter(id => c.ros.some(o => o.id === id && o.lv === 1 && df2Unit(o) && df2MaxLv(id) > 1 && id !== 'forge')), full = c.ros.length >= DF2.MAX; let id;
   if (full) return;
-  else { const top = Math.max(...c.deck.map(df2Cost)); if (c.wave > 3 && top > c.tok && !mg.length && Math.random() < 0.35) return; id = mg.length && Math.random() < 0.65 ? rnd(mg) : rnd(aff); }
+  else { const top = Math.max(...c.deck.map(df2SumCost)); if (c.wave > 3 && top > c.tok && !mg.length && Math.random() < 0.35) return; id = mg.length && Math.random() < 0.65 ? rnd(mg) : rnd(aff); }
   const used = new Set(c.ros.map(o => o.t)), free = []; for (let t = 0; t < TILES; t++) if (!used.has(t + TILES)) free.push(t);
   df2Summon(id, (free.length ? rnd(free) : Math.floor(Math.random() * TILES)) + TILES);
 }
@@ -14985,7 +15006,7 @@ function loopBody(ts) {
   const real = Math.min(0.1, (ts - (lastTs || ts)) / 1000); lastTs = ts; if (S.cw && S.cw.endK) dfFailTick(); /* 디펜스 방어 실패 */
   if (S.speed === 1 && !S.speedManual && S.time >= CFG.FAST_AFTER) { S.speed = CFG.FAST_SPEED; renderSpeedBtn(); banner('⏩ 1.5배속'); } // 전작: 전투가 길어지면 1.5배속
   acc += real * (S.paused /* R3.1 전투 설정 창 (봇전) */ || (S.replay && S.replay.pause) || (S.cw && S.cw.pick) || (S.fxHold && performance.now() < S.fxHold) /* R3.0 라운드 전환 연출 동안 */ ? 0 : S.speed * (S.slowK || 1)) /* 디펜스 방어 실패 슬로우모션 */; /* build 2: 디펜스 정비 시간 */ const simT0 = performance.now(); // R2.14 다시보기 일시정지
-  let n = 0; while (acc >= CFG.STEP && S.phase === 'combat' && n++ < 4) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= 4) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
+  let n = 0; const maxN = S.speed >= 3 ? 6 : 4; /* R3.9 build 3: 3배속은 30프레임에서도 나오게 6스텝 */ while (acc >= CFG.STEP && S.phase === 'combat' && n++ < maxN) { acc -= CFG.STEP; stepCombat(CFG.STEP); } if (n >= maxN) acc = Math.min(acc, CFG.STEP); // R2.12: 느린 기기에서 따라잡기가 쌓여 더 느려지지 않게 (최대 4스텝)
   const simMs = performance.now() - simT0;
   const alpha = clamp(acc / CFG.STEP, 0, 1); S.units.forEach(u => physSyncDom(u, alpha)); flushUnits(); ubSync(); camYaw(real); camFollow(real); cvDraw(); drawShots(); monoDraw(); fmbTick(); if (reelsOn()) reelsTick(); if (S.replay) rpTick(); drawMinimap(); if (rangeRing && rangeRing.unit && (S._uiT = (S._uiT || 0) + 1) % 6 === 0) renderUInfo(); // 지후 정보 (10번에 한 번쯤)
   if (S.cw && S.cw.v2) setRing(S.cw.wave ? Math.max(0, df2WV() - S.cw.t) : Math.max(0, df2FV() - S.cw.t), S.cw.wave ? df2WV() : df2FV()); /* R3.6 새 디펜스: 웨이브 남은 시간 */ else if (S.cw && S.cw.df) setRing(Math.max(0, DF.EWAVE - S.cw.et), DF.EWAVE); else if (S.cw) setRing(S.cw.sd ? 0 : Math.max(0, cwWv() - S.cw.t), cwWv()); else setRing(Math.max(0, CFG.ROUND_TIME - S.time), CFG.ROUND_TIME); /* R2.33: 다음 웨이브까지 */
@@ -15102,12 +15123,12 @@ function cvPlace() { // 캔버스에 카메라의 반대 변환 → 화면 크�
   if (CV.tf !== t) { CV.tf = t; els.forEach(e => { e.style.transform = t; }); }
 }
 const lvShow = u => u.df2A ? u.lv - 1 : u.lv; // R3.7 디펜스: Lv0 부터 보인다 (내부 Lv1)
-function cvPick(e) { // 누른 자리의 지후 (캔버스는 pointer-events 가 없어서 직접 찾는다)
+function cvPick(e, ok) { // 누른 자리의 지후 (캔버스는 pointer-events 가 없어서 직접 찾는다)
   if (!CV.on) return null; const r = $('fieldWrap').getBoundingClientRect(), { vw, vh } = viewSize(), z = CAM.z || 1;
   const X = CAM.x + (e.clientX - r.left - vw / 2) / z, Y = CAM.y + (e.clientY - r.top - vh / 2) / z, fl = flipView(), ew = isEW();
   const T = TILT(), lift = T !== 1 ? CFG.LIFT : 0, sk = SKW(); /* R3.0: 화면에 서 있는 그림 (보기 좌표) 으로 고른다 */
-  if (P3.m) { const sx = e.clientX - r.left, sy = e.clientY - r.top; let b3 = null, d3 = Infinity; for (const u of S.units) { if (!u.alive || !u._cv) continue; const p = proj3(u.x, u.y), rr = unitRadius(u) * p.s * z, d = Math.hypot(p.x - sx, p.y - rr * lift - sy); if (d < rr * 1.15 && d < d3) { d3 = d; b3 = u; } } return b3; } /* R3.0 3D: 원근 투영으로 고른다 */
-  let best = null, bd = Infinity; for (const u of S.units) { if (!u.alive || !u._cv) continue; const ux = (fl && ew ? FW() - u.x : u.x) + sk * u.y, uy = (fl && !ew ? FH() - u.y : u.y) * T - unitRadius(u) * lift, d = Math.hypot(ux - X, uy - Y); if (d < unitRadius(u) * 1.15 && d < bd) { bd = d; best = u; } } return best;
+  if (P3.m) { const sx = e.clientX - r.left, sy = e.clientY - r.top; let b3 = null, d3 = Infinity; for (const u of S.units) { if (!u.alive || !u._cv || (ok && !ok(u))) continue; const p = proj3(u.x, u.y), rr = unitRadius(u) * p.s * z, d = Math.hypot(p.x - sx, p.y - rr * lift - sy); if (d < rr * 1.15 && d < d3) { d3 = d; b3 = u; } } return b3; } /* R3.0 3D: 원근 투영으로 고른다 */
+  let best = null, bd = Infinity; for (const u of S.units) { if (!u.alive || !u._cv || (ok && !ok(u))) continue; const ux = (fl && ew ? FW() - u.x : u.x) + sk * u.y, uy = (fl && !ew ? FH() - u.y : u.y) * T - unitRadius(u) * lift, d = Math.hypot(ux - X, uy - Y); if (d < unitRadius(u) * 1.15 && d < bd) { bd = d; best = u; } } return best;
 }
 const CV_IX = [], CV_M = []; function cvAt(c, k, X, Y, s) { c.setTransform(k * s, 0, 0, k * s, k * X, k * Y); } /* R3.0: 지후 하나의 자리 · 깊이 배율 */
 const CV_L = []; // 이번 프레임에 그릴 지후 [u, x, y] (화면 좌표 / 확대 = 「확대한 CSS px」)
@@ -15233,6 +15254,7 @@ function cvDraw0() {
   if (!cvAllowed()) { cvEnd(); return; }
   if (CV.lost) { CV.lost = 0; cvReset(); }
   const f = $('field');
+  if (CV.el && (CV.el.parentNode === f) === !!P3.m) { CV.el.remove(); CV.el = null; } /* R3.9 build 3: 3D ↔ 2D 가 바뀌면 캔버스 자리도 새로 */
   if (!CV.el || !CV.el.isConnected) { CV.el = document.createElement('canvas'); CV.el.className = 'fx-ucv'; CV.ctx = CV.el.getContext('2d'); CV.el.addEventListener('contextlost', () => { CV.lost = 1; }); CV.el.addEventListener('contextrestored', () => { CV.lost = 1; }); /* build 11: 그림이 날아가면 다음 프레임에 새로 */ if (P3.m) f.after(CV.el); else f.insertBefore(CV.el, f.querySelector('.unit') || null); /* R3.0 3D: 3D 로 기운 #field 밖 */ CV.w = CV.h = 0; CV.tf = ''; }
   const gu = glWant() && glMake(); /* R3.0 build 3 WebGL: 지후는 GPU 층 · 위 이펙트는 그 위 2D 층 */
   if (gu) { if (!CV.el2) { CV.el2 = document.createElement('canvas'); CV.el2.className = 'fx-ucv'; CV.ctx2 = CV.el2.getContext('2d'); } if (GL.el.previousSibling !== CV.el) { CV.el.after(GL.el); CV.w = 0; } if (CV.el2.previousSibling !== GL.el) { GL.el.after(CV.el2); CV.w = 0; } }
@@ -15256,11 +15278,11 @@ function cvDraw0() {
     if (u._yf && u.yeetT > 0 && now - u._yf.t0 >= 850) continue; /* R3.4 build 8 날려 보냄: 다 날아간 뒤엔 안 그린다 */
     u._cvS = ds; L.push(u, X, Y);
   }
-  if (T !== 1 && L.length > 3) { /* R3.0: 뒤 (위) 에서 앞 (아래) 순서로 그린다 */ const n = L.length / 3, ix = CV_IX, M = CV_M; ix.length = n; for (let i = 0; i < n; i++) ix[i] = i * 3; ix.sort((p, q2) => L[p + 2] - L[q2 + 2] || p - q2); M.length = L.length; for (let i = 0; i < n; i++) { const p = ix[i]; M[i * 3] = L[p]; M[i * 3 + 1] = L[p + 1]; M[i * 3 + 2] = L[p + 2]; } for (let i = 0; i < L.length; i++) L[i] = M[i]; }
+  if (ew && L.length > 3) { /* R3.0: 뒤 (위) 에서 앞 (아래) 순서로 그린다 */ const n = L.length / 3, ix = CV_IX, M = CV_M; ix.length = n; for (let i = 0; i < n; i++) ix[i] = i * 3; ix.sort((p, q2) => L[p + 2] - L[q2 + 2] || p - q2); M.length = L.length; for (let i = 0; i < n; i++) { const p = ix[i]; M[i * 3] = L[p]; M[i * 3 + 1] = L[p + 1]; M[i * 3 + 2] = L[p + 2]; } for (let i = 0; i < L.length; i++) L[i] = M[i]; }
   const fy = flip && !ew ? -1 : 1, fx = flip && ew ? -1 : 1, W = CV.W || (CV.W = {}); W.fx = fx; W.fy = fy; W.x = (x, y) => P3.m ? proj3(x, y || 0).x / z : (flip && ew ? fw - x : x) + sk * (y || 0) - cx + hw; /* R3.0: 3D 는 원근 투영 */ W.y = (x, y) => P3.m ? proj3(x, y).y / z : (flip && !ew ? fh - y : y) * T - cy + hh; W.a = a => flip ? (ew ? Math.PI - a : -a) : a; W.hw = hw; W.hh = hh; W.t = T; /* R3.0: 이펙트도 보기 좌표 (y × TILT) */
   for (const u of S.units) if (u.tgc && u.alive) cvFan(c0, W.x(u.x, u.y), W.y(u.x, u.y), u.tgc, W, 0); // 0) 아래층: 공격 예고 · 고리 · 먼지
   cvFxDraw(c0, 'under', now, W, gu ? GLC : null); if (S.njF || (S.njZ && S.njZ.length)) njUnderDraw(c0, W, now); /* R3.6 build 3 밭 · 버프 공간 */
-  if (T !== 1) { for (let i = 0; i < L.length; i += 3) { const u = L[i], s = u._cvS, R = cvD(u) / 2 * s; if (u.st.dive > 0 || u.realm) continue; c.drawImage(r3Glow(u.side, q), L[i + 1] - R * 1.25, L[i + 2] + R * 0.62, R * 2.5, R * 0.72); } } /* R3.0: 발밑 빛 (아군 하늘색 · 적 빨강) */
+  if (ew) { for (let i = 0; i < L.length; i += 3) { const u = L[i], s = u._cvS, R = cvD(u) / 2 * s; if (u.st.dive > 0 || u.realm) continue; c.drawImage(r3Glow(u.side, q), L[i + 1] - R * 1.25, L[i + 2] + R * 0.62, R * 2.5, R * 0.72); } } /* R3.0: 발밑 빛 (아군 하늘색 · 적 빨강) */
   if (S.cw && S.cw.v2) df2FlyShadow(c, L); /* R3.6 플라잉한철 그림자 (땅) */
   for (let i = 0; i < L.length; i += 3) { // 1) 몸통
     const u = L[i], st = u.st, D = cvD(u), R = D / 2, X = 0, Y = 0; cvAt(c, k, L[i + 1], L[i + 2], u._cvS); /* R3.0: 지후마다 자리 · 깊이 배율을 변환으로 (아래 X · Y 는 0) */
@@ -15275,7 +15297,7 @@ function cvDraw0() {
     if (u._yf && u.yeetT > 0) { const p = clamp((now - u._yf.t0) / 850, 0, 1), e = 1 - Math.pow(1 - p, 3); ox += u._yf.dx * e * fx; oy += u._yf.dy * e * fy; s *= 1 - 0.85 * e; a *= 1 - p; } /* R3.4 build 8 스파이 날려 보냄 */
     const b = cvBody(u, q, low), W = (D + CV_PAD * 2) * s;
     c.globalAlpha = hf ? a * 0.6 : a;
-    if (b && T !== 1 && u.side === OPP()) { c.scale(-1, 1); c.drawImage(b, -(X + ox) - W / 2, Y + oy - W / 2, W, W); cvAt(c, k, L[i + 1], L[i + 2], u._cvS); } /* R3.0: 적은 오른쪽에서 왼쪽을 본다 */ else if (b) c.drawImage(b, X + ox - W / 2, Y + oy - W / 2, W, W); else { c.fillStyle = u.side === OPP() ? '#ff5d6c' : '#36c9a8'; c.beginPath(); c.arc(X, Y, R + 4, 0, Math.PI * 2); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(X, Y, R, 0, Math.PI * 2); c.fill(); }
+    if (b && ew && u.side === OPP()) { c.scale(-1, 1); c.drawImage(b, -(X + ox) - W / 2, Y + oy - W / 2, W, W); cvAt(c, k, L[i + 1], L[i + 2], u._cvS); } /* R3.0: 적은 오른쪽에서 왼쪽을 본다 */ else if (b) c.drawImage(b, X + ox - W / 2, Y + oy - W / 2, W, W); else { c.fillStyle = u.side === OPP() ? '#ff5d6c' : '#36c9a8'; c.beginPath(); c.arc(X, Y, R + 4, 0, Math.PI * 2); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(X, Y, R, 0, Math.PI * 2); c.fill(); }
     c.globalAlpha = a;
     if (u._cvTgH && !low) { const r0 = R + 10, a0 = now / 320; c.lineWidth = 5; c.lineCap = 'round'; c.strokeStyle = '#ff2a2a'; c.beginPath(); c.arc(X + ox, Y + oy, r0, a0, a0 + Math.PI * 0.9); c.stroke(); c.strokeStyle = '#2a7bff'; c.beginPath(); c.arc(X + ox, Y + oy, r0, a0 + Math.PI, a0 + Math.PI * 1.9); c.stroke(); } // R2.30 태극 [극의 조화]
     if (st.scope > 0) { const r0 = R + 9, X1 = X + ox, Y1 = Y + oy; c.strokeStyle = c.fillStyle = u.scU ? '#ff8a3d' : '#3d9bff'; c.lineWidth = 2.5; for (let j = 0; j < 4; j++) { const a0 = j * Math.PI / 2 + 0.3; c.beginPath(); c.arc(X1, Y1, r0, a0, a0 + Math.PI / 2 - 0.6); c.stroke(); } c.fillRect(X1 - 1.5, Y1 - r0 - 5, 3, 10); c.fillRect(X1 - 1.5, Y1 + r0 - 5, 3, 10); c.fillRect(X1 - r0 - 5, Y1 - 1.5, 10, 3); c.fillRect(X1 + r0 - 5, Y1 - 1.5, 10, 3); } /* R3.7 마탄 [스코프] 조준경 (터진 스코프는 주황) */
@@ -15288,7 +15310,7 @@ function cvDraw0() {
   for (let i = 0; i < L.length; i += 3) { // 2) 체력바 · 쉴드 · SP
     const u = L[i], X = 0, Y = 0, st = u.st, R = (cvD(u)) / 2, by = Y + R + (nohp ? 4 : 2), bx = X - 39; cvAt(c, k, L[i + 1], L[i + 2], u._cvS);
     c.globalAlpha = (st.dive > 0 ? 0.4 : 1) * (u.realm ? 0.6 : 1) * (st.stealth > 0 ? 0.4 : 1);
-    if (T !== 1) { /* R3.0 시안: 왼쪽 체력 숫자 + 오른쪽 막대 두 개 (체력 5 · SP 3) */ const lt = r3Light(), ally = u.side !== opp, full = u.baseMaxHp || u.maxHp, f = clamp(u.hp / full, 0, 1), y0 = Y + R + 3, x0 = X - 14, bw = 60, ink = lt ? '22,22,26' : '232,227,216';
+    if (ew) { /* R3.0 시안: 왼쪽 체력 숫자 + 오른쪽 막대 두 개 (체력 5 · SP 3) */ const lt = r3Light(), ally = u.side !== opp, full = u.baseMaxHp || u.maxHp, f = clamp(u.hp / full, 0, 1), y0 = Y + R + 3, x0 = X - 14, bw = 60, ink = lt ? '22,22,26' : '232,227,216';
       if (!nohp) { const h = Math.max(0, Math.ceil(u.hp)), t = h >= 10000 ? (h / 1000).toFixed(1) + 'k' : String(h); c.font = `400 15px ${R3_FONT}`; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lt ? '#16161a' : '#f2ede2'; if (!lt) { c.lineWidth = 3; c.lineJoin = 'round'; c.strokeStyle = 'rgba(0,0,0,.75)'; c.strokeText(t, x0 - 4, y0 + 4); } c.fillText(t, x0 - 4, y0 + 4); }
       c.fillStyle = `rgba(${ink},.14)`; c.fillRect(x0, y0, bw, 5); c.fillStyle = ally ? (lt ? '#2c7ca3' : '#8fc6dd') : '#d6382c'; c.fillRect(x0, y0, bw * f, 5);
       if (u.cutFrac > 0) { const w = bw * clamp(u.cutFrac, 0, 1); c.fillStyle = '#5d5f66'; c.fillRect(x0 + bw - w, y0, w, 5); }
@@ -15307,14 +15329,14 @@ function cvDraw0() {
       c.fillStyle = 'rgba(60,60,67,.15)'; c.fillRect(X - 28, yy, 56, 3); c.fillStyle = u.def.gauge || sk.type === 'cooldown' ? '#8b8d93' : '#4f9dff'; c.fillRect(X - 28, yy, 56 * clamp(v || 0, 0, 1), 3); }
     if (u.ult) { const fu = u.ult.t > 0 ? clamp(1 - u.ult.t / u.ult.cd, 0, 1) : 1, yu = Y + R + (nohp ? 13 : 16) + (sk || u.def.gauge ? 5 : 0); c.fillStyle = 'rgba(214,56,44,.2)'; c.fillRect(X - 28, yu, 56, 3); c.fillStyle = fu >= 1 ? '#c04bff' : '#ff3b3b'; c.fillRect(X - 28, yu, 56 * fu, 3); }
   }
-  if (!nohp && T === 1) { // 3) 체력 숫자 (글꼴은 한 번만 정한다 · R3.0 은 2) 에서)
+  if (!nohp && !ew) { // 3) 체력 숫자 (글꼴은 한 번만 정한다 · R3.0 은 2) 에서)
     c.setTransform(k, 0, 0, k, 0, 0); c.globalAlpha = 1; c.font = `900 9px ${CV_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.lineWidth = 2.5; c.strokeStyle = 'rgba(17,19,24,.8)'; c.fillStyle = '#fff';
     for (let i = 0; i < L.length; i += 3) { const u = L[i], R = (cvD(u)) / 2, h = Math.max(0, Math.ceil(u.hp)), t = h >= 10000 ? (h / 1000).toFixed(1) + 'k' : String(h), ty = R + 8.5; if (u.st.stealth > 0 || u.st.dive > 0) continue; cvAt(c, k, L[i + 1], L[i + 2], u._cvS); c.strokeText(t, 0, ty); c.fillText(t, 0, ty); }
   }
   c.globalAlpha = 1;
   for (let i = 0; i < L.length; i += 3) { // 4) 머리 위 (레벨 · 글씨 · 효과 아이콘 · 도둑 초상화) — 모든 몸통 위에
     const u = L[i], X = 0, Y = 0, R = (cvD(u)) / 2; cvAt(c, k, L[i + 1], L[i + 2], u._cvS);
-    if (u.lv > 1 && T !== 1) { c.font = `400 16px ${R3_FONT}`; c.textAlign = 'left'; c.textBaseline = 'middle'; c.lineWidth = 3; c.strokeStyle = r3Light() ? 'rgba(255,255,255,.8)' : 'rgba(0,0,0,.8)'; c.strokeText('Lv' + lvShow(u), X - R * 0.95, Y - R * 0.78); c.fillStyle = r3Light() ? '#a57810' : '#e9c46a'; c.fillText('Lv' + lvShow(u), X - R * 0.95, Y - R * 0.78); } /* R3.0: 왼쪽 위 금색 */ else if (u.lv > 1) { const p = u.lv >= 6 ? cvPillSpr('Lv' + lvShow(u), 'lv6', '#111318', 12, 9, q) : cvPillSpr('Lv' + lvShow(u), '#ffc21a', '#111318', 12, 9, q); c.drawImage(p, X - 60, Y - R - 12, 120, 18); }
+    if (u.lv > 1 && ew) { c.font = `400 16px ${R3_FONT}`; c.textAlign = 'left'; c.textBaseline = 'middle'; c.lineWidth = 3; c.strokeStyle = r3Light() ? 'rgba(255,255,255,.8)' : 'rgba(0,0,0,.8)'; c.strokeText('Lv' + lvShow(u), X - R * 0.95, Y - R * 0.78); c.fillStyle = r3Light() ? '#a57810' : '#e9c46a'; c.fillText('Lv' + lvShow(u), X - R * 0.95, Y - R * 0.78); } /* R3.0: 왼쪽 위 금색 */ else if (u.lv > 1) { const p = u.lv >= 6 ? cvPillSpr('Lv' + lvShow(u), 'lv6', '#111318', 12, 9, q) : cvPillSpr('Lv' + lvShow(u), '#ffc21a', '#111318', 12, 9, q); c.drawImage(p, X - 60, Y - R - 12, 120, 18); }
     if (u._cvX && u._cvX.length) { if (now - (u._cvXt || 0) > 250) { u._cvXt = now; u._cvXs = u._cvX.map(e => [e.textContent, e.classList[1] || '', e.dataset.k || '']); }
       let top = Y - R - 12; for (const [t, k2, dk] of u._cvXs || []) { if (!t) continue; if (k2 === 'fg') { c.font = `400 30px ${R3_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 6; c.strokeStyle = '#0d0c0e'; c.strokeText(t, X, top + 6); c.fillStyle = '#fff'; c.fillText(t, X, top + 6); top -= 30; continue; } /* R3.2 build 3 강화 수치 */ let [bg, fg] = XLV_C[k2] || ['#111318', '#ffc21a']; if (k2 === 'wx') bg = dk === 'heat' ? '#b8420f' : dk === 'storm' ? '#5b4a9e' : bg; const fs = k2 && k2 !== 'mono' ? 11 : 12; c.drawImage(cvPillSpr(t, bg, fg, fs, k2 ? 7 : 9, q), X - 60, top, 120, fs + 6); top -= 22; } }
     const ic = cvIcons(u, q); if (ic) { const ix = X - ic.W / 2 + 4, iy = Y - R - (u.lv > 1 ? 50 : 34) - 1; c.drawImage(ic.spr, ix, iy, ic.W, ic.H); cvTimers(c, u, ic, ix, iy, q); }
@@ -15375,7 +15397,7 @@ function cvFxDraw(c2d, layer, now, W, g) { // W: 월드 → 그리기 좌표 { x
     else if (e.k.charCodeAt(0) === 100 && e.k.charCodeAt(1) === 100) ddDrawFx(c2d, e, p, now, W); /* R3.3 더블딜러 (dd…) */
     else if (e.k.charCodeAt(0) === 110 && e.k.charCodeAt(1) === 106) njDrawFx(c2d, e, p, now, W); /* R3.6 build 3 신규 지후 (nj…) */
     else if (e.k === 'num') { let a = 1 - p, dy = -30 * p, s = 1; if (e.stamp) { s = p < 0.12 ? 1.6 - 0.6 * (p / 0.12) : 1; dy = -18 * p; a = p < 0.7 ? 1 : 1 - (p - 0.7) / 0.3; }
-      const r3 = W.t !== 1 && !r3Light(); c.globalAlpha = Math.max(0, a); c.font = r3 ? `400 ${Math.round(e.fs * s * 1.15)}px ${R3_FONT}` : `900 ${Math.round(e.fs * s)}px ${CV_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.lineWidth = e.sw; c.strokeStyle = r3 ? 'rgba(0,0,0,.85)' : '#fff'; /* R3.0 다크: 검은 테두리 · 아래 cvNum 색 */ c.strokeText(e.txt, X, Y + dy); c.fillStyle = e.col; c.fillText(e.txt, X, Y + dy);
+      const r3 = isEW() && !r3Light(); c.globalAlpha = Math.max(0, a); c.font = r3 ? `400 ${Math.round(e.fs * s * 1.15)}px ${R3_FONT}` : `900 ${Math.round(e.fs * s)}px ${CV_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.lineWidth = e.sw; c.strokeStyle = r3 ? 'rgba(0,0,0,.85)' : '#fff'; /* R3.0 다크: 검은 테두리 · 아래 cvNum 색 */ c.strokeText(e.txt, X, Y + dy); c.fillStyle = e.col; c.fillText(e.txt, X, Y + dy);
       if (e.stamp) { c.font = `900 10px ${CV_FONT}`; c.lineWidth = 3; c.strokeText('CRITICAL', X, Y + dy - e.fs * s * 0.62); c.fillStyle = r3 ? '#f06a5c' : '#111318'; c.fillText('CRITICAL', X, Y + dy - e.fs * s * 0.62); } }
   }
   L.length = n; c2d.globalAlpha = 1; if (g) g.globalAlpha = 1;
@@ -15509,7 +15531,7 @@ const TUT_STATS = { // R2.22 build 3: 튜토리얼 전용 고정 수치 (R2.22 �
   water: { hp: 1760, atk: 70, atkSpeed: 2.5, range: 4.5, speed: 1.6 }, shield: { hp: 1950, shield: 500, atk: 150, atkSpeed: 3, range: 'melee', speed: 1.6 }, sword: { hp: 1530, atk: 175, atkSpeed: 1.5, range: 'melee', speed: 1.6 } }; /* R3.4 build 6: 검 (튜토리얼 챕터 3) */
 const TUT_EBUFF = { 2: 1.8 }; /* R3.4 build 6: 리뉴얼 = 3라운드 · 2라운드만 져야 한다 (예전 3라운드 구성 = 화염 2 · 얼음 2 vs 물 2 · 쉴드 2 × 1.8) */ // R2.22 build 3: 3라운드 1.35 → 1.8 (시뮬 200판: 1.35 는 플레이어가 94% 이김 · 1.6 부터 0%) · R2.12.3 긴급: 튜토리얼 2 · 3라운드(플레이어가 져야 함) 봇 체력 · 공격력 배율 — R2.12.3 수치로 3라운드를 이기던 문제 (×1.2 는 아슬아슬)
 function camYaw(dt) { // R3.0 회전 카메라 (실험 · 전투 설정): 전투 중에만 천천히 돌아간다
-  const t = BSET.cam3d && isEW() && S.phase === 'combat' ? CFG.YAW : 0, a = CAM.yaw || 0; if (a === t) return;
+  const t = BSET.cam3d && isEW() && !flatDf() && S.phase === 'combat' ? CFG.YAW : 0, a = CAM.yaw || 0; if (a === t) return;
   const k = 1 - Math.exp(-dt * 2.2), n = Math.abs(t - a) < 0.05 ? t : a + (t - a) * k, [ox, oy] = camV(FW() / 2, FH() / 2); CAM.yaw = n; const [nx, ny] = camV(FW() / 2, FH() / 2); CAM.x += nx - ox; CAM.y += ny - oy; applyCamera(true); }
 function camFollow(dt) {
   if (!CAM.follow || CAM.user || reelsOn() || S.phase !== 'combat') return;
@@ -15529,7 +15551,7 @@ function camAuto(dt) {
   const F = L.filter(u => u._engaged); if (F.length >= 4) L = F;
   const T = TILT(), n = L.length, V = L.map(u => camV(u.x, u.y)), xs = V.map(p => p[0]).sort((a, b) => a - b), ys = V.map(p => p[1]).sort((a, b) => a - b), cut = n >= 10 ? Math.floor(n * 0.08) : 0, pad = CFG.CELL * 2;
   const x0 = xs[cut] - pad, x1 = xs[n - 1 - cut] + pad, y0 = ys[cut] - pad, y1 = ys[n - 1 - cut] + pad, { vw, vh } = viewSize(), t = CAM.vi ? CAM.vi.t : 0, b = CAM.vi ? CAM.vi.b : 0;
-  let zt = clamp(Math.min(vw / Math.max(1, x1 - x0), Math.max(40, vh - t - b) / Math.max(1, y1 - y0)), Math.min(fitZoom(), TILT() !== 1 ? fitZoom() * (CAM.yaw ? 1 : 1.2) : 1.25), TILT() !== 1 ? fitZoom() * (CAM.yaw ? 1 : 1.2) : 1.25) /* R3.0 3D: 원근 때문에 많이 당기면 양옆이 잘린다 */;
+  const near = TILT() !== 1 || flatDf(); let zt = clamp(Math.min(vw / Math.max(1, x1 - x0), Math.max(40, vh - t - b) / Math.max(1, y1 - y0)), Math.min(fitZoom(), near ? fitZoom() * (CAM.yaw ? 1 : 1.2) : 1.25), near ? fitZoom() * (CAM.yaw ? 1 : 1.2) : 1.25) /* R3.0 3D: 원근 때문에 많이 당기면 양옆이 잘린다 */;
   if (CAM.az && Math.abs(zt - CAM.az) / CAM.az < 0.1) zt = CAM.az; else CAM.az = zt;
   const k = 1 - Math.exp(-dt * 2.4), kz = 1 - Math.exp(-dt * 1.5), nz = CAM.z + (zt - CAM.z) * kz, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - (t - b) / 2 / nz, nx = CAM.x + (cx - CAM.x) * k, ny = CAM.y + (cy - CAM.y) * k;
   if (Math.abs(nz - CAM.z) < 0.0005 && Math.abs(nx - CAM.x) < 0.3 && Math.abs(ny - CAM.y) < 0.3) return;
@@ -15548,7 +15570,7 @@ function setZoom(z, cx, cy) {
 function fitField() {
   const f = $('field'), T = TILT(); f.style.width = FW() + 'px'; f.style.height = FH() + 'px'; f.classList.toggle('ns', !isEW());
   if (isEW()) try { const o = screen.orientation; if (o && o.lock) { const p = o.lock('landscape'); if (p && p.catch) p.catch(() => {}); } } catch (e) {} /* R3.0: 가로 고정 (되는 기기만 · 안 되면 #rotOv 안내) */
-  f.classList.toggle('tilt', T !== 1); f.style.setProperty('--ut', '1'); f.style.setProperty('--lk', '0'); f.style.setProperty('--rx', (T !== 1 ? -CFG.TILT_DEG : 0) + 'deg'); /* R3.0 3D: 눌림 보정 대신 일으켜 세운다 */ $('fieldWrap').classList.toggle('ew', isEW()); /* R3.0 2.5D: 서 있는 요소가 쓰는 값 (CSS .tilt) */
+  f.classList.toggle('tilt', isEW()); f.classList.toggle('flat', isEW() && T === 1); /* R3.9 build 3: 평면도 모양 (.tilt) 은 그대로 */ f.style.setProperty('--ut', '1'); f.style.setProperty('--lk', '0'); f.style.setProperty('--rx', (T !== 1 ? -CFG.TILT_DEG : 0) + 'deg'); /* R3.0 3D: 눌림 보정 대신 일으켜 세운다 */ $('fieldWrap').classList.toggle('ew', isEW()); /* R3.0 2.5D: 서 있는 요소가 쓰는 값 (CSS .tilt) */
   fitCamera();
 }
 window.addEventListener('resize', () => { if (S.phase !== 'idle') applyCamera(); });
@@ -16449,11 +16471,11 @@ function beginCombat() {
   requestAnimationFrame(loop);
 }
 // 배속 버튼 (R2.19: 동그란 버튼 하나 · 누구나 1.5배속 · VIP 2배속 · 켜 두면 다음 전투도) · 친선전도 내 화면만 빨라진다 (결과는 같다)
-let speedPref = false; // 꺼 두어도 전투가 길어지면 자동 1.5배속
+let speedPref = false, speed3Pref = false; try { speed3Pref = localStorage.getItem('rejhbt-speed3') === '1'; } catch (e) {} /* R3.9 build 3: 협동 디펜스 3배속 기억 */ // 꺼 두어도 전투가 길어지면 자동 1.5배속
 const dfSpd = 2; // R3.7: 디펜스 4배속 삭제 (2배속까지)
-const fastSpeed = () => isDf() ? dfSpd : vipOn() || rtbFast() ? 2 : CFG.FAST_SPEED; /* R3.8 build 8 복귀 */ // R2.19: 누구나 1.5배속 · VIP 는 2배속 · R2.36: 디펜스는 누구나 2배속 · R3.2 build 9: 디펜스 4배속
-function renderSpeedBtn() { const b = $('speedSeg'), on = S.phase === 'combat' ? S.speed > 1 : speedPref, t = fastSpeed() + '×'; b.classList.toggle('on', on); if (b.textContent !== t) b.textContent = t; }
-$('speedSeg').addEventListener('click', () => { const was = S.phase === 'combat' ? S.speed > 1 : speedPref; let fast = !was; // 켜짐 ↔ 꺼짐
+const fastSpeed = () => isDf() ? (coMap() && speed3Pref ? CO.SPD3 : dfSpd) /* R3.9 build 3 */ : vipOn() || rtbFast() ? 2 : CFG.FAST_SPEED; /* R3.8 build 8 복귀 */ // R2.19: 누구나 1.5배속 · VIP 는 2배속 · R2.36: 디펜스는 누구나 2배속 · R3.2 build 9: 디펜스 4배속
+function renderSpeedBtn() { const b = $('speedSeg'), on = S.phase === 'combat' ? S.speed > 1 : speedPref, t = (coMap() && !on ? 1 : fastSpeed()) + '×'; /* 협동: 지금 배속을 보인다 */ b.classList.toggle('on', on); if (b.textContent !== t) b.textContent = t; }
+$('speedSeg').addEventListener('click', () => { const was = S.phase === 'combat' ? S.speed > 1 : speedPref, three = coMap() && was && !speed3Pref, fast = three || !was; /* 협동: 1× → 2× → 3× → 1× */ if (coMap()) { speed3Pref = three; try { localStorage.setItem('rejhbt-speed3', three ? '1' : '0'); } catch (err) {} } // 그 밖: 켜짐 ↔ 꺼짐
   if (S.phase === 'combat') { S.speed = fast ? fastSpeed() : 1; S.speedManual = true; } speedPref = fast; renderSpeedBtn(); try { localStorage.setItem('rejhbt-speed', speedPref ? '1' : '0'); } catch (err) {} });
 $('btnDeployDone').addEventListener('click', () => { if (S.phase === 'deploy' && !(S.net && S.net.spec)) autoPlace(); }); // 자동 배치: 시간 초과 때와 같이
 // ── 라운드 끝 (전작 endRoundCombat): 시간 종료 50:50 은 같은 라운드를 처음 배치로 다시 · 양쪽 전멸은 라이프 그대로 다음 라운드 ──
@@ -20424,7 +20446,19 @@ $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnC
 // ═════════ 패치노트 (PATCH_NOTES · 맨 위가 최신) ═════════
 const PN_TAG = { new: '신규', buff: '상향', nerf: '하향', adjust: '조정', fix: '수정', system: '시스템', rework: '리워크' };
 const PATCH_NOTES = [
-  { v: 'R3.9', date: '2026.11.28', title: '협동 디펜스와 문장으로 쓴 지후 상세', sections: [
+  { v: 'R3.9', date: '2026.11.28', title: '협동 디펜스 강화와 문장으로 쓴 지후 상세', sections: [
+    { title: '추가 패치 (build 3)', items: [
+      { icon: '⏩', name: '3배속', tag: 'new', desc: '협동 디펜스 배속 버튼이 <b>1×, 2×, 3×</b>로 바뀐다' },
+      { icon: '🗺', name: '2D 전장', tag: 'adjust', desc: '디펜스와 협동 디펜스는 <b>2D</b> 전장' },
+      { icon: '❤', name: '협동 적 체력', tag: 'adjust', desc: '그냥한철 체력 <b>100 × 웨이브 → 200 × 웨이브</b>' },
+      { icon: '💨', name: '빠른한철', tag: 'new', desc: '협동: <b>30%</b> 확률로 등장, 체력 그냥한철의 <b>0.75배</b>, 이동속도 <b>4배</b>' },
+      { icon: '🧱', name: '두꺼운한철', tag: 'new', desc: '협동: 10웨이브부터 <b>25마리</b>마다 등장, 체력 <b>3배</b>' },
+      { icon: '😈', name: '준보스', tag: 'new', desc: '협동: 20웨이브부터 <b>20마리</b>마다 무작위 준보스, 체력 <b>2배</b>' },
+      { icon: '🧟', name: '흑화 네크로맨서', tag: 'adjust', desc: '협동: 그냥한철, 빠른한철, 두꺼운한철을 <b>1마리씩</b> 소환, 체력 <b>0.5배</b>' },
+      { icon: '👑', name: '보스 둘', tag: 'adjust', desc: '협동: 50웨이브부터 보스가 <b>둘</b>' },
+      { icon: '🪙', name: '소환 비용', tag: 'adjust', desc: '협동: 지후를 소환할 때마다 그 지후 비용 <b>+0.5</b>' },
+      { icon: '🔗', name: '합체', tag: 'fix', desc: '다른 지후 카드를 고른 채로 전장의 지후를 합칠 수 없던 것' },
+    ] },
     { title: '추가 패치 (build 2)', items: [
       { icon: '📖', name: '지후 상세', tag: 'system', desc: '모든 지후의 상세 설명을 읽기 쉬운 <b>문장</b>으로 다시 썼다' },
       { id: 'berserk', name: '광폭화 지후', tag: 'fix', desc: '설명의 [광폭화] 공격 속도를 실제 수치인 <b>70%</b>로 바로잡았다' },
